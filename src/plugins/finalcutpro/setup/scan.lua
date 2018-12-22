@@ -7,13 +7,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local timer         = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp			  = require("cp.apple.finalcutpro")
-local config		= require("cp.config")
-local i18n      = require("cp.i18n")
+local config        = require("cp.config")
+local fcp			= require("cp.apple.finalcutpro")
+local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -32,7 +38,7 @@ local mod = {}
 --- Returns:
 ---  * self
 function mod.init(deps)
-    if fcp:isInstalled() then
+    if fcp:isSupported() then
         if not fcp:plugins().scanned() then
             --------------------------------------------------------------------------------
             -- Final Cut Pro hasn't been scanned yet:
@@ -48,8 +54,21 @@ function mod.init(deps)
                     :addButton({
                         label		= i18n("startScan"),
                         onclick		= function()
-                            fcp:scanPlugins()
-                            setup.nextPanel()
+                            --------------------------------------------------------------------------------
+                            -- Show "Scanning in progress" screen:
+                            --------------------------------------------------------------------------------
+                            setup.injectScript([[
+                                function getElementByXpath(path) {
+                                  return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                                }
+                                getElementByXpath("/html/body/div/div[1]/h1").style.display = "none";
+                                getElementByXpath("/html/body/div/div[2]").style.display = "none";
+                                getElementByXpath("/html/body/div/div[1]/p").innerHTML = "<h1>]] .. i18n("scanningInProgress") .. [[...</h1><h2>]] .. i18n("thisCanTakeSeveralMinutes") .. [[.</h2>"
+                            ]])
+                            timer.doAfter(0.1, function()
+                                fcp:scanPlugins()
+                                setup.nextPanel()
+                            end)
                         end
                     })
             )

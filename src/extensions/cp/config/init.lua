@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -69,6 +70,11 @@ if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
     -- Use assets in either the Developer or User Library directory:
     -------------------------------------------------------------------------------
     mod.scriptPath			= hs.configdir
+
+    --- cp.config.testsPath -> string
+    --- Constant
+    --- Path to where the Test scripts are stored. Only available in developer environments.
+    mod.testsPath           = fs.pathToAbsolute(mod.scriptPath .. "/../tests")
 else
     -------------------------------------------------------------------------------
     -- Use assets within the Application Bundle:
@@ -137,7 +143,10 @@ mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
 --- cp.config.sourceWatcher -> SourceWatcher
 --- Constant
 --- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
-mod.sourceWatcher		= sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
+mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions)
+    :watchPath(mod.scriptPath)
+    :watchPath(mod.userPluginsPath)
+    :watchPath(mod.bundledPluginsPath)
 
 --- cp.config.bundleID -> string
 --- Constant
@@ -272,6 +281,9 @@ function mod.reset()
     hs.reload()
 end
 
+--- cp.config.watcher() -> watcher
+--- Variable
+--- Config Watcher
 mod.watcher = watcher.new("reset")
 
 --- cp.config.watch(events) -> id
@@ -307,26 +319,19 @@ end
 --- cp.config.developerMode <cp.prop: boolean>
 --- Constant
 --- When `true`, the app is in developer mode.
-mod.developerMode = mod.prop("debugMode", false):watch(function(value)
-    if value then
-        log.df("Developer Mode Enabled")
-    else
-        log.df("Developer Mode Disabled")
-    end
-end)
+mod.developerMode = mod.prop("debugMode", false)
 
 --- cp.config.automaticScriptReloading <cp.prop: boolean>
 --- Variable
 --- Automatic Script Reloading.
 mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
     if value then
-        log.df("Automatic Script Reloading Enabled")
         mod.sourceWatcher:start()
     else
-        log.df("Automatic Script Reloading Disabled")
         mod.sourceWatcher:stop()
     end
 end)
+mod.automaticScriptReloading:update()
 
 --------------------------------------------------------------------------------
 --

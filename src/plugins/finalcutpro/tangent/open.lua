@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -34,9 +35,7 @@ function plugin.init(deps)
     local fcpGroup = deps.fcpGroup
     local id = 0x00050000
     fcpGroup:action(id, i18n("cpLaunchFinalCutPro" .. "_title"))
-        :onPress(function()
-            fcp:launch()
-        end)
+        :onPress(fcp:doLaunch())
 
     return fcpGroup
 end

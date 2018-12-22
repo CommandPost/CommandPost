@@ -7,13 +7,31 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
--- local log				= require("hs.logger").new("ids")
+local require = require
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log				= require("hs.logger").new("ids")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fs				= require("hs.fs")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local tools				= require("cp.tools")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local v					= require("semver")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert			= table.insert
 
 --------------------------------------------------------------------------------
@@ -75,16 +93,30 @@ function mod.mt:currentVersion()
     return toVersion(self._currentVersion and self._currentVersion() or nil)
 end
 
+--- cp.ids:versions() -> table
+--- Method
+--- Returns a table of versions.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of `semver` objects.
 function mod.mt:versions()
     if not self._versions then
         local versions = {}
         local path = fs.pathToAbsolute(self.path)
-        for file in fs.dir(path) do
-            if file:sub(-4) == ".lua" then
-                local versionString = file:sub(1, -5)
-                local version = toVersion(versionString)
-                if version then
-                    insert(versions, version)
+        local iterFn, dirObj = fs.dir(path)
+        if not iterFn then
+            log.ef("An error occured in cp.ids:versions: %s", dirObj)
+        else
+            for file in iterFn, dirObj do
+                if file:sub(-4) == ".lua" then
+                    local versionString = file:sub(1, -5)
+                    local version = toVersion(versionString)
+                    if version then
+                        insert(versions, version)
+                    end
                 end
             end
         end

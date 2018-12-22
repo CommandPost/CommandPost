@@ -11,6 +11,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -27,6 +28,7 @@ local window                            = require("hs.window")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local app                               = require("cp.app")
+local config			                = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local prop                              = require("cp.prop")
 
@@ -45,11 +47,20 @@ mod.dockIconEnabled = prop(
         return hs.dockIcon()
     end,
     function(enabled)
-        if mod._working then -- we're mid-change
-            return
-        end
+        --------------------------------------------------------------------------------
+        -- Ignore if the Dock Icon is already hidden:
+        --------------------------------------------------------------------------------
+        if not config.get("dockIcon", true) then return end
 
-        -- setting the dockIcon makes CommandPost the 'focused' app, so this is a  workaround.
+        --------------------------------------------------------------------------------
+        -- Ignore if we're mid-change:
+        --------------------------------------------------------------------------------
+        if mod._working then return end
+
+        --------------------------------------------------------------------------------
+        -- Setting the dockIcon makes CommandPost the 'focused' app,
+        -- so this is a workaround:
+        --------------------------------------------------------------------------------
         mod._working = true
         local focusedWindow = window.focusedWindow()
         hs.dockIcon(enabled)

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -254,7 +255,6 @@ local function touchBarPanelCallback(id, params)
             local groupID = params["groupID"]
 
             mod.activator[groupID]:onActivate(function(handler, action, text)
-
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
                 --------------------------------------------------------------------------------
@@ -265,7 +265,13 @@ local function touchBarPanelCallback(id, params)
                 local actionTitle = text
                 local handlerID = handler:id()
 
-                mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                --------------------------------------------------------------------------------
+                -- Check for duplicates:
+                --------------------------------------------------------------------------------
+                if not mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action) then
+                    dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("touchBarDuplicateWidget"), i18n("touchBarDuplicateWidgetInfo"), i18n("ok"))
+                end
+
                 mod._manager.refresh()
             end)
 
@@ -411,9 +417,9 @@ mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(functio
         mod.enabled(false)
     end
     if enabled then
-        mod._tb.virtual.start()
+        mod._virtual.start()
     else
-        mod._tb.virtual.stop()
+        mod._virtual.stop()
     end
 end)
 
@@ -444,12 +450,12 @@ mod.virtual.LOCATION_TIMELINE       = "TimelineTopCentre"
 --- When should the Virtual Touch Bar be visible?
 mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(status)
     if status == mod.virtual.VISIBILITY_ALWAYS then
-        mod._tb.virtual.show()
+        mod._virtual.show()
     elseif status == mod.virtual.VISIBILITY_FCP then
         if fcp.isFrontmost() then
-            mod._tb.virtual.show()
+            mod._virtual.show()
         else
-            mod._tb.virtual.hide()
+            mod._virtual.hide()
         end
     end
 end)
@@ -493,11 +499,11 @@ local function locationOptions()
     }
     options[#options + 1] = {
         label = i18n("mouseLocation"),
-        value = mod._tb.virtual.LOCATION_MOUSE,
+        value = mod._virtual.LOCATION_MOUSE,
     }
     options[#options + 1] = {
         label = i18n("draggable"),
-        value = mod._tb.virtual.LOCATION_DRAGGABLE,
+        value = mod._virtual.LOCATION_DRAGGABLE,
     }
     return options
 end
@@ -519,6 +525,7 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod._tb             = deps.tb
     mod._manager        = deps.manager
+    mod._virtual        = deps.virtual
     mod._webviewLabel   = deps.manager.getLabel()
     mod._actionmanager  = deps.actionmanager
     mod._env            = env
@@ -559,15 +566,15 @@ function mod.init(deps, env)
         :addSelect(4,
             {
                 label       = i18n("location"),
-                value       = mod._tb.virtual.location,
+                value       = mod._virtual.location,
                 options     = locationOptions(),
                 required    = true,
                 class       = "touchbarDropdown",
-                onchange    = function(_, params) mod._tb.virtual.location(params.value) end,
+                onchange    = function(_, params) mod._virtual.location(params.value) end,
             }
         )
-        :addParagraph(5, html.span {style="display: clear;", class="tbTip"} (
-            html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarDragTip") ) ..
+        :addParagraph(5, html.span {style="display: clear; margin-left: 243px;", class="tbTip"} (
+            i18n("touchBarDragTip") ) ..
             "\n\n"
         )
 
@@ -583,7 +590,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod.enabled(params.checked) end,
             }
         )
-        :addParagraph(8, html.span { class="tbTip" } ( html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarSetupTip") ).. "\n\n")
+        :addParagraph(8, html.span { class="tbTip" } ( i18n("touchBarSetupTip"), false ).. "\n\n")
         :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
@@ -615,6 +622,7 @@ local plugin = {
     dependencies    = {
         ["core.preferences.manager"]        = "manager",
         ["core.touchbar.manager"]           = "tb",
+        ["core.touchbar.virtual"]           = "virtual",
         ["core.action.manager"]             = "actionmanager",
     }
 }

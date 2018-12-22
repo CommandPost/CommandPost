@@ -11,7 +11,8 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("PrefsDlg")
+local require                       = require
+local log                           = require("hs.logger").new("PrefsDlg")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -23,10 +24,15 @@
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local Button                        = require("cp.ui.Button")
-local id                            = require("cp.apple.finalcutpro.ids") "CommandEditor"
+local Window                        = require("cp.ui.Window")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
-local Window                        = require("cp.ui.Window")
+
+local strings                       = require("cp.apple.finalcutpro.strings")
+
+local If                            = require("cp.rx.go.If")
+local Throw                         = require("cp.rx.go.Throw")
+local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
 --------------------------------------------------------------------------------
 --
@@ -91,7 +97,7 @@ function CommandEditor.new(app)
     end)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(app.app, UI)
+    local window = Window(app.app, UI)
     o._window = window
 
     prop.bind(o) {
@@ -120,6 +126,20 @@ function CommandEditor.new(app)
 --- The current position (x, y, width, height) of the window.
         frame = window.frame,
     }
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
+--- Field
+--- The "Save" [Button](cp.ui.Button.md).
+    o.save = Button(o, UI:mutate(function(original)
+        return axutils.childFromRight(original(), 1, Button.matches)
+    end))
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.close <cp.ui.Button>
+--- Field
+--- The "Close" [Button](cp.ui.Button.md).
+    o.close = Button(o, UI:mutate(function(original)
+        return axutils.childFromRight(original(), 2, Button.matches)
+    end))
 
     return o
 end
@@ -170,6 +190,29 @@ function CommandEditor:show()
     return self
 end
 
+--- cp.apple.finalcutpro.cmd.CommandEditor:doShow() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Creates a [Statement](cp.rx.go.Statement.md) that will attempt to show the Command Editor, if FCPX is running.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
+function CommandEditor:doShow()
+    return If(self:app().isRunning):Then(
+        If(self.isShowing):Is(false):Then(
+            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+        ):Then(
+            WaitUntil(self.isShowing)
+        ):Otherwise(true)
+    )
+    :Otherwise(false)
+    :TimeoutAfter(10000)
+    :ThenYield()
+    :Label("CommandEditor:doShow")
+end
+
 --- cp.apple.finalcutpro.cmd.CommandEditor:hide() -> cp.apple.finalcutpro.cmd.CommandEditor
 --- Method
 --- Hides the Command Editor.
@@ -190,6 +233,43 @@ function CommandEditor:hide()
     return self
 end
 
+--- cp.apple.finalcutpro.cmd.CommandEditor:doShow() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Creates a [Statement](cp.rx.go.Statement.md) that will attempt to hide the Command Editor, if FCPX is running.
+--- If the changes have not been saved, they will be lost.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement`, which will resolve to `true` if the CommandEditor is not showing or `false` if not.
+function CommandEditor:doHide()
+    local alert = self:alert()
+    local isHidden = self.isShowing:NOT()
+    return If(self.isShowing):Then(
+        self:window():doClose()
+    ):Then(
+        WaitUntil(isHidden:OR(alert.isShowing))
+    ):Then(
+        If(alert.isShowing):Then(function()
+            local msg = strings:find("ConfirmSaveAlertTitle")
+            if msg then
+                msg = msg:gsub("%?", "%%?"):gsub("%%@", ".*")
+                log.df("msg: %s", msg)
+                if alert:containsText(msg) then
+                    -- Button 1 should be "Don't Save" or equivalent in current locale.
+                    return alert:doPress(1)
+                end
+            end
+            return Throw("Unable to close the Command Editor: Unexpected Alert")
+        end)
+    ):Then(WaitUntil(isHidden)
+    ):Otherwise(true)
+    :TimeoutAfter(10000)
+    :ThenYield()
+    :Label("CommandEditor:doHide")
+end
+
 --- cp.apple.finalcutpro.cmd.CommandEditor:saveButton() -> axuielementObject | nil
 --- Method
 --- Gets the Command Editor Save Button AX item.
@@ -200,32 +280,33 @@ end
 --- Returns:
 ---  * The `axuielementObject` of the Save Button or nil.
 function CommandEditor:saveButton()
-    if not self._saveButton then
-        self._saveButton = Button.new(self, function()
-            return axutils.childWithID(self:UI(), id "SaveButton")
-        end)
-    end
-    return self._saveButton
+    return self.save
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:save() -> cp.apple.finalcutpro.cmd.CommandEditor
+--- cp.apple.finalcutpro.cmd.CommandEditor:doSave() -> cp.rx.go.Statement <boolean>
 --- Method
---- Triggers the Save button in the Command Editor.
+--- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Save button in the Command Editor.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The `cp.apple.finalcutpro.cmd.CommandEditor` object for method chaining.
-function CommandEditor:save()
-    local ui = self:UI()
-    if ui then
-        local saveBtn = axutils.childWith(ui, "AXIdentifier", id "SaveButton")
-        if saveBtn and saveBtn:enabled() then
-            saveBtn:doPress()
-        end
-    end
-    return self
+---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
+function CommandEditor:doSave()
+    return self.save:doPress()
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Save button in the Command Editor.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
+function CommandEditor:doSave()
+    return self.save:doPress()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:getTitle() -> string | nil
@@ -240,6 +321,19 @@ end
 function CommandEditor:getTitle()
     local ui = self:UI()
     return ui and ui:title()
+end
+
+--- cp.apple.finalcutpro.cmd.CommandEditor:alert() -> cp.ui.Alert
+--- Method
+--- The [Alert](cp.ui.Alert.md) for the Command Editor window.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Alert`.
+function CommandEditor:alert()
+    return self:window():alert()
 end
 
 return CommandEditor

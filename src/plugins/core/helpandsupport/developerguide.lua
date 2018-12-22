@@ -7,22 +7,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 1.1
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -53,8 +43,8 @@ local plugin = {
     id              = "core.helpandsupport.developerguide",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -67,17 +57,19 @@ function plugin.init(deps)
     -- Commands:
     --------------------------------------------------------------------------------
     local global = deps.global
-    global:add("cpDeveloperGuide")
-        :whenActivated(mod.show)
-        :groupedBy("helpandsupport")
+    if global then
+        global:add("cpDeveloperGuide")
+            :whenActivated(mod.show)
+            :groupedBy("helpandsupport")
+    end
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.helpandsupport:addItem(PRIORITY, function()
-        return { title = i18n("developerGuide"),    fn = mod.show }
-    end)
-    :addSeparator(PRIORITY+0.1)
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(6, function() return { title = i18n("developerGuide"), fn = mod.show } end)
+        :addSeparator(7)
 
     return mod
 end

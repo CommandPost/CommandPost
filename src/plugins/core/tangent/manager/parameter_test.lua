@@ -1,6 +1,7 @@
 -- local log		= require("hs.logger").new("t_html")
 -- local inspect	= require("hs.inspect")
 
+local require = require
 local test = require("cp.test")
 
 local parameter = require("parameter")

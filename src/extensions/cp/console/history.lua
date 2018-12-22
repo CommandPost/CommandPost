@@ -10,6 +10,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -40,15 +41,15 @@ local json     = require("cp.json")
 -- File name of settings file.
 local FILE_NAME = "History.cpCache"
 
---- FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
+-- FOLDER_NAME -> string
+-- Constant
+-- Folder Name where settings file is contained.
 local FOLDER_NAME = "Error Log"
 
 -- CHECK_INTERVAL -> number
 -- Constant
 -- How often to check for changes.
-local CHECK_INTERVAL = 1
+--local CHECK_INTERVAL = 1
 
 -- MAXIMUM -> number
 -- Constant
@@ -62,14 +63,14 @@ local MAXIMUM = 100
 --------------------------------------------------------------------------------
 local mod = {}
 
---- hashFN -> function
---- Variable
---- The has function. Can use other hash function if this proves insufficient.
+-- hashFN -> function
+-- Variable
+-- The has function. Can use other hash function if this proves insufficient.
 local hashFN = hash.MD5
 
---- currentHistoryCount -> number
---- Variable
---- Current History Count
+-- currentHistoryCount -> number
+-- Variable
+-- Current History Count
 local currentHistoryCount = #console.getHistory()
 
 --- cp.console.history.cache <cp.prop: table>
@@ -77,15 +78,15 @@ local currentHistoryCount = #console.getHistory()
 --- Console History Cache
 mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, nil)
 
---- uniqueHistory(raw) -> table
---- Function
---- Takes the raw history and returns only the unique history.
----
---- Parameters:
----  * raw - The raw history as a table
----
---- Returns:
----  * A table
+-- uniqueHistory(raw) -> table
+-- Function
+-- Takes the raw history and returns only the unique history.
+--
+-- Parameters:
+--  * raw - The raw history as a table
+--
+-- Returns:
+--  * A table
 local function uniqueHistory(raw)
     local hashed, history = {}, {}
     for i = #raw, 1, -1 do
@@ -214,6 +215,14 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Setup Autosave Timer:
     --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- NOTE: Chris has disabled this, because he THINKS it's the source of a
+    --       memory leak. However, the Console history SHOULD still work
+    --       as it's called as part of garbage collection.
+    --------------------------------------------------------------------------------
+
+    --[[
     mod.autosaveHistory = timer.new(CHECK_INTERVAL, function()
         local historyNow = console.getHistory()
         if #historyNow ~= currentHistoryCount then
@@ -221,6 +230,7 @@ function mod.init()
             mod.saveHistory()
         end
     end):start()
+    --]]
 
     --------------------------------------------------------------------------------
     -- Retrieve History on Boot:

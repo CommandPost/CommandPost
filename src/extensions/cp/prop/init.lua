@@ -36,7 +36,7 @@
 --- Similarly, you can 'observe' a prop as a `cp.rx.Observer` by calling the `observe` method:
 ---
 --- ```lua
---- propValue:observe():subscribe(function(value) print(tostring(value) end))
+--- propValue:toObservable():subscribe(function(value) print(tostring(value) end))
 --- ```
 ---
 --- These will never emit an `onError` or `onComplete` message, just `onNext` with either `nil` or the current value as it changes.
@@ -106,13 +106,31 @@
 --- To use a `prop` as a method, you need to `attach` it to the owning table, like so:
 ---
 --- ```lua
---- local owner = {
----     _value = true
---- }
+--- local owner = { _value = true }
 --- owner.isMethod = prop(function(self) return self._value end, function(value, self) self._value = value end):bind(owner)
 --- owner:isMethod()                -- success!
 --- owner.isMethod()                -- also works - will still pass in the bound owner.
 --- owner.isMethod:owner() == owner -- is true~
+--- ```
+---
+--- You can also use the [prop.bind](#bind) function to bind multple properties at once:
+---
+--- ```lua
+--- local owner = { _value = true }
+--- prop.bind(o) {
+---     isMethod = prop(function(self) return self._value end)
+--- }
+--- owner:isMethod()                -- success!
+--- ```
+---
+--- The [prop.extend](#extend) function will also bind any `cp.prop` values it finds:
+---
+--- ```lua
+--- local owner = prop.extend({
+---     _value = true,
+---     isMethod = prop(function(self) return self._value end),
+--- })
+--- owner:isMethod()                -- success!
 --- ```
 ---
 --- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.
@@ -250,6 +268,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -767,7 +786,7 @@ function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
 end
 
---- cp.prop:observe() -> cp.rx.Observable
+--- cp.prop:toObservable() -> cp.rx.Observable
 --- Method
 --- Returns the `cp.rx.Observable` for the property. This will emit
 --- `onNext()` events with the current value whenever the `cp.prop` is updated.
@@ -781,7 +800,9 @@ end
 ---
 --- Notes:
 ---  * It will only emit `onNext` events, never an `onError` or `onCompleted` event.
-function prop.mt:observe()
+---  * This will trigger an `update` each time it is called.
+function prop.mt:toObservable()
+    self:update()
     if not self._observable then
         local rx = require("cp.rx")
         local subject = rx.BehaviorSubject.create()
@@ -1666,14 +1687,15 @@ end
 --- Returns:
 ---  * The `target`, now extending the `source`.
 function prop.extend(target, source)
+    local o = {}
     -- bind any props to itself
-    prop.bind(target, true)(target)
+    prop.bind(o, true)(target)
     -- rebind any props in the source to the target
-    rebind(target, source)
+    rebind(o, source)
     if source.__index == nil then
         source.__index = source
     end
-    return setmetatable(target, source)
+    return setmetatable(o, source)
 end
 
 --- cp.prop.bind(owner[, relaxed]) -> function
@@ -1722,7 +1744,9 @@ function prop.bind(owner, relaxed)
                 elseif vOwner ~= owner then -- it's owned by someone else. wrap instead.
                     v:wrap(owner, k)
                 end
-            elseif not relaxed then
+            elseif relaxed then -- just copy the original over
+                owner[k] = v
+            else
                 error(format("The binding value must be a `cp.prop`, but was a `%s`.", type(v)))
             end
         end

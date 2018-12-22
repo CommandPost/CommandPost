@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -17,12 +18,14 @@ local log                               = require("hs.logger").new("inspector")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local prop                              = require("cp.prop")
+
+local strings                           = require("cp.apple.finalcutpro.strings")
 
 local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local ColorInspector                    = require("cp.apple.finalcutpro.inspector.color.ColorInspector")
-local EffectInspector                   = require("cp.apple.finalcutpro.inspector.effect.EffectInspector")
 local GeneratorInspector                = require("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
 local InfoInspector                     = require("cp.apple.finalcutpro.inspector.info.InfoInspector")
 local ShareInspector                    = require("cp.apple.finalcutpro.inspector.share.ShareInspector")
@@ -31,19 +34,26 @@ local TitleInspector                    = require("cp.apple.finalcutpro.inspecto
 local TransitionInspector               = require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 local VideoInspector                    = require("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
-local id                                = require("cp.apple.finalcutpro.ids") "Inspector"
+local go                                = require("cp.rx.go")
+local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
+local Given, Done                       = go.Given, go.Done
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Inspector = {}
+local Inspector = Element:subclass("Inspector")
+
+function Inspector.__tostring()
+    return "cp.apple.finalcutpro.inspector.Inspector"
+end
+
 
 --- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant
 --- Table of supported Inspector Tabs
-Inspector.INSPECTOR_TABS = {
+Inspector.static.INSPECTOR_TABS = {
     ["Audio"]       = "FFInspectorTabAudio",
     ["Color"]       = "FFInspectorTabColor",
     ["Effect"]      = "FFInspectorTabMotionEffectEffect",
@@ -65,13 +75,15 @@ Inspector.INSPECTOR_TABS = {
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Inspector.matches(element)
-    return axutils.childWithID(element, id "DetailsPanel") ~= nil -- is inspecting
-        or axutils.childWithID(element, id "NothingToInspect") ~= nil   -- nothing to inspect
+function Inspector.static.matches(element)
+    local children = axutils.children(element)
+    local groups = axutils.childrenWith(element, "AXRole", "AXGroup")
+    return (children and #children == 3 and groups and #groups == 3) -- is inspecting
+        or axutils.childWith(element, "AXValue", strings:find("Nothing to Inspect")) ~= nil -- nothing to inspect
         or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.new(parent) -> Inspector
+--- cp.apple.finalcutpro.inspector.Inspector(parent) -> Inspector
 --- Constructor
 --- Creates a new Inspector.
 ---
@@ -80,13 +92,8 @@ end
 ---
 --- Returns:
 ---  * The Inspector object.
-function Inspector.new(parent)
-    local o = prop.extend({_parent = parent}, Inspector)
-
---- cp.apple.finalcutpro.inspector.Inspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `axuielement` for the Inspector.
-    o.UI = prop(function(self)
+function Inspector:initialize(parent)
+    local UI = prop(function()
         return axutils.cache(self, "_ui",
         function()
             local ui = parent:rightGroupUI()
@@ -113,22 +120,34 @@ function Inspector.new(parent)
             return nil
         end,
         Inspector.matches)
-    end):bind(o)
+    end)
+
+    Element.initialize(self, parent, UI)
+
+    UI:preWatch(function()
+        self:app():notifier():watchFor({"AXUIElementDestroyed", "AXValueChanged"}, function()
+            UI:update()
+        end)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the "top bar" `axuielement` for the Inspector.
-    o.topBarUI = o.UI:mutate(function(original, self)
+function Inspector.lazy.prop:topBarUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_topBar", function()
             local ui = original()
             return ui and #ui == 3 and axutils.childFromTop(ui, 1) or nil
         end)
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.panelUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the central panel `axuielement` for the Inspector.
-    o.panelUI = o.UI:mutate(function(original, self)
+function Inspector.lazy.prop:panelUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_panel",
             function()
                 local ui = original()
@@ -142,12 +161,14 @@ function Inspector.new(parent)
             end,
             function(element) return element:attributeValue("AXRole") == "AXGroup" end
         )
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the properties `axuielement` for the Inspector. This contains the rows of property values.
-    o.propertiesUI = o.panelUI:mutate(function(original, self)
+function Inspector.lazy.prop:propertiesUI()
+    return self.panelUI:mutate(function(original)
         return axutils.cache(self, "_properties", function()
             local ui = original()
             if ui then
@@ -159,77 +180,57 @@ function Inspector.new(parent)
             end
             return nil
         end)
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.bottomBarUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the bottom bar `axuielement` for the Inspector.
-    o.bottomBarUI = o.UI:mutate(function(original, self)
+function Inspector.lazy.prop:bottomBarUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_bottomBar", function()
             local ui = original()
             return ui and #ui == 3 and axutils.childFromBottom(ui, 1) or nil
         end)
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.labelUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for text label at the top of the Inspector.
-    o.labelUI = o.topBarUI:mutate(function(original)
+function Inspector.lazy.prop:labelUI()
+    return self.topBarUI:mutate(function(original)
         local ui = original()
         return axutils.childWithRole(ui, "AXStaticText")
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the Inspector is showing otherwise `false`
-    o.isShowing = o.UI:mutate(function(original)
+function Inspector.lazy.prop:isShowing()
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui ~= nil
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.Inspector.isFullHeight <cp.prop: boolean>
 --- Field
 --- Returns `true` if the Inspector is full height.
-    o.isFullHeight = prop.new(
-        function(self)
+function Inspector.lazy.prop:isFullHeight()
+    return prop(
+        function()
             return Inspector.matches(self:parent():rightGroupUI())
         end,
-        function(newValue, self, thisProp)
+        function(newValue, _, thisProp)
             self:show()
             local currentValue = thisProp:get()
             if newValue ~= currentValue then
                 self:app():menu():selectMenu({"View", "Toggle Inspector Height"})
             end
         end
-    ):bind(o)
-
-    return o
-end
-
---- cp.apple.finalcutpro.inspector.Inspector:parent() -> Parent
---- Method
---- Returns the parent of the Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Inspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.Inspector:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Inspector:app()
-    return self:parent():app()
+    )
 end
 
 -----------------------------------------------------------------------
@@ -281,6 +282,21 @@ function Inspector:show(tab)
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.Inspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to show the `Inspector`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if the Inspector was shown successfully, or an error if not.
+function Inspector.lazy.method:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(self:parent():doShow())
+    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(5000))
+    :Otherwise(true)
+    :Label("Inspector:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.Inspector:hide() -> Inspector
 --- Method
 --- Hides the inspector.
@@ -297,6 +313,20 @@ function Inspector:hide()
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to hide the `Inspector`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
+function Inspector.lazy.method:doHide()
+    return If(self.isShowing):Is(true)
+    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
+    :Otherwise(true)
+    :Label("Inspector:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
@@ -334,8 +364,11 @@ function Inspector:selectTab(value)
         return false
     end
     local ui = self:topBarUI()
-    local app = self:app()
-    local valueTitle = app:string(code)
+    local valueTitle = strings:find(code)
+    if not valueTitle then
+        log.ef("Inspector:selectTab: unable to find string for tab code %q", code)
+        return false
+    end
     for _,subChild in ipairs(ui) do
         local title = subChild:attributeValue("AXTitle")
         if title == valueTitle then
@@ -343,6 +376,68 @@ function Inspector:selectTab(value)
         end
     end
     return false
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:doFindTabButton(type) -> cp.rx.go.Statement
+--- Method
+--- Finds the named Inspector tab button, or sends an error if the type is unsupported.
+---
+--- Parameters:
+--- * type - the type of the button to return. (e.g. "Video")
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) to execute.
+---
+--- Notes:
+---  * Valid strings for `type` are as follows:
+---    * Audio
+---    * Color
+---    * Effect
+---    * Generator
+---    * Info
+---    * Share
+---    * Text
+---    * Title
+---    * Transition
+---    * Video
+--- * Not all button types are available in all contexts.
+function Inspector:doFindTabButton(type)
+    local code = Inspector.INSPECTOR_TABS[type]
+    if not code then
+        return Throw("Invalid Inspector Tab: %s", type)
+    end
+    local localTitle = self:app():string(code)
+
+    return Given(List(self.topBarUI))
+    :Then(function(child)
+        if child:attributeValue("AXTitle") == localTitle then
+            return child
+        end
+        return Done()
+    end)
+    :Label("Inpector:doFindTabButton")
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:doSelectTab(title) -> cp.rx.go.Statement
+--- Method
+--- A Statement that selects the specified tab title.
+---
+--- Parameters:
+--- * title     - The title of the tab to select.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+function Inspector:doSelectTab(title)
+    return Do(self:doShow())
+    :Then(
+        If(self:doFindTabButton(title))
+        :Then(function(button)
+            button:doPress()
+            return true
+        end)
+        :Otherwise(false)
+    )
+    :Label("Inspector:doSelectTab")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:tabAvailable(tab) -> boolean
@@ -448,11 +543,8 @@ end
 ---
 --- Returns:
 ---  * ColorInspector
-function Inspector:video()
-    if not self._videoInspector then
-        self._videoInspector = VideoInspector.new(self)
-    end
-    return self._videoInspector
+function Inspector.lazy.method:video()
+    return VideoInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -470,11 +562,8 @@ end
 ---
 --- Returns:
 ---  * GeneratorInspector
-function Inspector:generator()
-    if not self._generatorInspector then
-        self._generatorInspector = GeneratorInspector.new(self)
-    end
-    return self._generatorInspector
+function Inspector.lazy.method:generator()
+    return GeneratorInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -492,33 +581,8 @@ end
 ---
 --- Returns:
 ---  * InfoInspector
-function Inspector:info()
-    if not self._infoInspector then
-        self._infoInspector = InfoInspector.new(self)
-    end
-    return self._infoInspector
-end
-
------------------------------------------------------------------------
---
--- EFFECT INSPECTOR:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.Inspector:effect() -> EffectInspector
---- Method
---- Gets the EffectInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * EffectInspector
-function Inspector:effect()
-    if not self._effectInspector then
-        self._effectInspector = EffectInspector.new(self)
-    end
-    return self._effectInspector
+function Inspector.lazy.method:info()
+    return InfoInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -536,11 +600,8 @@ end
 ---
 --- Returns:
 ---  * TextInspector
-function Inspector:text()
-    if not self._textInspector then
-        self._textInspector = TextInspector.new(self)
-    end
-    return self._textInspector
+function Inspector.lazy.method:text()
+    return TextInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -558,11 +619,8 @@ end
 ---
 --- Returns:
 ---  * TitleInspector
-function Inspector:title()
-    if not self._titleInspector then
-        self._titleInspector = TitleInspector.new(self)
-    end
-    return self._titleInspector
+function Inspector.lazy.method:title()
+    return TitleInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -580,11 +638,8 @@ end
 ---
 --- Returns:
 ---  * TransitionInspector
-function Inspector:transition()
-    if not self._transitionInspector then
-        self._transitionInspector = TransitionInspector.new(self)
-    end
-    return self._transitionInspector
+function Inspector.lazy.method:transition()
+    return TransitionInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -602,11 +657,8 @@ end
 ---
 --- Returns:
 ---  * AudioInspector
-function Inspector:audio()
-    if not self._audioInspector then
-        self._audioInspector = AudioInspector.new(self)
-    end
-    return self._audioInspector
+function Inspector.lazy.method:audio()
+    return AudioInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -624,11 +676,8 @@ end
 ---
 --- Returns:
 ---  * ShareInspector
-function Inspector:share()
-    if not self._shareInspector then
-        self._shareInspector = ShareInspector.new(self)
-    end
-    return self._shareInspector
+function Inspector.lazy.method:share()
+    return ShareInspector.new(self)
 end
 
 -----------------------------------------------------------------------
@@ -646,11 +695,8 @@ end
 ---
 --- Returns:
 ---  * ColorInspector
-function Inspector:color()
-    if not self._colorInspector then
-        self._colorInspector = ColorInspector.new(self)
-    end
-    return self._colorInspector
+function Inspector.lazy.method:color()
+    return ColorInspector(self)
 end
 
 return Inspector

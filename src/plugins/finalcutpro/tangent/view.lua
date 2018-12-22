@@ -7,11 +7,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log                                       = require("hs.logger").new("fcptng_timeline")
+local log                                       = require("hs.logger").new("fcptng_timeline")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -31,6 +32,13 @@ local mod = {}
 --- Constant
 --- The `core.tangent.manager.group` that collects Final Cut Pro View actions/parameters/etc.
 mod.group = nil
+
+local function doShortcut(id)
+    return fcp:doShortcut(id):Catch(function(message)
+        log.wf("Unable to perform %q shortcut: %s", id, message)
+        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+    end)
+end
 
 --- plugins.finalcutpro.tangent.view.init() -> none
 --- Function
@@ -60,25 +68,13 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"View", "Timeline History Forward"}))
 
     mod.group:action(baseID+5, i18n("show") .. " " .. i18n("histogram"))
-        :onPress(function()
-            if not fcp:performShortcut("ToggleHistogram") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ToggleHistogram"))
 
     mod.group:action(baseID+6, i18n("show") .. " " .. i18n("vectorscope"))
-        :onPress(function()
-            if not fcp:performShortcut("ToggleVectorscope") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ToggleVectorscope"))
 
     mod.group:action(baseID+7, i18n("show") .. " " .. i18n("videoWaveform"))
-        :onPress(function()
-            if not fcp:performShortcut("ToggleWaveform") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ToggleWaveform"))
 
     mod.group:action(baseID+8, i18n("toggleVideoScopesInViewer"))
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Video Scopes"}))

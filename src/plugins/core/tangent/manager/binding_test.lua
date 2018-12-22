@@ -1,6 +1,7 @@
 -- local log		= require("hs.logger").new("t_binding")
 -- local inspect	= require("hs.inspect")
 
+local require = require
 local test          = require("cp.test")
 
 local binding       = require("binding")

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -163,21 +164,19 @@ end
 ---  * None
 function mod.init(deps)
 
-    mod._colorBoard         = fcp:colorBoard()
-
-    mod._colorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
+    local colorBoard = fcp:colorBoard()
 
     local colorBoardAspects = {
-        { title = i18n("color"),        control = mod._colorBoard:color(),          hasAngle = true },
-        { title = i18n("saturation"),   control = mod._colorBoard:saturation()      },
-        { title = i18n("exposure"),     control = mod._colorBoard:exposure()        },
+        { title = i18n("color"),        control = colorBoard:color(),          hasAngle = true },
+        { title = i18n("saturation"),   control = colorBoard:saturation()      },
+        { title = i18n("exposure"),     control = colorBoard:exposure()        },
     }
 
     local pucks = {
-        { title = "Master",             fn = mod._colorBoardAspect.master        },
-        { title = "Shadows",            fn = mod._colorBoardAspect.shadows       },
-        { title = "Midtones",           fn = mod._colorBoardAspect.midtones      },
-        { title = "Highlights",         fn = mod._colorBoardAspect.highlights    },
+        { title = "Master",             id = "master"        },
+        { title = "Shadows",            id = "shadows"       },
+        { title = "Midtones",           id = "midtones"      },
+        { title = "Highlights",         id = "highlights"    },
     }
 
     local midiText, colorBoardText, puckText, descriptionText = upper(i18n("midi")), i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
@@ -192,7 +191,7 @@ function mod.init(deps)
             group = "fcpx",
             text = format("%s: %s %s %s", midiText, colorBoardText, puckText, i),
             subText = descriptionText,
-            fn = makePercentHandler(function() return puck.fn( mod._colorBoard:current() ) end),
+            fn = makePercentHandler(function() return colorBoard:current()[puck.id]() end),
         })
 
         --------------------------------------------------------------------------------
@@ -202,7 +201,7 @@ function mod.init(deps)
             group = "fcpx",
             text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, colorText, puckText, i, angleText),
             subText = descriptionText,
-            fn = makeAngleHandler(function() return puck.fn( mod._colorBoard:color() ) end),
+            fn = makeAngleHandler(function() return colorBoard:color()[puck.id]() end),
         })
 
         --------------------------------------------------------------------------------
@@ -214,7 +213,7 @@ function mod.init(deps)
                 group = "fcpx",
                 text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, aspect.title, puckText, i, percentageText ),
                 subText = descriptionText,
-                fn = makePercentHandler(function() return puck.fn( aspect.control ) end),
+                fn = makePercentHandler(function() return aspect.control[puck.id]() end),
             })
         end
     end

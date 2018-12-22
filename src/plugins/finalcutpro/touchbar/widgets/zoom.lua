@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -17,6 +18,7 @@ local canvas            = require("hs.canvas")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -139,8 +141,8 @@ function mod.init(deps)
 
     local params = {
         group = "fcpx",
-        text = "Zoom Slider",
-        subText = "Allows you to control timeline zoom.",
+        text = i18n("zoomSlider"),
+        subText = i18n("zoomSliderDescription"),
         item = mod.widget,
     }
     deps.manager.widgets:new("zoomSlider", params)

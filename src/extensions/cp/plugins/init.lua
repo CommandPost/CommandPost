@@ -150,6 +150,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -863,11 +864,11 @@ function mod.loadComplexPlugin(path)
         if cache[name] then
             return cache[name]
         end
-        local file = package.searchpath(name, searchPath) -- luacheck: ignore
+        local file = package.searchpath(name, searchPath)
         if file then
             local gRequire = _G.require
             _G.require = pluginRequire
-                local result = dofile(file)
+            local result = dofile(file)
             cache[name] = result
             _G.require = gRequire
             return result

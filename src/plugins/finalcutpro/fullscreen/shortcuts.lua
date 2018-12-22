@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -24,7 +25,7 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local commandeditor						          = require("cp.apple.commandeditor")
+local commandeditor						= require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
 local i18n                              = require("cp.i18n")
 
@@ -155,7 +156,7 @@ function mod.ninjaKeyStroke(whichModifier, whichKey)
     --------------------------------------------------------------------------------
     -- Go back to Full Screen Playback:
     --------------------------------------------------------------------------------
-    fcp:performShortcut("PlayFullscreen")
+    fcp:doShortcut("PlayFullscreen"):Now()
 end
 
 --- plugins.finalcutpro.fullscreen.shortcuts.performCommand(cmd, whichModifier, whichKey) -> boolean
@@ -257,7 +258,7 @@ local plugin = {
     id              = "finalcutpro.fullscreen.shortcuts",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -273,7 +274,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(1.2,
+            :addCheckbox(1.01,
             {
                 label = i18n("enableShortcutsDuringFullscreen"),
                 onchange = function(_, params) mod.enabled(params.checked) end,

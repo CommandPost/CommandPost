@@ -7,7 +7,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log               = require("hs.logger").new("proxyicon")
 
 --------------------------------------------------------------------------------
@@ -87,7 +91,7 @@ local plugin = {
     id              = "finalcutpro.menu.proxyicon",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"]     = "prefs",
+        ["finalcutpro.preferences.manager"]     = "prefs",
         ["core.menu.manager"]               = "menuManager",
     }
 }

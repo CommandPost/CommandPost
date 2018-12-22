@@ -61,6 +61,16 @@ local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
 -- Left Mouse Up ID.
 local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
 
+-- RIGHT_MOUSE_DOWN -> number
+-- Constant
+-- Right Mouse Down ID.
+local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+
+-- RIGHT_MOUSE_UP -> number
+-- Constant
+-- Right Mouse Up ID.
+local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+
 -- CLICK_STATE -> number
 -- Constant
 -- Click State ID.
@@ -337,10 +347,48 @@ function tools.getModelName()
             if modelName == "MacBook Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
                 local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
-                if minorVersion >= 2 and majorVersion >= 13 then
-                    return "MacBook Pro (Touch Bar)"
+                if majorVersion == 15 and minorVersion == 1 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 15 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 1 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 4 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 5 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 12 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
                 else
-                    return "MacBook Pro"
+                    return ""
                 end
             elseif modelName == "Mac Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
@@ -355,6 +403,8 @@ function tools.getModelName()
                 return "MacBook"
             elseif modelName == "iMac" then
                 return "iMac"
+            elseif modelName == "iMac Pro" then
+                return "iMac Pro"
             elseif modelName == "Mac mini" then
                 return "Mac mini"
             end
@@ -417,7 +467,9 @@ function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
         local result = ""
-        if v(macOSVersion) >= v("10.13") then
+        if v(macOSVersion) >= v("10.14") then
+            result = "macOS Mojave" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.13") then
             result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
         elseif v(macOSVersion) >= v("10.12") then
             result = "macOS Sierra 10.12.x"
@@ -905,6 +957,25 @@ function tools.leftClick(point, delay, clickNumber)
     eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
+--- cp.tools.rightClick(point[, delay, clickNumber]) -> none
+--- Function
+--- Performs a Right Mouse Click.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---  * clickNumber - The optional number of times you want to perform the click.
+---
+--- Returns:
+---  * None
+function tools.rightClick(point, delay, clickNumber)
+    delay = delay or DEFAULT_DELAY
+    clickNumber = clickNumber or 1
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    if delay > 0 then timer.usleep(delay) end
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+end
+
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
 --- Function
 --- Performs a Left Mouse Double Click.
@@ -935,6 +1006,24 @@ function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
+    if delay > 0 then timer.usleep(delay) end
+    mouse.setAbsolutePosition(originalMousePoint)
+end
+
+--- cp.tools.ninjaRightMouseClick(point[, delay]) -> none
+--- Function
+--- Performs a right mouse click, but returns the mouse to the original position without the users knowledge.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
+function tools.ninjaRightMouseClick(point, delay)
+    delay = delay or DEFAULT_DELAY
+    local originalMousePoint = mouse.getAbsolutePosition()
+    tools.rightClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
@@ -1149,7 +1238,7 @@ end
 ---  * path - A path as string
 ---
 --- Returns:
----  * A table containing filenames as strings.
+---  * A table containing filenames as strings, or `nil` followed by the error message if an error occurs.
 function tools.dirFiles(path)
     if not path then
         return nil
@@ -1159,7 +1248,9 @@ function tools.dirFiles(path)
         return nil
     end
     local contents, data = fs.dir(path)
-
+    if not contents then
+        return nil, data
+    end
     local files = {}
     for file in function() return contents(data) end do
         files[#files+1] = file
@@ -1180,21 +1271,28 @@ end
 ---  * `true` if successful, or `nil, err` if there was a problem.
 function tools.rmdir(path, recursive)
     if recursive then
-        -- remove the contents.
-        for name in fs.dir(path) do
-            if name ~= "." and name ~= ".." then
-                local filePath = path .. "/" .. name
-                local attrs = fs.symlinkAttributes(filePath)
-                local ok, err
-                if attrs == nil then
-                    return nil, "Unable to find file to remove: "..filePath
-                elseif attrs.mode == "directory" then
-                    ok, err = tools.rmdir(filePath, true)
-                else
-                    ok, err = os.remove(filePath)
-                end
-                if not ok then
-                    return nil, err
+        --------------------------------------------------------------------------------
+        -- Remove the contents:
+        --------------------------------------------------------------------------------
+        local iterFn, dirObj = fs.dir(path)
+        if not iterFn then
+            return nil, dirObj
+        else
+            for name in iterFn, dirObj do
+                if name ~= "." and name ~= ".." then
+                    local filePath = path .. "/" .. name
+                    local attrs = fs.symlinkAttributes(filePath)
+                    local ok, err
+                    if attrs == nil then
+                        return nil, "Unable to find file to remove: "..filePath
+                    elseif attrs.mode == "directory" then
+                        ok, err = tools.rmdir(filePath, true)
+                    else
+                        ok, err = os.remove(filePath)
+                    end
+                    if not ok then
+                        return nil, err
+                    end
                 end
             end
         end
@@ -1353,5 +1451,35 @@ function tools.tableMatch(t1,t2,ignoreMetatable)
     return true
 end
 
+--- cp.tools.convertSingleHexStringToDecimalString(hex) -> string
+--- Function
+--- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
+---
+--- Parameters:
+---  * hex - A single string character
+---
+--- Returns:
+---  * A four character string
+function tools.convertSingleHexStringToDecimalString(hex)
+    local lookup = {
+        ["0"]   = "0000",
+        ["1"]   = "0001",
+        ["2"]   = "0010",
+        ["3"]   = "0011",
+        ["4"]   = "0100",
+        ["5"]   = "0101",
+        ["6"]   = "0110",
+        ["7"]   = "0111",
+        ["8"]   = "1000",
+        ["9"]   = "1001",
+        ["A"]   = "1010",
+        ["B"]   = "1011",
+        ["C"]   = "1100",
+        ["D"]   = "1101",
+        ["E"]   = "1110",
+        ["F"]   = "1111",
+    }
+    return lookup[hex]
+end
 
 return tools

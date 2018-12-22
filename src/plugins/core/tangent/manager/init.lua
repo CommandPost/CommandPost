@@ -13,11 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local require                                   = require
 local log                                       = require("hs.logger").new("tangentMan")
 
 --------------------------------------------------------------------------------
@@ -52,6 +52,7 @@ local parameter                                 = require("parameter")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local insert, sort                              = table.insert, table.sort
+local format                                    = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -90,42 +91,11 @@ mod._connectionConfirmed = false
 --- The set of controls currently registered.
 mod.controls = controls.new()
 
---- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
---- Function
---- Writes the Tangent controls.xml File to the User's Application Support folder.
----
---- Parameters:
----  * None
----
---- Returns:
----  *  `true` if successfully created otherwise `false` if an error occurred.
----  *  If an error occurs an error message will also be returned as a string.
-function mod.writeControlsXML()
+local controlsXML
 
-    --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    if not tools.doesDirectoryExist(mod.configPath) then
-        --log.df("Tangent Settings folder did not exist, so creating one.")
-        fs.mkdir(mod.configPath)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Copy existing XML files from Application Bundle to local Application Support:
-    --------------------------------------------------------------------------------
-    local _, status = hs.execute([[cp -a "]] .. mod._pluginPath .. [["/. "]] .. mod.configPath .. [[/"]])
-    if not status then
-        log.ef("Failed to copy XML files.")
-        return false, "Failed to copy XML files."
-    end
-
-    --------------------------------------------------------------------------------
-    -- Create "controls.xml" file:
-    --------------------------------------------------------------------------------
-    local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
-    if controlsFile then
-
-        local root = x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
+function mod.getControlsXML()
+    if not controlsXML then
+        controlsXML = x._xml() .. x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
             --------------------------------------------------------------------------------
             -- Capabilities:
             --------------------------------------------------------------------------------
@@ -162,14 +132,49 @@ function mod.writeControlsXML()
             mod.controls:xml()
 
         )
+    end
+    return controlsXML
+end
 
-        local output = x._xml() .. root
+--- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
+--- Function
+--- Writes the Tangent controls.xml File to the User's Application Support folder.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  *  `true` if successfully created otherwise `false` if an error occurred.
+---  *  If an error occurs an error message will also be returned as a string.
+function mod.writeControlsXML()
 
+    --------------------------------------------------------------------------------
+    -- Create folder if it doesn't exist:
+    --------------------------------------------------------------------------------
+    if not tools.doesDirectoryExist(mod.configPath) then
+        --log.df("Tangent Settings folder did not exist, so creating one.")
+        fs.mkdir(mod.configPath)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Copy existing XML files from Application Bundle to local Application Support:
+    --------------------------------------------------------------------------------
+    local _, status = hs.execute(format("cp -a %q/. %q/", mod._pluginPath, mod.configPath))
+    if not status then
+        log.ef("Failed to copy XML files.")
+        return false, "Failed to copy XML files."
+    end
+
+    --------------------------------------------------------------------------------
+    -- Create "controls.xml" file:
+    --------------------------------------------------------------------------------
+    local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
+    if controlsFile then
         --------------------------------------------------------------------------------
         -- Write to File & Close:
         --------------------------------------------------------------------------------
         io.output(controlsFile)
-        io.write(tostring(output))
+        io.write(tostring(mod.getControlsXML()))
         io.close(controlsFile)
     else
         log.ef("Failed to open controls.xml file in write mode")
@@ -187,9 +192,7 @@ end
 --- Returns:
 ---  * None
 function mod.updateControls()
-    mod.writeControlsXML()
     if mod.connected() then
-        -- tangent.sendApplicationDefinition()
         mod.connected(false)
     end
 end
@@ -229,14 +232,20 @@ function mod.getMode(id)
     return nil
 end
 
+--- plugins.core.tangent.manager.activeModeID <cp.prop: string>
+--- Field
+--- The current active mode ID.
+mod.activeModeID = config.prop("tangent.activeModeID")
+
 --- plugins.core.tangent.manager.activeMode <cp.prop: mode>
 --- Constant
 --- Represents the currently active `mode`.
-mod.activeMode = prop(
-    function()
-        return mod._activeMode
+mod.activeMode = mod.activeModeID:mutate(
+    function(original)
+        local id = original()
+        return id and mod.getMode(id)
     end,
-    function(newMode)
+    function(newMode, original)
         local m = mode.is(newMode) and newMode or mod.getMode(newMode)
         if m then
             local oldMode = mod._activeMode
@@ -248,6 +257,7 @@ mod.activeMode = prop(
                 m._activate()
             end
             tangent.sendModeValue(newMode.id)
+            original(newMode.id)
         else
             error("Expected a `mode` or a valid mode `ID`: %s", inspect(newMode))
         end
@@ -577,10 +587,12 @@ local function callback(commands)
 
         local fn = fromHub[id]
         if fn then
-            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
-            if not ok then
-                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
-            end
+            timer.doAfter(0, function()
+                local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
+                if not ok then
+                    log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
+                end
+            end)
         else
             log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end

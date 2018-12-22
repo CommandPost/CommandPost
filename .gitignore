@@ -75,5 +75,7 @@ temp
 .vscode
 
 # FCP Libraries
+.lock-dir
 .lock-info
 .lock
+.fcpcache

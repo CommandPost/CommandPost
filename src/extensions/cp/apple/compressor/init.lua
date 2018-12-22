@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require                 = require
 -- local log										= require("hs.logger").new("compressor")
 
 --------------------------------------------------------------------------------
@@ -185,18 +186,22 @@ function compressor:launch(waitSeconds)
     return self
 end
 
---- cp.apple.compressor:restart([waitSeconds]) -> self
+
+function compressor:doLaunch()
+    return self.app:doLaunch()
+end
+
+--- cp.apple.compressor:doRestart() -> cp.rx.go.Statement
 --- Method
---- Restart the application.
+--- Returns a [Statement](cp.rx.go.Statement.md) that will restart the application.
 ---
 --- Parameters:
----  * waitSeconds  - if provided, we will wait for up to the specified seconds for the restart to complete before returning.
+---  * None
 ---
 --- Returns:
 ---  * `true` if the application was running and restarted successfully.
-function compressor:restart(waitSeconds)
-    self.app:restart(waitSeconds)
-    return self
+function compressor:doRestart()
+    return self.app:doRestart()
 end
 
 --- cp.apple.compressor:show() -> self
@@ -213,6 +218,10 @@ function compressor:show()
     return self
 end
 
+function compressor:doShow()
+    return self.app:doShow()
+end
+
 --- cp.apple.compressor:hide() -> self
 --- Method
 --- Hides Compressor
@@ -227,6 +236,10 @@ function compressor:hide()
     return self
 end
 
+function compressor:doHide()
+    return self.app:doHide()
+end
+
 --- cp.apple.compressor:quit([waitSeconds]) -> self
 --- Method
 --- Quits Compressor
@@ -239,6 +252,10 @@ end
 function compressor:quit(waitSeconds)
     self.app:quit(waitSeconds)
     return self
+end
+
+function compressor:doQuit()
+    return self.app:doQuit()
 end
 
 --- cp.apple.compressor:path() -> string or nil

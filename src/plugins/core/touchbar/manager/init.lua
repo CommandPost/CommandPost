@@ -1,24 +1,23 @@
 --- === plugins.core.touchbar.manager ===
 ---
 --- Touch Bar Manager Plugin.
---- This handles both the Virtual Touch Bar and adding items to the physical Touch Bar.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("managerTouchBar")
+local log                                       = require("hs.logger").new("tbManager")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local canvas                                    = require("hs.canvas")
-local eventtap                                  = require("hs.eventtap")
 local fnutils                                   = require("hs.fnutils")
 local image                                     = require("hs.image")
 
@@ -26,7 +25,6 @@ local image                                     = require("hs.image")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
 local json                                      = require("cp.json")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
@@ -38,130 +36,16 @@ local i18n                                      = require("cp.i18n")
 local touchbar                                  = require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------
+-- Local Extensions:
+--------------------------------------------------------------------------------
+local widgets                                   = require("widgets")
+
+--------------------------------------------------------------------------------
 --
--- THE MODULE - WIDGETS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- === plugins.core.touchbar.manager.widgets ===
----
---- Touch Bar Widgets Manager
-
-local widgets = {}
-mod.widgets = widgets
-
--- plugins.core.touchbar.manager.widgets._items -> table
--- Variable
--- Touch Bar Widget Items
-widgets._items = {}
-
---- plugins.core.touchbar.manager.widgets:new(id, params) -> table
---- Method
---- Creates a new Touch Bar Widget.
----
---- Parameters:
---- * `id`      - The unique ID for this widget.
----
---- Returns:
----  * table that has been created
-function widgets:new(id, params)
-
-    if widgets._items[id] ~= nil then
-        error("Duplicate Widget ID: " .. id)
-    end
-    local o = {
-        _id = id,
-        _params = params,
-    }
-    setmetatable(o, self)
-    self.__index = self
-
-    widgets._items[id] = o
-    return o
-
-end
-
---- plugins.core.touchbar.manager.widgets:get(id) -> table
---- Method
---- Gets a Touch Bar widget
----
---- Parameters:
---- * `id`      - The unique ID for the widget you want to return.
----
---- Returns:
----  * table containing the widget
-function widgets:get(id)
-    return self._items[id]
-end
-
---- plugins.core.touchbar.manager.widgets:getAll() -> table
---- Method
---- Returns all of the created widgets
----
---- Parameters:
---- * None
----
---- Returns:
----  * table containing all of the created callbacks
-function widgets:getAll()
-    return self._items
-end
-
---- plugins.core.touchbar.manager.widgets:id() -> string
---- Method
---- Returns the ID of the widget
----
---- Parameters:
---- * None
----
---- Returns:
----  * The ID of the widget as a `string`
-function widgets:id()
-    return self._id
-end
-
---- plugins.core.touchbar.manager.widgets:params() -> function
---- Method
---- Returns the paramaters of the widget
----
---- Parameters:
---- * None
----
---- Returns:
----  * The paramaters of the widget
-function widgets:params()
-    return self._params
-end
-
---- plugins.core.touchbar.manager.widgets.allGroups() -> table
---- Function
---- Returns a table containing all of the widget groups.
----
---- Parameters:
---- * None
----
---- Returns:
----  * Table
-function widgets.allGroups()
-    local result = {}
-    local theWidgets = widgets:getAll()
-    for _, widget in pairs(theWidgets) do
-        local params = widget:params()
-        if params and params.group then
-            if not tools.tableContains(result, params.group) then
-                table.insert(result, params.group)
-            end
-        end
-    end
-    return result
-end
-
---------------------------------------------------------------------------------
---
--- THE MODULE - PHYSICAL TOUCH BAR:
---
---------------------------------------------------------------------------------
 
 --- plugins.core.touchbar.manager.DEFAULT_GROUP -> string
 --- Constant
@@ -177,6 +61,11 @@ mod.FILE_NAME = "Default.cpTouchBar"
 --- Constant
 --- Folder Name where settings file is contained.
 mod.FOLDER_NAME = "Touch Bar"
+
+--- plugins.core.touchbar.manager.widgets -> table
+--- Variable
+--- Widget Manager
+mod.widgets = widgets
 
 -- plugins.core.touchbar.manager._tbItems -> table
 -- Variable
@@ -291,20 +180,37 @@ function mod.updateIcon(button, group, icon)
     mod.update()
 end
 
---- plugins.core.touchbar.manager.updateAction(button, group, action) -> none
+--- plugins.core.touchbar.manager.updateAction(button, group, action) -> boolean
 --- Function
 --- Updates a Touch Bar action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
 ---  * group - Group ID as string
----  * action - Action as string
+---  * actionTitle - Action Title as string
+---  * handlerID - Handler ID as string
+---  * action - Action as table
 ---
 --- Returns:
----  * None
+---  * `true` if successfully updated, or `false` if a duplicate entry was found
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-
     local buttons = mod._items()
+
+    --------------------------------------------------------------------------------
+    -- Check to make sure the widget isn't already in use:
+    --------------------------------------------------------------------------------
+    if handlerID and handlerID:sub(-8) == "_widgets" then
+        for _, _group in pairs(buttons) do
+            for _, _button in pairs(_group) do
+                if _button.action and _button.action.id and action.id and _button.action.id == action.id then
+                    --------------------------------------------------------------------------------
+                    -- Duplicate found, so abort:
+                    --------------------------------------------------------------------------------
+                    return false
+                end
+            end
+        end
+    end
 
     button = tostring(button)
     if not buttons[group] then
@@ -319,7 +225,7 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
 
     mod._items(buttons)
     mod.update()
-
+    return true
 end
 
 --- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none
@@ -777,381 +683,6 @@ function mod.groupStatus(groupID, status)
     mod.update()
 end
 
---------------------------------------------------------------------------------
---
--- THE MODULE - VIRTUAL TOUCH BAR:
---
---------------------------------------------------------------------------------
-
---- === plugins.core.touchbar.manager.virtual ===
----
---- Virtual Touch Bar Manager
-
-mod.virtual = {}
-
---- plugins.core.touchbar.manager.virtual.LOCATION_DRAGGABLE -> string
---- Constant
---- Location is Draggable.
-mod.virtual.LOCATION_DRAGGABLE  = "Draggable"
-
---- plugins.core.touchbar.manager.virtual.LOCATION_MOUSE -> string
---- Constant
---- Location is Mouse.
-mod.virtual.LOCATION_MOUSE      = "Mouse"
-
---- plugins.core.touchbar.manager.virtual.LOCATION_DEFAULT_VALUE -> string
---- Constant
---- Default location value.
-mod.virtual.LOCATION_DEFAULT_VALUE      = mod.virtual.LOCATION_DRAGGABLE
-
---- plugins.core.touchbar.manager.virtual.lastLocation <cp.prop: point table>
---- Field
---- The last known Virtual Touch Bar Location
-mod.virtual.lastLocation = config.prop("lastVirtualTouchBarLocation")
-
---- plugins.finalcutpro.touchbar.virtual.location <cp.prop: string>
---- Field
---- The Virtual Touch Bar Location Setting
-mod.virtual.location = config.prop("displayVirtualTouchBarLocation", mod.virtual.LOCATION_DEFAULT_VALUE):watch(function() mod.virtual.update() end)
-
---- plugins.core.touchbar.manager.virtual.enabled <cp.prop: boolean>
---- Field
---- Is `true` if the plugin is enabled.
-mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enabled)
-    --------------------------------------------------------------------------------
-    -- Check for compatibility:
-    --------------------------------------------------------------------------------
-    if enabled and not mod.supported() then
-        dialog.displayMessage(i18n("touchBarError"))
-        mod.enabled(false)
-    end
-    if not enabled then
-        mod.virtual.stop()
-    end
-end)
-
---- plugins.core.touchbar.manager.virtual.isActive <cp.prop: boolean; read-only>
---- Field
---- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
-mod.virtual.isActive = mod.virtual.enabled:AND(mod.supported):watch(function(active)
-    if active then
-        mod.virtual.show()
-    else
-        mod.virtual.hide()
-    end
-end)
-
---- plugins.core.touchbar.manager.virtual.start() -> none
---- Function
---- Initialises the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.start()
-    if mod.supported() and not mod._touchBar then
-
-        --------------------------------------------------------------------------------
-        -- Set up Touch Bar:
-        --------------------------------------------------------------------------------
-        mod._touchBar = touchbar.new()
-
-        if mod._touchBar == nil then
-            log.ef("There was an error initialising the Touch Bar.")
-            return
-        end
-
-        --------------------------------------------------------------------------------
-        -- Touch Bar Watcher:
-        --------------------------------------------------------------------------------
-        mod._touchBar:setCallback(mod.virtual.callback)
-
-        --------------------------------------------------------------------------------
-        -- Get last Touch Bar Location from Settings:
-        --------------------------------------------------------------------------------
-        local lastTouchBarLocation = mod.virtual.lastLocation()
-        if lastTouchBarLocation ~= nil then mod._touchBar:topLeft(lastTouchBarLocation) end
-
-        --------------------------------------------------------------------------------
-        -- Draggable Touch Bar:
-        --------------------------------------------------------------------------------
-        local events = eventtap.event.types
-        mod.keyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-            if mod.mouseInsideTouchbar and mod.virtual.location() == mod.virtual.LOCATION_DRAGGABLE then
-                if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
-                    mod._touchBar:backgroundColor{ red = 1 }
-                                    :movable(true)
-                                    :acceptsMouseEvents(false)
-                elseif ev:getType() ~= events.leftMouseDown then
-                    mod._touchBar:backgroundColor{ white = 0 }
-                                  :movable(false)
-                                  :acceptsMouseEvents(true)
-                    mod.virtual.lastLocation(mod._touchBar:topLeft())
-                end
-            end
-            return false
-        end):start()
-
-        mod.virtual.update()
-
-    end
-end
-
---- plugins.core.touchbar.manager.virtual.stop() -> none
---- Function
---- Stops the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.stop()
-    if mod._touchBar then
-        mod._touchBar:hide()
-        mod._touchBar = nil
-        collectgarbage() -- See: https://github.com/asmagill/hammerspoon_asm/issues/10#issuecomment-303290853
-    end
-    if mod.keyboardWatcher then
-        mod.keyboardWatcher:stop()
-        mod.keyboardWatcher = nil
-    end
-end
-
---- plugins.finalcutpro.touchbar.virtual.updateLocation() -> none
---- Function
---- Updates the Location of the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.updateLocation()
-
-    --------------------------------------------------------------------------------
-    -- Check that the Touch Bar exists:
-    --------------------------------------------------------------------------------
-    if not mod._touchBar then return end
-
-    --------------------------------------------------=-----------------------------
-    -- Put it back to last known position:
-    --------------------------------------------------------------------------------
-    local lastLocation = mod.virtual.lastLocation()
-    if lastLocation and mod._touchBar then
-        mod._touchBar:topLeft(lastLocation)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Trigger Callbacks:
-    --------------------------------------------------------------------------------
-    local updateLocationCallbacks = mod.virtual.updateLocationCallback:getAll()
-    if updateLocationCallbacks and type(updateLocationCallbacks) == "table" then
-        for _, v in pairs(updateLocationCallbacks) do
-            local fn = v:callbackFn()
-            if fn and type(fn) == "function" then
-                fn()
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Save last Touch Bar Location to Settings:
-    --------------------------------------------------------------------------------
-    mod.virtual.lastLocation(mod._touchBar:topLeft())
-end
-
---- plugins.core.touchbar.manager.virtual.show() -> none
---- Function
---- Show the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.show()
-    --------------------------------------------------------------------------------
-    -- Check if we need to show the Touch Bar:
-    --------------------------------------------------------------------------------
-    if mod.supported() and mod.virtual.enabled() then
-        mod.virtual.start()
-        mod.virtual.updateLocation()
-        mod._touchBar:show()
-    end
-end
-
---- plugins.core.touchbar.manager.virtual.hide() -> none
---- Function
---- Hide the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.hide()
-    if mod.supported() and mod.virtual.enabled() and mod._touchBar then
-        mod._touchBar:hide()
-    end
-end
-
---- plugins.core.touchbar.manager.virtual.callback() -> none
---- Function
---- Callback Function for the Virtual Touch Bar
----
---- Parameters:
----  * obj - the touchbarObject the callback is for
----  * message - the message to the callback, either "didEnter" or "didExit"
----
---- Returns:
----  * None
-function mod.virtual.callback(_, message)
-    if message == "didEnter" then
-        mod.mouseInsideTouchbar = true
-    elseif message == "didExit" then
-        mod.mouseInsideTouchbar = false
-
-        --------------------------------------------------------------------------------
-        -- Just in case we got here before the eventtap returned the Touch Bar to normal:
-        --------------------------------------------------------------------------------
-        mod._touchBar:movable(false)
-        mod._touchBar:acceptsMouseEvents(true)
-        mod.virtual.lastLocation(mod._touchBar:topLeft())
-    end
-end
-
---- plugins.core.touchbar.manager.virtual.update() -> none
---- Function
---- Updates the visibility and location of the Virtual Touch Bar
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.virtual.update()
-    -- Check if it's active.
-    mod.virtual.isActive:update()
-end
-
---------------------------------------------------------------------------------
---
--- UPDATE LOCATION CALLBACK:
---
---------------------------------------------------------------------------------
-
---- === plugins.core.touchbar.manager.virtual.updateLocationCallback ===
----
---- Virtual Touch Bar Update Location Callback
-
-local updateLocationCallback = {}
-mod.virtual.updateLocationCallback = updateLocationCallback
-
--- plugins.core.touchbar.manager.virtual.updateLocationCallback._items -> table
--- Variable
--- Items
-updateLocationCallback._items = {}
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:new(id, callbackFn) -> table
---- Method
---- Creates a new Update Location Callback
----
---- Parameters:
---- * `id`      - The unique ID for this callback.
----
---- Returns:
----  * table that has been created
-function updateLocationCallback:new(id, callbackFn)
-
-    if updateLocationCallback._items[id] ~= nil then
-        error("Duplicate Update Location Callback: " .. id)
-    end
-    local o = {
-        _id = id,
-        _callbackFn = callbackFn,
-    }
-    setmetatable(o, self)
-    self.__index = self
-
-    updateLocationCallback._items[id] = o
-    return o
-
-end
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:get(id) -> table
---- Method
---- Gets an Update Location Callback based on an ID.
----
---- Parameters:
---- * `id`      - The unique ID for the callback you want to return.
----
---- Returns:
----  * table containing the callback
-function updateLocationCallback:get(id)
-    return self._items[id]
-end
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:getAll() -> table
---- Method
---- Returns all of the created Update Location Callbacks
----
---- Parameters:
---- * None
----
---- Returns:
----  * table containing all of the created callbacks
-function updateLocationCallback:getAll()
-    return self._items
-end
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:id() -> string
---- Method
---- Returns the ID of the current Update Location Callback
----
---- Parameters:
---- * None
----
---- Returns:
----  * The ID of the current File Dropped to Dock Icon Callback as a `string`
-function updateLocationCallback:id()
-    return self._id
-end
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:callbackFn() -> function
---- Method
---- Returns the callbackFn of the current Update Location Callback
----
---- Parameters:
---- * None
----
---- Returns:
----  * The callbackFn of the current Shutdown Callback
-function updateLocationCallback:callbackFn()
-    return self._callbackFn
-end
-
-
---- plugins.core.touchbar.manager.virtual.updateLocationCallback:delete() -> none
---- Method
---- Deletes a Update Location Callback based on an ID.
----
---- Parameters:
---- * None
----
---- Returns:
----  * None
-function updateLocationCallback:delete()
-    updateLocationCallback._items[self._id] = nil
-end
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod
@@ -1235,6 +766,7 @@ function plugin.postInit(deps)
                 return choices
             end)
             :onExecute(function() end)
+            :onActionId(function() return "touchBarWidget" end)
     end
 
     --------------------------------------------------------------------------------

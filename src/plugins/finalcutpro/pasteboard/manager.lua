@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -28,13 +29,18 @@ local base64                                    = require("hs.base64")
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
+local i18n                                      = require("cp.i18n")
 local json                                      = require("cp.json")
-local just                                      = require("cp.just")
 local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
 local protect                                   = require("cp.protect")
+local Set                                       = require("cp.collect.Set")
 local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+
+local Do                                        = require("cp.rx.go.Do")
+local Throw                                     = require("cp.rx.go.Throw")
+local Require                                   = require("cp.rx.go.Require")
+local Retry                                     = require("cp.rx.go.Retry")
 
 --------------------------------------------------------------------------------
 --
@@ -45,8 +51,10 @@ local PASTEBOARD = protect({
     --------------------------------------------------------------------------------
     -- Final Cut Pro Types:
     --------------------------------------------------------------------------------
-    ANCHORED_COLLECTION                         = "FFAnchoredCollection",
-    MARKER                                      = "FFAnchoredTimeMarker",
+    COLLECTION                                  = "FFAnchoredCollection",
+    TIME_MARKER                                 = "FFAnchoredTimeMarker",
+    KEYWORD_MARKER                              = "FFAnchoredKeywordMarker",
+    FAVORITE_MARKER                             = "FFAnchoredFavoriteMarker",
     GAP                                         = "FFAnchoredGapGeneratorComponent",
 
     --------------------------------------------------------------------------------
@@ -86,7 +94,7 @@ mod.RESTART_DELAY = 0.5
 --- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
 --- Table of data we don't want to count when copying.
-mod.excludedClassnames = {PASTEBOARD.MARKER}
+mod.excludedClassnames = Set(PASTEBOARD.TIME_MARKER, PASTEBOARD.KEYWORD_MARKER, PASTEBOARD.FAVORITE_MARKER)
 
 -- plugins.finalcutpro.pasteboard.manager._watchersCount -> number
 -- Variable
@@ -131,24 +139,6 @@ function mod.processObject(data)
     return nil, 0
 end
 
---- plugins.finalcutpro.pasteboard.manager.isClassnameSupported(classname) -> boolean
---- Function
---- Is the class name supported?
----
---- Parameters:
----  * classname - The class name you want to check
----
---- Returns:
----  * `true` if the class name is supported otherwise `false`.
-function mod.isClassnameSupported(classname)
-    for _,name in ipairs(mod.excludedClassnames) do
-        if name == classname then
-            return false
-        end
-    end
-    return true
-end
-
 --- plugins.finalcutpro.pasteboard.manager.processArray(data) -> string, number
 --- Function
 --- Processes an 'array' table.
@@ -183,7 +173,7 @@ end
 ---  * `true` if supported otherwise `false`.
 function mod.supportsContainedItems(data)
     local classname = mod.getClassname(data)
-    return data.containedItems and classname ~= PASTEBOARD.ANCHORED_COLLECTION
+    return data.containedItems and classname ~= PASTEBOARD.COLLECTION
 end
 
 --- plugins.finalcutpro.pasteboard.manager.getClassname(data) -> string
@@ -210,7 +200,8 @@ end
 ---  * The primary clip name as a string.
 ---  * The number of clips as number.
 function mod.processContent(data)
-    if not mod.isClassnameSupported(data) then
+    local classname = mod.getClassname(data)
+    if mod.excludedClassnames:has(classname) then
         return nil, 0
     end
 
@@ -224,7 +215,7 @@ function mod.processContent(data)
     local displayName = data.displayName
     local count = displayName and 1 or 0
 
-    if mod.getClassname(data) == PASTEBOARD.GAP then
+    if classname == PASTEBOARD.GAP then
         displayName = nil
         count = 0
     end
@@ -306,7 +297,6 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    --log.d("Copying Clip with custom Clip Name")
     local menuBar = fcp:menu()
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
@@ -451,8 +441,6 @@ function mod.startWatching()
         return
     end
 
-    --log.d("Starting Pasteboard Watcher.")
-
     if mod._timer then
         mod.stopWatching()
     end
@@ -513,7 +501,6 @@ function mod.startWatching()
     mod._timer:start()
 
     mod.watching:update()
-    --log.d("Started Pasteboard Watcher")
 end
 
 --- plugins.finalcutpro.pasteboard.manager.stopWatching() -> none
@@ -530,7 +517,6 @@ function mod.stopWatching()
         mod._timer:stop()
         mod._timer = nil
         mod.watching:update()
-        --log.d("Stopped Pasteboard Watcher")
     end
 end
 
@@ -546,74 +532,110 @@ end)
 --- Contains the Pasteboard Buffer.
 mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.cpPasteboard", {})
 
---- plugins.finalcutpro.pasteboard.manager.saveToBuffer(id) -> none
+--- plugins.finalcutpro.pasteboard.manager.doWaitForFreshData(oldData) -> cp.rx.go.Statement
 --- Function
---- Save a Pasteboard item to the buffer.
+--- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to copy
+--- to the clipboard. If none is found, an error is sent.
+---
+--- Parameters:
+---  * oldData - The original Pasteboard data.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md)
+function mod.doWaitForFreshData(oldData)
+    return Retry(function()
+        local d = mod.readFCPXData()
+        if d and d ~= oldData then
+            return d
+        else
+            return Throw("Copy failed.")
+        end
+    end):DelayedBy(100):UpTo(100)
+end
+
+--- plugins.finalcutpro.pasteboard.manager.doSaveToBuffer(id) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which saves a Pasteboard item to the buffer.
 ---
 --- Parameters:
 ---  * id - The ID of the buffer item.
 ---
 --- Returns:
----  * None
-function mod.saveToBuffer(id)
+---  * A [Statement](cp.rx.go.Statement.md)
+function mod.doSaveToBuffer(id)
     local menuBar = fcp:menu()
-    if menuBar:isEnabled({"Edit", "Copy"}) then
 
+    return Do(
+        Require(menuBar:doIsEnabled({"Edit", "Copy"}))
+        :OrThrow(i18n("pasteboardManager_CopyDisabled"))
+    )
+    :Then(fcp:doLaunch())
+    :Then(function()
         local wasWatching = mod.watching()
         if wasWatching then
             mod.stopWatching()
         end
 
-        local data
         local originalContents = mod.readFCPXData()
 
-        local result = menuBar:selectMenu({"Edit", "Copy"})
-        if result then
-            data = just.doUntil(function()
-                local d = mod.readFCPXData()
-                return d and d ~= originalContents and d
-            end)
-        else
-            tools.playErrorSound()
-        end
-
-        if data then
+        return Do(menuBar:doSelectMenu({"Edit", "Copy"}))
+        :Then(mod.doWaitForFreshData(originalContents))
+        :Then(function(data)
             local buffer = mod.buffer()
             buffer[id] = base64.encode(data)
             mod.buffer(buffer)
             dialog.displayNotification(i18n("savedToPasteboardBuffer", {id=tostring(id)}))
-        else
-            tools.playErrorSound()
-        end
 
-        timer.doAfter(mod.RESTART_DELAY, function()
-            if originalContents then
-                mod.writeFCPXData(originalContents)
-            end
-            if wasWatching then
-                mod.startWatching()
-            end
+            return Do(function()
+                if originalContents then
+                    mod.writeFCPXData(originalContents)
+                end
+                if wasWatching then
+                    mod.startWatching()
+                end
+            end)
+            :After(mod.RESTART_DELAY)
         end)
-
-    else
+    end)
+    :Catch(function(message)
+        log.ef("pasteboardManager.doSaveToBuffer: error: %s", message)
         tools.playErrorSound()
-    end
+    end)
 end
 
---- plugins.finalcutpro.pasteboard.manager.restoreFromBuffer(id) -> none
+--- plugins.finalcutpro.pasteboard.manager.doDecodeBuffer(id) -> cp.rx.go.Statement
 --- Function
---- Restore a Pasteboard item from the buffer.
+--- A [Statement](cp.rx.go.Statement.md) which decodes the buffer with the specified ID.
+---
+--- Parameters:
+--- * id        - The ID to decode
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that sends the decoded buffer, or throws an error if not available.
+function mod.doDecodeBuffer(id)
+    return Do(function()
+        local buffer = mod.buffer()
+        local encodedData = buffer[id]
+        if encodedData then
+            return base64.decode(encodedData)
+        else
+            return Throw("Unable to find data with ID: %s", id)
+        end
+    end)
+end
+
+--- plugins.finalcutpro.pasteboard.manager.doRestoreFromBuffer(id) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which restore a Pasteboard item from the buffer.
 ---
 --- Parameters:
 ---  * id - The ID of the buffer item.
 ---
 --- Returns:
----  * None
-function mod.restoreFromBuffer(id)
-    local buffer = mod.buffer()
-    local encodedData = buffer[id]
-    local data = encodedData and base64.decode(encodedData)
-    if data then
+---  * A [Statement](cp.rx.go.Statement.md)
+function mod.doRestoreFromBuffer(id)
+    return Do(mod.doDecodeBuffer(id))
+    :Then(function(data)
         local wasWatching = mod.watching()
         if wasWatching then
             mod.stopWatching()
@@ -622,22 +644,24 @@ function mod.restoreFromBuffer(id)
         local originalContents = mod.readFCPXData()
 
         mod.writeFCPXData(data)
-        local result = fcp:performShortcut("Paste")
-        if not result then
-            tools.playErrorSound()
-        end
 
-        timer.doAfter(mod.RESTART_DELAY, function()
-            if originalContents then
-                mod.writeFCPXData(originalContents)
-            end
-            if wasWatching then
-                mod.startWatching()
-            end
+        return Do(fcp:doShortcut("Paste"))
+        :Then(function()
+            Do(function()
+                if originalContents then
+                    mod.writeFCPXData(originalContents)
+                end
+                if wasWatching then
+                    mod.startWatching()
+                end
+            end)
+            :After(mod.RESTART_DELAY)
         end)
-    else
+    end)
+    :Catch(function(message)
+        log.ef("doRestoreFromBuffer failed: %s", message)
         tools.playErrorSound()
-    end
+    end)
 end
 
 --------------------------------------------------------------------------------
@@ -674,11 +698,11 @@ function plugin.init(deps)
         for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
             deps.fcpxCmds:add("saveToPasteboardBuffer" .. tostring(id))
                 :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(function() mod.saveToBuffer(id) end)
+                :whenActivated(mod.doSaveToBuffer(id))
 
             deps.fcpxCmds:add("restoreFromPasteboardBuffer" .. tostring(id))
                 :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(function() mod.restoreFromBuffer(id) end)
+                :whenActivated(mod.doRestoreFromBuffer(id))
 
         end
     end

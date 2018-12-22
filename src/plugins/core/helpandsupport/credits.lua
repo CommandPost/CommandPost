@@ -7,22 +7,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 3
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -50,11 +40,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.helpandsupport.credits",
-    group           = "core",
-    dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+    id = "core.helpandsupport.credits",
+    group = "core",
+    dependencies = {
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -67,15 +57,20 @@ function plugin.init(deps)
     -- Commands:
     --------------------------------------------------------------------------------
     local global = deps.global
-    global:add("cpCredits")
-        :whenActivated(mod.show)
-        :groupedBy("helpandsupport")
+    if global then
+        global:add("cpCredits")
+            :whenActivated(mod.show)
+            :groupedBy("helpandsupport")
+    end
 
-    deps.helpandsupport:addItem(PRIORITY, function()
-        return { title = i18n("credits"),   fn = mod.show }
-    end)
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(10, function() return { title = i18n("credits"), fn = mod.show } end)
+
     return mod
-
 end
 
 return plugin

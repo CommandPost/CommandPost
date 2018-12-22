@@ -24,19 +24,22 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local axutils                       = require("cp.ui.axutils")
+local Element						= require("cp.ui.Element")
+
+local If                            = require("cp.rx.go.If")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local CheckBox = {}
+local CheckBox = Element:subclass("CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
 --- Function
@@ -47,51 +50,37 @@ local CheckBox = {}
 ---
 --- Returns:
 ---  * `true` if it's a match, or `false` if not.
-function CheckBox.matches(element)
-    return element ~= nil and element:attributeValue("AXRole") == "AXCheckBox"
+function CheckBox.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.ui.CheckBox.new(parent, finderFn) -> cp.ui.CheckBox
+--- cp.ui.CheckBox(parent, uiFinder) -> cp.ui.CheckBox
 --- Constructor
 --- Creates a new CheckBox.
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * finderFn		- A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder		- A function which will return the `hs._asm.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `CheckBox`.
-function CheckBox.new(parent, finderFn)
-    local o = prop.extend({_parent = parent, _finder = finderFn}, CheckBox)
+function CheckBox:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
-    --- cp.ui.CheckBox:UI() -> hs._asm.axuielement | nil
-    --- Method
-    --- Returns the `axuielement` representing the CheckBox, or `nil` if not available.
-    ---
-    --- Parameters:
-    ---  * None
-    ---
-    --- Return:
-    ---  * The `axuielement` or `nil`.
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        CheckBox.matches)
-    end)
+--- cp.ui.CheckBox.title <cp.prop: string; read-only>
+--- Field
+--- The button title, if available.
+function CheckBox.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
+end
 
-    --- cp.ui.CheckBox.isShowing <cp.prop: boolean; read-only>
-    --- Field
-    --- If `true`, it is visible on screen.
-    local isShowing = UI:mutate(function(original, self)
-        return original() ~= nil and self:parent():isShowing()
-    end)
-
-    --- cp.ui.CheckBox.checked <cp.prop: boolean>
-    --- Field
-    --- Indicates if the checkbox is currently checked.
-    --- May be set by calling as a function with `true` or `false` to the function.
-    local checked = UI:mutate(
+--- cp.ui.CheckBox.checked <cp.prop: boolean>
+--- Field
+--- Indicates if the checkbox is currently checked.
+--- May be set by calling as a function with `true` or `false` to the function.
+function CheckBox.lazy.prop:checked()
+    return self.UI:mutate(
         function(original) -- get
             local ui = original()
             return ui ~= nil and ui:value() == 1
@@ -103,25 +92,6 @@ function CheckBox.new(parent, finderFn)
             end
         end
     )
-
-    prop.bind(o) {
-        UI = UI, isShowing = isShowing, checked = checked,
-    }
-
-    return o
-end
-
---- cp.ui.CheckBox:parent() -> table
---- Method
---- The parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function CheckBox:parent()
-    return self._parent
 end
 
 --- cp.ui.CheckBox:toggle() -> self
@@ -136,20 +106,6 @@ end
 function CheckBox:toggle()
     self.checked:toggle()
     return self
-end
-
---- cp.ui.CheckBox:isEnabled() -> boolean
---- Method
---- Returns `true` if the radio button exists and is enabled.
----
---- Parameters:
----  * None
----
---- Returns:
---- `true` or `false`.
-function CheckBox:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
 end
 
 --- cp.ui.CheckBox:press() -> self
@@ -167,6 +123,26 @@ function CheckBox:press()
         ui:doPress()
     end
     return self
+end
+
+--- cp.ui.CheckBox:doPress() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will press the button when executed, if available at the time.
+--- If not an `error` is sent.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will press the button when executed.
+function CheckBox.lazy.method:doPress()
+    return If(self.UI):Then(function(ui)
+        ui:doPress()
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("CheckBox:doPress")
 end
 
 --- cp.ui.CheckBox:saveLayout() -> table
@@ -214,24 +190,6 @@ function CheckBox:__call(parent, value)
         value = parent
     end
     return self:checked(value)
-end
-
---- cp.ui.CheckBox:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function CheckBox:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return CheckBox

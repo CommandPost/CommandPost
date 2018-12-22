@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -22,9 +23,13 @@ local fnutils							= require("hs.fnutils")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
+local tools                             = require("cp.tools")
 local axutils							= require("cp.ui.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
+
+local go                                = require("cp.rx.go")
+local If, WaitUntil                     = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -60,6 +65,8 @@ function TimelineContents.new(parent)
         end
         return nil
     end)
+    o:app():notifier():watchFor("AXUIElementDestroyed", function() scrollAreaUI:update() end)
+    o:app():notifier():watchFor("AXCreated", function() scrollAreaUI:update() end)
 
     -- TODO: Add documentation
     local UI = scrollAreaUI:mutate(function(original, self)
@@ -113,6 +120,24 @@ function TimelineContents.new(parent)
         return ui and ui:frame()
     end)
 
+    local children = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXChildren")
+    end):preWatch(function(self, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
+
+    local selectedChildren = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXSelectedChildren")
+    end):preWatch(function(self, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
+
     prop.bind(o) {
 --- cp.apple.finalcutpro.main.TimelineContents.UI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
@@ -158,6 +183,16 @@ function TimelineContents.new(parent)
 --- Field
 --- The current 'frame' of the internal timeline content,  or `nil` if not available.
         timelineFrame = timelineFrame,
+
+--- cp.apple.finalcutpro.main.TimelineContents.children <cp.prop: table; read-only; live>
+--- Field
+--- The current set of child elements in the TimelineContents.
+        children = children,
+
+--- cp.apple.finalcutpro.main.TimelineContents.selectedChildren <cp.prop: table; read-only; live>
+--- Field
+--- The current set of selected child elements in the TimelineContents.
+        selectedChildren = selectedChildren,
     }
 
     return o
@@ -185,10 +220,30 @@ function TimelineContents:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.TimelineContents:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to show the Timeline Contents.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doShow()
+    return self:parent():doShow()
+end
+
 -- TODO: Add documentation
 function TimelineContents:hide()
     self:parent():hide()
     return self
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the Timeline Contents.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doHide()
+    return self:parent():doHide()
 end
 
 -----------------------------------------------------------------------
@@ -430,6 +485,87 @@ end
 -- TODO: Add documentation
 function TimelineContents:selectClip(clipUI)
     return self:selectClips({clipUI})
+end
+
+-- containsOnly(values) -> function
+-- Function
+-- Returns a "match" function which will check its input value to see if it is a table which contains the same values in any order.
+--
+-- Parameters:
+-- * values     - A [Set](cp.collect.Set.md) or `table` specifying exactly what items must be in the matching table, in any order.
+--
+-- Returns:
+-- * A `function` that will accept a single input value, which will only return `true` the input is a `table` containing exactly the items in `values` in any order.
+local function containsOnly(values)
+    return function(other)
+        if other and values and #other == #values then
+            for _,v in ipairs(other) do
+                if not tools.tableContains(values, v) then
+                    return false
+                end
+            end
+            return true
+        end
+        return false
+    end
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doSelectClips(clipsUI) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs._asm.axuielement` values in the Timeline Contents area.
+---
+--- Parameters:
+--- * clipsUI       - The table of `hs._asm.axuilement` values to select.
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
+function TimelineContents:doSelectClips(clipsUI)
+    return If(self.UI):Then(function(ui)
+        local selectedClips = {}
+        for i,clip in ipairs(clipsUI) do
+            selectedClips[i] = clip
+        end
+        ui:setAttributeValue("AXSelectedChildren", selectedClips)
+        return true
+    end)
+    :Then(WaitUntil(self.selectedChildren):Matches(containsOnly(clipsUI)))
+    :TimeoutAfter(5000)
+    :Label("TimelineContents:doSelectClips")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doSelectClip(clipUI) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs._asm.axuielement` value in the Timeline Contents area.
+---
+--- Parameters:
+--- * clipUI       - The `hs._asm.axuilement` values to select.
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
+function TimelineContents:doSelectClip(clipUI)
+    return self:doSelectClips({clipUI})
+    :Label("TimelineContents:doSelectClip")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+---
+--- Parameters:
+--- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doFocus(show)
+    show = show or false
+    local menu = self:app():menu()
+
+    return If(self.isFocused):Is(false):Then(
+        menu:doSelectMenu({"Window", "Go To", "Timeline"}):Debug("Go To Timeline")
+    )
+    :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
+    :Otherwise(true)
+    :Label("TimelineContents:doFocus")
 end
 
 -----------------------------------------------------------------------

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -21,15 +22,17 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local Element						= require("cp.ui.Element")
+
+local go                            = require("cp.rx.go")
+local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local RadioGroup = {}
+local RadioGroup = Element:subclass("RadioGroup")
 
 --- cp.ui.RadioGroup.matches(element) -> boolean
 --- Function
@@ -40,131 +43,92 @@ local RadioGroup = {}
 ---
 --- Returns:
 --- * `true` if the element is a RadioGroup.
-function RadioGroup.matches(element)
-    return element and element:attributeValue("AXRole") == "AXRadioGroup"
+function RadioGroup.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup.new(parent, finderFn[, cached]) -> RadioGroup
---- Method
+--- cp.ui.RadioGroup(parent, finderFn[, cached]) -> cp.ui.RadioGroup
+--- Constructor
 --- Creates a new RadioGroup.
 ---
 --- Parameters:
 --- * parent	- The parent table.
 --- * finderFn	- The function which will find the `axuielement` representing the RadioGroup.
---- * cached	- If set to `false`, the `axuielement` will not be cached. Defaults to `true`.
 ---
 --- Returns:
 --- * The new `RadioGroup` instance.
-function RadioGroup.new(parent, finderFn, cached)
-    local o = prop.extend({
-        _parent = parent,
-        _finder = finderFn,
-        _cached = cached ~= false and true or false,
-    }, RadioGroup)
-    return o
-end
-
---- cp.ui.RadioGroup:parent() -> table
---- Method
---- Returns the parent object.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The parent object.
-function RadioGroup:parent()
-    return self._parent
-end
-
---- cp.ui.RadioGroup:isShowing() -> boolean
---- Method
---- Checks if the RadioGroup is visible.
----
---- Parameters:
---- * None
----
---- Returns:
---- * `true` if the RadioGroup is visible.
-function RadioGroup:isShowing()
-    return self:UI() ~= nil and self:parent():isShowing()
-end
-
---- cp.ui.RadioGroup:UI() -> axuielement
---- Method
---- Returns the `axuielement` for the RadioGroup, or `nil` if not currently visible.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `asuielement` or `nil`.
-function RadioGroup:UI()
-    if self._cached then
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        RadioGroup.matches)
-    else
-        return self._finder()
-    end
-end
-
---- cp.ui.RadioGroup:isEnabled()
---- Method
---- Checks if the RadioGroup is enabled.
----
---- Parameters:
---- * None
----
---- Returns:
---- * `true` if the RadioGroup is showing and enabled.
-function RadioGroup:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
+function RadioGroup:initialize(parent, finderFn)
+    Element.initialize(self, parent, finderFn)
 end
 
 --- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
 --- Field
 --- The number of options in the group.
-RadioGroup.optionCount = prop(
-    function(self)
-        local ui = self:UI()
-        return ui and #ui or 0
-    end
-):bind(RadioGroup)
-
-
+function RadioGroup.lazy.prop:optionCount()
+    return self.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and #ui or 0
+        end
+    )
+end
 
 --- cp.ui.RadioGroup.selectedOption <cp.prop: number>
 --- Field
 --- The currently selected option number.
-RadioGroup.selectedOption = prop(
-    function(self)
-        local ui = self:UI()
-        if ui then
-            for i,item in ipairs(ui:children()) do
-                if item:attributeValue("AXValue") == 1 then
-                    return i
+function RadioGroup.lazy.prop:selectedOption()
+    return self.UI:mutate(
+        function(original)
+            local ui = original()
+            if ui then
+                for i,item in ipairs(ui:children()) do
+                    if item:attributeValue("AXValue") == 1 then
+                        return i
+                    end
                 end
             end
-        end
-        return nil
-    end,
-    function(index, self)
-        local ui = self:UI()
-        if ui then
-            if index >= 1 and index <= #ui then
-                local item = ui[index]
-                if item and item:attributeValue("AXValue") ~= 1 then
-                    item:doPress()
-                    return index
+            return nil
+        end,
+        function(index, original)
+            local ui = original()
+            if ui then
+                if index >= 1 and index <= #ui then
+                    local item = ui[index]
+                    if item and item:attributeValue("AXValue") ~= 1 then
+                        item:doPress()
+                        return index
+                    end
                 end
             end
+            return nil
         end
-        return nil
-    end
-):bind(RadioGroup)
+    )
+end
+
+--- cp.ui.RadioGroup:doSelectOption(index) -> cp.rx.go.Statement<boolean>
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will attempt to select the option at the specified `index`.
+---
+--- Parameters:
+--- * index     - The index to select. Must be between 1 and [optionCount](#optionCount).
+---
+--- Returns:
+--- * The `Statement`, which will resolve to `true` if successful or send an error if not.
+function RadioGroup:doSelectOption(index)
+    return If(self.isEnabled)
+    :Then(function()
+        local count = self:optionCount()
+        if index < 1 or index > count then
+            return Throw("Selected index must be between 1 and %d, but was %d", count, index)
+        end
+        self:selectedOption(index)
+
+        return WaitUntil(self.selectedOption):Is(index)
+        :TimeoutAfter(1000, Throw("Failed to select item %d", index))
+    end)
+    :Otherwise(Throw("The radio group is unavailable."))
+    :Label("RadioGroup:doSelectOption")
+end
 
 --- cp.ui.RadioGroup:nextOption() -> self
 --- Method
@@ -178,9 +142,33 @@ RadioGroup.selectedOption = prop(
 function RadioGroup:nextOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected >= count and 1 or selected + 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected >= count and 1 or selected + 1
+        self:selectedOption(selected)
+    end
     return self
+end
+
+--- cp.ui.RadioGroup:doNextOption() -> cp.rx.go.Statement<boolean>
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that selects the next option in the group.
+--- Cycles from the last to the first option.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement`, that resolves to `true` if successful or sends an error if not.
+function RadioGroup.lazy.method:doNextOption()
+    return If(self.isEnabled)
+    :Then(function()
+        local selected = self:selectedOption()
+        local count = self:optionCount()
+        selected = selected >= count and 1 or selected + 1
+        return self:doSelectOption(selected)
+    end)
+    :Otherwise(Throw("The radio group is unavailable."))
+    :Label("RadioGroup:doNextOption")
 end
 
 --- cp.ui.RadioGroup:previousOption() -> self
@@ -195,27 +183,37 @@ end
 function RadioGroup:previousOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected <= 1 and count or selected - 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected <= 1 and count or selected - 1
+        self:selectedOption(selected)
+    end
     return self
 end
 
---- cp.ui.RadioGroup:snapshot([path]) -> hs.image | nil
+--- cp.ui.RadioGroup:doPreviousOption() -> cp.rx.go.Statement<boolean>
 --- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
+--- A [Statement](cp.rx.go.Statement.md) that selects the previous option in the group.
+--- Cycles from the first to the last item.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+--- * None
 ---
---- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
-function RadioGroup:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
+--- Returns:
+--- * The `Statement`, which resolves to `true` if successful or sends an error if not..
+function RadioGroup.lazy.method:doPreviousOption()
+    return If(self.isEnabled)
+    :Then(function()
+        local selected = self:selectedOption()
+        local count = self:optionCount()
+        selected = selected <= 1 and count or selected - 1
+        return self:doSelectOption(selected)
+    end)
+    :Otherwise(Throw("The radio group is unavailable."))
+    :Label("RadioGroup:doNextOption")
+end
+
+function RadioGroup.__tostring()
+    return "cp.ui.RadioGroup"
 end
 
 return RadioGroup

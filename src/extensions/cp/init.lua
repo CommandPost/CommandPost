@@ -7,23 +7,26 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
+local hs = hs
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
 local logger = require("hs.logger")
-logger.defaultLogLevel = 'debug'
+logger.defaultLogLevel = "verbose"
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local application               = require("hs.application")
 local console                   = require("hs.console")
-local crash                     = require("hs.crash")
 local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
+local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
+local window                    = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -61,7 +64,9 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Show Dock Icon:
     --------------------------------------------------------------------------------
-    hs.dockIcon(true)
+    if config.get("dockIcon", true) then
+        hs.dockIcon(true)
+    end
 
     --------------------------------------------------------------------------------
     -- Not used in `init.lua`, but is required to "jump start" the CLI support:
@@ -79,25 +84,25 @@ function mod.init()
     application.enableSpotlightForNameSearches(false)
 
     --------------------------------------------------------------------------------
+    -- Disable Window Animations:
+    --------------------------------------------------------------------------------
+    window.animationDuration = 0
+
+    --------------------------------------------------------------------------------
     -- Console Colour Scheme:
     --------------------------------------------------------------------------------
-    console.consoleCommandColor{hex = "#999999", alpha = 1}
-    console.outputBackgroundColor{hex = "#161616", alpha = 1}
+    local grey = {hex = "#999999", alpha = 1}
+    console.consoleCommandColor(grey)
+    console.consolePrintColor(grey)
+    console.consoleResultColor(grey)
+    console.outputBackgroundColor({hex = "#161616", alpha = 1})
 
     --------------------------------------------------------------------------------
     -- Debug Mode:
     --------------------------------------------------------------------------------
     local debugMode = config.developerMode()
     if debugMode then
-        logger.defaultLogLevel = 'debug'
         require("cp.developer")
-    --else
-        --------------------------------------------------------------------------------
-        -- NOTE: For now, whilst we're in beta, it's probably better if our error
-        --       logs contain all the debug message we write to the console, so we can
-        --       refer to them if users submit feedback.
-        --------------------------------------------------------------------------------
-        --logger.defaultLogLevel = 'warning'
     end
 
     --------------------------------------------------------------------------------
@@ -245,7 +250,14 @@ function mod.init()
         --------------------------------------------------------------------------------
         -- Enable Automatic Launch by default:
         --------------------------------------------------------------------------------
-        hs.autoLaunch(true)
+        if not hs.autoLaunch() then
+            hs.autoLaunch(true)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Set Log Level to Verbose for Debugging:
+        --------------------------------------------------------------------------------
+        settings.set("hs._asm.axuielement.logLevel", "verbose")
 
         --------------------------------------------------------------------------------
         -- Don't do this again unless you trash preferences:
@@ -325,18 +337,8 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    local floor = math.floor
-    local beforeRS = crash.residentSize()
-    local beforeGC = floor(collectgarbage("count")*1024)
-    collectgarbage()
-    collectgarbage()
-    local afterRS = beforeRS - crash.residentSize()
-    local afterGC = beforeGC - floor(collectgarbage("count")*1024)
-    log.df("---------------------------------------------------------")
-    log.df("AFTER GARBAGE COLLECTION:")
-    log.df("Process resident size reduction: %s", afterRS)
-    log.df("Lua state size reduction: %s", afterGC)
-    log.df("---------------------------------------------------------")
+    collectgarbage("collect")
+    collectgarbage("collect")
 
     --------------------------------------------------------------------------------
     -- Return the module:

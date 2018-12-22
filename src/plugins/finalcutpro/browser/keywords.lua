@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -138,12 +139,10 @@ local plugin = {
 function plugin.init(deps)
     for i=1, mod.NUMBER_OF_PRESETS do
         deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
-            :activatedBy():ctrl():option():cmd(tostring(i))
             :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.restore(i) end)
 
         deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
-            :activatedBy():ctrl():option():shift():cmd(tostring(i))
             :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.save(i) end)
     end

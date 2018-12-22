@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -17,9 +18,8 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local go                                = require("cp.rx.go")
 local prop								= require("cp.prop")
-
-local id								= require("cp.apple.finalcutpro.ids") "Timeline"
 
 local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -27,8 +27,13 @@ local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
-local go                                = require("cp.rx.go")
-local Do                                = go.Do
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
+local cache                             = axutils.cache
+local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
+local childrenWithRole                  = axutils.childrenWithRole
 
 --------------------------------------------------------------------------------
 --
@@ -46,9 +51,15 @@ local Timeline = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`.
+---
+--- Notes:
+---  * `element` should be an `AXGroup`, which contains an `AXSplitGroup` with an
+---    `AXIdentifier` of `_NS:237` (as of Final Cut Pro 10.4)
 function Timeline.matches(element)
+    local splitGroup = childWithRole(element, "AXSplitGroup")
     return element:attributeValue("AXRole") == "AXGroup"
-       and axutils.childWith(element, "AXIdentifier", id "Contents") ~= nil
+       and splitGroup
+       and Timeline.matchesMain(splitGroup)
 end
 
 --- cp.apple.finalcutpro.main.Timeline.matchesMain(element) -> boolean
@@ -60,8 +71,17 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
+---
+--- Notes:
+---  * `element` should be an `AXSplitGroup` with an `AXIdentifier` of `_NS:237`
+---    (as of Final Cut Pro 10.4)
+---  * Because the timeline contents is hard to detect, we look for the timeline
+---    toolbar instead.
 function Timeline.matchesMain(element)
-    return element:attributeValue("AXIdentifier") == id "Contents"
+    local parent = element and element:attributeValue("AXParent")
+    local group = parent and childWithRole(parent, "AXGroup")
+    local buttons = group and childrenWithRole(group, "AXButton")
+    return buttons and #buttons >= 6
 end
 
 -- _findTimeline(...) -> window | nil
@@ -79,7 +99,7 @@ function Timeline._findTimeline(...)
         if window then
             local ui = window:timelineGroupUI()
             if ui then
-                local timeline = axutils.childMatching(ui, Timeline.matches)
+                local timeline = childMatching(ui, Timeline.matches)
                 if timeline then return timeline end
             end
         end
@@ -103,7 +123,7 @@ function Timeline.new(app)
     },	Timeline)
 
     local UI = app.UI:mutate(function(_, self)
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
         end,
         Timeline.matches)
@@ -144,9 +164,9 @@ function Timeline.new(app)
         --- Field
         --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
         mainUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_main", function()
+            return cache(self, "_main", function()
                 local ui = original()
-                return ui and axutils.childMatching(ui, Timeline.matchesMain)
+                return ui and childMatching(ui, Timeline.matchesMain)
             end,
             Timeline.matchesMain)
         end),
@@ -225,13 +245,10 @@ function Timeline:show()
 end
 
 function Timeline:doShow()
-    return Do(function()
-        if not self:isShowing() then
-            return self:doShowOnPrimary()
-        else
-            return true
-        end
-    end)
+    return If(self.isShowing):Is(false)
+    :Then(self:doShowOnPrimary())
+    :Otherwise(true)
+    :Label("Timeline:doShow")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
@@ -258,7 +275,7 @@ function Timeline:showOnPrimary()
     return self
 end
 
---- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the primary window.
 ---
@@ -266,22 +283,24 @@ end
 ---  * timeout  - The timeout period for the operation.
 ---
 --- Returns:
----  * A `Statement` ready to run.
+---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline:doShowOnPrimary()
     local menu = self:app():menu()
 
-    return Do(function()
-        if self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        end
-    end)
-    :Then(function()
-        if not self:isOnPrimary() then
-            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        Do(
+            If(self.isOnSecondary):Then(
+                menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+            )
+        )
+        :Then(
+            If(self.isOnPrimary):Is(false):Then(
+                Do(menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"}))
+                :Then(WaitUntil(self.isOnPrimary):TimeoutAfter(5000))
+            ):Otherwise(true)
+        )
+    ):Otherwise(false)
+    :Label("Timeline:doShowOnPrimary")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
@@ -304,16 +323,26 @@ function Timeline:showOnSecondary()
     return self
 end
 
+
+--- cp.apple.finalcutpro.main.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a `Statement` that will ensure the timeline is in the secondary window.
+---
+--- Parameters:
+---  * timeout  - The timeout period for the operation.
+---
+--- Returns:
+---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline:doShowOnSecondary()
     local menu = self:app():menu()
 
-    return Do(function()
-        if not self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        If(self.isOnSecondary):Is(false)
+        :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}))
+        :Then(WaitUntil(self.isOnSecondary):TimeoutAfter(5000))
+        :Otherwise(true)
+    ):Otherwise(false)
+    :Label("Timeline:doShowOnSecondary")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
@@ -350,18 +379,36 @@ end
 function Timeline:doHide()
     local menu = self:app():menu()
 
-    return Do(function()
-        if self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        end
-    end)
-    :Then(function()
-        if self:isOnPrimary() then
-            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        Do(
+            If(self.isOnSecondary):Then(
+                menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+            )
+            :Then(WaitUntil(self.isOnSecondary:NOT()):TimeoutAfter(5000))
+        )
+        :Then(
+            If(self.isOnPrimary):Then(
+                menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+            )
+            :Then(WaitUntil(self.isOnPrimary:NOT()):TimeoutAfter(5000))
+            :Otherwise(true)
+        )
+    ):Otherwise(false)
+    :Label("Timeline:doHide")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+---
+--- Parameters:
+--- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+---
+--- Returns:
+--- * The `Statement`.
+function Timeline:doFocus(show)
+    return self:contents():doFocus(show)
+    :Label("Timeline:doFocus")
 end
 
 -----------------------------------------------------------------------
@@ -496,6 +543,19 @@ function Timeline:toolbar()
         self._toolbar = TimelineToolbar.new(self)
     end
     return self._toolbar
+end
+
+--- cp.apple.finalcutpro.main.Timeline:title() -> cp.ui.StaticText
+--- Method
+--- Returns the [StaticText](cp.ui.StaticText.md) containing the title.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `StaticText` object.
+function Timeline:title()
+    return self:toolbar():title()
 end
 
 return Timeline

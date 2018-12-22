@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -16,9 +17,10 @@ local log								= require("hs.logger").new("librariesBrowser")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local i18n                              = require("cp.i18n")
 local just								= require("cp.just")
-local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 
 local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
@@ -27,16 +29,34 @@ local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesBrowser"
+local Observable                        = require("cp.rx").Observable
+local Do                                = require("cp.rx.go.Do")
+local Given                             = require("cp.rx.go.Given")
+local First                             = require("cp.rx.go.First")
+local If                                = require("cp.rx.go.If")
+local Throw                             = require("cp.rx.go.Throw")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                             = axutils.cache
+local childFromRight                    = axutils.childFromRight
+local childMatching                     = axutils.childMatching
+local childrenWithRole                  = axutils.childrenWithRole
+local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local LibrariesBrowser = {}
+local LibrariesBrowser = Element:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.new(app) -> LibrariesBrowser
+function LibrariesBrowser.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser(app) -> LibrariesBrowser
 --- Constructor
 --- Creates a new `LibrariesBrowser` instance.
 ---
@@ -45,86 +65,50 @@ local LibrariesBrowser = {}
 ---
 --- Returns:
 ---  * A new `LibrariesBrowser` object.
-function LibrariesBrowser.new(parent)
-    local o = prop.extend({_parent = parent}, LibrariesBrowser)
-
+function LibrariesBrowser:initialize(parent)
     -- checks if the Libraries Browser is showing
     local isShowing = parent.isShowing:AND(parent.librariesShowing)
 
-    -- returns the UI for the Libraries Browser.
-    local UI = prop.OR(isShowing:AND(parent.UI), prop.NIL)
+    local UI = parent.UI:mutate(function(original)
+        return isShowing() and original() or nil
+    end)
 
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the Libraries Browser is showing.
-        isShowing = isShowing,
-
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The `axuielement` for the Library Browser, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the main group within the Libraries Browser, or `nil` if not available..
-        mainGroupUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_mainGroup", function()
-                local ui = original()
-                return ui and axutils.childWithRole(ui, "AXSplitGroup")
-            end)
-        end),
-
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.isFocused <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the Libraries Browser is the current focus.
-        isFocused = UI:mutate(function(original)
+    Element.initialize(self, parent, UI)
+end
+--- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the main group within the Libraries Browser, or `nil` if not available..
+function LibrariesBrowser.lazy.prop:mainGroupUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_mainGroup", function()
             local ui = original()
-            return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
-        end),
-    }
-
-    -- because we are referencing list/filmstrip classes which in turn reference our UI/etc
-    -- we need a separate prop.bind to avoid a circular reference.
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.isListView <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the Library Browser is in 'list view' mode.
-        isListView = o:list().isShowing:wrap(),
-
-        --- cp.apple.finalcutpro.main.LibrariesBrowser.isFilmstripView <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the Library Browser is in 'filmstrip view' mode.
-        isFilmstripView = o:filmstrip().isShowing:wrap(),
-    }
-
-    return o
+            return ui and childWithRole(ui, "AXSplitGroup")
+        end)
+    end)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function LibrariesBrowser:parent()
-    return self._parent
+--- cp.apple.finalcutpro.main.LibrariesBrowser.isFocused <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the Libraries Browser is the current focus.
+function LibrariesBrowser.lazy.prop:isFocused()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXFocused") or childWith(ui, "AXFocused", true) ~= nil
+    end)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function LibrariesBrowser:app()
-    return self:parent():app()
+--- cp.apple.finalcutpro.main.LibrariesBrowser.isListView <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the Library Browser is in 'list view' mode.
+function LibrariesBrowser.lazy.prop:isListView()
+    return self:list().isShowing
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.isFilmstripView <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the Library Browser is in 'filmstrip view' mode.
+function LibrariesBrowser.lazy.prop:isFilmstripView()
+    return self:filmstrip().isShowing
 end
 
 -----------------------------------------------------------------------
@@ -153,6 +137,25 @@ function LibrariesBrowser:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` object.
+function LibrariesBrowser.lazy.method:doShow()
+    local browser = self:parent()
+    return Given(browser:doShow())
+    :Then(function()
+        browser:librariesShowing(true)
+    end)
+    :ThenYield()
+    :Label("LibrariesBrowser:doShow")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:hide() -> LibrariesBrowser
 --- Method
 --- Hide the Libraries Browser.
@@ -165,6 +168,20 @@ end
 function LibrariesBrowser:hide()
     self:parent():hide()
     return self
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will hide the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function LibrariesBrowser.lazy.method:doHide()
+    return self:parent():doHide()
+    :Label("LibrariesBrowser:doHide")
 end
 
 -----------------------------------------------------------------------------
@@ -222,13 +239,10 @@ end
 ---
 --- Returns:
 ---  * The `Button` object.
-function LibrariesBrowser:toggleViewMode()
-    if not self._viewMode then
-        self._viewMode = Button.new(self, function()
-            return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
-        end)
-    end
-    return self._viewMode
+function LibrariesBrowser.lazy.method:toggleViewMode()
+    return Button(self, function()
+        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 3)
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:appearanceAndFiltering() -> Button
@@ -240,13 +254,10 @@ end
 ---
 --- Returns:
 ---  * The `Button` object.
-function LibrariesBrowser:appearanceAndFiltering()
-    if not self._appearanceAndFiltering then
-        self._appearanceAndFiltering = Button.new(self, function()
-            return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
-        end)
-    end
-    return self._appearanceAndFiltering
+function LibrariesBrowser.lazy.method:appearanceAndFiltering()
+    return Button(self, function()
+        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 2)
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:searchToggle() -> Button
@@ -258,13 +269,10 @@ end
 ---
 --- Returns:
 ---  * The `Button` object.
-function LibrariesBrowser:searchToggle()
-    if not self._searchToggle then
-        self._searchToggle = Button.new(self, function()
-            return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
-        end)
-    end
-    return self._searchToggle
+function LibrariesBrowser.lazy.method:searchToggle()
+    return Button(self, function()
+        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 1)
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:search() -> TextField
@@ -276,13 +284,10 @@ end
 ---
 --- Returns:
 ---  * The `TextField` object.
-function LibrariesBrowser:search()
-    if not self._search then
-        self._search = TextField.new(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Search")
-        end)
-    end
-    return self._search
+function LibrariesBrowser.lazy.method:search()
+    return TextField(self, function()
+        return childWithRole(self:mainGroupUI(), "AXTextField")
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:filterToggle() -> Button
@@ -294,44 +299,41 @@ end
 ---
 --- Returns:
 ---  * The `Button` object.
-function LibrariesBrowser:filterToggle()
-    if not self._filterToggle then
-        self._filterToggle = Button.new(self, function()
-            return axutils.childWithRole(self:mainGroupUI(), "AXButton")
-        end)
-    end
-    return self._filterToggle
+function LibrariesBrowser.lazy.method:filterToggle()
+    return Button(self, function()
+        return childWithRole(self:mainGroupUI(), "AXButton")
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
 --- Constant
 --- All Clips ID.
-LibrariesBrowser.ALL_CLIPS = 1
+LibrariesBrowser.static.ALL_CLIPS = 1
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.HIDE_REJECTED -> number
 --- Constant
 --- Hide Rejected ID.
-LibrariesBrowser.HIDE_REJECTED = 2
+LibrariesBrowser.static.HIDE_REJECTED = 2
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.NO_RATINGS_OR_KEYWORDS -> number
 --- Constant
 --- No Rating or Keywords ID.
-LibrariesBrowser.NO_RATINGS_OR_KEYWORDS = 3
+LibrariesBrowser.static.NO_RATINGS_OR_KEYWORDS = 3
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.FAVORITES -> number
 --- Constant
 --- Favourites ID.
-LibrariesBrowser.FAVORITES = 4
+LibrariesBrowser.static.FAVORITES = 4
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.REJECTED -> number
 --- Constant
 --- Rejected ID.
-LibrariesBrowser.REJECTED = 5
+LibrariesBrowser.static.REJECTED = 5
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.UNUSED -> number
 --- Constant
 --- Unused ID.
-LibrariesBrowser.UNUSED = 6
+LibrariesBrowser.static.UNUSED = 6
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipFiltering(filterType) -> LibrariesBrowser
 --- Method
@@ -345,7 +347,7 @@ LibrariesBrowser.UNUSED = 6
 function LibrariesBrowser:selectClipFiltering(filterType)
     local ui = self:UI()
     if ui then
-        local button = axutils.childWithID(ui, id "FilterButton")
+        local button = childWithRole(ui, "AXButton")
         if button then
             local menu = button[1]
             if not menu then
@@ -370,27 +372,21 @@ end
 ---
 --- Returns:
 ---  * The `LibrariesBrowser` object.
-function LibrariesBrowser:filmstrip()
-    if not self._filmstrip then
-        self._filmstrip = LibrariesFilmstrip.new(self)
-    end
-    return self._filmstrip
+function LibrariesBrowser.lazy.method:filmstrip()
+    return LibrariesFilmstrip.new(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesList
+--- cp.apple.finalcutpro.main.LibrariesBrowser:list() -> LibrariesList
 --- Method
---- Get Libraries List object.
+--- Get [LibrariesList](cp.apple.finalcutpro.main.LibrariesList.md) object.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `LibrariesList` object.
-function LibrariesBrowser:list()
-    if not self._list then
-        self._list = LibrariesList.new(self)
-    end
-    return self._list
+function LibrariesBrowser.lazy.method:list()
+    return LibrariesList.new(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:sidebar() -> Table
@@ -402,13 +398,10 @@ end
 ---
 --- Returns:
 ---  * `Table` object.
-function LibrariesBrowser:sidebar()
-    if not self._sidebar then
-        self._sidebar = Table.new(self, function()
-            return axutils.childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
-        end):uncached()
-    end
-    return self._sidebar
+function LibrariesBrowser.lazy.method:sidebar()
+    return Table(self, function()
+        return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
+    end):uncached()
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
@@ -422,11 +415,10 @@ end
 ---  * `true` if there's a match, otherwise `false`.
 function LibrariesBrowser.matchesSidebar(element)
     return element and element:attributeValue("AXRole") == "AXScrollArea"
-        and element:attributeValue("AXIdentifier") == id "Sidebar"
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table
---- Function
+--- Method
 --- Selects a Library.
 ---
 --- Parameters:
@@ -439,7 +431,7 @@ function LibrariesBrowser:selectLibrary(...)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:openClipTitled(name) -> boolean
---- Function
+--- Method
 --- Open a clip with a specific title.
 ---
 --- Parameters:
@@ -469,8 +461,28 @@ function LibrariesBrowser:openClipTitled(name)
     return false
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doOpenClipTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to open the named clip in the Libraries Browser in the Timeline.
+---
+--- Parameters:
+--- * title      - The title of the clip to open.
+---
+--- Returns:
+--- * The `Statement` to execute.
+function LibrariesBrowser:doOpenClipTitled(title)
+    local menuBar = self:app():menu()
+
+    return Do(self:app():doLaunch())
+    :Then(self:doSelectClipTitled(title))
+    :Then(menuBar:doSelectMenu({"Window", "Go To", "Libraries"}))
+    :Then(menuBar:doSelectMenu({"Clip", "Open Clip"}))
+    :Catch(Throw("Unable to open clip: %s", title))
+    :Label("LibrariesBrowser:doOpenClipTitled")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:clipsUI(filterFn) -> table | nil
---- Function
+--- Method
 --- Gets clip UIs using a custom filter.
 ---
 --- Parameters:
@@ -489,7 +501,7 @@ function LibrariesBrowser:clipsUI(filterFn)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:clips(filterFn) -> table | nil
---- Function
+--- Method
 --- Gets clips using a custom filter.
 ---
 --- Parameters:
@@ -508,7 +520,7 @@ function LibrariesBrowser:clips(filterFn)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClipsUI() -> table | nil
---- Function
+--- Method
 --- Gets selected clips UI's.
 ---
 --- Parameters:
@@ -527,7 +539,7 @@ function LibrariesBrowser:selectedClipsUI()
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClips() -> table | nil
---- Function
+--- Method
 --- Gets selected clips.
 ---
 --- Parameters:
@@ -546,7 +558,7 @@ function LibrariesBrowser:selectedClips()
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:showClip(clip) -> boolean
---- Function
+--- Method
 --- Shows a clip.
 ---
 --- Parameters:
@@ -563,7 +575,7 @@ function LibrariesBrowser:showClip(clip)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClip(clip) -> boolean
---- Function
+--- Method
 --- Selects a clip.
 ---
 --- Parameters:
@@ -583,7 +595,7 @@ function LibrariesBrowser:selectClip(clip)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipAt(index) -> boolean
---- Function
+--- Method
 --- Select clip at a specific index.
 ---
 --- Parameters:
@@ -600,7 +612,7 @@ function LibrariesBrowser:selectClipAt(index)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipTitled(title) -> boolean
---- Function
+--- Method
 --- Select clip with a specific title.
 ---
 --- Parameters:
@@ -621,8 +633,54 @@ function LibrariesBrowser:selectClipTitled(title)
     return false
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doFindClips(filter) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser matching the `filter` as an `onNext` signal.
+---
+--- Parameters:
+--- * filter    - a function which receives the [Clip](cp.apple.finalcutpro.content.Clip.md) to check and returns `true` or `false`.
+---
+--- Returns:
+--- * The `Statement`.
+function LibrariesBrowser:doFindClips(filter)
+    return Do(function() return Observable.fromTable(self:clips(filter)) end)
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doFindClipsTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser with the specified `title` as an `onNext` signal.
+---
+--- Parameters:
+--- * title    - The title string to check for.
+---
+--- Returns:
+--- * The `Statement`.
+function LibrariesBrowser:doFindClipsTitled(title)
+    return self:doFindClips(function(clip) return clip and clip:getTitle() == title end)
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doSelectClipTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the first clip with a matching `title`.
+---
+--- Parameters:
+--- * title     - The title to select.
+---
+--- Returns:
+--- * The `Statement` ready to execute.
+function LibrariesBrowser:doSelectClipTitled(title)
+    return If(
+        First(self:doFindClipsTitled(title))
+    ):Then(function(clip)
+        return self:selectClip(clip)
+    end)
+    :Catch(Throw(i18n("LibrariesBrowser_NoClipTitled", {title = title})))
+    :ThenYield()
+    :Label("LibrariesBrowser:doSelectClipTitled")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectAll([clips]) -> boolean
---- Function
+--- Method
 --- Select all clips.
 ---
 --- Parameters:

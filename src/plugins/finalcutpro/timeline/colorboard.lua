@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -22,11 +23,12 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local ColorBoardAspect					= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
 local tools                             = require("cp.tools")
+
+local format                            = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -163,16 +165,16 @@ function plugin.init(deps)
     local colorBoard = fcp:colorBoard()
 
     local colorBoardAspects = {
-        { title = "Color", control = colorBoard:color(), hasAngle = true },
-        { title = "Saturation", control = colorBoard:saturation() },
-        { title = "Exposure", control = colorBoard:exposure() },
+        { id = "color", title = "Color", i18n = i18n("color"), control = colorBoard:color(), hasAngle = true },
+        { id = "saturation", title = "Saturation", i18n = i18n("saturation"), control = colorBoard:saturation() },
+        { id = "exposure", title = "Exposure", i18n = i18n("exposure"), control = colorBoard:exposure() },
     }
 
     local pucks = {
-        { title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
-        { title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
-        { title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
-        { title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
+        { id = "master", title = "Master", i18n = i18n("master"), shortcut = "m" },
+        { id = "shadows", title = "Shadows", i18n = i18n("shadows"), shortcut = "," },
+        { id = "midtones", title = "Midtones", i18n = i18n("midtones"), shortcut = "." },
+        { id = "highlights", title = "Highlights", i18n = i18n("highlights"), shortcut = "/" },
     }
 
     for i,puck in ipairs(pucks) do
@@ -180,20 +182,19 @@ function plugin.init(deps)
         fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :activatedBy():ctrl():option():cmd(puck.shortcut)
-            :whenActivated(function() puck.fn( colorBoard:current() ):select() end)
+            :whenActivated(function() colorBoard:current()[puck.id]():select() end)
 
         fcpxCmds:add("cpPuck" .. iWord .. "Mouse")
             :titled(i18n("cpPuckMouse_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :whenActivated(function() mod.startMousePuck(puck.fn( colorBoard:current() )) end)
+            :whenActivated(function() mod.startMousePuck(colorBoard:current()[puck.id]()) end)
             :whenReleased(function() mod.stopMousePuck() end)
 
         for _, aspect in ipairs(colorBoardAspects) do
             --------------------------------------------------------------------------------
             -- Find the puck for the current aspect (eg. "color > master"):
             --------------------------------------------------------------------------------
-            local puckControl = puck.fn( aspect.control )
+            local puckControl = aspect.control[puck.id]()
             if not puckControl then
                 log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
             end
@@ -246,118 +247,22 @@ function plugin.init(deps)
         :whenActivated(mod.nextAspect)
 
     --------------------------------------------------------------------------------
-    -- TODO: Eventually David will probably want to clean up the below code.
-    --------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
     -- Reset Color Board - Current Pucks:
     --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("cpResetColorBoardCurrentMaster")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("master"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():show():master():reset() end)
+    local iReset, iColorBoard = i18n("reset"), i18n("colorBoard")
 
-    fcpxCmds
-        :add("cpResetColorBoardCurrentShadows")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("shadows"))
+    for _,puck in ipairs(pucks) do
+        fcpxCmds:add("cpResetColorBoardCurrent" .. puck.title)
+        :titled(format("%s %s %s", iReset, iColorBoard, puck.i18n))
         :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():show():shadows():reset() end)
+        :whenActivated(colorBoard:doResetCurrent(puck.id))
 
-    fcpxCmds
-        :add("cpResetColorBoardCurrentMidtones")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("midtones"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():show():midtones():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardCurrentHighlights")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("highlights"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():show():highlights():reset() end)
-
-    --------------------------------------------------------------------------------
-    -- Reset Color Board - Color Pucks:
-    --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("cpResetColorBoardColorMaster")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("master"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:color():show():master():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardColorShadows")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("shadows"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:color():show():shadows():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardColorMidtones")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("midtones"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:color():show():midtones():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardColorHighlights")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("highlights"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:color():show():highlights():reset() end)
-
-    --------------------------------------------------------------------------------
-    -- Reset Color Board - Saturation Pucks:
-    --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("cpResetColorBoardSaturationMaster")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("master"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:saturation():show():master():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardSaturationShadows")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("shadows"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:saturation():show():shadows():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardSaturationMidtones")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("midtones"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:saturation():show():midtones():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardSaturationHighlights")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("highlights"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:saturation():show():highlights():reset() end)
-
-    --------------------------------------------------------------------------------
-    -- Reset Color Board - Exposure Pucks:
-    --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("cpResetColorBoardExposureMaster")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("master"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:exposure():show():master():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardExposureShadows")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("shadows"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:exposure():show():shadows():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardExposureMidtones")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("midtones"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:exposure():show():midtones():reset() end)
-
-    fcpxCmds
-        :add("cpResetColorBoardExposureHighlights")
-        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("highlights"))
-        :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:exposure():show():highlights():reset() end)
-    return mod
-
+        -- register commands for resetting each specific aspect
+        for _,aspect in ipairs(colorBoardAspects) do
+            fcpxCmds:add("cpResetColorBoard" .. aspect.title .. puck.title)
+            :titled(format("%s %s %s %s", iReset, iColorBoard, aspect.i18n, puck.i18n))
+        end
+    end
 end
 
 return plugin

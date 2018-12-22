@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -20,6 +21,7 @@ local timer             = require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -530,20 +532,14 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps)
-
-    --------------------------------------------------------------------------------
-    -- TODO: This should be streamlined and cleaned up with loops. We should also
-    --       be used i18n.
-    --------------------------------------------------------------------------------
-
     --------------------------------------------------------------------------------
     -- Color Board Group:
     --------------------------------------------------------------------------------
     local params
     params = {
         group = "fcpx",
-        text = "Color Board (Grouped)",
-        subText = "Color Board Panel Toggle Button & 4 x Puck Controls.",
+        text = i18n("colorBoard") .. " (" .. i18n("grouped") .. ")",
+        subText = i18n("touchBarColorBoardGroupedDescription"),
         item = function() return groupPuck("colorBoardGroup") end,
     }
     deps.manager.widgets:new("colorBoardGroup", params)
@@ -555,32 +551,32 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     params = {
         group = "fcpx",
-        text = "Color Board Puck 1",
-        subText = "Allows you to control puck one of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("puck") .. " 1",
+        subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("one")}),
         item = function() return puckWidget("colorBoardPuck1", function() return colorBoard:current():master() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck1", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Puck 2",
-        subText = "Allows you to control puck two of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("puck") .. " 2",
+        subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("two")}),
         item = function() return puckWidget("colorBoardPuck2", function() return colorBoard:current():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck2", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Puck 3",
-        subText = "Allows you to control puck three of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("puck") .. " 3",
+        subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("three")}),
         item = function() return puckWidget("colorBoardPuck3", function() return colorBoard:current():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck3", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Puck 4",
-        subText = "Allows you to control puck four of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("puck") .. " 4",
+        subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("four")}),
         item = function() return puckWidget("colorBoardPuck4", function() return colorBoard:current():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck4", params)
@@ -590,32 +586,32 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     params = {
         group = "fcpx",
-        text = "Color Board Color Puck 1",
-        subText = "Allows you to the Color Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 1",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck1", function() return colorBoard:color():master() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck1", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Color Puck 2",
-        subText = "Allows you to the Color Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 2",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck2", function() return colorBoard:color():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck2", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Color Puck 3",
-        subText = "Allows you to the Color Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 3",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck3", function() return colorBoard:color():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck3", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Color Puck 4",
-        subText = "Allows you to the Color Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 4",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck4", function() return colorBoard:color():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck4", params)
@@ -625,32 +621,32 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     params = {
         group = "fcpx",
-        text = "Color Board Saturation Puck 1",
-        subText = "Allows you to the Saturation Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 1",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck1", function() return colorBoard:saturation():master() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck1", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Saturation Puck 2",
-        subText = "Allows you to the Saturation Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 2",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck2", function() return colorBoard:saturation():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck2", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Saturation Puck 3",
-        subText = "Allows you to the Saturation Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 3",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck3", function() return colorBoard:saturation():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck3", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Saturation Puck 4",
-        subText = "Allows you to the Saturation Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 4",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck4", function() return colorBoard:saturation():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck4", params)
@@ -660,32 +656,32 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     params = {
         group = "fcpx",
-        text = "Color Board Exposure Puck 1",
-        subText = "Allows you to the Exposure Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 1",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():global() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck1", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Exposure Puck 2",
-        subText = "Allows you to the Exposure Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 2",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck2", function() return colorBoard:exposure():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck2", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Exposure Puck 3",
-        subText = "Allows you to the Exposure Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 3",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck3", function() return colorBoard:exposure():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck3", params)
 
     params = {
         group = "fcpx",
-        text = "Color Board Exposure Puck 4",
-        subText = "Allows you to the Exposure Panel of the Color Board.",
+        text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 4",
+        subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck4", function() return colorBoard:exposure():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck4", params)

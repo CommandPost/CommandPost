@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -185,7 +186,7 @@ end
 --- Returns:
 ---  * The `parameter` instance.
 function parameter.mt:onGet(getFn)
-    if is.nt.fn(getFn) then
+    if is.nt.callable(getFn) then
         error("Please provide a `get` function: %s", type(getFn))
     end
     self._get = getFn
@@ -224,7 +225,7 @@ end
 --- Returns:
 ---  * The `parameter` instance.
 function parameter.mt:onChange(changeFn)
-    if is.nt.fn(changeFn) then
+    if is.nt.callable(changeFn) then
         error("Please provide a `change` function: %s", type(changeFn))
     end
     self._change = changeFn
@@ -266,8 +267,8 @@ end
 --- Returns:
 ---  * The `parameter` instance.
 function parameter.mt:onReset(resetFn)
-    if is.nt.fn(resetFn) then
-        error("Please provide a `reset` function: %s", type(resetFn))
+    if is.nt.callable(resetFn) then
+        error(format("Please provide a `reset` function: %s", type(resetFn)))
     end
     self._reset = resetFn
     return self

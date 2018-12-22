@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -25,24 +26,30 @@ local hswindow                      = require("hs.window")
 local app                           = require("cp.app")
 local axutils                       = require("cp.ui.axutils")
 local notifier                      = require("cp.ui.notifier")
+local Alert                         = require("cp.ui.Alert")
 local prop                          = require("cp.prop")
 
+local If                            = require("cp.rx.go.If")
+local WaitUntil                     = require("cp.rx.go.WaitUntil")
+
 local format                        = string.format
+
+local class                         = require("middleclass")
+local lazy                          = require("cp.lazy")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Window = {}
+local Window = class("Window"):include(lazy)
 
 --- cp.ui.Window.matches(element) -> boolean
 --- Function
 --- Checks if the provided element is a valid window.
-function Window.matches(element)
-    return element and element:attributeValue("AXRole") == "AXWindow"
+function Window.static.matches(element)
+    return element ~= nil and element:attributeValue("AXRole") == "AXWindow"
 end
-
 
 -- utility function to help set up watchers
 local function notifyWatch(cpProp, notifications)
@@ -52,9 +59,10 @@ local function notifyWatch(cpProp, notifications)
             function() cpProp:update() end
         )
     end)
+    return cpProp
 end
 
---- cp.ui.Window.new(cpApp, uiProp) -> Window
+--- cp.ui.Window(cpApp, uiProp) -> Window
 --- Constructor
 --- Creates a new Window
 ---
@@ -64,152 +72,178 @@ end
 ---
 --- Returns:
 ---  * A new `Window` instance.
-function Window.new(cpApp, uiProp)
+function Window:initialize(cpApp, uiProp)
     assert(app.is(cpApp), "Parameter #1 must be a cp.app")
     assert(prop.is(uiProp), "Parameter #2 must be a cp.prop")
-    local o = prop.extend({
-        _app = cpApp,
-    }, Window)
+
+    self._app = cpApp
 
 --- cp.ui.Window.UI <cp.prop: hs._asm.axuielement: read-only; live?>
 --- Field
 --- The UI `axuielement` for the Window.
-    local UI = uiProp
+    prop.bind(self) {
+        UI = uiProp
+    }
+end
 
 --- cp.ui.Window.hsWindow <cp.prop: hs.window; read-only>
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
-    local hsWindow = UI:mutate(
-        function(original)
-            local ui = original()
-            return ui and ui:asHSWindow()
-        end
+function Window.lazy.prop:hsWindow()
+    return notifyWatch(
+        self.UI:mutate(
+            function(original)
+                local ui = original()
+                return ui and ui:asHSWindow()
+            end
+        ),
+        {"AXWindowCreated", "AXUIElementDestroyed"}
     )
+end
 
 --- cp.ui.Window.id <cp.prop: number; read-only>
 --- Field
 --- The unique ID for the window.
-    local id = hsWindow:mutate(
+function Window.lazy.prop:id()
+    return self.hsWindow:mutate(
         function(original)
             local window = original()
             return window ~= nil and window:id()
         end
     )
+end
+
+--- cp.ui.Window.id <cp.prop: string; read-only>
+--- Field
+--- The window title, or `nil` if the window is not currently visible.
+function Window.lazy.prop:title()
+    return self.hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window and window:title()
+        end
+    )
+end
 
 --- cp.ui.Window.visible <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the window is visible on a screen.
-    local visible = hsWindow:mutate(
-        function(original)
-            local window = original()
-            return window ~= nil and window:isVisible()
-        end
+function Window.lazy.prop:visible()
+    return notifyWatch(
+        self.hsWindow:mutate(
+            function(original)
+                local window = original()
+                return window ~= nil and window:isVisible()
+            end
+        ),
+        {"AXWindowMiniaturized", "AXWindowDeminiaturized",  "AXApplicationHidden", "AXApplicationShown"}
     )
+end
 
 --- cp.ui.Window.focused <cp.prop: boolean>
 --- Field
 --- Is `true` if the window has mouse/keyboard focused.
 --- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
-    local focused = hsWindow:mutate(
-        function(original)
-            return original() == hswindow.focusedWindow()
-        end,
-        function(focused, original)
-            local window = original()
-            if window and focused then
-                window:focus()
+function Window.lazy.prop:focused()
+    return notifyWatch(
+        self.hsWindow:mutate(
+            function(original)
+                return original() == hswindow.focusedWindow()
+            end,
+            function(focused, original)
+                local window = original()
+                if window and focused then
+                    window:focus()
+                end
             end
-        end
+        )
+        :monitor(self.visible),
+        {"AXFocusedWindowChanged", "AXApplicationActivated", "AXApplicationDeactivated"}
     )
-    :monitor(visible)
+end
 
 --- cp.ui.Window.exists <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the window exists. It may not be visible.
-    local exists = UI:ISNOT(nil)
+function Window.lazy.prop:exists()
+    return self.UI:ISNOT(nil)
+end
 
 --- cp.ui.Window.minimized <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window exists and is minimised.
-    local minimized = hsWindow:mutate(
-        function(original)
-            local window = original()
-            return window ~= nil and window:isMinimized()
-        end,
-        function(minimized, original)
-            local window = original()
-            if window then
-                if minimized then
-                    window:minimize()
-                else
-                    window:unminimize()
+function Window.lazy.prop:minimized()
+    return notifyWatch(
+        self.hsWindow:mutate(
+            function(original)
+                local window = original()
+                return window ~= nil and window:isMinimized()
+            end,
+            function(minimized, original)
+                local window = original()
+                if window then
+                    if minimized then
+                        window:minimize()
+                    else
+                        window:unminimize()
+                    end
                 end
             end
-        end
+        ),
+        {"AXWindowMiniaturized", "AXWindowDeminiaturized"}
     )
+end
 
 --- cp.ui.Window.frame <cp.prop: hs.geometry rect>
 --- Field
 --- The `hs.geometry` rect value describing the window's position.
-    local frame = hsWindow:mutate(
-        function(original)
-            local window = original()
-            return window and window:frame()
-        end,
-        function(frame, original)
-            local window = original()
-            if window then
-                window:move(frame)
+function Window.lazy.prop:frame()
+    return notifyWatch(
+        self.hsWindow:mutate(
+            function(original)
+                local window = original()
+                return window and window:frame()
+            end,
+            function(frame, original)
+                local window = original()
+                if window then
+                    window:move(frame)
+                end
+                return window
             end
-            return window
-        end
+        )
+        :monitor(self.visible),
+        {"AXWindowResized", "AXWindowMoved"}
     )
-    :monitor(visible)
+end
 
 --- cp.ui.Window.fullScreen <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window is full-screen.
-    local fullScreen = hsWindow:mutate(
-        function(original)
-            local window = original()
-            return window ~= nil and window:isFullScreen()
-        end,
-        function(window, fullScreen)
-            if window then
-                window:setFullScreen(fullScreen)
+function Window.lazy.prop:fullScreen()
+    return notifyWatch(
+        self.hsWindow:mutate(
+            function(original)
+                local window = original()
+                return window ~= nil and window:isFullScreen()
+            end,
+            function(window, fullScreen)
+                if window then
+                    window:setFullScreen(fullScreen)
+                end
+                return window
             end
-            return window
-        end
+        )
+        :monitor(self.visible),
+        {"AXWindowResized", "AXWindowMoved"}
     )
-    :monitor(visible)
-
-    prop.bind(o) {
-        UI = UI,
-        hsWindow = hsWindow,
-        id = id,
-        visible = visible,
-        focused = focused,
-        exists = exists,
-        minimized = minimized,
-        frame = frame,
-        fullScreen = fullScreen,
-    }
-
-    notifyWatch(hsWindow, {"AXWindowCreated", "AXUIElementDestroyed"})
-    notifyWatch(visible, {"AXWindowMiniaturized", "AXWindowDeminiaturized",  "AXApplicationHidden", "AXApplicationShown"})
-    notifyWatch(focused, {"AXFocusedWindowChanged", "AXApplicationActivated", "AXApplicationDeactivated"})
-    notifyWatch(minimized, {"AXWindowMiniaturized", "AXWindowDeminiaturized"})
-    notifyWatch(frame, {"AXWindowResized", "AXWindowMoved"})
-    notifyWatch(fullScreen, {"AXWindowResized", "AXWindowMoved"})
-
-    return o
 end
 
 function Window:app()
     return self._app
 end
 
---- cp.ui.Window.close() -> boolean
+--- cp.ui.Window:close() -> boolean
 --- Method
 --- Attempts to close the window.
 ---
@@ -223,7 +257,26 @@ function Window:close()
     return hsWindow ~= nil and hsWindow:close()
 end
 
---- cp.ui.Window.focus() -> boolean
+--- cp.ui.Window:doClose() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will attempt to close the window, if it is visible.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement` to execute, resolving to `true` if the window is closed successfully, or `false` if not.
+function Window.lazy.method:doClose()
+    return If(self.hsWindow):Then(function(hsWindow)
+        return hsWindow:close()
+    end)
+    :Then(WaitUntil(self.visible:NOT())
+    ):Otherwise(true)
+    :ThenYield()
+    :Label("Window:doClose")
+end
+
+--- cp.ui.Window:focus() -> boolean
 --- Method
 --- Attempts to focus the window.
 ---
@@ -237,6 +290,39 @@ function Window:focus()
     return hsWindow ~= nil and hsWindow:focus()
 end
 
+--- cp.ui.Window:doFocus() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) will attempt to focus on the window, if it is visible.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement` to execute, which resolves to `true` if the window was successfully focused, or `false` if not.
+function Window.lazy.method:doFocus()
+    return If(self.hsWindow):Then(function(hsWindow)
+        return hsWindow:focus()
+    end)
+    :Then(WaitUntil(self.focused))
+    :Otherwise(false)
+    :TimeoutAfter(10000)
+    :ThenYield()
+    :Label("Window:doFocus")
+end
+
+--- cp.ui.Window:alert() -> cp.ui.Alert
+--- Method
+--- Provides access to any 'Alert' windows on the PrimaryWindow.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `cp.ui.Alert` object
+function Window.lazy.method:alert()
+    return Alert(self)
+end
+
 --- cp.ui.Window:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
@@ -246,13 +332,8 @@ end
 ---
 --- Returns:
 ---  * The notifier.
-function Window:notifier()
-    if not self._notifier then
-        local theApp = self:app()
-        local bundleID = theApp:bundleID()
-        self._notifier = notifier.new(bundleID, function() return self:UI() end):start()
-    end
-    return self._notifier
+function Window.lazy.method:notifier()
+    return notifier.new(self:app():bundleID(), self.UI):start()
 end
 
 --- cp.ui.Window:snapshot([path]) -> hs.image | nil
@@ -274,7 +355,9 @@ function Window:snapshot(path)
 end
 
 function Window:__tostring()
-    return format("cp.ui.Window: %s", self:app())
+    local title = self:title()
+    local label = title and " ("..title..")" or ""
+    return format("cp.ui.Window: %s%s", self:app(), label)
 end
 
 return Window

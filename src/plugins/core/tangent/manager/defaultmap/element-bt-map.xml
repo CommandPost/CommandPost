@@ -28,25 +28,25 @@
                         <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x0AF00001</Key> <!-- Activate Global Console -->
-                                <CustomName>CONSOLE</CustomName>
+                                <CustomName>Console</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x0AF00005</Key> <!-- Open Error Log -->
-                                <CustomName>ERR LOG</CustomName>
+                                <CustomName>Err Log</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x0AF00006</Key> <!-- Preferences -->
-                                <CustomName>PREFS</CustomName>
+                                <CustomName>Prefs</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00050000</Key> <!-- Launch Final Cut Pro -->
-                                <CustomName>FCPX</CustomName>
+                                <CustomName>Final Cut</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -78,73 +78,73 @@
                         <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00310105</Key> <!-- Apply Color Correction from Previous Clip -->
-                                <CustomName>1 BACK</CustomName>
+                                <CustomName>1 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310107</Key> <!-- Apply Color Correction from Two Clips Back -->
-                                <CustomName>2 BACK</CustomName>
+                                <CustomName>2 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310106</Key> <!-- Apply Color Correction from Three Clips Back -->
-                                <CustomName>3 BACK</CustomName>
+                                <CustomName>3 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310108</Key> <!-- Enable/Disable Balance Color -->
-                                <CustomName>BALANCE</CustomName>
+                                <CustomName>Balance</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="4"> <!-- Element-Bt Button 5 -->
                             <Mapping mode="Std">
                                 <Key>0x00310110</Key> <!-- Match Color -->
-                                <CustomName>MATCH</CustomName>
+                                <CustomName>Match</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="5"> <!-- Element-Bt Button 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310113</Key> <!-- Toggle Effects -->
-                                <CustomName>T/EFFECTS</CustomName>
+                                <CustomName>T/Effects</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Bt Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00310112</Key> <!-- Toggle Color Correction Effects -->
-                                <CustomName>T/COLOR</CustomName>
+                                <CustomName>T/Color</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Bt Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00310118</Key> <!-- View All Color Channels -->
-                                <CustomName>T/ALL</CustomName>
+                                <CustomName>T/All</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Bt Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00310114</Key> <!-- View Alpha Color Channel -->
-                                <CustomName>T/ALPHA</CustomName>
+                                <CustomName>T/Alpha</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Bt Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00310115</Key> <!-- View Red Color Channel -->
-                                <CustomName>T/RED</CustomName>
+                                <CustomName>T/Red</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Bt Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00310116</Key> <!-- View Green Color Channel -->
-                                <CustomName>T/GREEN</CustomName>
+                                <CustomName>T/Green</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Bt Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00310117</Key> <!-- View Blue Color Channel -->
-                                <CustomName>T/BLUE</CustomName>
+                                <CustomName>T/Blue</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -176,73 +176,73 @@
                         <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00310105</Key> <!-- Apply Color Correction from Previous Clip -->
-                                <CustomName>1 BACK</CustomName>
+                                <CustomName>1 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310107</Key> <!-- Apply Color Correction from Two Clips Back -->
-                                <CustomName>2 BACK</CustomName>
+                                <CustomName>2 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310106</Key> <!-- Apply Color Correction from Three Clips Back -->
-                                <CustomName>3 BACK</CustomName>
+                                <CustomName>3 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310108</Key> <!-- Enable/Disable Balance Color -->
-                                <CustomName>BALANCE</CustomName>
+                                <CustomName>Balance</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="4"> <!-- Element-Bt Button 5 -->
                             <Mapping mode="Std">
                                 <Key>0x00310110</Key> <!-- Match Color -->
-                                <CustomName>MATCH</CustomName>
+                                <CustomName>Match</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="5"> <!-- Element-Bt Button 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310113</Key> <!-- Toggle Effects -->
-                                <CustomName>T/EFFECTS</CustomName>
+                                <CustomName>T/Effects</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Bt Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00310112</Key> <!-- Toggle Color Correction Effects -->
-                                <CustomName>T/COLOR</CustomName>
+                                <CustomName>T/Color</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Bt Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00310118</Key> <!-- View All Color Channels -->
-                                <CustomName>T/ALL</CustomName>
+                                <CustomName>T/All</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Bt Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00310114</Key> <!-- View Alpha Color Channel -->
-                                <CustomName>T/ALPHA</CustomName>
+                                <CustomName>T/Alpha</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Bt Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00310115</Key> <!-- View Red Color Channel -->
-                                <CustomName>T/RED</CustomName>
+                                <CustomName>T/Red</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Bt Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00310116</Key> <!-- View Green Color Channel -->
-                                <CustomName>T/GREEN</CustomName>
+                                <CustomName>T/Green</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Bt Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00310117</Key> <!-- View Blue Color Channel -->
-                                <CustomName>T/BLUE</CustomName>
+                                <CustomName>T/Blue</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -274,73 +274,73 @@
                         <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00310105</Key> <!-- Apply Color Correction from Previous Clip -->
-                                <CustomName>1 BACK</CustomName>
+                                <CustomName>1 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310107</Key> <!-- Apply Color Correction from Two Clips Back -->
-                                <CustomName>2 BACK</CustomName>
+                                <CustomName>2 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310106</Key> <!-- Apply Color Correction from Three Clips Back -->
-                                <CustomName>3 BACK</CustomName>
+                                <CustomName>3 Back</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310108</Key> <!-- Enable/Disable Balance Color -->
-                                <CustomName>BALANCE</CustomName>
+                                <CustomName>Balance</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="4"> <!-- Element-Bt Button 5 -->
                             <Mapping mode="Std">
                                 <Key>0x00310110</Key> <!-- Match Color -->
-                                <CustomName>MATCH</CustomName>
+                                <CustomName>Match</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="5"> <!-- Element-Bt Button 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310113</Key> <!-- Toggle Effects -->
-                                <CustomName>T/EFFECTS</CustomName>
+                                <CustomName>T/Effects</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Bt Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00310112</Key> <!-- Toggle Color Correction Effects -->
-                                <CustomName>T/COLOR</CustomName>
+                                <CustomName>T/Color</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Bt Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00310118</Key> <!-- View All Color Channels -->
-                                <CustomName>T/ALL</CustomName>
+                                <CustomName>T/All</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Bt Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00310114</Key> <!-- View Alpha Color Channel -->
-                                <CustomName>T/ALPHA</CustomName>
+                                <CustomName>T/Alpha</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Bt Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00310115</Key> <!-- View Red Color Channel -->
-                                <CustomName>T/RED</CustomName>
+                                <CustomName>T/Red</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Bt Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00310116</Key> <!-- View Green Color Channel -->
-                                <CustomName>T/GREEN</CustomName>
+                                <CustomName>T/Green</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Bt Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00310117</Key> <!-- View Blue Color Channel -->
-                                <CustomName>T/BLUE</CustomName>
+                                <CustomName>T/Blue</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -17,14 +18,14 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local Element                       = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ScrollArea = {}
+local ScrollArea = Element:subclass("ScrollArea")
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
@@ -35,51 +36,58 @@ local ScrollArea = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function ScrollArea.matches(element)
-    return element and element:attributeValue("AXRole") == "AXScrollArea"
+function ScrollArea.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
---- cp.ui.ScrollArea.new(parent, finderFn) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * finderFn		- A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder		- A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
-function ScrollArea.new(parent, finderFn)
-    return prop.extend({
-        _parent = parent,
-        _finder = finderFn
-    }, ScrollArea)
+function ScrollArea:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
 end
 
---- cp.ui.ScrollArea:parent() -> table
---- Method
---- The parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function ScrollArea:parent()
-    return self._parent
+--- cp.ui.ScrollArea.contentsUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+function ScrollArea.lazy.prop:contentsUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        if ui then
+            local role = ui:attributeValue("AXRole")
+            if role and role == "AXScrollArea" then
+                return ui:contents()[1]
+            end
+        end
+    end)
 end
 
---- cp.ui.ScrollArea:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function ScrollArea:app()
-    return self:parent():app()
+--- cp.ui.ScrollArea.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `axuielement` representing the Vertical Scroll Bar, or `nil` if not available.
+function ScrollArea.lazy.prop:verticalScrollBarUI()
+    return axutils.prop(self.UI, "AXVerticalScrollBar")
+end
+
+--- cp.ui.ScrollArea.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `axuielement` representing the Horizontal Scroll Bar, or `nil` if not available.
+function ScrollArea.lazy.prop:horizontalScrollBarUI()
+    return axutils.prop(self.UI, "AXHorizontalScrollBar")
+end
+
+--- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
+function ScrollArea.lazy.prop:selectedChildrenUI()
+    return axutils.prop(self.contentsUI, "AXSelectedChildren")
 end
 
 -----------------------------------------------------------------------
@@ -87,88 +95,6 @@ end
 -- CONTENT UI:
 --
 -----------------------------------------------------------------------
-
---- cp.ui.ScrollArea:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the `ScrollArea`, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:UI()
-    return axutils.cache(self, "_ui", function()
-        return self._finder()
-    end,
-    ScrollArea.matches)
-end
-
---- cp.ui.ScrollArea:verticalScrollBarUI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the Vertical Scroll Bar, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:verticalScrollBarUI()
-    local ui = self:UI()
-    return ui and ui:attributeValue("AXVerticalScrollBar")
-end
-
---- cp.ui.ScrollArea:horizontalScrollBarUI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the Horizontal Scroll Bar, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:horizontalScrollBarUI()
-    local ui = self:UI()
-    return ui and ui:attributeValue("AXHorizontalScrollBar")
-end
-
---- cp.ui.ScrollArea:isShowing() -> boolean
---- Method
---- Is the Scroll Area showing?
----
---- Parameters:
----  * None
----
---- Return:
----  * `true` if showing otherwise `false.
-function ScrollArea:isShowing()
-    return self:UI() ~= nil
-end
-
---- cp.ui.ScrollArea:contentsUI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:contentsUI()
-    local ui = self:UI()
-    if ui then
-        local role = ui:attributeValue("AXRole")
-        if role and role == "AXScrollArea" then
-            return ui:contents()[1]
-        else
-            --log.ef("Expected AXScrollArea, but got %s. Returning 'nil'.", role)
-            return nil
-        end
-    else
-        --log.ef("Failed to get ScrollArea:contentsUI(). Returning 'nil'.")
-        return nil
-    end
-end
 
 --- cp.ui.ScrollArea:childrenUI(filterFn) -> hs._asm.axuielement | nil
 --- Method
@@ -214,20 +140,6 @@ function ScrollArea:childrenUI(filterFn)
         end
     end
     return nil
-end
-
---- cp.ui.ScrollArea:selectedChildrenUI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function ScrollArea:selectedChildrenUI()
-    local ui = self:contentsUI()
-    return ui and ui:selectedChildren()
 end
 
 --- cp.ui.ScrollArea:viewFrame() -> hs.geometry rect
@@ -325,7 +237,10 @@ end
 ---  * Self
 function ScrollArea:selectChild(childUI)
     if childUI then
-        childUI:parent():setAttributeValue("AXSelectedChildren", { childUI } )
+        local parent = childUI:parent()
+        if parent then
+            parent:setAttributeValue("AXSelectedChildren", { childUI } )
+        end
     end
     return self
 end
@@ -412,7 +327,7 @@ end
 --- Loads a Scroll Area layout.
 ---
 --- Parameters:
----  * layout - A table containing the Browser layout settings - created using `cp.apple.finalcutpro.main.Browser:saveLayout()`.
+---  * layout - A table containing the ScrollArea layout settings, typically created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None
@@ -428,24 +343,6 @@ function ScrollArea:loadLayout(layout)
             hScroll:setValue(layout.horizontalScrollBar)
         end
     end
-end
-
---- cp.ui.ScrollArea:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path - (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function ScrollArea:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return ScrollArea

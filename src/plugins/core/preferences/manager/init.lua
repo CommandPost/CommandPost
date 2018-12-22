@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -234,6 +235,9 @@ end
 local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
+            --------------------------------------------------------------------------------
+            -- Destroy the Webview:
+            --------------------------------------------------------------------------------
             mod._webview = nil
 
             --------------------------------------------------------------------------------
@@ -244,7 +248,6 @@ local function windowCallback(action, _, frame)
                     v.closeFn()
                 end
             end
-
         end
     elseif action == "frameChange" then
         if frame then
@@ -404,7 +407,6 @@ end
 --- Returns:
 ---  * True if successful or nil if an error occurred
 function mod.show()
-
     if mod._webview == nil then
         mod.new()
     end

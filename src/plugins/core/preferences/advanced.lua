@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -63,19 +64,13 @@ mod.developerMode = config.developerMode
 function mod.toggleDeveloperMode()
     mod.developerMode:toggle()
     mod.manager.refresh()
-end
-
---- plugins.core.preferences.advanced.openErrorLog() -> none
---- Function
---- Opens the Error Log
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.openErrorLog()
-    hs.openConsole()
+    if mod.developerMode() then
+        require("cp.developer")
+    else
+        if package.loaded["cp.developer"] then
+            _G.destroyDeveloperMode()
+        end
+    end
 end
 
 --
@@ -130,7 +125,7 @@ end
 --- plugins.core.preferences.advanced.openErrorLogOnDockClick <cp.prop: boolean>
 --- Variable
 --- Open Error Log on Dock Icon Click.
-mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
 
 --------------------------------------------------------------------------------
 --
@@ -158,10 +153,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local global = deps.global
     if global then
-        global:add("cpOpenErrorLog")
-            :whenActivated(mod.openErrorLog)
-            :groupedBy("commandPost")
-
         global:add("cpTrashPreferences")
             :whenActivated(mod.trashPreferences)
             :groupedBy("commandPost")
@@ -193,14 +184,6 @@ function plugin.init(deps)
                         label = i18n("enableAutomaticScriptReloading"),
                         onchange = mod.toggleEnableAutomaticScriptReloading,
                         checked = config.automaticScriptReloading(),
-                    }
-                )
-
-                :addCheckbox(63,
-                    {
-                        label = i18n("openErrorLogOnDockClick"),
-                        onchange = function() mod.openErrorLogOnDockClick:toggle() end,
-                        checked = mod.openErrorLogOnDockClick
                     }
                 )
 

@@ -20,16 +20,31 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("colorCurves")
+-- local log                               = require("hs.logger").new("colorCurves")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop                              = require("cp.prop")
+local axutils                           = require("cp.ui.axutils")
+local CheckBox                          = require("cp.ui.CheckBox")
+local Element                           = require("cp.ui.Element")
+local MenuButton                        = require("cp.ui.MenuButton")
+local PropertyRow						= require("cp.ui.PropertyRow")
+local RadioGroup						= require("cp.ui.RadioGroup")
+local Slider							= require("cp.ui.Slider")
+local TextField                         = require("cp.ui.TextField")
+
+local If                                = require("cp.rx.go.If")
+
+local ColorCurve                        = require("cp.apple.finalcutpro.inspector.color.ColorCurve")
+
+local cache, childMatching              = axutils.cache, axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
@@ -44,27 +59,32 @@ local CORRECTION_TYPE                   = "Color Curves"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorCurves = {}
+local ColorCurves = Element:subclass("ColorCurves")
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves.VIEW_MODES -> table
---- Constant
---- View Modes for Color Curves
-ColorCurves.VIEW_MODES = {
-    ["All Curves"]      = "PAECurvesViewControllerVertical",
-    ["Single Curves"]   = "PAECurvesViewControllerSingleControl",
-}
+function ColorCurves.__tostring()
+    return "cp.apple.finalcutpro.inspector.color.ColorCurves"
+end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves.CURVES -> table
---- Constant
---- Table containing all the different types of Color Curves
-ColorCurves.CURVES = {
-    ["Luma"]            = "PAECurvesViewControllerLuma",
-    ["Red"]             = "Primatte::Red",
-    ["Green"]           = "Primatte::Green",
-    ["Blue"]            = "Primatte::Blue",
-}
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.matches(element)
+--- Function
+--- Checks if the specified element is the Color Curves element.
+---
+--- Parameters:
+--- * element	- The element to check
+---
+--- Returns:
+--- * `true` if the element is the Color Curves.
+function ColorCurves.static.matches(element)
+    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
+    and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
+    and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
+        local scroll = element[1][1]
+        return childMatching(scroll, ColorCurve.matches) ~= nil
+    end
+    return false
+end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves.new(parent) -> ColorCurves object
+--- cp.apple.finalcutpro.inspector.color.ColorCurves(parent) -> ColorCurves object
 --- Constructor
 --- Creates a new ColorCurves object
 ---
@@ -73,40 +93,22 @@ ColorCurves.CURVES = {
 ---
 --- Returns:
 ---  * A ColorInspector object
-function ColorCurves.new(parent)
+function ColorCurves:initialize(parent)
 
-    local o = {
-        _parent = parent,
-        _child = {}
-    }
+    local UI = parent.correctorUI:mutate(function(original)
+        return cache(self, "_ui", function()
+            local ui = original()
+            return ColorCurves.matches(ui) and ui or nil
+        end, ColorCurves.matches)
+    end)
 
-    return prop.extend(o, ColorCurves)
-end
+    Element.initialize(self, parent, UI)
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:parent() -> table
---- Method
---- Returns the ColorCurves's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function ColorCurves:parent()
-    return self._parent
-end
+    PropertyRow.prepareParent(self, self.contentUI)
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function ColorCurves:app()
-    return self:parent():app()
+    -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
+    -- link these fields so they mirror each other.
+    self:mixSlider().value:mirror(self:mixTextField().value)
 end
 
 --------------------------------------------------------------------------------
@@ -131,290 +133,226 @@ function ColorCurves:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:isShowing() -> boolean
+function ColorCurves.lazy.method:doShow()
+    return If(self.isShowing):Is(false):Then(
+        self:parent():doActivateCorrection(CORRECTION_TYPE)
+    ):Otherwise(true)
+    :Label("ColorCurves:doShow")
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` representing the content element of the ColorCurves corrector.
+--- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
+function ColorCurves.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_content", function()
+            local ui = original()
+            return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
+        end)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:viewModeButton() -> MenuButton
 --- Method
---- Is the Color Curves panel currently showing?
+--- Returns the [MenuButton](cp.ui.MenuButton.md) for the View Mode.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `MenuButton` for the View Mode.
+function ColorCurves.lazy.method:viewModeButton()
+    return MenuButton(self, function()
+        local ui = self:contentUI()
+        if ui then
+            return childMatching(ui, MenuButton.matches)
+        end
+        return nil
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.viewingAllCurves <cp.prop: boolean>
+--- Field
+--- Reports and modifies whether the corrector is showing "All Curves" (`true`) or "Single Curves" (`false`).
+function ColorCurves.lazy.prop:viewingAllCurves()
+    return prop(
+        function()
+            local ui = self:contentUI()
+            if ui then
+                local curveOne = childMatching(ui, ColorCurve.matches, 1)
+                local curveTwo = childMatching(ui, ColorCurve.matches, 2)
+                local posOne = curveOne and curveOne:attributeValue("AXPosition")
+                local posTwo = curveTwo and curveTwo:attributeValue("AXPosition")
+                return posOne ~= nil and posTwo ~= nil and posOne.y ~= posTwo.y or false
+            end
+            return false
+        end,
+        function(allCurves, _, theProp)
+            local current = theProp:get()
+            if allCurves and not current then
+                self:viewModeButton():selectItem(1)
+            elseif not allCurves and current then
+                self:viewModeButton():selectItem(2)
+            end
+        end
+    ):monitor(self.contentUI)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:curveType() -> RadioGroup
+--- Method
+--- Returns the `RadioGroup` that allows selection of the curve type. Only available when
+--- [viewingAllCurves](#viewingAllCurves) is `true`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `RadioGroup`.
+function ColorCurves.lazy.method:wheelType()
+    return RadioGroup(self,
+        function()
+            if not self:viewingAllCurves() then
+                local ui = self:contentUI()
+                return ui and childMatching(ui, RadioGroup.matches) or nil
+            end
+            return nil
+        end,
+        false -- not cached
+    )
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:luma() -> ColorCurve
+--- Method
+--- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- that allows control of the 'luma' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorCurve`.
+function ColorCurves.lazy.method:luma()
+    return ColorCurve(self, ColorCurve.TYPE.LUMA)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:red() -> ColorCurve
+--- Method
+--- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- that allows control of the 'red' color settings. The actual
+--- color can be adjusted within the ColorCurve, but it starts as red.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorCurve`.
+function ColorCurves.lazy.method:red()
+    return ColorCurve(self, ColorCurve.TYPE.RED)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:green() -> ColorCurve
+--- Method
+--- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- that allows control of the 'green' color settings. The actual
+--- color can be adjusted within the ColorCurve, but it starts as green.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorCurve`.
+function ColorCurves.lazy.method:green()
+    return ColorCurve(self, ColorCurve.TYPE.GREEN)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:blue() -> ColorCurve
+--- Method
+--- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- that allows control of the 'blue' color settings. The actual
+--- color can be adjusted within the ColorCurve, but it starts as blue.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorCurve`.
+function ColorCurves.lazy.method:blue()
+    return ColorCurve(self, ColorCurve.TYPE.BLUE)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:mixRow() -> cp.ui.PropertyRow
+--- Method
+--- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
+--- values for that row.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if showing, otherwise `false`
-function ColorCurves:isShowing()
-    return self:parent():isShowing(CORRECTION_TYPE)
+---  * The `PropertyRow`.
+function ColorCurves.lazy.method:mixRow()
+    return PropertyRow(self, "FFChannelMixName")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:viewMode([value]) -> string | nil
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:mixSlider() -> cp.ui.Slider
 --- Method
---- Sets or gets the View Mode for the Color Curves.
+--- Returns a `Slider` that provides access to the 'Mix' slider.
 ---
 --- Parameters:
----  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.inspector.color.ColorCurves.VIEW_MODES`.
+---  * None
 ---
 --- Returns:
----  * A string containing the View Mode or `nil` if an error occurs.
----
---- Notes:
----  * Value can be:
----    * All Curves
----    * Single Curves
-function ColorCurves:viewMode(value)
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value and not self.VIEW_MODES[value] then
-        log.ef("Invalid Mode: %s", value)
-        return nil
-    end
-    if not self:isShowing() then
-        log.ef("Color Curves not active.")
-        return nil
-    end
-    --------------------------------------------------------------------------------
-    -- Check that the Color Inspector UI is available:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    if ui and ui[2] then
-        --------------------------------------------------------------------------------
-        -- Determine wheel mode based on whether or not the Radio Group exists:
-        --------------------------------------------------------------------------------
-        local selectedValue = "All Curves"
-        if ui[2]:attributeValue("AXRole") == "AXRadioGroup" then
-            selectedValue = "Single Curves"
+---  * The Mix `Slider`.
+function ColorCurves.lazy.method:mixSlider()
+    return Slider(self,
+        function()
+            local ui = self:mixRow():children()
+            return ui and childMatching(ui, Slider.matches)
         end
-        if value and selectedValue ~= value then
-            --------------------------------------------------------------------------------
-            -- Setter:
-            --------------------------------------------------------------------------------
-            ui[1]:performAction("AXPress") -- Press the "View" button
-            if ui[1][1] then
-                for _, child in ipairs(ui[1][1]) do
-                    local title = child:attributeValue("AXTitle")
-                    --local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
-                    local app = self:app()
-                    if title == app:string(self.VIEW_MODES["All Curves"]) and value == "All Curves" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "All Curves"
-                    elseif title == app:string(self.VIEW_MODES["Single Curves"]) and value == "Single Curves" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "Single Curves"
-                    end
-                end
-                log.df("Failed to determine which View Mode was selected")
-                return nil
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- Getter:
-            --------------------------------------------------------------------------------
-            return selectedValue
-        end
-    else
-        log.ef("Could not find Color Inspector UI.")
-    end
-    return nil
+    )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:visibleCurve([value]) -> string | nil
---- Method
---- Sets or gets the selected color curve.
----
---- Parameters:
----  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.inspector.color.ColorCurves.CURVES`.
----
---- Returns:
----  * A string containing the selected color curve or `nil` if an error occurs.
----
---- Notes:
----  * Value can be:
----    * All Curves
----    * Luma
----    * Red
----    * Green
----    * Blue
----  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():color():colorCurves():visibleCurve("Luma")`
-function ColorCurves:visibleCurve(value)
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value and not self.CURVES[value] then
-        log.ef("Invalid Wheel: %s", value)
-        return nil
-    end
-    if not self:isShowing() then
-        log.ef("Color Curves not active.")
-        return nil
-    end
-    --------------------------------------------------------------------------------
-    -- Check that the Color Inspector UI is available:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    if ui and ui[2] then
-        --------------------------------------------------------------------------------
-        -- Setter:
-        --------------------------------------------------------------------------------
-        if value then
-            self:viewMode("Single Curves")
-            ui = self:parent():UI() -- Refresh the UI
-            if ui and ui[2] and ui[2][1] then
-                if value == "Luma" and ui[2][1]:attributeValue("AXValue") == 0 then
-                    ui[2][1]:performAction("AXPress")
-                elseif value == "Red" and ui[2][2]:attributeValue("AXValue") == 0 then
-                    ui[2][2]:performAction("AXPress")
-                elseif value == "Green" and ui[2][3]:attributeValue("AXValue") == 0 then
-                    ui[2][3]:performAction("AXPress")
-                elseif value == "Blue" and ui[2][4]:attributeValue("AXValue") == 0 then
-                    ui[2][4]:performAction("AXPress")
-                end
-            else
-                log.ef("Setting Visible Curve failed because UI was nil. This shouldn't happen.")
-            end
-        end
-        --------------------------------------------------------------------------------
-        -- Getter:
-        --------------------------------------------------------------------------------
-        if ui[2]:attributeValue("AXRole") == "AXRadioGroup" then
-            if ui[2][1]:attributeValue("AXValue") == 1 then
-                return "Luma"
-            elseif ui[2][2]:attributeValue("AXValue") == 1 then
-                return "Red"
-            elseif ui[2][3]:attributeValue("AXValue") == 1 then
-                return "Green"
-            elseif ui[2][4]:attributeValue("AXValue") == 1 then
-                return "Blue"
-            end
-        else
-            return "All Curves"
-        end
-    else
-        log.ef("Could not find Color Inspector UI.")
-    end
+function ColorCurves.lazy.method:mixTextField()
+    return TextField(self,
+        function()
+            local ui = self:mixRow():children()
+            return ui and childMatching(ui, TextField.matches)
+        end,
+        tonumber
+    )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:mix([value]) -> number | nil
---- Method
---- Sets or gets the color curves mix value.
----
---- Parameters:
----  * [value] - An optional value you want to set the mix value to as number (0 to 1).
----
---- Returns:
----  * A number containing the mix value or `nil` if an error occurs.
-function ColorCurves:mix(value)
-
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value then
-        if type(value) ~= "number" then
-            log.ef("Invalid Mix Value Type: %s", type(value))
-            return nil
-        end
-        if value >= 0 and value <= 1 then
-            log.df("Valid Value: %s", value)
-        else
-            log.ef("Invalid Mix Value: %s", value)
-            return nil
-        end
-    end
-    if not self:isShowing() then
-        log.ef("Color Curves not active.")
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Find Mix Slider:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    local slider = nil
-    for _, v in ipairs(ui) do
-        if v:attributeValue("AXRole") == "AXSlider" then
-            slider = v
-        end
-    end
-    if not slider then
-        log.ef("Could not find slider.")
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Setter:
-    --------------------------------------------------------------------------------
-    if value then
-        slider:setAttributeValue("AXValue", value)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Getter:
-    --------------------------------------------------------------------------------
-    return slider:attributeValue("AXValue")
-
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.mix <cp.prop: number>
+--- Field
+--- The mix amount for this corrector. A number ranging from `0` to `1`.
+function ColorCurves.lazy.prop:mix()
+    return self:mixSlider().value
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:preserveLuma([value]) -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:preserveLumaRow() -> cp.ui.PropertyRow
 --- Method
---- Sets or gets whether or not Preserve Luma is active.
+--- Returns a `PropertyRow` that provides access to the 'Preserve Luma' parameter, and `axuielement`
+--- values for that row.
 ---
 --- Parameters:
----  * [value] - An optional boolean value to set the Preserve Luma option.
+---  * None
 ---
 --- Returns:
----  * `true` if Preserve Luma is selected, otherwise `false`.
-function ColorCurves:preserveLuma(value)
+---  * The `PropertyRow`.
+function ColorCurves.lazy.method:preserveLumaRow()
+    return PropertyRow(self, "PAEColorCurvesEffectPreserveLuma")
+end
 
-    --------------------------------------------------------------------------------
-    -- TODO: This currently only gets, not sets, because the checkbox is read only.
-    --------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if type(value) ~= "nil" then
-        if type(value) ~= "boolean" then
-            log.ef("Invalid Mix Value Type: %s", type(value))
-            return nil
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.preserveLuma <cp.ui.CheckBox>
+--- Field
+--- Returns a [CheckBox](cp.ui.CheckBox.md) that provides access to the 'Preserve Luma' slider.
+function ColorCurves.lazy.value:preserveLuma()
+    return CheckBox(self,
+        function()
+            return childMatching(self:preserveLumaRow():children(), CheckBox.matches)
         end
-    end
-    if not self:isShowing() then
-        log.ef("Color Curves not active.")
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Find Preserve Luma Chebox:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    local checkbox = nil
-    for _, v in ipairs(ui) do
-        if v:attributeValue("AXRole") == "AXCheckBox" then
-            checkbox = v
-        end
-    end
-    if not checkbox then
-        log.ef("Could not find checkbox.")
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Setter:
-    --------------------------------------------------------------------------------
-    if type(value) == "boolean" then
-        log.df("SETTER!")
-        if value == true then
-            log.df("SETTING TO TRUE")
-            checkbox:setAttributeValue("AXValue", 1)
-        else
-            log.df("SETTING TO FALSE")
-            checkbox:setAttributeValue("AXValue", 0)
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Getter:
-    --------------------------------------------------------------------------------
-    return checkbox:attributeValue("AXValue") == 1
-
+    )
 end
 
 return ColorCurves

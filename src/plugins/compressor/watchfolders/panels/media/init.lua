@@ -7,11 +7,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("compressor")
+--local log               = require("hs.logger").new("compressor")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -30,10 +31,11 @@ local uuid              = require("hs.host").uuid
 local compressor        = require("cp.apple.compressor")
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
-local tools             = require("cp.tools")
+local Do                = require("cp.rx.go.Do")
 local html              = require("cp.web.html")
-local ui                = require("cp.web.ui")
 local i18n              = require("cp.i18n")
+local tools             = require("cp.tools")
+local ui                = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -342,7 +344,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                     -------------------------------------------------------------------------------
                     -- Cancelled:
                     --------------------------------------------------------------------------------
-                    log.df("Render Cancelled: %s", jobID)
+                    --log.df("Render Cancelled: %s", jobID)
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
                 elseif status and status == "Successful" then
@@ -360,13 +362,14 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                         :subTitle(tools.getFilenameFromPath(file))
                         :hasActionButton(true)
                         :actionButtonTitle(i18n("show"))
+                        :withdrawAfter(0)
                         :send()
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
-                elseif status and status == "Processing" then
-                    log.df("Compressor is processing the following file: %s", file)
+                --elseif status and status == "Processing" then
+                    --log.df("Compressor is processing the following file: %s", file)
                 else
-                    log.df("Unknown Status from Compressor: %s", status)
+                    --log.df("Unknown Status from Compressor: %s", status)
                     if mod.statusTimer[jobID] then
                         mod.statusTimer[jobID]:stop()
                         mod.statusTimer[jobID] = nil
@@ -476,6 +479,7 @@ function mod.addFilesToCompressor(files)
             :subTitle(tools.getFilenameFromPath(file))
             :hasActionButton(true)
             :actionButtonTitle(i18n("monitor"))
+            :withdrawAfter(0)
             :send()
 
         local selectedFile = nil
@@ -490,18 +494,45 @@ function mod.addFilesToCompressor(files)
 
         local filename = tools.getFilenameFromPath(file, true)
 
-        local compressorTask = task.new(compressorPath, function() end,
+        local compressorTask = task.new(compressorPath, function(exitCode)
+            if exitCode ~= 0 then
+                --------------------------------------------------------------------------------
+                -- Compressor Failed:
+                --------------------------------------------------------------------------------
+                if mod.notifications[file] then
+                    mod.notifications[file]:withdraw()
+                    mod.notifications[file] = nil
+                end
+
+                --------------------------------------------------------------------------------
+                -- Show Failed Notification:
+                --------------------------------------------------------------------------------
+                notify.new(function() compressor:launch() end)
+                    :title("Compressor Failed:")
+                    :subTitle(tools.getFilenameFromPath(file))
+                    :hasActionButton(true)
+                    :actionButtonTitle(i18n("monitor"))
+                    :withdrawAfter(0)
+                    :send()
+            end
+        end,
         function(_, _, stdErr)
             local jobID = nil
             local jobIDPattern = "jobID ([^%s]+)"
             if stdErr and string.find(stdErr, jobIDPattern) then
                 jobID = string.match(stdErr, jobIDPattern)
             end
-
             if jobID then
+                --------------------------------------------------------------------------------
+                -- Watch the Compressor Status:
+                --------------------------------------------------------------------------------
                 mod.watchCompressorStatus(jobID, file, selectedFile.destinationPath)
-            end
 
+                --------------------------------------------------------------------------------
+                -- We only want to trigger the streamCallbackFn for the jobID:
+                --------------------------------------------------------------------------------
+                return false
+            end
             return true
         end, { "-batchname", "CommandPost Watch Folder", "-jobpath", file, "-settingpath", selectedFile.settingFile, "-locationpath", selectedFile.destinationPath .. filename } ):start()
 
@@ -564,21 +595,25 @@ function mod.watchFolderTriggered(files, eventFlags)
                 -- New File Added to Watch Folder, but still in transit:
                 --------------------------------------------------------------------------------
                 if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
-
                     -------------------------------------------------------------------------------
-                    -- Add filename to table:
+                    -- Only show temporary notification for allowed files:
                     -------------------------------------------------------------------------------
-                    mod.filesInTransit[#mod.filesInTransit + 1] = file
+                    if ((fnutils.contains(allowedExtensions, string.lower(file:sub(-3))) or fnutils.contains(allowedExtensions, string.lower(file:sub(-4))))) then
+                        -------------------------------------------------------------------------------
+                        -- Add filename to table:
+                        -------------------------------------------------------------------------------
+                        mod.filesInTransit[#mod.filesInTransit + 1] = file
 
-                    -------------------------------------------------------------------------------
-                    -- Show Temporary Notification:
-                    --------------------------------------------------------------------------------
-                    mod.notifications[file] = notify.new()
-                        :title(i18n("incomingFile"))
-                        :subTitle(tools.getFilenameFromPath(file))
-                        :hasActionButton(false)
-                        :send()
-
+                        -------------------------------------------------------------------------------
+                        -- Show Temporary Notification:
+                        --------------------------------------------------------------------------------
+                        mod.notifications[file] = notify.new()
+                            :title(i18n("incomingFile"))
+                            :subTitle(tools.getFilenameFromPath(file))
+                            :hasActionButton(false)
+                            :withdrawAfter(0)
+                            :send()
+                    end
                 end
 
                 --------------------------------------------------------------------------------
@@ -650,57 +685,57 @@ end
 --- Returns:
 ---  * None
 function mod.addWatchFolder()
+    Do(function()
+        --------------------------------------------------------------------------------
+        -- Select Watch Folder Folder:
+        --------------------------------------------------------------------------------
+        local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
+        if not path then
+            return
+        end
+        local watchFolders = mod.watchFolders()
+        if tools.tableContains(watchFolders, path) then
+            dialog.displayMessage(i18n("alreadyWatched"))
+            return
+        end
 
-    --------------------------------------------------------------------------------
-    -- Select Watch Folder Folder:
-    --------------------------------------------------------------------------------
-    local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
-    if not path then
-        return
-    end
-    local watchFolders = mod.watchFolders()
-    if tools.tableContains(watchFolders, path) then
-        dialog.displayMessage(i18n("alreadyWatched"))
-        return
-    end
+        --------------------------------------------------------------------------------
+        -- Select Setting File:
+        --------------------------------------------------------------------------------
+        local settingsPath = os.getenv("HOME") .. "/Library/Application Support/Compressor/Settings"
+        local defaultPath = nil
+        if tools.doesDirectoryExist(settingsPath) then
+            defaultPath = settingsPath
+        end
+        local settingFile = dialog.displayChooseFile(i18n("selectCompressorSettingsFile"), {"cmprstng", "compressorsetting"}, defaultPath)
+        if not settingFile then
+            return
+        end
 
-    --------------------------------------------------------------------------------
-    -- Select Setting File:
-    --------------------------------------------------------------------------------
-    local settingsPath = os.getenv("HOME") .. "/Library/Application Support/Compressor/Settings"
-    local defaultPath = nil
-    if tools.doesDirectoryExist(settingsPath) then
-        defaultPath = settingsPath
-    end
-    local settingFile = dialog.displayChooseFile(i18n("selectCompressorSettingsFile"), "cmprstng", defaultPath)
-    if not settingFile then
-        return
-    end
+        --------------------------------------------------------------------------------
+        -- Select Destination Folder:
+        --------------------------------------------------------------------------------
+        local destinationPath = dialog.displayChooseFolder(i18n("selectCompressorDestination"))
+        if not destinationPath then
+            return
+        end
 
-    --------------------------------------------------------------------------------
-    -- Select Destination Folder:
-    --------------------------------------------------------------------------------
-    local destinationPath = dialog.displayChooseFolder(i18n("selectCompressorDestination"))
-    if not destinationPath then
-        return
-    end
+        --------------------------------------------------------------------------------
+        -- Update Settings:
+        --------------------------------------------------------------------------------
+        watchFolders[path] = {settingFile=settingFile, destinationPath=destinationPath }
+        mod.watchFolders(watchFolders)
 
-    --------------------------------------------------------------------------------
-    -- Update Settings:
-    --------------------------------------------------------------------------------
-    watchFolders[path] = {settingFile=settingFile, destinationPath=destinationPath }
-    mod.watchFolders(watchFolders)
+        --------------------------------------------------------------------------------
+        -- Refresh HTML Table:
+        --------------------------------------------------------------------------------
+        mod.refreshTable()
 
-    --------------------------------------------------------------------------------
-    -- Refresh HTML Table:
-    --------------------------------------------------------------------------------
-    mod.refreshTable()
-
-    --------------------------------------------------------------------------------
-    -- Setup New Watcher:
-    --------------------------------------------------------------------------------
-    mod.newWatcher(path)
-
+        --------------------------------------------------------------------------------
+        -- Setup New Watcher:
+        --------------------------------------------------------------------------------
+        mod.newWatcher(path)
+    end):After(0)
 end
 
 --- plugins.compressor.watchfolders.panels.media.setupWatchers(path) -> none

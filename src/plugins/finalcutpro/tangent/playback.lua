@@ -7,11 +7,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log                                       = require("hs.logger").new("fcptng_timeline")
+local log                                       = require("hs.logger").new("fcptng_timeline")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -31,6 +32,13 @@ local mod = {}
 --- Constant
 --- The `core.tangent.manager.group` that collects Final Cut Pro Playback actions/parameters/etc.
 mod.group = nil
+
+local function doShortcut(id)
+    return fcp:doShortcut(id):Catch(function(message)
+        log.wf("Unable to perform %q shortcut: %s", id, message)
+        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+    end)
+end
 
 --- plugins.finalcutpro.tangent.playback.init() -> none
 --- Function
@@ -87,11 +95,7 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"Mark", "Previous", "Frame"}))
 
     mod.group:action(baseID+14, i18n("play") .. " " .. i18n("reverse"))
-        :onPress(function()
-            if not fcp:performShortcut("PlayReverse") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("PlayReverse"))
 
     mod.group:action(baseID+15, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("edit"))
         :onPress(fcp:doSelectMenu({"Mark", "Next", "Edit"}))

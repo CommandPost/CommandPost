@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -14,13 +15,22 @@
 local log                                   = require("hs.logger").new("pasteboardHistory")
 
 --------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local timer                                 = require("hs.timer")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local base64                                = require("hs.base64")
 local config                                = require("cp.config")
+local dialog                                = require("cp.dialog")
 local fcp                                   = require("cp.apple.finalcutpro")
-local fnutils                               = require("hs.fnutils")
-local json                                  = require("cp.json")
 local i18n                                  = require("cp.i18n")
+local json                                  = require("cp.json")
+
+local If                                    = require("cp.rx.go.If")
+local Do                                    = require("cp.rx.go.Do")
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +51,7 @@ local mod = {}
 --- plugins.finalcutpro.pasteboard.history.FILE_NAME -> string
 --- Constant
 --- File name of settings file.
-mod.FILE_NAME = "Pasteboard History.json"
+mod.FILE_NAME = "Pasteboard History.cpPasteboard"
 
 --- plugins.finalcutpro.pasteboard.history.FOLDER_NAME -> string
 --- Constant
@@ -63,32 +73,6 @@ mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
 --- Contains all the saved Touch Bar Buttons
 mod.history = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
---- plugins.finalcutpro.pasteboard.history.getHistory() -> table
---- Function
---- Gets the Pasteboard History.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table of the Pasteboard history.
-function mod.getHistory()
-    return mod.history()
-end
-
---- plugins.finalcutpro.pasteboard.history.setHistory(history) -> none
---- Function
---- Sets the Pasteboard History.
----
---- Parameters:
----  * history - The history in a table.
----
---- Returns:
----  * None
-function mod.setHistory(history)
-    mod.history(history)
-end
-
 --- plugins.finalcutpro.pasteboard.history.clearHistory() -> none
 --- Function
 --- Clears the Pasteboard History.
@@ -99,7 +83,7 @@ end
 --- Returns:
 ---  * None
 function mod.clearHistory()
-    mod.setHistory({})
+    mod.history:set({})
 end
 
 --- plugins.finalcutpro.pasteboard.history.addHistoryItem(data, label) -> none
@@ -112,46 +96,80 @@ end
 --- Returns:
 ---  * None
 function mod.addHistoryItem(data, label)
-    local history = mod.getHistory()
-    local item = {data, label}
+    --------------------------------------------------------------------------------
+    -- Encode the data to base64:
+    --------------------------------------------------------------------------------
+    local encodedData = base64.encode(data)
+
     --------------------------------------------------------------------------------
     -- Drop old history items:
     --------------------------------------------------------------------------------
+    local history = mod.history()
     while (#(history) >= mod.HISTORY_MAXIMUM_SIZE) do
         table.remove(history,1)
     end
+
+    --------------------------------------------------------------------------------
+    -- Add data to history:
+    --------------------------------------------------------------------------------
+    local item = {encodedData, label}
     table.insert(history, item)
-    mod.setHistory(history)
+    mod.history:set(history)
 end
 
---- plugins.finalcutpro.pasteboard.history.pasteHistoryItem(index) -> none
+--- plugins.finalcutpro.pasteboard.history.doPasteHistoryItem(index) -> cp.rx.go.Statement
 --- Function
---- Pastes a Pasteboard History Item.
+--- Returns a function which will paste a Pasteboard History Item when executed.
 ---
 --- Parameters:
 ---  * index - The index of the Pasteboard history item.
 ---
 --- Returns:
----  * None
-function mod.pasteHistoryItem(index)
-    local item = mod.getHistory()[index]
-    if item then
-        --------------------------------------------------------------------------------
-        -- Put item back in the Pasteboard quietly.
-        --------------------------------------------------------------------------------
-        mod._manager.writeFCPXData(item[1], true)
-
-        --------------------------------------------------------------------------------
-        -- Paste in FCPX:
-        --------------------------------------------------------------------------------
-        fcp:launch()
-        if fcp:performShortcut("Paste") then
-            return true
-        else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
-        end
-    end
-    return false
+---  * A [Statement](cp.rx.go.Statement.md) to be executed.
+function mod.doPasteHistoryItem(index)
+    local timeline = fcp:timeline()
+    local originalContents = mod._manager.readFCPXData()
+    return If(function()
+        return mod.history()[index]
+    end)
+    :Then(function(item)
+        return Do(fcp:doLaunch())
+        :Then(
+            If(timeline.isLoaded):Then(function()
+                local data = base64.decode(item[1])
+                if not data then
+                    log.w("Unable to decode the Pasteboard History Data for index %s.", index)
+                end
+                --------------------------------------------------------------------------------
+                -- Put item back in the Pasteboard quietly.
+                --------------------------------------------------------------------------------
+                mod._manager.writeFCPXData(data, true)
+            end)
+            :Then(function()
+                return Do(fcp:menu():doSelectMenu({"Edit", "Paste"}))
+                :Then(function()
+                    --------------------------------------------------------------------------------
+                    -- Restore the original Pasteboard Contents:
+                    --------------------------------------------------------------------------------
+                    if originalContents then
+                        timer.doAfter(0.3, function()
+                            mod._manager.writeFCPXData(originalContents, true)
+                        end)
+                    end
+                end)
+            end
+            ):Otherwise(function()
+                dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
+                return false
+            end)
+        )
+    end)
+    :Otherwise(false)
+    :Catch(function(message)
+        log.w("doPasteHistoryItem: %s", message)
+        return false
+    end)
+    :Label("history.doPastHistoryItem")
 end
 
 -- watchUpdate(data, name) -> none
@@ -220,7 +238,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.pasteboard.manager"]  = "manager",
-        ["finalcutpro.menu.pasteboard"]     = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
 
     }
 }
@@ -238,7 +256,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
+    deps.menu.pasteboard:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
         :addItem(OPTIONS_PRIORITY, function()
             return { title = i18n("enablePasteboardHistory"),    fn = function()
                 mod.enabled:toggle()
@@ -250,11 +268,11 @@ function plugin.init(deps)
             local historyItems = {}
             if mod.enabled() then
                 local fcpxRunning = fcp:isRunning()
-                local history = mod.getHistory()
+                local history = mod.history()
                 if #history > 0 then
                     for i=#history, 1, -1 do
                         local item = history[i]
-                        table.insert(historyItems, {title = item[2], fn = function() mod.pasteHistoryItem(i) end, disabled = not fcpxRunning})
+                        table.insert(historyItems, {title = item[2], fn = function() mod.doPasteHistoryItem(i):Now() end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearPasteboardHistory"), fn = mod.clearHistory })
@@ -278,7 +296,14 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     local legacy = config.get("pasteboardHistory", nil)
     if legacy then
-        mod.history(fnutils.copy(legacy))
+
+        local migrateHistory = {}
+
+        for i=1, #legacy do
+            table.insert(migrateHistory, {base64.encode(legacy[i][1]), legacy[i][2]})
+        end
+
+        mod.history(migrateHistory)
         config.set("pasteboardHistory", nil)
         log.df("Migrated Pasteboard History from Plist to JSON.")
     end

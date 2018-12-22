@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -71,12 +72,15 @@ local function getFinalCutProFontPaths()
         local o, s, t, r = execute([[lsof -n -p ]] .. processID .. [[ | grep -E '\.ttf$|\.otf$|\.ttc$']])
         if o and s and t == "exit" and r == 0 then
             local lines = tools.lines(o)
+            local find = string.find
+            local sub = string.sub
+            local insert = table.insert
             for _, line in pairs(lines) do
-                local _, position = string.find(line, " /")
+                local _, position = find(line, " /")
                 if position then
-                    local path = string.sub(line, position)
+                    local path = sub(line, position)
                     if path then
-                        table.insert(result, path)
+                        insert(result, path)
                     end
                 end
             end
@@ -99,14 +103,16 @@ end
 local function loadFinalCutProFonts()
     local fontPaths = getFinalCutProFontPaths()
     local userPath = os.getenv("HOME")
+    local doesFileExist = tools.doesFileExist
+    local loadFont = styledtext.loadFont
     for _, file in pairs(fontPaths) do
-        if not mod.processedFonts[file] and tools.doesFileExist(file) then
+        if not mod.processedFonts[file] and doesFileExist(file) then
             if file:sub(1, 15) ~= "/Library/Fonts/" and
             file:sub(1, userPath:len() + 15) ~= userPath .. "/Library/Fonts/" and
             file:sub(1, 22) ~= "/System/Library/Fonts/" and
             file:sub(1, 47) ~= "/Library/Application Support/Apple/Fonts/iWork/" and
             file:sub(-13) ~= "FCMetro34.ttf" then
-                styledtext.loadFont(file)
+                loadFont(file)
             end
         end
         mod.processedFonts[file] = true
@@ -205,7 +211,7 @@ function mod.onActivate(_, action)
             fontCount = mod.fontCount or 0
             difference = kidsCount - fontCount
             if difference ~= 0 then
-                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by TypeKit fonts that haven't properly synced yet, corrupt fonts in your Font Book or a corrupt macOS Font Cache.\n\nPlease try deactivating and reactivating any TypeKit Fonts, validate your Font Book fonts, and failing that, clear your macOS Font Cache & Database.", fontCount, kidsCount))
+                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by Adobe TypeKit fonts that haven't properly synced yet, corrupt fonts in your Font Book or a corrupt macOS Font Cache.\n\nPlease try deactivating and reactivating all your TypeKit Fonts, validate your Font Book fonts, or failing that, clear your macOS Font Cache & Database.", fontCount, kidsCount))
                 return
             end
         end
@@ -293,24 +299,36 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     if fcp:isRunning() then
         loadFinalCutProFonts()
+    else
+        return
     end
 
     --------------------------------------------------------------------------------
     -- Add Fonts to Table:
     --------------------------------------------------------------------------------
     local fonts = {}
+    local insert = table.insert
     for _, familyName in pairs(styledtext.fontFamilies()) do
-        table.insert(fonts, familyName)
+        insert(fonts, familyName)
     end
 
     --------------------------------------------------------------------------------
     -- Remove Duplicate, Ignored & Hidden Fonts:
     --------------------------------------------------------------------------------
     local hash = {}
+
+        --------------------------------------------------------------------------------
+        -- For whatever reason, Final Cut Pro never displays the "SF Compact Display"
+        -- font family, even though TextEdit does, and it also appears in Font Book.
+        -- https://github.com/CommandPost/CommandPost/issues/1407#issuecomment-411001923
+        --------------------------------------------------------------------------------
+        hash["SF Compact Display"] = true
+
     local newFonts = {}
+    local sub = string.sub
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) ~= "." then
+            if sub(fontName, 1, 1) ~= "." then
                 newFonts[#newFonts+1] = fontName
                 hash[fontName] = true
             end
@@ -322,6 +340,7 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     mod.fontLookup = {}
     table.sort(newFonts, function(a, b) return string.lower(a) < string.lower(b) end)
+    local new = styledtext.new
     for id,fontName in pairs(newFonts) do
             --------------------------------------------------------------------------------
             -- Add ID to Font Lookup Table:
@@ -332,7 +351,7 @@ function mod.onChoices(choices)
             -- Add choice to Activator:
             --------------------------------------------------------------------------------
             if choices then
-                local name = styledtext.new(fontName, {font = { name = fontName, size = 18 } })
+                local name = new(fontName, {font = { name = fontName, size = 18 } })
                 choices
                     :add(name)
                     :id(fontName)
@@ -407,6 +426,15 @@ function plugin.init(deps)
         :onChoices(mod.onChoices)
         :onExecute(mod.onExecute)
         :onActionId(mod.getId)
+
+    --------------------------------------------------------------------------------
+    -- Reload the Final Cut Pro font list when Final Cut Pro restarts:
+    --------------------------------------------------------------------------------
+    fcp.isRunning:watch(function(running)
+        if running then
+            mod._handler:reset(true)
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Add the command trigger:

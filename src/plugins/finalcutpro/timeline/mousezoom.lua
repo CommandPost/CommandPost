@@ -9,6 +9,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -571,7 +572,7 @@ local plugin = {
     id = "finalcutpro.timeline.mousezoom",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -625,13 +626,16 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(101,
+            :addCheckbox(1.3,
             {
                 label = i18n("allowZoomingWithModifierKey"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             })
-            :addSelect(102,
+            :addContent(1.4, [[
+                <div style="padding-left: 19px">
+            ]], false)
+            :addSelect(1.5,
             {
                 label		= i18n("modifierKey"),
                 value		= mod.customModifier,
@@ -664,6 +668,7 @@ function plugin.init(deps)
                 required	= true,
                 onchange	= function(_, params) mod.customModifier(params.value) end,
             })
+            :addContent(1.6, "</div>", false)
     end
 
     return mod

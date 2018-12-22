@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -16,7 +17,7 @@ local log                           = require("hs.logger").new("valueIndicator")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils                       = require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 local prop                          = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -24,7 +25,7 @@ local prop                          = require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ValueIndicator = {}
+local ValueIndicator = Element:subclass("ValueIndicator")
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator.matches(element) -> boolean
 --- Function
@@ -35,17 +36,17 @@ local ValueIndicator = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function ValueIndicator.matches(element)
-    return element:attributeValue("AXRole") == "AXValueIndicator"
+function ValueIndicator.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
---- cp.apple.finalcutpro.inspector.color.ValueIndicator.new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
+--- cp.apple.finalcutpro.inspector.color.ValueIndicator(parent, uiFinder, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
 --- Constructor
 --- Creates a new ValueIndicator.
 ---
 --- Parameters:
 ---  * `parent`         - The parent table.
----  * `finderFn`       - The function which returns the `axuielement`.
+---  * `uiFinder`       - The function which returns the `axuielement`.
 ---  * `minValue`       - The minimum value allowed for the value.
 ---  * `maxValue`       - The maximum value allowed for the value.
 ---  * `toAXValueFn`    - The function which will convert the user value to the actual AXValue.
@@ -53,28 +54,13 @@ end
 ---
 --- Returns:
 ---  * New `ValueIndicator` instance.
-function ValueIndicator.new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn)
-    return prop.extend({
-        _parent = parent,
-        _finder = finderFn,
-        _minValue = minValue,
-        _maxValue = maxValue,
-        _toAXValueFn = toAXValueFn,
-        _fromAXValueFn = fromAXValueFn,
-    }, ValueIndicator)
-end
+function ValueIndicator:initialize(parent, uiFinder, minValue, maxValue, toAXValueFn, fromAXValueFn)
+    Element.initialize(self, parent, uiFinder)
 
---- cp.apple.finalcutpro.inspector.color.ValueIndicator:parent() -> table
---- Method
---- Returns the Value Indicators parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function ValueIndicator:parent()
-    return self._parent
+    self._minValue = minValue
+    self._maxValue = maxValue
+    self._toAXValueFn = toAXValueFn
+    self._fromAXValueFn = fromAXValueFn
 end
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator:isShowing() -> boolean
@@ -86,51 +72,37 @@ end
 ---
 --- Returns:
 ---  * `true` if showing, otherwise `false`
-function ValueIndicator:isShowing()
-    return self:UI() ~= nil and self:parent():isShowing()
-end
-
---- cp.apple.finalcutpro.inspector.color.ValueIndicator:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `hs._asm.axuielement` object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil`.
-function ValueIndicator:UI()
-    return axutils.cache(self, "_ui", function()
-        return self._finder()
-    end,
-    ValueIndicator.matches)
+function ValueIndicator.lazy.prop:isShowing()
+    return self:UI():ISNOT(nil):AND(self:parent().isShowing)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.value <cp.prop: number>
 --- Field
 --- The value of the value indicator as a number.
-ValueIndicator.value = prop.new(
-    function(self)
-        local ui = self:UI()
-        local value = ui and ui:attributeValue("AXValue") or nil
-        if value ~= nil then
-            if self._fromAXValueFn then
-                value = self._fromAXValueFn(value)
+function ValueIndicator.lazy.prop:value()
+    return self.UI:mutate(
+        function(original)
+            local ui = original()
+            local value = ui and ui:attributeValue("AXValue") or nil
+            if value ~= nil then
+                if self._fromAXValueFn then
+                    value = self._fromAXValueFn(value)
+                end
+                return value
             end
-            return value
-        end
-        return nil
-    end,
-    function(value, self)
-        local ui = self:UI()
-        if ui then
-            if self._toAXValueFn then
-                value = self._toAXValueFn(value)
+            return nil
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                if self._toAXValueFn then
+                    value = self._toAXValueFn(value)
+                end
+                ui:setAttributeValue("AXValue", value)
             end
-            ui:setAttributeValue("AXValue", value)
         end
-    end
-):bind(ValueIndicator)
+    )
+end
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator:shiftValue(value) -> cp.apple.finalcutpro.inspector.color.ValueIndicator
 --- Method
@@ -154,16 +126,20 @@ end
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.minValue <cp.prop: number>
 --- Field
 --- The minimum value of the indicator as a number.
-ValueIndicator.minValue = prop.new(function(self)
-    return self._minValue
-end)
+function ValueIndicator.lazy.prop:minValue()
+    return prop(function()
+        return self._minValue
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.maxValue <cp.prop: number>
 --- Field
 --- The maximum value of the indicator as a number.
-ValueIndicator.maxValue = prop.new(function(self)
-    return self._maxValue
-end)
+function ValueIndicator.lazy.prop:maxValue()
+    return prop(function()
+        return self._maxValue
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator:increment() -> cp.apple.finalcutpro.inspector.color.ValueIndicator
 --- Method
@@ -197,20 +173,6 @@ function ValueIndicator:decrement()
         ui:doDecrement()
     end
     return self
-end
-
---- cp.apple.finalcutpro.inspector.color.ValueIndicator:isEnabled() -> boolean
---- Method
---- Is the value indicator enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled otherwise `false`.
-function ValueIndicator:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator:saveLayout() -> table

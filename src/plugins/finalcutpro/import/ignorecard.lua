@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -125,7 +126,7 @@ local plugin = {
     id              = "finalcutpro.import.ignorecard",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -139,10 +140,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs.panel then
         deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Heading:
-            --------------------------------------------------------------------------------
-            :addHeading(1, i18n("general"))
 
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
@@ -153,6 +150,8 @@ function plugin.init(deps)
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             }
+
+
         )
     end
 

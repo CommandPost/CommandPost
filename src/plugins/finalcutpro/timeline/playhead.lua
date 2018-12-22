@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -107,7 +108,7 @@ mod.alwaysCentered = config.prop("scrollingTimelineCentered", false)
 --- plugins.finalcutpro.timeline.playhead.tracking <cp.prop: boolean; read-only; live>
 --- Variable
 --- If `true`, we are tracking the playhead position.
-mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):watch(function(tracking)
+mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):AND(contents.isShowing):watch(function(tracking)
     if tracking then
         -- calculate the intial playhead offset
         local viewFrame = contents:viewFrame()
@@ -134,9 +135,9 @@ local plugin = {
     id = "finalcutpro.timeline.playhead",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.timeline"]               = "timelineMenu",
+        ["finalcutpro.menu.manager"]                = "menuManager",
         ["finalcutpro.commands"]                    = "fcpxCmds",
-        ["finalcutpro.preferences.app"]             = "prefs",
+        ["finalcutpro.preferences.manager"]             = "prefs",
     }
 }
 
@@ -144,7 +145,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    local menu, cmds = deps.timelineMenu, deps.fcpxCmds
+    local menu, cmds = deps.menuManager.timeline, deps.fcpxCmds
 
     --------------------------------------------------------------------------------
     -- Setup Menu:

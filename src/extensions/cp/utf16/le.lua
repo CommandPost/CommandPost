@@ -2,6 +2,7 @@
 ---
 --- A pure-LUA implementation of UTF-16 decoding with little-endian ordering.
 
+local require = require
 local utf16				= require("cp.utf16")
 
 local utf16char, utf16codepoint, utf16codes, utf16len, utf16offset = utf16.char, utf16.codepoint, utf16.codes, utf16.len, utf16.offset

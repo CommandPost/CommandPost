@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -20,6 +21,7 @@ local base64                                    = require("hs.base64")
 local fs                                        = require("hs.fs")
 local host                                      = require("hs.host")
 local json                                      = require("hs.json")
+local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -29,6 +31,9 @@ local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
+
+local Do                                        = require("cp.rx.go.Do")
+local Throw                                     = require("cp.rx.go.Throw")
 
 --------------------------------------------------------------------------------
 --
@@ -111,7 +116,7 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        log.df("Pasteboard updated. Adding '%s' to shared history.", name)
+        --log.df("Pasteboard updated. Adding '%s' to shared history.", name)
 
         local sharedPasteboardPath = mod.getRootPath()
         if sharedPasteboardPath ~= nil then
@@ -366,7 +371,31 @@ function mod.copyWithCustomClipNameAndFolder()
     end
 end
 
---- plugins.finalcutpro.pasteboard.shared.pasteHistoryItem(folderName, index) -> none
+--- plugins.finalcutpro.pasteboard.shared.doDecodeHistoryItem(folderName, index) -> string | nil
+--- Function
+--- Decodes a Paste History Item.
+---
+--- Parameters:
+---  * folderName - The folder name
+---  * index - The index of the item you want to decode
+---
+--- Returns:
+---  * The decoded Pasteboard History Item or `nil`.
+function mod.doDecodeHistoryItem(folderName, index)
+    return Do(function()
+        local item = mod.getHistory(folderName)[index]
+        if item then
+            local data = base64.decode(item.data)
+            if data then
+                return data
+            end
+        end
+        return Throw("Unable to decode the item data for '%s' at %d.", folderName, index)
+    end)
+    :Label("shared.doDecodeHistoryItem")
+end
+
+--- plugins.finalcutpro.pasteboard.shared.doPasteHistoryItem(folderName, index) -> none
 --- Function
 --- Paste History Item.
 ---
@@ -376,32 +405,27 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.pasteHistoryItem(folderName, index)
-    local item = mod.getHistory(folderName)[index]
-    if item then
-        --------------------------------------------------------------------------------
-        -- Decode the data:
-        --------------------------------------------------------------------------------
-        local data = base64.decode(item.data)
-        if not data then
-            log.w("Unable to decode the item data for '%s' at %d.", folderName, index)
-        end
+function mod.doPasteHistoryItem(folderName, index)
+    local originalContents = mod._manager.readFCPXData()
+    return Do(mod.doDecodeHistoryItem(folderName, index))
+    :Then(function(data)
         --------------------------------------------------------------------------------
         -- Put item back in the pasteboard quietly:
         --------------------------------------------------------------------------------
         mod._manager.writeFCPXData(data, true)
-
-        --------------------------------------------------------------------------------
-        -- Paste in FCPX:
-        --------------------------------------------------------------------------------
-        fcp:launch()
-        if fcp:performShortcut("Paste") then
-            return true
-        else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
+    end)
+    :Then(fcp:doLaunch())
+    :Then(fcp:doShortcut("Paste"))
+    :Then(function()
+        if originalContents then
+            --------------------------------------------------------------------------------
+            -- Restore the original Pasteboard Contents:
+            --------------------------------------------------------------------------------
+            timer.doAfter(0.3, function()
+                mod._manager.writeFCPXData(originalContents, true)
+            end)
         end
-    end
-    return false
+    end)
 end
 
 --- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard
@@ -482,7 +506,7 @@ function mod.generateSharedPasteboardMenu()
                 if #history > 0 then
                     for i=#history, 1, -1 do
                         local item = history[i]
-                        table.insert(historyItems, {title = item.name, fn = function() mod.pasteHistoryItem(folder, i) end, disabled = not fcpxRunning})
+                        table.insert(historyItems, {title = item.name, fn = function() mod.doPasteHistoryItem(folder, i):Now() end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearSharedPasteboard"), fn = function() mod.clearHistory(folder) end })
@@ -507,9 +531,9 @@ local plugin = {
     id              = "finalcutpro.pasteboard.shared",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.pasteboard.manager"]   = "manager",
+        ["finalcutpro.pasteboard.manager"]  = "manager",
         ["finalcutpro.commands"]            = "fcpxCmds",
-        ["finalcutpro.menu.pasteboard"]      = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
     }
 }
 
@@ -531,7 +555,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu
+    deps.menu.pasteboard
       :addMenu(TOOLS_PRIORITY, function() return i18n("sharedPasteboardHistory") end)
       :addItem(1000, function()
           return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }

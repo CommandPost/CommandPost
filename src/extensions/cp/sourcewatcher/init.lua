@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local require = require
 local console                       = require("hs.console")
 local pathwatcher                   = require("hs.pathwatcher")
 
@@ -112,7 +113,7 @@ function mod.mt:watchPath(path)
         function(files, flagTables)
             self:filesChanged(files, flagTables)
         end
-    ):start()
+    )
     return self
 end
 

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -308,7 +309,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]        = "fcpxCmds",
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 

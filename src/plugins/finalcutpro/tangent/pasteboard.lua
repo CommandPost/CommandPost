@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -52,15 +53,11 @@ function mod.init(fcpGroup, pbm)
     for id=1, pbm.NUMBER_OF_PASTEBOARD_BUFFERS do
 
         mod.save:action(nextID, i18n("pasteboardBuffer") .. " " .. tostring(id))
-        :onPress(function()
-            pbm.saveToBuffer(id)
-        end)
+        :onPress(pbm.doSaveToBuffer(id))
         nextID = nextID + 1
 
         mod.restore:action(nextID, i18n("pasteboardBuffer") .. " " .. tostring(id))
-        :onPress(function()
-            pbm.restoreFromBuffer(id)
-        end)
+        :onPress(pbm.doRestoreFromBuffer(id))
         nextID = nextID + 1
 
     end

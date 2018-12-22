@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -100,14 +101,49 @@ end
 --- Applies the provided human-readable title to the command.
 ---
 --- Parameters:
----  * `id`	= the unique identifier for the command. E.g. 'FCPXHacksCustomCommand'
+---  * id - the unique identifier for the command (i.e. 'CPCustomCommand').
+---
+--- Returns:
+---  * command - The command that was created.
+function command.mt:titled(title)
+    self._title = title
+    return self
+end
+
+--- cp.commands.command:action(getFn, setFn) -> command
+--- Method
+--- Sets the action get and set callbacks for a specific command.
+---
+--- Parameters:
+---  * getFn - The function that gets the action.
+---  * setFn - The function that sets the action.
 ---
 --- Returns:
 ---  * command - The command that was created.
 ---
-function command.mt:titled(title)
-    self._title = title
+--- Notes:
+---  * The `getFn` function should have no arguments.
+---  * The `setFn` function can have two optional arguments:
+---    * `clear` - A boolean that defines whether or not the value should be cleared.
+---    * `completionFn` - An optional completion function callback.
+function command.mt:action(getFn, setFn)
+    self._actionGetFn = getFn
+    self._actionSetFn = setFn
     return self
+end
+
+--- cp.commands.command:getAction() -> function, function
+--- Method
+--- Gets the action get and set callbacks for a specific command.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * getFn - The function that gets the action.
+---  * setFn - The function that sets the action.
+function command.mt:getAction()
+    return self._actionGetFn, self._actionSetFn
 end
 
 --- cp.commands.command:getTitle() -> string

@@ -7,19 +7,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+-- local log                           = require("hs.logger").new("popUpButton")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local Element                       = require("cp.ui.Element")
+
+local go                            = require("cp.rx.go")
+local If, WaitUntil                 = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = {}
+local PopUpButton = Element:subclass("PopUpButton")
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function
@@ -30,38 +39,26 @@ local PopUpButton = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function PopUpButton.matches(element)
-    return element and element:attributeValue("AXRole") == "AXPopUpButton"
+function PopUpButton.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.ui.PopUpButton.new(axuielement, function) -> cp.ui.PopUpButton
+--- cp.ui.PopUpButton(parent, uiFinder) -> cp.ui.PopUpButton
 --- Constructor
 --- Creates a new PopUpButton.
 ---
 --- Parameters:
 ---  * parent		- The parent table. Should have a `isShowing` property.
+---  * uiFinder      - The `function` or `cp.prop` that provides the current `hs._asm.axuielement`.
 ---
 --- Returns:
 ---  * The new `PopUpButton` instance.
-function PopUpButton.new(parent, finderFn)
-    local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
 
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        PopUpButton.matches)
-    end)
-
-    if prop.is(parent.UI) then
-        UI:monitor(parent.UI)
-    end
-
-    local isShowing = UI:mutate(function(original, self)
-        return original() ~= nil and self:parent():isShowing()
-    end)
-
-    local value = UI:mutate(
+--- cp.ui.PopUpButton.value <cp.prop: anything; live>
+--- Field
+--- Returns or sets the current `PopUpButton` value.
+function PopUpButton.lazy.prop:value()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             return ui and ui:value()
@@ -70,46 +67,40 @@ function PopUpButton.new(parent, finderFn)
             local ui = original()
             if ui and ui:value() ~= newValue then
                 local items = ui:doPress()[1]
-                for _,item in ipairs(items) do
-                    if item:title() == newValue then
-                        item:doPress()
-                        return
+                if items then
+                    for _,item in ipairs(items) do
+                        if item:title() == newValue then
+                            item:doPress()
+                            return
+                        end
                     end
+                    items:doCancel()
                 end
-                items:doCancel()
             end
         end
     )
-
-    return prop.bind(o) {
-        --- cp.ui.PopUpButton.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Provides the `axuielement` for the `PopUpButton`.
-        UI = UI,
-
-        --- cp.ui.PopUpButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Checks if the `PopUpButton` is visible on screen.
-        isShowing = isShowing,
-
-        --- cp.ui.PopUpButton.value <cp.prop: anything>
-        --- Field
-        --- Returns or sets the current `PopUpButton` value.
-        value = value,
-    }
+    -- if anyone starts watching, then register with the app notifier.
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor("AXMenuItemSelected", function()
+            theProp:update()
+        end)
+    end)
 end
 
---- cp.ui.PopUpButton:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function PopUpButton:parent()
-    return self._parent
+--- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
+function PopUpButton.lazy.prop:menuUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and axutils.childWithRole(ui, "AXMenu")
+    end)
+    -- if anyone opens the menu, update the prop watchers
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            theProp:update()
+        end)
+    end)
 end
 
 --- cp.ui.PopUpButton:selectItem(index) -> self
@@ -139,6 +130,62 @@ function PopUpButton:selectItem(index)
     return self
 end
 
+--- cp.ui.PopUpButton:doSelectItem(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `PopUpButton` by index.
+---
+--- Parameters:
+---  * index - The index number of the item you want to select.
+---
+--- Returns:
+---  * the `Statement`.
+function PopUpButton:doSelectItem(index)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        local item = menuUI[index]
+        if item then
+            item:doPress()
+            return true
+        else
+            item:doCancel()
+            return false
+        end
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("PopUpMenu:doSelectItem")
+end
+
+--- cp.ui.PopUpButton:doSelectValue(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `PopUpButton` by value.
+---
+--- Parameters:
+---  * value - The value of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function PopUpButton:doSelectValue(value)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        for _,item in ipairs(menuUI) do
+            if item:title() == value then
+                item:doPress()
+                return true
+            end
+        end
+        menuUI:doCancel()
+        return false
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("PopUpButton:doSelectValue")
+end
+
 --- cp.ui.PopUpButton:getValue() -> string | nil
 --- Method
 --- Gets the `PopUpButton` value.
@@ -166,20 +213,6 @@ function PopUpButton:setValue(value)
     return self
 end
 
---- cp.ui.PopUpButton:isEnabled() -> boolean
---- Method
---- Is the `PopUpButton` enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled otherwise `false`.
-function PopUpButton:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
-end
-
 --- cp.ui.PopUpButton:press() -> self
 --- Method
 --- Presses the `PopUpButton`.
@@ -197,6 +230,24 @@ function PopUpButton:press()
     return self
 end
 
+--- cp.ui.PopUpButton:doPress() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that presses the `PopUpButton`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function PopUpButton.lazy.method:doPress()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:doPress()
+    end)
+    :ThenYield()
+    :Label("PopUpButton:doPress")
+end
+
 -- cp.ui.PopUpButton:__call() -> boolean
 -- Method
 -- Allows the `PopUpButton` to be called as a function and will return the button value.
@@ -211,6 +262,10 @@ function PopUpButton:__call(parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function PopUpButton:__tostring()
+    return string.format("cp.ui.PopUpButton: %s", self:value())
 end
 
 --- cp.ui.PopUpButton:saveLayout() -> table
@@ -233,7 +288,7 @@ end
 --- Loads a `PopUpButton` layout.
 ---
 --- Parameters:
----  * layout - A table containing the `PopUpButton` layout settings - created using `cp.ui.PopUpButton:saveLayout()`.
+---  * layout - A table containing the `PopUpButton` layout settings - created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None
@@ -241,24 +296,6 @@ function PopUpButton:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
-end
-
---- cp.ui.PopUpButton:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function PopUpButton:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return PopUpButton
