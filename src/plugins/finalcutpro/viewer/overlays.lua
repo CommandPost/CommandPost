@@ -1147,6 +1147,292 @@ function mod.toggleDraggableGuide(id)
     mod.update()
 end
 
+-- generateMenu -> table
+-- Function
+-- Returns a table with the Overlay menu.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A table containing the overlay menu.
+local function generateMenu()
+    return {
+        --------------------------------------------------------------------------------
+        --
+        -- ENABLE OVERLAYS:
+        --
+        --------------------------------------------------------------------------------
+        { title = i18n("enable") .. " " .. i18n("overlays"), checked = not mod.capslock() and not mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end, disabled = mod.capslock()  },
+        { title = i18n("toggleOverlaysWithCapsLock"), checked = mod.capslock(), fn = function() mod.capslock:toggle(); mod.update() end },
+        { title = "-", disabled = true },
+        --------------------------------------------------------------------------------
+        --
+        -- DRAGGABLE GUIDES:
+        --
+        --------------------------------------------------------------------------------
+        { title = string.upper(i18n("guides")) .. ":", disabled = true },
+        { title = "  " .. i18n("draggableGuides"), menu = {
+            { title = i18n("guide") .. " 1", menu = {
+                { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(1), fn = function() mod.toggleDraggableGuide(1); mod.update(); end },
+                { title = i18n("appearance"), menu = {
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.getGuideColor(1) == "#000000", fn = function() mod.setGuideColor(1, "#000000") end },
+                        { title = i18n("white"),    checked = mod.getGuideColor(1) == "#FFFFFF", fn = function() mod.setGuideColor(1, "#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.getGuideColor(1) == "#F4D03F", fn = function() mod.setGuideColor(1, "#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.getGuideColor(1) == "#FF5733", fn = function() mod.setGuideColor(1, "#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.getGuideColor(1) == "CUSTOM", fn = function() mod.setCustomGuideColor(1) end},
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.getGuideAlpha(1) == 10,  fn = function() mod.setGuideAlpha(1, 10) end },
+                        { title = "20%",  checked = mod.getGuideAlpha(1) == 20,  fn = function() mod.setGuideAlpha(1, 20) end },
+                        { title = "30%",  checked = mod.getGuideAlpha(1) == 30,  fn = function() mod.setGuideAlpha(1, 30) end },
+                        { title = "40%",  checked = mod.getGuideAlpha(1) == 40,  fn = function() mod.setGuideAlpha(1, 40) end },
+                        { title = "50%",  checked = mod.getGuideAlpha(1) == 50,  fn = function() mod.setGuideAlpha(1, 50) end },
+                        { title = "60%",  checked = mod.getGuideAlpha(1) == 60,  fn = function() mod.setGuideAlpha(1, 60) end },
+                        { title = "70%",  checked = mod.getGuideAlpha(1) == 70,  fn = function() mod.setGuideAlpha(1, 70) end },
+                        { title = "80%",  checked = mod.getGuideAlpha(1) == 80,  fn = function() mod.setGuideAlpha(1, 80) end },
+                        { title = "90%",  checked = mod.getGuideAlpha(1) == 90,  fn = function() mod.setGuideAlpha(1, 90) end },
+                        { title = "100%", checked = mod.getGuideAlpha(1) == 100, fn = function() mod.setGuideAlpha(1, 100) end },
+                    }},
+                }},
+            }},
+            { title = i18n("guide") .. " 2", menu = {
+                { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(2), fn = function() mod.toggleDraggableGuide(2); mod.update(); end },
+                { title = i18n("appearance"), menu = {
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.getGuideColor(2) == "#000000", fn = function() mod.setGuideColor(2, "#000000") end },
+                        { title = i18n("white"),    checked = mod.getGuideColor(2) == "#FFFFFF", fn = function() mod.setGuideColor(2, "#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.getGuideColor(2) == "#F4D03F", fn = function() mod.setGuideColor(2, "#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.getGuideColor(2) == "#FF5733", fn = function() mod.setGuideColor(2, "#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.getGuideColor(2) == "CUSTOM", fn = function() mod.setCustomGuideColor(2) end},
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.getGuideAlpha(2) == 10,  fn = function() mod.setGuideAlpha(2, 10) end },
+                        { title = "20%",  checked = mod.getGuideAlpha(2) == 20,  fn = function() mod.setGuideAlpha(2, 20) end },
+                        { title = "30%",  checked = mod.getGuideAlpha(2) == 30,  fn = function() mod.setGuideAlpha(2, 30) end },
+                        { title = "40%",  checked = mod.getGuideAlpha(2) == 40,  fn = function() mod.setGuideAlpha(2, 40) end },
+                        { title = "50%",  checked = mod.getGuideAlpha(2) == 50,  fn = function() mod.setGuideAlpha(2, 50) end },
+                        { title = "60%",  checked = mod.getGuideAlpha(2) == 60,  fn = function() mod.setGuideAlpha(2, 60) end },
+                        { title = "70%",  checked = mod.getGuideAlpha(2) == 70,  fn = function() mod.setGuideAlpha(2, 70) end },
+                        { title = "80%",  checked = mod.getGuideAlpha(2) == 80,  fn = function() mod.setGuideAlpha(2, 80) end },
+                        { title = "90%",  checked = mod.getGuideAlpha(2) == 90,  fn = function() mod.setGuideAlpha(2, 90) end },
+                        { title = "100%", checked = mod.getGuideAlpha(2) == 100, fn = function() mod.setGuideAlpha(2, 100) end },
+                    }},
+                }},
+            }},
+            { title = i18n("guide") .. " 3", menu = {
+                { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(3), fn = function() mod.toggleDraggableGuide(3); mod.update(); end },
+                { title = i18n("appearance"), menu = {
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.getGuideColor(3) == "#000000", fn = function() mod.setGuideColor(3, "#000000") end },
+                        { title = i18n("white"),    checked = mod.getGuideColor(3) == "#FFFFFF", fn = function() mod.setGuideColor(3, "#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.getGuideColor(3) == "#F4D03F", fn = function() mod.setGuideColor(3, "#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.getGuideColor(3) == "#FF5733", fn = function() mod.setGuideColor(3, "#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.getGuideColor(3) == "CUSTOM", fn = function() mod.setCustomGuideColor(3) end},
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.getGuideAlpha(3) == 10,  fn = function() mod.setGuideAlpha(3, 10) end },
+                        { title = "20%",  checked = mod.getGuideAlpha(3) == 20,  fn = function() mod.setGuideAlpha(3, 20) end },
+                        { title = "30%",  checked = mod.getGuideAlpha(3) == 30,  fn = function() mod.setGuideAlpha(3, 30) end },
+                        { title = "40%",  checked = mod.getGuideAlpha(3) == 40,  fn = function() mod.setGuideAlpha(3, 40) end },
+                        { title = "50%",  checked = mod.getGuideAlpha(3) == 50,  fn = function() mod.setGuideAlpha(3, 50) end },
+                        { title = "60%",  checked = mod.getGuideAlpha(3) == 60,  fn = function() mod.setGuideAlpha(3, 60) end },
+                        { title = "70%",  checked = mod.getGuideAlpha(3) == 70,  fn = function() mod.setGuideAlpha(3, 70) end },
+                        { title = "80%",  checked = mod.getGuideAlpha(3) == 80,  fn = function() mod.setGuideAlpha(3, 80) end },
+                        { title = "90%",  checked = mod.getGuideAlpha(3) == 90,  fn = function() mod.setGuideAlpha(3, 90) end },
+                        { title = "100%", checked = mod.getGuideAlpha(3) == 100, fn = function() mod.setGuideAlpha(3, 100) end },
+                    }},
+                }},
+            }},
+            { title = i18n("guide") .. " 4", menu = {
+                { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(4), fn = function() mod.toggleDraggableGuide(4); mod.update(); end },
+                { title = i18n("appearance"), menu = {
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.getGuideColor(4) == "#000000", fn = function() mod.setGuideColor(4, "#000000") end },
+                        { title = i18n("white"),    checked = mod.getGuideColor(4) == "#FFFFFF", fn = function() mod.setGuideColor(4, "#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.getGuideColor(4) == "#F4D03F", fn = function() mod.setGuideColor(4, "#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.getGuideColor(4) == "#FF5733", fn = function() mod.setGuideColor(4, "#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.getGuideColor(4) == "CUSTOM", fn = function() mod.setCustomGuideColor(4) end},
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.getGuideAlpha(4) == 10,  fn = function() mod.setGuideAlpha(4, 10) end },
+                        { title = "20%",  checked = mod.getGuideAlpha(4) == 20,  fn = function() mod.setGuideAlpha(4, 20) end },
+                        { title = "30%",  checked = mod.getGuideAlpha(4) == 30,  fn = function() mod.setGuideAlpha(4, 30) end },
+                        { title = "40%",  checked = mod.getGuideAlpha(4) == 40,  fn = function() mod.setGuideAlpha(4, 40) end },
+                        { title = "50%",  checked = mod.getGuideAlpha(4) == 50,  fn = function() mod.setGuideAlpha(4, 50) end },
+                        { title = "60%",  checked = mod.getGuideAlpha(4) == 60,  fn = function() mod.setGuideAlpha(4, 60) end },
+                        { title = "70%",  checked = mod.getGuideAlpha(4) == 70,  fn = function() mod.setGuideAlpha(4, 70) end },
+                        { title = "80%",  checked = mod.getGuideAlpha(4) == 80,  fn = function() mod.setGuideAlpha(4, 80) end },
+                        { title = "90%",  checked = mod.getGuideAlpha(4) == 90,  fn = function() mod.setGuideAlpha(4, 90) end },
+                        { title = "100%", checked = mod.getGuideAlpha(4) == 100, fn = function() mod.setGuideAlpha(4, 100) end },
+                    }},
+                }},
+            }},
+            { title = i18n("guide") .. " 5", menu = {
+                { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(5), fn = function() mod.toggleDraggableGuide(5); mod.update(); end },
+                { title = i18n("appearance"), menu = {
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.getGuideColor(5) == "#000000", fn = function() mod.setGuideColor(5, "#000000") end },
+                        { title = i18n("white"),    checked = mod.getGuideColor(5) == "#FFFFFF", fn = function() mod.setGuideColor(5, "#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.getGuideColor(5) == "#F4D03F", fn = function() mod.setGuideColor(5, "#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.getGuideColor(5) == "#FF5733", fn = function() mod.setGuideColor(5, "#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.getGuideColor(5) == "CUSTOM", fn = function() mod.setCustomGuideColor(5) end},
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.getGuideAlpha(5) == 10,  fn = function() mod.setGuideAlpha(5, 10) end },
+                        { title = "20%",  checked = mod.getGuideAlpha(5) == 20,  fn = function() mod.setGuideAlpha(5, 20) end },
+                        { title = "30%",  checked = mod.getGuideAlpha(5) == 30,  fn = function() mod.setGuideAlpha(5, 30) end },
+                        { title = "40%",  checked = mod.getGuideAlpha(5) == 40,  fn = function() mod.setGuideAlpha(5, 40) end },
+                        { title = "50%",  checked = mod.getGuideAlpha(5) == 50,  fn = function() mod.setGuideAlpha(5, 50) end },
+                        { title = "60%",  checked = mod.getGuideAlpha(5) == 60,  fn = function() mod.setGuideAlpha(5, 60) end },
+                        { title = "70%",  checked = mod.getGuideAlpha(5) == 70,  fn = function() mod.setGuideAlpha(5, 70) end },
+                        { title = "80%",  checked = mod.getGuideAlpha(5) == 80,  fn = function() mod.setGuideAlpha(5, 80) end },
+                        { title = "90%",  checked = mod.getGuideAlpha(5) == 90,  fn = function() mod.setGuideAlpha(5, 90) end },
+                        { title = "100%", checked = mod.getGuideAlpha(5) == 100, fn = function() mod.setGuideAlpha(5, 100) end },
+                    }},
+                }},
+            }},
+        }},
+        --------------------------------------------------------------------------------
+        --
+        -- CROSS HAIR:
+        --
+        --------------------------------------------------------------------------------
+        { title = "  " .. i18n("crossHair"), menu = {
+            { title = i18n("enable"),   checked = mod.crossHairEnabled(), fn = function() mod.crossHairEnabled:toggle(); mod.update(); end },
+            { title = i18n("appearance"), menu = {
+                { title = "  " .. i18n("color"), menu = {
+                    { title = i18n("black"),    checked = mod.crossHairColor() == "#000000", fn = function() mod.crossHairColor("#000000"); mod.update() end },
+                    { title = i18n("white"),    checked = mod.crossHairColor() == "#FFFFFF", fn = function() mod.crossHairColor("#FFFFFF"); mod.update() end },
+                    { title = i18n("yellow"),   checked = mod.crossHairColor() == "#F4D03F", fn = function() mod.crossHairColor("#F4D03F"); mod.update() end },
+                    { title = i18n("red"),      checked = mod.crossHairColor() == "#FF5733", fn = function() mod.crossHairColor("#FF5733"); mod.update() end },
+                    { title = "-", disabled = true },
+                    { title = i18n("custom"),   checked = mod.crossHairColor() == "CUSTOM", fn = function() mod.setCustomCrossHairColor(); mod.update() end},
+                }},
+                { title = "  " .. i18n("opacity"), menu = {
+                    { title = "10%",  checked = mod.crossHairAlpha() == 10,  fn = function() mod.crossHairAlpha(10); mod.update() end },
+                    { title = "20%",  checked = mod.crossHairAlpha() == 20,  fn = function() mod.crossHairAlpha(20); mod.update() end },
+                    { title = "30%",  checked = mod.crossHairAlpha() == 30,  fn = function() mod.crossHairAlpha(30); mod.update() end },
+                    { title = "40%",  checked = mod.crossHairAlpha() == 40,  fn = function() mod.crossHairAlpha(40); mod.update() end },
+                    { title = "50%",  checked = mod.crossHairAlpha() == 50,  fn = function() mod.crossHairAlpha(50); mod.update() end },
+                    { title = "60%",  checked = mod.crossHairAlpha() == 60,  fn = function() mod.crossHairAlpha(60); mod.update() end },
+                    { title = "70%",  checked = mod.crossHairAlpha() == 70,  fn = function() mod.crossHairAlpha(70); mod.update() end },
+                    { title = "80%",  checked = mod.crossHairAlpha() == 80,  fn = function() mod.crossHairAlpha(80); mod.update() end },
+                    { title = "90%",  checked = mod.crossHairAlpha() == 90,  fn = function() mod.crossHairAlpha(90); mod.update() end },
+                    { title = "100%", checked = mod.crossHairAlpha() == 100, fn = function() mod.crossHairAlpha(100); mod.update() end },
+                }},
+            }},
+        }},
+        { title = "-", disabled = true },
+        { title = string.upper(i18n("mattes")) .. ":", disabled = true },
+        { title = "  " .. i18n("letterbox"), menu = {
+            { title = i18n("enable"),   checked = mod.letterboxEnabled(), fn = function() mod.letterboxEnabled:toggle(); mod.update(); end },
+        }},
+        { title = "-", disabled = true },
+        --------------------------------------------------------------------------------
+        --
+        -- STILL FRAMES:
+        --
+        --------------------------------------------------------------------------------
+        { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },
+        { title = "  " .. i18n("view"), menu = {
+            { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end, disabled = not mod.getMemory(1) },
+            { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end, disabled = not mod.getMemory(2) },
+            { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end, disabled = not mod.getMemory(3) },
+            { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end, disabled = not mod.getMemory(4) },
+            { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end, disabled = not mod.getMemory(5) },
+        }},
+        { title = "  " .. i18n("save"), menu = {
+            { title = i18n("memory") .. " 1", fn = function() mod.saveMemory(1) end },
+            { title = i18n("memory") .. " 2", fn = function() mod.saveMemory(2) end },
+            { title = i18n("memory") .. " 3", fn = function() mod.saveMemory(3) end },
+            { title = i18n("memory") .. " 4", fn = function() mod.saveMemory(4) end },
+            { title = i18n("memory") .. " 5", fn = function() mod.saveMemory(5) end },
+        }},
+        { title = "  " .. i18n("import"), menu = {
+            { title = i18n("memory") .. " 1", fn = function() mod.importMemory(1) end },
+            { title = i18n("memory") .. " 2", fn = function() mod.importMemory(2) end },
+            { title = i18n("memory") .. " 3", fn = function() mod.importMemory(3) end },
+            { title = i18n("memory") .. " 4", fn = function() mod.importMemory(4) end },
+            { title = i18n("memory") .. " 5", fn = function() mod.importMemory(5) end },
+        }},
+        { title = "  " .. i18n("delete"), menu = {
+            { title = i18n("memory") .. " 1", fn = function() mod.deleteMemory(1) end, disabled = not mod.getMemory(1) },
+            { title = i18n("memory") .. " 2", fn = function() mod.deleteMemory(2) end, disabled = not mod.getMemory(2) },
+            { title = i18n("memory") .. " 3", fn = function() mod.deleteMemory(3) end, disabled = not mod.getMemory(3) },
+            { title = i18n("memory") .. " 4", fn = function() mod.deleteMemory(4) end, disabled = not mod.getMemory(4) },
+            { title = i18n("memory") .. " 5", fn = function() mod.deleteMemory(5) end, disabled = not mod.getMemory(5) },
+        }},
+        { title = "  " .. i18n("appearance"), menu = {
+            { title = i18n("fullFrame"),  checked = mod.stillsLayout() == "Full Frame", fn = function() mod.stillsLayout("Full Frame"); mod.update() end },
+            { title = "-", disabled = true },
+            { title = i18n("leftVertical"),  checked = mod.stillsLayout() == "Left Vertical", fn = function() mod.stillsLayout("Left Vertical"); mod.update() end },
+            { title = i18n("rightVertical"), checked = mod.stillsLayout() == "Right Vertical", fn = function() mod.stillsLayout("Right Vertical"); mod.update() end },
+            { title = "-", disabled = true },
+            { title = i18n("topHorizontal"), checked = mod.stillsLayout() == "Top Horizontal", fn = function() mod.stillsLayout("Top Horizontal"); mod.update() end },
+            { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
+        }},
+        { title = "-", disabled = true },
+        --------------------------------------------------------------------------------
+        --
+        -- GRID OVERLAY:
+        --
+        --------------------------------------------------------------------------------
+        { title = string.upper(i18n("gridOverlay")) .. ":", disabled = true },
+        { title = "  " .. i18n("enable"), checked = mod.basicGridEnabled(), fn = function() mod.basicGridEnabled:toggle(); mod.update(); end },
+        { title = "  " .. i18n("appearance"), menu = {
+            { title = "  " .. i18n("color"), menu = {
+                { title = i18n("black"),    checked = mod.gridColor() == "#000000", fn = function() mod.setGridColor("#000000") end },
+                { title = i18n("white"),    checked = mod.gridColor() == "#FFFFFF", fn = function() mod.setGridColor("#FFFFFF") end },
+                { title = i18n("yellow"),   checked = mod.gridColor() == "#F4D03F", fn = function() mod.setGridColor("#F4D03F") end },
+                { title = i18n("red"),      checked = mod.gridColor() == "#FF5733", fn = function() mod.setGridColor("#FF5733") end },
+                { title = "-", disabled = true },
+                { title = i18n("custom"),   checked = mod.gridColor() == "CUSTOM" and mod.customGridColor(), fn = mod.setCustomGridColor },
+            }},
+            { title = "  " .. i18n("opacity"), menu = {
+                { title = "10%",  checked = mod.gridAlpha() == 10,  fn = function() mod.setGridAlpha(10) end },
+                { title = "20%",  checked = mod.gridAlpha() == 20,  fn = function() mod.setGridAlpha(20) end },
+                { title = "30%",  checked = mod.gridAlpha() == 30,  fn = function() mod.setGridAlpha(30) end },
+                { title = "40%",  checked = mod.gridAlpha() == 40,  fn = function() mod.setGridAlpha(40) end },
+                { title = "50%",  checked = mod.gridAlpha() == 50,  fn = function() mod.setGridAlpha(50) end },
+                { title = "60%",  checked = mod.gridAlpha() == 60,  fn = function() mod.setGridAlpha(60) end },
+                { title = "70%",  checked = mod.gridAlpha() == 70,  fn = function() mod.setGridAlpha(70) end },
+                { title = "80%",  checked = mod.gridAlpha() == 80,  fn = function() mod.setGridAlpha(80) end },
+                { title = "90%",  checked = mod.gridAlpha() == 90,  fn = function() mod.setGridAlpha(90) end },
+                { title = "100%", checked = mod.gridAlpha() == 100, fn = function() mod.setGridAlpha(100) end },
+            }},
+            { title = "  " .. i18n("segments"), menu = {
+                { title = "5",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
+                { title = "10",     checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
+                { title = "15",     checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
+                { title = "20",     checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
+                { title = "25",     checked = mod.gridSpacing() == 25, fn = function() mod.setGridSpacing(25) end },
+                { title = "30",     checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
+                { title = "35",     checked = mod.gridSpacing() == 35, fn = function() mod.setGridSpacing(35) end },
+                { title = "40",     checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
+                { title = "45",     checked = mod.gridSpacing() == 45, fn = function() mod.setGridSpacing(45) end },
+                { title = "50",     checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
+                { title = "55",     checked = mod.gridSpacing() == 55, fn = function() mod.setGridSpacing(55) end },
+                { title = "60",     checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
+                { title = "65",     checked = mod.gridSpacing() == 65, fn = function() mod.setGridSpacing(65) end },
+                { title = "70",     checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
+                { title = "75",     checked = mod.gridSpacing() == 75, fn = function() mod.setGridSpacing(70) end },
+                { title = "80",     checked = mod.gridSpacing() == 80, fn = function() mod.setGridSpacing(80) end },
+                { title = "85",     checked = mod.gridSpacing() == 85, fn = function() mod.setGridSpacing(85) end },
+                { title = "90",     checked = mod.gridSpacing() == 90, fn = function() mod.setGridSpacing(90) end },
+                { title = "95",     checked = mod.gridSpacing() == 95, fn = function() mod.setGridSpacing(95) end },
+                { title = "100",    checked = mod.gridSpacing() == 100, fn = function() mod.setGridSpacing(100) end },
+            }},
+        }},
+    }
+end
+
 -- contextualMenu(event) -> none
 -- Function
 -- Builds the Final Cut Pro Overlay contextual menu.
@@ -1164,282 +1450,13 @@ local function contextualMenu(event)
         local location = event:location() and geometry.point(event:location())
         if barFrame and location and location:inside(geometry.rect(barFrame)) then
             if mod._menu then
-                mod._menu:setMenu({
-                    --------------------------------------------------------------------------------
-                    --
-                    -- ENABLE OVERLAYS:
-                    --
-                    --------------------------------------------------------------------------------
-                    { title = i18n("enable") .. " " .. i18n("overlays"), checked = not mod.capslock() and not mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end, disabled = mod.capslock()  },
-                    { title = i18n("toggleOverlaysWithCapsLock"), checked = mod.capslock(), fn = function() mod.capslock:toggle(); mod.update() end },
-                    { title = "-", disabled = true },
-                    --------------------------------------------------------------------------------
-                    --
-                    -- DRAGGABLE GUIDES:
-                    --
-                    --------------------------------------------------------------------------------
-                    { title = string.upper(i18n("guides")) .. ":", disabled = true },
-                    { title = "  " .. i18n("draggableGuides"), menu = {
-                        { title = i18n("guide") .. " 1", menu = {
-                            { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(1), fn = function() mod.toggleDraggableGuide(1); mod.update(); end },
-                            { title = i18n("appearance"), menu = {
-                                { title = "  " .. i18n("color"), menu = {
-                                    { title = i18n("black"),    checked = mod.getGuideColor(1) == "#000000", fn = function() mod.setGuideColor(1, "#000000") end },
-                                    { title = i18n("white"),    checked = mod.getGuideColor(1) == "#FFFFFF", fn = function() mod.setGuideColor(1, "#FFFFFF") end },
-                                    { title = i18n("yellow"),   checked = mod.getGuideColor(1) == "#F4D03F", fn = function() mod.setGuideColor(1, "#F4D03F") end },
-                                    { title = i18n("red"),      checked = mod.getGuideColor(1) == "#FF5733", fn = function() mod.setGuideColor(1, "#FF5733") end },
-                                    { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(1) == "CUSTOM", fn = function() mod.setCustomGuideColor(1) end},
-                                }},
-                                { title = "  " .. i18n("opacity"), menu = {
-                                    { title = "10%",  checked = mod.getGuideAlpha(1) == 10,  fn = function() mod.setGuideAlpha(1, 10) end },
-                                    { title = "20%",  checked = mod.getGuideAlpha(1) == 20,  fn = function() mod.setGuideAlpha(1, 20) end },
-                                    { title = "30%",  checked = mod.getGuideAlpha(1) == 30,  fn = function() mod.setGuideAlpha(1, 30) end },
-                                    { title = "40%",  checked = mod.getGuideAlpha(1) == 40,  fn = function() mod.setGuideAlpha(1, 40) end },
-                                    { title = "50%",  checked = mod.getGuideAlpha(1) == 50,  fn = function() mod.setGuideAlpha(1, 50) end },
-                                    { title = "60%",  checked = mod.getGuideAlpha(1) == 60,  fn = function() mod.setGuideAlpha(1, 60) end },
-                                    { title = "70%",  checked = mod.getGuideAlpha(1) == 70,  fn = function() mod.setGuideAlpha(1, 70) end },
-                                    { title = "80%",  checked = mod.getGuideAlpha(1) == 80,  fn = function() mod.setGuideAlpha(1, 80) end },
-                                    { title = "90%",  checked = mod.getGuideAlpha(1) == 90,  fn = function() mod.setGuideAlpha(1, 90) end },
-                                    { title = "100%", checked = mod.getGuideAlpha(1) == 100, fn = function() mod.setGuideAlpha(1, 100) end },
-                                }},
-                            }},
-                        }},
-                        { title = i18n("guide") .. " 2", menu = {
-                            { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(2), fn = function() mod.toggleDraggableGuide(2); mod.update(); end },
-                            { title = i18n("appearance"), menu = {
-                                { title = "  " .. i18n("color"), menu = {
-                                    { title = i18n("black"),    checked = mod.getGuideColor(2) == "#000000", fn = function() mod.setGuideColor(2, "#000000") end },
-                                    { title = i18n("white"),    checked = mod.getGuideColor(2) == "#FFFFFF", fn = function() mod.setGuideColor(2, "#FFFFFF") end },
-                                    { title = i18n("yellow"),   checked = mod.getGuideColor(2) == "#F4D03F", fn = function() mod.setGuideColor(2, "#F4D03F") end },
-                                    { title = i18n("red"),      checked = mod.getGuideColor(2) == "#FF5733", fn = function() mod.setGuideColor(2, "#FF5733") end },
-                                    { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(2) == "CUSTOM", fn = function() mod.setCustomGuideColor(2) end},
-                                }},
-                                { title = "  " .. i18n("opacity"), menu = {
-                                    { title = "10%",  checked = mod.getGuideAlpha(2) == 10,  fn = function() mod.setGuideAlpha(2, 10) end },
-                                    { title = "20%",  checked = mod.getGuideAlpha(2) == 20,  fn = function() mod.setGuideAlpha(2, 20) end },
-                                    { title = "30%",  checked = mod.getGuideAlpha(2) == 30,  fn = function() mod.setGuideAlpha(2, 30) end },
-                                    { title = "40%",  checked = mod.getGuideAlpha(2) == 40,  fn = function() mod.setGuideAlpha(2, 40) end },
-                                    { title = "50%",  checked = mod.getGuideAlpha(2) == 50,  fn = function() mod.setGuideAlpha(2, 50) end },
-                                    { title = "60%",  checked = mod.getGuideAlpha(2) == 60,  fn = function() mod.setGuideAlpha(2, 60) end },
-                                    { title = "70%",  checked = mod.getGuideAlpha(2) == 70,  fn = function() mod.setGuideAlpha(2, 70) end },
-                                    { title = "80%",  checked = mod.getGuideAlpha(2) == 80,  fn = function() mod.setGuideAlpha(2, 80) end },
-                                    { title = "90%",  checked = mod.getGuideAlpha(2) == 90,  fn = function() mod.setGuideAlpha(2, 90) end },
-                                    { title = "100%", checked = mod.getGuideAlpha(2) == 100, fn = function() mod.setGuideAlpha(2, 100) end },
-                                }},
-                            }},
-                        }},
-                        { title = i18n("guide") .. " 3", menu = {
-                            { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(3), fn = function() mod.toggleDraggableGuide(3); mod.update(); end },
-                            { title = i18n("appearance"), menu = {
-                                { title = "  " .. i18n("color"), menu = {
-                                    { title = i18n("black"),    checked = mod.getGuideColor(3) == "#000000", fn = function() mod.setGuideColor(3, "#000000") end },
-                                    { title = i18n("white"),    checked = mod.getGuideColor(3) == "#FFFFFF", fn = function() mod.setGuideColor(3, "#FFFFFF") end },
-                                    { title = i18n("yellow"),   checked = mod.getGuideColor(3) == "#F4D03F", fn = function() mod.setGuideColor(3, "#F4D03F") end },
-                                    { title = i18n("red"),      checked = mod.getGuideColor(3) == "#FF5733", fn = function() mod.setGuideColor(3, "#FF5733") end },
-                                    { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(3) == "CUSTOM", fn = function() mod.setCustomGuideColor(3) end},
-                                }},
-                                { title = "  " .. i18n("opacity"), menu = {
-                                    { title = "10%",  checked = mod.getGuideAlpha(3) == 10,  fn = function() mod.setGuideAlpha(3, 10) end },
-                                    { title = "20%",  checked = mod.getGuideAlpha(3) == 20,  fn = function() mod.setGuideAlpha(3, 20) end },
-                                    { title = "30%",  checked = mod.getGuideAlpha(3) == 30,  fn = function() mod.setGuideAlpha(3, 30) end },
-                                    { title = "40%",  checked = mod.getGuideAlpha(3) == 40,  fn = function() mod.setGuideAlpha(3, 40) end },
-                                    { title = "50%",  checked = mod.getGuideAlpha(3) == 50,  fn = function() mod.setGuideAlpha(3, 50) end },
-                                    { title = "60%",  checked = mod.getGuideAlpha(3) == 60,  fn = function() mod.setGuideAlpha(3, 60) end },
-                                    { title = "70%",  checked = mod.getGuideAlpha(3) == 70,  fn = function() mod.setGuideAlpha(3, 70) end },
-                                    { title = "80%",  checked = mod.getGuideAlpha(3) == 80,  fn = function() mod.setGuideAlpha(3, 80) end },
-                                    { title = "90%",  checked = mod.getGuideAlpha(3) == 90,  fn = function() mod.setGuideAlpha(3, 90) end },
-                                    { title = "100%", checked = mod.getGuideAlpha(3) == 100, fn = function() mod.setGuideAlpha(3, 100) end },
-                                }},
-                            }},
-                        }},
-                        { title = i18n("guide") .. " 4", menu = {
-                            { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(4), fn = function() mod.toggleDraggableGuide(4); mod.update(); end },
-                            { title = i18n("appearance"), menu = {
-                                { title = "  " .. i18n("color"), menu = {
-                                    { title = i18n("black"),    checked = mod.getGuideColor(4) == "#000000", fn = function() mod.setGuideColor(4, "#000000") end },
-                                    { title = i18n("white"),    checked = mod.getGuideColor(4) == "#FFFFFF", fn = function() mod.setGuideColor(4, "#FFFFFF") end },
-                                    { title = i18n("yellow"),   checked = mod.getGuideColor(4) == "#F4D03F", fn = function() mod.setGuideColor(4, "#F4D03F") end },
-                                    { title = i18n("red"),      checked = mod.getGuideColor(4) == "#FF5733", fn = function() mod.setGuideColor(4, "#FF5733") end },
-                                    { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(4) == "CUSTOM", fn = function() mod.setCustomGuideColor(4) end},
-                                }},
-                                { title = "  " .. i18n("opacity"), menu = {
-                                    { title = "10%",  checked = mod.getGuideAlpha(4) == 10,  fn = function() mod.setGuideAlpha(4, 10) end },
-                                    { title = "20%",  checked = mod.getGuideAlpha(4) == 20,  fn = function() mod.setGuideAlpha(4, 20) end },
-                                    { title = "30%",  checked = mod.getGuideAlpha(4) == 30,  fn = function() mod.setGuideAlpha(4, 30) end },
-                                    { title = "40%",  checked = mod.getGuideAlpha(4) == 40,  fn = function() mod.setGuideAlpha(4, 40) end },
-                                    { title = "50%",  checked = mod.getGuideAlpha(4) == 50,  fn = function() mod.setGuideAlpha(4, 50) end },
-                                    { title = "60%",  checked = mod.getGuideAlpha(4) == 60,  fn = function() mod.setGuideAlpha(4, 60) end },
-                                    { title = "70%",  checked = mod.getGuideAlpha(4) == 70,  fn = function() mod.setGuideAlpha(4, 70) end },
-                                    { title = "80%",  checked = mod.getGuideAlpha(4) == 80,  fn = function() mod.setGuideAlpha(4, 80) end },
-                                    { title = "90%",  checked = mod.getGuideAlpha(4) == 90,  fn = function() mod.setGuideAlpha(4, 90) end },
-                                    { title = "100%", checked = mod.getGuideAlpha(4) == 100, fn = function() mod.setGuideAlpha(4, 100) end },
-                                }},
-                            }},
-                        }},
-                        { title = i18n("guide") .. " 5", menu = {
-                            { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(5), fn = function() mod.toggleDraggableGuide(5); mod.update(); end },
-                            { title = i18n("appearance"), menu = {
-                                { title = "  " .. i18n("color"), menu = {
-                                    { title = i18n("black"),    checked = mod.getGuideColor(5) == "#000000", fn = function() mod.setGuideColor(5, "#000000") end },
-                                    { title = i18n("white"),    checked = mod.getGuideColor(5) == "#FFFFFF", fn = function() mod.setGuideColor(5, "#FFFFFF") end },
-                                    { title = i18n("yellow"),   checked = mod.getGuideColor(5) == "#F4D03F", fn = function() mod.setGuideColor(5, "#F4D03F") end },
-                                    { title = i18n("red"),      checked = mod.getGuideColor(5) == "#FF5733", fn = function() mod.setGuideColor(5, "#FF5733") end },
-                                    { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(5) == "CUSTOM", fn = function() mod.setCustomGuideColor(5) end},
-                                }},
-                                { title = "  " .. i18n("opacity"), menu = {
-                                    { title = "10%",  checked = mod.getGuideAlpha(5) == 10,  fn = function() mod.setGuideAlpha(5, 10) end },
-                                    { title = "20%",  checked = mod.getGuideAlpha(5) == 20,  fn = function() mod.setGuideAlpha(5, 20) end },
-                                    { title = "30%",  checked = mod.getGuideAlpha(5) == 30,  fn = function() mod.setGuideAlpha(5, 30) end },
-                                    { title = "40%",  checked = mod.getGuideAlpha(5) == 40,  fn = function() mod.setGuideAlpha(5, 40) end },
-                                    { title = "50%",  checked = mod.getGuideAlpha(5) == 50,  fn = function() mod.setGuideAlpha(5, 50) end },
-                                    { title = "60%",  checked = mod.getGuideAlpha(5) == 60,  fn = function() mod.setGuideAlpha(5, 60) end },
-                                    { title = "70%",  checked = mod.getGuideAlpha(5) == 70,  fn = function() mod.setGuideAlpha(5, 70) end },
-                                    { title = "80%",  checked = mod.getGuideAlpha(5) == 80,  fn = function() mod.setGuideAlpha(5, 80) end },
-                                    { title = "90%",  checked = mod.getGuideAlpha(5) == 90,  fn = function() mod.setGuideAlpha(5, 90) end },
-                                    { title = "100%", checked = mod.getGuideAlpha(5) == 100, fn = function() mod.setGuideAlpha(5, 100) end },
-                                }},
-                            }},
-                        }},
-                    }},
-                    --------------------------------------------------------------------------------
-                    --
-                    -- CROSS HAIR:
-                    --
-                    --------------------------------------------------------------------------------
-                    { title = "  " .. i18n("crossHair"), menu = {
-                        { title = i18n("enable"),   checked = mod.crossHairEnabled(), fn = function() mod.crossHairEnabled:toggle(); mod.update(); end },
-                        { title = i18n("appearance"), menu = {
-                            { title = "  " .. i18n("color"), menu = {
-                                { title = i18n("black"),    checked = mod.crossHairColor() == "#000000", fn = function() mod.crossHairColor("#000000"); mod.update() end },
-                                { title = i18n("white"),    checked = mod.crossHairColor() == "#FFFFFF", fn = function() mod.crossHairColor("#FFFFFF"); mod.update() end },
-                                { title = i18n("yellow"),   checked = mod.crossHairColor() == "#F4D03F", fn = function() mod.crossHairColor("#F4D03F"); mod.update() end },
-                                { title = i18n("red"),      checked = mod.crossHairColor() == "#FF5733", fn = function() mod.crossHairColor("#FF5733"); mod.update() end },
-                                { title = "-", disabled = true },
-                                { title = i18n("custom"),   checked = mod.crossHairColor() == "CUSTOM", fn = function() mod.setCustomCrossHairColor(); mod.update() end},
-                            }},
-                            { title = "  " .. i18n("opacity"), menu = {
-                                { title = "10%",  checked = mod.crossHairAlpha() == 10,  fn = function() mod.crossHairAlpha(10); mod.update() end },
-                                { title = "20%",  checked = mod.crossHairAlpha() == 20,  fn = function() mod.crossHairAlpha(20); mod.update() end },
-                                { title = "30%",  checked = mod.crossHairAlpha() == 30,  fn = function() mod.crossHairAlpha(30); mod.update() end },
-                                { title = "40%",  checked = mod.crossHairAlpha() == 40,  fn = function() mod.crossHairAlpha(40); mod.update() end },
-                                { title = "50%",  checked = mod.crossHairAlpha() == 50,  fn = function() mod.crossHairAlpha(50); mod.update() end },
-                                { title = "60%",  checked = mod.crossHairAlpha() == 60,  fn = function() mod.crossHairAlpha(60); mod.update() end },
-                                { title = "70%",  checked = mod.crossHairAlpha() == 70,  fn = function() mod.crossHairAlpha(70); mod.update() end },
-                                { title = "80%",  checked = mod.crossHairAlpha() == 80,  fn = function() mod.crossHairAlpha(80); mod.update() end },
-                                { title = "90%",  checked = mod.crossHairAlpha() == 90,  fn = function() mod.crossHairAlpha(90); mod.update() end },
-                                { title = "100%", checked = mod.crossHairAlpha() == 100, fn = function() mod.crossHairAlpha(100); mod.update() end },
-                            }},
-                        }},
-                    }},
-                    { title = "-", disabled = true },
-                    { title = string.upper(i18n("mattes")) .. ":", disabled = true },
-                    { title = "  " .. i18n("letterbox"), menu = {
-                        { title = i18n("enable"),   checked = mod.letterboxEnabled(), fn = function() mod.letterboxEnabled:toggle(); mod.update(); end },
-                    }},
-                    { title = "-", disabled = true },
-                    --------------------------------------------------------------------------------
-                    --
-                    -- STILL FRAMES:
-                    --
-                    --------------------------------------------------------------------------------
-                    { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },
-                    { title = "  " .. i18n("view"), menu = {
-                        { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end, disabled = not mod.getMemory(1) },
-                        { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end, disabled = not mod.getMemory(2) },
-                        { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end, disabled = not mod.getMemory(3) },
-                        { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end, disabled = not mod.getMemory(4) },
-                        { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end, disabled = not mod.getMemory(5) },
-                    }},
-                    { title = "  " .. i18n("save"), menu = {
-                        { title = i18n("memory") .. " 1", fn = function() mod.saveMemory(1) end },
-                        { title = i18n("memory") .. " 2", fn = function() mod.saveMemory(2) end },
-                        { title = i18n("memory") .. " 3", fn = function() mod.saveMemory(3) end },
-                        { title = i18n("memory") .. " 4", fn = function() mod.saveMemory(4) end },
-                        { title = i18n("memory") .. " 5", fn = function() mod.saveMemory(5) end },
-                    }},
-                    { title = "  " .. i18n("import"), menu = {
-                        { title = i18n("memory") .. " 1", fn = function() mod.importMemory(1) end },
-                        { title = i18n("memory") .. " 2", fn = function() mod.importMemory(2) end },
-                        { title = i18n("memory") .. " 3", fn = function() mod.importMemory(3) end },
-                        { title = i18n("memory") .. " 4", fn = function() mod.importMemory(4) end },
-                        { title = i18n("memory") .. " 5", fn = function() mod.importMemory(5) end },
-                    }},
-                    { title = "  " .. i18n("delete"), menu = {
-                        { title = i18n("memory") .. " 1", fn = function() mod.deleteMemory(1) end, disabled = not mod.getMemory(1) },
-                        { title = i18n("memory") .. " 2", fn = function() mod.deleteMemory(2) end, disabled = not mod.getMemory(2) },
-                        { title = i18n("memory") .. " 3", fn = function() mod.deleteMemory(3) end, disabled = not mod.getMemory(3) },
-                        { title = i18n("memory") .. " 4", fn = function() mod.deleteMemory(4) end, disabled = not mod.getMemory(4) },
-                        { title = i18n("memory") .. " 5", fn = function() mod.deleteMemory(5) end, disabled = not mod.getMemory(5) },
-                    }},
-                    { title = "  " .. i18n("appearance"), menu = {
-                        { title = i18n("fullFrame"),  checked = mod.stillsLayout() == "Full Frame", fn = function() mod.stillsLayout("Full Frame"); mod.update() end },
-                        { title = "-", disabled = true },
-                        { title = i18n("leftVertical"),  checked = mod.stillsLayout() == "Left Vertical", fn = function() mod.stillsLayout("Left Vertical"); mod.update() end },
-                        { title = i18n("rightVertical"), checked = mod.stillsLayout() == "Right Vertical", fn = function() mod.stillsLayout("Right Vertical"); mod.update() end },
-                        { title = "-", disabled = true },
-                        { title = i18n("topHorizontal"), checked = mod.stillsLayout() == "Top Horizontal", fn = function() mod.stillsLayout("Top Horizontal"); mod.update() end },
-                        { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
-                    }},
-                    { title = "-", disabled = true },
-                    --------------------------------------------------------------------------------
-                    --
-                    -- GRID OVERLAY:
-                    --
-                    --------------------------------------------------------------------------------
-                    { title = string.upper(i18n("gridOverlay")) .. ":", disabled = true },
-                    { title = "  " .. i18n("enable"), checked = mod.basicGridEnabled(), fn = function() mod.basicGridEnabled:toggle(); mod.update(); end },
-                    { title = "  " .. i18n("appearance"), menu = {
-                        { title = "  " .. i18n("color"), menu = {
-                            { title = i18n("black"),    checked = mod.gridColor() == "#000000", fn = function() mod.setGridColor("#000000") end },
-                            { title = i18n("white"),    checked = mod.gridColor() == "#FFFFFF", fn = function() mod.setGridColor("#FFFFFF") end },
-                            { title = i18n("yellow"),   checked = mod.gridColor() == "#F4D03F", fn = function() mod.setGridColor("#F4D03F") end },
-                            { title = i18n("red"),      checked = mod.gridColor() == "#FF5733", fn = function() mod.setGridColor("#FF5733") end },
-                            { title = "-", disabled = true },
-                            { title = i18n("custom"),   checked = mod.gridColor() == "CUSTOM" and mod.customGridColor(), fn = mod.setCustomGridColor },
-                        }},
-                        { title = "  " .. i18n("opacity"), menu = {
-                            { title = "10%",  checked = mod.gridAlpha() == 10,  fn = function() mod.setGridAlpha(10) end },
-                            { title = "20%",  checked = mod.gridAlpha() == 20,  fn = function() mod.setGridAlpha(20) end },
-                            { title = "30%",  checked = mod.gridAlpha() == 30,  fn = function() mod.setGridAlpha(30) end },
-                            { title = "40%",  checked = mod.gridAlpha() == 40,  fn = function() mod.setGridAlpha(40) end },
-                            { title = "50%",  checked = mod.gridAlpha() == 50,  fn = function() mod.setGridAlpha(50) end },
-                            { title = "60%",  checked = mod.gridAlpha() == 60,  fn = function() mod.setGridAlpha(60) end },
-                            { title = "70%",  checked = mod.gridAlpha() == 70,  fn = function() mod.setGridAlpha(70) end },
-                            { title = "80%",  checked = mod.gridAlpha() == 80,  fn = function() mod.setGridAlpha(80) end },
-                            { title = "90%",  checked = mod.gridAlpha() == 90,  fn = function() mod.setGridAlpha(90) end },
-                            { title = "100%", checked = mod.gridAlpha() == 100, fn = function() mod.setGridAlpha(100) end },
-                        }},
-                        { title = "  " .. i18n("segments"), menu = {
-                            { title = "5",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
-                            { title = "10",     checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
-                            { title = "15",     checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
-                            { title = "20",     checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
-                            { title = "25",     checked = mod.gridSpacing() == 25, fn = function() mod.setGridSpacing(25) end },
-                            { title = "30",     checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
-                            { title = "35",     checked = mod.gridSpacing() == 35, fn = function() mod.setGridSpacing(35) end },
-                            { title = "40",     checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
-                            { title = "45",     checked = mod.gridSpacing() == 45, fn = function() mod.setGridSpacing(45) end },
-                            { title = "50",     checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
-                            { title = "55",     checked = mod.gridSpacing() == 55, fn = function() mod.setGridSpacing(55) end },
-                            { title = "60",     checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
-                            { title = "65",     checked = mod.gridSpacing() == 65, fn = function() mod.setGridSpacing(65) end },
-                            { title = "70",     checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
-                            { title = "75",     checked = mod.gridSpacing() == 75, fn = function() mod.setGridSpacing(70) end },
-                            { title = "80",     checked = mod.gridSpacing() == 80, fn = function() mod.setGridSpacing(80) end },
-                            { title = "85",     checked = mod.gridSpacing() == 85, fn = function() mod.setGridSpacing(85) end },
-                            { title = "90",     checked = mod.gridSpacing() == 90, fn = function() mod.setGridSpacing(90) end },
-                            { title = "95",     checked = mod.gridSpacing() == 95, fn = function() mod.setGridSpacing(95) end },
-                            { title = "100",    checked = mod.gridSpacing() == 100, fn = function() mod.setGridSpacing(100) end },
-                        }},
-                    }},
-                })
-                mod._menu:popupMenu(location, true)
+                mod._menu:delete()
+                mod._menu = nil
             end
+            mod._menu = menubar.new()
+            mod._menu:setMenu(generateMenu())
+            mod._menu:removeFromMenuBar()
+            mod._menu:popupMenu(location, true)
         end
     end
 end
@@ -1454,6 +1471,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]        = "fcpxCmds",
+        ["finalcutpro.menu.manager"]    = "menu",
     }
 }
 
@@ -1463,10 +1481,16 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Setup contextual menu:
+    -- Setup Event Tap:
     --------------------------------------------------------------------------------
-    mod._menu = menubar.new(false)
     mod._eventtap = eventtap.new({events.rightMouseUp}, contextualMenu)
+
+    --------------------------------------------------------------------------------
+    -- Setup the system menu:
+    --------------------------------------------------------------------------------
+    deps.menu.tools
+        :addMenu(10001, function() return i18n("viewerOverlay") end)
+        :addItems(1000, generateMenu)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
