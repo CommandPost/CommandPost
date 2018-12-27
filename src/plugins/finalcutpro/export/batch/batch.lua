@@ -877,24 +877,29 @@ function plugin.init(deps)
         label       = i18n("timeline"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 670,
+        height      = 620,
     })
-        :addHeading(nextID(), "Batch Export from Timeline")
+        :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
                 local clipCount = mod._clips and #mod._clips or 0
                 local clipCountString = clipsToCountString(mod._clips)
                 local itemString = i18n("item", {count=clipCount})
-                return "Final Cut Pro will export the " ..  clipCountString .. "selected " ..  itemString .. " in the timeline to the following location:"
+                return i18n("finalCutProTimelineBatchExportMessage", {clipCountString=clipCountString, itemString=itemString})
             end)
         :addParagraph(nextID(), html.br())
         :addContent(nextID(), function()
-                local destinationFolder = mod.getDestinationFolder()
-                if destinationFolder then
-                    return html.div {style="white-space: nowrap; overflow: hidden;"} (
-                        html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationFolder)
-                    )
+                local destinationPreset = mod.getDestinationPreset()
+                if destinationPreset == i18n("sendToCompressor") then
+                    return html.p {class="uiItem", style="color:#3f9253; font-weight:bold;"} (i18n("changeDestinationFolderInCompressor"))
                 else
-                    html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} "No Destination Folder Selected"
+                    local destinationFolder = mod.getDestinationFolder()
+                    if destinationFolder then
+                        return html.div {style="white-space: nowrap; overflow: hidden;"} (
+                            html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationFolder)
+                        )
+                    else
+                        return html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} (i18n("noDestinationFolderSelected"))
+                    end
                 end
             end)
         :addParagraph(nextID(), html.br())
@@ -902,10 +907,17 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationFolder"),
-                onclick = mod.changeExportDestinationFolder
+                onclick = function()
+                    local destinationPreset = mod.getDestinationPreset()
+                    if destinationPreset == i18n("sendToCompressor") then
+                        compressor:launch()
+                    else
+                        mod.changeExportDestinationFolder()
+                    end
+                end
             })
         :addParagraph(nextID(), html.br())
-        :addParagraph(nextID(), "Using the following Destination Preset:")
+        :addParagraph(nextID(), i18n("usingTheFollowingDestinationPreset") .. ":")
         :addParagraph(nextID(), html.br())
         :addContent(nextID(), function()
                 local destinationPreset = mod.getDestinationPreset()
@@ -921,7 +933,7 @@ function plugin.init(deps)
                         html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationPreset)
                     )
                 else
-                    return html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} ("No Destination Preset Selected")
+                    return html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} (i18n("noDestinationPresetSelected"))
                 end
             end)
         :addParagraph(nextID(), html.br())
@@ -932,7 +944,7 @@ function plugin.init(deps)
                 onclick = mod.changeExportDestinationPreset
             })
         :addParagraph(nextID(), html.br())
-        :addParagraph(nextID(), "Using the following naming convention:")
+        :addParagraph(nextID(), i18n("usingTheFollowingNamingConvention") .. ":")
         :addParagraph(nextID(), html.br())
         :addContent(nextID(), function()
                 local useCustomFilename = mod.useCustomFilename()
@@ -940,7 +952,7 @@ function plugin.init(deps)
                     local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
                     return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
                 else
-                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">Original Clip Name</p>]]
+                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
                 end
             end, false)
         :addParagraph(nextID(), html.br())

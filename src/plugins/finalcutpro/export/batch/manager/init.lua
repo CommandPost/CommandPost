@@ -67,7 +67,7 @@ mod.DEFAULT_HEIGHT = 338
 --- plugins.finalcutpro.export.batch.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of Preferences Window
-mod.DEFAULT_WIDTH = 500
+mod.DEFAULT_WIDTH = 400
 
 --- plugins.finalcutpro.export.batch.manager.DEFAULT_TITLE -> string
 --- Constant
@@ -384,7 +384,7 @@ function mod.new()
             :allowNewWindows(false)
             :allowTextEntry(true)
             :windowTitle(mod.DEFAULT_TITLE)
-            :attachedToolbar(mod._toolbar)
+            --:attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
             :darkMode(true)
