@@ -11,8 +11,8 @@
 						end
 					%}
 
-					<div id="{{ groupID }}_dropzone{{ i }}" class="dropzone{{ class }}">
-						<div id="{{ groupID }}_dropzone{{ i }}_preview">
+					<div id="touchbar_{{ groupID }}_dropzone{{ i }}" class="dropzone{{ class }}">
+						<div id="touchbar_{{ groupID }}_dropzone{{ i }}_preview">
 							{%
 
 								if result then
@@ -26,20 +26,83 @@
 								end
 							%}
 						</div>
-						<input id="{{ groupID }}_button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" />
+						<input id="touchbar_{{ groupID }}_button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" />
 					</div>
 				</td>
 				<td class="tbRowAction">
-					<input type="text" id="{{ groupID }}_button{{ i }}_action" class="tbActionTextbox" value="{{ tb.getActionTitle(tostring(i), groupID) or "None" }}" disabled>
+					<input type="text" id="touchbar_{{ groupID }}_button{{ i }}_action" class="tbActionTextbox" value="{{ tb.getActionTitle(tostring(i), groupID) or "None" }}" disabled>
 				</td>
 				<td class="tbRowActionButton">
-					<a id="{{ groupID }}_button{{ i }}_actionButton" href="#" class="button tbActionButton">Select</a>
-					<a id="{{ groupID }}_button{{ i }}_clearActionButton" href="#" class="button tbActionButton">Clear</a>
+					<a id="touchbar_{{ groupID }}_button{{ i }}_actionButton" href="#" class="button tbActionButton">Select</a>
+					<a id="touchbar_{{ groupID }}_button{{ i }}_clearActionButton" href="#" class="button tbActionButton">Clear</a>
 				</td>
 				<td class="tbRowLabel">
-					<input type="text" id="{{ groupID }}_button{{ i }}_label" class="tbButtonLabel" value="{{ tb.getLabel(tostring(i), groupID) or "None" }}">
+					<input type="text" id="touchbar_{{ groupID }}_button{{ i }}_label" class="tbButtonLabel" value="{{ tb.getLabel(tostring(i), groupID) or "None" }}">
+				</td>
+				<td class="tbRowOrder">
+					{% if i ~= 1  then %}
+					<a id="touchbar_{{ groupID }}_button{{ i }}_upButton" href="#" class="button tbActionButton tbUpButton">⬆</a>
+					{% end
+					if i ~= maxItems then %}
+					<a id="touchbar_{{ groupID }}_button{{ i }}_downButton" href="#" class="button tbActionButton">⬇</a>
+					{% end %}
 				</td>
 				<script>
+						/*
+						--------------------------------------------------------------------------------
+						UP BUTTON:
+						--------------------------------------------------------------------------------
+						*/
+						{% if i ~= 1  then %}
+							var {{ groupID }}_button{{ i }}_upButton;
+							touchbar_{{ groupID }}_button{{ i }}_upButton = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_upButton");
+							touchbar_{{ groupID }}_button{{ i }}_upButton.addEventListener("click", upButtonPressed{{ i }}, false);
+
+							function upButtonPressed{{ i }}(e) {
+								try {
+									var result = {
+										id: "touchBarPanelCallback",
+										params: {
+											type: "upButtonPressed",
+											groupID: "{{ groupID }}",
+											buttonID: "{{ i }}",
+										},
+									}
+									webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+								} catch(err) {
+									console.log("Error: " + err)
+									alert('An error has occurred. Does the controller exist yet?');
+								}
+							}
+						/*
+						--------------------------------------------------------------------------------
+						DOWN BUTTON:
+						--------------------------------------------------------------------------------
+						*/
+						{% end
+						if i ~= maxItems then %}
+							var {{ groupID }}_button{{ i }}_downButton;
+							touchbar_{{ groupID }}_button{{ i }}_downButton = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_downButton");
+							touchbar_{{ groupID }}_button{{ i }}_downButton.addEventListener("click", downButtonPressed{{ i }}, false);
+
+							function downButtonPressed{{ i }}(e) {
+								try {
+									var result = {
+										id: "touchBarPanelCallback",
+										params: {
+											type: "downButtonPressed",
+											groupID: "{{ groupID }}",
+											buttonID: "{{ i }}",
+										},
+									}
+									webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+								} catch(err) {
+									console.log("Error: " + err)
+									alert('An error has occurred. Does the controller exist yet?');
+								}
+							}
+						{% end %}
+
 						/*
 						--------------------------------------------------------------------------------
 						LABEL:
@@ -47,8 +110,8 @@
 						*/
 
 						var {{ groupID }}_button{{ i }}_label;
-						{{ groupID }}_button{{ i }}_label = document.getElementById("{{ groupID }}_button{{ i }}_label");
-						{{ groupID }}_button{{ i }}_label.addEventListener("change", updateLabel{{ i }}, false);
+						touchbar_{{ groupID }}_button{{ i }}_label = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_label");
+						touchbar_{{ groupID }}_button{{ i }}_label.addEventListener("change", updateLabel{{ i }}, false);
 
 						function updateLabel{{ i }}(e) {
 							//
@@ -61,7 +124,7 @@
 										type: "updateLabel",
 										groupID: "{{ groupID }}",
 										buttonID: "{{ i }}",
-										label: {{ groupID }}_button{{ i }}_label.value,
+										label: touchbar_{{ groupID }}_button{{ i }}_label.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -78,14 +141,14 @@
 						*/
 
 						var {{ groupID }}_dropzone{{ i }};
-						{{ groupID }}_dropzone{{ i }} = document.getElementById("{{ groupID }}_dropzone{{ i }}");
-						{{ groupID }}_dropzone{{ i }}.addEventListener("dragover", dragover{{ i }}, false);
-						{{ groupID }}_dropzone{{ i }}.addEventListener("dragleave", dragleave{{ i }}, false);
+						touchbar_{{ groupID }}_dropzone{{ i }} = document.getElementById("touchbar_{{ groupID }}_dropzone{{ i }}");
+						touchbar_{{ groupID }}_dropzone{{ i }}.addEventListener("dragover", dragover{{ i }}, false);
+						touchbar_{{ groupID }}_dropzone{{ i }}.addEventListener("dragleave", dragleave{{ i }}, false);
 
 						var {{ groupID }}_dropzoneInput{{ i }};
-						{{ groupID }}_dropzoneInput{{ i }} = document.getElementById("{{ groupID }}_button{{ i }}_icon");
-						{{ groupID }}_dropzoneInput{{ i }}.addEventListener("change", dropzoneChange{{ i }}, false);
-						{{ groupID }}_dropzoneInput{{ i }}.addEventListener("click", dropzoneClick{{ i }}, false);
+						touchbar_{{ groupID }}_dropzoneInput{{ i }} = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_icon");
+						touchbar_{{ groupID }}_dropzoneInput{{ i }}.addEventListener("change", dropzoneChange{{ i }}, false);
+						touchbar_{{ groupID }}_dropzoneInput{{ i }}.addEventListener("click", dropzoneClick{{ i }}, false);
 
 						function dropzoneClick{{ i }}(e) {
 							//
@@ -108,18 +171,18 @@
 						}
 
 						function dragover{{ i }}(e) {
-							{{ groupID }}_dropzone{{ i }}.classList.add("hover");
+							touchbar_{{ groupID }}_dropzone{{ i }}.classList.add("hover");
 						}
 
 						function dragleave{{ i }}(e) {
-							{{ groupID }}_dropzone{{ i }}.classList.remove("hover");
+							touchbar_{{ groupID }}_dropzone{{ i }}.classList.remove("hover");
 						}
 
 						function dropzoneChange{{ i }}(e) {
 
 							var file = this.files[0];
 
-							{{ groupID }}_dropzone{{ i }}.classList.remove("hover");
+							touchbar_{{ groupID }}_dropzone{{ i }}.classList.remove("hover");
 
 							var match = this.accept.split(/, ?/).indexOf(file.type);
 
@@ -142,14 +205,14 @@
 								return;
 							};
 
-							{{ groupID }}_dropzone{{ i }}.classList.add("dropped");
+							touchbar_{{ groupID }}_dropzone{{ i }}.classList.add("dropped");
 
 							var reader = new FileReader(file);
 							reader.readAsDataURL(file);
 
 							reader.onload = function(e) {
 								var data = e.target.result;
-								document.getElementById("{{ groupID }}_dropzone{{ i }}_preview").innerHTML = '<img src="' + data + '" />';
+								document.getElementById("touchbar_{{ groupID }}_dropzone{{ i }}_preview").innerHTML = '<img src="' + data + '" />';
 
 								//
 								// Icon Callback:
@@ -180,8 +243,8 @@
 						*/
 
 						var {{ groupID }}_button{{ i }}_actionButton;
-						{{ groupID }}_button{{ i }}_actionButton = document.getElementById("{{ groupID }}_button{{ i }}_actionButton");
-						{{ groupID }}_button{{ i }}_actionButton.addEventListener("click", updateAction{{ i }}, false);
+						touchbar_{{ groupID }}_button{{ i }}_actionButton = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_actionButton");
+						touchbar_{{ groupID }}_button{{ i }}_actionButton.addEventListener("click", updateAction{{ i }}, false);
 
 						function updateAction{{ i }}(e) {
 							//
@@ -210,8 +273,8 @@
 						*/
 
 						var {{ groupID }}_button{{ i }}_clearActionButton;
-						{{ groupID }}_button{{ i }}_clearActionButton = document.getElementById("{{ groupID }}_button{{ i }}_clearActionButton");
-						{{ groupID }}_button{{ i }}_clearActionButton.addEventListener("click", clearAction{{ i }}, false);
+						touchbar_{{ groupID }}_button{{ i }}_clearActionButton = document.getElementById("touchbar_{{ groupID }}_button{{ i }}_clearActionButton");
+						touchbar_{{ groupID }}_button{{ i }}_clearActionButton.addEventListener("click", clearAction{{ i }}, false);
 
 						function clearAction{{ i }}(e) {
 							//

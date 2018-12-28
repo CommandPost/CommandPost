@@ -59,7 +59,11 @@
 }
 
 .tbRowLabel {
-	width: 35%;
+	width: 27%;
+}
+
+.tbRowOrder {
+	width: 8%;
 }
 
 .touchbar thead {

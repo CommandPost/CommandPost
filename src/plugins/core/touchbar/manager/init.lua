@@ -39,6 +39,7 @@ local touchbar                                  = require("hs._asm.undocumented.
 -- Local Extensions:
 --------------------------------------------------------------------------------
 local widgets                                   = require("widgets")
+local copy                                      = fnutils.copy
 
 --------------------------------------------------------------------------------
 --
@@ -152,6 +153,47 @@ function mod.clear()
     mod.update()
 end
 
+--- plugins.core.touchbar.manager.updateOrder(direction, button, group) -> none
+--- Function
+--- Shifts a Touch Bar button either up or down.
+---
+--- Parameters:
+---  * direction - Either "up" or "down"
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * None
+function mod.updateOrder(direction, button, group)
+    local buttons = copy(mod._items())
+
+    local shiftButton
+    if direction == "down" then
+        shiftButton = tostring(tonumber(button) + 1)
+    else
+        shiftButton = tostring(tonumber(button) - 1)
+    end
+
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    if not buttons[group][shiftButton] then
+        buttons[group][shiftButton] = {}
+    end
+
+    local original = copy(buttons[group][button])
+    local new = copy(buttons[group][shiftButton])
+
+    buttons[group][button] = new
+    buttons[group][shiftButton] = original
+
+    mod._items(buttons)
+    mod.update()
+end
+
 --- plugins.core.touchbar.manager.updateIcon(button, group, icon) -> none
 --- Function
 --- Updates a Touch Bar icon.
@@ -164,19 +206,19 @@ end
 --- Returns:
 ---  * None
 function mod.updateIcon(button, group, icon)
-    local buttons = mod._items()
+    local items = copy(mod._items())
 
     button = tostring(button)
 
-    if not buttons[group] then
-        buttons[group] = {}
+    if not items[group] then
+        items[group] = {}
     end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
+    if not items[group][button] then
+        items[group][button] = {}
     end
-    buttons[group][button]["icon"] = icon
+    items[group][button]["icon"] = icon
 
-    mod._items(buttons)
+    mod._items(items)
     mod.update()
 end
 
@@ -194,13 +236,13 @@ end
 --- Returns:
 ---  * `true` if successfully updated, or `false` if a duplicate entry was found
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-    local buttons = mod._items()
+    local items = copy(mod._items())
 
     --------------------------------------------------------------------------------
     -- Check to make sure the widget isn't already in use:
     --------------------------------------------------------------------------------
     if handlerID and handlerID:sub(-8) == "_widgets" then
-        for _, _group in pairs(buttons) do
+        for _, _group in pairs(items) do
             for _, _button in pairs(_group) do
                 if _button.action and _button.action.id and action.id and _button.action.id == action.id then
                     --------------------------------------------------------------------------------
@@ -213,17 +255,17 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
     end
 
     button = tostring(button)
-    if not buttons[group] then
-        buttons[group] = {}
+    if not items[group] then
+        items[group] = {}
     end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
+    if not items[group][button] then
+        items[group][button] = {}
     end
-    buttons[group][button]["actionTitle"] = actionTitle
-    buttons[group][button]["handlerID"] = handlerID
-    buttons[group][button]["action"] = action
+    items[group][button]["actionTitle"] = actionTitle
+    items[group][button]["handlerID"] = handlerID
+    items[group][button]["action"] = action
 
-    mod._items(buttons)
+    mod._items(items)
     mod.update()
     return true
 end
@@ -240,19 +282,19 @@ end
 --- Returns:
 ---  * None
 function mod.updateLabel(button, group, label)
-    local buttons = mod._items()
+    local items = copy(mod._items())
 
     button = tostring(button)
 
-    if not buttons[group] then
-        buttons[group] = {}
+    if not items[group] then
+        items[group] = {}
     end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
+    if not items[group][button] then
+        items[group][button] = {}
     end
-    buttons[group][button]["label"] = label
+    items[group][button]["label"] = label
 
-    mod._items(buttons)
+    mod._items(items)
     mod.update()
 end
 
@@ -653,6 +695,8 @@ function mod.update()
         if mod._tbWidgetID[b] then
             b = mod._tbWidgetID[b]
         end
+        a = tonumber(tools.split(a, "_")[2])
+        b = tonumber(tools.split(b, "_")[2])
         return a<b
     end)
 

@@ -41,6 +41,7 @@ local default                                   = require("default")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local convertSingleHexStringToDecimalString     = tools.convertSingleHexStringToDecimalString
+local copy                                      = fnutils.copy
 local doAfter                                   = timer.doAfter
 
 --------------------------------------------------------------------------------
@@ -169,7 +170,7 @@ end
 ---  * None
 function mod.updateAction(button, group, actionTitle, handlerID, action)
 
-    local buttons = mod._items()
+    local buttons = copy(mod._items())
 
     button = tostring(button)
     if not buttons[group] then
@@ -208,7 +209,7 @@ end
 --- Returns:
 ---  * None
 function mod.setItem(item, button, group, value)
-    local buttons = mod._items()
+    local buttons = copy(mod._items())
 
     button = tostring(button)
 

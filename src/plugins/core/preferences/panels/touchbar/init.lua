@@ -161,7 +161,7 @@ local function generateContent()
                 alert('An error has occurred. Does the controller exist yet?');
             }
 
-            console.log("touchBarGroupSelect changed");
+            //console.log("touchBarGroupSelect changed");
             var groupControls = document.getElementById("touchbarGroupControls");
             var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
             var children = groupControls.children;
@@ -271,8 +271,9 @@ local function touchBarPanelCallback(id, params)
                 if not mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action) then
                     dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("touchBarDuplicateWidget"), i18n("touchBarDuplicateWidgetInfo"), i18n("ok"))
                 end
-
-                mod._manager.refresh()
+                mod._manager.injectScript([[
+                    document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_action").value = "]] ..actionTitle .. [[";
+                ]])
             end)
 
             --------------------------------------------------------------------------------
@@ -282,7 +283,9 @@ local function touchBarPanelCallback(id, params)
 
         elseif params["type"] == "clearAction" then
             mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
-            mod._manager.refresh()
+            mod._manager.injectScript([[
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_action").value = "]] .. i18n("none") .. [[";
+            ]])
         elseif params["type"] == "updateLabel" then
             --------------------------------------------------------------------------------
             -- Update Label:
@@ -322,7 +325,10 @@ local function touchBarPanelCallback(id, params)
                             local encodedIcon = newImage:encodeAsURLString()
 
                             mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-                            mod._manager.refresh()
+                            mod._manager.injectScript([[
+                                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[_preview").innerHTML = "<img src=\"]] .. encodedIcon .. [[\">";
+                                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[").className = "dropzone dropped";
+                            ]])
                         else
                             failed = true
                         end
@@ -333,7 +339,10 @@ local function touchBarPanelCallback(id, params)
                         local encodedIcon = icon:encodeAsURLString()
                         if encodedIcon then
                             mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-                            mod._manager.refresh()
+                             mod._manager.injectScript([[
+                                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[_preview").innerHTML = "<img src=\"]] .. encodedIcon .. [[\">";
+                                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[").className = "dropzone dropped";
+                            ]])
                         else
                             failed = true
                         end
@@ -349,13 +358,54 @@ local function touchBarPanelCallback(id, params)
                 -- Clear Icon:
                 --------------------------------------------------------------------------------
                 mod._tb.updateIcon(params["buttonID"], params["groupID"], nil)
-                mod._manager.refresh()
+                mod._manager.injectScript([[
+                    document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[_preview").innerHTML = "icon";
+                    document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[").className = "dropzone";
+                ]])
             end
         elseif params["type"] == "updateGroup" then
             --------------------------------------------------------------------------------
             -- Update Group:
             --------------------------------------------------------------------------------
             mod.lastGroup(params["groupID"])
+        elseif params["type"] == "upButtonPressed" or params["type"] == "downButtonPressed" then
+            --------------------------------------------------------------------------------
+            -- Up & Down Buttons:
+            --------------------------------------------------------------------------------
+            local direction
+            if params["type"] == "upButtonPressed" then
+                direction = "up"
+            else
+                direction = "down"
+            end
+            mod._tb.updateOrder(direction, params["buttonID"], params["groupID"])
+            local shiftButton
+            if params["type"] == "upButtonPressed" then
+                shiftButton = tostring(tonumber(params["buttonID"]) - 1)
+            else
+                shiftButton = tostring(tonumber(params["buttonID"]) + 1)
+            end
+            mod._manager.injectScript([[
+                var originalPreview = document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[_preview").innerHTML;
+                var originalIconClass = document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[").className;
+                var originalAction = document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_action").value;
+                var originalLabel = document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_label").value;
+
+                var newPreview = document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. shiftButton .. [[_preview").innerHTML;
+                var newIconClass = document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. shiftButton .. [[").className;
+                var newAction = document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. shiftButton .. [[_action").value;
+                var newLabel = document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. shiftButton .. [[_label").value;
+
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[_preview").innerHTML = newPreview;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. params["buttonID"] .. [[").className = newIconClass;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_action").value = newAction;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. params["buttonID"] .. [[_label").value = newLabel;
+
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. shiftButton .. [[_preview").innerHTML = originalPreview;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_dropzone]] .. shiftButton .. [[").className = originalIconClass;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. shiftButton .. [[_action").value = originalAction;
+                document.getElementById("touchbar_]] .. params["groupID"] .. [[_button]] .. shiftButton .. [[_label").value = originalLabel;
+            ]])
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
