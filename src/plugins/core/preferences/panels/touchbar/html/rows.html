@@ -39,6 +39,14 @@
 				<td class="tbRowLabel">
 					<input type="text" id="{{ groupID }}_button{{ i }}_label" class="tbButtonLabel" value="{{ tb.getLabel(tostring(i), groupID) or "None" }}">
 				</td>
+				<td class="tbRowOrder">
+					{% if i ~= 1  then %}
+					<a id="{{ groupID }}_button{{ i }}_upButton" href="#" class="button tbActionButton tbUpButton">⬆</a>
+					{% end
+					if i ~= maxItems then %}
+					<a id="{{ groupID }}_button{{ i }}_downButton" href="#" class="button tbActionButton">⬇</a>
+					{% end %}
+				</td>
 				<script>
 						/*
 						--------------------------------------------------------------------------------
