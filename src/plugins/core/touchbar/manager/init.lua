@@ -695,6 +695,8 @@ function mod.update()
         if mod._tbWidgetID[b] then
             b = mod._tbWidgetID[b]
         end
+        a = tonumber(tools.split(a, "_")[2])
+        b = tonumber(tools.split(b, "_")[2])
         return a<b
     end)
 
