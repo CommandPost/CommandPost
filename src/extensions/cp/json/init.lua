@@ -86,7 +86,7 @@ function mod.write(path, data)
         log.ef("Path is required for `cp.json.write`.")
         return false
     end
-    local encodedData = json.encode(data)
+    local encodedData = json.encode(data, true)
     if encodedData then
         local file = io.open(path, "w")
         if file then

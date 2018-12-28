@@ -15,20 +15,6 @@
 			{(html/rows.html, _.extend({groupID = groupID}, context))}
 			</tbody>
 		</table>
-		<script>
-			/*
-			--------------------------------------------------------------------------------
-			UP BUTTONS:
-			--------------------------------------------------------------------------------
-			*/
-			var upButtonArray = document.querySelectorAll('tbUpButton');
-			upButtonArray.forEach(function(elem) {
-				elem.addEventListener("click", function() {
-					var clickedItem = e.target.id;
-            		alert("Hello " + clickedItem);
-				});
-			});
-		</script>
 	</div>
 {% end %}
 </div>
