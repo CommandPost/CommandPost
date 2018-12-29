@@ -21,10 +21,13 @@
 		</script>
 	</head>
 	<body>
-{%	for i, panel in ipairs(panels) do %}
-		<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
-			{* panel:generateContent() *}
-		</div>
-{%	end %}
+{%	for i, panel in ipairs(panels) do
+		if panel.id == currentPanelID then
+%}
+			<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
+				{* panel:generateContent() *}
+			</div>
+{%		end
+	end %}
 	</body>
 </html>
