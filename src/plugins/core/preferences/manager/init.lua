@@ -211,6 +211,7 @@ local function generateHTML()
     env.debugMode = config.developerMode()
     env.panels = mod._panels
     env.currentPanelID = currentPanelID()
+    env.webviewLabel = mod.WEBVIEW_LABEL
 
     local result, err = mod._panelRenderer(env)
     if err then
