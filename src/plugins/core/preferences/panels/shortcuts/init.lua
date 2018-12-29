@@ -249,6 +249,7 @@ local function shortcutsPanelCallback(_, params)
             -- Update Group:
             --------------------------------------------------------------------------------
             mod.lastGroup(params["groupID"])
+            mod._manager.refresh()
             return
         elseif paramsType == "updateAction" then
             --------------------------------------------------------------------------------

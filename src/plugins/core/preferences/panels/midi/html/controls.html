@@ -1,5 +1,6 @@
 <div id="midiGroupControls" class="uiItem">
-{%	for __, groupID in pairs(groups) do %}
+{%	for __, groupID in pairs(groups) do
+		if groupID == defaultGroup then %}
 	<div id="midiGroup_{{ groupID }}" class="midiGroup{{ groupID == defaultGroup and ' selected' or '' }}">
 		<table class="midi">
 			<thead>
@@ -19,5 +20,6 @@
 			</tbody>
 		</table>
 	</div>
-{% end %}
+{% 		end
+	end %}
 </div>

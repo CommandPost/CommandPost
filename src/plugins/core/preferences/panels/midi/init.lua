@@ -706,6 +706,7 @@ local function midiPanelCallback(id, params)
 
             mod._stopLearning(id, params)
             mod.lastGroup(params["groupID"])
+            mod._manager.refresh()
         elseif params["type"] == "learnButton" then
             --------------------------------------------------------------------------------
             -- Learn Button:

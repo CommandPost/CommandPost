@@ -303,7 +303,7 @@ local function touchBarPanelCallback(id, params)
                         local originalImage = image.imageFromPath(path):template(false)
                         if originalImage then
 
-                            local a = canvas.new{x = 0, y = 0, w = 512, h = 512 }
+                            local a = canvas.new{x = 0, y = 0, w = 50, h = 50 }
                             a[1] = {
                               type="image",
                               image = originalImage,
@@ -328,7 +328,15 @@ local function touchBarPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- An image from outside the pre-supplied image path:
                         --------------------------------------------------------------------------------
-                        local encodedIcon = icon:encodeAsURLString()
+                        local a = canvas.new{x = 0, y = 0, w = 50, h = 50 }
+                        a[1] = {
+                          type="image",
+                          image = icon,
+                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                        }
+                        local newImage = a:imageFromCanvas()
+
+                        local encodedIcon = newImage:encodeAsURLString()
                         if encodedIcon then
                             mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
                             injectScript([[setTouchBarIcon("]] .. params["groupID"] .. [[", "]] .. params["buttonID"] .. [[", "]] .. encodedIcon .. [[")]])
