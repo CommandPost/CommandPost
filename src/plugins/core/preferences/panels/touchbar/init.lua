@@ -615,7 +615,7 @@ function mod.init(deps, env)
             width       = 200,
             label       = i18n("touchBarReset"),
             onclick     = resetTouchBar,
-            class       = "resetShortcuts",
+            class       = "resetTouchBar",
         }
     )
 
