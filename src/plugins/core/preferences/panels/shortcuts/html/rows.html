@@ -5,7 +5,7 @@
 	end
 	table.sort(cmds, function(a, b) return a:getTitle() < b:getTitle() end)
 
-	for i,cmd in ipairs(cmds) do
+	for __,cmd in ipairs(cmds) do
 		local shortcut = cmd:getFirstShortcut()
 %}
 			<tr>
@@ -15,123 +15,24 @@
 				local getFn = cmd:getAction()
 				if getFn then
 				%}
-					<input type="text" id="shortcuts{{ group:id() }}_button{{ i }}_action" class="scActionTextbox" value="{{ getFn() or i18nNone }}" disabled>
-					<a id="shortcuts{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button scActionButton">{{ i18nSelect }}</a>
-					<a id="shortcuts{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button scActionButton">{{ i18nClear }}</a>
+					<input type="text" id="shortcuts{{ group:id() }}_button{{ cmd:id() }}_action" class="scActionTextbox" value="{{ getFn() or i18nNone }}" disabled>
+					<a id="shortcuts{{ group:id() }}_button{{ cmd:id() }}_actionButton" href="#" class="button scActionButton" onclick="pressShortcutsActionButton('{{ group:id() }}', '{{ cmd:id() }}')">{{ i18nSelect }}</a>
+					<a id="shortcuts{{ group:id() }}_button{{ cmd:id() }}_clearActionButton" href="#" class="button scActionButton" onclick="pressShortcutsClearButton('{{ group:id() }}', '{{ cmd:id() }}')">{{ i18nClear }}</a>
 				{% end %}
 				</td>
 				<td class="rowModifier">
-					<select id="modifiers_{{ cmd:id() }}">
+					<select id="shortcuts{{ group:id() }}_{{ cmd:id() }}_modifiers" onchange="updateShortcuts('{{ group:id() }}', '{{ cmd:id() }}')">
 						<option value="none">{{ i18nNone }}</option>
 						{* modifierOptions(shortcut) *}
 					</select>
 				</td>
 				<td class="rowKeyCode">
-					<select id="keyCode_{{ cmd:id() }}">
+					<select id="shortcuts{{ group:id() }}_{{ cmd:id() }}_keyCode" onchange="updateShortcuts('{{ group:id() }}', '{{ cmd:id() }}')">
 						<option value="none">{{ i18nNone }}</option>
 						{* keyCodeOptions(shortcut) *}
 					</select>
 				</td>
 			</tr>
-			<script>
-
-				/*
-				--------------------------------------------------------------------------------
-				MODIFIER & KEY:
-				--------------------------------------------------------------------------------
-				*/
-				(function() {
-					var modifiers = document.getElementById("modifiers_{{ cmd:id() }}");
-					var keyCode = document.getElementById("keyCode_{{ cmd:id() }}");
-					var handler = function () {
-						console.log("modifiers.id: " + modifiers.id);
-						console.log("modifiers.value: " + modifiers.value);
-						console.log("keyCode.value: " + keyCode.value);
-						try {
-							var result = {
-								id: "shortcutsPanelCallback",
-								params: {
-									group: "{{ group:id() }}",
-									command: "{{ cmd:id() }}",
-									modifiers: modifiers.value,
-									keyCode: keyCode.value,
-								}
-							}
-							webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
-						} catch(err) {
-							console.log("Error: " + err)
-							alert('An error has occurred. Does the controller exist yet?');
-						}
-					}
-					modifiers.onchange = handler
-					keyCode.onchange = handler
-				})()
-
-				{% if getFn then %}
-
-				/*
-				--------------------------------------------------------------------------------
-				ACTION:
-				--------------------------------------------------------------------------------
-				*/
-				var shortcuts{{ group:id() }}_button{{ i }}_actionButton;
-				shortcuts{{ group:id() }}_button{{ i }}_actionButton = document.getElementById("shortcuts{{ group:id() }}_button{{ i }}_actionButton");
-				shortcuts{{ group:id() }}_button{{ i }}_actionButton.addEventListener("click", updateAction{{ i }}, false);
-
-				function updateAction{{ i }}(e) {
-					//
-					// Action Callback:
-					//
-					try {
-						var result = {
-							id: "shortcutsPanelCallback",
-							params: {
-								type: "updateAction",
-								group: "{{ group:id() }}",
-								command: "{{ cmd:id() }}",
-								elementID: "shortcuts{{ group:id() }}_button{{ i }}_action",
-							},
-						}
-						webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
-					} catch(err) {
-						console.log("Error: " + err)
-						alert('An error has occurred. Does the controller exist yet?');
-					}
-				}
-
-				/*
-				--------------------------------------------------------------------------------
-				CLEAR:
-				--------------------------------------------------------------------------------
-				*/
-
-				var shortcuts{{ group:id() }}_button{{ i }}_clearActionButton;
-				shortcuts{{ group:id() }}_button{{ i }}_clearActionButton = document.getElementById("shortcuts{{ group:id() }}_button{{ i }}_clearActionButton");
-				shortcuts{{ group:id() }}_button{{ i }}_clearActionButton.addEventListener("click", clearAction{{ i }}, false);
-
-				function clearAction{{ i }}(e) {
-					//
-					// Action Callback:
-					//
-					try {
-						var result = {
-							id: "shortcutsPanelCallback",
-							params: {
-								type: "clearAction",
-								group: "{{ group:id() }}",
-								command: "{{ cmd:id() }}",
-								elementID: "shortcuts{{ group:id() }}_button{{ i }}_action",
-							},
-						}
-						webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
-					} catch(err) {
-						console.log("Error: " + err)
-						alert('An error has occurred. Does the controller exist yet?');
-					}
-				}
-				{% end %}
-
-			</script>
 {%
 	end -- shortcuts loop
 %}
