@@ -93,6 +93,13 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
+    -- Create Dock Icon Click Callback:
+    --------------------------------------------------------------------------------
+    config.dockIconClickCallback:new("cp", function()
+        if mod.openErrorLogOnDockClick() then hs.openConsole() end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Cache Values:
     --------------------------------------------------------------------------------
     mod._autoLaunch 		= hs.autoLaunch()

@@ -316,10 +316,10 @@ function mod.unwatch(id)
     return mod.watcher:unwatch(id)
 end
 
---- cp.config.developerMode <cp.prop: boolean>
---- Constant
+--- cp.config.developerMode <cp.prop: boolean; read-only>
+--- Field
 --- When `true`, the app is in developer mode.
-mod.developerMode = mod.prop("debugMode", false)
+mod.developerMode = prop.new(function() return settings.get("MJConfigFile") ~= nil end)
 
 --- cp.config.automaticScriptReloading <cp.prop: boolean>
 --- Variable
