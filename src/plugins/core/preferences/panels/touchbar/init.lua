@@ -354,6 +354,7 @@ local function touchBarPanelCallback(id, params)
             -- Update Group:
             --------------------------------------------------------------------------------
             mod.lastGroup(params["groupID"])
+            mod._manager.refresh()
         elseif params["type"] == "upButtonPressed" or params["type"] == "downButtonPressed" then
             --------------------------------------------------------------------------------
             -- Up & Down Buttons:
