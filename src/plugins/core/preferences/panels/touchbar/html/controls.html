@@ -1,5 +1,7 @@
 <div id="touchbarGroupControls" class="uiItem">
-{%	for __, groupID in pairs(groups) do %}
+{%	for __, groupID in pairs(groups) do
+		if groupID == defaultGroup then
+%}
 	<div id="touchbarGroup_{{ groupID }}" class="touchbarGroup{{ groupID == defaultGroup and ' selected' or '' }}">
 		<table class="touchbar">
 			<thead>
@@ -16,5 +18,6 @@
 			</tbody>
 		</table>
 	</div>
-{% end %}
+{% 		end
+	end %}
 </div>

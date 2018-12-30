@@ -1,2 +1,37 @@
 <style>{(css/tangent.css)}</style>
+<script>
+	function pressTangetActionButton(buttonID){
+		try {
+			var result = {
+				id: "tangentPanelCallback",
+				params: {
+					type: "updateAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressTangetClearButton(buttonID){
+		try {
+			var result = {
+				id: "tangentPanelCallback",
+				params: {
+					type: "clearAction",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function setTangentAction(buttonID, value) {
+		document.getElementById("tangent_button" + buttonID + "_action").value = value;
+	}
+</script>
 {(html/controls.html, context)}

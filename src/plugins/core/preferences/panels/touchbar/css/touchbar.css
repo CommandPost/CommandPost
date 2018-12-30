@@ -98,16 +98,10 @@
 	color: white;
 }
 
-.resetShortcuts {
+.resetTouchBar {
 	margin: 10px 0px;
-	text-align: left;
+	text-align: center;
 	float: left;
-}
-
-.resetShortcutsToNone {
-	margin: 10px 0px;
-	text-align: right;
-	float: right;
 }
 
 .buttonDisabled {

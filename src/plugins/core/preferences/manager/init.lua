@@ -211,6 +211,7 @@ local function generateHTML()
     env.debugMode = config.developerMode()
     env.panels = mod._panels
     env.currentPanelID = currentPanelID()
+    env.webviewLabel = mod.WEBVIEW_LABEL
 
     local result, err = mod._panelRenderer(env)
     if err then
@@ -364,6 +365,7 @@ function mod.new()
             :autosaves(true)
             :setCallback(function(_, _, id)
                 mod.selectPanel(id)
+                mod.refresh()
             end)
 
         local theToolbar = mod._toolbar
@@ -515,8 +517,6 @@ function mod.selectPanel(id)
         return
     end
 
-    local js = ""
-
     for _, thePanel in ipairs(mod._panels) do
         --------------------------------------------------------------------------------
         -- Resize Panel:
@@ -531,13 +531,8 @@ function mod.selectPanel(id)
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
-        local style = thePanel.id == id and "block" or "none"
-        js = js .. [[
-            document.getElementById(']] .. thePanel.id .. [[').style.display = ']] .. style .. [[';
-        ]]
     end
 
-    mod._webview:evaluateJavaScript(js)
     mod._toolbar:selectedItem(id)
 
     --------------------------------------------------------------------------------

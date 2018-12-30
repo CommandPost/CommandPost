@@ -1,3 +1,57 @@
 <style>{(css/shortcuts.css)}</style>
+<script>
+	function pressShortcutsActionButton(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "updateAction",
+					group: groupID,
+					command: commandID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressShortcutsClearButton(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "clearAction",
+					group: groupID,
+					command: commandID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function setShortcutsAction(groupID, commandID, value) {
+		document.getElementById("shortcuts" + groupID + "_button" + commandID + "_action").value = value;
+	}
+
+	function updateShortcuts(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					group: groupID,
+					command: commandID,
+					modifiers: document.getElementById("shortcuts" + groupID + "_" + commandID + "_modifiers").value,
+					keyCode: document.getElementById("shortcuts" + groupID + "_" + commandID + "_keyCode").value,
+				}
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
 <h3 class="uiItem"><span class="groupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>{* groupSelect *}</span>{{ i18nCustomiseShortcuts }}</h3>
 {(html/controls.html, context)}

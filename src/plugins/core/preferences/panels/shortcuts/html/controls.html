@@ -1,12 +1,8 @@
 <div id="shortcutsGroupControls" class="uiItem">
-{%	for id,group in pairs(groups) do %}
+{%	for id,group in pairs(groups) do
+		if id == defaultGroup then
+%}
 	<div id="shortcutsGroup_{{ id }}" class="shortcutsGroup{{ id == defaultGroup and ' selected' or '' }}">
-	{%
-		local editor = groupEditor(id)
-		if editor then
-	%}
-			{* editor(group) *}
-	{%	else %}
 		<input class="search" placeholder="Filter Shortcuts" />
 		<table class="shortcuts">
 			<thead>
@@ -21,12 +17,10 @@
 			{(html/rows.html, _.extend({group = group}, context))}
 			</tbody>
 		</table>
-	{%
-		end --if
-	%}
 	</div>
 	<script>
 		var shortcutList_{{ id }} = new List('shortcutsGroup_{{ id }}', {valueNames: ['rowLabel']});
 	</script>
-{% end %}
+{% 		end
+	end %}
 </div>

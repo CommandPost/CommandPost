@@ -111,7 +111,7 @@ function plugin.init(deps)
             }
         )
         :addHeading(APPEARANCE_HEADING + 3, i18n("shared") .. " " .. i18n("sections"))
-        :addContent(400, [[
+        :addContent(399, [[
                 </div>
                 <div class="menubarColumn">
         ]], false)

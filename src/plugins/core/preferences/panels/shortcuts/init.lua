@@ -241,7 +241,7 @@ end
 -- Returns:
 --  * None
 local function shortcutsPanelCallback(_, params)
-
+    local injectScript = mod._manager.injectScript
     if params then
         local paramsType = params["type"]
         if paramsType == "updateGroup" then
@@ -249,6 +249,7 @@ local function shortcutsPanelCallback(_, params)
             -- Update Group:
             --------------------------------------------------------------------------------
             mod.lastGroup(params["groupID"])
+            mod._manager.refresh()
             return
         elseif paramsType == "updateAction" then
             --------------------------------------------------------------------------------
@@ -259,19 +260,16 @@ local function shortcutsPanelCallback(_, params)
             if theCommand then
                 local getFn, setFn = theCommand:getAction()
                 if setFn then
-                    local elementID = params["elementID"]
                     local ok, result = xpcall(function()
                         setFn(false, function()
                             local getFnResult = getFn()
-                            if elementID and getFnResult then
-                                mod._manager.injectScript([[
-                                    document.getElementById("]] .. elementID .. [[").value = "]] .. (getFnResult or i18n("none")) .. [["
-                                ]])
+                            if getFnResult then
+                                injectScript("setShortcutsAction('" .. params["group"] .. "', '" .. params["command"] .. "', '" .. (getFnResult or i18n("none")) .. "')")
                             end
                         end)
                     end, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        log.ef("Error while triggering setFn for Group '%s', Command '%s':\n%s", params["group"], params["command"], result)
                         return nil
                     end
                 end
@@ -286,17 +284,12 @@ local function shortcutsPanelCallback(_, params)
             if theCommand then
                 local _, setFn = theCommand:getAction()
                 if setFn then
-                    local elementID = params["elementID"]
                     local ok, result = xpcall(function()
                         setFn(true)
-                        if elementID then
-                            mod._manager.injectScript([[
-                                document.getElementById("]] .. elementID .. [[").value = "]] .. i18n("none") .. [["
-                            ]])
-                        end
+                        injectScript("setShortcutsAction('" .. params["group"] .. "', '" .. params["command"] .. "', '" .. i18n("none") .. "')")
                     end, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        log.ef("Error while triggering setFn for Group '%s', Command '%s':\n%s", params["group"], params["command"], result)
                         return nil
                     end
                 end
