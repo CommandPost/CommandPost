@@ -12,8 +12,8 @@
 				<td class="rowLabel">{{ cmd:getTitle() }}</td>
 				<td class="rowAction">
 				{%
-				local getFn = cmd:getAction()
-				if getFn then
+				if cmd:hasAction() then
+					local getFn = cmd:getAction()
 				%}
 					<input type="text" id="shortcuts{{ group:id() }}_button{{ cmd:id() }}_action" class="scActionTextbox" value="{{ getFn() or i18nNone }}" disabled>
 					<a id="shortcuts{{ group:id() }}_button{{ cmd:id() }}_actionButton" href="#" class="button scActionButton" onclick="pressShortcutsActionButton('{{ group:id() }}', '{{ cmd:id() }}')">{{ i18nSelect }}</a>

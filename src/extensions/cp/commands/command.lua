@@ -146,6 +146,19 @@ function command.mt:getAction()
     return self._actionGetFn, self._actionSetFn
 end
 
+--- cp.commands.command:hasAction() -> boolean
+--- Method
+--- Gets whether or not any action callbacks have been assigned.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if action callbacks have been assigned, otherwise `false`.
+function command.mt:hasAction()
+    return (self._actionGetFn ~= nil and self._actionSetFn ~= nil) or false
+end
+
 --- cp.commands.command:getTitle() -> string
 --- Method
 --- Returns the command title in the current language, if availalbe. If not, the ID is returned.
