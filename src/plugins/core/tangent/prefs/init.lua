@@ -101,6 +101,7 @@ end
 -- Returns:
 --  * None
 local function tangentPanelCallback(id, params)
+    local injectScript = mod._prefsManager.injectScript
     if params and params["type"] then
         if params["type"] == "updateAction" then
 
@@ -132,7 +133,7 @@ local function tangentPanelCallback(id, params)
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
                     mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
-                    mod._prefsManager.refresh()
+                    injectScript("setTangentAction(" .. buttonID .. ", '" .. actionTitle .. "')")
                 end)
 
             --------------------------------------------------------------------------------
@@ -142,7 +143,8 @@ local function tangentPanelCallback(id, params)
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
             mod._favourites.clearAction(buttonID)
-            mod._prefsManager.refresh()
+            injectScript("setTangentAction(" .. buttonID .. ", '" .. i18n("none") .. "')")
+
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
