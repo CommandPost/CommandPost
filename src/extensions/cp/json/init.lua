@@ -190,7 +190,7 @@ function mod.prop(path, folder, filename, defaultValue)
         else
             log.ef("Failed to create JSON folder: %s", fullPath)
         end
-    end)
+    end):deepTable()
 
 end
 

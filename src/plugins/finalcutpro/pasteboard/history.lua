@@ -292,10 +292,10 @@ end
 function plugin.postInit()
 
     --------------------------------------------------------------------------------
-    -- Migrate Legacy Property Pasteboard History to JSON:
+    -- Copy Legacy Property Pasteboard History to JSON:
     --------------------------------------------------------------------------------
     local legacy = config.get("pasteboardHistory", nil)
-    if legacy then
+    if legacy and not config.get("pasteboardHistoryCopied") then
 
         local migrateHistory = {}
 
@@ -304,8 +304,10 @@ function plugin.postInit()
         end
 
         mod.history(migrateHistory)
-        config.set("pasteboardHistory", nil)
-        log.df("Migrated Pasteboard History from Plist to JSON.")
+
+        config.set("pasteboardHistoryCopied", true)
+
+        log.df("Copied Pasteboard History from Plist to JSON.")
     end
 
 end

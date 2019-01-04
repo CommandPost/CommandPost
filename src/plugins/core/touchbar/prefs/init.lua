@@ -1,4 +1,4 @@
---- === plugins.core.preferences.panels.touchbar ===
+--- === plugins.core.touchbar.prefs ===
 ---
 --- Touch Bar Preferences Panel
 
@@ -44,27 +44,27 @@ local _                                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.panels.touchbar.supportedExtensions -> string
+--- plugins.core.touchbar.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Touch Bar Icons.
 mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 
---- plugins.core.preferences.panels.touchbar.defaultIconPath -> string
+--- plugins.core.touchbar.prefs.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = config.assetsPath .. "/icons"
 
---- plugins.core.preferences.panels.touchbar.enabled <cp.prop: boolean>
+--- plugins.core.touchbar.prefs.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar Support.
 mod.enabled = config.prop("enableTouchBar", false)
 
---- plugins.core.preferences.panels.touchbar.lastGroup <cp.prop: string>
+--- plugins.core.touchbar.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("touchBarPreferencesLastGroup", nil)
 
---- plugins.core.preferences.panels.touchbar.maxItems -> number
+--- plugins.core.touchbar.prefs.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
 mod.maxItems = 8
@@ -392,7 +392,7 @@ local function touchBarPanelCallback(id, params)
     end
 end
 
---- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
+--- plugins.core.touchbar.prefs.setGroupEditor(groupId, editorFn) -> none
 --- Function
 --- Sets the Group Editor
 ---
@@ -409,7 +409,7 @@ function mod.setGroupEditor(groupId, editorFn)
     mod._groupEditors[groupId] = editorFn
 end
 
---- plugins.core.preferences.panels.touchbar.getGroupEditor(groupId) -> none
+--- plugins.core.touchbar.prefs.getGroupEditor(groupId) -> none
 --- Function
 --- Gets the Group Editor
 ---
@@ -533,7 +533,7 @@ local function locationOptions()
     return options
 end
 
---- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
+--- plugins.core.touchbar.prefs.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
 ---
@@ -642,7 +642,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.preferences.panels.touchbar",
+    id              = "core.touchbar.prefs",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]        = "manager",

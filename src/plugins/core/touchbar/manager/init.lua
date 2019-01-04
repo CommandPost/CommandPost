@@ -769,13 +769,13 @@ end
 function plugin.postInit(deps)
 
     --------------------------------------------------------------------------------
-    -- Migrate Legacy Property List Touch Bar Buttons to JSON:
+    -- Copy Legacy Property List Touch Bar Buttons to JSON:
     --------------------------------------------------------------------------------
     local legacyControls = config.get("touchBarButtons", nil)
-    if legacyControls then
-        mod._items(fnutils.copy(legacyControls))
-        config.set("touchBarButtons", nil)
-        log.df("Migrated Touch Bar Buttons from Plist to JSON.")
+    if legacyControls and not config.get("touchBarButtonsCopied") then
+        mod._items(legacyControls)
+        config.set("touchBarButtonsCopied", true)
+        log.df("Copied Touch Bar Buttons from Plist to JSON.")
     end
 
     --------------------------------------------------------------------------------

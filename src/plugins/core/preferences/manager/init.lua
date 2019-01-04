@@ -178,16 +178,16 @@ local function isPanelIDValid(whichID)
     return false
 end
 
--- currentPanelID() -> string
--- Function
--- Returns the panel ID with the highest priority.
---
--- Parameters:
--- * None
---
--- Returns:
--- * The panel ID as a string
-local function currentPanelID()
+--- plugins.core.preferences.manager.currentPanelID() -> string
+--- Function
+--- Returns the panel ID with the highest priority.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The panel ID as a string
+function mod.currentPanelID()
     local id = mod.lastTab()
     if id and isPanelIDValid(id) then
         return id
@@ -210,7 +210,7 @@ local function generateHTML()
 
     env.debugMode = config.developerMode()
     env.panels = mod._panels
-    env.currentPanelID = currentPanelID()
+    env.currentPanelID = mod.currentPanelID()
     env.webviewLabel = mod.WEBVIEW_LABEL
 
     local result, err = mod._panelRenderer(env)
@@ -417,7 +417,7 @@ function mod.show()
         dialog.displayMessage("There are no Preferences Panels to display.")
         return nil
     else
-        mod.selectPanel(currentPanelID())
+        mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
         mod._webview:show()
         mod.focus()
@@ -472,7 +472,7 @@ end
 ---  * None
 function mod.refresh()
     if mod._webview then
-        mod.selectPanel(currentPanelID())
+        mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
     end
 end
