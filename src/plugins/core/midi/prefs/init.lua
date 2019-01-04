@@ -1,4 +1,4 @@
---- === plugins.core.preferences.panels.midi ===
+--- === plugins.core.midi.prefs ===
 ---
 --- MIDI Preferences Panel
 
@@ -21,6 +21,7 @@ local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
 local inspect                                   = require("hs.inspect")
 local midi                                      = require("hs.midi")
+local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -44,12 +45,17 @@ local _                                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.panels.midi.lastGroup <cp.prop: string>
+--- plugins.core.midi.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("midiPreferencesLastGroup", nil)
 
--- plugins.core.preferences.panels.midi.resetMIDI() -> none
+--- plugins.core.midi.prefs.lastGroup <cp.prop: string>
+--- Field
+--- Last group used in the Preferences Drop Down.
+mod.scrollBarPosition = config.prop("midiPreferencesScrollBarPosition", {})
+
+-- plugins.core.midi.prefs.resetMIDI() -> none
 -- Function
 -- Prompts to reset shortcuts to default for all groups.
 --
@@ -67,7 +73,7 @@ function mod._resetMIDI()
     end, i18n("midiResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- plugins.core.preferences.panels.midi.resetMIDIGroup() -> none
+-- plugins.core.midi.prefs.resetMIDIGroup() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
 --
@@ -176,7 +182,6 @@ local function generateContent()
         }
     ]], {label = mod._manager.getLabel()})
 
-
     local context = {
         _                           = _,
         midiGroupSelect             = midiGroupSelect,
@@ -186,6 +191,7 @@ local function generateContent()
         maxItems                    = mod._midi.maxItems,
         midiDevices                 = mod._midi.devices(),
         virtualMidiDevices          = mod._midi.virtualDevices(),
+        scrollBarPosition           = mod.scrollBarPosition(),
         items                       = mod._midi.getItems(),
         i18nSelect 	                = i18n("select"),
         i18nClear 	                = i18n("clear"),
@@ -230,17 +236,15 @@ end
 -- Returns:
 --  * None
 local function setValue(groupID, buttonID, field, value)
-    mod._manager.injectScript([[
-        document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_]] .. field .. [[").value = "]] .. value .. [["
-    ]])
+    mod._manager.injectScript("setMidiValue('" .. groupID .. "', '" .. buttonID .. "', '" .. field .. "', '" .. value .. "');")
 end
 
---- plugins.core.preferences.panels.midi._currentlyLearning -> boolean
+--- plugins.core.midi.prefs._currentlyLearning -> boolean
 --- Variable
 --- Are we in learning mode?
 mod._currentlyLearning = false
 
--- plugins.core.preferences.panels.midi._destroyMIDIWatchers() -> none
+-- plugins.core.midi.prefs._destroyMIDIWatchers() -> none
 -- Function
 -- Destroys any MIDI Watchers.
 --
@@ -263,14 +267,9 @@ function mod._destroyMIDIWatchers()
     end
     mod.learningMidiDevices = nil
     mod.learningMidiDeviceNames = nil
-
-    --------------------------------------------------------------------------------
-    -- Garbage Collection:
-    --------------------------------------------------------------------------------
-    collectgarbage()
 end
 
--- plugins.core.preferences.panels.midi._stopLearning(id, params) -> none
+-- plugins.core.midi.prefs._stopLearning(id, params) -> none
 -- Function
 -- Sets the Group Editor
 --
@@ -315,19 +314,7 @@ function mod._stopLearning(_, params, cancel, skipUpdateUI)
     --------------------------------------------------------------------------------
     -- Update the UI:
     --------------------------------------------------------------------------------
-    local maxItems = mod._midi.maxItems
-    local groupID = params["groupID"]
-    local js = ""
-    for i=1,maxItems,1 do
-        if groupID then
-            js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "visible";]] .. "\n"
-            js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").innerHTML = "]] .. i18n("learn") .. [[";]] .. "\n"
-            if not skipUpdateUI then
-                js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
-            end
-        end
-    end
-    mod._manager.injectScript(js)
+    mod._manager.injectScript("stopLearnMode('" .. i18n("learn") .. "')")
 
     --------------------------------------------------------------------------------
     -- Destroy the MIDI watchers:
@@ -338,7 +325,7 @@ end
 
 mod._midiCallbackInProgress = {}
 
--- plugins.core.preferences.panels.midi._startLearning(id, params) -> none
+-- plugins.core.midi.prefs._startLearning(id, params) -> none
 -- Function
 -- Sets the Group Editor
 --
@@ -349,6 +336,12 @@ mod._midiCallbackInProgress = {}
 -- Returns:
 --  * None
 function mod._startLearning(id, params)
+
+    --------------------------------------------------------------------------------
+    -- Setup some locals:
+    --------------------------------------------------------------------------------
+    local injectScript = mod._manager.injectScript
+    local setItem = mod._midi.setItem
 
     --------------------------------------------------------------------------------
     -- Destroy any leftover MIDI Watchers:
@@ -365,36 +358,30 @@ function mod._startLearning(id, params)
     --------------------------------------------------------------------------------
     mod._midi.learningMode = true
 
-    local maxItems = mod._midi.maxItems
+    --------------------------------------------------------------------------------
+    -- Start Learning Mode in JavaScript Land:
+    --------------------------------------------------------------------------------
     local groupID = params["groupID"]
     local buttonID = params["buttonID"]
-    local js = ""
-    for i=1,maxItems,1 do
-        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
-    end
-    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").style.visibility = "visible";]] .. "\n"
-    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").innerHTML = "Stop";]] .. "\n"
-    mod._manager.injectScript(js)
+    injectScript("startLearnMode('" .. groupID .. "', '" .. buttonID .. "', '" .. i18n("stop") .. "')")
 
     --------------------------------------------------------------------------------
     -- Reset the current line item:
     --------------------------------------------------------------------------------
     setValue(params["groupID"], params["buttonID"], "device", "")
-    mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+    setItem("device", params["buttonID"], params["groupID"], nil)
 
     setValue(params["groupID"], params["buttonID"], "commandType", "")
-    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
+    setItem("commandType", params["buttonID"], params["groupID"], nil)
 
     setValue(params["groupID"], params["buttonID"], "channel", "")
-    mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+    setItem("channel", params["buttonID"], params["groupID"], nil)
 
     setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
-    mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+    setItem("number", params["buttonID"], params["groupID"], nil)
 
     setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
-    mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
+    setItem("value", params["buttonID"], params["groupID"], nil)
 
     --------------------------------------------------------------------------------
     -- Setup MIDI watchers:
@@ -482,37 +469,29 @@ function mod._startLearning(id, params)
                                     -- Reset the current line item:
                                     --------------------------------------------------------------------------------
                                     setValue(params["groupID"], params["buttonID"], "device", "")
-                                    mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+                                    setItem("device", params["buttonID"], params["groupID"], nil)
 
                                     setValue(params["groupID"], params["buttonID"], "commandType", "")
-                                    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
+                                    setItem("commandType", params["buttonID"], params["groupID"], nil)
 
                                     setValue(params["groupID"], params["buttonID"], "channel", "")
-                                    mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+                                    setItem("channel", params["buttonID"], params["groupID"], nil)
 
                                     setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
-                                    mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+                                    setItem("number", params["buttonID"], params["groupID"], nil)
 
                                     setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
-                                    mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
-
-                                    local code = [[
-                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "#cc5e53";
-                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
-                                    ]]
-
-                                    mod._manager.injectScript(code)
-
-                                    for x=1,maxItems,1 do
-                                        js = [[document.getElementById("midi]] .. groupID .. [[_button]] .. x .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-                                        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. x .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-                                        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. x .. [[].style.backgroundColor = "";]]
-                                    end
+                                    setItem("value", params["buttonID"], params["groupID"], nil)
 
                                     --------------------------------------------------------------------------------
                                     -- Exit the callback:
                                     --------------------------------------------------------------------------------
                                     mod._stopLearning(id, params, code, true)
+
+                                    --------------------------------------------------------------------------------
+                                    -- Highlight the row red in JavaScript Land:
+                                    --------------------------------------------------------------------------------
+                                    injectScript("highlightRowRed('" .. groupID .. "', " .. i .. ")")
                                     return
                                 end
                             end
@@ -524,41 +503,41 @@ function mod._startLearning(id, params)
                     --------------------------------------------------------------------------------
                     if metadata.isVirtual then
                         setValue(params["groupID"], params["buttonID"], "device", "virtual_" .. callbackDeviceName)
-                        mod._midi.setItem("device", params["buttonID"], params["groupID"], "virtual_" .. callbackDeviceName)
+                        setItem("device", params["buttonID"], params["groupID"], "virtual_" .. callbackDeviceName)
                     else
                         setValue(params["groupID"], params["buttonID"], "device", callbackDeviceName)
-                        mod._midi.setItem("device", params["buttonID"], params["groupID"], callbackDeviceName)
+                        setItem("device", params["buttonID"], params["groupID"], callbackDeviceName)
                     end
 
                     setValue(params["groupID"], params["buttonID"], "commandType", commandType)
-                    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], commandType)
+                    setItem("commandType", params["buttonID"], params["groupID"], commandType)
 
-                    setValue(params["groupID"], params["buttonID"], "channel", metadata.channel + 1)
-                    mod._midi.setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
+                    setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
+                    setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
 
                     if commandType == "noteOff" or commandType == "noteOn" then
 
                         setValue(params["groupID"], params["buttonID"], "number", metadata.note)
-                        mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.note)
+                        setItem("number", params["buttonID"], params["groupID"], metadata.note)
 
                         setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
-                        mod._midi.setItem("value", params["buttonID"], params["groupID"], i18n("none"))
+                        setItem("value", params["buttonID"], params["groupID"], i18n("none"))
 
                     elseif commandType == "controlChange" then
 
                         setValue(params["groupID"], params["buttonID"], "number", metadata.controllerNumber)
-                        mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
+                        setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
 
                         setValue(params["groupID"], params["buttonID"], "value", controllerValue)
-                        mod._midi.setItem("value", params["buttonID"], params["groupID"], controllerValue)
+                        setItem("value", params["buttonID"], params["groupID"], controllerValue)
 
                     elseif commandType == "pitchWheelChange" then
 
                         --setValue(params["groupID"], params["buttonID"], "number", "Pitch")
-                        --mod._midi.setItem("number", params["buttonID"], params["groupID"], "Pitch")
+                        --setItem("number", params["buttonID"], params["groupID"], "Pitch")
 
                         setValue(params["groupID"], params["buttonID"], "value", metadata.pitchChange)
-                        mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.pitchChange)
+                        setItem("value", params["buttonID"], params["groupID"], metadata.pitchChange)
 
                     end
 
@@ -586,8 +565,9 @@ end
 -- Returns:
 --  * None
 local function midiPanelCallback(id, params)
-    if params and params["type"] then
-        if params["type"] == "updateAction" then
+    local callbackType = params and params["type"]
+    if callbackType then
+        if callbackType == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
@@ -644,7 +624,7 @@ local function midiPanelCallback(id, params)
             -- Show Activator:
             --------------------------------------------------------------------------------
             mod.activator[groupID]:show()
-        elseif params["type"] == "clear" then
+        elseif callbackType == "clear" then
             --------------------------------------------------------------------------------
             -- Clear:
             --------------------------------------------------------------------------------
@@ -662,52 +642,46 @@ local function midiPanelCallback(id, params)
 
             setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
             mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
-
-        elseif params["type"] == "updateNumber" then
+        elseif callbackType == "updateNumber" then
             --------------------------------------------------------------------------------
             -- Update Number:
             --------------------------------------------------------------------------------
             --log.df("Updating Device: %s", params["number"])
             mod._midi.setItem("number", params["buttonID"], params["groupID"], params["number"])
-        elseif params["type"] == "updateDevice" then
+        elseif callbackType == "updateDevice" then
             --------------------------------------------------------------------------------
             -- Update Device:
             --------------------------------------------------------------------------------
             --log.df("Updating Device: %s", params["device"])
             mod._midi.setItem("device", params["buttonID"], params["groupID"], params["device"])
-
-        elseif params["type"] == "updateCommandType" then
+        elseif callbackType == "updateCommandType" then
             --------------------------------------------------------------------------------
             -- Update Command Type:
             --------------------------------------------------------------------------------
             --log.df("Updating Command Type: %s", params["commandType"])
             mod._midi.setItem("commandType", params["buttonID"], params["groupID"], params["commandType"])
-        elseif params["type"] == "updateChannel" then
+        elseif callbackType == "updateChannel" then
             --------------------------------------------------------------------------------
             -- Update Channel:
             --------------------------------------------------------------------------------
             --log.df("Updating Channel: %s", params["channel"])
             mod._midi.setItem("channel", params["buttonID"], params["groupID"], params["channel"])
-        elseif params["type"] == "updateValue" then
+        elseif callbackType == "updateValue" then
             --------------------------------------------------------------------------------
             -- Update Value:
             --------------------------------------------------------------------------------
             --log.df("Updating Value: %s", params["value"])
             mod._midi.setItem("value", params["buttonID"], params["groupID"], params["value"])
-        elseif params["type"] == "updateGroup" then
+        elseif callbackType == "updateGroup" then
             --------------------------------------------------------------------------------
             -- Update Group:
-            --------------------------------------------------------------------------------
-
-            --------------------------------------------------------------------------------
             -- Change the MIDI Bank as you change the group drop down:
             --------------------------------------------------------------------------------
             mod._midi.forceGroupChange(params["groupID"], mod._midi.enabled())
-
             mod._stopLearning(id, params)
             mod.lastGroup(params["groupID"])
             mod._manager.refresh()
-        elseif params["type"] == "learnButton" then
+        elseif callbackType == "learnButton" then
             --------------------------------------------------------------------------------
             -- Learn Button:
             --------------------------------------------------------------------------------
@@ -715,6 +689,14 @@ local function midiPanelCallback(id, params)
                 mod._stopLearning(id, params, true)
             else
                 mod._startLearning(id, params)
+            end
+        elseif callbackType == "scrollBarPosition" then
+            local value = params["value"]
+            local groupID = params["groupID"]
+            if value and groupID then
+                local scrollBarPosition = mod.scrollBarPosition()
+                scrollBarPosition[groupID] = value
+                mod.scrollBarPosition(scrollBarPosition)
             end
         else
             --------------------------------------------------------------------------------
@@ -727,7 +709,7 @@ local function midiPanelCallback(id, params)
     end
 end
 
--- plugins.core.preferences.panels.midi._displayBooleanToString(value) -> none
+-- plugins.core.midi.prefs._displayBooleanToString(value) -> none
 -- Function
 -- Converts a boolean to a string for use in the CSS block style value.
 --
@@ -744,7 +726,7 @@ function mod._displayBooleanToString(value)
     end
 end
 
--- plugins.core.preferences.panels.midi._applyTopDeviceToAll() -> none
+-- plugins.core.midi.prefs._applyTopDeviceToAll() -> none
 -- Function
 -- Applies the Top Group to all the subsequent groups.
 --
@@ -830,7 +812,7 @@ local function getMIDIDeviceList()
     return result
 end
 
---- plugins.core.preferences.panels.midi.init(deps, env) -> module
+--- plugins.core.midi.prefs.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
 ---
@@ -843,6 +825,11 @@ end
 function mod.init(deps, env)
 
     --------------------------------------------------------------------------------
+    -- Define the Panel ID:
+    --------------------------------------------------------------------------------
+    local panelID = "midi"
+
+    --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._midi           = deps.midi
@@ -852,15 +839,32 @@ function mod.init(deps, env)
     mod._env            = env
 
     --------------------------------------------------------------------------------
+    -- Refresh the webview if MIDI devices are added or removed.
+    -- There's a slight delay on this, otherwise CommandPost gets stuck in an
+    -- infinite loop.
+    --------------------------------------------------------------------------------
+    mod._refreshTimer = timer.delayed.new(0.2, function()
+        if mod._manager._webview ~= nil and mod._manager.currentPanelID() == panelID then
+            --log.df("Refreshing MIDI Preferences as number of MIDI Devices have changed.")
+            mod._manager.refresh()
+        --else
+            --log.df("Not Refereshing MIDI Preferences as the panel is not active.")
+        end
+    end)
+    mod._midi.numberOfMidiDevices:watch(function()
+         mod._refreshTimer:start()
+    end)
+
+    --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033,
-        id              = "midi",
+        id              = panelID,
         label           = i18n("midi"),
         image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
         tooltip         = i18n("midi"),
-        height          = 780,
+        height          = 610,
         closeFn         = mod._destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
@@ -877,139 +881,7 @@ function mod.init(deps, env)
                 class       = "openAudioMIDISetup",
             }
         )
-        :addButton(0.3,
-            {
-                width       = 200,
-                label       = i18n("refreshMidi"),
-                onclick     = mod._manager.refresh,
-                class       = "refreshMidi",
-            }
-        )
         :addParagraph(5, html.br())
-        :addContent(1, ui.style([[
-            .midiColumn {
-                float: left;
-                width: 50%;
-            }
-
-            .midiRow {
-                clear: left;
-            }
-
-            /* Clear floats after the columns */
-            .midiRow:after {
-                content: "";
-                display: table;
-                clear: both;
-            }
-        ]]))
-        :addContent(1.01, [[<div class="midiRow">
-            <div class="midiColumn">
-        ]], false)
-        --------------------------------------------------------------------------------
-        --
-        -- MIDI Machine Control:
-        --
-        --------------------------------------------------------------------------------
-        :addHeading(1.1, i18n("midiMachineControl"))
-        :addCheckbox(1.2,
-            {
-                label       = i18n("transmitMMC"),
-                checked     = mod._midi.transmitMMC,
-                onchange    = function(_, params)
-                    mod._midi.transmitMMC(params.checked)
-                end,
-            }
-        )
-        :addSelect(1.3,
-            {
-                label       = i18n("device"),
-                width       = 250,
-                value       = mod._midi.transmitMMCDevice,
-                options     = getMIDIDeviceList,
-                required    = true,
-                onchange    = function(_, params)
-                    mod._midi.transmitMMCDevice(params.value)
-                end,
-            }
-        )
-        :addCheckbox(1.4,
-            {
-                label       = i18n("listenMMC"),
-                checked     = mod._midi.listenMMC,
-                onchange    = function(_, params)
-                    mod._midi.listenMMC(params.checked)
-                end,
-            }
-        )
-        :addSelect(1.5,
-            {
-                label       = i18n("device"),
-                width       = 250,
-                value       = mod._midi.listenMMCDevice,
-                options     = getMIDIDeviceList,
-                required    = true,
-                onchange    = function(_, params)
-                    mod._midi.listenMMCDevice(params.value)
-                end,
-            }
-        )
-        :addContent(1.6, [[
-            </div>
-            <div class="midiColumn">
-        ]], false)
-        --------------------------------------------------------------------------------
-        --
-        -- MIDI TIMECODE (MTC):
-        --
-        --------------------------------------------------------------------------------
-        :addHeading(2, i18n("midiTimecode"))
-        :addCheckbox(2.1,
-            {
-                label       = i18n("transmitMTC"),
-                checked     = mod._midi.transmitMTC,
-                onchange    = function(_, params)
-                    mod._midi.transmitMTC(params.checked)
-                end,
-            }
-        )
-        :addSelect(2.2,
-            {
-                label       = i18n("device"),
-                width       = 250,
-                value       = mod._midi.transmitMTCDevice,
-                options     = getMIDIDeviceList,
-                required    = true,
-                onchange    = function(_, params)
-                    mod._midi.transmitMTCDevice(params.value)
-                end,
-            }
-        )
-        :addCheckbox(2.3,
-            {
-                label       = i18n("listenMTC"),
-                checked     = mod._midi.listenMTC,
-                onchange    = function(_, params)
-                    mod._midi.listenMTC(params.checked)
-                end,
-            }
-        )
-        :addSelect(2.4,
-            {
-                label       = i18n("device"),
-                width       = 250,
-                value       = mod._midi.listenMTCDevice,
-                options     = getMIDIDeviceList,
-                required    = true,
-                onchange    = function(_, params)
-                    mod._midi.listenMTCDevice(params.value)
-                end,
-            }
-        )
-        :addContent(2.5, [[
-                </div>
-            </div>
-        ]], false)
         --------------------------------------------------------------------------------
         --
         -- MIDI CONTROLS:
@@ -1066,7 +938,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.preferences.panels.midi",
+    id              = "core.midi.prefs",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]        = "manager",
