@@ -410,8 +410,8 @@ function mod._startLearning(id, params)
         if mod.learningMidiDevices[deviceName] then
             mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
 
-                local groupID = mod._learnGroupID
-                local buttonID = mod._learnButtonID
+                local learnGroupID = mod._learnGroupID
+                local learnButtonID = mod._learnButtonID
 
                 if not mod._currentlyLearning then
                     --------------------------------------------------------------------------------
@@ -427,8 +427,8 @@ function mod._startLearning(id, params)
                     --------------------------------------------------------------------------------
                     --log.df("commandType: %s", commandType)
                     --log.df("metadata: %s", hs.inspect(metadata))
-                    --log.df("groupID: %s", groupID)
-                    --log.df("buttonID: %s", buttonID)
+                    --log.df("learnGroupID: %s", learnGroupID)
+                    --log.df("learnButtonID: %s", learnButtonID)
 
                     --------------------------------------------------------------------------------
                     -- Support 14bit Control Change Messages:
@@ -447,9 +447,9 @@ function mod._startLearning(id, params)
                     -- Check it's not already in use:
                     --------------------------------------------------------------------------------
                     local items = mod._midi._items()
-                    if items[groupID] then
-                        for i, item in pairs(items[groupID]) do
-                            if buttonID and i ~= tonumber(buttonID) then
+                    if items[learnGroupID] then
+                        for i, item in pairs(items[learnGroupID]) do
+                            if learnButtonID and i ~= tonumber(learnButtonID) then
                                 --------------------------------------------------------------------------------
                                 -- Check for matching devices:
                                 --------------------------------------------------------------------------------
@@ -484,25 +484,25 @@ function mod._startLearning(id, params)
                                 --------------------------------------------------------------------------------
                                 if deviceMatch and match then
 
-                                    --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", groupID, buttonID)
+                                    --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", learnGroupID, learnButtonID)
 
                                     --------------------------------------------------------------------------------
                                     -- Reset the current line item:
                                     --------------------------------------------------------------------------------
-                                    setValue(groupID, buttonID, "device", "")
-                                    setItem("device", buttonID, groupID, nil)
+                                    setValue(learnGroupID, learnButtonID, "device", "")
+                                    setItem("device", learnButtonID, learnGroupID, nil)
 
-                                    setValue(groupID, buttonID, "commandType", "")
-                                    setItem("commandType", buttonID, groupID, nil)
+                                    setValue(learnGroupID, learnButtonID, "commandType", "")
+                                    setItem("commandType", learnButtonID, learnGroupID, nil)
 
-                                    setValue(groupID, buttonID, "channel", "")
-                                    setItem("channel", buttonID, groupID, nil)
+                                    setValue(learnGroupID, learnButtonID, "channel", "")
+                                    setItem("channel", learnButtonID, learnGroupID, nil)
 
-                                    setValue(groupID, buttonID, "number", i18n("none"))
-                                    setItem("number", buttonID, groupID, nil)
+                                    setValue(learnGroupID, learnButtonID, "number", i18n("none"))
+                                    setItem("number", learnButtonID, learnGroupID, nil)
 
-                                    setValue(groupID, buttonID, "value", i18n("none"))
-                                    setItem("value", buttonID, groupID, nil)
+                                    setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                                    setItem("value", learnButtonID, learnGroupID, nil)
 
                                     --------------------------------------------------------------------------------
                                     -- Exit the callback:
@@ -512,7 +512,7 @@ function mod._startLearning(id, params)
                                     --------------------------------------------------------------------------------
                                     -- Highlight the row red in JavaScript Land:
                                     --------------------------------------------------------------------------------
-                                    injectScript("highlightRowRed('" .. groupID .. "', " .. i .. ")")
+                                    injectScript("highlightRowRed('" .. learnGroupID .. "', " .. i .. ")")
                                     return
                                 end
                             end
@@ -523,39 +523,39 @@ function mod._startLearning(id, params)
                     -- Update the UI & Save Preferences:
                     --------------------------------------------------------------------------------
                     if metadata.isVirtual then
-                        setValue(groupID, buttonID, "device", "virtual_" .. callbackDeviceName)
-                        setItem("device", buttonID, groupID, "virtual_" .. callbackDeviceName)
+                        setValue(learnGroupID, learnButtonID, "device", "virtual_" .. callbackDeviceName)
+                        setItem("device", learnButtonID, learnGroupID, "virtual_" .. callbackDeviceName)
                     else
-                        setValue(groupID, buttonID, "device", callbackDeviceName)
-                        setItem("device", buttonID, groupID, callbackDeviceName)
+                        setValue(learnGroupID, learnButtonID, "device", callbackDeviceName)
+                        setItem("device", learnButtonID, learnGroupID, callbackDeviceName)
                     end
 
-                    setValue(groupID, buttonID, "commandType", commandType)
-                    setItem("commandType", buttonID, groupID, commandType)
+                    setValue(learnGroupID, learnButtonID, "commandType", commandType)
+                    setItem("commandType", learnButtonID, learnGroupID, commandType)
 
-                    setValue(groupID, buttonID, "channel", metadata.channel)
-                    setItem("channel", buttonID, groupID, metadata.channel)
+                    setValue(learnGroupID, learnButtonID, "channel", metadata.channel)
+                    setItem("channel", learnButtonID, learnGroupID, metadata.channel)
 
                     if commandType == "noteOff" or commandType == "noteOn" then
 
-                        setValue(groupID, buttonID, "number", metadata.note)
-                        setItem("number", buttonID, groupID, metadata.note)
+                        setValue(learnGroupID, learnButtonID, "number", metadata.note)
+                        setItem("number", learnButtonID, learnGroupID, metadata.note)
 
-                        setValue(groupID, buttonID, "value", i18n("none"))
-                        setItem("value", buttonID, groupID, i18n("none"))
+                        setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                        setItem("value", learnButtonID, learnGroupID, i18n("none"))
 
                     elseif commandType == "controlChange" then
 
-                        setValue(groupID, buttonID, "number", metadata.controllerNumber)
-                        setItem("number", buttonID, groupID, metadata.controllerNumber)
+                        setValue(learnGroupID, learnButtonID, "number", metadata.controllerNumber)
+                        setItem("number", learnButtonID, learnGroupID, metadata.controllerNumber)
 
-                        setValue(groupID, buttonID, "value", controllerValue)
-                        setItem("value", buttonID, groupID, controllerValue)
+                        setValue(learnGroupID, learnButtonID, "value", controllerValue)
+                        setItem("value", learnButtonID, learnGroupID, controllerValue)
 
                     elseif commandType == "pitchWheelChange" then
 
-                        setValue(groupID, buttonID, "value", metadata.pitchChange)
-                        setItem("value", buttonID, groupID, metadata.pitchChange)
+                        setValue(learnGroupID, learnButtonID, "value", metadata.pitchChange)
+                        setItem("value", learnButtonID, learnGroupID, metadata.pitchChange)
 
                     end
 
