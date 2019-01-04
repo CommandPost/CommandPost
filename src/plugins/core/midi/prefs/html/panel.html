@@ -175,6 +175,11 @@
         document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 1s");
 	}
 
+	function unhighlightRowRed(groupID, buttonID) {
+		document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.backgroundColor = "";
+        document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 0s");
+	}
+
 	function saveScrollbarPosition(groupID, element) {
 		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
 			try {
