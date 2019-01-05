@@ -390,7 +390,6 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
-
     --------------------------------------------------------------------------------
     -- Ignore callbacks when in learning mode:
     --------------------------------------------------------------------------------
@@ -688,41 +687,10 @@ end
 --- Total number of MIDI Devices detected (including both physical and virtual).
 mod.numberOfMidiDevices = prop.THIS(0)
 
---- plugins.core.midi.manager.update() -> none
---- Function
---- Updates the MIDI Watchers.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.updateDeviceCallback()
-    if mod.enabled() then
-        --------------------------------------------------------------------------------
-        -- Setup MIDI Device Callback:
-        --------------------------------------------------------------------------------
-        midi.deviceCallback(function(devices, virtualDevices)
-            --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
-            mod._deviceNames = devices
-            mod._virtualDevices = virtualDevices
-            mod.numberOfMidiDevices(#devices + #virtualDevices)
-        end)
-    else
-        --------------------------------------------------------------------------------
-        -- Destroy MIDI Device Callback:
-        --------------------------------------------------------------------------------
-        midi.deviceCallback(nil)
-    end
-end
-
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
-mod.enabled = config.prop("enableMIDI", false):watch(function()
-    mod.update()
-    mod.updateDeviceCallback()
-end)
+mod.enabled = config.prop("enableMIDI", false):watch(function() mod.update() end)
 
 --- plugins.core.midi.manager.init(deps, env) -> none
 --- Function
@@ -758,6 +726,20 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Setup MIDI Device Callback:
+    --
+    -- This callback needs to be setup, regardless of whether MIDI controls are
+    -- enabled or not so that we can refresh the MIDI Preferences panel if a MIDI
+    -- device is added or removed.
+    --------------------------------------------------------------------------------
+    midi.deviceCallback(function(devices, virtualDevices)
+        --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
+        mod._deviceNames = devices
+        mod._virtualDevices = virtualDevices
+        mod.numberOfMidiDevices(#devices + #virtualDevices)
+    end)
+
     --------------------------------------------------------------------------------
     -- Get list of MIDI devices:
     --------------------------------------------------------------------------------

@@ -45,6 +45,11 @@ local _                                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- plugins.core.midi.prefs._midiCallbackInProgress -> table
+-- Variable
+-- MIDI Callback in Progress
+mod._midiCallbackInProgress = {}
+
 --- plugins.core.midi.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
@@ -128,6 +133,20 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
+
+    --------------------------------------------------------------------------------
+    -- Build a table of all the devices recognised when initialising the panel:
+    --------------------------------------------------------------------------------
+    local midiDevices = mod._midi.devices()
+    local virtualMidiDevices = mod._midi.virtualDevices()
+    local devices = {}
+    for _, device in pairs(midiDevices) do
+        table.insert(devices, device)
+    end
+    for _, device in pairs(virtualMidiDevices) do
+        table.insert(devices, "virtual_" .. device)
+    end
+    mod._devices = devices
 
     --------------------------------------------------------------------------------
     -- The Group Select:
@@ -322,8 +341,6 @@ function mod._stopLearning(_, params, cancel, skipUpdateUI)
     mod._destroyMIDIWatchers()
 
 end
-
-mod._midiCallbackInProgress = {}
 
 -- plugins.core.midi.prefs._startLearning(id, params) -> none
 -- Function
@@ -563,6 +580,13 @@ function mod._startLearning(id, params)
                     -- Stop Learning:
                     --------------------------------------------------------------------------------
                     mod._stopLearning(id, params)
+
+                    --------------------------------------------------------------------------------
+                    -- If the device isn't already listed in the panel we need to refresh:
+                    --------------------------------------------------------------------------------
+                    if not tools.tableContains(mod._devices, callbackDeviceName) then
+                        mod._manager.refresh()
+                    end
                 end
             end)
         else
@@ -773,67 +797,6 @@ function mod._applyTopDeviceToAll()
             end
         end
     end, i18n("midiTopDeviceToAll"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
-
-local function getMIDIDeviceList()
-    local midiDevices = mod._midi.devices()
-    local virtualMidiDevices = mod._midi.virtualDevices()
-
-    local result = {}
-
-    table.insert(result, {
-        value = "",
-        label = i18n("none"),
-    })
-
-    table.insert(result, {
-        value = "-",
-        label = "--------------------------",
-        disabled = true,
-    })
-    table.insert(result, {
-        value = "-",
-        label = string.upper(i18n("physical")) .. ":",
-        disabled = true,
-    })
-    table.insert(result, {
-        value = "-",
-        label = "--------------------------",
-        disabled = true,
-    })
-
-    for _, device in pairs(midiDevices) do
-        table.insert(result, {
-            value = device,
-            label = device,
-        })
-    end
-
-
-    table.insert(result, {
-        value = "-",
-        label = "--------------------------",
-        disabled = true,
-    })
-    table.insert(result, {
-        value = "-",
-        label = string.upper(i18n("virtual")) .. ":",
-        disabled = true,
-    })
-    table.insert(result, {
-        value = "-",
-        label = "--------------------------",
-        disabled = true,
-    })
-
-    for _, device in pairs(virtualMidiDevices) do
-        table.insert(result, {
-            value = "virtual_" .. device,
-            label = device,
-        })
-    end
-    return result
 end
 
 --- plugins.core.midi.prefs.init(deps, env) -> module
