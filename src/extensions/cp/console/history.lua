@@ -46,11 +46,6 @@ local FILE_NAME = "History.cpCache"
 -- Folder Name where settings file is contained.
 local FOLDER_NAME = "Error Log"
 
--- CHECK_INTERVAL -> number
--- Constant
--- How often to check for changes.
---local CHECK_INTERVAL = 1
-
 -- MAXIMUM -> number
 -- Constant
 -- Maximum history to save
@@ -76,7 +71,7 @@ local currentHistoryCount = #console.getHistory()
 --- cp.console.history.cache <cp.prop: table>
 --- Field
 --- Console History Cache
-mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, nil)
+mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, {})
 
 -- uniqueHistory(raw) -> table
 -- Function
@@ -211,26 +206,6 @@ end
 --- Returns:
 ---  * Self
 function mod.init()
-
-    --------------------------------------------------------------------------------
-    -- Setup Autosave Timer:
-    --------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- NOTE: Chris has disabled this, because he THINKS it's the source of a
-    --       memory leak. However, the Console history SHOULD still work
-    --       as it's called as part of garbage collection.
-    --------------------------------------------------------------------------------
-
-    --[[
-    mod.autosaveHistory = timer.new(CHECK_INTERVAL, function()
-        local historyNow = console.getHistory()
-        if #historyNow ~= currentHistoryCount then
-            currentHistoryCount = #historyNow
-            mod.saveHistory()
-        end
-    end):start()
-    --]]
 
     --------------------------------------------------------------------------------
     -- Retrieve History on Boot:
