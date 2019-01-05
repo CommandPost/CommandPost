@@ -55,12 +55,12 @@ mod._midiCallbackInProgress = {}
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("midiPreferencesLastGroup", nil)
 
---- plugins.core.midi.prefs.lastGroup <cp.prop: string>
+--- plugins.core.midi.prefs.scrollBarPosition <cp.prop: table>
 --- Field
---- Last group used in the Preferences Drop Down.
+--- Scroll Bar Position
 mod.scrollBarPosition = config.prop("midiPreferencesScrollBarPosition", {})
 
--- plugins.core.midi.prefs.resetMIDI() -> none
+-- plugins.core.midi.prefs._resetMIDI() -> none
 -- Function
 -- Prompts to reset shortcuts to default for all groups.
 --
@@ -78,7 +78,7 @@ function mod._resetMIDI()
     end, i18n("midiResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- plugins.core.midi.prefs.resetMIDIGroup() -> none
+-- plugins.core.midi.prefs._resetMIDIGroup() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
 --

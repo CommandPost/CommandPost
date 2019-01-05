@@ -20,15 +20,17 @@ local log                                       = require("hs.logger").new("tbMa
 local canvas                                    = require("hs.canvas")
 local fnutils                                   = require("hs.fnutils")
 local image                                     = require("hs.image")
+local styledtext                                = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
+local dialog                                    = require("cp.dialog")
+local i18n                                      = require("cp.i18n")
 local json                                      = require("cp.json")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -103,7 +105,7 @@ mod.maxItems = 20
 --- plugins.core.touchbar.manager.numberOfSubGroups -> number
 --- Variable
 --- The number of Sub Groups per Touch Bar Group.
-mod.numberOfSubGroups = 5
+mod.numberOfSubGroups = 9
 
 --- plugins.core.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
@@ -165,7 +167,7 @@ end
 --- Returns:
 ---  * None
 function mod.updateOrder(direction, button, group)
-    local buttons = copy(mod._items())
+    local buttons = mod._items()
 
     local shiftButton
     if direction == "down" then
@@ -206,7 +208,7 @@ end
 --- Returns:
 ---  * None
 function mod.updateIcon(button, group, icon)
-    local items = copy(mod._items())
+    local items = mod._items()
 
     button = tostring(button)
 
@@ -236,7 +238,7 @@ end
 --- Returns:
 ---  * `true` if successfully updated, or `false` if a duplicate entry was found
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-    local items = copy(mod._items())
+    local items = mod._items()
 
     --------------------------------------------------------------------------------
     -- Check to make sure the widget isn't already in use:
@@ -272,7 +274,7 @@ end
 
 --- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none
 --- Function
---- Updates a Touch Bar action.
+--- Updates a Touch Bar label.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -282,7 +284,7 @@ end
 --- Returns:
 ---  * None
 function mod.updateLabel(button, group, label)
-    local items = copy(mod._items())
+    local items = mod._items()
 
     button = tostring(button)
 
@@ -293,6 +295,28 @@ function mod.updateLabel(button, group, label)
         items[group][button] = {}
     end
     items[group][button]["label"] = label
+
+    mod._items(items)
+    mod.update()
+end
+
+--- plugins.core.touchbar.manager.updateBankLabel(group, label) -> none
+--- Function
+--- Updates a Touch Bar Bank Label.
+---
+--- Parameters:
+---  * group - Group ID as string
+---  * label - Label as string
+---
+--- Returns:
+---  * None
+function mod.updateBankLabel(group, label)
+    local items = mod._items()
+
+    if not items[group] then
+        items[group] = {}
+    end
+    items[group]["bankLabel"] = label
 
     mod._items(items)
     mod.update()
@@ -388,6 +412,24 @@ function mod.getLabel(button, group)
     local items = mod._items()
     if items[group] and items[group][button] and items[group][button]["label"] then
         return items[group][button]["label"]
+    else
+        return nil
+    end
+end
+
+--- plugins.core.touchbar.manager.getBankLabel(group) -> string
+--- Function
+--- Returns a specific Touch Bar Bank Label.
+---
+--- Parameters:
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Label as string
+function mod.getBankLabel(group)
+    local items = mod._items()
+    if items[group] and items[group] and items[group]["bankLabel"] then
+        return items[group]["bankLabel"]
     else
         return nil
     end
@@ -595,6 +637,88 @@ function mod.activeSubGroup()
     return tostring(result)
 end
 
+--- plugins.core.touchbar.manager.gotoSubGroup() -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * id - The ID of the sub-group.
+---
+--- Returns:
+---  * None
+function mod.gotoSubGroup(id)
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    currentSubGroup[activeGroup] = id
+    mod._currentSubGroup(currentSubGroup)
+end
+
+--- plugins.core.touchbar.manager.forceGroupChange(combinedGroupAndSubGroupID) -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
+---
+--- Returns:
+---  * None
+function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
+    if combinedGroupAndSubGroupID then
+        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
+        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
+        if group and subGroup then
+            local currentSubGroup = mod._currentSubGroup()
+            currentSubGroup[group] = tonumber(subGroup)
+            mod._currentSubGroup(currentSubGroup)
+        end
+        if notify then
+            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+        end
+    end
+end
+
+--- plugins.core.touchbar.manager.nextSubGroup() -> none
+--- Function
+--- Goes to the next sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.nextSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue < mod.numberOfSubGroups then
+        currentSubGroup[activeGroup] = currentSubGroupValue + 1
+    else
+        currentSubGroup[activeGroup] = 1
+    end
+    mod._currentSubGroup(currentSubGroup)
+end
+
+--- plugins.core.touchbar.manager.previousSubGroup() -> none
+--- Function
+--- Goes to the previous sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.previousSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue == 1 then
+        currentSubGroup[activeGroup] = mod.numberOfSubGroups
+    else
+        currentSubGroup[activeGroup] = currentSubGroupValue - 1
+    end
+    mod._currentSubGroup(currentSubGroup)
+end
+
 --- plugins.core.touchbar.manager.incrementActiveSubGroup() -> none
 --- Function
 --- Increments the active sub-group
@@ -639,6 +763,8 @@ function mod.incrementActiveSubGroup()
     -- Save to Preferences:
     mod._currentSubGroup(currentSubGroup)
 
+    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. result)
+
 end
 
 --- plugins.core.touchbar.manager.update() -> none
@@ -665,9 +791,12 @@ function mod.update()
     --------------------------------------------------------------------------------
     -- Create new buttons and widgets:
     --------------------------------------------------------------------------------
+    local activeGroup = mod.activeGroup()
+    local activeSubGroup = mod.activeSubGroup()
+    local activeGroupAndSubGroup = activeGroup .. activeSubGroup
     local items = mod._items()
     for groupID, group in pairs(items) do
-        if groupID == mod.activeGroup() .. mod.activeSubGroup() then
+        if groupID == activeGroupAndSubGroup then
             for buttonID, button in pairs(group) do
                 if button["action"] then
                     local action        = button["action"] or nil
@@ -701,6 +830,23 @@ function mod.update()
     end)
 
     --------------------------------------------------------------------------------
+    -- Add Bank Label if exists:
+    --------------------------------------------------------------------------------
+    if items and items[activeGroupAndSubGroup] and items[activeGroupAndSubGroup]["bankLabel"] then
+        local bankLabel = items[activeGroupAndSubGroup]["bankLabel"]
+        local id = "bankLabel"
+        local bankLabelCanvas = canvas.new{x = 0, y = 0, h = 30, w = 50}
+        bankLabelCanvas[1] = {
+            type    = "text",
+            text    = styledtext.getStyledTextFromData([[<span style="font-family: -apple-system; font-size: 10px; color: #FFFFFF; vertical-align: middle;">]] .. bankLabel .. [[</span>]]),
+            frame   = { x = 0, y = 8, h = "100%", w = "100%" }
+        }
+        local bankLabelCanvasItem = touchbar.item.newCanvas(bankLabelCanvas, id)
+        table.insert(mod._tbItemIDs, 1, id)
+        table.insert(mod._tbItems, 1, bankLabelCanvasItem)
+    end
+
+    --------------------------------------------------------------------------------
     -- Add buttons to the bar:
     --------------------------------------------------------------------------------
     mod._bar
@@ -709,7 +855,6 @@ function mod.update()
         :requiredIdentifiers(mod._tbItemIDs)
         :defaultIdentifiers(mod._tbItemIDs)
         :presentModalBar()
-
 end
 
 --- plugins.core.touchbar.manager.groupStatus(groupID, status) -> none
@@ -727,6 +872,15 @@ function mod.groupStatus(groupID, status)
     mod.update()
 end
 
+--- plugins.core.touchbar.manager.init(deps) -> self
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The module.
 function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod

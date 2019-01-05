@@ -1,6 +1,6 @@
---- === plugins.core.midi.controls.banks ===
+--- === plugins.core.touchbar.banks ===
 ---
---- MIDI Control Bank Actions.
+--- Touch Bar Bank Actions.
 
 --------------------------------------------------------------------------------
 --
@@ -27,7 +27,7 @@ local i18n                          = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.midi.controls.banks.init() -> nil
+--- plugins.core.touchbar.banks.init() -> nil
 --- Function
 --- Initialise the module.
 ---
@@ -37,22 +37,22 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
-    mod._handler = mod._actionmanager.addHandler("global_midibanks")
+    mod._handler = mod._actionmanager.addHandler("global_touchbarbanks")
         :onChoices(function(choices)
             for i=1, mod._manager.numberOfSubGroups do
-                choices:add(i18n("midi") .. " " .. i18n("bank") .. " " .. tostring(i))
-                    :subText(i18n("midiBankDescription"))
+                choices:add(i18n("touchBar") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("touchBarBankDescription"))
                     :params({ id = i })
                     :id(i)
             end
 
-            choices:add(i18n("next") .. " " .. i18n("midi") .. " " .. i18n("bank"))
-                :subText(i18n("midiBankDescription"))
+            choices:add(i18n("next") .. " " .. i18n("touchBar") .. " " .. i18n("bank"))
+                :subText(i18n("touchBarBankDescription"))
                 :params({ id = "next" })
                 :id("next")
 
-            choices:add(i18n("previous") .. " " .. i18n("midi") .. " " .. i18n("bank"))
-                :subText(i18n("midiBankDescription"))
+            choices:add(i18n("previous") .. " " .. i18n("touchBar") .. " " .. i18n("bank"))
+                :subText(i18n("touchBarBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
 
@@ -72,11 +72,12 @@ function mod.init()
                 local activeGroup = mod._manager.activeGroup()
                 local activeSubGroup = mod._manager.activeSubGroup()
                 if activeGroup and activeSubGroup then
-                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
                 end
+                mod._manager.update()
             end
         end)
-        :onActionId(function(action) return "midiBank" .. action.id end)
+        :onActionId(function(action) return "touchbarBank" .. action.id end)
     return mod
 end
 
@@ -86,10 +87,10 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.midi.controls.banks",
+    id              = "core.touchbar.banks",
     group           = "core",
     dependencies    = {
-        ["core.midi.manager"]   = "manager",
+        ["core.touchbar.manager"]   = "manager",
         ["core.action.manager"]	= "actionmanager",
     }
 }

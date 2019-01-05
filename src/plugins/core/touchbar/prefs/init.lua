@@ -64,6 +64,11 @@ mod.enabled = config.prop("enableTouchBar", false)
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("touchBarPreferencesLastGroup", nil)
 
+--- plugins.core.touchbar.prefs.scrollBarPosition <cp.prop: string>
+--- Field
+--- Last group used in the Preferences Drop Down.
+mod.scrollBarPosition = config.prop("touchBarPreferencesScrollBarPosition", {})
+
 --- plugins.core.touchbar.prefs.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
@@ -129,7 +134,7 @@ local function generateContent()
     for _,id in ipairs(commands.groupIds()) do
         for subGroupID=1, mod._tb.numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bar " .. tostring(subGroupID) .. ")"}
+            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (" .. i18n("bank") .. " " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
@@ -161,7 +166,6 @@ local function generateContent()
                 alert('An error has occurred. Does the controller exist yet?');
             }
 
-            //console.log("touchBarGroupSelect changed");
             var groupControls = document.getElementById("touchbarGroupControls");
             var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
             var children = groupControls.children;
@@ -181,11 +185,9 @@ local function generateContent()
         touchBarGroupSelect     = touchBarGroupSelect,
         groups                  = groups,
         defaultGroup            = defaultGroup,
-
+        scrollBarPosition       = mod.scrollBarPosition(),
         groupEditor             = mod.getGroupEditor,
-
         i18n                    = i18n,
-
         maxItems                = mod._tb.maxItems,
         tb                      = mod._tb,
     }
@@ -286,6 +288,11 @@ local function touchBarPanelCallback(id, params)
             -- Update Label:
             --------------------------------------------------------------------------------
             mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
+        elseif params["type"] == "updateBankLabel" then
+            --------------------------------------------------------------------------------
+            -- Update Bank Label:
+            --------------------------------------------------------------------------------
+            mod._tb.updateBankLabel(params["groupID"], params["label"])
         elseif params["type"] == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
@@ -361,6 +368,8 @@ local function touchBarPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Update Group:
             --------------------------------------------------------------------------------
+            mod._tb.forceGroupChange(params["groupID"], mod._tb.enabled())
+            mod._tb.update()
             mod.lastGroup(params["groupID"])
             mod._manager.refresh()
         elseif params["type"] == "upButtonPressed" or params["type"] == "downButtonPressed" then
@@ -381,6 +390,14 @@ local function touchBarPanelCallback(id, params)
                 shiftButton = tostring(tonumber(params["buttonID"]) + 1)
             end
             injectScript([[shiftTouchBarButtons(']] .. params["groupID"] .. [[', ']] .. params["buttonID"] .. [[', ']] .. shiftButton .. [[')]])
+        elseif params["type"] == "scrollBarPosition" then
+            local value = params["value"]
+            local groupID = params["groupID"]
+            if value and groupID then
+                local scrollBarPosition = mod.scrollBarPosition()
+                scrollBarPosition[groupID] = value
+                mod.scrollBarPosition(scrollBarPosition)
+            end
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
