@@ -461,42 +461,43 @@ function Viewer.lazy.prop:isPlaying()
             local element = self:playButton():UI()
             if element then
                 local window = element:attributeValue("AXWindow")
+                if window then
+                    local hsWindow = window:asHSWindow()
+                    local windowSnap = hsWindow:snapshot()
+                    local windowFrame = window:frame()
+                    local shotSize = windowSnap:size()
 
-                local hsWindow = window:asHSWindow()
-                local windowSnap = hsWindow:snapshot()
-                local windowFrame = window:frame()
-                local shotSize = windowSnap:size()
+                    local ratio = shotSize.h/windowFrame.h
+                    local elementFrame = element:frame()
 
-                local ratio = shotSize.h/windowFrame.h
-                local elementFrame = element:frame()
+                    local imageFrame = {
+                        x = (windowFrame.x-elementFrame.x)*ratio,
+                        y = (windowFrame.y-elementFrame.y)*ratio,
+                        w = shotSize.w,
+                        h = shotSize.h,
+                    }
 
-                local imageFrame = {
-                    x = (windowFrame.x-elementFrame.x)*ratio,
-                    y = (windowFrame.y-elementFrame.y)*ratio,
-                    w = shotSize.w,
-                    h = shotSize.h,
-                }
+                    --------------------------------------------------------------------------------
+                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
+                    --------------------------------------------------------------------------------
 
-                --------------------------------------------------------------------------------
-                -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                --------------------------------------------------------------------------------
+                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+                    c[1] = {
+                        type = "image",
+                        image = windowSnap,
+                        imageScaling = "none",
+                        imageAlignment = "topLeft",
+                        frame = imageFrame,
+                    }
 
-                local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-                c[1] = {
-                    type = "image",
-                    image = windowSnap,
-                    imageScaling = "none",
-                    imageAlignment = "topLeft",
-                    frame = imageFrame,
-                }
+                    local elementSnap = c:imageFromCanvas()
+                    c:delete()
 
-                local elementSnap = c:imageFromCanvas()
-                c:delete()
-
-                if elementSnap then
-                    elementSnap:size({h=60,w=60})
-                    local spot = elementSnap:colorAt({x=31,y=31})
-                    return spot and spot.blue < 0.5
+                    if elementSnap then
+                        elementSnap:size({h=60,w=60})
+                        local spot = elementSnap:colorAt({x=31,y=31})
+                        return spot and spot.blue < 0.5
+                    end
                 end
             end
             return false
