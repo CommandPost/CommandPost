@@ -104,7 +104,7 @@ mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
 --- plugins.core.midi.manager.numberOfSubGroups -> number
 --- Variable
 --- The number of Sub Groups per Touch Bar Group.
-mod.numberOfSubGroups = 5
+mod.numberOfSubGroups = 9
 
 --
 -- Used to prevent callback delays (sorry David, I know this is the worst possible way to do things):
@@ -298,7 +298,7 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midiBank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
         end
     end
 end
