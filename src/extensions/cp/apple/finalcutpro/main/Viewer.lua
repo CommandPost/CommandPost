@@ -395,14 +395,16 @@ function Viewer.lazy.prop:timecode()
                         -- Wait until we see the timecode in the viewer:
                         --------------------------------------------------------------------------------
                         local pasteboardPasteResult = just.doUntil(function()
-                            return tcField:value() == timecodeValue
+                            local blank = "00:00:00:00"
+                            local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
+                            return tcField:value() == formattedTimecodeValue
                         end, 5)
 
                         --------------------------------------------------------------------------------
                         -- Press return to complete the timecode entry:
                         --------------------------------------------------------------------------------
                         if not pasteboardPasteResult then
-                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode).")
+                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
                             return
                         else
                             eventtap.keyStroke({}, 'return')

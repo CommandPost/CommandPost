@@ -501,6 +501,11 @@ return test.suite("cp.apple.finalcutpro"):with(
                 effectsGroup = "_NS:166"
             end
 
+            if version >= v("10.4.4") then
+                skimmingGroup = "_NS:183"
+                effectsGroup = "_NS:170"
+            end
+
             ok(toolbar:isShowing())
             ok(toolbar:skimmingGroupUI() ~= nil)
             ok(skimmingGroup and toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == skimmingGroup)
