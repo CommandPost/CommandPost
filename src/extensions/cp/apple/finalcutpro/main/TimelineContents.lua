@@ -255,7 +255,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, self.UI)
+        self._playhead = Playhead(self, false, self.UI)
     end
     return self._playhead
 end
@@ -263,7 +263,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, self.UI)
+        self._skimmingPlayhead = Playhead(self, true, self.UI)
     end
     return self._skimmingPlayhead
 end
