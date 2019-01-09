@@ -12,34 +12,34 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log						  = require("hs.logger").new("actnmngr")
+local log				= require("hs.logger").new("actnmngr")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fnutils					= require("hs.fnutils")
-local urlevent				= require("hs.urlevent")
+local fnutils			= require("hs.fnutils")
+local urlevent			= require("hs.urlevent")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog					= require("cp.dialog")
-local prop						= require("cp.prop")
-local tools           = require("cp.tools")
-local i18n            = require("cp.i18n")
+local dialog			= require("cp.dialog")
+local prop				= require("cp.prop")
+local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:
 --------------------------------------------------------------------------------
-local activator				= require("activator")
-local handler					= require("handler")
+local activator			= require("activator")
+local handler			= require("handler")
 
 --------------------------------------------------------------------------------
 -- Local Extensions:
 --------------------------------------------------------------------------------
-local copy		    = fnutils.copy
-local format	    = string.format
-local insert        = table.insert
+local copy		        = fnutils.copy
+local format	        = string.format
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -50,12 +50,12 @@ local insert        = table.insert
 -- ARRAY_DELIM -> string
 -- Constant
 -- Array Delimiter.
-local ARRAY_DELIM   = "||"
+local ARRAY_DELIM = "||"
 
 -- UNDEFINED -> string
 -- Constant
 -- Undefined String.
-local UNDEFINED     = "_undefined"
+local UNDEFINED = "_undefined"
 
 --------------------------------------------------------------------------------
 --

@@ -27,9 +27,10 @@ local timer                                     = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
-local json                                      = require("cp.json")
-local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
+local json                                      = require("cp.json")
+local prop                                      = require("cp.prop")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- Local Extensions:
@@ -41,7 +42,6 @@ local default                                   = require("default")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local convertSingleHexStringToDecimalString     = tools.convertSingleHexStringToDecimalString
-local copy                                      = fnutils.copy
 local doAfter                                   = timer.doAfter
 
 --------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
 --- plugins.core.midi.manager.numberOfSubGroups -> number
 --- Variable
 --- The number of Sub Groups per Touch Bar Group.
-mod.numberOfSubGroups = 5
+mod.numberOfSubGroups = 9
 
 --
 -- Used to prevent callback delays (sorry David, I know this is the worst possible way to do things):
@@ -115,21 +115,6 @@ mod._lastControllerValue        = nil
 mod._lastControllerChannel      = nil
 mod._lastTimestamp              = nil
 mod._lastPitchChange            = nil
-
--- mod._listenMMCFunctions -> table
--- Variable
--- MMC Listener Functions.
-mod._listenMMCFunctions = {}
-
--- mod._listenMTCFunctions -> table
--- Variable
--- MTC Listener Functions.
-mod._listenMTCFunctions = {}
-
--- mod._generalCallbacks -> table
--- Variable
--- General Callback Functions.
-mod._generalCallbacks = {}
 
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
@@ -169,15 +154,14 @@ end
 --- Returns:
 ---  * None
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-
-    local buttons = copy(mod._items())
+    local items = mod._items()
 
     button = tostring(button)
-    if not buttons[group] then
-        buttons[group] = {}
+    if not items[group] then
+        items[group] = {}
     end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
+    if not items[group][button] then
+        items[group][button] = {}
     end
 
     --------------------------------------------------------------------------------
@@ -187,13 +171,12 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
         actionTitle = actionTitle:convert("text")
     end
 
-    buttons[group][button]["actionTitle"] = actionTitle
-    buttons[group][button]["handlerID"] = handlerID
-    buttons[group][button]["action"] = action
+    items[group][button]["actionTitle"] = actionTitle
+    items[group][button]["handlerID"] = handlerID
+    items[group][button]["action"] = action
 
-    mod._items(buttons)
+    mod._items(items)
     mod.update()
-
 end
 
 --- plugins.core.midi.manager.setItem(item, button, group, value) -> none
@@ -209,19 +192,19 @@ end
 --- Returns:
 ---  * None
 function mod.setItem(item, button, group, value)
-    local buttons = copy(mod._items())
+    local items = mod._items()
 
     button = tostring(button)
 
-    if not buttons[group] then
-        buttons[group] = {}
+    if not items[group] then
+        items[group] = {}
     end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
+    if not items[group][button] then
+        items[group][button] = {}
     end
-    buttons[group][button][item] = value
+    items[group][button][item] = value
 
-    mod._items(buttons)
+    mod._items(items)
     mod.update()
 end
 
@@ -268,7 +251,6 @@ end
 --- Returns:
 ---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
-
     local groupStatus = mod._groupStatus
     for group, status in pairs(groupStatus) do
         if status then
@@ -276,7 +258,6 @@ function mod.activeGroup()
         end
     end
     return mod.DEFAULT_GROUP
-
 end
 
 --- plugins.core.midi.manager.activeSubGroup() -> string
@@ -317,7 +298,7 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midiBank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
         end
     end
 end
@@ -395,523 +376,6 @@ function mod.groupStatus(groupID, status)
     mod.update()
 end
 
---- plugins.core.midi.manager.registerListenMMCFunction(id, fn) -> none
---- Function
---- Registers a MMC Listening Function
----
---- Parameters:
----  * id - The group ID as a string.
----  * fn - The function you want to trigger.
----
---- Returns:
----  * None
-function mod.registerListenMMCFunction(id, fn)
-    if id and type(id) == "string" and fn and type(fn) == "function" then
-        mod._listenMMCFunctions[id] = fn
-    else
-        log.ef("Could not register MMC listening function. id: %s, fn: %s", id, fn)
-    end
-end
-
---- plugins.core.midi.manager.registerListenMTCFunction(id, fn) -> none
---- Function
---- Registers a MTC Listening Function
----
---- Parameters:
----  * id - The group ID as a string.
----  * fn - The function you want to trigger.
----
---- Returns:
----  * None
-function mod.registerListenMTCFunction(id, fn)
-    if id and type(id) == "string" and fn and type(fn) == "function" then
-        mod._listenMTCFunctions[id] = fn
-    else
-        log.ef("Could not register MTC listening function. id: %s, fn: %s", id, fn)
-    end
-end
-
---- plugins.core.midi.manager.registerCallback(id, fn) -> none
---- Function
---- Registers a MIDI Callback.
----
---- Parameters:
----  * id - The ID as a string.
----  * fn - The function you want to trigger.
----
---- Returns:
----  * None
-function mod.registerCallback(id, fn)
-    if id and type(id) == "string" and fn and type(fn) == "function" then
-        mod._generalCallbacks[id] = fn
-    else
-        log.ef("Could not register callback function. id: %s, fn: %s", id, fn)
-    end
-end
-
---- plugins.core.midi.manager.sendMMC(deviceName, virtual, commandType, parameters) -> boolean
---- Function
---- Sends MMC Data to a MIDI Device.
----
---- Parameters:
----  * deviceName - The MIDI Device name.
----  * virtual - Is this MIDI Device virtual as boolean?
----  * channelNumber - "00" to "7F", where "7F" is all devices.
----  * commandType - Command Type as string (see possible options in Notes below)
----  * parameters - Optional parameters in a table.
----
---- Returns:
----  * `true` if successfully sent otherwise `false`.
----
---- Notes:
----  * The possible MMC commands are:
----    * STOP
----    * PLAY
----    * DEFERRED_PLAY
----    * FAST_FORWARD
----    * REWIND
----    * RECORD_STROBE
----    * RECORD_EXIT
----    * RECORD_PAUSE
----    * PAUSE
----    * EJECT
----    * CHASE
----    * MMC_RESET
----    * WRITE
----    * GOTO
----      * timecode - Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
----      * frameRate - Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
----      * subFrame - Subframe as string.
----    * ERROR
----    * SHUTTLE
---- * Example Usage:
----   ```lua
----     _plugins("core.midi.manager").sendMMC("CommandPost", false, "7F", "GOTO", {timecode="01:02:03:04", frameRate="25", subFrame="00"})
----   ```
-function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters)
-
-    if deviceName and virtual then
-        deviceName = "virtual_" .. deviceName
-    end
-    local device
-    if mod._midiDevices and mod._midiDevices[deviceName] then
-        device = mod._midiDevices[deviceName]
-    else
-        --log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
-        return false
-    end
-
-    local parameterString = ""
-    if commandType and mod.MMC_COMMAND_TYPE[commandType] then
-        if commandType == "GOTO" then
-            if parameters and type(parameters) == "table" and parameters.timecode and parameters.frameRate and parameters.subFrame then
-
-                local timecode = parameters.timecode
-                local frameRate = parameters.frameRate
-                local subFrame = parameters.subFrame
-
-                --------------------------------------------------------------------------------
-                -- Only handle valid timecode values:
-                --------------------------------------------------------------------------------
-                if not string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
-                    log.ef("Invalid GOTO MMC Timecode: %s", timecode)
-                    return
-                end
-
-                --------------------------------------------------------------------------------
-                -- Remove timecode formatting:
-                --------------------------------------------------------------------------------
-                local value = string.gsub(timecode, ":", "")
-
-                local decimalHours = tonumber(string.sub(value, 1, 2))
-                local decimalMinutes = tonumber(string.sub(value, 3, 4))
-                local decimalSeconds = tonumber(string.sub(value, 5, 6))
-                local decimalFrames = tonumber(string.sub(value, 7, 8))
-
-                --------------------------------------------------------------------------------
-                -- hr:
-                -- 7 65 43210
-                -- 0 yy zzzzz
-                --      yy: 00 = 24fps
-                --          01 = 25fps
-                --          10 = 30fps (drop frame)
-                --          11 = 30fps (non drop frame)
-                --      zzzzz: hours (00 -> 23)
-                --------------------------------------------------------------------------------
-
-                local frameRateAsDecimalCode = tonumber(mod.MMC_TIMECODE_TYPE[frameRate])
-
-                local hexHours = string.format("%02x", (frameRateAsDecimalCode << 5) + decimalHours)
-                local hexMinutes = string.format("%02x", decimalMinutes)
-                local hexSeconds = string.format("%02x", decimalSeconds)
-                local hexFrames = string.format("%02x", decimalFrames)
-
-                parameterString = "06 01 " .. hexHours .. " " .. hexMinutes .. " " .. hexSeconds .. " " .. hexFrames .. " " .. subFrame
-
-            else
-                log.ef("Bad GOTO MMC Parameters: %s", parameters and inspect(parameters))
-            end
-        end
-    else
-        log.ef("Invalid MMC Command: %s", commandType)
-        return false
-    end
-
-    if channelNumber and commandType and parameterString then
-        local message = "F0 7F " .. channelNumber .. " 06 " .. mod.MMC_COMMAND_TYPE[commandType] .. parameterString .. " F7"
-        device:sendSysex(message)
-    end
-
-end
-
---- plugins.core.midi.manager.processMMC(sysexData) -> string, ...
---- Function
---- Process MMC Data
----
---- Parameters:
----  * sysexData - Sysex Data as Hex String
----
---- Returns:
----  * A string with the MMC command, and any additional parameters as per below notes.
----
---- Notes:
----  * The possible MMC commands are:
----    * STOP
----    * PLAY
----    * DEFERRED_PLAY
----    * FAST_FORWARD
----    * REWIND
----    * RECORD_STROBE
----    * RECORD_EXIT
----    * RECORD_PAUSE
----    * PAUSE
----    * EJECT
----    * CHASE
----    * MMC_RESET
----    * WRITE
----    * GOTO
----      * timecode - Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
----      * frameRate - Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
----      * subframe - Subframe as string.
----    * ERROR
----    * SHUTTLE
-function mod.processMMC(sysexData)
-    ---------------------------------------------------------------------------------------------
-    -- An MMC message is either an MMC command (Sub-ID#1=06) or an MMC response
-    -- (Sub-ID#1=07). As a SysEx message it is formatted (all numbers hexadecimal):
-    --
-    --      F0 7F <Device-ID> <06|07> [<Sub-ID#2> [<parameters>]] F7
-    --      Device-ID: MMC device's ID#; value 00-7F (7F = all devices); AKA "channel number"
-    ---------------------------------------------------------------------------------------------
-
-    ---------------------------------------------------------------------------------------------
-    -- Split sysexData into individual components:
-    ---------------------------------------------------------------------------------------------
-    local data = {}
-    for c in sysexData:gmatch"." do
-        table.insert(data, c)
-    end
-
-    if data then
-        if data[1] == "0" and data[2] == "6" then
-            --------------------------------------------------------------------------------
-            -- We have a command:
-            --------------------------------------------------------------------------------
-            if data[3] == "0" and data[4] == "1" then
-                --------------------------------------------------------------------------------
-                -- 01 Stop
-                --------------------------------------------------------------------------------
-                return "STOP"
-            elseif data[3] == "0" and data[4] == "2" then
-                --------------------------------------------------------------------------------
-                -- 02 Play
-                --------------------------------------------------------------------------------
-                return "PLAY"
-            elseif data[3] == "0" and data[4] == "3" then
-                --------------------------------------------------------------------------------
-                -- 03 Deferred Play (play after no longer busy)
-                --------------------------------------------------------------------------------
-                return "DEFERRED_PLAY"
-            elseif data[3] == "0" and data[4] == "4" then
-                --------------------------------------------------------------------------------
-                -- 04 Fast Forward
-                --------------------------------------------------------------------------------
-                return "FAST_FORWARD"
-            elseif data[3] == "0" and data[4] == "5" then
-                --------------------------------------------------------------------------------
-                -- 05 Rewind
-                --------------------------------------------------------------------------------
-                return "REWIND"
-            elseif data[3] == "0" and data[4] == "6" then
-                --------------------------------------------------------------------------------
-                -- 06 Record Strobe (AKA [[Punch in/out|Punch In]])
-                --------------------------------------------------------------------------------
-                return "RECORD_STROBE"
-            elseif data[3] == "0" and data[4] == "7" then
-                --------------------------------------------------------------------------------
-                -- 07 Record Exit (AKA [[Punch out (music)|Punch out]])
-                --------------------------------------------------------------------------------
-                return "RECORD_EXIT"
-            elseif data[3] == "0" and data[4] == "8" then
-                --------------------------------------------------------------------------------
-                -- 08 Record Pause
-                --------------------------------------------------------------------------------
-                return "RECORD_PAUSE"
-            elseif data[3] == "0" and data[4] == "9" then
-                --------------------------------------------------------------------------------
-                -- 09 Pause (pause playback)
-                --------------------------------------------------------------------------------
-                return "PAUSE"
-            elseif data[3] == "0" and data[4] == "A" then
-                --------------------------------------------------------------------------------
-                -- 0A Eject (disengage media container from MMC device)
-                --------------------------------------------------------------------------------
-                return "EJECT"
-            elseif data[3] == "0" and data[4] == "B" then
-                --------------------------------------------------------------------------------
-                -- 0B Chase
-                --------------------------------------------------------------------------------
-                return "CHASE"
-            elseif data[3] == "0" and data[4] == "D" then
-                --------------------------------------------------------------------------------
-                -- 0D MMC Reset (to default/startup state)
-                --------------------------------------------------------------------------------
-                return "MMC_RESET"
-            elseif data[3] == "4" and data[4] == "0" then
-                --------------------------------------------------------------------------------
-                -- 40 Write (AKA Record Ready, AKA Arm Tracks)
-                --    parameters: <length1> 4F <length2> <track-bitmap-bytes>
-                --------------------------------------------------------------------------------
-                return "WRITE"
-            elseif data[3] == "4" and data[4] == "4" then
-                --------------------------------------------------------------------------------
-                -- 44 Goto (AKA Locate)
-                --    parameters: <length>=06 01 <hours> <minutes> <seconds> <frames> <subframes>
-                --------------------------------------------------------------------------------
-
-                --------------------------------------------------------------------------------
-                -- F0 7F <Device-ID> 06 44 <length>=06 01 <hr> <mn> <sc> <fr> <ff> F7
-                --
-                -- Sub-ID#2 =44: LOCATE command
-                -- length: 06 Data byte count (always six bytes)
-                -- subcommand: 01 TARGET
-                -- hr: hours and type (as with MTC Fullframe); values 0-17 (= 0-23 decimal)
-                -- mn: minutes; values 0-3B (= 0-59 decimal)
-                -- sc: seconds; values 0-3B (= 0-59 decimal)
-                -- fr: frames; values 0-1D (= 0-29 decimal)
-                -- ff: sub-frames / fractional frames (leave at zero if un-sure); values 0-63 (= 0-99 decimal)
-                --
-                --
-                -- The data byte for the Hours hi nybble and frame-rate, the bits are interpreted as follows:
-                -- 0nnn xyyd
-                --
-                -- x is unused and set to 0.
-                -- d is the high bit of the Hours count.
-                -- yy defines the frame-rate as follows:
-                -- 00 = 24 fps (Film)
-                -- 01 = 25 fps (EBU)
-                -- 10 = 30 fps (SMPTE drop-frame)
-                -- 11 = 30 fps (SMPTE non-drop frame)
-                --------------------------------------------------------------------------------
-                if data[5] == "0" and data[6] == "6" and data[7] == "0" and data[8] == "1" then
-
-                    local hourHex = data[9] .. data[10]
-                    local minHex = data[11] .. data[12]
-                    local secHex = data[13] .. data[14]
-                    local frameHex = data[15] .. data[16]
-                    local subframeHex = data[17] .. data[18]
-
-                    local hour, frameRate
-                    if hourHex then
-                        local hourDec = tostring(tonumber(hourHex,16))
-                        local hourBin = convertSingleHexStringToDecimalString(hourDec:sub(1, 1)) .. convertSingleHexStringToDecimalString(hourDec:sub(2, 2))
-                        frameRate = hourBin:sub(6,7)
-                        hour = hourDec & 0x1f
-                    end
-
-                    local min = minHex and tonumber(minHex,16) or 0
-                    local sec = secHex and tonumber(secHex,16) or 0
-                    local frame = frameHex and tonumber(frameHex,16) or 0
-                    local subframe = subframeHex and tonumber(subframeHex,16) or 0
-
-                    local frameRateString = mod.MMC_TIMECODE_TYPE[frameRate] or "UNKNOWN"
-
-                    local timecode = string.format("%02d", hour) .. ":" .. string.format("%02d", min) .. ":" .. string.format("%02d", sec) .. ":" .. string.format("%02d", frame)
-
-                    return "GOTO", timecode, frameRateString, string.format("%02d", subframe)
-                else
-                    return "ERROR", "Bad Goto Data"
-                end
-            elseif data[3] == "4" and data[4] == "7" then
-                --------------------------------------------------------------------------------
-                -- 47 Shuttle
-                --    parameters: <length>=03 <sh> <sm> <sl> (MIDI Standard Speed codes)
-                --------------------------------------------------------------------------------
-                return "SHUTTLE"
-            end
-        --elseif data[1] == "0" and data[2] == "7" then
-            --------------------------------------------------------------------------------
-            -- We have a response:
-            --------------------------------------------------------------------------------
-        end
-    end
-    return nil
-end
-
---- plugins.core.midi.manager.MMC_COMMAND_TYPE -> table
---- Constant
---- MMC Command Types
-mod.MMC_COMMAND_TYPE = {
-    ["STOP"]                = "01",
-    ["PLAY"]                = "02",
-    ["DEFERRED_PLAY"]       = "03",
-    ["FAST_FORWARD"]        = "04",
-    ["REWIND"]              = "05",
-    ["RECORD_STROBE"]       = "06",
-    ["RECORD_EXIT"]         = "07",
-    ["RECORD_PAUSE"]        = "08",
-    ["PAUSE"]               = "09",
-    ["EJECT"]               = "0A",
-    ["CHASE"]               = "0B",
-    ["MMC_RESET"]           = "0D",
-    ["WRITE"]               = "40",
-    ["GOTO"]                = "44",
-    ["SHUTTLE"]             = "47",
-}
-
---- plugins.core.midi.manager.MMC_TIMECODE_TYPE -> table
---- Constant
---- MMC Timecode Type
-mod.MMC_TIMECODE_TYPE = {
-    ["00"] = "24",              -- 24 fps (Film)
-    ["01"] = "25",              -- 25 fps (EBU)
-    ["10"] = "30 DF",           -- 30 fps (SMPTE drop-frame)
-    ["11"] = "30 NDF",          -- 30 fps (SMPTE non-drop frame)
-
-    --------------------------------------------------------------------------------
-    -- REVERSE:
-    --------------------------------------------------------------------------------
-    ["24"] = "00",              -- 24 fps (Film)
-    ["25"] = "01",              -- 25 fps (EBU)
-    ["30 DF"] = "10",           -- 30 fps (SMPTE drop-frame)
-    ["30 NDF"] = "11",          -- 30 fps (SMPTE non-drop frame)
-}
-
---- plugins.core.midi.manager.MTC_MESSAGE_TYPE -> table
---- Constant
---- MTC Message Types
-mod.MTC_MESSAGE_TYPE = {
-    [0] = "FRAME_LS",
-    [1] = "FRAME_MS",
-    [2] = "SECONDS_LS",
-    [3] = "SECONDS_MS",
-    [4] = "MINUTES_LS",
-    [5] = "MINUTES_MS",
-    [6] = "HOURS_LS",
-    [7] = "HOURS_MS",
-}
-
---- plugins.core.midi.manager.MTC_TIMECODE_TYPE -> table
---- Constant
---- MTC Timecode Type
-mod.MTC_TIMECODE_TYPE = {
-    [0] = "24",
-    [1] = "25",
-    [2] = "30 DF",
-    [3] = "30 NDF",
-}
-
---- plugins.core.midi.manager.MTC_COMMAND_TYPE -> table
---- Constant
---- MTC Command Type
-mod.MTC_COMMAND_TYPE = {
-    ["f1"] = "QUARTER_FRAME",
-}
-
--- plugins.core.midi.manager._mtcBuffer -> table
--- Variable
--- MTC Buffer.
-mod._mtcBuffer = {}
-
---- plugins.core.midi.manager.processMTC(mtcData) -> string, ...
---- Function
---- Process MTC Data
----
---- Parameters:
----  * mtcData - MTC Data as Hex String
----
---- Returns:
----  * A string with the MTC command, and any additional parameters.
-function mod.processMTC(mtcData)
-
-    ---------------------------------------------------------------------------------------------
-    -- Split sysexData into individual components:
-    ---------------------------------------------------------------------------------------------
-    local data = {}
-    for c in mtcData:gmatch"." do
-        table.insert(data, c)
-    end
-
-    if data then
-        if data[1] == "f" and data[2] == "1" then
-            ---------------------------------------------------------------------------------------------
-            -- Quarter Frame Messages (2 bytes)
-            ---------------------------------------------------------------------------------------------
-            local message = convertSingleHexStringToDecimalString(data[3]) .. convertSingleHexStringToDecimalString(data[4])
-            if message then
-
-                ---------------------------------------------------------------------------------------------
-                -- Split nibble into individual components:
-                ---------------------------------------------------------------------------------------------
-                local nibble = {}
-                for c in message:gmatch"." do
-                    table.insert(nibble, c)
-                end
-
-                if nibble[1] == "0" then
-                    local messageTypeBinary = nibble[2] .. nibble[3] .. nibble[4]
-                    local messageTypeDecimal = tonumber(messageTypeBinary, 2)
-                    local messageTypeString = mod.MTC_MESSAGE_TYPE[messageTypeDecimal]
-
-                    mod._mtcBuffer[messageTypeString] = nibble[5] .. nibble[6] .. nibble[7] .. nibble[8]
-
-                    if mod._mtcBuffer["FRAME_LS"] and mod._mtcBuffer["FRAME_MS"] and mod._mtcBuffer["SECONDS_LS"] and mod._mtcBuffer["SECONDS_MS"] and mod._mtcBuffer["MINUTES_LS"] and mod._mtcBuffer["MINUTES_MS"] and mod._mtcBuffer["HOURS_LS"] and mod._mtcBuffer["HOURS_MS"] then
-
-                        local frameCount = string.sub(mod._mtcBuffer["FRAME_MS"] .. mod._mtcBuffer["FRAME_LS"], 4)
-                        local secondsCount = string.sub(mod._mtcBuffer["SECONDS_MS"] .. mod._mtcBuffer["SECONDS_LS"], 3)
-                        local minutesCount = string.sub(mod._mtcBuffer["MINUTES_MS"] .. mod._mtcBuffer["MINUTES_LS"], 3)
-                        local hoursCount = string.sub(mod._mtcBuffer["HOURS_MS"] .. mod._mtcBuffer["HOURS_LS"], 4)
-                        local framerateCount = string.sub(mod._mtcBuffer["HOURS_MS"] .. mod._mtcBuffer["HOURS_LS"], 2, 3)
-
-                        local frame = string.format("%02d", tonumber(frameCount, 2))
-                        local sec = string.format("%02d", tonumber(secondsCount, 2))
-                        local min = string.format("%02d", tonumber(minutesCount, 2))
-                        local hour = string.format("%02d", tonumber(hoursCount, 2))
-
-                        local framerate = mod.MTC_TIMECODE_TYPE[tonumber(framerateCount, 2)]
-
-                        local timecode = hour .. ":" .. min .. ":" .. sec .. ":" .. frame
-
-                        if timecode ~= mod._lastMTC then
-                            mod._lastMTC = timecode
-                            return "QUARTER_FRAME", timecode, framerate
-                        else
-                            mod._lastMTC = timecode
-                        end
-
-                        ---------------------------------------------------------------------------------------------
-                        -- Clear the buffer:
-                        ---------------------------------------------------------------------------------------------
-                        mod._mtcBuffer = nil
-                        mod._mtcBuffer = {}
-                    end
-                end
-            end
-        end
-    end
-    return nil
-end
-
 --- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
 --- Function
 --- MIDI Callback
@@ -926,7 +390,6 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
-
     --------------------------------------------------------------------------------
     -- Ignore callbacks when in learning mode:
     --------------------------------------------------------------------------------
@@ -949,54 +412,6 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     --------------------------------------------------------------------------------
     if metadata.isVirtual == true then
         deviceName = "virtual_" .. deviceName
-    end
-
-    --------------------------------------------------------------------------------
-    -- Listen for MMC Callbacks:
-    ---------------------------- ----------------------------------------------------
-    local listenMMCDevice = mod.listenMMCDevice()
-    if mod.listenMMC() and listenMMCDevice and listenMMCDevice == deviceName and commandType == "systemExclusive" then
-        for _, v in pairs(mod._listenMMCFunctions) do
-            doAfter(0, function()
-                local mmcType, timecode, framerate, subframe = mod.processMMC(metadata.sysexData)
-                if mmcType then
-                    local ok, result = xpcall(function() v(mmcType, timecode, framerate, subframe) end, debug.traceback)
-                    if not ok then
-                        log.ef("Error while processing MMC Callback: %s", result)
-                    end
-                end
-            end)
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Listen for MTC Callbacks:
-    --------------------------------------------------------------------------------
-    local listenMTCDevice = mod.listenMTCDevice()
-    if mod.listenMTC() and listenMTCDevice and listenMTCDevice == deviceName and commandType == "systemTimecodeQuarterFrame" then
-        for _, v in pairs(mod._listenMTCFunctions) do
-            doAfter(0, function()
-                local mtcType, timecode, framerate = mod.processMTC(metadata.data)
-                if mtcType then
-                    local ok, result = xpcall(function() v(mtcType, timecode, framerate) end, debug.traceback)
-                    if not ok then
-                        log.ef("Error while processing MTC Callback: %s", result)
-                    end
-                end
-            end)
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Listen for General Callbacks:
-    --------------------------------------------------------------------------------
-    for _, v in pairs(mod._generalCallbacks) do
-        doAfter(0, function()
-            local ok, result = xpcall(function() v(object, deviceName, commandType, description, metadata) end, debug.traceback)
-            if not ok then
-                log.ef("Error while processing MIDI General Callback: %s", result)
-            end
-        end)
     end
 
     --------------------------------------------------------------------------------
@@ -1155,28 +570,6 @@ function mod.virtualDevices()
     return mod._virtualDevices
 end
 
--- plugins.core.midi.manager._forcefullyWatchMIDIDevices -> table
--- Variable
--- Table of forced MIDI Devices.
-mod._forcefullyWatchMIDIDevices = {}
-
---- plugins.core.midi.manager.forcefullyWatchMIDIDevices(devices) -> none
---- Function
---- Forces CommandPost to watch a table of MIDI devices.
----
---- Parameters:
----  * devices - A table containing all the device names you want to always watch.
----
---- Returns:
----  * A table of Virtual MIDI Source Names.
-function mod.forcefullyWatchMIDIDevices(devices)
-    if devices and type(devices) == "table" then
-        for _, device in pairs(devices) do
-            table.insert(mod._forcefullyWatchMIDIDevices, device)
-        end
-    end
-end
-
 --- plugins.core.midi.manager.getDevice(deviceName, virtual) -> hs.midi object | nil
 --- Function
 --- Gets a MIDI Device.
@@ -1205,18 +598,8 @@ end
 ---  * None
 function mod.start()
     if not mod._midiDevices then
-        --log.df("Starting MIDI Watchers")
         mod._midiDevices = {}
     end
-
-    --------------------------------------------------------------------------------
-    -- Setup MIDI Device Callback:
-    --------------------------------------------------------------------------------
-    midi.deviceCallback(function(devices, virtualDevices)
-        mod._deviceNames = devices
-        mod._virtualDevices = virtualDevices
-        --log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
-    end)
 
     --------------------------------------------------------------------------------
     -- For performance, we only use watchers for USED devices:
@@ -1227,36 +610,6 @@ function mod.start()
         for _, vv in pairs(v) do
             table.insert(usedDevices, vv.device)
         end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Take into account Sync features too:
-    --------------------------------------------------------------------------------
-    local transmitMMCDevice = mod.transmitMMCDevice()
-    if mod.transmitMMC() and transmitMMCDevice and type(transmitMMCDevice) == "string" and transmitMMCDevice ~= "" then
-        table.insert(usedDevices, transmitMMCDevice)
-    end
-
-    local listenMMCDevice = mod.listenMMCDevice()
-    if mod.listenMMC() and listenMMCDevice and type(listenMMCDevice) == "string" and listenMMCDevice ~= "" then
-        table.insert(usedDevices, listenMMCDevice)
-    end
-
-    local transmitMTCDevice = mod.transmitMTCDevice()
-    if mod.transmitMTC() and transmitMTCDevice and type(transmitMTCDevice) == "string" and transmitMTCDevice ~= "" then
-        table.insert(usedDevices, transmitMTCDevice)
-    end
-
-    local listenMTCDevice = mod.listenMTCDevice()
-    if mod.listenMTC() and listenMTCDevice and type(listenMTCDevice) == "string" and listenMTCDevice ~= "" then
-        table.insert(usedDevices, listenMTCDevice)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Take into account forced MIDI Devices:
-    --------------------------------------------------------------------------------
-    for _, device in pairs(mod._forcefullyWatchMIDIDevices) do
-        table.insert(mod._forcefullyWatchMIDIDevices, device)
     end
 
     --------------------------------------------------------------------------------
@@ -1304,26 +657,12 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    --------------------------------------------------------------------------------
-    -- Destroy MIDI Watchers:
-    --------------------------------------------------------------------------------
-    --log.df("Stopping MIDI Watchers")
     if mod._midiDevices and type(mod._midiDevices) == "table" then
         for _, id in pairs(mod._midiDevices) do
             mod._midiDevices[id] = nil
         end
         mod._midiDevices = nil
     end
-
-    --------------------------------------------------------------------------------
-    -- Destroy MIDI Device Callback:
-    --------------------------------------------------------------------------------
-    midi.deviceCallback(nil)
-
-    --------------------------------------------------------------------------------
-    -- Garbage Collection:
-    --------------------------------------------------------------------------------
-    collectgarbage()
 end
 
 --- plugins.core.midi.manager.update() -> none
@@ -1336,30 +675,22 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-    --log.df("Updating MIDI Watchers")
-    if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
-
-        --------------------------------------------------------------------------------
-        -- Start MIDI:
-        --------------------------------------------------------------------------------
+    if mod.enabled() then
         mod.start()
-
-        --------------------------------------------------------------------------------
-        -- Update the prop, so that any other plugins watching this prop also update:
-        --------------------------------------------------------------------------------
-        mod.transmitMTC:update()
-        mod.transmitMMC:update()
     else
         mod.stop()
     end
 end
 
+--- plugins.core.midi.manager.numberOfMidiDevices -> <cp.prop: number>
+--- Field
+--- Total number of MIDI Devices detected (including both physical and virtual).
+mod.numberOfMidiDevices = prop.THIS(0)
+
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
-mod.enabled = config.prop("enableMIDI", false):watch(function()
-    mod.update()
-end)
+mod.enabled = config.prop("enableMIDI", false):watch(function() mod.update() end)
 
 --- plugins.core.midi.manager.init(deps, env) -> none
 --- Function
@@ -1375,52 +706,6 @@ function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod
 end
-
---------------------------------------------------------------------------------
---
--- MIDI SYNC:
---
---------------------------------------------------------------------------------
-
---- plugins.core.midi.manager.transmitMMC <cp.prop: boolean>
---- Field
---- Enable or disable Transmit MMC Support.
-mod.transmitMMC = config.prop("transmitMMC", false)
-
---- plugins.core.midi.manager.listenMMC <cp.prop: boolean>
---- Field
---- Enable or disable Listen MMC Support.
-mod.listenMMC = config.prop("listenMMC", false)
-
---- plugins.core.midi.manager.transmitMTC <cp.prop: boolean>
---- Field
---- Enable or disable Transmit MTC Support.
-mod.transmitMTC = config.prop("transmitMTC", false)
-
---- plugins.core.midi.manager.listenMTC <cp.prop: boolean>
---- Field
---- Enable or disable Listen MTC Support.
-mod.listenMTC = config.prop("listenMTC", false)
-
---- plugins.core.midi.manager.transmitMMCDevice <cp.prop: string>
---- Field
---- MIDI Device
-mod.transmitMMCDevice = config.prop("transmitMMCDevice", "")
-
---- plugins.core.midi.manager.listenMMCDevice <cp.prop: string>
---- Field
---- MIDI Device
-mod.listenMMCDevice = config.prop("listenMMCDevice", "")
-
---- plugins.core.midi.manager.transmitMTCDevice <cp.prop: string>
---- Field
---- MIDI Device
-mod.transmitMTCDevice = config.prop("transmitMTCDevice", "")
-
---- plugins.core.midi.manager.listenMTCDevice <cp.prop: string>
---- Field
---- MIDI Device
-mod.listenMTCDevice = config.prop("listenMTCDevice", "")
 
 --------------------------------------------------------------------------------
 --
@@ -1441,6 +726,20 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Setup MIDI Device Callback:
+    --
+    -- This callback needs to be setup, regardless of whether MIDI controls are
+    -- enabled or not so that we can refresh the MIDI Preferences panel if a MIDI
+    -- device is added or removed.
+    --------------------------------------------------------------------------------
+    midi.deviceCallback(function(devices, virtualDevices)
+        --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
+        mod._deviceNames = devices
+        mod._virtualDevices = virtualDevices
+        mod.numberOfMidiDevices(#devices + #virtualDevices)
+    end)
+
     --------------------------------------------------------------------------------
     -- Get list of MIDI devices:
     --------------------------------------------------------------------------------
@@ -1463,13 +762,13 @@ end
 function plugin.postInit(deps)
 
     --------------------------------------------------------------------------------
-    -- Migrate Legacy Property List MIDI Controls to JSON:
+    -- Copy Legacy Property List MIDI Controls to JSON:
     --------------------------------------------------------------------------------
     local legacyControls = config.get("midiControls", nil)
-    if legacyControls then
-        mod._items(fnutils.copy(legacyControls))
-        config.set("midiControls", nil)
-        log.df("Migrated Legacy MIDI Controls from Plist to JSON.")
+    if legacyControls and not config.get("midiControlsCopied") then
+        mod._items(legacyControls)
+        log.df("Copied Legacy MIDI Controls from Plist to JSON.")
+        config.set("midiControlsCopied", true)
     end
 
     --------------------------------------------------------------------------------
@@ -1510,7 +809,7 @@ function plugin.postInit(deps)
     --------------------------------------------------------------------------------
     -- Start Plugin:
     --------------------------------------------------------------------------------
-    mod.update()
+    mod.enabled:update()
 
 end
 

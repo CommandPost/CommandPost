@@ -1,0 +1,38 @@
+<div id="touchbarGroupControls" class="uiItem">
+{%	for __, groupID in pairs(groups) do
+		if groupID == defaultGroup then
+%}
+	<div id="touchbarGroup_{{ groupID }}" class="touchbarGroup{{ groupID == defaultGroup and ' selected' or '' }}">
+		<script>
+			window.onload = function() {
+				{% local scrollBarValue = scrollBarPosition[groupID] or 0 %}
+				document.getElementsByClassName("touchbar")[0].getElementsByTagName("tbody")[0].scrollTop = {{ scrollBarValue }};
+			};
+		</script>
+		<table class="touchbar">
+			<thead>
+				<tr>
+					<th class="tbRowIcon">{{ i18n("icon") }}</th>
+					<th class="tbRowAction">{{ i18n("actionOrWidget") }}</th>
+					<th class="tbRowActionButton"></th>
+					<th class="tbRowLabel">{{ i18n("buttonLabel") }}</th>
+					<th class="tbRowOrder"></th>
+				</tr>
+			</thead>
+			<tbody onscroll="saveScrollbarPosition('{{ groupID }}', this);">
+			<tr>
+				<td class="tbRowIcon"></td>
+				<td class="tbRowAction"></td>
+				<td class="tbRowActionButton"></td>
+				<td class="tbRowLabel">
+					<input type="text" id="touchbar_{{ groupID }}_bankLabel" class="tbButtonLabel" value="{{ tb.getBankLabel(groupID) or i18n("none") }}" onchange="changeTouchBarBankLabel('{{ groupID }}', this.value)">
+				</td>
+				<td class="tbRowOrder"></td>
+			</tr>
+			{(html/rows.html, _.extend({groupID = groupID}, context))}
+			</tbody>
+		</table>
+	</div>
+{% 		end
+	end %}
+</div>

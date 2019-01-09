@@ -395,14 +395,16 @@ function Viewer.lazy.prop:timecode()
                         -- Wait until we see the timecode in the viewer:
                         --------------------------------------------------------------------------------
                         local pasteboardPasteResult = just.doUntil(function()
-                            return tcField:value() == timecodeValue
+                            local blank = "00:00:00:00"
+                            local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
+                            return tcField:value() == formattedTimecodeValue
                         end, 5)
 
                         --------------------------------------------------------------------------------
                         -- Press return to complete the timecode entry:
                         --------------------------------------------------------------------------------
                         if not pasteboardPasteResult then
-                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode).")
+                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
                             return
                         else
                             eventtap.keyStroke({}, 'return')
@@ -461,42 +463,43 @@ function Viewer.lazy.prop:isPlaying()
             local element = self:playButton():UI()
             if element then
                 local window = element:attributeValue("AXWindow")
+                if window then
+                    local hsWindow = window:asHSWindow()
+                    local windowSnap = hsWindow:snapshot()
+                    local windowFrame = window:frame()
+                    local shotSize = windowSnap:size()
 
-                local hsWindow = window:asHSWindow()
-                local windowSnap = hsWindow:snapshot()
-                local windowFrame = window:frame()
-                local shotSize = windowSnap:size()
+                    local ratio = shotSize.h/windowFrame.h
+                    local elementFrame = element:frame()
 
-                local ratio = shotSize.h/windowFrame.h
-                local elementFrame = element:frame()
+                    local imageFrame = {
+                        x = (windowFrame.x-elementFrame.x)*ratio,
+                        y = (windowFrame.y-elementFrame.y)*ratio,
+                        w = shotSize.w,
+                        h = shotSize.h,
+                    }
 
-                local imageFrame = {
-                    x = (windowFrame.x-elementFrame.x)*ratio,
-                    y = (windowFrame.y-elementFrame.y)*ratio,
-                    w = shotSize.w,
-                    h = shotSize.h,
-                }
+                    --------------------------------------------------------------------------------
+                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
+                    --------------------------------------------------------------------------------
 
-                --------------------------------------------------------------------------------
-                -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                --------------------------------------------------------------------------------
+                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+                    c[1] = {
+                        type = "image",
+                        image = windowSnap,
+                        imageScaling = "none",
+                        imageAlignment = "topLeft",
+                        frame = imageFrame,
+                    }
 
-                local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-                c[1] = {
-                    type = "image",
-                    image = windowSnap,
-                    imageScaling = "none",
-                    imageAlignment = "topLeft",
-                    frame = imageFrame,
-                }
+                    local elementSnap = c:imageFromCanvas()
+                    c:delete()
 
-                local elementSnap = c:imageFromCanvas()
-                c:delete()
-
-                if elementSnap then
-                    elementSnap:size({h=60,w=60})
-                    local spot = elementSnap:colorAt({x=31,y=31})
-                    return spot and spot.blue < 0.5
+                    if elementSnap then
+                        elementSnap:size({h=60,w=60})
+                        local spot = elementSnap:colorAt({x=31,y=31})
+                        return spot and spot.blue < 0.5
+                    end
                 end
             end
             return false

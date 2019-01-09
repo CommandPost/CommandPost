@@ -1,16 +1,6 @@
---- === cp.developer ===
+--- === cp.dev ===
 ---
---- Developer Tools
----
-
---[[
-
-hs.hotkey.bind({"cmd", "alt", "ctrl", "shift"}, "q", function()
-  require("cp.developer")
-  print(_inspectAtMouse())
-end)
-
---]]
+--- A set of handy developer tools for CommandPost.
 
 --------------------------------------------------------------------------------
 --
@@ -21,7 +11,7 @@ end)
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log           = require("hs.logger").new("develop")
+local log           = require("hs.logger").new("dev")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -29,10 +19,11 @@ local log           = require("hs.logger").new("develop")
 local ax            = require("hs._asm.axuielement")
 local drawing       = require("hs.drawing")
 local geometry      = require("hs.geometry")
+local hotkey        = require("hs.hotkey")
 local inspect       = require("hs.inspect")
+local json          = require("hs.json")
 local mouse         = require("hs.mouse")
 local timer         = require("hs.timer")
-local json          = require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -44,37 +35,31 @@ local config        = require("cp.config")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
---------------------------------------------------------------------------------
--- DESTROY DEVELOPER MODE:
---------------------------------------------------------------------------------
-function _G.destroyDeveloperMode()
-    _G._plugins = nil
-    _G._fcp = nil
-    _G._findUnusedLanguageStrings = nil
-    _G._which = nil
-    _G._elementAtMouse = nil
-    _G._inspectAtMouse = nil
-    _G._inspect = nil
-    _G._inspectElement = nil
-    _G._highlight = nil
-    _G._highlightPoint = nil
-    _G._inspectElementAtMousePath = nil
-    _G._test = nil
-    _G.destroyDeveloper = nil
-    package.loaded["cp.developer"] = nil
+--- cp.dev.hotkey(fn) -> none
+--- Function
+--- Assigns a function to the CONTROL+OPTION+COMMAND+SHIFT+Q keyboard combination.
+---
+--- Parameters:
+---  * fn - A function to execute when the hotkey is triggered.
+---
+--- Returns:
+---  * None
+function mod.hotkey(fn)
+    mod._hotkey = hotkey.bind({"cmd", "alt", "ctrl", "shift"}, "q", fn)
 end
 
---------------------------------------------------------------------------------
--- DEVELOPER SHORTCUTS FOR USE IN ERROR LOG:
---------------------------------------------------------------------------------
-_G._plugins            = require("cp.plugins")
-_G._fcp                = require("cp.apple.finalcutpro")
-
---------------------------------------------------------------------------------
--- FIND UNUSED LANGUAGES STRINGS:
---------------------------------------------------------------------------------
-function _G._findUnusedLanguageStrings()
+--- cp.dev.findUnusedLanguageStrings() -> string
+--- Function
+--- Searches for any unused language strings in English.json.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string with the results of the search.
+function mod.findUnusedLanguageStrings()
 
     local path = config.languagePath .. "English.json"
     local data = io.open(path, "r")
@@ -120,11 +105,19 @@ function _G._findUnusedLanguageStrings()
     log.df(result)
 end
 
---------------------------------------------------------------------------------
--- FIND TEXT:
---------------------------------------------------------------------------------
+--- cp.dev.which(cmd) -> none
+--- Function
+--- The which utility takes a list of command names and searches the path for
+--- each executable file that would be run had these commands actually been
+--- invoked.
+---
+--- Parameters:
+---  * cmd - The parameters to pass along to the `which` executable.
+---
+--- Returns:
+---  * The path or `nil` and the error message if an error occurs.
 local whiches = {}
-function _G._which(cmd)
+function mod.which(cmd)
     local path = whiches[cmd]
     if not path then
         local output, ok = hs.execute(string.format("which %q", cmd))
@@ -138,19 +131,31 @@ function _G._which(cmd)
     return path
 end
 
---------------------------------------------------------------------------------
--- ELEMENT AT MOUSE:
---------------------------------------------------------------------------------
-function _G._elementAtMouse()
+--- cp.dev.elementAtMouse() -> axuielementObject
+--- Function
+--- Gets the AX element under the current mouse position.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.elementAtMouse()
     return ax.systemElementAtPosition(mouse.getAbsolutePosition())
 end
 
---------------------------------------------------------------------------------
--- INSPECT ELEMENT AT MOUSE:
---------------------------------------------------------------------------------
-function _G._inspectAtMouse(options)
+--- cp.dev.inspectAtMouse(options) -> string
+--- Function
+--- Inspects an AX element under the current mouse position.
+---
+--- Parameters:
+---  * options - Any additional options to pass along to `cp.dev.inspectElement`.
+---
+--- Returns:
+---  * A string containing the results.
+function mod.inspectAtMouse(options)
     options = options or {}
-    local element = _G._elementAtMouse()
+    local element = mod.elementAtMouse()
     if options.parents then
         for _=1,options.parents do
             element = element ~= nil and element:parent()
@@ -162,7 +167,7 @@ function _G._inspectAtMouse(options)
         if options.type == "path" then
             local path = element:path()
             for i,e in ipairs(path) do
-                result = result .. _G._inspectElement(e, options, i)
+                result = result .. mod.inspectElement(e, options, i)
             end
             return result
         else
@@ -173,10 +178,17 @@ function _G._inspectAtMouse(options)
     end
 end
 
---------------------------------------------------------------------------------
--- INSPECT:
---------------------------------------------------------------------------------
-function _G._inspect(e, options)
+--- cp.dev.inspect(item, options) -> string
+--- Function
+--- Inspect an item.
+---
+--- Parameters:
+---  * item - The object to inspect.
+---  * options - Any additional options to pass along to `cp.dev.inspectElement`.
+---
+--- Returns:
+---  * A results as a string.
+function mod.inspect(e, options)
     if e == nil then
         return "<nil>"
     elseif type(e) ~= "userdata" or not e.attributeValue then
@@ -188,7 +200,7 @@ function _G._inspect(e, options)
                 result = result ..
                          "\n= " .. string.format("%3d", i) ..
                          " ========================================" ..
-                         _G._inspect(item, options)
+                         mod.inspect(item, options)
             end
             return result
         else
@@ -196,15 +208,26 @@ function _G._inspect(e, options)
         end
     else
         return "\n==============================================" ..
-               _G._inspectElement(e, options)
+               mod.inspectElement(e, options)
     end
 end
 
---------------------------------------------------------------------------------
--- INSPECT ELEMENT:
---------------------------------------------------------------------------------
-function _G._inspectElement(e, options)
-    _G._highlight(e)
+--- cp.dev.inspectElement() -> string
+--- Function
+--- Inspect an AX element.
+---
+--- Parameters:
+---  * element - The element to inspect.
+---  * options - A table containing any optional values.
+---
+--- Returns:
+---  * The results as a string.
+---
+--- Notes:
+---  * The options table accepts the following parameters:
+---   * depth - A number representing the maximum depth to recurse into variable.
+function mod.inspectElement(e, options)
+    mod._highlight(e)
 
     local depth = options and options.depth or 1
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
@@ -222,10 +245,16 @@ function _G._inspectElement(e, options)
     return out
 end
 
---------------------------------------------------------------------------------
--- HIGHLIGHT ELEMENT:
---------------------------------------------------------------------------------
-function _G._highlight(e)
+--- cp.dev.highlight(element) -> axuielementObject
+--- Function
+--- Highlights an AX element on the screen.
+---
+--- Parameters:
+---  * element - The AX element to highlight.
+---
+--- Returns:
+---  * The element.
+function mod.highlight(e)
     if not e or not e.frame then
         return e
     end
@@ -258,8 +287,19 @@ function _G._highlight(e)
     return e
 end
 
-local SIZE = 100
-function _G._highlightPoint(point)
+--- cp.dev.highlightPoint(point) -> none
+--- Function
+--- Highlights a point on the screen.
+---
+--- Parameters:
+---  * point - A `hs.geometry` point object.
+---
+--- Returns:
+---  * None
+function mod.highlightPoint(point)
+
+    local SIZE = 100
+
     --------------------------------------------------------------------------------
     -- Get Highlight Colour Preferences:
     --------------------------------------------------------------------------------
@@ -288,38 +328,44 @@ function _G._highlightPoint(point)
     end)
 end
 
---------------------------------------------------------------------------------
--- INSPECT ELEMENT AT MOUSE PATH:
---------------------------------------------------------------------------------
-function _G._inspectElementAtMousePath()
-    return inspect(_G._elementAtMouse():path())
+--- cp.dev.inspectElementAtMousePath() -> none
+--- Function
+--- Inspects an AX element at the mouse path.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.inspectElementAtMousePath()
+    return inspect(mod.elementAtMouse():path())
 end
 
--- _test(id) -> cp.test
--- Function
--- This function will return a [cp.test](cp.test.md) with either the
--- name `<id>_test` or `<id>._test` if the `<id>` is pointing at a folder.
---
--- For example, you have an extensions called
--- `foo.bar`, and you want to create a test for it.
---
--- Option 1: `<id>_test`
--- * File: `/src/tests/foo/bar_test.lua`
---
--- Option 2: `<id>._test`
--- * File: `/src/tests/foo/bar/_test.lua`
---
--- You could then run all the contained tests like so:
--- ```lua
--- _test("foo.bar")()
--- ```
---
--- Parameters:
--- * id     - the `id` to test.
---
--- Returns:
--- * A [cp.test] to execute.
-function _G._test(id)
+--- cp.dev.test(id) -> cp.test
+--- Function
+--- This function will return a [cp.test](cp.test.md) with either the
+--- name `<id>_test` or `<id>._test` if the `<id>` is pointing at a folder.
+---
+--- For example, you have an extensions called
+--- `foo.bar`, and you want to create a test for it.
+---
+--- Option 1: `<id>_test`
+--- * File: `/src/tests/foo/bar_test.lua`
+---
+--- Option 2: `<id>._test`
+--- * File: `/src/tests/foo/bar/_test.lua`
+---
+--- You could then run all the contained tests like so:
+--- ```lua
+--- _test("foo.bar")()
+--- ```
+---
+--- Parameters:
+---  * id - the `id` to test.
+---
+--- Returns:
+---  * A [cp.test] to execute.
+function mod.test(id)
     id = id or ""
     local testsRoot = config.testsPath
     if not testsRoot then
@@ -353,3 +399,5 @@ function _G._test(id)
         return result
     end
 end
+
+return mod

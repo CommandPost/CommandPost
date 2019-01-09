@@ -93,14 +93,6 @@ function mod.init()
     console.outputBackgroundColor({hex = "#161616", alpha = 1})
 
     --------------------------------------------------------------------------------
-    -- Debug Mode:
-    --------------------------------------------------------------------------------
-    local debugMode = config.developerMode()
-    if debugMode then
-        require("cp.developer")
-    end
-
-    --------------------------------------------------------------------------------
     -- Add Toolbar To Error Log:
     --------------------------------------------------------------------------------
     local function consoleOnTopIcon()
@@ -268,6 +260,7 @@ function mod.init()
     local osVersion             = tools.macOSVersion() or "Unknown"
     local fcpLocale             = fcp:currentLocale()
     local fcpLanguage           = fcpLocale and fcpLocale.code or "Unknown"
+    local debugMode             = config.developerMode()
 
     --------------------------------------------------------------------------------
     -- Clear The Console:
