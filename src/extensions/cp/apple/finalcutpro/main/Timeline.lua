@@ -163,7 +163,7 @@ end
 --- Field
 --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
 function Timeline.lazy.prop:mainUI()
-    return self.UI:mutate(function(original, self)
+    return self.UI:mutate(function(original)
         return cache(self, "_main", function()
             local ui = original()
             return ui and childMatching(ui, Timeline.matchesMain)

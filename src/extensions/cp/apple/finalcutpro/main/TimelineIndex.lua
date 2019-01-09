@@ -36,3 +36,5 @@ function TimelineIndex:initialize(timeline)
 
     Element:initialize(self, timeline, UI)
 end
+
+return TimelineIndex

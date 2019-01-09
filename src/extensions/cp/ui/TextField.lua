@@ -38,7 +38,7 @@ local TextField = Element:subclass("cp.ui.TextField")
 ---  * `true` if matches otherwise `false`
 function TextField.static.matches(element, subrole)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField" and
-        subrole == nil or element:attributeValue("AXSubrole") == subrole
+        (subrole == nil or element:attributeValue("AXSubrole") == subrole)
 end
 
 --- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
