@@ -17,7 +17,7 @@
 --- local MyClass = class("MyClass")
 --- function MyClass:expensiveThing()
 ---     if self._expensiveThing == nil then
----         self._expensiveThing = ExpensiveThing.new()
+---         self._expensiveThing = ExpensiveThing()
 ---     end
 ---     return self._expensiveThing
 --- end
@@ -38,7 +38,7 @@
 ---
 --- local MyClass = class("MyClass"):include(lazy)
 --- function MyClass.lazy.method:expensiveThing()
----     return someObject.new()
+---     return ExpensiveThing()
 --- end
 ---
 --- local myThing = MyClass()
@@ -53,7 +53,7 @@
 ---
 --- local MyClass = class("MyClass"):include(lazy)
 --- function MyClass.lazy.value:expensiveThing()
----     return someObject.new()
+---     return ExpensiveThing()
 --- end
 ---
 --- local myThing = MyClass()
@@ -84,6 +84,8 @@
 ---
 --- It is very similar to the `value` factory, but the returned `cp.prop` will be automatically bound
 --- to the new instance and labeled with the key ("enabled" in the example above).
+
+-- local log           = require "hs.logger".new("lazy")
 
 local prop          = require "cp.prop"
 local format        = string.format

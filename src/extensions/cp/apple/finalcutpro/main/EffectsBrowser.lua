@@ -165,9 +165,9 @@ function EffectsBrowser:toggleButton()
         local button = nil
         local type = self:type()
         if type == EffectsBrowser.EFFECTS then
-            button = toolbar:effectsToggle()
+            button = toolbar:browser():effects()
         elseif type == EffectsBrowser.TRANSITIONS then
-            button = toolbar:transitionsToggle()
+            button = toolbar:browser():transitions()
         end
         self._toggleButton = button
     end

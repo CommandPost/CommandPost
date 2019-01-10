@@ -32,10 +32,22 @@ function Element.static.matches(element)
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
 
+-- Defaults to describing the class by it's class name
 function Element:__tostring()
     return self.class.name
 end
 
+--- cp.ui.Element(parent, uiFinder) -> cp.ui.Element
+--- Constructor
+--- Creates a new `Element` with the specified `parent` and `uiFinder`.
+--- The `uiFinder` may be either a `function` that returns an `axuielement`, or a [cp.prop](cp.prop.md).
+---
+--- Parameters:
+--- * parent - The parent Element (may be `nil`)
+--- * uiFinder - The `function` or `prop` that actually provides the current `axuielement` instance.
+---
+--- Returns:
+--- * The new `Element` instance.
 function Element:initialize(parent, uiFinder)
     self._parent = parent
 
@@ -110,7 +122,8 @@ end
 --- Returns:
 ---  * App
 function Element:app()
-    return self:parent():app()
+    local parent = self:parent()
+    return parent and parent:app()
 end
 
 --- cp.ui.Element:snapshot([path]) -> hs.image | nil
@@ -129,6 +142,45 @@ function Element:snapshot(path)
         return axutils.snapshot(ui, path)
     end
     return nil
+end
+
+
+--- cp.ui.Element:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the current configuration details for this Element (or subclass).
+---
+--- Notes:
+--- * When subclassing, the overriding `saveLayout` method should call the parent's saveLayout method,
+--- then add values to it, like so:
+---    ```
+---    function MyElement:saveLayout()
+---        local layout = Element.saveLayout(self)
+---        layout.myConfig = self.myConfig
+---        return layout
+---    end
+---    ```
+function Element.saveLayout()
+    return {}
+end
+
+--- cp.ui.Element:loadLayout(layout) -> nil
+--- Method
+--- When called, the Element (or subclass) will attempt to load the layout based on the parameters
+--- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
+---
+--- Parameters:
+--- * layout - a `table` of parameters that will be used to layout the element.
+---
+--- Notes:
+--- * When subclassing, the overriding `loadLayout` method should call the parent's `loadLayout` method,
+--- then process any custom values from it, like so:
+---    ```
+---    function MyElement:loadLayout(layout)
+---        Element.loadLayout(self, layout)
+---        self.myConfig = layout.myConfig
+---    end
+---    ```
+function Element.loadLayout(_)
 end
 
 return Element

@@ -227,7 +227,7 @@ end
 ---  * The options table accepts the following parameters:
 ---   * depth - A number representing the maximum depth to recurse into variable.
 function mod.inspectElement(e, options)
-    mod._highlight(e)
+    mod.highlight(e)
 
     local depth = options and options.depth or 1
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))

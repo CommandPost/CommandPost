@@ -26,7 +26,7 @@ local Element                       = require("cp.ui.Element")
 --------------------------------------------------------------------------------
 local TextField = Element:subclass("cp.ui.TextField")
 
---- cp.ui.TextField.matches(element) -> boolean
+--- cp.ui.TextField.matches(element[, subrole]) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---

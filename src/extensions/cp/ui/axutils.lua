@@ -470,6 +470,20 @@ function axutils.childrenMatching(element, matcherFn)
     return nil
 end
 
+--- cp.ui.axutils.hasChild(element, matcherFn) -> boolean
+--- Function
+--- Checks if the axuielement has a child that passes the `matcherFn`.
+---
+--- Parameters:
+--- * element - the `axuielement` to check.
+--- * matcherFn - the `function` that accepts an `axuielement` and returns a `boolean`
+---
+--- Returns:
+--- * `true` if any child matches, otherwise `false`.
+function axutils.hasChild(element, matcherFn)
+    return axutils.childMatching(element, matcherFn) ~= nil
+end
+
 --- cp.ui.axutils.isValid(element) -> boolean
 --- Function
 --- Checks if the axuilelement is still valid - that is, still active in the UI.
