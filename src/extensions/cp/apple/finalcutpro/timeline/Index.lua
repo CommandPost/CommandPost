@@ -10,6 +10,7 @@ local SplitGroup                        = require("cp.ui.SplitGroup")
 local SearchField                       = require("cp.ui.SearchField")
 
 local strings                           = require("cp.apple.finalcutpro.strings")
+local IndexClips                        = require("cp.apple.finalcutpro.timeline.IndexClips")
 local IndexMode                         = require("cp.apple.finalcutpro.timeline.IndexMode")
 
 local childMatching, hasChild           = axutils.childMatching, axutils.hasChild
@@ -154,6 +155,10 @@ end
 function Index.lazy.method:doFindSynchronized()
     return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeSynchronized"))
     :Label("Index:doFindSynchronized")
+end
+
+function Index.lazy.method:clips()
+    return IndexClips(self)
 end
 
 return Index

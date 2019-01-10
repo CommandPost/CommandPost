@@ -23,6 +23,10 @@ local function rolesString()
     return strings:find("PEDataListRoles")
 end
 
+local function captionsString()
+    return strings:find("PEDataListCaptions")
+end
+
 --- cp.apple.finalcutpro.timeline.IndexMode.matches(element) -> boolean
 --- Function
 --- Checks if the element is the `IndexMode`.
@@ -96,6 +100,21 @@ function IndexMode.lazy.method:roles()
         return cache(self, "_roles", function()
             local ui = original()
             return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == rolesString() end)
+        end, RadioButton.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.timeline.IndexMode:captions() -> cp.ui.RadioButton
+--- Method
+--- Returns the [RadioButton](cp.ui.RadioButton.ui) for the "Captions" mode.
+---
+--- Returns:
+--- * The "Captions" RadioButton.
+function IndexMode.lazy.method:captions()
+    return RadioButton(self, self.UI:mutate(function(original)
+        return cache(self, "_captions", function()
+            local ui = original()
+            return ui and childMatching(ui, function(child) return child:attributeValue("AXTitle") == captionsString() end)
         end, RadioButton.matches)
     end))
 end

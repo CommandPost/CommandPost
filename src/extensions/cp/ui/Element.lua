@@ -17,7 +17,7 @@ local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
 
-local Element = class("Element"):include(lazy)
+local Element = class("cp.ui.Element"):include(lazy)
 
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
