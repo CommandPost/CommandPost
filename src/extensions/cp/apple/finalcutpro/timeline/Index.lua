@@ -17,7 +17,7 @@ local IndexTags	                        = require("cp.apple.finalcutpro.timeline
 local childMatching, hasChild           = axutils.childMatching, axutils.hasChild
 local cache                             = axutils.cache
 
-local Do, If                            = go.Do, go.If
+local If                                = go.If
 
 -- The Index class
 local Index = SplitGroup:subclass("cp.apple.finalcutpro.timeline.Index")
