@@ -10,6 +10,7 @@ local SplitGroup                        = require("cp.ui.SplitGroup")
 local SearchField                       = require("cp.ui.SearchField")
 
 local strings                           = require("cp.apple.finalcutpro.strings")
+local IndexCaptions	                    = require("cp.apple.finalcutpro.timeline.IndexCaptions")
 local IndexClips                        = require("cp.apple.finalcutpro.timeline.IndexClips")
 local IndexMode                         = require("cp.apple.finalcutpro.timeline.IndexMode")
 local IndexRoles	                    = require("cp.apple.finalcutpro.timeline.IndexRoles")
@@ -163,8 +164,18 @@ function Index.lazy.method:tags()
     return IndexTags(self)
 end
 
+--- cp.apple.finalcutpro.timeline.Index:roles() -> cp.apple.finalcutpro.timeline.IndexRoles
+--- Method
+--- The [IndexRoles](cp.apple.finalcutpro.timeline.IndexRoles.md).
 function Index.lazy.method:roles()
     return IndexRoles(self)
+end
+
+--- cp.apple.finalcutpro.timeline.Index:captions() -> cp.apple.finalcutpro.timeline.IndexCaptions
+--- Method
+--- The [IndexCaptions](cp.apple.finalcutpro.timeline.IndexCaptions.md).
+function Index.lazy.method:captions()
+    return IndexCaptions(self)
 end
 
 return Index
