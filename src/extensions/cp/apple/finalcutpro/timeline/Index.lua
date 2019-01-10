@@ -12,6 +12,7 @@ local SearchField                       = require("cp.ui.SearchField")
 local strings                           = require("cp.apple.finalcutpro.strings")
 local IndexClips                        = require("cp.apple.finalcutpro.timeline.IndexClips")
 local IndexMode                         = require("cp.apple.finalcutpro.timeline.IndexMode")
+local IndexRoles	                    = require("cp.apple.finalcutpro.timeline.IndexRoles")
 local IndexTags	                        = require("cp.apple.finalcutpro.timeline.IndexTags")
 
 local childMatching, hasChild           = axutils.childMatching, axutils.hasChild
@@ -160,6 +161,10 @@ end
 --- The [IndexTags](cp.apple.finalcutpro.timeline.IndexTags.md).
 function Index.lazy.method:tags()
     return IndexTags(self)
+end
+
+function Index.lazy.method:roles()
+    return IndexRoles(self)
 end
 
 return Index
