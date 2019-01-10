@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.timeline.IndexClips ===
 ---
---- Provides access to the 'Clips' section of the [Timeline Index](cp.apple.finalcutpro.timeline.IndexClips)
+--- Provides access to the 'Clips' section of the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md)
 
 local class                 = require "middleclass"
 local lazy                  = require "cp.lazy"
@@ -115,7 +115,7 @@ end
 function IndexClips.lazy.method:all()
     return RadioButton(self, self:index().UI:mutate(function(original)
         if self:activate():checked() then
-            return cache(self, "_clips", function()
+            return cache(self, "_all", function()
                 local group = childMatching(original(), function(child)
                     return RadioGroup.matches(child) and #child == 1
                 end)

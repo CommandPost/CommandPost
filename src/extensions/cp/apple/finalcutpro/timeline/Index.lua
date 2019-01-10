@@ -12,6 +12,7 @@ local SearchField                       = require("cp.ui.SearchField")
 local strings                           = require("cp.apple.finalcutpro.strings")
 local IndexClips                        = require("cp.apple.finalcutpro.timeline.IndexClips")
 local IndexMode                         = require("cp.apple.finalcutpro.timeline.IndexMode")
+local IndexTags	                        = require("cp.apple.finalcutpro.timeline.IndexTags")
 
 local childMatching, hasChild           = axutils.childMatching, axutils.hasChild
 local cache                             = axutils.cache
@@ -84,16 +85,6 @@ function Index.lazy.method:doShow()
     return self:parent():toolbar():index().doCheck
 end
 
-function Index.lazy.method:doShowClips()
-    return Do(self.doShow)
-    :Then(
-        If(self.isShowing)
-        :Then(self:mode():clips().doPress)
-        :Otherwise(false)
-    )
-    :Label("Index:doShowClips")
-end
-
 --- cp.apple.finalcutpro.timeline.Index:doFindClipsContaining(text) -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.go.rx.Statement.md) that will use the index to search for clips containing the specified text.
@@ -157,8 +148,18 @@ function Index.lazy.method:doFindSynchronized()
     :Label("Index:doFindSynchronized")
 end
 
+--- cp.apple.finalcutpro.timeline.Index:clips() -> cp.apple.finalcutpro.timeline.IndexClips
+--- Method
+--- The [IndexClips](cp.apple.finalcutpro.timeline.IndexClips.md).
 function Index.lazy.method:clips()
     return IndexClips(self)
+end
+
+--- cp.apple.finalcutpro.timeline.Index:tags() -> cp.apple.finalcutpro.timeline.IndexTags
+--- Method
+--- The [IndexTags](cp.apple.finalcutpro.timeline.IndexTags.md).
+function Index.lazy.method:tags()
+    return IndexTags(self)
 end
 
 return Index
