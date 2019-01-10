@@ -11,14 +11,10 @@ local RadioButton           = require "cp.ui.RadioButton"
 local RadioGroup            = require "cp.ui.RadioGroup"
 local Table                 = require "cp.ui.Table"
 
-local strings               = require "cp.apple.finalcutpro.strings"
-
 local cache                 = axutils.cache
 local childFromLeft	        = axutils.childFromLeft
-local childWith             = axutils.childWith
 local childWithRole         = axutils.childWithRole
 local childMatching         = axutils.childMatching
-local hasChild              = axutils.hasChild
 
 local Do, If                = go.Do, go.If
 
@@ -132,10 +128,6 @@ end
 --- The collection of [RadioButtons](cp.ui.RadioButton.md) that allow filtering by Video/Audio/Title.
 
 IndexTags.static.Type = RadioGroup:subclass("cp.apple.finalcutpro.timeline.IndexTags.Type")
-
-local function videoFilter()
-    return strings:find("FFVideoFilterLabel")
-end
 
 --- cp.apple.finalcutpro.timeline.IndexTags.Type.matches(element) -> boolean
 --- Method
