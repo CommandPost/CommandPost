@@ -87,6 +87,27 @@ function Element.lazy.prop:isShowing()
     return isShowing
 end
 
+--- cp.ui.Element.role <cp.prop: string; read-only>
+--- Field
+--- Returns the `AX` role name for the element.
+function Element.lazy.prop:role()
+    return axutils.prop(self.UI, "AXRole")
+end
+
+--- cp.ui.Element.subrole <cp.prop: string; read-only>
+--- Field
+--- Returns the `AX` subrole name for the element.
+function Element.lazy.prop:subrole()
+    return axutils.prop(self.UI, "AXSubrole")
+end
+
+--- cp.ui.Element.identifier <cp.prop: string; read-only>
+--- Field
+--- Returns the `AX` identifier for the element.
+function Element.lazy.prop:identifier()
+    return axutils.prop(self.UI, "AXIdentifier")
+end
+
 --- cp.ui.Element.isEnabled <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the `Element` is visible and enabled.
@@ -100,6 +121,22 @@ end
 function Element.lazy.prop:frame()
     return axutils.prop(self.UI, "AXFrame")
 end
+
+--- cp.ui.Element.position <cp.prop: table; read-only; live?>
+--- Field
+--- Returns the table containing the `x` and `y` values for the `Element` frame, or `nil` if not available.
+-- TODO: ensure no other 'position' props are getting created elsewhere...
+-- function Element.lazy.prop:position()
+--     return axutils.prop(self.UI, "AXPosition")
+-- end
+
+--- cp.ui.Element.size <cp.prop: table; read-only; live?>
+--- Field
+--- Returns the table containing the `w` and `h` values for the `Element` frame, or `nil` if not available.
+-- TODO: ensure no other 'size' props are getting created elswehere...
+-- function Element.lazy.prop:size()
+--     return axutils.prop(self.UI, "AXSize")
+-- end
 
 --- cp.ui.Element:parent() -> parent
 --- Method

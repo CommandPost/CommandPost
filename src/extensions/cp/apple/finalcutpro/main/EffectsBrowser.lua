@@ -622,9 +622,7 @@ end
 function EffectsBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table(self, function()
-            return axutils.childFromLeft(self:mainGroupUI(), 1, function(element)
-                return element:attributeValue("AXRole") == "AXScrollArea"
-            end)
+            return axutils.childFromLeft(self:mainGroupUI(), 1, ScrollArea.matches)
         end):uncached()
     end
     return self._sidebar

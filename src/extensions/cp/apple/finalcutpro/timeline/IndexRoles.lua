@@ -14,12 +14,13 @@ local Button                = require "cp.ui.Button"
 local Group                 = require "cp.ui.Group"
 
 local strings	            = require "cp.apple.finalcutpro.strings"
+local IndexRolesList	    = require("cp.apple.finalcutpro.timeline.IndexRolesList")
 
 local cache                 = axutils.cache
 local childMatching         = axutils.childMatching
 local childrenMatching	    = axutils.childrenMatching
 
-local Do, If, Done          = go.Do, go.If, go.Done
+local Do, If                = go.Do, go.If
 
 local IndexRoles = class("cp.apple.finalcutpro.timeline.IndexRoles"):include(lazy)
 
@@ -82,10 +83,10 @@ end
 --- * The [Statement](cp.rx.go.Statement.md)
 function IndexRoles.lazy.method:doShow()
     local index = self:index()
-    return Do(index.doShow)
+    return Do(index:doShow())
     :Then(
         If(index.isShowing)
-        :Then(self:activate().doPress)
+        :Then(self:activate():doPress())
         :Otherwise(false)
     )
     :ThenYield()
@@ -104,6 +105,17 @@ local function _findGroupedButtonUI(ui, title)
             end
         end
     end
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:list() -> cp.apple.finalcutpro.timeline.IndexRolesList
+--- Method
+--- The [IndexRolesList](cp.apple.finalcutpro.timeline.IndexRolesList.md) with the list of Roles.
+function IndexRoles.lazy.method:list()
+    return IndexRolesList(self, self.UI:mutate(function(original)
+        return cache(self, "_list", function()
+            return childMatching(original(), IndexRolesList.matches)
+        end)
+    end))
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:ediRoles() -> cp.ui.Button
@@ -201,7 +213,8 @@ end
 function IndexRoles:saveLayout()
     return {
         showing = self:isShowing(),
-        audioLanes = self:audioLanes()
+        audioLanes = self:audioLanes(),
+        list = self:list():saveLayout(),
     }
 end
 
@@ -223,6 +236,7 @@ function IndexRoles:doLayout(layout)
         :Then(self:doShowAudioLanes())
         :Otherwise(self:doHideAudioLanes())
     )
+    :Then(self:list():doLayout(layout.list))
     :Label("IndexRoles:doLayout")
 end
 
