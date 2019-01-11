@@ -11,11 +11,13 @@ local require           = require
 
 local axutils           = require("cp.ui.axutils")
 local prop              = require("cp.prop")
+local go	            = require("cp.rx.go")
 
 local class             = require("middleclass")
 local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
+local Do  	            = go.Do
 
 local Element = class("cp.ui.Element"):include(lazy)
 
@@ -181,6 +183,39 @@ end
 ---    end
 ---    ```
 function Element.loadLayout(_)
+end
+
+--- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to load the layout based on the parameters
+--- provided by the `layout` table. This table should generally be generated via the [#saveLayout] method.
+---
+--- Parameters:
+--- * layout - a `table` of parameters that will be used to layout the element.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md) to execute.
+---
+--- Notes:
+--- * By default, to enable backwards-compatibility, this method will simply call the [#loadLayout]. Override it to provide more optimal asynchonous behaviour if required.
+--- * When subclassing, the overriding `doLayout` method should call the parent class's `doLayout` method,
+--- then process any custom values from it, like so:
+---    ```
+---    function MyElement:doLayout(layout)
+---        layout = layout or {}
+---        return Do(Element.doLayout(self, layout))
+---        :Then(function()
+---            self.myConfig = layout.myConfig
+---        end)
+---        :Label("MyElement:doLayout")
+---    end
+---    ```
+function Element:doLayout(layout)
+    return Do(function()
+        self:loadLayout(layout)
+        return true
+    end)
+    :Label("Element:doLayout")
 end
 
 return Element

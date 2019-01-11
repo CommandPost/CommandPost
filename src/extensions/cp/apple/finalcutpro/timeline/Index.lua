@@ -19,7 +19,7 @@ local IndexTags	                        = require("cp.apple.finalcutpro.timeline
 local childMatching, hasChild           = axutils.childMatching, axutils.hasChild
 local cache                             = axutils.cache
 
-local If                                = go.If
+local If, Do                            = go.If, go.Do
 
 -- The Index class
 local Index = SplitGroup:subclass("cp.apple.finalcutpro.timeline.Index")
@@ -84,7 +84,14 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will show the Index if possible.
 function Index.lazy.method:doShow()
-    return self:parent():toolbar():index().doCheck
+    return self:parent():toolbar():index():doCheck()
+end
+
+--- cp.apple.finalcutpro.timeline.Index:doHide() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) which will hide the Index if possible.
+function Index.lazy.method:doHide()
+    return self:parent():toolbar():index():doUncheck()
 end
 
 --- cp.apple.finalcutpro.timeline.Index:doFindClipsContaining(text) -> cp.rx.go.Statement
@@ -176,6 +183,52 @@ end
 --- The [IndexCaptions](cp.apple.finalcutpro.timeline.IndexCaptions.md).
 function Index.lazy.method:captions()
     return IndexCaptions(self)
+end
+
+--- cp.apple.finalcutpro.timeline.Index:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the layout configuration for this class.
+---
+--- Returns:
+--- * The layout configuration `table`.
+function Index:saveLayout()
+    local layout = SplitGroup.saveLayout(self)
+
+    layout.showing = self:isShowing()
+    layout.clips = self:clips():saveLayout()
+    layout.tags = self:tags():saveLayout()
+    layout.roles = self:roles():saveLayout()
+    layout.captions = self:captions():saveLayout()
+
+    layout.search = self:search():saveLayout()
+
+    return layout
+end
+
+--- cp.apple.finalcutpro.timeline.Index:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
+---
+--- Parameters:
+--- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function Index:doLayout(layout)
+    layout = layout or {}
+    return Do(
+        SplitGroup.doLayout(self, layout)
+    ):Then(
+        If(layout.showing == true)
+        :Then(self:doShow())
+        :Otherwise(self:doHide())
+    )
+    :Then(self:clips():doLayout(layout.clips))
+    :Then(self:tags():doLayout(layout.tags))
+    :Then(self:roles():doLayout(layout.roles))
+    :Then(self:captions():doLayout(layout.captions))
+    :Then(self:search():doLayout(layout.search))
+    :Label("Index:doLayout")
 end
 
 return Index

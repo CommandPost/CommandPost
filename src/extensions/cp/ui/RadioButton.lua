@@ -28,7 +28,7 @@ local require = require
 local Element                       = require("cp.ui.Element")
 local go                            = require("cp.rx.go")
 
-local If                            = go.If
+local If, Do                        = go.If, go.Do
 
 --------------------------------------------------------------------------------
 --
@@ -178,6 +178,18 @@ function RadioButton:loadLayout(layout)
     if layout then
         self:checked(layout.checked)
     end
+end
+
+--- cp.ui.RadioButton:doLayout()
+function RadioButton:doLayout(layout)
+    layout = layout or {}
+    return Do(Element.doLayout(self, layout))
+    :Then(
+        If(self.checked):IsNot(layout.checked)
+        :Then(self:doPress())
+        :Otherwise(true)
+    )
+    :Label("RadioButton:doLayout")
 end
 
 -- Allows the RadioButton to be called as a function and will return the `checked` value.

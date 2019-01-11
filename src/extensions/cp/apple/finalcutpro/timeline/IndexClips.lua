@@ -230,8 +230,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "All" media types.
 function IndexClips.lazy.method:doShowAll()
-    return If(self.doShow)
-    :Then(self:all().doPress)
+    return If(self:doShow())
+    :Then(self:all():doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowAll")
 end
@@ -240,8 +240,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Video" media types.
 function IndexClips.lazy.method:doShowVideo()
-    return If(self.doShow)
-    :Then(self:video().doPress)
+    return If(self:doShow())
+    :Then(self:video():doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowVideo")
 end
@@ -250,8 +250,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Audio" media types.
 function IndexClips.lazy.method:doShowAudio()
-    return If(self.doShow)
-    :Then(self:audio().doPress)
+    return If(self:doShow())
+    :Then(self:audio():doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowAudio")
 end
@@ -260,10 +260,46 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Titles" media types.
 function IndexClips.lazy.method:doShowTitles()
-    return If(self.doShow)
-    :Then(self:titles().doPress)
+    return If(self:doShow())
+    :Then(self:titles():doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowTitles")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the layout configuration for this class.
+---
+--- Returns:
+--- * The layout configuration `table`.
+function IndexClips:saveLayout()
+    return {
+        showing = self:isShowing(),
+        all = self:all():saveLayout(),
+        video = self:video():saveLayout(),
+        audio = self:audio():saveLayout(),
+        titles = self:titles():saveLayout(),
+    }
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
+---
+--- Parameters:
+--- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function IndexClips:doLayout(layout)
+    layout = layout or {}
+    return If(layout.showing == true)
+    :Then(self:doShow())
+    :Then(self:all():doLayout(layout.all))
+    :Then(self:video():doLayout(layout.video))
+    :Then(self:audio():doLayout(layout.audio))
+    :Then(self:titles():doLayout(layout.titles))
+    :Label("IndexClips:doLayout")
 end
 
 return IndexClips

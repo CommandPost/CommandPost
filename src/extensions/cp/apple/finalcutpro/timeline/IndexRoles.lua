@@ -19,7 +19,7 @@ local cache                 = axutils.cache
 local childMatching         = axutils.childMatching
 local childrenMatching	    = axutils.childrenMatching
 
-local Do, If                = go.Do, go.If
+local Do, If, Done          = go.Do, go.If, go.Done
 
 local IndexRoles = class("cp.apple.finalcutpro.timeline.IndexRoles"):include(lazy)
 
@@ -94,12 +94,14 @@ end
 
 local function _findGroupedButtonUI(ui, title)
     local groups = childrenMatching(ui, Group.matches)
-    for _,group in ipairs(groups) do
-        local buttonUI = childMatching(group, function(child)
-            return Button.matches(child) and child:attributeValue("AXTitle") == title
-        end)
-        if buttonUI then
-            return buttonUI
+    if groups then
+        for _,group in ipairs(groups) do
+            local buttonUI = childMatching(group, function(child)
+                return Button.matches(child) and child:attributeValue("AXTitle") == title
+            end)
+            if buttonUI then
+                return buttonUI
+            end
         end
     end
 end
@@ -164,8 +166,8 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that will show the Audio Lanes when executed.
 function IndexRoles.lazy.method:doShowAudioLanes()
     local show = self:showAudioLanes()
-    return Do(self.doShow)
-    :Then(If(show.isShowing):Then(show.doPress))
+    return Do(self:doShow())
+    :Then(If(show.isShowing):Then(show:doPress()))
     :Label("IndexRoles:doShowAudioLanes")
 end
 
@@ -174,8 +176,8 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles, if they are currently expanded.
 function IndexRoles.lazy.method:doCollapseSubroles()
     local collapse = self:collapseSubroles()
-    return Do(self.doShow)
-    :Then(If(collapse.isShowing):Then(collapse.doPress))
+    return Do(self:doShow())
+    :Then(If(collapse.isShowing):Then(collapse:doPress()))
     :Label("IndexRoles:doCollapseSubroles")
 end
 
@@ -184,10 +186,44 @@ end
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles (if necessary) and hide the audio lanes.
 function IndexRoles.lazy.method:doHideAudioLanes()
     local hide = self:hideAudioLanes()
-    return Do(self.doShow)
-    :Then(self.doCollapseSubroles)
-    :Then(If(hide.isShowing):Then(hide.doPress))
+    return Do(self:doShow())
+    :Then(self:doCollapseSubroles())
+    :Then(If(hide.isShowing):Then(hide:doPress()))
     :Label("IndexRoles:doHideAudioLanes")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the layout configuration for this class.
+---
+--- Returns:
+--- * The layout configuration `table`.
+function IndexRoles:saveLayout()
+    return {
+        showing = self:isShowing(),
+        audioLanes = self:audioLanes()
+    }
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
+---
+--- Parameters:
+--- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function IndexRoles:doLayout(layout)
+    layout = layout or {}
+    return If(layout.showing == true)
+    :Then(self:doShow())
+    :Then(
+        If(layout.audioLanes == true)
+        :Then(self:doShowAudioLanes())
+        :Otherwise(self:doHideAudioLanes())
+    )
+    :Label("IndexRoles:doLayout")
 end
 
 return IndexRoles

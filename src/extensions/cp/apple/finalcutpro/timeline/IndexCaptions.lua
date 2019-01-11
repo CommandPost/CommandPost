@@ -113,4 +113,33 @@ function IndexCaptions.lazy.method:viewErrors()
     end))
 end
 
+
+--- cp.apple.finalcutpro.timeline.IndexCaptions:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the layout configuration for this class.
+---
+--- Returns:
+--- * The layout configuration `table`.
+function IndexCaptions:saveLayout()
+    return {
+        showing = self:isShowing(),
+    }
+end
+
+--- cp.apple.finalcutpro.timeline.IndexCaptions:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
+---
+--- Parameters:
+--- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function IndexCaptions:doLayout(layout)
+    layout = layout or {}
+    return If(layout.showing == true)
+    :Then(self:doShow())
+    :Label("IndexCaptions:doLayout")
+end
+
 return IndexCaptions

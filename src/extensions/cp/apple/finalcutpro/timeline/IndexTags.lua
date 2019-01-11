@@ -260,8 +260,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "All" media types.
 function IndexTags.lazy.method:doShowAll()
-    return If(self.doShow)
-    :Then(self:all().doPress)
+    return If(self:doShow())
+    :Then(self:all():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowAll")
 end
@@ -270,8 +270,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Standard" markers.
 function IndexTags.lazy.method:doShowStandardMarkers()
-    return If(self.doShow)
-    :Then(self:standardMarkers().doPress)
+    return If(self:doShow())
+    :Then(self:standardMarkers():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowStandardMarkers")
 end
@@ -280,8 +280,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Keywords".
 function IndexTags.lazy.method:doShowKeywords()
-    return If(self.doShow)
-    :Then(self:keywords().doPress)
+    return If(self:doShow())
+    :Then(self:keywords():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowKeywords")
 end
@@ -290,8 +290,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Analysis Keywords".
 function IndexTags.lazy.method:doShowAnalysisKeywords()
-    return If(self.doShow)
-    :Then(self:analysisKeywords().doPress)
+    return If(self:doShow())
+    :Then(self:analysisKeywords():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowAnalysisKeywords")
 end
@@ -300,8 +300,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Incomplete Todo Markers".
 function IndexTags.lazy.method:doShowIncompleteTodos()
-    return If(self.doShow)
-    :Then(self:incompleteTodos().doPress)
+    return If(self:doShow())
+    :Then(self:incompleteTodos():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowIncompleteTodos")
 end
@@ -310,8 +310,8 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Complete Todos".
 function IndexTags.lazy.method:doShowCompleteTodos()
-    return If(self.doShow)
-    :Then(self:completeTodos().doPress)
+    return If(self:doShow())
+    :Then(self:completeTodos():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowCompleteTodos")
 end
@@ -320,10 +320,52 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Chapter" markers.
 function IndexTags.lazy.method:doShowChapters()
-    return If(self.doShow)
-    :Then(self:chapters().doPress)
+    return If(self:doShow())
+    :Then(self:chapters():doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowChapters")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexTags:saveLayout() -> table
+--- Method
+--- Returns a `table` containing the layout configuration for this class.
+---
+--- Returns:
+--- * The layout configuration `table`.
+function IndexTags:saveLayout()
+    return {
+        showing = self:isShowing(),
+        all = self:all():saveLayout(),
+        standardMarkers = self:standardMarkers():saveLayout(),
+        keywords = self:keywords():saveLayout(),
+        analysisKeywords = self:analysisKeywords():saveLayout(),
+        incompleteTodos = self:incompleteTodos():saveLayout(),
+        completeTodos = self:completeTodos():saveLayout(),
+        chapters = self:chapters():saveLayout(),
+    }
+end
+
+--- cp.apple.finalcutpro.timeline.IndexTags:doLayout(layout) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
+---
+--- Parameters:
+--- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function IndexTags:doLayout(layout)
+    layout = layout or {}
+    return If(layout.showing == true)
+    :Then(self:doShow())
+    :Then(self:all():doLayout(layout.all))
+    :Then(self:standardMarkers():doLayout(layout.standardMarkers))
+    :Then(self:keywords():doLayout(layout.keywords))
+    :Then(self:analysisKeywords():doLayout(layout.analysisKeywords))
+    :Then(self:incompleteTodos():doLayout(layout.incompleteTodos))
+    :Then(self:completeTodos():doLayout(layout.completeTodos))
+    :Then(self:chapters():doLayout(layout.chapters))
+    :Label("IndexTags:doLayout")
 end
 
 return IndexTags
