@@ -8,6 +8,8 @@ local axutils	                = require "cp.ui.axutils"
 local ScrollArea	            = require "cp.ui.ScrollArea"
 local Outline	                = require "cp.ui.Outline"
 
+local childMatching	            = axutils.childMatching
+
 local IndexRolesList = ScrollArea:subclass("cp.apple.finalcutpro.timeline.IndexRolesList")
 
 --- cp.apple.finalcutpro.timeline.IndexRolesList.matches(element) -> boolean
@@ -31,7 +33,9 @@ end
 --- Method
 --- The [Outline](cp.ui.Outline.md) that serves as the contents of the scroll area.
 function IndexRolesList.lazy.method:contents()
-    return Outline(self, axutils.prop(self.UI, "AXContents"))
+    return Outline(self, self.UI:mutate(function(original)
+        return childMatching(original(), Outline.matches)
+    end))
 end
 
 function IndexRolesList:saveLayout()

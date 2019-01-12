@@ -190,7 +190,12 @@
 ---
 --- ## Tables
 ---
---- Because tables are copied by reference rather than by value, changes made inside a table will not necessarily trigger an update when setting a value with an updated table value. By default, tables are simply passed in and out without modification. You can nominate for a property to make copies of tables (not userdata) when getting or setting, which effectively isolates the value being stored from outside modification. This can be done with the [deepTable](#deepTable) and [shallowTable](#shallowTable) methods. Below is an example of them in action:
+--- Because tables are copied by reference rather than by value, changes made inside a table will not necessarily
+--- trigger an update when setting a value with an updated table value. By default, tables are simply passed in
+--- and out without modification. You can nominate for a property to make copies of tables (not userdata) when
+--- getting or setting, which effectively isolates the value being stored from outside modification. This can be
+--- done with the [deepTable](#deepTable) and [shallowTable](#shallowTable) methods. Below is an example of them
+--- in action:
 ---
 --- ```lua
 --- local value = { a = 1, b = { c = 1 } }

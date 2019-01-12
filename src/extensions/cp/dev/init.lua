@@ -204,6 +204,9 @@ function mod.inspect(e, options)
             end
             return result
         else
+            if type(e) == "table" and e.UI then
+                mod.highlight(e:UI())
+            end
             return inspect(e, options)
         end
     else
