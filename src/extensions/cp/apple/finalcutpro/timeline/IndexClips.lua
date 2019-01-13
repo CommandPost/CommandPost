@@ -266,6 +266,69 @@ function IndexClips.lazy.method:doShowTitles()
     :Label("IndexClips:doShowTitles")
 end
 
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindClipsContaining(text) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.go.rx.Statement.md) that will use the index to search for clips containing the specified text.
+---
+--- Parameters:
+--- * text - The text to search for.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * Because the `text` can change each time, this result is not cached automatically. However as long as you are searching for the same text the result can be safely cached. The [#toFindMissingMedia] method does this, for example.
+function IndexClips:doFindClipsContaining(text)
+    return If(self.doShowClips)
+    :Then(function()
+        self:search():value(text)
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("IndexClips:doFindClipsContaining('"..text.."')")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindMissingMedia() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Missing Media".
+function IndexClips.lazy.method:doFindMissingMedia()
+    return self:doFindClipsContaining(strings:find("FFTimelineIndexMissingMediaSearch"))
+    :Label("IndexClips:doFindMissingMedia")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindAuditions() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Auditions".
+function IndexClips.lazy.method:doFindAuditions()
+    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeAudition"))
+    :Label("IndexClips:doFindAuditions")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindMulticams() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Multicam" clips.
+function IndexClips.lazy.method:doFindMulticams()
+    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeMultiCam"))
+    :Label("IndexClips:doFindMulticams")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindCompoundClips() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Compound Clips".
+function IndexClips.lazy.method:doFindCompoundClips()
+    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeCompound"))
+    :Label("IndexClips:doFindCompoundClips")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexClips:doFindSynchronized() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Synchronized" Clips.
+function IndexClips.lazy.method:doFindSynchronized()
+    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeSynchronized"))
+    :Label("IndexClips:doFindSynchronized")
+end
+
 --- cp.apple.finalcutpro.timeline.IndexClips:saveLayout() -> table
 --- Method
 --- Returns a `table` containing the layout configuration for this class.

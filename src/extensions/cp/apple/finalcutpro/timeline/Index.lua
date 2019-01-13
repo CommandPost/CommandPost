@@ -9,7 +9,6 @@ local axutils                           = require("cp.ui.axutils")
 local SplitGroup                        = require("cp.ui.SplitGroup")
 local SearchField                       = require("cp.ui.SearchField")
 
-local strings                           = require("cp.apple.finalcutpro.strings")
 local IndexCaptions	                    = require("cp.apple.finalcutpro.timeline.IndexCaptions")
 local IndexClips                        = require("cp.apple.finalcutpro.timeline.IndexClips")
 local IndexMode                         = require("cp.apple.finalcutpro.timeline.IndexMode")
@@ -92,69 +91,6 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) which will hide the Index if possible.
 function Index.lazy.method:doHide()
     return self:parent():toolbar():index():doUncheck()
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindClipsContaining(text) -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.go.rx.Statement.md) that will use the index to search for clips containing the specified text.
----
---- Parameters:
---- * text - The text to search for.
----
---- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
----
---- Notes:
---- * Because the `text` can change each time, this result is not cached automatically. However as long as you are searching for the same text the result can be safely cached. The [#toFindMissingMedia] method does this, for example.
-function Index:doFindClipsContaining(text)
-    return If(self.doShowClips)
-    :Then(function()
-        self:search():value(text)
-        return true
-    end)
-    :Otherwise(false)
-    :ThenYield()
-    :Label("Index:doFindClipsContaining('"..text.."')")
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindMissingMedia() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Missing Media".
-function Index.lazy.method:doFindMissingMedia()
-    return self:doFindClipsContaining(strings:find("FFTimelineIndexMissingMediaSearch"))
-    :Label("Index:doFindMissingMedia")
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindAuditions() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Auditions".
-function Index.lazy.method:doFindAuditions()
-    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeAudition"))
-    :Label("Index:doFindAuditions")
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindMulticams() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Multicam" clips.
-function Index.lazy.method:doFindMulticams()
-    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeMultiCam"))
-    :Label("Index:doFindMulticams")
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindCompoundClips() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Compound Clips".
-function Index.lazy.method:doFindCompoundClips()
-    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeCompound"))
-    :Label("Index:doFindCompoundClips")
-end
-
---- cp.apple.finalcutpro.timeline.Index:doFindSynchronized() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that will use the index to search for all "Synchronized" Clips.
-function Index.lazy.method:doFindSynchronized()
-    return self:doFindClipsContaining(strings:find("FFOrganizerFilterHUDClipTypeSynchronized"))
-    :Label("Index:doFindSynchronized")
 end
 
 --- cp.apple.finalcutpro.timeline.Index:clips() -> cp.apple.finalcutpro.timeline.IndexClips

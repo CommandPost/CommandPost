@@ -2,7 +2,7 @@
 ---
 --- Represents an `AXOutline` `axuielement`.
 
-local log                       = require "hs.logger" .new "Outline"
+-- local log                       = require "hs.logger" .new "Outline"
 
 local funtils	                = require "hs.fnutils"
 
@@ -12,7 +12,7 @@ local Column                    = require "cp.ui.Column"
 local Element	                = require "cp.ui.Element"
 local Row                       = require "cp.ui.Row"
 
-local valueOf, children         = axutils.valueOf, axutils.children
+local valueOf                   = axutils.valueOf
 local insert	                = table.insert
 local ifilter	                = funtils.ifilter
 

@@ -2,7 +2,7 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
-local log	                = require "hs.logger" .new "Row"
+-- local log	                = require "hs.logger" .new "Row"
 
 local axutils	            = require "cp.ui.axutils"
 local Element	            = require "cp.ui.Element"
