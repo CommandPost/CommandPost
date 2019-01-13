@@ -84,4 +84,18 @@ function AudioRole.lazy.method:doUnfocusInTimeline()
     return self:focusedInTimeline():doUncheck()
 end
 
+--- cp.apple.finalcutpro.timeline.AudioRole:doShowSubroleLanes() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to show the subrole lanes on this audio role in the timeline.
+function AudioRole.lazy.method:doShowSubroleLanes()
+    return self:subroleLanes():doCheck()
+end
+
+--- cp.apple.finalcutpro.timeline.AudioRole:doHideSubroleLanes() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the subrole lanes on this audio role in the timeline.
+function AudioRole.lazy.method:doHideSubroleLanes()
+    return self:subrolLanes():doUncheck()
+end
+
 return AudioRole

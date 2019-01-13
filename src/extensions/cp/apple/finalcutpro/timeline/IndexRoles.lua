@@ -295,6 +295,15 @@ function IndexRoles:doDeactivate(title)
     :Label("IndexRoles:doDeactivate")
 end
 
+-- These help with caching the Statements for store/recall
+function IndexRoles.lazy.method:_doStoreIndexLayout()
+    return self:index():doStoreLayout("IndexRoles")
+end
+
+function IndexRoles.lazy.method:_doRecallIndexLayout()
+    return self:index():doRecallLayout("IndexRoles")
+end
+
 --- cp.apple.finalcutpro.timeline.IndexRoles:doFocusInTimeline(title) -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that will focus the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
@@ -309,10 +318,10 @@ end
 --- Notes:
 --- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doFocusInTimeline(title)
-    return Do(self:index():doStoreLayout("doFocusInTimeline"))
+    return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
     :Then(self:list():doFocusInTimeline(title))
-    :Finally(self:index():doRecallLayout("doFocusInTimeline"))
+    :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doFocusInTimeline")
 end
 
@@ -330,11 +339,54 @@ end
 --- Notes:
 --- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doUnfocusInTimeline(title)
-    return Do(self:index():doStoreLayout("doUnfocusInTimeline"))
+    return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
     :Then(self:list():doUnfocusInTimeline(title))
-    :Finally(self:index():doRecallLayout("doUnfocusInTimeline"))
+    :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doUnfocusInTimeline")
+end
+
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:doShowSubroleLanes(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will show subrole lanes for the role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
+--- This will automatically show and hide the Index if it is not currently visible.
+---
+--- Parameters:
+--- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRoles:doShowSubroleLanes(title)
+    return Do(self:_doStoreIndexLayout())
+    :Then(self:doShow())
+    :Then(self:list():doShowSubroleLanes(title))
+    :Finally(self:_doRecallIndexLayout())
+    :Label("IndexRoles:doSubroleLanes")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:doHideSubroleLanes(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will hide the subrole lanes for the listed role, if it is available and is an [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md).
+--- This will automatically show and hide the Index if it is not currently visible.
+---
+--- Parameters:
+--- * The title of the [Role](cp.apple.finalcutpro.timeline.Role.md).
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRoles:doHideSubroleLanes(title)
+    return Do(self:_doStoreIndexLayout())
+    :Then(self:doShow())
+    :Then(self:list():doHideSubroleLanes(title))
+    :Finally(self:_doRecallIndexLayout())
+    :Label("IndexRoles:doHideSubroleLanes")
 end
 
 return IndexRoles
