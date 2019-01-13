@@ -14,7 +14,7 @@ local Button                = require "cp.ui.Button"
 local Group                 = require "cp.ui.Group"
 
 local strings	            = require "cp.apple.finalcutpro.strings"
-local IndexRolesList	    = require("cp.apple.finalcutpro.timeline.IndexRolesList")
+local IndexRolesArea	    = require("cp.apple.finalcutpro.timeline.IndexRolesArea")
 
 local cache                 = axutils.cache
 local childMatching         = axutils.childMatching
@@ -107,15 +107,22 @@ local function _findGroupedButtonUI(ui, title)
     end
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:list() -> cp.apple.finalcutpro.timeline.IndexRolesList
+--- cp.apple.finalcutpro.timeline.IndexRoles:area() -> cp.apple.finalcutpro.timeline.IndexRolesArea
 --- Method
---- The [IndexRolesList](cp.apple.finalcutpro.timeline.IndexRolesList.md) with the list of Roles.
-function IndexRoles.lazy.method:list()
-    return IndexRolesList(self, self.UI:mutate(function(original)
+--- The [IndexRolesArea](cp.apple.finalcutpro.timeline.IndexRolesArea.md) containing the list of [Role](cp.apple.finalcutpro.timeline.Role.md).
+function IndexRoles.lazy.method:area()
+    return IndexRolesArea(self, self.UI:mutate(function(original)
         return cache(self, "_list", function()
-            return childMatching(original(), IndexRolesList.matches)
+            return childMatching(original(), IndexRolesArea.matches)
         end)
     end))
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRoles:list() -> cp.apple.finalcutpro.timeline.IndexRolesList
+--- Method
+--- The [IndexRolesList](cp.apple.finalcutpro.timeline.IndexRolesList.md) for the roles.
+function IndexRoles.lazy.method:list()
+    return self:area():list()
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:ediRoles() -> cp.ui.Button
@@ -214,7 +221,7 @@ function IndexRoles:saveLayout()
     return {
         showing = self:isShowing(),
         audioLanes = self:audioLanes(),
-        list = self:list():saveLayout(),
+        area = self:area():saveLayout(),
     }
 end
 
@@ -236,8 +243,24 @@ function IndexRoles:doLayout(layout)
         :Then(self:doShowAudioLanes())
         :Otherwise(self:doHideAudioLanes())
     )
-    :Then(self:list():doLayout(layout.list))
+    :Then(self:area():doLayout(layout.area))
     :Label("IndexRoles:doLayout")
+end
+
+function IndexRoles:allRoles(includeSubroles)
+    return self:list():allRoles(includeSubroles)
+end
+
+function IndexRoles:videoRoles(includeSubroles)
+    return self:list():videoRoles(includeSubroles)
+end
+
+function IndexRoles:audioRoles(includeSubroles)
+    return self:list():audioRoles(includeSubroles)
+end
+
+function IndexRoles:captionRoles(includeSubroles)
+    return self:list():captionRoles(includeSubroles)
 end
 
 return IndexRoles

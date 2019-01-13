@@ -52,7 +52,7 @@ end
 --- The `Row` which is disclosing this `Row`.
 function Row.lazy.prop:disclosedByRow()
     return axutils.prop(self.UI, "AXDisclosedByRow"):mutate(function(original)
-        return self:parent():findRow(original())
+        return self:parent():fetchRow(original())
     end)
 end
 
@@ -68,7 +68,7 @@ function Row:disclosedRows()
     if ui then
         local rowsUI = ui:attributeValue("AXDisclosedRows")
         if rowsUI then
-            return self:parent():findRows(rowsUI)
+            return self:parent():fetchRows(rowsUI)
         end
     end
 end

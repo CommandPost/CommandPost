@@ -1,56 +1,104 @@
---- === cp.apple.finalcutpro.timeline.IndexRolesList ===
----
---- Represents the list of Roles in the [IndexRoles](cp.apple.finalcutpro.timeline.IndexRoles.md).
+-- local log	                    = require "hs.logger" .new "IndexRolesList"
 
-local log	                    = require "hs.logger" .new "IndexRolesList"
+local prop	                    = require "cp.prop"
+local Outline	                = require "cp.ui.Outline"
+local Row                       = require "cp.ui.Row"
 
-local axutils	                = require "cp.ui.axutils"
-local ScrollArea	            = require "cp.ui.ScrollArea"
-local IndexRolesOutline         = require "cp.apple.finalcutpro.timeline.IndexRolesOutline"
+local Role                      = require "cp.apple.finalcutpro.timeline.Role"
+local AudioRole                 = require "cp.apple.finalcutpro.timeline.AudioRole"
+local AudioSubrole	            = require "cp.apple.finalcutpro.timeline.AudioSubrole"
+local CaptionsRole	            = require "cp.apple.finalcutpro.timeline.CaptionsRole"
+local CaptionsSubrole	        = require "cp.apple.finalcutpro.timeline.CaptionsSubrole"
+local VideoRole	                = require "cp.apple.finalcutpro.timeline.VideoRole"
+local VideoSubrole	            = require "cp.apple.finalcutpro.timeline.VideoSubrole"
 
-local childMatching	            = axutils.childMatching
+local IndexRolesList = Outline:subclass("cp.apple.finalcutpro.timeline.IndexRolesList")
 
-local IndexRolesList = ScrollArea:subclass("cp.apple.finalcutpro.timeline.IndexRolesList")
+-- cp.apple.finalcutpro.timeline.IndexRolesList:createRow(rowUI) -> cp.apple.finalcutpro.timeline.Role
+-- Private Method
+-- Returns Rows as a Role.
+function IndexRolesList:createRow(rowUI)
+    assert(rowUI:attributeValue("AXParent") == self:UI(), "The provided `rowUI` is not in this Outline.")
+    local rowProp = prop.THIS(rowUI)
 
---- cp.apple.finalcutpro.timeline.IndexRolesList.matches(element) -> boolean
---- Function
---- Checks if the `element` matches an `IndexRolesList`.
+    if AudioRole.matches(rowUI) then
+        return AudioRole(self, rowProp)
+    elseif AudioSubrole.matches(rowUI) then
+        return AudioSubrole(self, rowProp)
+    elseif CaptionsRole.matches(rowUI) then
+        return CaptionsRole(self, rowProp)
+    elseif CaptionsSubrole.matches(rowUI) then
+        return CaptionsSubrole(self, rowProp)
+    elseif VideoRole.matches(rowUI) then
+        return VideoRole(self, rowProp)
+    elseif VideoSubrole.matches(rowUI) then
+        return VideoSubrole(self, rowProp)
+    elseif Role.matches(rowUI) then
+        return Role(self, rowProp)
+    end
+
+    return Row(self, rowProp)
+end
+
+-- creates a filter function for Roles.
+local function rolesFilter(includeSubroles, type)
+    return function(e)
+        return Role.is(e)
+        and (includeSubroles == true or e:subroleRow() ~= true)
+        and (type == nil or e[type] == true)
+    end
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:allRoles([includeSubroles]) -> table of Roles
+--- Method
+--- Returns the list of all [Role](cp.ui.Role.md)s in the current list.
 ---
 --- Parameters:
---- * element	- The `axuielement` to check.
+--- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
 ---
 --- Returns:
---- * `true` if it matches, otherwise `false`.
-function IndexRolesList.static.matches(element)
-    if ScrollArea.matches(element) then
-        local contents = element:attributeValue("AXContents")
-        return #contents == 1 and IndexRolesOutline.matches(contents[1])
-    end
-    return false
+--- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+function IndexRolesList:allRoles(includeSubroles)
+    return self:filterRows(rolesFilter(includeSubroles))
 end
 
---- cp.apple.finalcutpro.timeline.IndexRolesList:contents() -> cp.ui.Outline
+--- cp.apple.finalcutpro.timeline.IndexRolesList:videoRoles([includeSubroles]) -> table of Roles
 --- Method
---- The [Outline](cp.ui.Outline.md) that serves as the contents of the scroll area.
-function IndexRolesList.lazy.method:contents()
-    return IndexRolesOutline(self, self.UI:mutate(function(original)
-        return childMatching(original(), IndexRolesOutline.matches)
-    end))
+--- Returns the list of all video [Role](cp.ui.Role.md)s in the current list.
+---
+--- Parameters:
+--- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---
+--- Returns:
+--- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+function IndexRolesList:videoRoles(includeSubroles)
+    return self:filterRows(rolesFilter(includeSubroles, "video"))
 end
 
-function IndexRolesList:saveLayout()
-    local layout = ScrollArea.saveLayout(self)
-
-    layout.contents = self:contents():saveLayout()
-
-    return layout
+--- cp.apple.finalcutpro.timeline.IndexRolesList:audioRoles([includeSubroles]) -> table of Roles
+--- Method
+--- Returns the list of all audio [Role](cp.ui.Role.md)s in the current list.
+---
+--- Parameters:
+--- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---
+--- Returns:
+--- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+function IndexRolesList:audioRoles(includeSubroles)
+    return self:filterRows(rolesFilter(includeSubroles, "audio"))
 end
 
-function IndexRolesList:loadLayout(layout)
-    log.df("IndexRolesList:loadLayout: called")
-    layout = layout or {}
-    ScrollArea.loadLayout(self, layout)
-    self:contents():loadLayout(layout.contents)
+--- cp.apple.finalcutpro.timeline.IndexRolesList:allRoles([includeSubroles]) -> table of Roles
+--- Method
+--- Returns the list of caption [Role](cp.ui.Role.md)s in the current list.
+---
+--- Parameters:
+--- * includeSubroles - if `true`, include Subroles, otherwise exclude them.
+---
+--- Returns:
+--- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
+function IndexRolesList:captionRoles(includeSubroles)
+    return self:filterRows(rolesFilter(includeSubroles, "caption"))
 end
 
 return IndexRolesList

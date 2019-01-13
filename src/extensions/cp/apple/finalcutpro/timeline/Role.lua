@@ -10,6 +10,7 @@ local CheckBox	            = require "cp.ui.CheckBox"
 local StaticText	        = require "cp.ui.StaticText"
 
 local childWithRole, childFromLeft	    = axutils.childWithRole, axutils.childFromLeft
+local format	                        = string.format
 
 local Role = Row:subclass("cp.apple.finalcutpro.timeline.Role")
 
@@ -42,9 +43,9 @@ Role.static.TITLE_KEY = {
 --- * AUDIO - An Audio Role
 --- * CAPTION - A Caption Role
 Role.static.TYPE = {
-    VIDEO = 1,
-    AUDIO = 2,
-    CAPTION = 3,
+    VIDEO = "VIDEO",
+    AUDIO = "AUDIO",
+    CAPTION = "CAPTION",
 }
 
 --- cp.apple.finalcutpro.timeline.Role.matches(element) -> boolean
@@ -60,6 +61,19 @@ function Role.static.matches(element)
     return Row.matches(element)
     and CheckBox.matches(childFromLeft(element[1], 1))
     and StaticText.matches(childFromLeft(element[1], 2))
+end
+
+--- cp.apple.finalcutpro.timeline.Role.is(thing) -> boolean
+--- Function
+--- Checks if the `thing` is a `Role`.
+---
+--- Parameters:
+---  * `thing`		- The thing to check
+---
+--- Returns:
+---  * `true` if the thing is a `Table` instance.
+function Role.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(Role)
 end
 
 --- cp.apple.finalcutpro.timeline.Role(parent, uiFinder, type)
@@ -124,6 +138,11 @@ function Role.lazy.method:title()
     return StaticText(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, StaticText.matches)
     end))
+end
+
+function Role:__tostring()
+    local title = self:title():value() or "[Unknown]"
+    return format("%s: %s", Row.__tostring(self), title)
 end
 
 return Role
