@@ -17,7 +17,7 @@ local class             = require("middleclass")
 local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
-local Do, Given, If     = go.Do, go.Given, go.If
+local Do, Given         = go.Do, go.Given
 
 local Element = class("cp.ui.Element"):include(lazy)
 
