@@ -482,7 +482,7 @@ end
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenMatching(element, matcherFn)
     if element then
-        return fnutils.ifilter(element, matcherFn)
+        return fnutils.ifilter(axutils.children(element), matcherFn)
     end
     return nil
 end

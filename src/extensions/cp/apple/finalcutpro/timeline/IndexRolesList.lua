@@ -6,7 +6,7 @@ local log	                    = require "hs.logger" .new "IndexRolesList"
 
 local axutils	                = require "cp.ui.axutils"
 local ScrollArea	            = require "cp.ui.ScrollArea"
-local Outline	                = require "cp.ui.Outline"
+local IndexRolesOutline         = require "cp.apple.finalcutpro.timeline.IndexRolesOutline"
 
 local childMatching	            = axutils.childMatching
 
@@ -24,7 +24,7 @@ local IndexRolesList = ScrollArea:subclass("cp.apple.finalcutpro.timeline.IndexR
 function IndexRolesList.static.matches(element)
     if ScrollArea.matches(element) then
         local contents = element:attributeValue("AXContents")
-        return #contents == 1 and Outline.matches(contents[1])
+        return #contents == 1 and IndexRolesOutline.matches(contents[1])
     end
     return false
 end
@@ -33,8 +33,8 @@ end
 --- Method
 --- The [Outline](cp.ui.Outline.md) that serves as the contents of the scroll area.
 function IndexRolesList.lazy.method:contents()
-    return Outline(self, self.UI:mutate(function(original)
-        return childMatching(original(), Outline.matches)
+    return IndexRolesOutline(self, self.UI:mutate(function(original)
+        return childMatching(original(), IndexRolesOutline.matches)
     end))
 end
 
