@@ -150,7 +150,7 @@ end
 --- Returns a `Statement` that will ensure the `CheckBox` is checked.
 function CheckBox.lazy.method:doCheck()
     return If(self.checked):Is(false)
-    :Then(self.doPress)
+    :Then(self:doPress())
     :Otherwise(true)
     :ThenYield()
     :Label("CheckBox:doCheck")
@@ -161,7 +161,7 @@ end
 --- Returns a `Statement` that will ensure the `CheckBox` is unchecked.
 function CheckBox.lazy.method:doUncheck()
     return If(self.checked)
-    :Then(self.doPress)
+    :Then(self:doPress())
     :Otherwise(true)
     :ThenYield()
     :Label("CheckBox:doUncheck")

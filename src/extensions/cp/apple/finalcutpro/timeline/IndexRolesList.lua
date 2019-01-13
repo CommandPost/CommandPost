@@ -1,5 +1,6 @@
 -- local log	                    = require "hs.logger" .new "IndexRolesList"
 
+local go	                    = require "cp.rx.go"
 local prop	                    = require "cp.prop"
 local Outline	                = require "cp.ui.Outline"
 local Row                       = require "cp.ui.Row"
@@ -11,6 +12,8 @@ local CaptionsRole	            = require "cp.apple.finalcutpro.timeline.Captions
 local CaptionsSubrole	        = require "cp.apple.finalcutpro.timeline.CaptionsSubrole"
 local VideoRole	                = require "cp.apple.finalcutpro.timeline.VideoRole"
 local VideoSubrole	            = require "cp.apple.finalcutpro.timeline.VideoSubrole"
+
+local If                        = go.If
 
 local IndexRolesList = Outline:subclass("cp.apple.finalcutpro.timeline.IndexRolesList")
 
@@ -38,6 +41,19 @@ function IndexRolesList:createRow(rowUI)
     end
 
     return Row(self, rowProp)
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:filterRoles([matcherFn]) -> table of Roles or nil
+--- Method
+--- Filters the current list of [Role](cp.apple.finalcutpro.timeline.Role.md)s based on the given `matchesFn` predicate.
+---
+--- Parameters:
+--- * matchesFn - the matcher function. If not provided, no additional filtering occurs.
+---
+--- Returns:
+--- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if no UI is currently available.
+function IndexRolesList:filterRoles(matchesFn)
+    return self:filterRows(function(e) return Role.is(e) and (matchesFn == nil or matchesFn(e)) end)
 end
 
 -- creates a filter function for Roles.
@@ -99,6 +115,110 @@ end
 --- * A `table` of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available currently.
 function IndexRolesList:captionRoles(includeSubroles)
     return self:filterRows(rolesFilter(includeSubroles, "caption"))
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:findRoleTitled(title) -> Role or nil
+--- Method
+--- Returns the [Role](cp.apple.finalcutpro.timeline.Role.md) with the specified title.
+---
+--- Parameters:
+--- * title - The title of the role to find.
+---
+--- Returns:
+--- * The [Role](cp.apple.finalcutpro.timeline.Role.md), or `nil` if it can't be found.
+---
+--- Notes:
+--- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRolesList:findRoleTitled(title)
+    --- find the language-specific title
+    title = Role.findTitle(title)
+    --- search for it.
+    local rows = self:filterRoles(function(e) return e:title():value() == title end)
+    return rows and rows[1]
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:doActivate(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will activate the provided role, if it is available.
+---
+--- Parameters:
+--- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRolesList:doActivate(title)
+    return If(function() return self:findRoleTitled(title) end)
+    :Then(function(role)
+        return role:doActivate()
+    end)
+    :Otherwise(false)
+    :Label("IndexRolesList:doActivate")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:doDeactivate(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will deactivate the provided role, if it is available.
+---
+--- Parameters:
+--- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to deactivate.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRolesList:doDeactivate(title)
+    return If(function() return self:findRoleTitled(title) end)
+    :Then(function(role)
+        return role:doDeactivate()
+    end)
+    :Otherwise(false)
+    :Label("IndexRolesList:doDeactivate")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:doFocusInTimeline(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will focus the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
+---
+--- Parameters:
+--- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRolesList:doFocusInTimeline(title)
+    return If(function() return self:findRoleTitled(title) end)
+    :Then(function(role)
+        return role:isInstanceOf(AudioRole) and role:doFocusInTimeline()
+    end)
+    :Otherwise(false)
+    :Label("IndexRolesList:doFocusInTimeline")
+end
+
+--- cp.apple.finalcutpro.timeline.IndexRolesList:doUnfocusInTimeline(title) -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will unfocus the provided [AudioRole](cp.apple.finalcutpro.timeline.AudioRole.md), if it is available.
+---
+--- Parameters:
+--- * title - The title of the [Role](cp.apple.finalcutpro.timeline.Role.md) to activate.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
+---
+--- Notes:
+--- * The title can be the English name (eg. "Dialogue", "Music", etc.) for default Roles, and it will find the correct role in the current FCPX language.
+function IndexRolesList:doUnfocusInTimeline(title)
+    return If(function() return self:findRoleTitled(title) end)
+    :Then(function(role)
+        return role:isInstanceOf(AudioRole) and role:doUnfocusInTimeline()
+    end)
+    :Otherwise(false)
+    :Label("IndexRolesList:doUnfocusInTimeline")
 end
 
 return IndexRolesList

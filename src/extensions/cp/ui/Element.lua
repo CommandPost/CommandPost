@@ -17,7 +17,7 @@ local class             = require("middleclass")
 local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
-local Do  	            = go.Do
+local Do, Given, If     = go.Do, go.Given, go.If
 
 local Element = class("cp.ui.Element"):include(lazy)
 
@@ -222,6 +222,11 @@ end
 function Element.loadLayout(_)
 end
 
+function Element:doSaveLayout()
+    return Do(function() return self:saveLayout() end)
+    :Label("Element:doSaveLayout")
+end
+
 --- cp.ui.Element:doLayout(layout) -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will attempt to load the layout based on the parameters
@@ -237,7 +242,7 @@ end
 --- * By default, to enable backwards-compatibility, this method will simply call the [#loadLayout]. Override it to provide more optimal asynchonous behaviour if required.
 --- * When subclassing, the overriding `doLayout` method should call the parent class's `doLayout` method,
 --- then process any custom values from it, like so:
----    ```
+---    ```lua
 ---    function MyElement:doLayout(layout)
 ---        layout = layout or {}
 ---        return Do(Element.doLayout(self, layout))
@@ -248,11 +253,54 @@ end
 ---    end
 ---    ```
 function Element:doLayout(layout)
-    return Do(function()
-        self:loadLayout(layout)
+    return Given(layout)
+    :Then(function(_layout)
+        self:loadLayout(_layout)
         return true
     end)
     :Label("Element:doLayout")
+end
+
+function Element:doStoreLayout(id)
+    return Given(self:doSaveLayout())
+    :Then(function(layout)
+        local layouts = self.__storedLayouts or {}
+        layouts[id] = layout
+        self.__storedLayouts = layouts
+        return layout
+    end)
+    :Label("Element:doStoreLayout")
+end
+
+function Element:doForgetLayout(id)
+    return Do(function()
+        local layouts = self.__storedLayouts
+        if layouts then
+            layouts[id] = nil
+        end
+        for _ in pairs(layouts) do -- luacheck: ignore
+            return -- there are still layouts stored.
+        end
+        self.__storedLayouts = nil
+    end)
+    :Label("Element:doForgetLayout")
+end
+
+function Element:doRecallLayout(id, preserve)
+    local doForget = preserve and nil or self:doForgetLayout(id)
+
+    return Given(function()
+        local layouts = self.__storedLayouts
+        return layouts and layouts[id]
+    end)
+    :Then(function(layout)
+        local doLayout = self:doLayout(layout)
+        if doForget then
+            doLayout = Do(doLayout):Then(doForget)
+        end
+        return doLayout
+    end)
+    :Label("Element:doRecallLayout")
 end
 
 return Element

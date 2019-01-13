@@ -2,7 +2,7 @@
 ---
 --- Represents the list of Roles in the [IndexRoles](cp.apple.finalcutpro.timeline.IndexRoles.md).
 
-local log	                    = require "hs.logger" .new "IndexRolesArea"
+-- local log	                    = require "hs.logger" .new "IndexRolesArea"
 
 local axutils	                = require "cp.ui.axutils"
 local ScrollArea	            = require "cp.ui.ScrollArea"
@@ -47,7 +47,6 @@ function IndexRolesArea:saveLayout()
 end
 
 function IndexRolesArea:loadLayout(layout)
-    log.df("IndexRolesArea:loadLayout: called")
     layout = layout or {}
     ScrollArea.loadLayout(self, layout)
     self:list():loadLayout(layout.list)

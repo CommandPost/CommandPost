@@ -4,13 +4,21 @@
 ---
 --- Represents a Role in the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md).
 
+-- local log	                = require "hs.logger" .new "Row"
+
+local localeID	            = require "cp.i18n.localeID"
 local axutils	            = require "cp.ui.axutils"
 local Row	                = require "cp.ui.Row"
 local CheckBox	            = require "cp.ui.CheckBox"
 local StaticText	        = require "cp.ui.StaticText"
 
+local fcpApp	            = require "cp.apple.finalcutpro.app"
+local strings	            = require "cp.apple.finalcutpro.strings"
+
 local childWithRole, childFromLeft	    = axutils.childWithRole, axutils.childFromLeft
 local format	                        = string.format
+
+local en                                = localeID("en")
 
 local Role = Row:subclass("cp.apple.finalcutpro.timeline.Role")
 
@@ -76,6 +84,24 @@ function Role.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(Role)
 end
 
+--- cp.apple.finalcutpro.timeline.Role.findTitle(title) -> string
+--- Function
+--- Checks if FCPX is not currently running in English, it will check if the title is one
+--- of the default English Role titles, and return the current language instead. If it's not found,
+--- unmodified `title` is returned.
+function Role.findTitle(title)
+    local fcpLocale = fcpApp:currentLocale()
+    if en:matches(fcpLocale) == 0 then -- not in english
+        for _,key in pairs(Role.TITLE_KEY) do
+            local value = strings:find(key, en)
+            if value == title then
+                return strings:find(key, fcpLocale)
+            end
+        end
+    end
+    return title
+end
+
 --- cp.apple.finalcutpro.timeline.Role(parent, uiFinder, type)
 --- Constructor
 --- Creates the new Role. Typically this is not called directly, but rather by one of the
@@ -138,6 +164,20 @@ function Role.lazy.method:title()
     return StaticText(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, StaticText.matches)
     end))
+end
+
+--- cp.apple.finalcutpro.timeline.Role:doActivate() -> cp.rx.go.Statement.md
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will activate the current role, if possible.
+function Role.lazy.method:doActivate()
+    return self:active():doCheck()
+end
+
+--- cp.apple.finalcutpro.timeline.Role:doDeactivate() -> cp.rx.go.Statement.md
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will deactivate the current role, if possible.
+function Role.lazy.method:doDeactivate()
+    return self:active():doUncheck()
 end
 
 function Role:__tostring()

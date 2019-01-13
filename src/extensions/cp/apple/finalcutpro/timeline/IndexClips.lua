@@ -1,9 +1,9 @@
 --- === cp.apple.finalcutpro.timeline.IndexClips ===
 ---
+--- *Extends [IndexSection](cp.apple.finalcutpro.timeline.IndexSection.md)*
+---
 --- Provides access to the 'Clips' section of the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md)
 
-local class                 = require "middleclass"
-local lazy                  = require "cp.lazy"
 local go                    = require "cp.rx.go"
 
 local axutils               = require "cp.ui.axutils"
@@ -12,6 +12,7 @@ local RadioGroup            = require "cp.ui.RadioGroup"
 local Table                 = require "cp.ui.Table"
 
 local strings               = require "cp.apple.finalcutpro.strings"
+local IndexSection          = require "cp.apple.finalcutpro.timeline.IndexSection"
 
 local cache                 = axutils.cache
 local childWith             = axutils.childWith
@@ -19,9 +20,9 @@ local childWithRole         = axutils.childWithRole
 local childMatching         = axutils.childMatching
 local hasChild              = axutils.hasChild
 
-local Do, If                = go.Do, go.If
+local If                    = go.If
 
-local IndexClips = class("cp.apple.finalcutpro.timeline.IndexClips"):include(lazy)
+local IndexClips = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexClips")
 
 --- cp.apple.finalcutpro.timeline.IndexClips(index) -> IndexClips
 --- Constructor
@@ -29,67 +30,12 @@ local IndexClips = class("cp.apple.finalcutpro.timeline.IndexClips"):include(laz
 ---
 --- Parameters:
 --- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
-function IndexClips:initialize(index)
-    self._index = index
-end
-
---- cp.apple.finalcutpro.timeline.IndexClips:parent() -> cp.apple.finalcutpro.timeline.Index
---- Method
---- The parent index.
-function IndexClips:parent()
-    return self:index()
-end
-
---- cp.apple.finalcutpro.timeline.IndexClips:app() -> cp.apple.finalcutpro
---- Method
---- The [Final Cut Pro](cp.apple.finalcutpro.md) instance.
-function IndexClips:app()
-    return self:parent():app()
-end
-
-function IndexClips:index()
-    return self._index
-end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:activate() -> cp.ui.RadioButton
 --- Method
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Clips' section.
 function IndexClips.lazy.method:activate()
     return self:index():mode():clips()
-end
-
---- cp.apple.finalcutpro.timeline.IndexClips.UI <cp.prop: axuielement; read-only; live?>
---- Field
---- The `axuielement` that represents the item.
-function IndexClips.lazy.prop:UI()
-    return self:index().UI:mutate(function(original)
-        return self:activate():checked() and original()
-    end)
-end
-
---- cp.apple.finalcutpro.timeline.IndexClips.isShowing <cp.prop: boolean; read-only; live?>
---- Field
---- Indicates if the Clips section is currently showing.
-function IndexClips.lazy.prop:isShowing()
-    return self:activate().checked
-end
-
---- cp.apple.finalcutpro.timeline.IndexClips:doShow() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will show the Clips section in the Timeline Index, if possible.
----
---- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
-function IndexClips.lazy.method:doShow()
-    local index = self:index()
-    return Do(index.doShow)
-    :Then(
-        If(index.isShowing)
-        :Then(index:mode():clips().doPress)
-        :Otherwise(false)
-    )
-    :ThenYield()
-    :Label("IndexClips:doShow")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:list() -> cp.ui.Table
@@ -279,7 +225,7 @@ end
 --- Notes:
 --- * Because the `text` can change each time, this result is not cached automatically. However as long as you are searching for the same text the result can be safely cached. The [#toFindMissingMedia] method does this, for example.
 function IndexClips:doFindClipsContaining(text)
-    return If(self.doShowClips)
+    return If(self:doShowClips())
     :Then(function()
         self:search():value(text)
         return true

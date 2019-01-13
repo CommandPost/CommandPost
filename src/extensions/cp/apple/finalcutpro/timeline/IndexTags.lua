@@ -2,8 +2,6 @@
 ---
 --- Provides access to the 'Tags' section of the [Timeline Index](cp.apple.finalcutpro.timeline.Index.md)
 
-local class                 = require "middleclass"
-local lazy                  = require "cp.lazy"
 local go                    = require "cp.rx.go"
 
 local axutils               = require "cp.ui.axutils"
@@ -11,82 +9,22 @@ local RadioButton           = require "cp.ui.RadioButton"
 local RadioGroup            = require "cp.ui.RadioGroup"
 local Table                 = require "cp.ui.Table"
 
+local IndexSection          = require "cp.apple.finalcutpro.timeline.IndexSection"
+
 local cache                 = axutils.cache
 local childFromLeft	        = axutils.childFromLeft
 local childWithRole         = axutils.childWithRole
 local childMatching         = axutils.childMatching
 
-local Do, If                = go.Do, go.If
+local If                    = go.If
 
-local IndexTags = class("cp.apple.finalcutpro.timeline.IndexTags"):include(lazy)
-
---- cp.apple.finalcutpro.timeline.IndexTags(index) -> IndexTags
---- Constructor
---- Creates the `IndexTags` instance.
----
---- Parameters:
---- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
-function IndexTags:initialize(index)
-    self._index = index
-end
-
---- cp.apple.finalcutpro.timeline.IndexTags:parent() -> cp.apple.finalcutpro.timeline.Index
---- Method
---- The parent index.
-function IndexTags:parent()
-    return self:index()
-end
-
---- cp.apple.finalcutpro.timeline.IndexTags:app() -> cp.apple.finalcutpro
---- Method
---- The [Final Cut Pro](cp.apple.finalcutpro.md) instance.
-function IndexTags:app()
-    return self:parent():app()
-end
-
-function IndexTags:index()
-    return self._index
-end
+local IndexTags = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexTags")
 
 --- cp.apple.finalcutpro.timeline.IndexTags:activate() -> cp.ui.RadioButton
 --- Method
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Tags' section.
 function IndexTags.lazy.method:activate()
     return self:index():mode():tags()
-end
-
---- cp.apple.finalcutpro.timeline.IndexTags.UI <cp.prop: axuielement; read-only; live?>
---- Field
---- The `axuielement` that represents the item.
-function IndexTags.lazy.prop:UI()
-    return self:index().UI:mutate(function(original)
-        return self:activate():checked() and original()
-    end)
-end
-
---- cp.apple.finalcutpro.timeline.IndexTags.isShowing <cp.prop: boolean; read-only; live?>
---- Field
---- Indicates if the Tags section is currently showing.
-function IndexTags.lazy.prop:isShowing()
-    return self:activate().checked
-end
-
---- cp.apple.finalcutpro.timeline.IndexTags:doShow() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will show the Tags section in the Timeline Index, if possible.
----
---- Returns:
---- * The [Statement](cp.rx.go.Statement.md)
-function IndexTags.lazy.method:doShow()
-    local index = self:index()
-    return Do(index.doShow)
-    :Then(
-        If(index.isShowing)
-        :Then(self:activate().doPress)
-        :Otherwise(false)
-    )
-    :ThenYield()
-    :Label("IndexTags:doShow")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexTags:list() -> cp.ui.Table

@@ -70,4 +70,18 @@ function AudioRole.lazy.method:subroleLanes()
     end))
 end
 
+--- cp.apple.finalcutpro.timeline.AudioRole:doFocusInTimeline() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on this audio role in the timeline.
+function AudioRole.lazy.method:doFocusInTimeline()
+    return self:focusedInTimeline():doCheck()
+end
+
+--- cp.apple.finalcutpro.timeline.AudioRole:doUnfocusInTimeline() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to unfocus on this audio role in the timeline.
+function AudioRole.lazy.method:doUnfocusInTimeline()
+    return self:focusedInTimeline():doUncheck()
+end
+
 return AudioRole

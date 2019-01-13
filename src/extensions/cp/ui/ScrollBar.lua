@@ -2,7 +2,7 @@
 ---
 --- Provides access to `AXScrollBar` `axuielement` values.
 
-local log	                    = require "hs.logger" .new "ScrollBar"
+-- local log	                    = require "hs.logger" .new "ScrollBar"
 
 local axutils	                = require "cp.ui.axutils"
 local Element	                = require "cp.ui.Element"
@@ -103,7 +103,6 @@ end
 function ScrollBar:loadLayout(layout)
     layout = layout or {}
     if layout.value then
-        log.df("ScrollBar:loadLayout: setting value to %d", layout.value)
         self.value:set(layout.value)
     end
 end
