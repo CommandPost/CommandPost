@@ -43,22 +43,8 @@
 --- For more information on using and creating statements, see the
 --- [Statements](cp.rx.go.Statements.md) documentation.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log           = require("hs.logger").new("rxgo")
--- local inspect       = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local Statement     = require("cp.rx.go.Statement")
 local Do            = require("cp.rx.go.Do")
 local Done          = require("cp.rx.go.Done")

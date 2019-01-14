@@ -3,21 +3,8 @@
 --- The `Button` type extends [Element](cp.ui.Element.md) and includes all its
 --- methods, fields and other properties.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log							= require("hs.logger").new("Button")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 local go                            = require("cp.rx.go")

@@ -3,13 +3,9 @@
 --- This module provides functions to help with performing tasks which may be
 --- delayed, up to a finite number of loops.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
-local timer 					= require("hs.timer")
+
+local timer = require("hs.timer")
 
 --------------------------------------------------------------------------------
 --

@@ -271,21 +271,10 @@
 --- 2. If working with an array of immutible objects, use the `shallow` table copy.
 --- 3. In most other cases, use a `deep` table copy.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log             = require("hs.logger").new("prop")
+local log               = require("hs.logger").new("prop")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local inspect           = require("hs.inspect")
 local fnutils           = require("hs.fnutils")
 

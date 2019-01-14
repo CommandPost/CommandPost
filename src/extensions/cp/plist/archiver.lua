@@ -2,17 +2,9 @@
 ---
 --- Supports 'defrosting' a table which is made up from an 'NSKeyArchiver' record.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local require = require
-local plist					= require("cp.plist")
+
+local plist	= require("cp.plist")
 
 --------------------------------------------------------------------------------
 --
@@ -21,26 +13,37 @@ local plist					= require("cp.plist")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.ARCHIVER_KEY 			= "$archiver"
-mod.ARCHIVER_VALUE 			= "NSKeyedArchiver"
+-- TODO: Add Documentation
+mod.ARCHIVER_KEY = "$archiver"
 
-mod.OBJECTS_KEY 			= "$objects"
-mod.TOP_KEY					= "$top"
+-- TODO: Add Documentation
+mod.ARCHIVER_VALUE = "NSKeyedArchiver"
 
-mod.CFUID					= "CF$UID"
+-- TODO: Add Documentation
+mod.OBJECTS_KEY = "$objects"
 
+-- TODO: Add Documentation
+mod.TOP_KEY	= "$top"
+
+-- TODO: Add Documentation
+mod.CFUID	= "CF$UID"
+
+-- TODO: Add Documentation
 local function checkArchiver(archive)
     return archive[mod.ARCHIVER_KEY] == mod.ARCHIVER_VALUE
 end
 
+-- TODO: Add Documentation
 local function isReference(data)
     return type(data) == 'table' and data[mod.CFUID] ~= nil
 end
 
+-- TODO: Add Documentation
 local function getReferenceID(data)
     return data[mod.CFUID]
 end
 
+-- TODO: Add Documentation
 local function defrostClass(data, defrostFn)
     if data["$class"] then
         local classname = data["$class"]["$classname"]
