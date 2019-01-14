@@ -12,9 +12,10 @@ local format = string.format
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- ID -> string
 -- Constant
@@ -25,13 +26,6 @@ local ID = "cmds"
 -- Constant
 -- Global ID.
 local GROUP = "global"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.core.commands.actions.init(actionmanager, cmds) -> none
 --- Function

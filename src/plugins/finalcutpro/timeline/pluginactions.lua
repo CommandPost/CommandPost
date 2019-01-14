@@ -2,40 +2,13 @@
 ---
 --- Adds Final Cut Pro Plugins (i.e. Effects, Generators, Titles and Transitions) to CommandPost Actions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("plgnactns")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local plugins           = require("cp.apple.finalcutpro.plugins")
 local i18n              = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- GROUP -> string
--- Constant
--- The group.
-local GROUP = "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -43,6 +16,11 @@ local GROUP = "fcpx"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- GROUP -> string
+-- Constant
+-- The group.
+local GROUP = "fcpx"
 
 --- plugins.finalcutpro.timeline.pluginactions.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects) -> module
 --- Function
@@ -140,9 +118,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end

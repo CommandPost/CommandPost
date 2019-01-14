@@ -4,8 +4,6 @@
 
 local require = require
 
---local log = require("hs.logger").new("compressor")
-
 local fnutils       = require("hs.fnutils")
 local host          = require("hs.host")
 local image         = require("hs.image")
@@ -23,18 +21,7 @@ local i18n          = require("cp.i18n")
 local tools         = require("cp.tools")
 local ui            = require("cp.web.ui")
 
-local uuid = host.uuid
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- WATCH_FOLDER_TABLE_ID -> string
--- Variable
--- Watch Folder Table ID
-local WATCH_FOLDER_TABLE_ID  = "compressorWatchFoldersTable"
+local uuid          = host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -42,6 +29,11 @@ local WATCH_FOLDER_TABLE_ID  = "compressorWatchFoldersTable"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- WATCH_FOLDER_TABLE_ID -> string
+-- Variable
+-- Watch Folder Table ID
+local WATCH_FOLDER_TABLE_ID  = "compressorWatchFoldersTable"
 
 --- plugins.compressor.watchfolders.panels.media.filesInTransit -> table
 --- Variable

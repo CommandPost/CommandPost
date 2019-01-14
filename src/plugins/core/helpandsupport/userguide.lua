@@ -8,6 +8,26 @@ local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+--- plugins.core.helpandsupport.userguide.show() -> nil
+--- Function
+--- Opens the CommandPost User Guide in your default Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.show()
+    os.execute('open "http://help.commandpost.io/"')
+end
+
+--------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -22,25 +42,20 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Show Help:
-    --------------------------------------------------------------------------------
-    local show = function()
-        os.execute('open "http://help.commandpost.io/"')
-    end
-
-    --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
     deps.global
         :add("cpUserGuide")
-        :whenActivated(show)
+        :whenActivated(mod.show)
         :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menuManager.commandPostHelpAndSupport
-        :addItem(5, function() return { title = i18n("userGuide"), fn = show } end)
+        :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
+
+    return mod
 end
 
 return plugin

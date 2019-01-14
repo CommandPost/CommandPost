@@ -13,22 +13,6 @@ local uuid    = host.uuid
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
---- plugins.core.preferences.manager.panel.DEFAULT_PRIORITY -> number
---- Constant
---- The default priority for panels.
-local DEFAULT_PRIORITY = 0
-
---- plugins.core.preferences.manager.panel.HANDLER_PRIORITY -> number
---- Constant
---- The default priority for handler scripts.
-local HANDLER_PRIORITY = 1000000
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -136,7 +120,7 @@ end
 --- * The panel.
 function panel:addContent(priority, content, escaped)
     -- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
-    priority = priority or DEFAULT_PRIORITY
+    priority = priority or 0
 
     local items = self._uiItems
     items[#items+1] = {
@@ -191,7 +175,7 @@ function panel:addHandler(event, id, handlerFn, keys)
     --------------------------------------------------------------------------------
     -- Add the script to the panel:
     --------------------------------------------------------------------------------
-    self:addContent(HANDLER_PRIORITY, script)
+    self:addContent(1000000, script)
 
     --------------------------------------------------------------------------------
     -- Register the handler function:

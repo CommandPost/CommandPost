@@ -2,28 +2,14 @@
 ---
 --- Pasteboard Manager.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("clipmgr")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
+local host                                      = require("hs.host")
 local pasteboard                                = require("hs.pasteboard")
 local timer                                     = require("hs.timer")
-local uuid                                      = require("hs.host").uuid
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local archiver                                  = require("cp.plist.archiver")
 local base64                                    = require("hs.base64")
 local config                                    = require("cp.config")
@@ -42,11 +28,18 @@ local Throw                                     = require("cp.rx.go.Throw")
 local Require                                   = require("cp.rx.go.Require")
 local Retry                                     = require("cp.rx.go.Retry")
 
+local uuid                                      = host.uuid
+
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
+
+-- PASTEBOARD -> table
+-- Constant
+-- Pasteboard Types
 local PASTEBOARD = protect({
     --------------------------------------------------------------------------------
     -- Final Cut Pro Types:
@@ -68,13 +61,6 @@ local PASTEBOARD = protect({
     PASTEBOARD_OBJECT                           = "ffpasteboardobject",
     UTI                                         = "com.apple.flexo.proFFPasteboardUTI"
 })
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.finalcutpro.pasteboard.manager.WATCHER_FREQUENCY -> number
 --- Variable
@@ -677,35 +663,30 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- SETUP COMMANDS:
+    -- Copy with Custom Label:
     --------------------------------------------------------------------------------
-    if deps and deps.fcpxCmds then
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds
+        :add("cpCopyWithCustomLabel")
+        :whenActivated(mod.copyWithCustomClipName)
 
-        --------------------------------------------------------------------------------
-        -- Copy with Custom Label:
-        --------------------------------------------------------------------------------
-        deps.fcpxCmds:add("cpCopyWithCustomLabel")
-            :whenActivated(mod.copyWithCustomClipName)
+    --------------------------------------------------------------------------------
+    -- Pasteboard Buffer:
+    --------------------------------------------------------------------------------
+    for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
+        fcpxCmds
+            :add("saveToPasteboardBuffer" .. tostring(id))
+            :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
+            :whenActivated(mod.doSaveToBuffer(id))
 
-        --------------------------------------------------------------------------------
-        -- Pasteboard Buffer:
-        --------------------------------------------------------------------------------
-        for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
-            deps.fcpxCmds:add("saveToPasteboardBuffer" .. tostring(id))
-                :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(mod.doSaveToBuffer(id))
-
-            deps.fcpxCmds:add("restoreFromPasteboardBuffer" .. tostring(id))
-                :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(mod.doRestoreFromBuffer(id))
-
-        end
+        fcpxCmds
+            :add("restoreFromPasteboardBuffer" .. tostring(id))
+            :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
+            :whenActivated(mod.doRestoreFromBuffer(id))
     end
+
     return mod
 end
 

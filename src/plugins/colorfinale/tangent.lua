@@ -4,8 +4,6 @@
 
 local require = require
 
---local log           = require("hs.logger").new("cf_tangent")
-
 local application   = require("hs.application")
 
 local fcp           = require("cp.apple.finalcutpro")
@@ -16,9 +14,10 @@ local startsWith    = tools.startsWith
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod ={}
 
 -- APP_BUNDLE_ID -> string
 -- Constant
@@ -29,13 +28,6 @@ local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
 -- Constant
 -- ColorFinale Window Title
 local WINDOW_TITLE = "Color Finale"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod ={}
 
 --- plugins.colorfinale.tangent.init(tangentManager) -> module
 --- Function

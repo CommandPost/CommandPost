@@ -81,9 +81,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
     mod._actionmanager = deps.actionmanager

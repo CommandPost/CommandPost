@@ -10,21 +10,15 @@ local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- ID -> string
 -- Constant
 -- Volume ID
 local ID = "volume"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.core.touchbar.widgets.volume.widget() -> `hs._asm.undocumented.touchbar.item`
 --- Function

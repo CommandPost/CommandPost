@@ -2,22 +2,11 @@
 ---
 --- Shortcut for changing Final Cut Pro's Timeline Height
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer                             = require("hs.timer")
 local eventtap                          = require("hs.eventtap")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -119,24 +108,23 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpChangeTimelineClipHeightUp")
-            :whenActivated(function() mod.changeTimelineClipHeight("up") end)
-            :whenReleased(function() changeTimelineClipHeightRelease() end)
-            :activatedBy():ctrl():option():cmd("=")
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds
+        :add("cpChangeTimelineClipHeightUp")
+        :whenActivated(function() mod.changeTimelineClipHeight("up") end)
+        :whenReleased(function() changeTimelineClipHeightRelease() end)
+        :activatedBy():ctrl():option():cmd("=")
 
-        deps.fcpxCmds:add("cpChangeTimelineClipHeightDown")
-            :whenActivated(function() mod.changeTimelineClipHeight("down") end)
-            :whenReleased(function() changeTimelineClipHeightRelease() end)
-            :activatedBy():ctrl():option():cmd("-")
-    end
+    fcpxCmds
+        :add("cpChangeTimelineClipHeightDown")
+        :whenActivated(function() mod.changeTimelineClipHeight("down") end)
+        :whenReleased(function() changeTimelineClipHeightRelease() end)
+        :activatedBy():ctrl():option():cmd("-")
+
     return mod
 end
 

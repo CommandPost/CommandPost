@@ -9,6 +9,26 @@ local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+--- plugins.core.helpandsupport.feedback.show() -> nil
+--- Function
+--- Opens CommandPost Credits Window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.show()
+    feedback.showFeedback()
+end
+
+--------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -23,26 +43,21 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Show Feedback Form:
-    --------------------------------------------------------------------------------
-    local show = function()
-        feedback.showFeedback()
-    end
-
-    --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
     deps.global
         :add("cpFeedback")
-        :whenActivated(show)
+        :whenActivated(mod.show)
         :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menuManager.commandPostHelpAndSupport
-        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = show } end)
+        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = mod.show } end)
         :addSeparator(4)
+
+    return mod
 end
 
 return plugin

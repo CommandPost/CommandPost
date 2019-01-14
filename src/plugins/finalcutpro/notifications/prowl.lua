@@ -2,42 +2,17 @@
 ---
 --- Prowl Notifications Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
 local http                                      = require("hs.http")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local slaxdom                                   = require("slaxml.slaxdom")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 200
 
 --------------------------------------------------------------------------------
 --
@@ -175,9 +150,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.manager)
 
@@ -186,7 +158,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(PRIORITY+1, ui.style ([[
+            :addContent(201, ui.style ([[
                 .prowlEnable {
                     margin-bottom: 10px !important;
                 }
@@ -206,8 +178,8 @@ function plugin.init(deps)
                 html.br() ..
                 html.hr()
             )
-            :addHeading(PRIORITY+2, i18n("prowlNotifications"))
-            :addCheckbox(PRIORITY+3,
+            :addHeading(202, i18n("prowlNotifications"))
+            :addCheckbox(203,
                 {
                     label = i18n("enableProwlNotifications"),
                     onchange = function(_, params)
@@ -226,7 +198,7 @@ function plugin.init(deps)
                     class = "prowlEnable",
                 }
             )
-            :addTextbox(PRIORITY+4,
+            :addTextbox(204,
                 {
                     label = i18n("prowlAPIKey") .. ":",
                     value = mod.apiKey(),
@@ -247,7 +219,7 @@ function plugin.init(deps)
                     end,
                 }
             )
-            :addButton(PRIORITY+5,
+            :addButton(205,
                 {
                     width = 200,
                     label = i18n("sendTestNotification"),
@@ -260,7 +232,7 @@ function plugin.init(deps)
                     class = "testProwl",
                 }
             )
-            :addButton(PRIORITY+6,
+            :addButton(206,
                 {
                     width = 200,
                     label = i18n("getProwlAccount"),

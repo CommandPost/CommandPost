@@ -2,36 +2,19 @@
 ---
 --- A collection of Final Cut Pro Color Board Widgets for the Touch Bar.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
 local eventtap          = require("hs.eventtap")
 local styledtext        = require("hs.styledtext")
 local timer             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local prop              = require("cp.prop")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local touchbar          = require("hs._asm.undocumented.touchbar")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert            = table.insert
 local format            = string.format
 local abs               = math.abs
@@ -719,9 +702,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Only load this plugin if the Touch Bar is supported:

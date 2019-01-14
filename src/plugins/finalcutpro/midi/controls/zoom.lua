@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro MIDI Zoom Control.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("zoomMIDI")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
@@ -68,7 +57,6 @@ end
 --- Returns:
 ---  * None
 function mod.init()
-
     local params = {
         group = "fcpx",
         text = string.upper(i18n("midi")) .. ": " .. i18n("timelineZoom"),
@@ -78,7 +66,6 @@ function mod.init()
     mod._manager.controls:new("zoomSlider", params)
 
     return mod
-
 end
 
 --------------------------------------------------------------------------------
@@ -94,9 +81,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
     return mod.init()

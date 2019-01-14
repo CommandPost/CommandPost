@@ -18,9 +18,10 @@ local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- FEEDBACK_TYPE -> string
 -- Constant
@@ -36,13 +37,6 @@ local DEFAULT_WIDTH = 650
 -- Constant
 -- The default height of the webview.
 local DEFAULT_HEIGHT = 500
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.compressor.feedback.bugreport.position <cp.prop: table>
 --- Field

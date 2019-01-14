@@ -12,21 +12,15 @@ local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- ID -> string
 -- Constant
 -- Window Slide ID
 local ID = "windowSlide"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.core.touchbar.widgets.windowSlide.widget() -> `hs._asm.undocumented.touchbar.item`
 --- Function

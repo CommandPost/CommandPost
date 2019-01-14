@@ -3,18 +3,12 @@
 --- An `action` which will execute a command with matching group/id values.
 --- Registers itself with the `core.action.manager`.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local i18n              = require("cp.i18n")
+
+local format            = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -23,9 +17,14 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
-local format = string.format
-
+-- ID -> string
+-- Constant
+-- Commands ID
 local ID = "cmds"
+
+-- GROUP -> string
+-- Constant
+-- Group ID
 local GROUP = "fcpx"
 
 --- plugins.finalcutpro.commands.actions.init(actionmanager, cmds) -> none
@@ -167,9 +166,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.actionmanager, deps.cmds)
     return mod

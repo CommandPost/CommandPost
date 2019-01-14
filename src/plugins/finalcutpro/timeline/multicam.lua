@@ -2,21 +2,8 @@
 ---
 --- Multicam Tools.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("multicam")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
 
@@ -25,9 +12,10 @@ local Throw                             = require("cp.rx.go.Throw")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- MAX_ANGLES -> number
 -- Constant
@@ -38,13 +26,6 @@ local MAX_ANGLES = 16
 -- Constant
 -- Supported Angle Types
 local ANGLE_TYPES = {"Video", "Audio", "Both"}
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.finalcutpro.timeline.multicam.doCutAndSwitchMulticam(whichMode, whichAngle) -> Statement
 --- Function
@@ -92,21 +73,17 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        for i = 1, MAX_ANGLES do
-            for _, whichType in ipairs(ANGLE_TYPES) do
-                deps.fcpxCmds:add("cpCutSwitchAngle" .. string.format("%02d", tostring(i)) .. whichType)
-                    :titled(i18n("cpCutSwitch" .. whichType .. "Angle_customTitle", {count = i}))
-                    :whenActivated(function() mod.doCutAndSwitchMulticam(whichType, i):Now() end)
-            end
+    local fcpxCmds = deps.fcpxCmds
+    for i = 1, MAX_ANGLES do
+        for _, whichType in ipairs(ANGLE_TYPES) do
+            fcpxCmds
+                :add("cpCutSwitchAngle" .. string.format("%02d", tostring(i)) .. whichType)
+                :titled(i18n("cpCutSwitch" .. whichType .. "Angle_customTitle", {count = i}))
+                :whenActivated(function() mod.doCutAndSwitchMulticam(whichType, i):Now() end)
         end
     end
 

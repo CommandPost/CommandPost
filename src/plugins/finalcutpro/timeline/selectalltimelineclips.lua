@@ -2,21 +2,10 @@
 ---
 --- Select All Timeline Clips
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("selectalltimelineclips")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -72,26 +61,22 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpSelectForward")
-            :activatedBy():ctrl():option():cmd("right")
-            :whenActivated(function() mod.selectAllTimelineClips(true) end)
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds
+        :add("cpSelectForward")
+        :activatedBy():ctrl():option():cmd("right")
+        :whenActivated(function() mod.selectAllTimelineClips(true) end)
 
-        deps.fcpxCmds:add("cpSelectBackwards")
-            :activatedBy():ctrl():option():cmd("left")
-            :whenActivated(function() mod.selectAllTimelineClips(false) end)
-    end
+    fcpxCmds
+        :add("cpSelectBackwards")
+        :activatedBy():ctrl():option():cmd("left")
+        :whenActivated(function() mod.selectAllTimelineClips(false) end)
 
     return mod
-
 end
 
 return plugin

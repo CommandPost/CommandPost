@@ -2,16 +2,8 @@
 ---
 --- Final Cut Pro Touch Bar Manager.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 
@@ -22,6 +14,15 @@ local fcp                                       = require("cp.apple.finalcutpro"
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- updateStatus(enabled) -> none
+-- Function
+-- Updates the Final Cut Pro Group Status.
+--
+-- Parameters:
+--  * enabled - `true` or `false`
+--
+-- Returns:
+--  * None
 local function updateStatus(enabled)
     mod._manager.groupStatus("fcpx", enabled)
 end
@@ -58,9 +59,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -71,9 +69,6 @@ function plugin.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update visibility:

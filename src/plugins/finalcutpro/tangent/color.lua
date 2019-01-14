@@ -2,27 +2,13 @@
 ---
 --- Final Cut Pro Tangent Color Manager.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("fcp_tangent")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local deferred                                  = require("cp.deferred")
 local prop                                      = require("cp.prop")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
@@ -31,9 +17,6 @@ local i18n                                      = require("cp.i18n")
 local go                                        = require("cp.rx.go")
 local If, Do                                    = go.If, go.Do
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format                                    = string.format
 
 --------------------------------------------------------------------------------
@@ -43,6 +26,7 @@ local format                                    = string.format
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- TODO: Add Documentation
 local function doShortcut(id)
     return fcp:doShortcut(id):Catch(function(message)
         log.wf("Unable to perform %q shortcut: %s", id, message)
@@ -537,9 +521,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------

@@ -4,8 +4,6 @@
 
 local require = require
 
---local log           = require("hs.logger").new("lang")
-
 local dialog        = require("hs.dialog")
 local fs            = require("hs.fs")
 local host          = require("hs.host")
@@ -16,21 +14,15 @@ local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- LANGUAGE_PATH -> string
 -- Constant
 -- Language Path.
 local LANGUAGE_PATH = config.languagePath
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.core.language.installedLanguages() -> table
 --- Variable

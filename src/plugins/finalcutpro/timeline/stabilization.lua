@@ -2,21 +2,8 @@
 ---
 --- Stabilization Shortcut
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("stabilization")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                           = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -72,28 +59,25 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        local cmds = deps.fcpxCmds
-        cmds:add("cpStabilizationToggle")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.enable() end)
+    local cmds = deps.fcpxCmds
+    cmds
+        :add("cpStabilizationToggle")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.enable() end)
 
-        cmds:add("cpStabilizationEnable")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.enable(true) end)
+    cmds
+        :add("cpStabilizationEnable")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.enable(true) end)
 
-        cmds:add("cpStabilizationDisable")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.enable(false) end)
-    end
+    cmds
+        :add("cpStabilizationDisable")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.enable(false) end)
 
     return mod
 end

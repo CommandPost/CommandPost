@@ -7,35 +7,19 @@ local require = require
 local log			    = require("hs.logger").new("actnmngr")
 
 local fnutils			= require("hs.fnutils")
-local urlevent	  = require("hs.urlevent")
+local urlevent	        = require("hs.urlevent")
 
 local dialog			= require("cp.dialog")
 local prop				= require("cp.prop")
-local tools       = require("cp.tools")
-local i18n        = require("cp.i18n")
+local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
 
-local activator	  = require("activator")
+local activator	        = require("activator")
 local handler			= require("handler")
 
-local copy		    = fnutils.copy
-local format	    = string.format
-local insert      = table.insert
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ARRAY_DELIM -> string
--- Constant
--- Array Delimiter.
-local ARRAY_DELIM = "||"
-
--- UNDEFINED -> string
--- Constant
--- Undefined String.
-local UNDEFINED = "_undefined"
+local copy		        = fnutils.copy
+local format	        = string.format
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -49,6 +33,17 @@ local mod = {
     _activators	= {},
     _cache		= {},
 }
+
+-- ARRAY_DELIM -> string
+-- Constant
+-- Array Delimiter.
+local ARRAY_DELIM = "||"
+
+-- UNDEFINED -> string
+-- Constant
+-- Undefined String.
+local UNDEFINED = "_undefined"
+
 
 -- freezeParams(params) -> string
 -- Function

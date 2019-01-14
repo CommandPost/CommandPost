@@ -2,22 +2,11 @@
 ---
 --- Notifications Manager Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local distributednotifications                  = require("hs.distributednotifications")
 local fs                                        = require("hs.fs")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local plist                                     = require("cp.plist")
 local watcher                                   = require("cp.watcher")
 local i18n                                      = require("cp.i18n")
@@ -29,7 +18,7 @@ local i18n                                      = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.notifications.manager
+--- plugins.finalcutpro.notifications.manager -> table
 --- Constant
 --- Event Types
 mod.EVENT_TYPES = {"success", "failure"}
@@ -195,9 +184,6 @@ local plugin = {
     group = "finalcutpro",
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init()
     return mod
 end

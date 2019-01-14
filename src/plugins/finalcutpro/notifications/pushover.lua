@@ -2,42 +2,17 @@
 ---
 --- Pushover Notifications Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("pushover")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local http                                      = require("hs.http")
 local json                                      = require("hs.json")
 local dialog                                    = require("hs.dialog")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local ui                                        = require("cp.web.ui")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 100
 
 --------------------------------------------------------------------------------
 --
@@ -207,9 +182,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.manager)
 
@@ -218,7 +190,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(PRIORITY, ui.style ([[
+            :addContent(100, ui.style ([[
                 .validatePushover {
                     float:left;
                     margin-bottom: 10px;
@@ -236,8 +208,8 @@ function plugin.init(deps)
                     margin-bottom: 10px;
                 }
             ]]))
-            :addHeading(PRIORITY+1, i18n("pushoverNotifications"))
-            :addCheckbox(PRIORITY+2,
+            :addHeading(101, i18n("pushoverNotifications"))
+            :addCheckbox(102,
                 {
                     label = i18n("enablePushoverNotifications"),
                     onchange = function(_, params)
@@ -258,7 +230,7 @@ function plugin.init(deps)
                     id = "pushoverEnable",
                 }
             )
-            :addButton(PRIORITY+3,
+            :addButton(103,
                 {
                     width = 200,
                     label = i18n("sendTestNotification"),
@@ -276,7 +248,7 @@ function plugin.init(deps)
                     class = "sendTestNotification",
                 }
             )
-            :addButton(PRIORITY+4,
+            :addButton(104,
                 {
                     width = 200,
                     label = i18n("pushoverSignup"),
@@ -286,7 +258,7 @@ function plugin.init(deps)
                     class = "pushoverButtons",
                 }
             )
-            :addButton(PRIORITY+5,
+            :addButton(105,
                 {
                     width = 200,
                     label = i18n("getCommandPostPushoverAPIKey"),
@@ -297,7 +269,7 @@ function plugin.init(deps)
                 }
             )
 
-            :addTextbox(PRIORITY+6,
+            :addTextbox(106,
                 {
                     label = i18n("userAPIKey") .. ":",
                     value = mod.userAPIKey(),
@@ -313,7 +285,7 @@ function plugin.init(deps)
                     end,
                 }
             )
-            :addTextbox(PRIORITY+7,
+            :addTextbox(107,
                 {
                     label = i18n("applicationAPIKey") .. ":",
                     value = mod.appAPIKey(),
@@ -329,7 +301,7 @@ function plugin.init(deps)
                     end,
                 }
             )
-            :addButton(PRIORITY+8,
+            :addButton(108,
                 {
                     width = 200,
                     label = i18n("validate"),

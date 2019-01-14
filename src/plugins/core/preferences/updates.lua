@@ -60,9 +60,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()

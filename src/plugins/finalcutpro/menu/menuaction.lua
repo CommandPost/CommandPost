@@ -3,42 +3,15 @@
 --- A `action` which will trigger an Final Cut Pro menu with a matching path, if available/enabled.
 --- Registers itself with the `plugins.core.actions.actionmanager`.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log               = require("hs.logger").new("menuaction")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local fnutils           = require("hs.fnutils")
 local idle              = require("cp.idle")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ID -> string
--- Constant
--- The menu ID.
-local ID                = "menu"
-
--- GROUP -> string
--- Constant
--- The group ID.
-local GROUP             = "fcpx"
+local insert, concat    = table.insert, table.concat
 
 --------------------------------------------------------------------------------
 --
@@ -47,7 +20,15 @@ local GROUP             = "fcpx"
 --------------------------------------------------------------------------------
 local mod = {}
 
-local insert, concat = table.insert, table.concat
+-- ID -> string
+-- Constant
+-- The menu ID.
+local ID = "menu"
+
+-- GROUP -> string
+-- Constant
+-- The group ID.
+local GROUP = "fcpx"
 
 --- plugins.finalcutpro.menu.menuaction.id() -> none
 --- Function
@@ -202,9 +183,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.actionmanager)
     return mod
