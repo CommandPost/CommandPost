@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Viewer Overlays.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("overlays")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
 local dialog            = require("hs.dialog")
 local eventtap          = require("hs.eventtap")
@@ -28,9 +17,6 @@ local menubar           = require("hs.menubar")
 local mouse             = require("hs.mouse")
 local timer             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils           = require("cp.ui.axutils")
 local config            = require("cp.config")
 local cpDialog          = require("cp.dialog")
@@ -40,17 +26,15 @@ local tools             = require("cp.tools")
 
 local Do                = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local events            = eventtap.event.types
 local capslock          = hid.capslock
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 -- STILLS_FOLDER -> string
 -- Constant
@@ -91,13 +75,6 @@ local FCP_COLOR_BLUE = "#5760e7"
 -- Constant
 -- Cross Hair Length
 local CROSS_HAIR_LENGTH = 100
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 -- plugins.finalcutpro.viewer.overlays.NUMBER_OF_MEMORIES -> number
 -- Constant
@@ -1475,9 +1452,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -1551,16 +1525,11 @@ function plugin.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
-
     --------------------------------------------------------------------------------
     -- Update the Canvas on initial boot:
     --------------------------------------------------------------------------------
     mod.update()
-
 end
 
 return plugin

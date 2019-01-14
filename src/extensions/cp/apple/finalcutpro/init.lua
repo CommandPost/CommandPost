@@ -58,29 +58,15 @@
 --- end
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log										= require("hs.logger").new("fcp")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher                               = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local Set                                       = require("cp.collect.Set")
 local just										= require("cp.just")
@@ -1272,8 +1258,9 @@ end
 local result = fcp()
 
 -- Add `cp.dev.fcp` when in developer mode.
-if config.developerMode() and cp and cp.dev then
-    cp.dev.fcp = result
+if config.developerMode() then
+    local dev = require("cp.dev")
+    dev.fcp = result
 end
 
 return result

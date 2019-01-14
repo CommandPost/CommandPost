@@ -2,11 +2,14 @@
 ---
 --- Represents an `AXRow` `axuielement`.
 
--- local log	                = require "hs.logger" .new "Row"
-
 local axutils	            = require "cp.ui.axutils"
 local Element	            = require "cp.ui.Element"
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Row = Element:subclass("cp.ui.Row")
 
 --- cp.ui.Row.matches(element) -> boolean

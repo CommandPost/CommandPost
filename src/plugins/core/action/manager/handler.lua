@@ -14,21 +14,10 @@
 --- The choices added to the `choices` should have the `params` value set to a table
 --- containing the details of the action to execute if the choice is selected.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("actnhndlr")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local choices           = require("cp.choices")
 local prop              = require("cp.prop")
 

@@ -2,32 +2,18 @@
 ---
 --- Block.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log               = require("hs.logger").new("block")
+local log                  = require("hs.logger").new("block")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local is				= require "cp.is"
+local is				           = require "cp.is"
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local concat, insert	= table.concat, table.insert
-local pairs				= pairs
-local type				= type
-local setmetatable		= setmetatable
+local concat, insert	     = table.concat, table.insert
+local pairs				         = pairs
+local type				         = type
+local setmetatable	 	     = setmetatable
 
-local isFunction, isList	= is.fn, is.list
+local isFunction, isList	 = is.fn, is.list
 
 --------------------------------------------------------------------------------
 --

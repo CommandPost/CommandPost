@@ -21,11 +21,6 @@
 --- -- Just the "foo" and "bar" functions are benchmarked.
 --- mod = _bench.press("mymod", mod, {"foo", "bar"})
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 local log = require("hs.logger").new("bench")
 local clock = require("hs.timer").secondsSinceEpoch

@@ -19,11 +19,6 @@
 --- myButton(false) == false	-- now false
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 local Element                       = require("cp.ui.Element")
 local go                            = require("cp.rx.go")

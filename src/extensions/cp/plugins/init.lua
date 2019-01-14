@@ -145,30 +145,16 @@
 ---
 --- These modules will not be accessible to other plugins or to the main application. They are only available to code inside the plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                           = require("hs.logger").new("plugins")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local console                       = require("hs.console")
 local fs                            = require("hs.fs")
 local inspect                       = require("hs.inspect")
 local fnutils                       = require("hs.fnutils")
 local timer                         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                        = require("cp.config")
 local env                           = require("cp.plugins.env")
 local plugin                        = require("cp.plugins.plugin")

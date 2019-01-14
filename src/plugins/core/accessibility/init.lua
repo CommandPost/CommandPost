@@ -2,21 +2,10 @@
 ---
 --- Accessibility Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application           = require("hs.application")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                = require("cp.config")
 local prop                  = require("cp.prop")
 local tools                 = require("cp.tools")
@@ -29,7 +18,7 @@ local i18n                  = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.accessibility.systemPreferencesAlreadyOpen
+--- plugins.core.accessibility.systemPreferencesAlreadyOpen -> boolean
 --- Variable
 --- Was System Preferences already open?
 mod.systemPreferencesAlreadyOpen = false
@@ -149,9 +138,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.setup)
 end

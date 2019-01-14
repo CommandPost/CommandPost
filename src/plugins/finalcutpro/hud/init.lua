@@ -2,48 +2,29 @@
 ---
 --- Final Cut Pro HUD.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local logName                                   = "hud"
 local log                                       = require("hs.logger").new(logName)
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local drawing                                   = require("hs.drawing")
 local screen                                    = require("hs.screen")
 local webview                                   = require("hs.webview")
 local window                                    = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local app                                       = require("cp.app")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 10000
+local hud = {}
 
 -- GROUP -> string
 -- Constant
@@ -55,13 +36,9 @@ local GROUP = "fcpx"
 -- The default HUD Width
 local DEFAULT_WIDTH = 350
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local hud = {}
-
+-- cpApp -> cp.app
+-- Variable
+-- CommandPost App
 local cpApp = app.forBundleID(hs.processInfo.bundleID)
 
 -- plugins.finalcutpro.hud.TITLE -> string
@@ -759,11 +736,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
@@ -775,7 +748,7 @@ function plugin.init(deps, env)
     -- Setup Menus:
     --------------------------------------------------------------------------------
    deps.menu.tools
-        :addMenu(PRIORITY, function() return i18n("hud") end)
+        :addMenu(10000, function() return i18n("hud") end)
         :addItem(1000, function()
             return { title = i18n("enableHUD"), fn = function() hud.enabled:toggle() end,       checked = hud.enabled()}
         end)
@@ -810,9 +783,6 @@ function plugin.init(deps, env)
     return hud
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     hud.update()
 end

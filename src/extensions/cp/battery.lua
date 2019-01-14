@@ -111,41 +111,13 @@
 --- Returns the power entering or leaving the battery, in W.
 --- Discharging will be less than zero, charging greater than zero.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log           = require("hs.logger").new("cpBattery")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local battery       = require("hs.battery")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local prop          = require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- EXCLUDED -> table
--- Constant
--- Table of excluded items.
-local EXCLUDED = {
-    ["privateBluetoothBatteryInfo"] = true,
-    ["getAll"] = true,
-}
 
 --------------------------------------------------------------------------------
 --
@@ -154,6 +126,13 @@ local EXCLUDED = {
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- EXCLUDED -> table
+-- Constant
+-- Table of excluded items.
+local EXCLUDED = {
+    ["privateBluetoothBatteryInfo"] = true,
+    ["getAll"] = true,
+}
 
 --- cp.battery._watcher -> hs.battery.watcher object
 --- Variable

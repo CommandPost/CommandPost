@@ -2,34 +2,22 @@
 ---
 --- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                   = require("hs.logger").new("cf_tangent")
+local application   = require("hs.application")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local application           = require("hs.application")
+local fcp           = require("cp.apple.finalcutpro")
+local prop          = require("cp.prop")
+local tools         = require("cp.tools")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp                   = require("cp.apple.finalcutpro")
-local prop                  = require("cp.prop")
+local startsWith    = tools.startsWith
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod ={}
 
 -- APP_BUNDLE_ID -> string
 -- Constant
@@ -40,34 +28,6 @@ local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
 -- Constant
 -- ColorFinale Window Title
 local WINDOW_TITLE = "Color Finale"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod ={}
-
--- startsWith(value, startValue) -> boolean
--- Function
--- Checks to see if a string starts with a value.
---
--- Parameters:
---  * value - The value to check
---  * startValue - The value to look for
---
--- Returns:
---  * `true` if value starts with the startValue, otherwise `false`
-local function startsWith(value, startValue)
-    if value and startValue then
-        local len = startValue:len()
-        if value:len() >= len then
-            local sub = value:sub(1, len)
-            return sub == startValue
-        end
-    end
-    return false
-end
 
 --- plugins.colorfinale.tangent.init(tangentManager) -> module
 --- Function
@@ -162,9 +122,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.tangentManager)
 end

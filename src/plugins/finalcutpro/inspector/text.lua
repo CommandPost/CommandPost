@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Text Inspector Additions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("textInspector")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local just              = require("cp.just")
@@ -149,45 +138,38 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds
-            :add("alignTextToTheLeft")
-            :whenActivated(function() setTextAlign("left") end)
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds
+        :add("alignTextToTheLeft")
+        :whenActivated(function() setTextAlign("left") end)
 
-        deps.fcpxCmds
-            :add("alignTextToTheCentre")
-            :whenActivated(function() setTextAlign("center") end)
+    fcpxCmds
+        :add("alignTextToTheCentre")
+        :whenActivated(function() setTextAlign("center") end)
 
-        deps.fcpxCmds
-            :add("alignTextToTheRight")
-            :whenActivated(function() setTextAlign("right") end)
+    fcpxCmds
+        :add("alignTextToTheRight")
+        :whenActivated(function() setTextAlign("right") end)
 
-        deps.fcpxCmds
-            :add("justifyLastLeft")
-            :whenActivated(function() setTextAlign("justifiedLeft") end)
+    fcpxCmds
+        :add("justifyLastLeft")
+        :whenActivated(function() setTextAlign("justifiedLeft") end)
 
-        deps.fcpxCmds
-            :add("justifyLastCentre")
-            :whenActivated(function() setTextAlign("justifiedCenter") end)
+    fcpxCmds
+        :add("justifyLastCentre")
+        :whenActivated(function() setTextAlign("justifiedCenter") end)
 
-        deps.fcpxCmds
-            :add("justifyLastRight")
-            :whenActivated(function() setTextAlign("justifiedRight") end)
+    fcpxCmds
+        :add("justifyLastRight")
+        :whenActivated(function() setTextAlign("justifiedRight") end)
 
-        deps.fcpxCmds
-            :add("justifyAll")
-            :whenActivated(function() setTextAlign("justifiedFull") end)
-
-    end
-
+    fcpxCmds
+        :add("justifyAll")
+        :whenActivated(function() setTextAlign("justifiedFull") end)
 end
 
 return plugin

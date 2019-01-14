@@ -2,16 +2,8 @@
 ---
 --- Watches folders for specific file extensions and reloads the app if they change.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local require = require
+
 local console                       = require("hs.console")
 local pathwatcher                   = require("hs.pathwatcher")
 
@@ -20,7 +12,6 @@ local pathwatcher                   = require("hs.pathwatcher")
 -- MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

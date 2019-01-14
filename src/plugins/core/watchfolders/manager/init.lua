@@ -2,41 +2,24 @@
 ---
 --- Manager for the CommandPost Watch Folders Panel.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("watchMan")
+local log           = require("hs.logger").new("watchMan")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local inspect                                   = require("hs.inspect")
-local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
-local toolbar                                   = require("hs.webview.toolbar")
-local webview                                   = require("hs.webview")
+local inspect       = require("hs.inspect")
+local screen        = require("hs.screen")
+local timer         = require("hs.timer")
+local toolbar       = require("hs.webview.toolbar")
+local webview       = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local just                                      = require("cp.just")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config        = require("cp.config")
+local dialog        = require("cp.dialog")
+local just          = require("cp.just")
+local tools         = require("cp.tools")
+local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local panel                                     = require("panel")
-local _                                         = require("moses")
+local panel         = require("panel")
+local _             = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -73,12 +56,12 @@ mod.DEFAULT_TITLE = i18n("watchFolders")
 -- plugins.core.watchfolders.manager._panels -> table
 -- Variable
 -- Table of Panels
-mod._panels             = {}
+mod._panels = {}
 
 -- plugins.core.watchfolders.manager._panels -> table
 -- Variable
 -- Table of Handlers
-mod._handlers           = {}
+mod._handlers = {}
 
 --- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
@@ -562,9 +545,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
     --------------------------------------------------------------------------------

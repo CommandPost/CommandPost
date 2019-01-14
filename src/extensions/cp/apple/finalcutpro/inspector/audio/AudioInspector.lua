@@ -41,34 +41,21 @@
 --- audio:stabilization():smoothing():show():value(1.5)
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local require = require
+local require                                       = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log								= require("hs.logger").new("audioInspect")
+local prop								                          = require("cp.prop")
+local axutils							                          = require("cp.ui.axutils")
+local Group                                         = require("cp.ui.Group")
+local RadioButton                                   = require("cp.ui.RadioButton")
+local SplitGroup                                    = require("cp.ui.SplitGroup")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local prop								= require("cp.prop")
-local axutils							= require("cp.ui.axutils")
-local Group                             = require("cp.ui.Group")
-local RadioButton                       = require("cp.ui.RadioButton")
-local SplitGroup                        = require("cp.ui.SplitGroup")
+local BasePanel                                     = require("cp.apple.finalcutpro.inspector.BasePanel")
+local IP                                            = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
-
-local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
-local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
-local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP.numberField, IP.popUpButton
+local childFromLeft, childFromRight                 = axutils.childFromLeft, axutils.childFromRight
+local withRole, childWithRole                       = axutils.withRole, axutils.childWithRole
+local hasProperties, simple                         = IP.hasProperties, IP.simple
+local section, slider, numberField, popUpButton     = IP.section, IP.slider, IP.numberField, IP.popUpButton
 
 --------------------------------------------------------------------------------
 --

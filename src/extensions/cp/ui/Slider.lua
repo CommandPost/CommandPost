@@ -2,14 +2,10 @@
 ---
 --- Slider Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
+
 local axutils						= require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
+local Element           = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --

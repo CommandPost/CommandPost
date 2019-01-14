@@ -3,37 +3,15 @@
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("customAction")
+local log           = require("hs.logger").new("customAction")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp                               = require("cp.apple.finalcutpro")
-local config                            = require("cp.config")
-local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
-local i18n                              = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- MAXIMUM -> number
--- Constant
--- The maximum number of shortcuts
-local MAXIMUM = 20
+local fcp           = require("cp.apple.finalcutpro")
+local config        = require("cp.config")
+local prop          = require("cp.prop")
+local tools         = require("cp.tools")
+local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -41,6 +19,11 @@ local MAXIMUM = 20
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- MAXIMUM -> number
+-- Constant
+-- The maximum number of shortcuts
+local MAXIMUM = 20
 
 --- plugins.finalcutpro.actions.custom.shortcuts <cp.prop: table>
 --- Variable
@@ -160,9 +143,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------

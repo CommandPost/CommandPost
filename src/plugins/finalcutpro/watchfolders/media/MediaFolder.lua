@@ -2,41 +2,22 @@
 ---
 --- Final Cut Pro Media Watch Folder Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("MediaFolder")
--- local inspect           = require("hs.inspect")
+local log				        = require("hs.logger").new("MediaFolder")
+local fs				        = require("hs.fs")
+local http				      = require("hs.http")
+local notify			      = require("hs.notify")
+local pasteboard		    = require("hs.pasteboard")
+local pathwatcher		    = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fs				= require("hs.fs")
-local http				= require("hs.http")
-local notify			= require("hs.notify")
-local pasteboard		= require("hs.pasteboard")
-local pathwatcher		= require("hs.pathwatcher")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp				= require("cp.apple.finalcutpro")
+local fcp				        = require("cp.apple.finalcutpro")
 local Queue             = require("cp.collect.Queue")
-local dialog			= require("cp.dialog")
+local dialog			      = require("cp.dialog")
 local go                = require("cp.rx.go")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local Do, If            = go.Do, go.If
 local Throw             = go.Throw
 local WaitUntil         = go.WaitUntil

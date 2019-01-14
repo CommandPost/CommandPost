@@ -2,37 +2,15 @@
 ---
 --- iMessage Notifications Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local messages                                  = require("hs.messages")
 local dialog                                    = require("hs.dialog")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 local i18n                                      = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 300
 
 --------------------------------------------------------------------------------
 --
@@ -75,7 +53,6 @@ mod.enabled = config.prop("iMessageNotificationsEnabled", false):watch(function(
 --- Field
 --- A string containing a mobile number or Apple ID
 mod.target = config.prop("iMessageTarget")
-
 
 --- plugins.finalcutpro.notifications.imessage.sendNotification(message) -> none
 --- Function
@@ -122,9 +99,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.manager)
 
@@ -133,7 +107,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(PRIORITY+1, ui.style ([[
+            :addContent(301, ui.style ([[
                 .iMessageEnable {
                     margin-bottom: 10px !important;
                 }
@@ -153,8 +127,8 @@ function plugin.init(deps)
                 html.br() ..
                 html.br() ..
                 html.hr())
-            :addHeading(PRIORITY+2, i18n("iMessageNotifications"))
-            :addCheckbox(PRIORITY+3,
+            :addHeading(302, i18n("iMessageNotifications"))
+            :addCheckbox(303,
                 {
                     label = i18n("enableiMessageNotifications"),
                     onchange = function(_, params)
@@ -173,7 +147,7 @@ function plugin.init(deps)
                     class = "iMessageEnable",
                 }
             )
-            :addTextbox(PRIORITY+4,
+            :addTextbox(304,
                 {
                     label = i18n("iMessageDestination") .. ":",
                     value = mod.target(),
@@ -183,7 +157,7 @@ function plugin.init(deps)
                     end,
                 }
             )
-            :addButton(PRIORITY+5,
+            :addButton(305,
                 {
                     width = 200,
                     label = i18n("sendTestNotification"),
@@ -193,7 +167,7 @@ function plugin.init(deps)
                     class = "testiMessage",
                 }
             )
-            :addButton(PRIORITY+6,
+            :addButton(306,
                 {
                     width = 200,
                     label = i18n("openMessages"),
@@ -203,7 +177,7 @@ function plugin.init(deps)
                     class = "openMessages",
                 }
             )
-            :addButton(PRIORITY+7,
+            :addButton(307,
                 {
                     width = 200,
                     label = i18n("openContacts"),

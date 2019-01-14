@@ -2,28 +2,14 @@
 ---
 --- Sends Apple a Bug Report or Feature Request for Motion.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("motionBug")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local inspect           = require("hs.inspect")
 local screen            = require("hs.screen")
 local webview           = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local motion            = require("cp.apple.motion")
 local just              = require("cp.just")
@@ -32,24 +18,15 @@ local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY          = 2000
-local FEEDBACK_URL      = "https://www.apple.com/feedback/motion.html"
-local FEEDBACK_TYPE     = "Bug Report"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.motion.feedback.bugreport.DEFAULT_WINDOW_STYLE -> table
---- Constant
---- Default Window Style
-mod.DEFAULT_WINDOW_STYLE = {"titled", "closable", "nonactivating", "resizable"}
+-- FEEDBACK_TYPE -> string
+-- Constant
+-- Feedback Type
+local FEEDBACK_TYPE = "Bug Report"
 
 --- plugins.motion.feedback.bugreport.DEFAULT_WIDTH -> number
 --- Constant
@@ -66,6 +43,9 @@ mod.DEFAULT_HEIGHT = 500
 --- Default Window Title
 mod.DEFAULT_TITLE = i18n("reportMotionBugToApple")
 
+--- plugins.motion.feedback.bugreport.position <cp.prop: table>
+--- Field
+--- Webview Position
 mod.position = config.prop("motion.bugreport.position", nil)
 
 -- centredPosition() -> none
@@ -370,7 +350,7 @@ function mod.open(bugReport)
     local prefs = {}
     prefs.developerExtrasEnabled = config.developerMode()
     mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+        :windowStyle({"titled", "closable", "nonactivating", "resizable"})
         :shadow(true)
         :allowNewWindows(false)
         :allowTextEntry(true)
@@ -378,7 +358,7 @@ function mod.open(bugReport)
         :deleteOnClose(true)
         :windowCallback(windowCallback)
         :navigationCallback(navigationCallback)
-        :url(FEEDBACK_URL)
+        :url("https://www.apple.com/feedback/motion.html")
         :darkMode(true)
         :show()
 
@@ -409,32 +389,32 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menu.appleHelpAndSupport
-        :addItem(PRIORITY, function()
+        :addItem(2000, function()
             return { title = i18n("suggestMotionFeatureToApple"), fn = function() mod.open(false) end }
         end)
-        :addItem(PRIORITY + 0.1, function()
+        :addItem(2000.1, function()
             return { title = i18n("reportMotionBugToApple"),  fn = function() mod.open(true) end }
         end)
-        :addSeparator(PRIORITY + 0.2)
+        :addSeparator(2000.2)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpMotionBugReport")
+    local global = deps.global
+    global
+        :add("cpMotionBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
         :titled(i18n("reportMotionBugToApple"))
 
-    deps.global:add("cpMotionFeatureRequest")
+    global
+        :add("cpMotionFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
         :titled(i18n("suggestMotionFeatureToApple"))

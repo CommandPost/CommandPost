@@ -2,24 +2,9 @@
 ---
 --- Final Cut Pro Console
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local tools             = require("cp.tools")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local WIDGETS       = "widgets"
+local tools = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -49,7 +34,7 @@ function mod.show()
         local handlerIds = mod.actionmanager.handlerIds()
         for _,id in pairs(handlerIds) do
             local handlerTable = tools.split(id, "_")
-            if handlerTable[2]~= WIDGETS then
+            if handlerTable[2]~= "widgets" then
                 table.insert(allowedHandlers, id)
             end
         end
@@ -72,11 +57,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
@@ -91,7 +72,6 @@ function plugin.init(deps)
         :activatedBy():ctrl("space")
 
     return mod
-
 end
 
 return plugin

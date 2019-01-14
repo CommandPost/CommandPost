@@ -2,45 +2,25 @@
 ---
 --- Fullscreen Shortcuts
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("fullscreenShortcuts")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local commandeditor						= require("cp.apple.commandeditor")
+local commandeditor						          = require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
 local i18n                              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
--- DEFAULT_VALUE
--- Constant
--- Whether or not this plugin is enabled by default.
-local DEFAULT_VALUE = false
-
--- FULLSCREEN_KEYS
+-- FULLSCREEN_KEYS -> table
 -- Constant
 -- Supported Full Screen Keys
 local FULLSCREEN_KEYS = {
@@ -53,13 +33,6 @@ local FULLSCREEN_KEYS = {
     "InsertMedia",
     "AppendWithSelectedMedia"
 }
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.finalcutpro.fullscreen.shortcuts.update() -> none
 --- Function
@@ -91,7 +64,7 @@ end
 --- plugins.finalcutpro.fullscreen.shortcuts.enabled <cp.prop: boolean>
 --- Variable
 --- Is the module enabled?
-mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", DEFAULT_VALUE):watch(function(enabled)
+mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watch(function(enabled)
     if enabled then
         --------------------------------------------------------------------------------
         -- Watch for the full screen window:
@@ -262,9 +235,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
@@ -286,9 +256,6 @@ function plugin.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Check to see if we started in fullscreen mode:

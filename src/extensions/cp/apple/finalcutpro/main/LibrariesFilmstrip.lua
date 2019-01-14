@@ -2,16 +2,8 @@
 ---
 --- Libraries Filmstrip Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")

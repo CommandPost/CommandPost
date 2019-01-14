@@ -11,28 +11,12 @@
 ---
 --- You can also convert the resulting table back to the code via `tostring`, or the [code](#code) method.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("localeID")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local language          = require("cp.i18n.language")
 local region            = require("cp.i18n.region")
 local script            = require("cp.i18n.script")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local match, format     = string.match, string.format
 local insert            = table.insert
 

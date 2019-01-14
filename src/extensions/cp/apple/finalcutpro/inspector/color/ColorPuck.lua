@@ -2,30 +2,16 @@
 ---
 --- Color ColorPuck Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log                                    = require("hs.logger").new("colorPuck")
 -- local inspect                                = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local drawing                               = require("hs.drawing")
 local geometry                              = require("hs.geometry")
 local mouse                                 = require("hs.mouse")
 local timer                                 = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                               = require("cp.ui.axutils")
 local Element                               = require("cp.ui.Element")
 local prop                                  = require("cp.prop")

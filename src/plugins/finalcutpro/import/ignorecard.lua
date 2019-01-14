@@ -2,23 +2,12 @@
 ---
 --- Ignore Final Cut Pro's Media Import Window.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application               = require("hs.application")
 local fs                        = require("hs.fs")
 local timer                     = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
@@ -130,30 +119,17 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
-            :addCheckbox(1.1,
-            {
-                label = i18n("ignoreInsertedCameraCards"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = mod.enabled,
-            }
-
-
-        )
-    end
+    deps.prefs.panel
+        :addCheckbox(1.1,
+        {
+            label = i18n("ignoreInsertedCameraCards"),
+            onchange = function(_, params) mod.enabled(params.checked) end,
+            checked = mod.enabled,
+        })
 
     --------------------------------------------------------------------------------
     -- Update the watcher status based on the settings:

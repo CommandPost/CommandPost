@@ -2,30 +2,16 @@
 ---
 --- Viewer Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local canvas					        = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 local pasteboard                        = require("hs.pasteboard")
 local timer                             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 local Button                            = require("cp.ui.Button")

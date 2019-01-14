@@ -2,21 +2,10 @@
 ---
 --- Controls Final Cut Pro's Transitions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
@@ -27,19 +16,6 @@ local i18n              = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.finalcutpro.timeline.transitions.init() -> none
---- Function
---- Initialise the Module
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Module
-function mod.init()
-    return mod
-end
 
 --- plugins.finalcutpro.timeline.transitions(action) -> boolean
 --- Function
@@ -165,18 +141,8 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init()
     return mod
-end
-
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
-function plugin.postInit()
-    return mod.init()
 end
 
 return plugin

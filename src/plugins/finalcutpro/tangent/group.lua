@@ -2,16 +2,8 @@
 ---
 --- Final Cut Pro Tangent Timeline Group/Management
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
@@ -28,9 +20,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     local tangentManager = deps.tangentManager
     local fcpGroup = tangentManager.controls:group(i18n("finalCutPro"))

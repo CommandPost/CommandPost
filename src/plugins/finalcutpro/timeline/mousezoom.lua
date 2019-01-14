@@ -4,54 +4,21 @@
 ---
 --- Special Thanks: Iain Anderson (@funwithstuff) for all his incredible testing!
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("mousezoom")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local distributednotifications          = require("hs.distributednotifications")
 local eventtap                          = require("hs.eventtap")
 local mouse                             = require("hs.mouse")
 local pathwatcher                       = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local tools                             = require("cp.tools")
 local i18n                              = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local semver                            = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local touchdevice
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ENABLED_DEFAULT -> number
--- Constant
--- Is this feature enabled by default?
-local ENABLED_DEFAULT = false
 
 --------------------------------------------------------------------------------
 --
@@ -110,7 +77,7 @@ end
 --- plugins.finalcutpro.timeline.mousezoom.enabled <cp.prop: boolean>
 --- Variable
 --- Toggles the Enable Proxy Menu Icon
-mod.enabled = config.prop("enablemousezoom", ENABLED_DEFAULT):watch(mod.update)
+mod.enabled = config.prop("enablemousezoom", false):watch(mod.update)
 
 --- plugins.finalcutpro.timeline.mousezoom.customModifier <cp.prop: string>
 --- Variable
@@ -576,9 +543,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -621,55 +585,50 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
-            :addCheckbox(1.3,
-            {
-                label = i18n("allowZoomingWithModifierKey"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = mod.enabled,
-            })
-            :addContent(1.4, [[
-                <div style="padding-left: 19px">
-            ]], false)
-            :addSelect(1.5,
-            {
-                label		= i18n("modifierKey"),
-                value		= mod.customModifier,
-                options		= {
-                    {
-                        label = "command ⌘",
-                        value = "cmd",
-                    },
-                    {
-                        label = "option ⌥",
-                        value = "alt",
-                    },
-                    {
-                        label = "shift ⇧",
-                        value = "shift",
-                    },
-                    {
-                        label = "control ⌃",
-                        value = "ctrl",
-                    },
-                    {
-                        label = "caps lock",
-                        value = "capslock",
-                    },
-                    {
-                        label = "fn",
-                        value = "fn",
-                    },
+    deps.prefs.panel
+        :addCheckbox(1.3,
+        {
+            label = i18n("allowZoomingWithModifierKey"),
+            onchange = function(_, params) mod.enabled(params.checked) end,
+            checked = mod.enabled,
+        })
+        :addContent(1.4, [[
+            <div style="padding-left: 19px">
+        ]], false)
+        :addSelect(1.5,
+        {
+            label		= i18n("modifierKey"),
+            value		= mod.customModifier,
+            options		= {
+                {
+                    label = "command ⌘",
+                    value = "cmd",
                 },
-                required	= true,
-                onchange	= function(_, params) mod.customModifier(params.value) end,
-            })
-            :addContent(1.6, "</div>", false)
-    end
+                {
+                    label = "option ⌥",
+                    value = "alt",
+                },
+                {
+                    label = "shift ⇧",
+                    value = "shift",
+                },
+                {
+                    label = "control ⌃",
+                    value = "ctrl",
+                },
+                {
+                    label = "caps lock",
+                    value = "capslock",
+                },
+                {
+                    label = "fn",
+                    value = "fn",
+                },
+            },
+            required	= true,
+            onchange	= function(_, params) mod.customModifier(params.value) end,
+        })
+        :addContent(1.6, "</div>", false)
 
     return mod
 end

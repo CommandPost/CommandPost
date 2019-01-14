@@ -2,50 +2,11 @@
 ---
 --- Import Preferences
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp           = require("cp.apple.finalcutpro")
 local dialog        = require("cp.dialog")
 local i18n          = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY
--- Constant
--- The menubar position priority.
-local PRIORITY = 1000
-
--- CREATE_OPTIMIZED_MEDIA
--- Constant
--- Create Optimised Media Preferences Key
-local CREATE_OPTIMIZED_MEDIA = "FFImportCreateOptimizeMedia"
-
--- CREATE_MULTICAM_OPTIMIZED_MEDIA
--- Constant
--- Create Multicam Optimised Media Preferences Key
-local CREATE_MULTICAM_OPTIMIZED_MEDIA = "FFCreateOptimizedMediaForMulticamClips"
-
--- CREATE_PROXY_MEDIA
--- Constant
--- Create Proxy Media Preferences Key
-local CREATE_PROXY_MEDIA = "FFImportCreateProxyMedia"
-
--- COPY_TO_MEDIA_FOLDER
--- Constant
--- Copy to Media Folder Preferences Key
-local COPY_TO_MEDIA_FOLDER = "FFImportCopyToMediaFolder"
 
 --------------------------------------------------------------------------------
 --
@@ -57,7 +18,7 @@ local mod = {}
 --- plugins.finalcutpro.import.preferences.createOptimizedMedia <cp.prop: boolean>
 --- Variable
 --- Create Optimised Media
-mod.createOptimizedMedia = fcp.preferences:prop(CREATE_OPTIMIZED_MEDIA, false):mutate(
+mod.createOptimizedMedia = fcp.preferences:prop("FFImportCreateOptimizeMedia", false):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
@@ -99,7 +60,7 @@ mod.createOptimizedMedia = fcp.preferences:prop(CREATE_OPTIMIZED_MEDIA, false):m
 --- plugins.finalcutpro.import.preferences.createMulticamOptimizedMedia <cp.prop: boolean>
 --- Variable
 --- Create Multicam Optimised Media
-mod.createMulticamOptimizedMedia = fcp.preferences:prop(CREATE_MULTICAM_OPTIMIZED_MEDIA, true):mutate(
+mod.createMulticamOptimizedMedia = fcp.preferences:prop("FFCreateOptimizedMediaForMulticamClips", true):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
@@ -141,7 +102,7 @@ mod.createMulticamOptimizedMedia = fcp.preferences:prop(CREATE_MULTICAM_OPTIMIZE
 --- plugins.finalcutpro.import.preferences.createProxyMedia <cp.prop: boolean>
 --- Variable
 --- Create Proxy Media
-mod.createProxyMedia = fcp.preferences:prop(CREATE_PROXY_MEDIA, false):mutate(
+mod.createProxyMedia = fcp.preferences:prop("FFImportCreateProxyMedia", false):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
@@ -182,7 +143,7 @@ mod.createProxyMedia = fcp.preferences:prop(CREATE_PROXY_MEDIA, false):mutate(
 --- plugins.finalcutpro.import.preferences.leaveInPlace <cp.prop: boolean>
 --- Variable
 --- Leave In Place.
-mod.leaveInPlace = fcp.preferences:prop(COPY_TO_MEDIA_FOLDER, true):mutate(
+mod.leaveInPlace = fcp.preferences:prop("FFImportCopyToMediaFolder", true):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
@@ -237,51 +198,60 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menus:
     --------------------------------------------------------------------------------
-    deps.menu.mediaImport:addItems(PRIORITY, function()
-        local fcpxRunning = fcp:isRunning()
-        return {
-            { title = i18n("createOptimizedMedia"),         fn = function() mod.createOptimizedMedia:toggle() end,              checked = mod.createOptimizedMedia(),               disabled = not fcpxRunning },
-            { title = i18n("createMulticamOptimizedMedia"), fn = function() mod.createMulticamOptimizedMedia:toggle() end,      checked = mod.createMulticamOptimizedMedia(),       disabled = not fcpxRunning },
-            { title = i18n("createProxyMedia"),             fn = function() mod.createProxyMedia:toggle() end,                  checked = mod.createProxyMedia(),                   disabled = not fcpxRunning },
-            { title = i18n("leaveFilesInPlaceOnImport"),    fn = function() mod.leaveInPlace:toggle() end,                      checked = mod.leaveInPlace(),                       disabled = not fcpxRunning },
-        }
-    end)
+    deps.menu.mediaImport
+        :addItems(1000, function()
+            local fcpxRunning = fcp:isRunning()
+            return {
+                { title = i18n("createOptimizedMedia"),         fn = function() mod.createOptimizedMedia:toggle() end,              checked = mod.createOptimizedMedia(),               disabled = not fcpxRunning },
+                { title = i18n("createMulticamOptimizedMedia"), fn = function() mod.createMulticamOptimizedMedia:toggle() end,      checked = mod.createMulticamOptimizedMedia(),       disabled = not fcpxRunning },
+                { title = i18n("createProxyMedia"),             fn = function() mod.createProxyMedia:toggle() end,                  checked = mod.createProxyMedia(),                   disabled = not fcpxRunning },
+                { title = i18n("leaveFilesInPlaceOnImport"),    fn = function() mod.leaveInPlace:toggle() end,                      checked = mod.leaveInPlace(),                       disabled = not fcpxRunning },
+            }
+        end)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
-    fcpxCmds:add("cpCreateOptimizedMediaOn")
+    fcpxCmds
+        :add("cpCreateOptimizedMediaOn")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createOptimizedMedia(true) end)
-    fcpxCmds:add("cpCreateOptimizedMediaOff")
+
+    fcpxCmds
+        :add("cpCreateOptimizedMediaOff")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createOptimizedMedia(false) end)
 
-    fcpxCmds:add("cpCreateMulticamOptimizedMediaOn")
+    fcpxCmds
+        :add("cpCreateMulticamOptimizedMediaOn")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createMulticamOptimizedMedia(true) end)
-    fcpxCmds:add("cpCreateMulticamOptimizedMediaOff")
+
+    fcpxCmds
+        :add("cpCreateMulticamOptimizedMediaOff")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createMulticamOptimizedMedia(false) end)
 
-    fcpxCmds:add("cpCreateProxyMediaOn")
+    fcpxCmds
+        :add("cpCreateProxyMediaOn")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createProxyMedia(true) end)
-    fcpxCmds:add("cpCreateProxyMediaOff")
+
+    fcpxCmds
+        :add("cpCreateProxyMediaOff")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.createProxyMedia(false) end)
-    fcpxCmds:add("cpLeaveInPlaceOn")
 
+    fcpxCmds
+        :add("cpLeaveInPlaceOn")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.leaveInPlace(true) end)
+
     fcpxCmds:add("cpLeaveInPlaceOff")
         :groupedBy("mediaImport")
         :whenActivated(function() mod.leaveInPlace(false) end)

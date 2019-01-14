@@ -1,30 +1,15 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     P R E F E R E N C E S   M A N A G E R                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.setup.panel ===
 ---
 --- CommandPost Setup Window Panel.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local uuid                                      = require("hs.host").uuid
+local host    = require("hs.host")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
+local html    = require("cp.web.html")
+local ui      = require("cp.web.ui")
+
+local uuid    = host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -36,7 +21,7 @@ local panel = {}
 --- plugins.core.setup.panel.WEBVIEW_LABEL -> string
 --- Constant
 --- The ID for the Webview
-panel.WEBVIEW_LABEL                             = "setup"
+panel.WEBVIEW_LABEL = "setup"
 
 --- plugins.core.setup.panel.new(id, priority) -> plugins.core.setup.panel
 --- Constructor
@@ -398,6 +383,5 @@ function panel:addButton(params)
     return self
 
 end
-
 
 return panel

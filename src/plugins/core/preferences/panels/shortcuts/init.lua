@@ -2,40 +2,23 @@
 ---
 --- Shortcuts Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsShortcuts")
+local log         = require("hs.logger").new("prefsShortcuts")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local fnutils                                   = require("hs.fnutils")
-local hotkey                                    = require("hs.hotkey")
-local image                                     = require("hs.image")
-local keycodes                                  = require("hs.keycodes")
+local dialog      = require("hs.dialog")
+local fnutils     = require("hs.fnutils")
+local hotkey      = require("hs.hotkey")
+local image       = require("hs.image")
+local keycodes    = require("hs.keycodes")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
-local config                                    = require("cp.config")
-local tools                                     = require("cp.tools")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local commands    = require("cp.commands")
+local config      = require("cp.config")
+local tools       = require("cp.tools")
+local ui          = require("cp.web.ui")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _           = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -712,11 +695,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Reset Watcher:
     --------------------------------------------------------------------------------
@@ -727,11 +706,7 @@ function plugin.init(deps, env)
     return mod.init(deps, env)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
-
     --------------------------------------------------------------------------------
     -- Cache all the default shortcuts:
     --------------------------------------------------------------------------------
@@ -746,10 +721,8 @@ function plugin.postInit()
     -- If no Default Shortcut File Exists, lets create one:
     --------------------------------------------------------------------------------
     if not result then
-        local filePath = commands.getShortcutsPath(mod.DEFAULT_SHORTCUTS)
         commands.saveToFile(mod.DEFAULT_SHORTCUTS)
     end
-
 end
 
 return plugin

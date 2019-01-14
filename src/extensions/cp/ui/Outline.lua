@@ -6,16 +6,21 @@
 
 local funtils	                = require "hs.fnutils"
 
-local prop	                    = require "cp.prop"
+local prop	                  = require "cp.prop"
 local axutils	                = require "cp.ui.axutils"
-local Column                    = require "cp.ui.Column"
+local Column                  = require "cp.ui.Column"
 local Element	                = require "cp.ui.Element"
-local Row                       = require "cp.ui.Row"
+local Row                     = require "cp.ui.Row"
 
-local valueOf                   = axutils.valueOf
+local valueOf                 = axutils.valueOf
 local insert	                = table.insert
 local ifilter	                = funtils.ifilter
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Outline = Element:subclass("cp.ui.Outline")
 
 -- _cleanCache()

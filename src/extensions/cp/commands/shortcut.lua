@@ -2,21 +2,16 @@
 ---
 --- Shortcut Commands
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
-local log										= require("hs.logger").new("shortcut")
+local log										 = require("hs.logger").new("shortcut")
 
-local eventtap									= require("hs.eventtap")
-local hotkey									= require("hs.hotkey")
-local keycodes									= require("hs.keycodes")
+local eventtap							 = require("hs.eventtap")
+local hotkey								 = require("hs.hotkey")
+local keycodes							 = require("hs.keycodes")
 
-local englishKeyCodes							= require("cp.commands.englishKeyCodes")
+local englishKeyCodes				 = require("cp.commands.englishKeyCodes")
 
-local prop										= require("cp.prop")
+local prop									 = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
