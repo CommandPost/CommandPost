@@ -81,6 +81,7 @@ local pathwatcher                               = require("hs.pathwatcher")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local config                                    = require("cp.config")
 local Set                                       = require("cp.collect.Set")
 local just										= require("cp.just")
 local i18n                                      = require("cp.i18n")
@@ -101,7 +102,7 @@ local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWind
 local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
+local Timeline									= require("cp.apple.finalcutpro.timeline.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
@@ -863,7 +864,7 @@ end
 --- Returns:
 ---  * the Timeline
 function fcp.lazy.method:timeline()
-    return Timeline.new(self)
+    return Timeline(self)
 end
 
 --- cp.apple.finalcutpro:viewer() -> Viewer
@@ -1268,4 +1269,11 @@ function fcp._describeWindow(w)
            "; modal: "..inspect(w:attributeValue("AXModal"))
 end
 
-return fcp()
+local result = fcp()
+
+-- Add `cp.dev.fcp` when in developer mode.
+if config.developerMode() and cp and cp.dev then
+    cp.dev.fcp = result
+end
+
+return result

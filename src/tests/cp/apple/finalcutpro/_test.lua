@@ -486,32 +486,32 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local toolbar = fcp:timeline():toolbar()
 
-            local skimmingGroup, effectsGroup
+            local skimmingId, effectsGroup
             local version = fcp.version()
 
             ok(version and type(version) == "table")
 
             if version >= v("10.3.2") then
-                skimmingGroup = "_NS:178"
+                skimmingId = "_NS:178"
                 effectsGroup = "_NS:165"
             end
 
             if version >= v("10.3.3") then
-                skimmingGroup = "_NS:179"
+                skimmingId = "_NS:179"
                 effectsGroup = "_NS:166"
             end
 
             if version >= v("10.4.4") then
-                skimmingGroup = "_NS:183"
+                skimmingId = "_NS:183"
                 effectsGroup = "_NS:170"
             end
 
             ok(toolbar:isShowing())
-            ok(toolbar:skimmingGroupUI() ~= nil)
-            ok(skimmingGroup and toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == skimmingGroup)
+            ok(toolbar:skimming():UI() ~= nil)
+            ok(skimmingId and toolbar:skimming():UI():attributeValue("AXIdentifier") == skimmingId)
 
-            ok(toolbar:effectsGroupUI() ~= nil)
-            ok(effectsGroup and toolbar:effectsGroupUI():attributeValue("AXIdentifier") == effectsGroup)
+            ok(toolbar:effectsGroup():UI() ~= nil)
+            ok(effectsGroup and toolbar:effectsGroup():UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(

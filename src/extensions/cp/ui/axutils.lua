@@ -34,6 +34,23 @@ local sort                      = table.sort
 --------------------------------------------------------------------------------
 local axutils = {}
 
+--- cp.ui.axutils.valueOf(element, name[, default]) -> anything
+--- Function
+--- Returns the named `AX` attribute value, or the `default` if it is empty.
+---
+--- Parameters:
+--- * element - the `axuielement` to retrieve the attribute value for.
+--- * attribute - The attribute name (e.g. "AXValue")
+--- * default - (optional) if provided, this will be returned if the attribute is `nil`.
+---
+--- Returns:
+--- * The attribute value, or the `default` if none is found.
+function axutils.valueOf(element, attribute, default)
+    if axutils.isValid(element) then
+        return element:attributeValue(attribute) or default
+    end
+end
+
 --- cp.ui.axutils.childrenInColumn(element, role, startIndex) -> table | nil
 --- Function
 --- Finds the children for an element, then checks to see if they match the supplied
@@ -465,9 +482,23 @@ end
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenMatching(element, matcherFn)
     if element then
-        return fnutils.ifilter(element, matcherFn)
+        return fnutils.ifilter(axutils.children(element), matcherFn)
     end
     return nil
+end
+
+--- cp.ui.axutils.hasChild(element, matcherFn) -> boolean
+--- Function
+--- Checks if the axuielement has a child that passes the `matcherFn`.
+---
+--- Parameters:
+--- * element - the `axuielement` to check.
+--- * matcherFn - the `function` that accepts an `axuielement` and returns a `boolean`
+---
+--- Returns:
+--- * `true` if any child matches, otherwise `false`.
+function axutils.hasChild(element, matcherFn)
+    return axutils.childMatching(element, matcherFn) ~= nil
 end
 
 --- cp.ui.axutils.isValid(element) -> boolean

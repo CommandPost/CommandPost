@@ -1,4 +1,4 @@
---- === cp.apple.finalcutpro.main.Timeline ===
+--- === cp.apple.finalcutpro.timeline.Timeline ===
 ---
 --- Timeline Module.
 
@@ -18,14 +18,16 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local go                                = require("cp.rx.go")
 local prop								= require("cp.prop")
 
 local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
-local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
+local Contents					= require("cp.apple.finalcutpro.timeline.Contents")
+local Toolbar					= require("cp.apple.finalcutpro.timeline.Toolbar")
+local Index                     = require("cp.apple.finalcutpro.timeline.Index")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -40,9 +42,9 @@ local childrenWithRole                  = axutils.childrenWithRole
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Timeline = {}
+local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 
---- cp.apple.finalcutpro.main.Timeline.matches(element) -> boolean
+--- cp.apple.finalcutpro.timeline.Timeline.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -55,14 +57,14 @@ local Timeline = {}
 --- Notes:
 ---  * `element` should be an `AXGroup`, which contains an `AXSplitGroup` with an
 ---    `AXIdentifier` of `_NS:237` (as of Final Cut Pro 10.4)
-function Timeline.matches(element)
+function Timeline.static.matches(element)
     local splitGroup = childWithRole(element, "AXSplitGroup")
     return element:attributeValue("AXRole") == "AXGroup"
        and splitGroup
        and Timeline.matchesMain(splitGroup)
 end
 
---- cp.apple.finalcutpro.main.Timeline.matchesMain(element) -> boolean
+--- cp.apple.finalcutpro.timeline.Timeline.matchesMain(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -77,7 +79,7 @@ end
 ---    (as of Final Cut Pro 10.4)
 ---  * Because the timeline contents is hard to detect, we look for the timeline
 ---    toolbar instead.
-function Timeline.matchesMain(element)
+function Timeline.static.matchesMain(element)
     local parent = element and element:attributeValue("AXParent")
     local group = parent and childWithRole(parent, "AXGroup")
     local buttons = group and childrenWithRole(group, "AXButton")
@@ -93,7 +95,7 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
-function Timeline._findTimeline(...)
+function Timeline.static._findTimeline(...)
     for i = 1,select("#", ...) do
         local window = select(i, ...)
         if window then
@@ -107,7 +109,7 @@ function Timeline._findTimeline(...)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Timeline.new(app) -> Timeline
+--- cp.apple.finalcutpro.timeline.Timeline(app) -> Timeline
 --- Constructor
 --- Creates a new `Timeline` instance.
 ---
@@ -116,100 +118,96 @@ end
 ---
 --- Returns:
 ---  * A new `Timeline` object.
-function Timeline.new(app)
+function Timeline:initialize(app)
 
-    local o = prop.extend({
-        _app = app,
-    },	Timeline)
-
-    local UI = app.UI:mutate(function(_, self)
+    local UI = app.UI:mutate(function()
         return cache(self, "_ui", function()
             return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
         end,
         Timeline.matches)
     end):monitor(app:primaryWindow().UI, app:secondaryWindow().UI)
 
-    prop.bind(o) {
-
-        --- cp.apple.finalcutpro.main.Timeline.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.Timeline.isOnSecondary <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Timeline is on the Secondary Display.
-        isOnSecondary = UI:mutate(function(original)
-            local ui = original()
-            return ui ~= nil and SecondaryWindow.matches(ui:window())
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.isOnPrimary <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Timeline is on the Primary Display.
-        isOnPrimary = UI:mutate(function(original)
-            local ui = original()
-            return ui ~= nil and PrimaryWindow.matches(ui:window())
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Timeline is showing on either the Primary or Secondary display.
-        isShowing = UI:mutate(function(original)
-            local ui = original()
-            return ui ~= nil and #ui > 0
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
-        mainUI = UI:mutate(function(original, self)
-            return cache(self, "_main", function()
-                local ui = original()
-                return ui and childMatching(ui, Timeline.matchesMain)
-            end,
-            Timeline.matchesMain)
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.isPlaying <cp.prop: boolean>
-        --- Field
-        --- Is the timeline playing?
-        isPlaying = app:viewer().isPlaying:mutate(function(original)
-            return original()
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
-        --- Field
-        --- Is Playhead Locked?
-        isLockedPlayhead = prop.new(function(self)
-            return self._locked == true
-        end),
-
-        --- cp.apple.finalcutpro.main.Timeline.isLockedInCentre <cp.prop: boolean>
-        --- Field
-        --- Is Playhead Locked in the centre?
-        isLockedInCentre = prop.new(function(self)
-            return self._lockInCentre == true
-        end),
-    }
-
-    -- These are bound separately because TimelineContents uses `UI` and `mainUI`
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.Timeline.isLoaded <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Timeline has finished loading.
-        isLoaded = o:contents().isLoaded,
-
-        --- cp.apple.finalcutpro.main.Timeline.isFocused <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Timeline is the focused panel.
-        isFocused = o:contents().isFocused,
-    }
-
-    return o
+    Element.initialize(self, app, UI)
 end
 
---- cp.apple.finalcutpro.main.Timeline:app() -> App
+--- cp.apple.finalcutpro.timeline.Timeline.isOnSecondary <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Timeline is on the Secondary Display.
+function Timeline.lazy.prop:isOnSecondary()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and SecondaryWindow.matches(ui:window())
+    end)
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isOnPrimary <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Timeline is on the Primary Display.
+function Timeline.lazy.prop:isOnPrimary()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and PrimaryWindow.matches(ui:window())
+    end)
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Timeline is showing on either the Primary or Secondary display.
+function Timeline.lazy.prop:isShowing()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and #ui > 0
+    end)
+end
+--- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
+function Timeline.lazy.prop:mainUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_main", function()
+            local ui = original()
+            return ui and childMatching(ui, Timeline.matchesMain)
+        end,
+        Timeline.matchesMain)
+    end)
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isPlaying <cp.prop: boolean>
+--- Field
+--- Is the timeline playing?
+function Timeline.lazy.prop:isPlaying()
+    return self:app():viewer().isPlaying
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isLockedPlayhead <cp.prop: boolean>
+--- Field
+--- Is Playhead Locked?
+function Timeline.lazy.prop.isLockedPlayhead()
+    return prop.TRUE()
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isLockedInCentre <cp.prop: boolean>
+--- Field
+--- Is Playhead Locked in the centre?
+function Timeline.lazy.prop.isLockedInCentre()
+    return prop.TRUE()
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isLoaded <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Timeline has finished loading.
+function Timeline.lazy.prop:isLoaded()
+    return self:contents().isLoaded
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Timeline is the focused panel.
+function Timeline.lazy.prop:isFocused()
+    return self:contents().isFocused
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline:app() -> App
 --- Method
 --- Returns the app instance representing Final Cut Pro.
 ---
@@ -219,7 +217,7 @@ end
 --- Returns:
 ---  * App
 function Timeline:app()
-    return self._app
+    return self:parent()
 end
 
 -----------------------------------------------------------------------
@@ -228,7 +226,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:show() -> Timeline
+--- cp.apple.finalcutpro.timeline.Timeline:show() -> Timeline
 --- Method
 --- Show's the Timeline on the Primary Display.
 ---
@@ -244,14 +242,14 @@ function Timeline:show()
     return self
 end
 
-function Timeline:doShow()
+function Timeline.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:doShowOnPrimary())
     :Otherwise(true)
     :Label("Timeline:doShow")
 end
 
---- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
+--- cp.apple.finalcutpro.timeline.Timeline:showOnPrimary() -> Timeline
 --- Method
 --- Show's the Timeline on the Primary Display.
 ---
@@ -275,7 +273,7 @@ function Timeline:showOnPrimary()
     return self
 end
 
---- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement <boolean>
+--- cp.apple.finalcutpro.timeline.Timeline:doShowOnPrimary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the primary window.
 ---
@@ -284,7 +282,7 @@ end
 ---
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
-function Timeline:doShowOnPrimary()
+function Timeline.lazy.method:doShowOnPrimary()
     local menu = self:app():menu()
 
     return If(self:app().isRunning):Then(
@@ -303,7 +301,7 @@ function Timeline:doShowOnPrimary()
     :Label("Timeline:doShowOnPrimary")
 end
 
---- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
+--- cp.apple.finalcutpro.timeline.Timeline:showOnSecondary() -> Timeline
 --- Method
 --- Show's the Timeline on the Secondary Display.
 ---
@@ -324,7 +322,7 @@ function Timeline:showOnSecondary()
 end
 
 
---- cp.apple.finalcutpro.main.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
+--- cp.apple.finalcutpro.timeline.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the secondary window.
 ---
@@ -333,7 +331,7 @@ end
 ---
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
-function Timeline:doShowOnSecondary()
+function Timeline.lazy.method:doShowOnSecondary()
     local menu = self:app():menu()
 
     return If(self:app().isRunning):Then(
@@ -345,7 +343,7 @@ function Timeline:doShowOnSecondary()
     :Label("Timeline:doShowOnSecondary")
 end
 
---- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
+--- cp.apple.finalcutpro.timeline.Timeline:hide() -> Timeline
 --- Method
 --- Hide's the Timeline (regardless of whether it was on the Primary or Secondary display).
 ---
@@ -366,7 +364,7 @@ function Timeline:hide()
     return self
 end
 
---- cp.apple.finalcutpro.main.Timeline:doHide() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Timeline:doHide() -> cp.rx.go.Statement
 --- Method
 --- Returns a `Statement` that will hide the Timeline (regardless of whether it
 --- was on the Primary or Secondary window).
@@ -376,7 +374,7 @@ end
 ---
 --- Returns:
 ---  * A `Statement` ready to run.
-function Timeline:doHide()
+function Timeline.lazy.method:doHide()
     local menu = self:app():menu()
 
     return If(self:app().isRunning):Then(
@@ -397,12 +395,12 @@ function Timeline:doHide()
     :Label("Timeline:doHide")
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `Contents`.
 ---
 --- Parameters:
---- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+--- * show      - if `true`, the `Contents` will be shown before focusing.
 ---
 --- Returns:
 --- * The `Statement`.
@@ -419,7 +417,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:contents() -> TimelineContent
+--- cp.apple.finalcutpro.timeline.Timeline:contents() -> TimelineContent
 --- Method
 --- Gets the Timeline Contents. The Content is the main body of the timeline,
 --- containing the Timeline Index, the Content, and the Effects/Transitions panels.
@@ -429,11 +427,8 @@ end
 ---
 --- Returns:
 ---  * `TimelineContent` object.
-function Timeline:contents()
-    if not self._content then
-        self._content = TimelineContent.new(self)
-    end
-    return self._content
+function Timeline.lazy.method:contents()
+    return Contents.new(self)
 end
 
 -----------------------------------------------------------------------
@@ -443,7 +438,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:effects() -> EffectsBrowser
+--- cp.apple.finalcutpro.timeline.Timeline:effects() -> EffectsBrowser
 --- Method
 --- Gets the (sometimes hidden) Effect Browser.
 ---
@@ -452,11 +447,8 @@ end
 ---
 --- Returns:
 ---  * `EffectsBrowser` object.
-function Timeline:effects()
-    if not self._effects then
-        self._effects = EffectsBrowser.new(self, EffectsBrowser.EFFECTS)
-    end
-    return self._effects
+function Timeline.lazy.method:effects()
+    return EffectsBrowser.new(self, EffectsBrowser.EFFECTS)
 end
 
 -----------------------------------------------------------------------
@@ -466,7 +458,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:transitions() -> EffectsBrowser
+--- cp.apple.finalcutpro.timeline.Timeline:transitions() -> EffectsBrowser
 --- Method
 --- Gets the (sometimes hidden) Transitions Browser.
 ---
@@ -475,11 +467,8 @@ end
 ---
 --- Returns:
 ---  * `EffectsBrowser` object.
-function Timeline:transitions()
-    if not self._transitions then
-        self._transitions = EffectsBrowser.new(self, EffectsBrowser.TRANSITIONS)
-    end
-    return self._transitions
+function Timeline.lazy.method:transitions()
+    return EffectsBrowser.new(self, EffectsBrowser.TRANSITIONS)
 end
 
 -----------------------------------------------------------------------
@@ -489,7 +478,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:playhead() -> Playhead
+--- cp.apple.finalcutpro.timeline.Timeline:playhead() -> Playhead
 --- Method
 --- Gets the Timeline Playhead.
 ---
@@ -509,7 +498,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:skimmingPlayhead() -> Playhead
+--- cp.apple.finalcutpro.timeline.Timeline:skimmingPlayhead() -> Playhead
 --- Method
 --- Gets the Playhead that tracks under the mouse while skimming.
 ---
@@ -529,7 +518,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline:toolbar() -> TimelineToolbar
+--- cp.apple.finalcutpro.timeline.Timeline:toolbar() -> Toolbar
 --- Method
 --- Gets the bar at the top of the timeline.
 ---
@@ -537,15 +526,12 @@ end
 ---  * None
 ---
 --- Returns:
----  * `TimelineToolbar` object.
-function Timeline:toolbar()
-    if not self._toolbar then
-        self._toolbar = TimelineToolbar.new(self)
-    end
-    return self._toolbar
+---  * `Toolbar` object.
+function Timeline.lazy.method:toolbar()
+    return Toolbar(self)
 end
 
---- cp.apple.finalcutpro.main.Timeline:title() -> cp.ui.StaticText
+--- cp.apple.finalcutpro.timeline.Timeline:title() -> cp.ui.StaticText
 --- Method
 --- Returns the [StaticText](cp.ui.StaticText.md) containing the title.
 ---
@@ -556,6 +542,26 @@ end
 ---  * `StaticText` object.
 function Timeline:title()
     return self:toolbar():title()
+end
+
+-----------------------------------------------------------------------
+--
+-- INDEX:
+-- The Timeline Index.
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.timeline.Timeline:index() -> Index
+--- Method
+--- The [Index](cp.apple.finalcutpro.timeline.Index.md).
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Index` object.
+function Timeline.lazy.method:index()
+    return Index(self)
 end
 
 return Timeline

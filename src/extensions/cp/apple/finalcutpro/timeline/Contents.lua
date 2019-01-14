@@ -1,4 +1,4 @@
---- === cp.apple.finalcutpro.main.TimelineContents ===
+--- === cp.apple.finalcutpro.timeline.Contents ===
 ---
 --- Timeline Contents Module.
 
@@ -36,20 +36,20 @@ local If, WaitUntil                     = go.If, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TimelineContents = {}
+local Contents = {}
 
 -- TODO: Add documentation
-function TimelineContents.matches(element)
+function Contents.matches(element)
     return element
         and element:attributeValue("AXRole") == "AXLayoutArea"
         and element:attributeValueCount("AXAuditIssues") < 1
 end
 
 -- TODO: Add documentation
-function TimelineContents.new(parent)
+function Contents.new(parent)
     local o = prop.extend({
         _parent = parent
-    }, TimelineContents)
+    }, Contents)
 
     -- TODO: Add documentation
     local scrollAreaUI = parent.mainUI:mutate(function(original)
@@ -58,7 +58,7 @@ function TimelineContents.new(parent)
             return axutils.childMatching(main, function(child)
                 if child:attributeValue("AXRole") == "AXScrollArea" then
                     local contents = child:attributeValue("AXContents")
-                    return axutils.childMatching(contents, TimelineContents.matches) ~= nil
+                    return axutils.childMatching(contents, Contents.matches) ~= nil
                 end
                 return false
             end)
@@ -73,11 +73,11 @@ function TimelineContents.new(parent)
         return axutils.cache(self, "_ui", function()
             local scrollArea = original()
             if scrollArea then
-                return axutils.childMatching(scrollArea, TimelineContents.matches)
+                return axutils.childMatching(scrollArea, Contents.matches)
             end
             return nil
         end,
-        TimelineContents.matches)
+        Contents.matches)
     end)
 
     local isFocused = UI:mutate(function(original)
@@ -139,59 +139,59 @@ function TimelineContents.new(parent)
     end)
 
     prop.bind(o) {
---- cp.apple.finalcutpro.main.TimelineContents.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.UI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The main UI of the Timeline Contents area.
         UI = UI,
 
---- cp.apple.finalcutpro.main.TimelineContents.scrollAreaUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.scrollAreaUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The parent `ScrollArea` UI of the Timeline Contents area.
         scrollAreaUI = scrollAreaUI,
 
---- cp.apple.finalcutpro.main.TimelineContents.isShowing <cp.prop: booelan; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.isShowing <cp.prop: booelan; read-only; live>
 --- Field
 --- Checks if the Timeline is currently showing.
         isShowing = UI:ISNOT(nil),
 
---- cp.apple.finalcutpro.main.TimelineContents.isLoaded <cp.prop: booelan; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.isLoaded <cp.prop: booelan; read-only; live>
 --- Field
 --- Checks if the Timeline has content loaded.
         isLoaded = scrollAreaUI:ISNOT(nil),
 
---- cp.apple.finalcutpro.main.TimelineContents.isFocused <cp.prop: booelan; read-only>
+--- cp.apple.finalcutpro.timeline.Contents.isFocused <cp.prop: booelan; read-only>
 --- Field
 --- Checks if the Timeline is currently the focused panel.
         isFocused = isFocused,
 
---- cp.apple.finalcutpro.main.TimelineContents.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The `AXHorizontalScrolLbar` for the Timeline Contents area.
         horizontalScrollBarUI = horizontalScrollBarUI,
 
---- cp.apple.finalcutpro.main.TimelineContents.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The `AXVerticalScrollBar` for the Timeline Contents area.
         verticalScrollBarUI = verticalScrollBarUI,
 
---- cp.apple.finalcutpro.main.TimelineContents.viewFrame <cp.prop: table; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.viewFrame <cp.prop: table; read-only; live>
 --- Field
 --- The current 'frame' of the scroll area, inside the scroll bars (if present),  or `nil` if not available.
         viewFrame = viewFrame,
 
---- cp.apple.finalcutpro.main.TimelineContents.viewFrame <cp.prop: table; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.viewFrame <cp.prop: table; read-only; live>
 --- Field
 --- The current 'frame' of the internal timeline content,  or `nil` if not available.
         timelineFrame = timelineFrame,
 
---- cp.apple.finalcutpro.main.TimelineContents.children <cp.prop: table; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.children <cp.prop: table; read-only; live>
 --- Field
---- The current set of child elements in the TimelineContents.
+--- The current set of child elements in the Contents.
         children = children,
 
---- cp.apple.finalcutpro.main.TimelineContents.selectedChildren <cp.prop: table; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.selectedChildren <cp.prop: table; read-only; live>
 --- Field
---- The current set of selected child elements in the TimelineContents.
+--- The current set of selected child elements in the Contents.
         selectedChildren = selectedChildren,
     }
 
@@ -199,12 +199,12 @@ function TimelineContents.new(parent)
 end
 
 -- TODO: Add documentation
-function TimelineContents:parent()
+function Contents:parent()
     return self._parent
 end
 
 -- TODO: Add documentation
-function TimelineContents:app()
+function Contents:app()
     return self:parent():app()
 end
 
@@ -215,34 +215,34 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function TimelineContents:show()
+function Contents:show()
     self:parent():show()
     return self
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doShow() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doShow() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to show the Timeline Contents.
 ---
 --- Returns:
 --- * The `Statement`.
-function TimelineContents:doShow()
+function Contents:doShow()
     return self:parent():doShow()
 end
 
 -- TODO: Add documentation
-function TimelineContents:hide()
+function Contents:hide()
     self:parent():hide()
     return self
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doHide() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doHide() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the Timeline Contents.
 ---
 --- Returns:
 --- * The `Statement`.
-function TimelineContents:doHide()
+function Contents:doHide()
     return self:parent():doHide()
 end
 
@@ -253,17 +253,17 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function TimelineContents:playhead()
+function Contents:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, self.UI)
+        self._playhead = Playhead(self, false, self.UI)
     end
     return self._playhead
 end
 
 -- TODO: Add documentation
-function TimelineContents:skimmingPlayhead()
+function Contents:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, self.UI)
+        self._skimmingPlayhead = Playhead(self, true, self.UI)
     end
     return self._skimmingPlayhead
 end
@@ -275,7 +275,7 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function TimelineContents:scrollHorizontalBy(shift)
+function Contents:scrollHorizontalBy(shift)
     local ui = self:horizontalScrollBarUI()
     if ui then
         local indicator = ui[1]
@@ -285,7 +285,7 @@ function TimelineContents:scrollHorizontalBy(shift)
 end
 
 -- TODO: Add documentation
-function TimelineContents:scrollHorizontalTo(value)
+function Contents:scrollHorizontalTo(value)
     local ui = self:horizontalScrollBarUI()
     if ui then
         local indicator = ui[1]
@@ -296,7 +296,7 @@ function TimelineContents:scrollHorizontalTo(value)
     end
 end
 
-function TimelineContents:scrollHorizontalToX(x)
+function Contents:scrollHorizontalToX(x)
     -- update the scrollbar position
     local timelineFrame = self:timelineFrame()
     local scrollWidth = timelineFrame.w - self:viewFrame().w
@@ -308,13 +308,13 @@ function TimelineContents:scrollHorizontalToX(x)
 end
 
 -- TODO: Add documentation
-function TimelineContents:getScrollHorizontal()
+function Contents:getScrollHorizontal()
     local ui = self:horizontalScrollBarUI()
     return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
 
 -- TODO: Add documentation
-function TimelineContents:scrollVerticalBy(shift)
+function Contents:scrollVerticalBy(shift)
     local ui = self:verticalScrollBarUI()
     if ui then
         local indicator = ui[1]
@@ -324,7 +324,7 @@ function TimelineContents:scrollVerticalBy(shift)
 end
 
 -- TODO: Add documentation
-function TimelineContents:scrollVerticalTo(value)
+function Contents:scrollVerticalTo(value)
     local ui = self:verticalScrollBarUI()
     if ui then
         local indicator = ui[1]
@@ -336,7 +336,7 @@ function TimelineContents:scrollVerticalTo(value)
 end
 
 -- TODO: Add documentation
-function TimelineContents:getScrollVertical()
+function Contents:getScrollVertical()
     local ui = self:verticalScrollBarUI()
     return ui and ui[1] and ui[1]:attributeValue("AXValue")
 end
@@ -347,7 +347,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.TimelineContents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- cp.apple.finalcutpro.timeline.Contents:selectedClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Method
 --- Returns a table containing the list of selected clips.
 ---
@@ -362,7 +362,7 @@ end
 ---
 --- Returns:
 ---  * The table of selected axuielements that match the conditions
-function TimelineContents:selectedClipsUI(expandGroups, filterFn)
+function Contents:selectedClipsUI(expandGroups, filterFn)
     local ui = self:UI()
     if ui then
         local clips = ui:attributeValue("AXSelectedChildren")
@@ -371,7 +371,7 @@ function TimelineContents:selectedClipsUI(expandGroups, filterFn)
     return nil
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:clipsUI(expandedGroups, filterFn) -> table of axuielements
+--- cp.apple.finalcutpro.timeline.Contents:clipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table containing the list of clips in the Timeline.
 ---
@@ -386,7 +386,7 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
-function TimelineContents:clipsUI(expandGroups, filterFn)
+function Contents:clipsUI(expandGroups, filterFn)
     local ui = self:UI()
     if ui then
         local clips = fnutils.filter(ui:children(), function(child)
@@ -398,7 +398,7 @@ function TimelineContents:clipsUI(expandGroups, filterFn)
     return nil
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:rangeSelectionUI() -> axuielements
+--- cp.apple.finalcutpro.timeline.Contents:rangeSelectionUI() -> axuielements
 --- Method
 --- Returns the UI for the current 'Range Selection', if present.
 ---
@@ -407,7 +407,7 @@ end
 ---
 --- Returns:
 ---  * The 'Range Selection' UI or `nil`
-function TimelineContents:rangeSelectionUI()
+function Contents:rangeSelectionUI()
     local ui = self:UI()
     if ui then
         local rangeSelectionDescription = self:app():string("FFTimelineRangeSelectionAccessibilityDescription")
@@ -416,7 +416,7 @@ function TimelineContents:rangeSelectionUI()
     return nil
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
+--- cp.apple.finalcutpro.timeline.Contents:playheadClipsUI(expandedGroups, filterFn) -> table of axuielements
 --- Function
 --- Returns a table array containing the list of clips in the Timeline under the playhead, ordered with the
 --- highest clips at the beginning of the array.
@@ -432,7 +432,7 @@ end
 ---
 --- Returns:
 ---  * The table of axuielements that match the conditions
-function TimelineContents:playheadClipsUI(expandGroups, filterFn)
+function Contents:playheadClipsUI(expandGroups, filterFn)
     local playheadPosition = self:playhead():position()
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip:frame()
@@ -444,7 +444,7 @@ function TimelineContents:playheadClipsUI(expandGroups, filterFn)
 end
 
 -- TODO: Add documentation
-function TimelineContents:_filterClips(clips, expandGroups, filterFn)
+function Contents:_filterClips(clips, expandGroups, filterFn)
     if expandGroups then
         return self:_expandClips(clips, filterFn)
     elseif filterFn ~= nil then
@@ -455,7 +455,7 @@ function TimelineContents:_filterClips(clips, expandGroups, filterFn)
 end
 
 -- TODO: Add documentation
-function TimelineContents:_expandClips(clips, filterFn)
+function Contents:_expandClips(clips, filterFn)
     return fnutils.mapCat(clips, function(child)
         local role = child:attributeValue("AXRole")
         if role == "AXLayoutItem" then
@@ -470,7 +470,7 @@ function TimelineContents:_expandClips(clips, filterFn)
 end
 
 -- TODO: Add documentation
-function TimelineContents:selectClips(clipsUI)
+function Contents:selectClips(clipsUI)
     local ui = self:UI()
     if ui then
         local selectedClips = {}
@@ -483,7 +483,7 @@ function TimelineContents:selectClips(clipsUI)
 end
 
 -- TODO: Add documentation
-function TimelineContents:selectClip(clipUI)
+function Contents:selectClip(clipUI)
     return self:selectClips({clipUI})
 end
 
@@ -510,7 +510,7 @@ local function containsOnly(values)
     end
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doSelectClips(clipsUI) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doSelectClips(clipsUI) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs._asm.axuielement` values in the Timeline Contents area.
 ---
@@ -519,7 +519,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
-function TimelineContents:doSelectClips(clipsUI)
+function Contents:doSelectClips(clipsUI)
     return If(self.UI):Then(function(ui)
         local selectedClips = {}
         for i,clip in ipairs(clipsUI) do
@@ -530,10 +530,10 @@ function TimelineContents:doSelectClips(clipsUI)
     end)
     :Then(WaitUntil(self.selectedChildren):Matches(containsOnly(clipsUI)))
     :TimeoutAfter(5000)
-    :Label("TimelineContents:doSelectClips")
+    :Label("Contents:doSelectClips")
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doSelectClip(clipUI) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs._asm.axuielement` value in the Timeline Contents area.
 ---
@@ -542,21 +542,21 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
-function TimelineContents:doSelectClip(clipUI)
+function Contents:doSelectClip(clipUI)
     return self:doSelectClips({clipUI})
-    :Label("TimelineContents:doSelectClip")
+    :Label("Contents:doSelectClip")
 end
 
---- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.timeline.Contents:doFocus(show) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `Contents`.
 ---
 --- Parameters:
---- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+--- * show      - if `true`, the `Contents` will be shown before focusing.
 ---
 --- Returns:
 --- * The `Statement`.
-function TimelineContents:doFocus(show)
+function Contents:doFocus(show)
     show = show or false
     local menu = self:app():menu()
 
@@ -565,7 +565,7 @@ function TimelineContents:doFocus(show)
     )
     :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
     :Otherwise(true)
-    :Label("TimelineContents:doFocus")
+    :Label("Contents:doFocus")
 end
 
 -----------------------------------------------------------------------
@@ -575,12 +575,12 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function TimelineContents:anglesUI()
+function Contents:anglesUI()
     return self:clipsUI()
 end
 
 -- TODO: Add documentation
-function TimelineContents:angleButtonsUI(angleNumber)
+function Contents:angleButtonsUI(angleNumber)
     local angles = self:anglesUI()
     if angles then
         local angle = angles[angleNumber]
@@ -592,7 +592,7 @@ function TimelineContents:angleButtonsUI(angleNumber)
 end
 
 -- TODO: Add documentation
-function TimelineContents:monitorVideoInAngle(angleNumber)
+function Contents:monitorVideoInAngle(angleNumber)
     local buttons = self:angleButtonsUI(angleNumber)
     if buttons and buttons[1] then
         buttons[1]:doPress()
@@ -600,7 +600,7 @@ function TimelineContents:monitorVideoInAngle(angleNumber)
 end
 
 -- TODO: Add documentation
-function TimelineContents:toggleAudioInAngle(angleNumber)
+function Contents:toggleAudioInAngle(angleNumber)
     local buttons = self:angleButtonsUI(angleNumber)
     if buttons and buttons[2] then
         buttons[2]:doPress()
@@ -610,7 +610,7 @@ end
 -- TODO: Add documentation
 -- Selects the clip under the playhead in the specified angle.
 -- NOTE: This will only work in multicam clips
-function TimelineContents:selectClipInAngle(angleNumber)
+function Contents:selectClipInAngle(angleNumber)
     local clipsUI = self:anglesUI()
     if clipsUI then
         local angleUI = clipsUI[angleNumber]
@@ -633,4 +633,4 @@ function TimelineContents:selectClipInAngle(angleNumber)
     return self
 end
 
-return TimelineContents
+return Contents

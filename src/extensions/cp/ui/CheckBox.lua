@@ -145,6 +145,28 @@ function CheckBox.lazy.method:doPress()
     :Label("CheckBox:doPress")
 end
 
+--- cp.ui.CheckBox:doCheck() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the `CheckBox` is checked.
+function CheckBox.lazy.method:doCheck()
+    return If(self.checked):Is(false)
+    :Then(self:doPress())
+    :Otherwise(true)
+    :ThenYield()
+    :Label("CheckBox:doCheck")
+end
+
+--- cp.ui.CheckBox:doUncheck() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the `CheckBox` is unchecked.
+function CheckBox.lazy.method:doUncheck()
+    return If(self.checked)
+    :Then(self:doPress())
+    :Otherwise(true)
+    :ThenYield()
+    :Label("CheckBox:doUncheck")
+end
+
 --- cp.ui.CheckBox:saveLayout() -> table
 --- Method
 --- Returns a table containing the layout settings for the checkbox.

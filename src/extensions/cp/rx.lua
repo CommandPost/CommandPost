@@ -55,7 +55,7 @@ util.constant = function(x) return function() return x end end
 util.isa = function(object, class)
   if type(object) == 'table' then
     local mt = getmetatable(object)
-    return mt ~= nil and mt.__index == class or mt ~= object and util.isa(mt, class)
+    return mt ~= nil and rawequal(mt.__index, class) or not rawequal(mt, object) and util.isa(mt, class)
   end
   return false
 end
