@@ -2,40 +2,23 @@
 ---
 --- Represents a single property row, typically in a Property Inspector.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log						= require("hs.logger").new("PropertyRow")
+local log						    = require("hs.logger").new("PropertyRow")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local inspect                   = require("hs.inspect")
+local inspect           = require("hs.inspect")
 local geometry					= require("hs.geometry")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils					= require("cp.ui.axutils")
-local Button					= require("cp.ui.Button")
-local is                        = require("cp.is")
-local prop						= require("cp.prop")
+local axutils					  = require("cp.ui.axutils")
+local Button					  = require("cp.ui.Button")
+local is                = require("cp.is")
+local prop						  = require("cp.prop")
 
-local Element                   = require("cp.ui.Element")
+local Element           = require("cp.ui.Element")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local format                    = string.format
-local childMatching             = axutils.childMatching
-local childrenMatching          = axutils.childrenMatching
+local format            = string.format
+local childMatching     = axutils.childMatching
+local childrenMatching  = axutils.childrenMatching
 
 --------------------------------------------------------------------------------
 --

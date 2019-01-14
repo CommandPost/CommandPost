@@ -3,14 +3,18 @@
 --- Toolbar Module.
 
 local require = require
+
 local axutils						= require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
+local Button            = require("cp.ui.Button")
+local Do                = require("cp.rx.go").Do
+local Element           = require("cp.ui.Element")
 local prop							= require("cp.prop")
 
-local Button                        = require("cp.ui.Button")
-
-local Do                            = require("cp.rx.go").Do
-
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Toolbar = Element:subclass("Toolbar")
 
 --- cp.ui.Toolbar.matches(element) -> boolean

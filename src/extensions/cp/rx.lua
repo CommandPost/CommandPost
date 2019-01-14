@@ -7,35 +7,14 @@
 --- * Originally forked from: https://github.com/bjornbytes/rxlua
 --- * MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log = require("hs.logger").new("rx")
+local timer            = require("hs.timer")
+local List             = require("cp.collect.List")
+local Queue            = require("cp.collect.Queue")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
--- local inspect = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local timer     = require("hs.timer")
-local List      = require("cp.collect.List")
-local Queue     = require("cp.collect.Queue")
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local format = string.format
-local insert, remove = table.insert, table.remove
+local format           = string.format
+local insert, remove   = table.insert, table.remove
 
 --------------------------------------------------------------------------------
 --

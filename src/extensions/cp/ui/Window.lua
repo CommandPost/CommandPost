@@ -2,40 +2,23 @@
 ---
 --- A Window UI element.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                         = require("hs.logger").new("button")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local hswindow                      = require("hs.window")
---local inspect                     = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
+local Alert                         = require("cp.ui.Alert")
 local app                           = require("cp.app")
 local axutils                       = require("cp.ui.axutils")
+local lazy                          = require("cp.lazy")
 local notifier                      = require("cp.ui.notifier")
-local Alert                         = require("cp.ui.Alert")
 local prop                          = require("cp.prop")
 
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
-local format                        = string.format
-
 local class                         = require("middleclass")
-local lazy                          = require("cp.lazy")
+
+local format                        = string.format
 
 --------------------------------------------------------------------------------
 --

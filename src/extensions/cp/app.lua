@@ -9,32 +9,17 @@
 ---  * `cp.app` instances are long-lived. You request it once and it will stay up-to-date even if the app quits.
 ---  * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require                   = require
 local log                       = require("hs.logger").new("app")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application               = require("hs.application")
-local applicationwatcher		= require("hs.application.watcher")
+local applicationwatcher		    = require("hs.application.watcher")
 local ax                        = require("hs._asm.axuielement")
 local fs                        = require("hs.fs")
 local inspect                   = require("hs.inspect")
 local task                      = require("hs.task")
 local timer                     = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                   = require("cp.ui.axutils")
 local go                        = require("cp.rx.go")
 local just                      = require("cp.just")
@@ -42,20 +27,14 @@ local languageID                = require("cp.i18n.languageID")
 local lazy                      = require("cp.lazy")
 local localeID                  = require("cp.i18n.localeID")
 local menu                      = require("cp.app.menu")
-local notifier					= require("cp.ui.notifier")
+local notifier					        = require("cp.ui.notifier")
 local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local v							= require("semver")
+local v							            = require("semver")
 local class                     = require("middleclass")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format                    = string.format
 local Given                     = go.Given
 local insert                    = table.insert
@@ -65,9 +44,10 @@ local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local app = class("app"):include(lazy)
 
 -- COMMANDPOST_BUNDLE_ID -> string
 -- Constant
@@ -79,14 +59,9 @@ local COMMANDPOST_BUNDLE_ID = processInfo.bundleID
 -- Base Locale.
 local BASE_LOCALE = "Base"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local app = class("app"):include(lazy)
-
--- keeps a log of all apps that have been created.
+-- apps -> table
+-- Variable
+-- Keeps a log of all apps that have been created.
 local apps = {}
 
 --- cp.app.is(thing) -> boolean

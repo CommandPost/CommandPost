@@ -5,41 +5,20 @@
 --- potentially dynamically updatable. Most values can be set using a value or a function,
 --- and if functions are provided, they are re-evaluated every time the element is generated.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log										= require("hs.logger").new("webui")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs										= require("hs.fs")
-local image										= require("hs.image")
+local image								  = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local html										= require("cp.web.html")
-local tools										= require("cp.tools")
+local html								  = require("cp.web.html")
+local tools								  = require("cp.tools")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _											= require("moses")
-local template									= require("resty.template")
+local template						  = require("resty.template")
 
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local compile									= template.compile
+local compile							  = template.compile
 
 --------------------------------------------------------------------------------
 --
