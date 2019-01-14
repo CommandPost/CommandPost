@@ -1272,8 +1272,9 @@ end
 local result = fcp()
 
 -- Add `cp.dev.fcp` when in developer mode.
-if config.developerMode() and cp and cp.dev then
-    cp.dev.fcp = result
+if config.developerMode() then
+    local dev = require("cp.dev")
+    dev.fcp = result
 end
 
 return result
