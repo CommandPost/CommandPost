@@ -95,7 +95,7 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the subrole lanes on this audio role in the timeline.
 function AudioRole.lazy.method:doHideSubroleLanes()
-    return self:subrolLanes():doUncheck()
+    return self:subroleLanes():doUncheck()
 end
 
 return AudioRole
