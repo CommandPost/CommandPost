@@ -36,7 +36,7 @@ local TextField = Element:subclass("cp.ui.TextField")
 ---
 --- Parameters:
 ---  * element - An `axuielementObject` to check.
----  * subrole - (optional) If proveded, the field must have the specified subrole.
+---  * subrole - (optional) If provided, the field must have the specified subrole.
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
