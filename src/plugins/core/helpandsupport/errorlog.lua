@@ -2,37 +2,9 @@
 ---
 --- Error Log Menu Item.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local i18n = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
-
---- plugins.core.helpandsupport.errorlog.open() -> nil
---- Function
---- Opens the CommandPost Error Log,
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.open()
-    hs.openConsole()
-end
 
 --------------------------------------------------------------------------------
 --
@@ -48,30 +20,28 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Open Console:
+    --------------------------------------------------------------------------------
+    local open = function()
+        hs.openConsole()
+    end
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    if global then
-        global:add("cpOpenErrorLog")
-            :whenActivated(mod.open)
-            :groupedBy("commandPost")
-    end
+    deps.global
+        :add("cpOpenErrorLog")
+        :whenActivated(open)
+        :groupedBy("commandPost")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
-    helpandsupport
-        :addItem(1, function() return { title = i18n("openErrorLog"), fn = mod.open } end)
+    deps.menuManager.commandPostHelpAndSupport
+        :addItem(1, function() return { title = i18n("openErrorLog"), fn = open } end)
         :addSeparator(2)
-
-    return mod
 end
 
 return plugin

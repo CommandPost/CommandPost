@@ -1,11 +1,11 @@
---- === plugins.finalcutpro.advanced.playbackrendering ===
+--- === plugins.finalcutpro.advanced.showtimelineinviewers ===
 ---
---- Playback Rendering Plugin.
+--- Show Timeline In Player.
 
 local require = require
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local fcp		     = require("cp.apple.finalcutpro")
+local i18n       = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -14,10 +14,13 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.advanced.playbackrendering.enabled <cp.prop: boolean>
---- Variable
---- Gets whether or not Playback Rendering is enabled.
-mod.enabled = fcp.preferences:prop("FFSuspendBGOpsDuringPlay", false)
+--- plugins.finalcutpro.advanced.showtimelineinviewers.enabled <cp.prop: boolean; live>
+--- Constant
+--- Show Timeline in Player Enabled?
+mod.enabled = fcp.preferences:prop("FFPlayerDisplayedTimeline", 0):mutate(
+    function(original) return original() == 1 end,
+    function(newValue, original) original(newValue and 1 or 0) end
+)
 
 --------------------------------------------------------------------------------
 --
@@ -25,10 +28,10 @@ mod.enabled = fcp.preferences:prop("FFSuspendBGOpsDuringPlay", false)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.advanced.playbackrendering",
-    group           = "finalcutpro",
-    dependencies    = {
-        ["finalcutpro.commands"] = "fcpxCmds",
+    id				= "finalcutpro.advanced.showtimelineinviewers",
+    group			= "finalcutpro",
+    dependencies	= {
+        ["finalcutpro.commands"] 		= "fcpxCmds",
         ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
@@ -38,18 +41,18 @@ function plugin.init(deps)
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     deps.prefs.panel
-        :addCheckbox(2204.1,
+        :addCheckbox(2204.2,
         {
-            label = i18n("enableRenderingDuringPlayback"),
+            label = i18n("showTimelineInViewers"),
             onchange = function(_, params) mod.enabled(params.checked) end,
-            checked = function() return not mod.enabled() end,
+            checked = function() return mod.enabled() end,
         })
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
     deps.fcpxCmds
-        :add("cpAllowTasksDuringPlayback")
+        :add("cpShowTimelineInViewers")
         :whenActivated(function() mod.enabled:toggle() end)
 
     return mod

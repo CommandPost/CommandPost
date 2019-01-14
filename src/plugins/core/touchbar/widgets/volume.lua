@@ -2,16 +2,8 @@
 ---
 --- Volume Slider
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local audiodevice		= require("hs.audiodevice")
 local image				  = require("hs.image")
 local touchbar 			= require("hs._asm.undocumented.touchbar")
@@ -21,6 +13,10 @@ local touchbar 			= require("hs._asm.undocumented.touchbar")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- ID -> string
+-- Constant
+-- Volume ID
 local ID = "volume"
 
 --------------------------------------------------------------------------------
@@ -106,9 +102,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     if touchbar.supported() then
         return mod.init(deps)

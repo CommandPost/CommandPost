@@ -3,21 +3,8 @@
 --- Represents a Tangent Group. Groups can also be used to enable/disable multiple
 --- Parameters/Actions/Menus by enabling/disabling the containing group.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("tangentControls")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local is                = require("cp.is")
 local prop              = require("cp.prop")
 local tools             = require("cp.tools")
@@ -28,9 +15,6 @@ local parameter         = require("parameter")
 local menu              = require("menu")
 local binding           = require("binding")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert            = table.insert
 local format            = string.format
 

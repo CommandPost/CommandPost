@@ -2,24 +2,13 @@
 ---
 --- Browser Playhead Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local dialog                        = require("hs.dialog")
 local drawing                       = require("hs.drawing")
 local geometry                      = require("hs.geometry")
 local timer                         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                        = require("cp.config")
 local fcp                           = require("cp.apple.finalcutpro")
 local i18n                          = require("cp.i18n")
@@ -28,22 +17,17 @@ local ui                            = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
+
 local DEFAULT_TIME                  = 3
 local DEFAULT_COLOR                 = "Red"
 
 local SHAPE_RECTANGLE               = "Rectangle"
 local SHAPE_CIRCLE                  = "Circle"
 local SHAPE_DIAMOND                 = "Diamond"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.finalcutpro.browser.playhead.getHighlightColor() -> table
 --- Function

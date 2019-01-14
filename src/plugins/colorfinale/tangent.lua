@@ -2,28 +2,17 @@
 ---
 --- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                   = require("hs.logger").new("cf_tangent")
+--local log           = require("hs.logger").new("cf_tangent")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local application           = require("hs.application")
+local application   = require("hs.application")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp                   = require("cp.apple.finalcutpro")
-local prop                  = require("cp.prop")
+local fcp           = require("cp.apple.finalcutpro")
+local prop          = require("cp.prop")
+local tools         = require("cp.tools")
+
+local startsWith    = tools.startsWith
 
 --------------------------------------------------------------------------------
 --
@@ -47,27 +36,6 @@ local WINDOW_TITLE = "Color Finale"
 --
 --------------------------------------------------------------------------------
 local mod ={}
-
--- startsWith(value, startValue) -> boolean
--- Function
--- Checks to see if a string starts with a value.
---
--- Parameters:
---  * value - The value to check
---  * startValue - The value to look for
---
--- Returns:
---  * `true` if value starts with the startValue, otherwise `false`
-local function startsWith(value, startValue)
-    if value and startValue then
-        local len = startValue:len()
-        if value:len() >= len then
-            local sub = value:sub(1, len)
-            return sub == startValue
-        end
-    end
-    return false
-end
 
 --- plugins.colorfinale.tangent.init(tangentManager) -> module
 --- Function
@@ -162,9 +130,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.tangentManager)
 end

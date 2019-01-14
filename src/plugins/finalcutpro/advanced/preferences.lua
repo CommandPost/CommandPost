@@ -2,35 +2,11 @@
 ---
 --- Final Cut Pro Timeline Preferences.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog                = require("cp.dialog")
 local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 2000
-
--- BACKGROUND_RENDER -> number
--- Constant
--- The Preferences Key for the Background Render value.
-local BACKGROUND_RENDER = "FFAutoStartBGRender"
 
 --------------------------------------------------------------------------------
 --
@@ -42,7 +18,7 @@ local mod = {}
 --- plugins.finalcutpro.timeline.preferences.backgroundRender <cp.prop: boolean>
 --- Variable
 --- Is Background Render enabled?
-mod.backgroundRender = fcp.preferences:prop(BACKGROUND_RENDER, true):mutate(
+mod.backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true):mutate(
     function(original) return original() end,
     function(newValue, original)
         if fcp:isRunning() then
@@ -106,34 +82,31 @@ local plugin = {
     }
 }
 
----------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
----------------------------------------------------------------------------------
 function plugin.init(deps)
     ---------------------------------------------------------------------------------
     -- Add Menu:
     ---------------------------------------------------------------------------------
-    if deps.menu then
-        deps.menu.mediaImport:addItems(PRIORITY, function()
+    deps.menu.mediaImport
+        :addItems(2000, function()
             local fcpxRunning = fcp:isRunning()
 
             return {
                 { title = i18n("enableBackgroundRender", {count = mod.getAutoRenderDelay()}),   fn = function() mod.backgroundRender:toggle() end,  checked = mod.backgroundRender(),   disabled = not fcpxRunning },
             }
         end)
-    end
 
     ---------------------------------------------------------------------------------
     -- Add Commands:
     ---------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpBackgroundRenderOn")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.backgroundRender(true) end)
-        deps.fcpxCmds:add("cpBackgroundRenderOff")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.backgroundRender(false) end)
-    end
+    deps.fcpxCmds
+        :add("cpBackgroundRenderOn")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.backgroundRender(true) end)
+
+    deps.fcpxCmds
+        :add("cpBackgroundRenderOff")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.backgroundRender(false) end)
 
     return mod
 end

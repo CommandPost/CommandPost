@@ -2,22 +2,23 @@
 ---
 --- Window Slide Widget for Touch Bar.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
+
 local canvas   			= require("hs.canvas")
 local screen   			= require("hs.screen")
-local touchbar 			= require("hs._asm.undocumented.touchbar")
 local window   			= require("hs.window")
+
+local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- ID -> string
+-- Constant
+-- Window Slide ID
 local ID = "windowSlide"
 
 --------------------------------------------------------------------------------
@@ -130,9 +131,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     if touchbar.supported() then
         return mod.init(deps)

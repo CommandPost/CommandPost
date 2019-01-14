@@ -2,32 +2,13 @@
 ---
 --- Menubar Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local image                                     = require("hs.image")
+local image       = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local i18n                                      = require("cp.i18n")
-local tools                                     = require("cp.tools")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local APPEARANCE_HEADING    = 100
-local SECTIONS_HEADING      = 200
+local config      = require("cp.config")
+local i18n        = require("cp.i18n")
+local tools       = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -64,9 +45,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     local panel = deps.prefsMgr.addPanel({
@@ -95,22 +73,22 @@ function plugin.init(deps)
             <div class="menubarRow">
                 <div class="menubarColumn">
         ]], false)
-        :addHeading(APPEARANCE_HEADING, i18n("appearance"))
-        :addCheckbox(APPEARANCE_HEADING + 1,
+        :addHeading(100, i18n("appearance"))
+        :addCheckbox(101,
             {
                 label = i18n("displayThisMenuAsIcon"),
                 onchange = function(_, params) mod.displayMenubarAsIcon(params.checked) end,
                 checked = mod.displayMenubarAsIcon,
             }
         )
-        :addCheckbox(APPEARANCE_HEADING + 2,
+        :addCheckbox(102,
             {
                 label = i18n("showSectionHeadingsInMenubar"),
                 onchange = function(_, params) mod.showSectionHeadingsInMenubar(params.checked) end,
                 checked = mod.showSectionHeadingsInMenubar,
             }
         )
-        :addHeading(APPEARANCE_HEADING + 3, i18n("shared") .. " " .. i18n("sections"))
+        :addHeading(103, i18n("shared") .. " " .. i18n("sections"))
         :addContent(399, [[
                 </div>
                 <div class="menubarColumn">

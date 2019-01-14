@@ -2,41 +2,21 @@
 ---
 --- Manager for the CommandPost Setup Screen.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("setup")
+local log       = require("hs.logger").new("setup")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local screen                                    = require("hs.screen")
-local webview                                   = require("hs.webview")
+local screen    = require("hs.screen")
+local webview   = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config    = require("cp.config")
+local prop      = require("cp.prop")
+local tools     = require("cp.tools")
+local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _         = require("moses")
 
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
-local panel                                     = require("panel")
+local panel     = require("panel")
 
 --------------------------------------------------------------------------------
 --
@@ -499,16 +479,10 @@ local plugin = {
     required        = true,
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(_, env)
     return mod.init(env)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     mod.onboardingRequired:watch(function(required)
         if required then

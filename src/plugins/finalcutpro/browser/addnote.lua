@@ -2,21 +2,10 @@
 ---
 --- Add Note Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("addnote")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
 local eventtap                          = require("hs.eventtap")
@@ -24,9 +13,6 @@ local menubar                           = require("hs.menubar")
 local mouse                             = require("hs.mouse")
 local screen                            = require("hs.screen")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
@@ -258,12 +244,9 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
-    deps.fcpxCmds:add("cpAddNoteToSelectedClip")
+    deps.fcpxCmds
+        :add("cpAddNoteToSelectedClip")
         :whenActivated(function() mod.addNoteToSelectedClip() end)
 
     return mod

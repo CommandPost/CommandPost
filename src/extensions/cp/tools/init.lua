@@ -1482,4 +1482,25 @@ function tools.convertSingleHexStringToDecimalString(hex)
     return lookup[hex]
 end
 
+--- cp.tools.startsWith(value, startValue) -> boolean
+--- Function
+--- Checks to see if a string starts with a value.
+---
+--- Parameters:
+---  * value - The value to check
+---  * startValue - The value to look for
+---
+--- Returns:
+---  * `true` if value starts with the startValue, otherwise `false`
+function tools.startsWith(value, startValue)
+    if value and startValue then
+        local len = startValue:len()
+        if value:len() >= len then
+            local sub = value:sub(1, len)
+            return sub == startValue
+        end
+    end
+    return false
+end
+
 return tools

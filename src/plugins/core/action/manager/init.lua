@@ -2,44 +2,24 @@
 ---
 --- Action Manager Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("actnmngr")
+local log			    = require("hs.logger").new("actnmngr")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fnutils			= require("hs.fnutils")
-local urlevent			= require("hs.urlevent")
+local urlevent	  = require("hs.urlevent")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog			= require("cp.dialog")
 local prop				= require("cp.prop")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
+local tools       = require("cp.tools")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
-local activator			= require("activator")
+local activator	  = require("activator")
 local handler			= require("handler")
 
---------------------------------------------------------------------------------
--- Local Extensions:
---------------------------------------------------------------------------------
-local copy		        = fnutils.copy
-local format	        = string.format
-local insert            = table.insert
+local copy		    = fnutils.copy
+local format	    = string.format
+local insert      = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -259,9 +239,6 @@ local plugin = {
     group			= "core",
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init()
     mod.init()
     return mod

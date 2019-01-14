@@ -2,38 +2,10 @@
 ---
 --- Feedback Menu Item.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local feedback          = require("cp.feedback")
-local i18n              = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
-
---- plugins.core.helpandsupport.feedback.show() -> nil
---- Function
---- Opens CommandPost Credits Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.show()
-    feedback.showFeedback()
-end
+local feedback  = require("cp.feedback")
+local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -49,30 +21,28 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Show Feedback Form:
+    --------------------------------------------------------------------------------
+    local show = function()
+        feedback.showFeedback()
+    end
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    if global then
-        global:add("cpFeedback")
-            :whenActivated(mod.show)
-            :groupedBy("helpandsupport")
-    end
+    deps.global
+        :add("cpFeedback")
+        :whenActivated(show)
+        :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
-    helpandsupport
-        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = mod.show } end)
+    deps.menuManager.commandPostHelpAndSupport
+        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = show } end)
         :addSeparator(4)
-
-    return mod
 end
 
 return plugin

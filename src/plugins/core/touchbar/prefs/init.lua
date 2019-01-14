@@ -2,40 +2,23 @@
 ---
 --- Touch Bar Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsTouchBar")
+local log             = require("hs.logger").new("prefsTouchBar")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local canvas                                    = require("hs.canvas")
-local dialog                                    = require("hs.dialog")
-local image                                     = require("hs.image")
+local canvas          = require("hs.canvas")
+local dialog          = require("hs.dialog")
+local image           = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
-local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local tools                                     = require("cp.tools")
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local commands        = require("cp.commands")
+local config          = require("cp.config")
+local fcp             = require("cp.apple.finalcutpro")
+local tools           = require("cp.tools")
+local html            = require("cp.web.html")
+local ui              = require("cp.web.ui")
+local i18n            = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _               = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -669,9 +652,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
     if deps.tb.supported() then
         return mod.init(deps, env)

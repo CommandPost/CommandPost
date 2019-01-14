@@ -2,42 +2,15 @@
 ---
 --- Menu Manager Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log										= require("hs.logger").new("menumgr")
--- local inspect									= require("hs.inspect")
+local image     = require("hs.image")
+local menubar		= require("hs.menubar")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local image										= require("hs.image")
-local menubar									= require("hs.menubar")
+local config		= require("cp.config")
+local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config									= require("cp.config")
-local i18n                                      = require("cp.i18n")
-
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
-local section									= require("section")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local DEFAULT_DISPLAY_MENUBAR_AS_ICON 			= true
+local section		= require("section")
 
 --------------------------------------------------------------------------------
 --
@@ -168,7 +141,7 @@ end
 --- plugins.core.menu.manager.displayMenubarAsIcon <cp.prop: boolean>
 --- Field
 --- If `true`, the menubar item will be the app icon. If not, it will be the app name.
-manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(manager.updateMenubarIcon)
+manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true):watch(manager.updateMenubarIcon)
 
 --- plugins.core.menu.manager.addSection(priority) -> section
 --- Function
@@ -225,9 +198,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -306,7 +276,6 @@ function plugin.init(deps)
     manager.bottom:addItem(99999999, function()
         return { title = i18n("quit"),  fn = function() config.application():kill() end }
     end)
-
 
     return manager
 end

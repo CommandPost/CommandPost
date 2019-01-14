@@ -2,21 +2,10 @@
 ---
 --- Automatic Disk Mounting & Unmounting.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                   = require("hs.logger").new("automount")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                = require("cp.config")
 local dialog                = require("cp.dialog")
 local battery               = require("cp.battery")
@@ -97,9 +86,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     local global, prefs = deps.global, deps.prefs
@@ -131,33 +117,36 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
-    global:add("unmountExternalDrives")
+    global
+        :add("unmountExternalDrives")
         :whenActivated(mod.unmountPhysicalDrives)
 
-    global:add("mountExternalDrives")
+    global
+        :add("mountExternalDrives")
         :whenActivated(mod.mountPhysicalDrives)
 
     --------------------------------------------------------------------------------
     -- Add Preferences:
     --------------------------------------------------------------------------------
-    prefs:addHeading(20, i18n("driveManagement"))
+    prefs
+      :addHeading(20, i18n("driveManagement"))
 
-    :addCheckbox(21,
-        {
-            label       = i18n("autoUnmountOnBattery"),
-            checked     = mod.autoUnmountOnBattery,
-            onchange    = function(_, params) mod.autoUnmountOnBattery(params.checked) end,
-            disabled    = not hasBattery
-        }
-    )
-    :addCheckbox(22,
-        {
-            label       = i18n("autoMountOnAC"),
-            checked     = mod.autoMountOnAC,
-            onchange    = function(_, params) mod.autoMountOnAC(params.checked) end,
-            disabled    = not hasBattery
-        }
-    )
+      :addCheckbox(21,
+          {
+              label       = i18n("autoUnmountOnBattery"),
+              checked     = mod.autoUnmountOnBattery,
+              onchange    = function(_, params) mod.autoUnmountOnBattery(params.checked) end,
+              disabled    = not hasBattery
+          }
+      )
+      :addCheckbox(22,
+          {
+              label       = i18n("autoMountOnAC"),
+              checked     = mod.autoMountOnAC,
+              onchange    = function(_, params) mod.autoMountOnAC(params.checked) end,
+              disabled    = not hasBattery
+          }
+      )
 
     return mod
 end
