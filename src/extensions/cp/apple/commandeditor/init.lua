@@ -3,28 +3,13 @@
 --- Functions to control and manage Apple's Command Editor - used in Final Cut Pro,
 --- Motion and Compressor.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require               = require
 local log										= require("hs.logger").new("cmdEditor")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fnutils                                   = require("hs.fnutils")
+local fnutils               = require("hs.fnutils")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local shortcut									= require("cp.commands.shortcut")
-local tools										= require("cp.tools")
+local shortcut						  = require("cp.commands.shortcut")
+local tools									= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
