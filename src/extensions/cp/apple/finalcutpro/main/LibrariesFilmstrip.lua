@@ -173,7 +173,7 @@ end
 ---  * `Playhead` object
 function LibrariesFilmstrip:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, self.contentsUI, true)
+        self._playhead = Playhead(self, false, self.contentsUI, true)
     end
     return self._playhead
 end
@@ -189,7 +189,7 @@ end
 ---  * `Playhead` object
 function LibrariesFilmstrip:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, self.contentsUI, true)
+        self._skimmingPlayhead = Playhead(self, true, self.contentsUI, true)
     end
     return self._skimmingPlayhead
 end

@@ -1,4 +1,4 @@
---- === cp.apple.finalcutpro.main.TimelineAppearance ===
+--- === cp.apple.finalcutpro.timeline.Appearance ===
 ---
 --- Timeline Appearance Module.
 
@@ -32,9 +32,9 @@ local childMatching                     = axutils.childMatching
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TimelineAppearance = {}
+local Appearance = {}
 
---- cp.apple.finalcutpro.main.TimelineAppearance.matches(element) -> boolean
+--- cp.apple.finalcutpro.timeline.Appearance.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -43,25 +43,25 @@ local TimelineAppearance = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function TimelineAppearance.matches(element)
+function Appearance.matches(element)
     return element and element:attributeValue("AXRole") == "AXPopover"
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance.new(app) -> TimelineAppearance
+--- cp.apple.finalcutpro.timeline.Appearance.new(app) -> Appearance
 --- Constructor
---- Creates a new `TimelineAppearance` instance.
+--- Creates a new `Appearance` instance.
 ---
 --- Parameters:
 ---  * parent - The parent object.
 ---
 --- Returns:
----  * A new `TimelineAppearance` object.
-function TimelineAppearance.new(parent)
-    local o = prop.extend({_parent = parent}, TimelineAppearance)
+---  * A new `Appearance` object.
+function Appearance.new(parent)
+    local o = prop.extend({_parent = parent}, Appearance)
     return o
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:parent() -> parent
+--- cp.apple.finalcutpro.timeline.Appearance:parent() -> parent
 --- Method
 --- Returns the parent object.
 ---
@@ -70,11 +70,11 @@ end
 ---
 --- Returns:
 ---  * parent
-function TimelineAppearance:parent()
+function Appearance:parent()
     return self._parent
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:app() -> App
+--- cp.apple.finalcutpro.timeline.Appearance:app() -> App
 --- Method
 --- Returns the app instance representing Final Cut Pro.
 ---
@@ -83,7 +83,7 @@ end
 ---
 --- Returns:
 ---  * App
-function TimelineAppearance:app()
+function Appearance:app()
     return self:parent():app()
 end
 
@@ -93,7 +93,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.TimelineAppearance:toggleUI() -> axuielementObject
+--- cp.apple.finalcutpro.timeline.Appearance:toggleUI() -> axuielementObject
 --- Method
 --- Gets the Toggle UI.
 ---
@@ -102,7 +102,7 @@ end
 ---
 --- Returns:
 ---  * A `axuielementObject` object.
-function TimelineAppearance:toggleUI()
+function Appearance:toggleUI()
     return cache(self, "_toggleUI", function()
         return childFromRight(self:parent():UI(), 1, function(element)
             return element:attributeValue("AXRole") == "AXCheckBox"
@@ -110,7 +110,7 @@ function TimelineAppearance:toggleUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:toggle() -> CheckBox
+--- cp.apple.finalcutpro.timeline.Appearance:toggle() -> CheckBox
 --- Method
 --- Gets the Timeline Appearance CheckBox.
 ---
@@ -119,7 +119,7 @@ end
 ---
 --- Returns:
 ---  * A `axuielementObject` object.
-function TimelineAppearance:toggle()
+function Appearance:toggle()
     if not self._toggle then
         self._toggle = CheckBox(self:parent(), function()
             return self:toggleUI()
@@ -128,7 +128,7 @@ function TimelineAppearance:toggle()
     return self._toggle
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:UI() -> axuielementObject
+--- cp.apple.finalcutpro.timeline.Appearance:UI() -> axuielementObject
 --- Method
 --- Gets the Timeline Appearance UI.
 ---
@@ -137,21 +137,21 @@ end
 ---
 --- Returns:
 ---  * A `axuielementObject` object.
-function TimelineAppearance:UI()
+function Appearance:UI()
     return cache(self, "_ui", function()
-        return childMatching(self:toggleUI(), TimelineAppearance.matches)
+        return childMatching(self:toggleUI(), Appearance.matches)
     end,
-    TimelineAppearance.matches)
+    Appearance.matches)
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance.isShowing <cp.prop: boolean>
+--- cp.apple.finalcutpro.timeline.Appearance.isShowing <cp.prop: boolean>
 --- Variable
 --- Is the Timeline Appearance popup showing?
-TimelineAppearance.isShowing = prop.new(function(self)
+Appearance.isShowing = prop.new(function(self)
     return self:UI() ~= nil
-end):bind(TimelineAppearance)
+end):bind(Appearance)
 
---- cp.apple.finalcutpro.main.TimelineAppearance:UI() -> TimelineAppearance
+--- cp.apple.finalcutpro.timeline.Appearance:UI() -> Appearance
 --- Method
 --- Show the Timeline Appearance popup.
 ---
@@ -159,15 +159,15 @@ end):bind(TimelineAppearance)
 ---  * None
 ---
 --- Returns:
----  * The `TimelineAppearance` object.
-function TimelineAppearance:show()
+---  * The `Appearance` object.
+function Appearance:show()
     if not self:isShowing() then
         self:toggle():checked(true)
     end
     return self
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:UI() -> TimelineAppearance
+--- cp.apple.finalcutpro.timeline.Appearance:UI() -> Appearance
 --- Method
 --- Hide the Timeline Appearance popup.
 ---
@@ -175,8 +175,8 @@ end
 ---  * None
 ---
 --- Returns:
----  * The `TimelineAppearance` object.
-function TimelineAppearance:hide()
+---  * The `Appearance` object.
+function Appearance:hide()
     local ui = self:UI()
     if ui then
         ui:doCancel()
@@ -191,7 +191,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.TimelineAppearance:clipHeight() -> Slider
+--- cp.apple.finalcutpro.timeline.Appearance:clipHeight() -> Slider
 --- Method
 --- Get the Clip Height Slider.
 ---
@@ -200,7 +200,7 @@ end
 ---
 --- Returns:
 ---  * A `Slider` object.
-function TimelineAppearance:clipHeight()
+function Appearance:clipHeight()
     if not self._clipHeight then
         self._clipHeight = Slider(self, function()
             return childMatching(self:UI(), function(e)
@@ -211,7 +211,7 @@ function TimelineAppearance:clipHeight()
     return self._clipHeight
 end
 
---- cp.apple.finalcutpro.main.TimelineAppearance:zoomAmount() -> Slider
+--- cp.apple.finalcutpro.timeline.Appearance:zoomAmount() -> Slider
 --- Method
 --- Get the Zoom Slider.
 ---
@@ -220,7 +220,7 @@ end
 ---
 --- Returns:
 ---  * A `Slider` object.
-function TimelineAppearance:zoomAmount()
+function Appearance:zoomAmount()
     if not self._zoomAmount then
         self._zoomAmount = Slider(self, function()
             return childFromTop(self:UI(), 1, function(element)
@@ -231,4 +231,4 @@ function TimelineAppearance:zoomAmount()
     return self._zoomAmount
 end
 
-return TimelineAppearance
+return Appearance
