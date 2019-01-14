@@ -24,9 +24,6 @@ local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx
 
 local withRole, childWithRole, childFromTop = axutils.withRole, axutils.childWithRole, axutils.childFromTop
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                                 = require("semver")
 
 --------------------------------------------------------------------------------

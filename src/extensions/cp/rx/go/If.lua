@@ -11,9 +11,6 @@ local inspect               = require("hs.inspect")
 local Observable            = require("cp.rx").Observable
 local Statement             = require("cp.rx.go.Statement")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local toObservable          = Statement.toObservable
 local toObservables         = Statement.toObservables
 

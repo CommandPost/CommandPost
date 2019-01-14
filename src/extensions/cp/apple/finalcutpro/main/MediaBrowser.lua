@@ -14,9 +14,6 @@ local Table								= require("cp.ui.Table")
 local PopUpButton				        = require("cp.ui.PopUpButton")
 local TextField						    = require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childWithRole                     = axutils.childWithRole
 

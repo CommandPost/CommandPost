@@ -12,9 +12,6 @@ local destinations				= require("cp.apple.finalcutpro.export.destinations")
 
 local axutils                   = require("cp.ui.axutils")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local isEqual                   = require("moses").isEqual
 
 --------------------------------------------------------------------------------

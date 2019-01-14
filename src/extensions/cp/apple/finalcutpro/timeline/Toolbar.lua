@@ -14,9 +14,6 @@ local StaticText                        = require("cp.ui.StaticText")
 
 local Appearance				= require("cp.apple.finalcutpro.timeline.Appearance")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childMatching                     = axutils.childMatching

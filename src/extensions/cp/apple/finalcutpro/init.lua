@@ -96,16 +96,10 @@ local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v											= require("semver")
 local class                                     = require("middleclass")
 local lazy                                      = require("cp.lazy")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
 local Do, Throw                                 = go.Do, go.Throw
 

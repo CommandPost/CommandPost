@@ -20,9 +20,6 @@ local ScrollArea						= require("cp.ui.ScrollArea")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 

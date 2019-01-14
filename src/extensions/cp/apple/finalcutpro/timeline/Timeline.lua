@@ -18,9 +18,6 @@ local Contents					= require("cp.apple.finalcutpro.timeline.Contents")
 local Toolbar					= require("cp.apple.finalcutpro.timeline.Toolbar")
 local Index                     = require("cp.apple.finalcutpro.timeline.Index")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching

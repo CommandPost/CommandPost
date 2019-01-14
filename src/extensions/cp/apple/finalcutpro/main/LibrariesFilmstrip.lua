@@ -9,14 +9,8 @@ local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _									= require("moses")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local isValid                           = axutils.isValid
 local childrenMatching                  = axutils.childrenMatching

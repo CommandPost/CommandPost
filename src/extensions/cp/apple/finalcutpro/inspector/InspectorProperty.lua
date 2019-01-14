@@ -25,9 +25,6 @@ local TextField             = require("cp.ui.TextField")
 
 local Do                    = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
 local childrenMatching              = axutils.childrenMatching
 

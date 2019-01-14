@@ -30,14 +30,8 @@ local watcher                   = require("cp.watcher")
 local fcpApp                    = require("cp.apple.finalcutpro.app")
 local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                         = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local getLocalizedName          = localized.getLocalizedName

@@ -32,9 +32,6 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 local go                                = require("cp.rx.go")
 local Do, If                            = go.Do, go.If
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom

@@ -11,14 +11,8 @@ local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
 local Table								= require("cp.ui.Table")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _									= require("moses")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromTop                      = axutils.childFromTop
 local childrenMatching                  = axutils.childrenMatching

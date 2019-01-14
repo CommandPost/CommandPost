@@ -25,9 +25,6 @@ local First                             = require("cp.rx.go.First")
 local If                                = require("cp.rx.go.If")
 local Throw                             = require("cp.rx.go.Throw")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromRight                    = axutils.childFromRight
 local childMatching                     = axutils.childMatching
