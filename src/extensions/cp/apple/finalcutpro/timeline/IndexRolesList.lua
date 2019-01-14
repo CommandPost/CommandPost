@@ -1,4 +1,8 @@
--- local log	                    = require "hs.logger" .new "IndexRolesList"
+--- === cp.apple.finalcutpro.timeline.IndexRolesList ===
+---
+--- Timeline Index Roles List.
+
+--local log	                    = require "hs.logger" .new "IndexRolesList"
 
 local go	                    = require "cp.rx.go"
 local prop	                    = require "cp.prop"
