@@ -62,7 +62,7 @@ function IndexRoles.lazy.method:list()
     return self:area():list()
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:ediRoles() -> cp.ui.Button
+--- cp.apple.finalcutpro.timeline.IndexRoles:editRoles() -> cp.ui.Button
 --- Method
 --- The `Edit Roles...` [Button](cp.ui.Button.md).
 function IndexRoles.lazy.method:editRoles()
@@ -345,7 +345,6 @@ function IndexRoles:doUnfocusInTimeline(title)
     :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doUnfocusInTimeline")
 end
-
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doShowSubroleLanes(title) -> cp.rx.go.Statement
 --- Method
