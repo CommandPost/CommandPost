@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Menu.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log                       = require("hs.logger").new("fcp_menu")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcpApp                    = require("cp.apple.finalcutpro.app")
 local strings                   = require("cp.apple.finalcutpro.strings")
 local destinations				= require("cp.apple.finalcutpro.export.destinations")

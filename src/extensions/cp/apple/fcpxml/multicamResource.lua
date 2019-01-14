@@ -5,25 +5,11 @@
 --- This extension was inspired and uses code based on [Pipeline](https://github.com/reuelk/pipeline).
 --- Thank you Reuel Kim for making something truly awesome, and releasing it as Open Source!
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log           = require("hs.logger").new("fcpxmlMulticamResource")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fnutils       = require("hs.fnutils")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config        = require("cp.config")
 local flicks        = require("cp.time.flicks")
 local tools         = require("cp.tools")

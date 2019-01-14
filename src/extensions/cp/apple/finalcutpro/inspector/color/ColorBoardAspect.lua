@@ -2,21 +2,10 @@
 ---
 --- Represents a particular aspect of the color board (Color/Saturation/Exposure).
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local inspect                   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local ColorPuck                 = require("cp.apple.finalcutpro.inspector.color.ColorPuck")
 local Element                   = require("cp.ui.Element")
 local just                      = require("cp.just")

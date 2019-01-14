@@ -7,29 +7,15 @@
 ---     require("cp.apple.finalcutpro"):plugins():scan()
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("scan")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local audiounit                 = require("hs.audiounit")
 local fnutils                   = require("hs.fnutils")
 local fs                        = require("hs.fs")
 --local inspect                   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
 local config                    = require("cp.config")
 local json                      = require("cp.json")
