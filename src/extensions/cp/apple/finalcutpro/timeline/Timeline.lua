@@ -448,7 +448,7 @@ end
 --- Returns:
 ---  * `EffectsBrowser` object.
 function Timeline.lazy.method:effects()
-    return EffectsBrowser.new(self, EffectsBrowser.EFFECTS)
+    return EffectsBrowser(self, EffectsBrowser.EFFECTS)
 end
 
 -----------------------------------------------------------------------
@@ -468,7 +468,7 @@ end
 --- Returns:
 ---  * `EffectsBrowser` object.
 function Timeline.lazy.method:transitions()
-    return EffectsBrowser.new(self, EffectsBrowser.TRANSITIONS)
+    return EffectsBrowser(self, EffectsBrowser.TRANSITIONS)
 end
 
 -----------------------------------------------------------------------

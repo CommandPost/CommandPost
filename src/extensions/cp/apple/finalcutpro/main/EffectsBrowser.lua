@@ -2,54 +2,52 @@
 ---
 --- Effects Browser Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("EffectsBrowser")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
+local go                                = require("cp.rx.go")
 
+local axutils							= require("cp.ui.axutils")
+local CheckBox							= require("cp.ui.CheckBox")
+local Group                             = require("cp.ui.Group")
+local PopUpButton						= require("cp.ui.PopUpButton")
 local Table								= require("cp.ui.Table")
 local ScrollArea						= require("cp.ui.ScrollArea")
-local CheckBox							= require("cp.ui.CheckBox")
-local PopUpButton						= require("cp.ui.PopUpButton")
-local TextField							= require("cp.ui.TextField")
+local SearchField	                    = require("cp.ui.SearchField")
+local SplitGroup	                    = require("cp.ui.SplitGroup")
+
+local childMatching, cache	            = axutils.childMatching, axutils.cache
+local childFromRight, childFromLeft     = axutils.childFromRight, axutils.childFromLeft
+local If, WaitUntil                     = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local EffectsBrowser = {}
+local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
+
+EffectsBrowser.static.TITLE_KEY = {
+    EFFECTS = "PEMediaBrowserEffectPaneCapTitle",
+    TRANSITIONS = "PEMediaBrowserTransitionsPaneCapTitle",
+}
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.EFFECTS -> string
 --- Constant
 --- Effects.
-EffectsBrowser.EFFECTS = "Effects"
+EffectsBrowser.static.EFFECTS = "Effects"
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.TRANSITIONS -> string
 --- Constant
 --- Transitions.
-EffectsBrowser.TRANSITIONS = "Transitions"
+EffectsBrowser.static.TRANSITIONS = "Transitions"
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.matches(element) -> boolean
 --- Function
@@ -60,12 +58,11 @@ EffectsBrowser.TRANSITIONS = "Transitions"
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function EffectsBrowser.matches(element)
-    return element and element:attributeValue("AXRole") == "AXGroup"
-       and #element == 4
+function EffectsBrowser.static.matches(element)
+    return Group.matches(element) and #element == 4
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser.new(parent, type) -> EffectsBrowser
+--- cp.apple.finalcutpro.main.EffectsBrowser(parent, type) -> EffectsBrowser
 --- Constructor
 --- Creates a new `EffectsBrowser` instance.
 ---
@@ -75,35 +72,13 @@ end
 ---
 --- Returns:
 ---  * A new `EffectsBrowser` object.
-function EffectsBrowser.new(parent, type)
-    local o = {_parent = parent, _type = type}
-    return prop.extend(o, EffectsBrowser)
-end
-
---- cp.apple.finalcutpro.main.EffectsBrowser:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function EffectsBrowser:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.main.EffectsBrowser:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function EffectsBrowser:app()
-    return self:parent():app()
+function EffectsBrowser:initialize(parent, type)
+    Group.initialize(self, parent, parent.mainUI:mutate(function(original)
+        return cache(self, "_ui", function()
+            return childMatching(original(), EffectsBrowser.matches)
+        end)
+    end))
+    self._type = type
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:type() -> App
@@ -125,30 +100,18 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.EffectsBrowser:UI() -> axuielementObject
---- Method
---- The Effects Browser UI.
----
---- Parameters:
----  * None
----
---- Returns:
----  * axuielementObject
-function EffectsBrowser:UI()
-    if self:isShowing() then
-        return axutils.cache(self, "_ui", function()
-            return axutils.childMatching(self:parent():mainUI(), EffectsBrowser.matches)
-        end,
-        EffectsBrowser.matches)
-    end
-end
-
 --- cp.apple.finalcutpro.main.EffectsBrowser.isShowing <cp.prop: boolean>
 --- Variable
 --- Is the Effects Browser showing?
-EffectsBrowser.isShowing = prop.new(function(self)
-    return self:toggleButton():checked()
-end):bind(EffectsBrowser)
+function EffectsBrowser.lazy.prop:isShowing()
+    return prop(function()
+        return self:toggleButton():checked()
+    end)
+end
+
+function EffectsBrowser.lazy.method:toolbar()
+    return self:app():timeline():toolbar()
+end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:toggleButton() -> RadioButton
 --- Method
@@ -159,19 +122,14 @@ end):bind(EffectsBrowser)
 ---
 --- Returns:
 ---  * A `RadioButton` object.
-function EffectsBrowser:toggleButton()
-    if not self._toggleButton then
-        local toolbar = self:app():timeline():toolbar()
-        local button = nil
-        local type = self:type()
-        if type == EffectsBrowser.EFFECTS then
-            button = toolbar:browser():effects()
-        elseif type == EffectsBrowser.TRANSITIONS then
-            button = toolbar:browser():transitions()
-        end
-        self._toggleButton = button
+function EffectsBrowser.lazy.method:toggleButton()
+    local group = self:toolbar():browser()
+    local type = self:type()
+    if type == EffectsBrowser.EFFECTS then
+        return group:effects()
+    elseif type == EffectsBrowser.TRANSITIONS then
+        return group:transitions()
     end
-    return self._toggleButton
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:show() -> EffectsBrowser
@@ -190,6 +148,17 @@ function EffectsBrowser:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.EffectsBrowser:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to show the Effects Browser.
+function EffectsBrowser.lazy.method:doShow()
+    return If(self:app():timeline():doShow())
+    :Then(self:toggleButton():doCheck())
+    :Then(WaitUntil(self.isShowing))
+    :Otherwise(false)
+    :Label("EffectsBrowser:doShow")
+end
+
 --- cp.apple.finalcutpro.main.EffectsBrowser:hide() -> EffectsBrowser
 --- Method
 --- Hide the Effects Browser.
@@ -205,6 +174,17 @@ function EffectsBrowser:hide()
         just.doWhile(function() return self:isShowing() end)
     end
     return self
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the browser.
+function EffectsBrowser.lazy.method:doHide()
+    return If(self.isShowing)
+    :Then(self:toggleButton():doUncheck())
+    :Then(WaitUntil(self.isShowing))
+    :Otherwise(false)
+    :Label("EffectsBrowser:doHide")
 end
 
 -----------------------------------------------------------------------------
@@ -229,6 +209,14 @@ function EffectsBrowser:showSidebar()
     return self
 end
 
+function EffectsBrowser.lazy.method:doShowSidebar()
+    return If(self:sidebar().isShowing):Is(false)
+    :Then(self:sidebarToggle():doPress())
+    :Then(WaitUntil(self:sidebar().isShowing))
+    :Otherwise(false)
+    :Label("EffectsBrowser:doShowSidebar")
+end
+
 --- cp.apple.finalcutpro.main.EffectsBrowser:hideSidebar() -> EffectsBrowser
 --- Method
 --- Hide Sidebar.
@@ -245,6 +233,14 @@ function EffectsBrowser:hideSidebar()
     return self
 end
 
+function EffectsBrowser.lazy.method:doHideSidebar()
+    return If(self:sidebar().isShowing)
+    :Then(self:sidebarToggle():doPress())
+    :Then(WaitUntil(self:sidebar().isShowing))
+    :Otherwise(false)
+    :Label("EffectsBrowser:doHideSidebar")
+end
+
 --- cp.apple.finalcutpro.main.EffectsBrowser:toggleSidebar() -> EffectsBrowser
 --- Method
 --- Toggle Sidebar.
@@ -257,6 +253,10 @@ end
 function EffectsBrowser:toggleSidebar()
     self:sidebarToggle():toggle()
     return self
+end
+
+function EffectsBrowser.lazy.method:doToggleSidebar()
+    return self:sidebarToggle():doPress()
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:showInstalledEffects() -> EffectsBrowser
@@ -593,7 +593,7 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.EffectsBrowser:mainGroupUI() -> axuielementObject
+--- cp.apple.finalcutpro.main.EffectsBrowser:mainGroup() -> cp.ui.SplitGroup
 --- Method
 --- Main Group UI.
 ---
@@ -601,13 +601,13 @@ end
 ---  * None
 ---
 --- Returns:
----  * `axuielementObject` object.
-function EffectsBrowser:mainGroupUI()
-    return axutils.cache(self, "_mainGroup",
-    function()
-        local ui = self:UI()
-        return ui and axutils.childWithRole(ui, "AXSplitGroup")
-    end)
+---  * The [SplitGroup](cp.ui.SplitGroup.md)
+function EffectsBrowser.lazy.method:mainGroup()
+    return SplitGroup(self, self.UI:mutate(function(original)
+        return cache(self, "_mainGroup", function()
+            return childMatching(original(), SplitGroup.matches)
+        end, SplitGroup.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:sidebar() -> Table
@@ -619,13 +619,10 @@ end
 ---
 --- Returns:
 ---  * A `Table` object.
-function EffectsBrowser:sidebar()
-    if not self._sidebar then
-        self._sidebar = Table(self, function()
-            return axutils.childFromLeft(self:mainGroupUI(), 1, ScrollArea.matches)
-        end):uncached()
-    end
-    return self._sidebar
+function EffectsBrowser.lazy.method:sidebar()
+    Table(self, self:mainGroup().UI:mutate(function(original)
+        return childFromLeft(original(), 1, Table.matches)
+    end)):uncached()
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:mainGroupUI() -> ScrollArea
@@ -637,15 +634,10 @@ end
 ---
 --- Returns:
 ---  * A `ScrollArea` object.
-function EffectsBrowser:contents()
-    if not self._contents then
-        self._contents = ScrollArea(self, function()
-            return axutils.childFromRight(self:mainGroupUI(), 1, function(element)
-                return element:attributeValue("AXRole") == "AXScrollArea"
-            end)
-        end)
-    end
-    return self._contents
+function EffectsBrowser.lazy.method:contents()
+    return ScrollArea(self, self:mainGroup().UI:mutate(function(original)
+        return childFromRight(original(), 1, ScrollArea.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:sidebarToggle() -> CheckBox
@@ -657,13 +649,10 @@ end
 ---
 --- Returns:
 ---  * A `CheckBox` object.
-function EffectsBrowser:sidebarToggle()
-    if not self._sidebarToggle then
-        self._sidebarToggle = CheckBox(self, function()
-            return axutils.childWithRole(self:UI(), "AXCheckBox")
-        end)
-    end
-    return self._sidebarToggle
+function EffectsBrowser.lazy.method:sidebarToggle()
+    return CheckBox(self, self.UI:mutate(function(original)
+        return childMatching(original(), CheckBox.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:group() -> PopUpButton
@@ -675,31 +664,25 @@ end
 ---
 --- Returns:
 ---  * A `PopUpButton` object.
-function EffectsBrowser:group()
-    if not self._group then
-        self._group = PopUpButton(self, function()
-            return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
-        end)
-    end
-    return self._group
+function EffectsBrowser.lazy.method:group()
+    return PopUpButton(self, self:mainGroup().UI:mutate(function(original)
+        return childMatching(original(), PopUpButton.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser:search() -> PopUpButton
+--- cp.apple.finalcutpro.main.EffectsBrowser:search() -> SearchField
 --- Method
---- Gets the Search Popup Button object.
+--- Gets the [SearchField](cp.ui.SearchField.md) for the browser..
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A `PopUpButton` object.
-function EffectsBrowser:search()
-    if not self._search then
-        self._search = TextField(self, function()
-            return axutils.childWithRole(self:UI(), "AXTextField")
-        end)
-    end
-    return self._search
+function EffectsBrowser.lazy.method:search()
+    return SearchField(self, self.UI:mutate(function(original)
+        return childMatching(original(), SearchField.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:saveLayout() -> table

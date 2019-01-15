@@ -171,7 +171,7 @@ end
 
 --- cp.ui.ScrollArea:showChild(childUI) -> self
 --- Method
---- Show's a child element in a Scroll Area.
+--- Shows a child element in a Scroll Area.
 ---
 --- Parameters:
 ---  * childUI - The `hs._asm.axuielement` object of the child you want to show.

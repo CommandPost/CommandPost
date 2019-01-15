@@ -12,7 +12,10 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local fnutils	        = require("hs.fnutils")
+local axutils	        = require("cp.ui.axutils")
 local Element           = require("cp.ui.Element")
+local Splitter	        = require("cp.ui.Splitter")
 
 --------------------------------------------------------------------------------
 --
@@ -46,6 +49,23 @@ end
 ---  * A new `SplitGroup` instance.
 function SplitGroup:initialize(parent, uiFinder)
     Element.initialize(self, parent, uiFinder)
+end
+
+--- cp.ui.SplitterGroup.splittersUI <cp.prop: table of axuielements; read-only>
+--- Field
+--- The list of `AXSplitter` `axuielement` items for the SplitGroup.
+function SplitGroup.lazy.prop:splittersUI()
+    return axutils.prop(self.UI, "AXSplitters")
+end
+
+--- cp.ui.SplitterGroup.splitters <cp.prop: table of cp.ui.Splitter; read-only>
+--- Field
+--- The list of [Splitter](cp.ui.Splitter.md) values for the group.
+function SplitGroup.lazy.prop:splitters()
+    return self.splittersUI:mutate(function(original)
+        local uis = original()
+        return uis and fnutils.map(uis, function(ui) return Splitter(self, ui) end)
+    end)
 end
 
 return SplitGroup

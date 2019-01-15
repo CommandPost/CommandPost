@@ -4,8 +4,11 @@
 
 -- local log	                = require "hs.logger" .new "Row"
 
+local prop	                = require "cp.prop"
 local axutils	            = require "cp.ui.axutils"
+local Cell	                = require "cp.ui.Cell"
 local Element	            = require "cp.ui.Element"
+local ElementCache	        = require "cp.ui.ElementCache"
 
 local Row = Element:subclass("cp.ui.Row")
 
@@ -22,16 +25,32 @@ function Row.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRow"
 end
 
---- cp.ui.Row(parent, uiFinder) -> cp.ui.Row
+--- cp.ui.Row(parent, uiFinder)
 --- Constructor
---- Creates a new `Row` instance with the specified `parent` and `uiFinder`.
+--- Creates a new `Row` based on the provided parent [Element](cp.ui.Element.md) and `uiFinder`.
 ---
 --- Parameters:
---- * parent - the parent `Element`.
---- * uiFinder - a `function` or `cp.prop` containing the `axuielement`
+--- * parent	- The parent [Element](cp.ui.Element.md)
+--- * uiFinder	- Either a function or [prop](cp.prop.md)
+function Row:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+    self._cellCache = ElementCache(self, self.createCell)
+end
+
+--- cp.ui.Row:createCell(ui) -> cp.ui.Cell
+--- Method
+--- This method creates a new [Cell](cp.ui.Cell.md) based on the provided `axuielement` value.
+--- Subclasses should override this method to create custom suclasses of [Cell](cp.ui.Cell.md)
+--- if necessary.
+---
+--- Parameters:
+--- * ui - The `AXCell` `axuielement` to create a [Cell](cp.ui.Cell.md) for.
 ---
 --- Returns:
---- * The new `Row`.
+--- * The new [Cell](cp.ui.Cell.md) (or subclass) instance.
+function Row:createCell(ui)
+    return Cell(self, prop.THIS(ui))
+end
 
 --- cp.ui.Row.disclosing <cp.prop: boolean>
 --- Field
@@ -85,6 +104,22 @@ end
 --- The numeric index of this row in the overall container, with `0` being the first item.
 function Row.lazy.prop:index()
     return axutils.prop(self.UI, "AXIndex")
+end
+
+--- cp.ui.Row.childrenUI <cp.prop: table of axuielement; read-only>
+--- Field
+--- The list of `axuielement` children.
+function Row.lazy.prop:childrenUI()
+    return axutils.prop(self.UI, "AXChildren")
+end
+
+--- cp.ui.Row.cells <cp.prop: table of Cell; read-only>
+--- Field
+--- The list of [Cell](cp.ui.Cell.md)s in the row.
+function Row.lazy.prop:cells()
+    return self.childrenUI:mutate(function(original)
+        return self._cellCache:fetchElements(original())
+    end)
 end
 
 -- cp.ui.Row:__eq(other) -> boolean

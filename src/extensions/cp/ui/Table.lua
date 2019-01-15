@@ -19,6 +19,7 @@ local require = require
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
+local ScrollBar                     = require("cp.ui.ScrollBar")
 
 --------------------------------------------------------------------------------
 --
@@ -203,11 +204,19 @@ function Table.lazy.prop:verticalScrollBarUI()
     return axutils.prop(self.UI, "AXVerticalScrollBar")
 end
 
+function Table.lazy.method:verticalScrollBar()
+    return ScrollBar(self, axutils.prop(self.UI, "AXVerticalScrollBar"))
+end
+
 --- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The horizontal scroll bar UI element, if present.
 function Table.lazy.prop:horizontalScrollBarUI()
     return axutils.prop(self.UI, "AXHorizontalScrollBar")
+end
+
+function Table.lazy.method:horizontalScrollBar()
+    return ScrollBar(self, axutils.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
 --- cp.ui.Table.isFocused <cp.prop: boolean; read-only>
