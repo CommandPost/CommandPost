@@ -127,6 +127,62 @@ function axutils.children(element)
     return children
 end
 
+local function isBelow(a)
+    return function(b)
+        if b == nil then
+            return false
+        elseif a == nil then
+            return true
+        else
+            local aFrame, bFrame = a:frame(), b:frame()
+            return aFrame.y + aFrame.h < bFrame.y
+        end
+    end
+end
+
+local function isAbove(a)
+    return function(b)
+        if b == nil then
+            return false
+        elseif a == nil then
+            return true
+        else
+            local aFrame, bFrame = a:frame(), b:frame()
+            return aFrame.y < bFrame.y + bFrame.h
+        end
+    end
+end
+
+--- cp.ui.axutils.childrenBelow(element, topElement) -> table of axuielement or nil
+--- Function
+--- Finds the list of `axuielement` children from the `element` which are below the specified `topElement`.
+--- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+---
+--- Parameters:
+--- * element - The `axuielement` to find the children of.
+--- * topElement - The `axuielement` that the other children must be below.
+---
+--- Returns:
+--- * The table of `axuielements` that are below, or `nil` if the element is not available.
+function axutils.childrenBelow(element, topElement)
+    return element and axutils.childrenMatching(element, isBelow(topElement))
+end
+
+--- cp.ui.axutils.childrenAbove(element, bottomElement) -> table of axuielement or nil
+--- Function
+--- Finds the list of `axuielement` children from the `element` which are above the specified `bottomElement`.
+--- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+---
+--- Parameters:
+--- * element - The `axuielement` to find the children of.
+--- * topElement - The `axuielement` that the other children must be above.
+---
+--- Returns:
+--- * The table of `axuielements` that are above, or `nil` if the element is not available.
+function axutils.childrenAbove(element, topElement)
+    return element and axutils.childrenMatching(element, isAbove(topElement))
+end
+
 --- cp.ui.axutils.hasAttributeValue(element, name, value) -> boolean
 --- Function
 --- Checks to see if an element has a specific value.

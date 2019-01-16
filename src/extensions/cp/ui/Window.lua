@@ -5,18 +5,19 @@
 local require = require
 
 local hswindow                      = require("hs.window")
+local class                         = require("middleclass")
 
-local Alert                         = require("cp.ui.Alert")
 local app                           = require("cp.app")
-local axutils                       = require("cp.ui.axutils")
 local lazy                          = require("cp.lazy")
-local notifier                      = require("cp.ui.notifier")
 local prop                          = require("cp.prop")
+local axutils                       = require("cp.ui.axutils")
+local notifier                      = require("cp.ui.notifier")
+local Alert                         = require("cp.ui.Alert")
+local Button                        = require("cp.ui.Button")
 
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
-local class                         = require("middleclass")
 
 local format                        = string.format
 
@@ -67,6 +68,13 @@ function Window:initialize(cpApp, uiProp)
     prop.bind(self) {
         UI = uiProp
     }
+end
+
+--- cp.ui.Window.isShowing <cp.prop: boolean; read-only; live?>
+--- Field
+--- Indicates if the `Window` is currently showing on screen.
+function Window.lazy.prop:isShowing()
+    return self.UI:ISNOT(nil)
 end
 
 --- cp.ui.Window.hsWindow <cp.prop: hs.window; read-only>
@@ -143,6 +151,26 @@ function Window.lazy.prop:focused()
         :monitor(self.visible),
         {"AXFocusedWindowChanged", "AXApplicationActivated", "AXApplicationDeactivated"}
     )
+end
+
+function Window.lazy.prop:modal()
+    return axutils.prop(self.UI, "AXModal")
+end
+
+function Window.lazy.method:closeButton()
+    return Button(self.UI, "AXCloseButton")
+end
+
+function Window.lazy.method:minimizeButton()
+    return Button(self.UI, "AXMinimizeButton")
+end
+
+function Window.lazy.method:fullScreenButton()
+    return Button(self.UI, "AXFullScreenButton")
+end
+
+function Window.lazy.method:zoomButton()
+    return Button(self.UI, "AXZoomButton")
 end
 
 --- cp.ui.Window.exists <cp.prop: boolean; read-only>
@@ -291,6 +319,17 @@ function Window.lazy.method:doFocus()
     :TimeoutAfter(10000)
     :ThenYield()
     :Label("Window:doFocus")
+end
+
+function Window.lazy.method:doRaise()
+    return If(self.hsWindow)
+    :Then(function()
+        self:UI():doRaise()
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("Window:doRaise")
 end
 
 --- cp.ui.Window:alert() -> cp.ui.Alert

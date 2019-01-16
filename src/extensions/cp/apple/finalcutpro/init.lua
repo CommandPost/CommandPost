@@ -95,6 +95,7 @@ local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+local FindAndReplaceTitleText	                = require("cp.apple.finalcutpro.main.FindAndReplaceTitleText")
 
 local v											= require("semver")
 local class                                     = require("middleclass")
@@ -811,6 +812,19 @@ end
 ---  * The Final Cut Pro Export Dialog Box
 function fcp.lazy.method:exportDialog()
     return ExportDialog.new(self)
+end
+
+--- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
+--- Method
+--- Returns the [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The window.
+function fcp.lazy.method:findAndReplaceTitleText()
+    return FindAndReplaceTitleText(self.app)
 end
 
 ----------------------------------------------------------------------------------------
