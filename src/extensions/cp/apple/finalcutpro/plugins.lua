@@ -141,7 +141,8 @@ mod.appBuiltinPlugins = {
         ["FFEffectCategoryColor"]   = { "FFCorrectorEffectName" },
         ["FFMaskEffect"]            = { "FFSplineMaskEffect", "FFShapeMaskEffect" },
         ["Stylize"]                 = { "DropShadow::Filter Name" },
-        ["FFEffectCategoryKeying"]  = { "Keyer::Filter Name", "LumaKeyer::Filter Name" }
+        ["FFEffectCategoryKeying"]  = { "Keyer::Filter Name", "LumaKeyer::Filter Name" },
+        ["FFEffectCategoryBasics"]  = { "FFNoiseReduction" }
     },
 
     --------------------------------------------------------------------------------
