@@ -59,4 +59,17 @@ function Cell.lazy.prop:textValue()
     end)
 end
 
+--- cp.ui.Cell.textValueIs(value) -> boolean
+--- Method
+--- Checks if the cell's text value equals `value`.
+---
+--- Parameters:
+---  * `value`	- The text value to compare.
+---
+--- Returns:
+---  * `true` if the cell text value equals the provided `value`.
+function Cell.static:textValueIs(value)
+    return self:textValue() == value
+end
+
 return Cell

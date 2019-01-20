@@ -4,7 +4,7 @@
 
 -- local log                       = require "hs.logger" .new "Grid"
 
-local funtils	                = require "hs.fnutils"
+local fnutils	                = require "hs.fnutils"
 
 local prop	                    = require "cp.prop"
 local axutils	                = require "cp.ui.axutils"
@@ -14,7 +14,7 @@ local ElementCache	            = require "cp.ui.ElementCache"
 local Row                       = require "cp.ui.Row"
 
 local valueOf                   = axutils.valueOf
-local ifilter	                = funtils.ifilter
+local ifilter	                = fnutils.ifilter
 
 local Grid = Element:subclass("cp.ui.Grid")
 
@@ -94,6 +94,14 @@ function Grid:columns()
     return self:fetchColumns(self:columnsUI())
 end
 
+--- cp.ui.Grid:column(index) -> cp.ui.Column or nil
+--- Method
+--- Provides the [Column](cp.ui.Column.md) at the specified index, or `nil` if it's not available.
+function Grid:column(index)
+    local columns = self:columns()
+    return columns and columns[index]
+end
+
 --- cp.ui.Grid:fetchColumn(columnUI) -> cp.ui.Column or nil
 --- Method
 --- Returns the [Column](cp.ui.Column.md) that represents the provided `columnUI`, if it is actually present.
@@ -157,6 +165,14 @@ function Grid:rows()
     return self:fetchRows(self:rowsUI())
 end
 
+--- cp.ui.Grid:row(index) -> cp.ui.Row or nil
+--- Method
+--- Provides the [Row](cp.ui.Row.md) at the specified index, or `nil` if it's not available.
+function Grid:row(index)
+    local rows = self:rows()
+    return rows and rows[index]
+end
+
 --- cp.ui.Grid:fetchRow(rowUI) -> cp.ui.Row or nil
 --- Method
 --- Returns the [Row](cp.ui.Row.md) that represents the provided `rowUI`, if it is actually present.
@@ -200,5 +216,118 @@ function Grid:filterRows(matcherFn)
     return rows and ifilter(rows, matcherFn)
 end
 
+local function walkRows(rows, path, actionFn)
+    if rows then
+        local name = table.remove(path, 1)
+        for _,row in ipairs(rows) do
+            local cell = row:cells()[1]
+            if cell:textValueIs(name) then
+                if #path > 0 then
+                    row:discloseRow()
+                    return walkRows(row:disclosedRows(), path, actionFn)
+                else
+                    actionFn(row)
+                    return row
+                end
+            end
+        end
+    end
+    return nil
+end
+
+--- cp.ui.Grid:visitRow(path, actionFn) -> cp.ui.Row
+--- Method
+--- Visits the row at the sub-level named in the `names` table, and executes the `actionFn`.
+---
+--- Parameters:
+---  * `names`		- The array of names to navigate down
+---  * `actionFn`	- A function to execute when the target row is found.
+---
+--- Returns:
+---  * The row that was visited, or `nil` if not.
+function Grid:visitRow(path, actionFn)
+    return walkRows(self:rows(), path, actionFn)
+end
+
+--- cp.ui.Grid:findColumnIndex(id) -> number | nil
+--- Method
+--- Finds the Column Index based on an `AXIdentifier` ID.
+---
+--- Parameters:
+---  * id - The `AXIdentifier` of the column index you want to find.
+---
+--- Returns:
+---  * A column index as a number, or `nil` if no index can be found.
+function Grid:findColumnIndex(id)
+    local cols = self:columns()
+    if cols then
+        for i=1,#cols do
+            if cols[i]:identifier() == id then
+                return i
+            end
+        end
+    end
+    return nil
+end
+
+--- cp.ui.Grid:findCell(rowNumber, columnId) -> `hs._asm.axuielement` | nil
+--- Method
+--- Finds a specific [Cell](cp.ui.Cell.md).
+---
+--- Parameters:
+---  * rowNumber - The row number.
+---  * columnId - The Column ID.
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object for the cell, or `nil` if the cell cannot be found.
+function Grid:findCell(rowNumber, columnId)
+    local rows = self:rows()
+    if rows and rowNumber >= 1 and rowNumber < #rows then
+        local colNumber = self:findColumnIndex(columnId)
+        return colNumber and rows[rowNumber]:cells()[colNumber]
+    end
+    return nil
+end
+
+--- cp.ui.Grid:selectRow(path) -> cp.ui.Row
+--- Method
+--- Selects the row at the sub-level named in the `path` table.
+---
+--- Parameters:
+--- * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
+---
+--- Returns:
+--- * The selected [Row](cp.ui.Row.md), or `nil` if not found.
+function Grid:selectRow(path)
+    return self:visitRow(path, function(row) row:selected(true) end)
+end
+
+--- cp.ui.Grid.selectedRowsUI <cp.prop: table of axuielement; live?>
+--- Field
+--- Contains the list of currently-selected row `axuilements`. Can be set.
+---
+--- Notes:
+--- * Also see [#selectedRows]
+function Grid.lazy.prop:selectedRowsUI()
+    return axutils.prop(self.UI, "AXSelectedRows", true)
+end
+
+--- cp.ui.Grid.selectedRows <cp.prop: table of cp.ui.Row; live?>
+--- Field
+--- Contains the list of currently-selected [Row](cp.ui.Row.md)s. Can be set.
+function Grid.lazy.prop:selectedRows()
+    return self.selectedRows:mutate(function(original)
+        local rowsUI = original()
+        return self:fetchRows(rowsUI)
+    end),
+    function(newRows, original)
+        if newRows then
+            local rowsUI = fnutils.map(newRows, function(row) return row:UI() end)
+            original(rowsUI)
+        else
+            original(nil)
+        end
+    end
+end
 
 return Grid

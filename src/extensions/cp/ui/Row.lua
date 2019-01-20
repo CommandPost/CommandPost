@@ -4,11 +4,14 @@
 
 -- local log	                = require "hs.logger" .new "Row"
 
+local go	                = require "cp.rx.go"
 local prop	                = require "cp.prop"
 local axutils	            = require "cp.ui.axutils"
 local Cell	                = require "cp.ui.Cell"
 local Element	            = require "cp.ui.Element"
 local ElementCache	        = require "cp.ui.ElementCache"
+
+local If , Do               = go.If, go.Do
 
 local Row = Element:subclass("cp.ui.Row")
 
@@ -119,6 +122,62 @@ end
 function Row.lazy.prop:cells()
     return self.childrenUI:mutate(function(original)
         return self._cellCache:fetchElements(original())
+    end)
+end
+
+--- cp.ui.Row:doDisclose() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will disclose the row contents.
+function Row.lazy.method:doDisclose()
+    return If(self.disclosing):Is(false)
+    :Then(function()
+        self:disclosing(true)
+        return true
+    end)
+    :Otherwise(false)
+    :Label("Row:doDisclose")
+end
+
+--- cp.ui.Row:doConceal() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will conceal the row contents.
+function Row.lazy.method:doConceal()
+    return If(self.disclosing)
+    :Then(function()
+        self:disclosing(false)
+        return true
+    end)
+    :Otherwise(false)
+    :Label("Row:doConceal")
+end
+
+--- cp.ui.Row:doToggle() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that toggles disclosing the row contents.
+function Row.lazy.method:doToggle()
+    return Do(function()
+        self:disclosing(false)
+        return true
+    end)
+    :Label("Row:doToggle")
+end
+
+--- cp.ui.Row:doSelect() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to select the row, if it is available.
+function Row.lazy.method:doSelect()
+    return Do(function()
+        self:selected(true)
+    end)
+    :Label("Row:doSelect")
+end
+
+--- cp.ui.Row:doDeselect() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to deselect the row, if it is available.
+function Row.lazy.method:doDeselect()
+    return Do(function()
+        self:selected(false)
     end)
 end
 
