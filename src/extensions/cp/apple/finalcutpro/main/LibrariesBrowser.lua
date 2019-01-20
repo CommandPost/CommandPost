@@ -11,6 +11,8 @@ local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 
+local AppearanceAndFiltering            = require("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
+
 local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
 
@@ -231,21 +233,6 @@ function LibrariesBrowser.lazy.method:toggleViewMode()
     end)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:appearanceAndFiltering() -> Button
---- Method
---- Get Appearance & Filtering Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` object.
-function LibrariesBrowser.lazy.method:appearanceAndFiltering()
-    return Button(self, function()
-        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 2)
-    end)
-end
-
 --- cp.apple.finalcutpro.main.LibrariesBrowser:searchToggle() -> Button
 --- Method
 --- Get Search Toggle Button.
@@ -289,6 +276,19 @@ function LibrariesBrowser.lazy.method:filterToggle()
     return Button(self, function()
         return childWithRole(self:mainGroupUI(), "AXButton")
     end)
+end
+
+--- cp.apple.finalcutpro.main.Browser:appearanceAndFiltering() -> AppearanceAndFiltering
+--- Method
+--- The Clip Appearance & Filtering Menu Popover
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `AppearanceAndFiltering` object.
+function LibrariesBrowser.lazy.method:appearanceAndFiltering()
+    return AppearanceAndFiltering(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
