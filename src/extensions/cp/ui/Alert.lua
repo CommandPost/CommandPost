@@ -16,7 +16,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Alert = Element:subclass("Alert")
+local Alert = Element:subclass("cp.ui.Alert")
 
 --- cp.ui.Alert.matches(element) -> boolean
 --- Function

@@ -31,7 +31,7 @@ local If                = require("cp.rx.go.If")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local CheckBox = Element:subclass("CheckBox")
+local CheckBox = Element:subclass("cp.ui.CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
 --- Function

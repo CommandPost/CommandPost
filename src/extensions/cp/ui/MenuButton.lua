@@ -18,7 +18,7 @@ local find                          = string.find
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local MenuButton = Element:subclass("MenuButton")
+local MenuButton = Element:subclass("cp.ui.MenuButton")
 
 --- cp.ui.MenuButton.matches(element) -> boolean
 --- Function

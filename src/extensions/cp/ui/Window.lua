@@ -26,7 +26,7 @@ local format                        = string.format
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Window = class("Window"):include(lazy)
+local Window = class("cp.ui.Window"):include(lazy)
 
 --- cp.ui.Window.matches(element) -> boolean
 --- Function

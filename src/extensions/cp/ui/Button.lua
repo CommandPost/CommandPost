@@ -16,7 +16,7 @@ local If                            = go.If
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Button = Element:subclass("Button")
+local Button = Element:subclass("cp.ui.Button")
 
 --- cp.ui.Button.matches(element) -> boolean
 --- Function

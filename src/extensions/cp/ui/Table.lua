@@ -12,7 +12,7 @@ local Element           = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Table = Element:subclass("Table")
+local Table = Element:subclass("cp.ui.Table")
 
 --- cp.ui.Table.is(thing) -> boolean
 --- Function
