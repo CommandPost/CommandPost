@@ -15,7 +15,7 @@ local If, WaitUntil                 = go.If, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = Element:subclass("PopUpButton")
+local PopUpButton = Element:subclass("cp.ui.PopUpButton")
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function

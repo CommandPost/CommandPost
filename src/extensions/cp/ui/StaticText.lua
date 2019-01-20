@@ -17,7 +17,7 @@ local delayedTimer        = timer.delayed
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local StaticText = Element:subclass("StaticText")
+local StaticText = Element:subclass("cp.ui.StaticText")
 
 --- cp.ui.StaticText.matches(element) -> boolean
 --- Function

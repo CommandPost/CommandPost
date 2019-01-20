@@ -15,7 +15,7 @@ local prop							= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Toolbar = Element:subclass("Toolbar")
+local Toolbar = Element:subclass("cp.ui.Toolbar")
 
 --- cp.ui.Toolbar.matches(element) -> boolean
 --- Function
