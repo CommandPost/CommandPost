@@ -104,9 +104,9 @@ end
 --- Returns:
 ---  * A `Button` object.
 function AppearanceAndFiltering.lazy.method:button()
-    return Button(self, function()
-        return childFromRight(childrenWithRole(self:parent():UI(), "AXButton"), 2)
-    end)
+    return Button(self, self:parent().UI:mutate(function(original)
+        return childFromRight(childrenWithRole(original(), "AXButton"), 2)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:clipHeight() -> cp.ui.Slider
@@ -119,9 +119,9 @@ end
 --- Returns:
 ---  * A `Slider` object.
 function AppearanceAndFiltering.lazy.method:clipHeight()
-    return Slider(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXSlider"), 2)
-    end)
+    return Slider(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXSlider"), 2)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:duration() -> cp.ui.Slider
@@ -134,9 +134,9 @@ end
 --- Returns:
 ---  * A `Slider` object.
 function AppearanceAndFiltering.lazy.method:duration()
-    return Slider(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXSlider"), 3)
-    end)
+    return Slider(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXSlider"), 3)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:groupBy() -> cp.ui.PopUpButton
@@ -149,9 +149,9 @@ end
 --- Returns:
 ---  * A `PopUpButton` object.
 function AppearanceAndFiltering.lazy.method:groupBy()
-    return PopUpButton(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXPopUpButton"), 1)
-    end)
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXPopUpButton"), 1)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:sortBy() -> cp.ui.PopUpButton
@@ -164,9 +164,9 @@ end
 --- Returns:
 ---  * A `PopUpButton` object.
 function AppearanceAndFiltering.lazy.method:sortBy()
-    return PopUpButton(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXPopUpButton"), 2)
-    end)
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXPopUpButton"), 2)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:waveForms() -> cp.ui.CheckBox
@@ -179,9 +179,9 @@ end
 --- Returns:
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:waveForms()
-    return CheckBox(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXCheckBox"), 1)
-    end)
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXCheckBox"), 1)
+    end))
 end
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering:continuousPlayback() -> cp.ui.CheckBox
@@ -194,9 +194,9 @@ end
 --- Returns:
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:continuousPlayback()
-    return CheckBox(self, function()
-        return childFromTop(childrenWithRole(self:UI(), "AXCheckBox"), 2)
-    end)
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childFromTop(childrenWithRole(original(), "AXCheckBox"), 2)
+    end))
 end
 
 return AppearanceAndFiltering
