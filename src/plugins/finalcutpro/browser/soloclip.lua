@@ -25,6 +25,12 @@ local plugin = {
 function plugin.init(deps)
 
     local soloClip = function()
+
+        --------------------------------------------------------------------------------
+        -- Make sure the libraries window is open:
+        --------------------------------------------------------------------------------
+        fcp:menu():selectMenu({"Window", "Go To", "Libraries"})
+
         --------------------------------------------------------------------------------
         -- Check that there is exactly one Selected Clip:
         --------------------------------------------------------------------------------
