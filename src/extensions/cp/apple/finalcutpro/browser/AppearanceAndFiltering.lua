@@ -179,7 +179,7 @@ end
 --- Returns:
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:waveForms()
-    return PopUpButton(self, self.UI:mutate(function(original)
+    return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 1)
     end))
 end
@@ -194,7 +194,7 @@ end
 --- Returns:
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:continuousPlayback()
-    return PopUpButton(self, self.UI:mutate(function(original)
+    return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 2)
     end))
 end
