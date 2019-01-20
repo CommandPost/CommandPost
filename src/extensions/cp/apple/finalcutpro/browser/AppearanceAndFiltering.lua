@@ -4,7 +4,7 @@
 
 local require = require
 
-local log                   = require("hs.logger").new("appearanceAndFiltering")
+--local log                   = require("hs.logger").new("appearanceAndFiltering")
 
 local axutils               = require("cp.ui.axutils")
 
