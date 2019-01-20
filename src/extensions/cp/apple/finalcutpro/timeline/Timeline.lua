@@ -14,9 +14,9 @@ local prop								= require("cp.prop")
 local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Contents					= require("cp.apple.finalcutpro.timeline.Contents")
-local Toolbar					= require("cp.apple.finalcutpro.timeline.Toolbar")
-local Index                     = require("cp.apple.finalcutpro.timeline.Index")
+local Contents					        = require("cp.apple.finalcutpro.timeline.Contents")
+local Toolbar					        = require("cp.apple.finalcutpro.timeline.Toolbar")
+local Index                             = require("cp.apple.finalcutpro.timeline.Index")
 
 local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 local cache                             = axutils.cache

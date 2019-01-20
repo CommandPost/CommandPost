@@ -12,7 +12,7 @@ local RadioButton						= require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 local StaticText                        = require("cp.ui.StaticText")
 
-local Appearance				= require("cp.apple.finalcutpro.timeline.Appearance")
+local Appearance				        = require("cp.apple.finalcutpro.timeline.Appearance")
 
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
