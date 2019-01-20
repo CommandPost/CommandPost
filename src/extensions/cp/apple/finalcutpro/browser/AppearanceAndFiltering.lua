@@ -87,7 +87,7 @@ AppearanceAndFiltering.DURATION = {
 ---
 --- Returns:
 ---  * Self
-function AppearanceAndFiltering.lazy.method:show()
+function AppearanceAndFiltering:show()
     if not self:isShowing() then
         self:button():press()
     end
@@ -120,7 +120,7 @@ end
 ---  * A `Slider` object.
 function AppearanceAndFiltering.lazy.method:clipHeight()
     return Slider(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXSlider"), 1)
+        return childFromTop(childrenWithRole(self:UI(), "AXSlider"), 2)
     end)
 end
 
@@ -135,7 +135,7 @@ end
 ---  * A `Slider` object.
 function AppearanceAndFiltering.lazy.method:duration()
     return Slider(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXSlider"), 2)
+        return childFromTop(childrenWithRole(self:UI(), "AXSlider"), 3)
     end)
 end
 
@@ -150,7 +150,7 @@ end
 ---  * A `PopUpButton` object.
 function AppearanceAndFiltering.lazy.method:groupBy()
     return PopUpButton(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXPopUpButton"), 1)
+        return childFromTop(childrenWithRole(self:UI(), "AXPopUpButton"), 1)
     end)
 end
 
@@ -165,7 +165,7 @@ end
 ---  * A `PopUpButton` object.
 function AppearanceAndFiltering.lazy.method:sortBy()
     return PopUpButton(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXPopUpButton"), 2)
+        return childFromTop(childrenWithRole(self:UI(), "AXPopUpButton"), 2)
     end)
 end
 
@@ -180,7 +180,7 @@ end
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:waveForms()
     return CheckBox(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXCheckBox"), 1)
+        return childFromTop(childrenWithRole(self:UI(), "AXCheckBox"), 1)
     end)
 end
 
@@ -195,7 +195,7 @@ end
 ---  * A `CheckBox` object.
 function AppearanceAndFiltering.lazy.method:continuousPlayback()
     return CheckBox(self, function()
-        return childFromTop(childrenWithRole(self:parent():UI(), "AXCheckBox"), 2)
+        return childFromTop(childrenWithRole(self:UI(), "AXCheckBox"), 2)
     end)
 end
 

@@ -46,7 +46,7 @@ end
 ---
 --- Returns:
 ---  * Self
-function Popover.lazy.method:hide()
+function Popover:hide()
     local ui = self:UI()
     if ui then
         ui:performAction("AXCancel")
