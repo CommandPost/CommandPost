@@ -134,8 +134,6 @@ function plugin.init(deps)
 
         appearanceAndFiltering:hide()
 
-        log.df("SAVING: %s", hs.inspect(result))
-
         config.set("finalcutpro.browser.layout." .. id, result)
 
     end
@@ -146,8 +144,6 @@ function plugin.init(deps)
     local restoreLayout = function(id)
 
         local layout = config.get("finalcutpro.browser.layout." .. id)
-
-        --log.df("RESTORING: %s", hs.inspect(layout))
 
         if not layout then
             tools.playErrorSound()
@@ -263,7 +259,6 @@ function plugin.init(deps)
                 local kids = group:attributeValue("AXChildren")
                 for _, button in pairs(kids) do
                     if layout["sortOrder"][button:attributeValue("AXTitle")] ~= "AXUnknownSortDirection" then
-                        log.df("FOUND BUTTON: %s", button:attributeValue("AXTitle"))
                         button:performAction("AXPress")
                         if layout["sortOrder"][button:attributeValue("AXTitle")] ~= button:attributeValue("AXSortDirection") then
                             button:performAction("AXPress")
