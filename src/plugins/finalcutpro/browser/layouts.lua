@@ -15,6 +15,8 @@ local i18n      = require("cp.i18n")
 local just      = require("cp.just")
 local tools	    = require("cp.tools")
 
+local childWithRole = axutils.childWithRole
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -48,6 +50,9 @@ function plugin.init(deps)
 
         local isListView = libraries:isListView()
 
+        --------------------------------------------------------------------------------
+        -- Save Column Data:
+        --------------------------------------------------------------------------------
         local columnResult = {}
         if isListView then
 
@@ -85,6 +90,27 @@ function plugin.init(deps)
 
         end
 
+        --------------------------------------------------------------------------------
+        -- Save Column Sorting Order:
+        --------------------------------------------------------------------------------
+        local sortOrder = {}
+        if isListView then
+            local ui = libraries:list():columns():UI()
+            local outline = ui and childWithRole(ui, "AXOutline")
+            local group = outline and childWithRole(outline, "AXGroup")
+            if group then
+                local kids = group:attributeValue("AXChildren")
+                for _, button in pairs(kids) do
+                    local title = button:attributeValue("AXTitle")
+                    local direction = button:attributeValue("AXSortDirection")
+                    sortOrder[title] = direction
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Save Appearance & Filtering Options:
+        --------------------------------------------------------------------------------
         if not just.doUntil(function()
             appearanceAndFiltering:show()
             return appearanceAndFiltering:isShowing()
@@ -96,6 +122,7 @@ function plugin.init(deps)
 
         local result = {
             ["columns"] = columnResult,
+            ["sortOrder"] = sortOrder,
             ["isListView"] = isListView,
             ["clipHeight"] = appearanceAndFiltering:clipHeight():value(),
             ["duration"] = appearanceAndFiltering:duration():value(),
@@ -107,7 +134,7 @@ function plugin.init(deps)
 
         appearanceAndFiltering:hide()
 
-        --log.df("SAVING: %s", hs.inspect(result))
+        log.df("SAVING: %s", hs.inspect(result))
 
         config.set("finalcutpro.browser.layout." .. id, result)
 
@@ -152,6 +179,9 @@ function plugin.init(deps)
             end
         end
 
+        --------------------------------------------------------------------------------
+        -- Restore Column Data:
+        --------------------------------------------------------------------------------
         if layout["isListView"] and layout["columns"] and #layout["columns"] >= 1 then
             libraries:list():columns():show()
 
@@ -222,6 +252,33 @@ function plugin.init(deps)
 
         end
 
+        --------------------------------------------------------------------------------
+        -- Restore Sort Order:
+        --------------------------------------------------------------------------------
+        if layout["isListView"] and layout["sortOrder"] then
+            local ui = libraries:list():columns():UI()
+            local outline = ui and childWithRole(ui, "AXOutline")
+            local group = outline and childWithRole(outline, "AXGroup")
+            if group then
+                local kids = group:attributeValue("AXChildren")
+                for _, button in pairs(kids) do
+                    if layout["sortOrder"][button:attributeValue("AXTitle")] ~= "AXUnknownSortDirection" then
+                        log.df("FOUND BUTTON: %s", button:attributeValue("AXTitle"))
+                        button:performAction("AXPress")
+                        if layout["sortOrder"][button:attributeValue("AXTitle")] ~= button:attributeValue("AXSortDirection") then
+                            button:performAction("AXPress")
+                        end
+                        if layout["sortOrder"][button:attributeValue("AXTitle")] ~= button:attributeValue("AXSortDirection") then
+                            button:performAction("AXPress")
+                        end
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Restore Appearance & Filtering Options:
+        --------------------------------------------------------------------------------
         if not just.doUntil(function()
             appearanceAndFiltering:show()
             return appearanceAndFiltering:isShowing()
