@@ -38,6 +38,17 @@ function plugin.init(deps)
     local libraries = fcp:libraries()
     local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
 
+    local getClipNameSize = function()
+        local menu = fcp:menu()
+        if menu:isChecked({"View", "Browser", "Clip Name Size", "Small"}) then
+            return "Small"
+        elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Medium"}) then
+            return "Medium"
+        elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Large"}) then
+            return "Large"
+        end
+    end
+
     --------------------------------------------------------------------------------
     -- Save Layout:
     --------------------------------------------------------------------------------
@@ -121,6 +132,7 @@ function plugin.init(deps)
         end
 
         local result = {
+            ["clipNameSize"] = getClipNameSize(),
             ["columns"] = columnResult,
             ["sortOrder"] = sortOrder,
             ["isListView"] = isListView,
@@ -153,6 +165,10 @@ function plugin.init(deps)
         if not libraries:isShowing() then
             tools.playErrorSound()
             return
+        end
+
+        if layout["clipNameSize"] then
+            fcp:menu():selectMenu({"View", "Browser", "Clip Name Size", layout["clipNameSize"]})
         end
 
         if layout["isListView"] then
