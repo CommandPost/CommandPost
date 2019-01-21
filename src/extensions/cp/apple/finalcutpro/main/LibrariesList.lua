@@ -8,6 +8,7 @@ local axutils							= require("cp.ui.axutils")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
 local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
+local Columns                           = require("cp.apple.finalcutpro.browser.Columns")
 local prop								= require("cp.prop")
 local Table								= require("cp.ui.Table")
 
@@ -125,6 +126,19 @@ end
 ---  * App
 function LibrariesList:app()
     return self:parent():app()
+end
+
+--- cp.apple.finalcutpro.main.LibrariesList:columns() -> Columns
+--- Method
+--- Gets the List View Columns object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `AppearanceAndFiltering` object.
+function LibrariesList:columns()
+    return Columns(self)
 end
 
 -----------------------------------------------------------------------

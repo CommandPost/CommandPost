@@ -169,7 +169,7 @@ function AppearanceAndFiltering.lazy.method:sortBy()
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:waveForms() -> cp.ui.CheckBox
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering:waveforms() -> cp.ui.CheckBox
 --- Method
 --- Gets the Waveforms checkbox.
 ---
@@ -178,7 +178,7 @@ end
 ---
 --- Returns:
 ---  * A `CheckBox` object.
-function AppearanceAndFiltering.lazy.method:waveForms()
+function AppearanceAndFiltering.lazy.method:waveforms()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 1)
     end))
