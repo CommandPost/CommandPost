@@ -782,6 +782,12 @@ function mod.performBatchExport()
         mod._bmMan.hide()
 
         --------------------------------------------------------------------------------
+        -- Make sure we're in HH:MM:SS:FF mode:
+        --------------------------------------------------------------------------------
+        local hhmmssff = fcp:preferencesWindow():generalPanel().TIME_DISPLAY["HH:MM:SS:FF"]
+        fcp:preferencesWindow():generalPanel().timeDisplay(hhmmssff)
+
+        --------------------------------------------------------------------------------
         -- Export the clips:
         --------------------------------------------------------------------------------
         local result

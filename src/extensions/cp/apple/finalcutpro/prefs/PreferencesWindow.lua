@@ -15,8 +15,10 @@ local go                            = require("cp.rx.go")
 local Window                        = require("cp.ui.Window")
 local Toolbar                       = require("cp.ui.Toolbar")
 
+local GeneralPanel                  = require("cp.apple.finalcutpro.prefs.GeneralPanel")
 local PlaybackPanel					= require("cp.apple.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("cp.apple.finalcutpro.prefs.ImportPanel")
+
 
 local If, WaitUntil                 = go.If, go.WaitUntil
 
@@ -143,6 +145,14 @@ function PreferencesWindow:importPanel()
         self._importPanel = ImportPanel.new(self)
     end
     return self._importPanel
+end
+
+-- TODO: Add documentation
+function PreferencesWindow:generalPanel()
+    if not self._generalPanel then
+        self._generalPanel = GeneralPanel.new(self)
+    end
+    return self._generalPanel
 end
 
 -- TODO: Add documentation
