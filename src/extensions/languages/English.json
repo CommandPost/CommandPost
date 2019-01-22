@@ -89,6 +89,8 @@
         "brightness9": "Brightnss",
         "browser": "Browser",
         "browser_group": "Browser",
+        "browserHeightSlider": "Browser Height Slider",
+        "browserHeightSliderDescription": "Allows you to control the Browser height.",
         "bugReport": "Bug Report",
         "button": "Button",
         "buttonLabel": "Button Label",

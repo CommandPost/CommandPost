@@ -4,7 +4,7 @@
 
 local require = require
 
-local axutils						= require("cp.ui.axutils")
+local axutils			= require("cp.ui.axutils")
 local Element           = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
