@@ -257,14 +257,33 @@ function mod.restoreLayoutFromTable(layout)
                 --------------------------------------------------------------------------------
                 -- Press 'Show All' or 'Hide All':
                 --------------------------------------------------------------------------------
+
+                --[[
+                    Final Cut Pro: Found resources containing "Show All Columns":
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListTagsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListCaptionsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFOrganizerFilmListView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListClipsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListTagsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListCaptionsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFOrganizerFilmListView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListClipsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListTagsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListCaptionsView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFOrganizerFilmListView.nib matches
+                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListClipsView.nib matches
+                --]]
+
                 local success = false
                 if tableCount(savedActiveColumnsNames) > 10 then
-                    local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Show All Columns")
+                    --local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Show All Columns")   -- TODO: This shouldn't be hardcoded in English
+                    local showAllUI = menu:UI():attributeValue("AXChildren")[6]
                     if showAllUI then
                         success = showAllUI:performAction("AXPress")
                     end
                 else
-                    local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Hide All Columns")
+                    --local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Hide All Columns")   -- TODO: This shouldn't be hardcoded in English
+                    local showAllUI = menu:UI():attributeValue("AXChildren")[7]
                     if showAllUI then
                         success = showAllUI:performAction("AXPress")
                     end
