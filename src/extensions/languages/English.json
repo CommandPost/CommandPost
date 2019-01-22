@@ -1203,6 +1203,9 @@
         "yes": "Yes",
         "zoomSlider": "Zoom Slider",
         "zoomSliderDescription": "Allows you to control timeline zoom.",
+        "resetBrowserLayoutForSelectedCollection_title": "Reset Browser Layout for Selected Collection",
+        "restoreBrowserLayoutForSelectedCollection_title": "Restore Browser Layout for Selected Collection",
+        "saveBrowserLayoutForSelectedCollection_title":  "Save Browser Layout for Selected Collection",
         "zoomToFit": "Zoom to Fit",
         "zoomToSamples": "Zoom to Samples"
     }

@@ -4,7 +4,7 @@
 
 local require = require
 
-local log                   = require("hs.logger").new("Columns")
+--local log                   = require("hs.logger").new("Columns")
 
 local geometry              = require("hs.geometry")
 
@@ -14,11 +14,6 @@ local tools                 = require("cp.tools")
 local Element               = require("cp.ui.Element")
 local Menu                  = require("cp.ui.Menu")
 
-local cache                 = axutils.cache
-local childFromRight        = axutils.childFromRight
-local childFromTop          = axutils.childFromTop
-local childMatching         = axutils.childMatching
-local childrenWithRole      = axutils.childrenWithRole
 local childWithRole         = axutils.childWithRole
 
 --------------------------------------------------------------------------------
