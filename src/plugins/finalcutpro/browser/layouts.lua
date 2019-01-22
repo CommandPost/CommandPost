@@ -17,7 +17,13 @@ local i18n              = require("cp.i18n")
 local just              = require("cp.just")
 local tools	            = require("cp.tools")
 
-local delayedTimer      = timer.delayed
+local tableContains     = tools.tableContains
+local tableCount        = tools.tableCount
+local tableMatch        = tools.tableMatch
+
+local playErrorSound    = tools.playErrorSound
+
+local childrenWithRole  = axutils.childrenWithRole
 local childWithRole     = axutils.childWithRole
 
 --------------------------------------------------------------------------------
@@ -27,16 +33,37 @@ local childWithRole     = axutils.childWithRole
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- NUMBER_OF_LAYOUTS -> number
+-- Constant
+-- The number of layouts supported.
 local NUMBER_OF_LAYOUTS = 5
 
+-- COLLECTION_LAYOUT_PREFERENCES_KEY -> string
+-- Constant
+-- The Preferences key for the Collection Layouts.
+local COLLECTION_LAYOUT_PREFERENCES_KEY = "finalcutpro.browser.collectionLayout"
+
+-- BROWSER_LAYOUT_PREFERENCES_KEY -> string
+-- Constant
+-- The Browser Layout Preferences Key.
+local BROWSER_LAYOUT_PREFERENCES_KEY = "finalcutpro.browser.layout."
+
+--- plugins.finalcutpro.browser.layouts.setupWatcher() -> none
+--- Function
+--- Creates or destroys the keyboard watcher.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.setupWatcher()
-    local collectionLayout = config.get("finalcutpro.browser.collectionLayout", {})
-    if tools.tableCount(collectionLayout) >= 1 then
+    local collectionLayout = config.get(COLLECTION_LAYOUT_PREFERENCES_KEY, {})
+    if tableCount(collectionLayout) >= 1 then
         --------------------------------------------------------------------------------
         -- Start the watcher:
         --------------------------------------------------------------------------------
         if not mod._watcher then
-            log.df("STARTING THE WATCHER")
             mod._watcher = eventtap.new({eventtap.event.types.leftMouseDown}, function(event)
                 if fcp:isFrontmost() then
                     local ui = fcp:browser():UI()
@@ -60,13 +87,21 @@ function mod.setupWatcher()
         -- Destroy the watcher:
         --------------------------------------------------------------------------------
         if mod._watcher then
-            log.df("DESTROYING THE WATCHER")
             mod._watcher:stop()
             mod._watcher = nil
         end
     end
 end
 
+--- plugins.finalcutpro.browser.layouts.getClipNameSize() -> string | nil
+--- Function
+--- Gets the Clip Name Size as a string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Clip Name Size as a string or `nil` if cannot be found.
 function mod.getClipNameSize()
     local menu = fcp:menu()
     if menu:isChecked({"View", "Browser", "Clip Name Size", "Small"}) then
@@ -76,8 +111,46 @@ function mod.getClipNameSize()
     elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Large"}) then
         return "Large"
     end
+    return nil
 end
 
+--- plugins.finalcutpro.browser.layouts.getActiveColumnsNames() -> table
+--- Function
+--- Get active column names in a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of active column names.
+function mod.getActiveColumnsNames()
+    local libraries = fcp:libraries()
+    local listUI = libraries:list():UI()
+    local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
+    local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
+    local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
+    local buttons = groupUI and childrenWithRole(groupUI, "AXButton")
+    if not buttons then
+        log.ef("getActiveColumns: Failed to get List Buttons")
+        return {}
+    end
+
+    local activeButtons = {}
+    for _, button in pairs(buttons) do
+        table.insert(activeButtons, button:attributeValue("AXTitle"))
+    end
+    return activeButtons
+end
+
+--- plugins.finalcutpro.browser.layouts.restoreLayoutFromTable(layout) -> boolean
+--- Function
+--- Restore Layout from Table.
+---
+--- Parameters:
+---  * layout - The layout settings in a table.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.restoreLayoutFromTable(layout)
 
     local libraries = fcp:libraries()
@@ -90,9 +163,8 @@ function mod.restoreLayoutFromTable(layout)
     if not just.doUntil(function()
         return libraries:isShowing()
     end) then
-        tools.playErrorSound()
-        log.ef("Failed to show libraries panel.")
-        return
+        log.ef("restoreLayoutFromTable: Failed to show libraries panel.")
+        return false
     end
 
     --------------------------------------------------------------------------------
@@ -110,18 +182,16 @@ function mod.restoreLayoutFromTable(layout)
             libraries:list():show()
             return libraries:isListView()
         end) then
-            tools.playErrorSound()
-            log.ef("Failed to change to list view.")
-            return
+            log.ef("restoreLayoutFromTable: Failed to change to list view.")
+            return false
         end
     else
         if not just.doUntil(function()
             libraries:filmstrip():show()
             return libraries:isFilmstripView()
         end) then
-            tools.playErrorSound()
-            log.ef("Failed to change to filmstrip view.")
-            return
+            log.ef("restoreLayoutFromTable: Failed to change to filmstrip view.")
+            return false
         end
     end
 
@@ -130,70 +200,131 @@ function mod.restoreLayoutFromTable(layout)
     --------------------------------------------------------------------------------
     if layout["isListView"] and layout["columns"] and #layout["columns"] >= 1 then
 
-        if not just.doUntil(function()
-            libraries:list():columns():show()
-            return libraries:list():columns():isMenuShowing()
-        end) then
-            tools.playErrorSound()
-            log.ef("Failed to activate the columns menu popup when restoring column data.")
-            return
-        end
+        --------------------------------------------------------------------------------
+        -- Check to see if we actually need to change the column data:
+        --------------------------------------------------------------------------------
+        local savedActiveColumnsNames = layout["activeColumnsNames"]
+        local activeColumnsNames = mod.getActiveColumnsNames()
+        local match = tableMatch(savedActiveColumnsNames, activeColumnsNames)
 
-        local menu = libraries:list():columns():menu()
-        if not menu then
-            tools.playErrorSound()
-            log.ef("Failed to get the columns menu popup.")
-            return
-        end
+        --------------------------------------------------------------------------------
+        -- We only update the columns if needed:
+        --------------------------------------------------------------------------------
+        if not match then
 
-        local menuUI = menu:UI()
-        if not menuUI then
-            tools.playErrorSound()
-            log.ef("Failed to get the columns menu popup UI.")
-            return
-        end
-
-        local menuChildren = menuUI:attributeValue("AXChildren")
-        if not menuChildren then
-            tools.playErrorSound()
-            log.ef("Could not get popup menu children.")
-            return
-        end
-
-        local numberOfMenuItems = #menuChildren
-
-        for i=1, numberOfMenuItems do
-
-            local menuItem = menu:UI():attributeValue("AXChildren")[i]
-
-            local currentValue = menuItem:attributeValue("AXMenuItemMarkChar") ~= nil
-            local savedValue = layout["columns"][i]
-
-            if currentValue ~= savedValue then
-
-                menuItem:performAction("AXPress")
-
-                if not just.doUntil(function()
-                    return not libraries:list():columns():isMenuShowing()
-                end) then
-                    tools.playErrorSound()
-                    log.ef("Failed to close menu after pressing a button.")
-                    return
-                end
-
-                if not just.doUntil(function()
-                    libraries:list():columns():show()
-                    return libraries:list():columns():isMenuShowing()
-                end) then
-                    tools.playErrorSound()
-                    log.ef("Failed to activate the columns menu popup in loop.")
-                    return
+            --------------------------------------------------------------------------------
+            -- Calculate the differences in the columns:
+            --------------------------------------------------------------------------------
+            local differenceCount = 0
+            if savedActiveColumnsNames then
+                for i=1, #activeColumnsNames do
+                    if not tableContains(savedActiveColumnsNames, activeColumnsNames[i]) then
+                        differenceCount = differenceCount + 1
+                    end
                 end
             end
+
+            if not just.doUntil(function()
+                libraries:list():columns():show()
+                return libraries:list():columns():isMenuShowing()
+            end) then
+                log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
+                return false
+            end
+
+            local menu = libraries:list():columns():menu()
+            if not menu then
+                log.ef("restoreLayoutFromTable: Failed to get the columns menu popup.")
+                return false
+            end
+
+            local menuUI = menu:UI()
+            if not menuUI then
+                log.ef("restoreLayoutFromTable: Failed to get the columns menu popup UI.")
+                return false
+            end
+
+            local menuChildren = menuUI:attributeValue("AXChildren")
+            if not menuChildren then
+                log.ef("restoreLayoutFromTable: Could not get popup menu children.")
+                return false
+            end
+
+            --------------------------------------------------------------------------------
+            -- Show All or Hide All if needed:
+            --------------------------------------------------------------------------------
+            if differenceCount > 10 then
+                --------------------------------------------------------------------------------
+                -- Press 'Show All' or 'Hide All':
+                --------------------------------------------------------------------------------
+                local success = false
+                if tableCount(savedActiveColumnsNames) > 10 then
+                    local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Show All Columns")
+                    if showAllUI then
+                        success = showAllUI:performAction("AXPress")
+                    end
+                else
+                    local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Hide All Columns")
+                    if showAllUI then
+                        success = showAllUI:performAction("AXPress")
+                    end
+                end
+
+                if success then
+                    --------------------------------------------------------------------------------
+                    -- Wait until menu has disappeared:
+                    --------------------------------------------------------------------------------
+                    if not just.doUntil(function()
+                        return not libraries:list():columns():isMenuShowing()
+                    end) then
+                        log.ef("restoreLayoutFromTable: Failed to close menu after pressing a button.")
+                        return
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Open it again:
+                    --------------------------------------------------------------------------------
+                    if not just.doUntil(function()
+                        libraries:list():columns():show()
+                        return libraries:list():columns():isMenuShowing()
+                    end) then
+                        log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
+                        return false
+                    end
+                end
+            end
+
+            local numberOfMenuItems = #menuChildren
+            for i=1, numberOfMenuItems do
+
+                local menuItem = menu:UI():attributeValue("AXChildren")[i]
+
+                local currentValue = menuItem:attributeValue("AXMenuItemMarkChar") ~= nil
+                local savedValue = layout["columns"][i]
+
+                if currentValue ~= savedValue then
+
+                    menuItem:performAction("AXPress")
+
+                    if not just.doUntil(function()
+                        return not libraries:list():columns():isMenuShowing()
+                    end) then
+                        log.ef("restoreLayoutFromTable: Failed to close menu after pressing a button.")
+                        return
+                    end
+
+                    if not just.doUntil(function()
+                        libraries:list():columns():show()
+                        return libraries:list():columns():isMenuShowing()
+                    end) then
+                        log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup in loop.")
+                        return
+                    end
+                end
+            end
+
+            menu:close()
         end
-
-        menu:close()
-
     end
 
     --------------------------------------------------------------------------------
@@ -226,8 +357,7 @@ function mod.restoreLayoutFromTable(layout)
         appearanceAndFiltering:show()
         return appearanceAndFiltering:isShowing()
     end) then
-        tools.playErrorSound()
-        log.ef("Could not open the Appearance & Filtering popup.")
+        log.ef("restoreLayoutFromTable: Could not open the Appearance & Filtering popup.")
         return
     end
 
@@ -239,8 +369,19 @@ function mod.restoreLayoutFromTable(layout)
     appearanceAndFiltering:continuousPlayback():checked(layout["continuousPlayback"])
 
     appearanceAndFiltering:hide()
+
+    return true
 end
 
+--- plugins.finalcutpro.browser.layouts.saveLayoutToTable() -> table | boolean
+--- Function
+--- Save Layout to Table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the layout settings if successful otherwise `false`.
 function mod.saveLayoutToTable()
 
     local libraries = fcp:libraries()
@@ -253,23 +394,8 @@ function mod.saveLayoutToTable()
     if not just.doUntil(function()
         return libraries:isShowing()
     end) then
-        tools.playErrorSound()
-        log.ef("Failed to show libraries panel.")
-        return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Save Clip Name Size:
-    --------------------------------------------------------------------------------
-    local getClipNameSize = function()
-        local menu = fcp:menu()
-        if menu:isChecked({"View", "Browser", "Clip Name Size", "Small"}) then
-            return "Small"
-        elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Medium"}) then
-            return "Medium"
-        elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Large"}) then
-            return "Large"
-        end
+        log.ef("saveLayoutToTable: Failed to show libraries panel.")
+        return false
     end
 
     local isListView = libraries:isListView()
@@ -284,23 +410,20 @@ function mod.saveLayoutToTable()
             libraries:list():columns():show()
             return libraries:list():columns():isMenuShowing()
         end) then
-            tools.playErrorSound()
-            log.ef("Failed to activate the columns menu popup when saving.")
-            return
+            log.ef("saveLayoutToTable: Failed to activate the columns menu popup when saving.")
+            return false
         end
 
         local menu = libraries:list():columns():menu()
         if not menu then
-            tools.playErrorSound()
-            log.ef("Failed to get the columns menu popup.")
-            return
+            log.ef("saveLayoutToTable: Failed to get the columns menu popup.")
+            return false
         end
 
         local menuUI = menu:UI()
         if not menuUI then
-            tools.playErrorSound()
-            log.ef("Failed to get the columns menu popup UI.")
-            return
+            log.ef("saveLayoutToTable: Failed to get the columns menu popup UI.")
+            return false
         end
 
         local menuChildren = menuUI:attributeValue("AXChildren")
@@ -338,14 +461,14 @@ function mod.saveLayoutToTable()
         appearanceAndFiltering:show()
         return appearanceAndFiltering:isShowing()
     end) then
-        tools.playErrorSound()
-        log.ef("Could not open the Appearance & Filtering popup.")
-        return
+        log.ef("saveLayoutToTable: Could not open the Appearance & Filtering popup.")
+        return false
     end
 
     local result = {
         ["clipNameSize"] = mod.getClipNameSize(),
         ["columns"] = columnResult,
+        ["activeColumnsNames"] = mod.getActiveColumnsNames(),
         ["sortOrder"] = sortOrder,
         ["isListView"] = isListView,
         ["clipHeight"] = appearanceAndFiltering:clipHeight():value(),
@@ -361,7 +484,15 @@ function mod.saveLayoutToTable()
     return result
 end
 
-
+--- plugins.finalcutpro.browser.layouts.getSingleSelectedCollection() -> string | nil
+--- Function
+--- If a single collection is selected in the browser it's value is returned as a string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string if successful otherwise `nil`.
 function mod.getSingleSelectedCollection()
     local selectedRowsUI = fcp:libraries():sidebar():selectedRowsUI()
     if selectedRowsUI and #selectedRowsUI == 1 and childWithRole(selectedRowsUI[1], "AXTextField") then
@@ -370,59 +501,97 @@ function mod.getSingleSelectedCollection()
     return nil
 end
 
+--- plugins.finalcutpro.browser.layouts.restoreBrowserLayoutForSelectedCollection() -> none
+--- Function
+--- Restore Browser Layout for selected collection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * An error sound will play if there's nothing to restore.
 function mod.restoreBrowserLayoutForSelectedCollection()
     local value = mod.getSingleSelectedCollection()
     if value then
-        local collectionLayout = config.get("finalcutpro.browser.collectionLayout", {})
+        local collectionLayout = config.get(COLLECTION_LAYOUT_PREFERENCES_KEY, {})
         local selectedCollection = collectionLayout[value]
         if selectedCollection then
             if mod.lastCollection == value then
-                log.df("we already have this collection loaded")
+                --------------------------------------------------------------------------------
+                -- Collection is already loaded:
+                --------------------------------------------------------------------------------
                 return
             end
-            mod.restoreLayoutFromTable(selectedCollection)
             mod.lastCollection = value
-            return
+            if not mod.restoreLayoutFromTable(selectedCollection) then
+                playErrorSound()
+                return
+            end
+        else
+            mod.lastCollection = value
         end
+    else
+        playErrorSound()
     end
-    tools.playErrorSound()
 end
 
+--- plugins.finalcutpro.browser.layouts.saveBrowserLayoutForSelectedCollection() -> none
+--- Function
+--- Save Browser Layout for selected collection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * An error sound will play if there's nothing to save.
 function mod.saveBrowserLayoutForSelectedCollection()
-
     local value = mod.getSingleSelectedCollection()
-
     if value then
-        local collectionLayout = config.get("finalcutpro.browser.collectionLayout", {})
+        local collectionLayout = config.get(COLLECTION_LAYOUT_PREFERENCES_KEY, {})
         local result = mod.saveLayoutToTable()
         if result then
             collectionLayout[value] = mod.saveLayoutToTable()
-            config.set("finalcutpro.browser.collectionLayout", collectionLayout)
-            log.df("VICTORY!")
+            config.set(COLLECTION_LAYOUT_PREFERENCES_KEY, collectionLayout)
             mod.setupWatcher()
             return
         end
-    else
-        tools.playErrorSound()
-        log.ef("More than one collection selected.")
-        return
     end
+    playErrorSound()
 end
 
+--- plugins.finalcutpro.browser.layouts.resetBrowserLayoutForSelectedCollection() -> none
+--- Function
+--- Reset Browser Layout for selected collection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * An error sound will play if there's nothing to reset.
 function mod.resetBrowserLayoutForSelectedCollection()
     local value = mod.getSingleSelectedCollection()
     if value then
-        local collectionLayout = config.get("finalcutpro.browser.collectionLayout", {})
+        local collectionLayout = config.get(COLLECTION_LAYOUT_PREFERENCES_KEY, {})
         collectionLayout[value] = nil
-        config.set("finalcutpro.browser.collectionLayout", collectionLayout)
+        config.set(COLLECTION_LAYOUT_PREFERENCES_KEY, collectionLayout)
         mod.setupWatcher()
-        log.df("VICTORY!")
     else
-        log.df("Nothing to reset")
-        tools.playErrorSound()
+        playErrorSound()
     end
 end
 
+--- plugins.finalcutpro.browser.layouts.lastCollection -> string | nil
+--- Variable
+--- The last collection registered.
 mod.lastCollection = mod.getSingleSelectedCollection()
 
 --------------------------------------------------------------------------------
@@ -457,7 +626,9 @@ function plugin.init(deps)
             :whenActivated(function()
                 local result = mod.saveLayoutToTable()
                 if result then
-                    config.set("finalcutpro.browser.layout." .. id, result)
+                    config.set(BROWSER_LAYOUT_PREFERENCES_KEY .. id, result)
+                else
+                    playErrorSound()
                 end
             end)
 
@@ -466,9 +637,9 @@ function plugin.init(deps)
             :titled(i18n("restoreBrowserLayoutToMemory") .. " " .. id)
             :groupedBy("browser")
             :whenActivated(function()
-                local layout = config.get("finalcutpro.browser.layout." .. id)
+                local layout = config.get(BROWSER_LAYOUT_PREFERENCES_KEY .. id)
                 if not mod.restoreLayoutFromTable(layout) then
-                    tools.playErrorSound()
+                    playErrorSound()
                 end
             end)
     end
