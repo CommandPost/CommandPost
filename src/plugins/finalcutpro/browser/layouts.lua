@@ -131,10 +131,8 @@ function mod.getActiveColumnsNames()
     local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
     local buttons = groupUI and childrenWithRole(groupUI, "AXButton")
     if not buttons then
-        log.ef("getActiveColumns: Failed to get List Buttons")
         return {}
     end
-
     local activeButtons = {}
     for _, button in pairs(buttons) do
         table.insert(activeButtons, button:attributeValue("AXTitle"))
