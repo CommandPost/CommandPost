@@ -89,6 +89,8 @@
         "brightness9": "Brightnss",
         "browser": "Browser",
         "browser_group": "Browser",
+        "browserDurationSlider": "Browser Duration Slider",
+        "browserDurationSliderDescription": "Allows you to control the Browser Duration.",
         "browserHeightSlider": "Browser Height Slider",
         "browserHeightSliderDescription": "Allows you to control the Browser height.",
         "bugReport": "Bug Report",

@@ -1,10 +1,10 @@
---- === plugins.finalcutpro.touchbar.widgets.height ===
+--- === plugins.finalcutpro.touchbar.widgets.duration ===
 ---
---- Final Cut Pro Browser Height Control Widget for Touch Bar.
+--- Final Cut Pro Browser Duration Control Widget for Touch Bar.
 
 local require           = require
 
---local log               = require("hs.logger").new("heightWidget")
+--local log               = require("hs.logger").new("duration")
 
 local canvas            = require("hs.canvas")
 
@@ -20,7 +20,7 @@ local touchbar          = require("hs._asm.undocumented.touchbar")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.touchbar.widgets.height.widget() -> `hs._asm.undocumented.touchbar.item`
+--- plugins.finalcutpro.touchbar.widgets.duration.widget() -> `hs._asm.undocumented.touchbar.item`
 --- Function
 --- The Widget
 ---
@@ -97,20 +97,20 @@ function mod.widget()
             }
 
             if m == "mouseDown" or m == "mouseMove" then
-                fcp:libraries():appearanceAndFiltering():show():clipHeight():setValue(x/(canvasWidth/10))
+                fcp:libraries():appearanceAndFiltering():show():duration():setValue(x/(canvasWidth/11))
             elseif m == "mouseUp" then
                 fcp:libraries():appearanceAndFiltering():hide()
             end
     end)
 
-    mod.item = touchbar.item.newCanvas(widgetCanvas, "browserHeightSlider")
+    mod.item = touchbar.item.newCanvas(widgetCanvas, "browserDurationSlider")
         :canvasClickColor{ alpha = 0.0 }
 
     return mod.item
 
 end
 
---- plugins.finalcutpro.touchbar.widgets.height.init() -> nil
+--- plugins.finalcutpro.touchbar.widgets.duration.init() -> nil
 --- Function
 --- Initialise the module.
 ---
@@ -123,11 +123,11 @@ function mod.init(deps)
 
     local params = {
         group = "fcpx",
-        text = i18n("browserHeightSlider"),
-        subText = i18n("browserHeightSliderDescription"),
+        text = i18n("browserDurationSlider"),
+        subText = i18n("browserDurationSliderDescription"),
         item = mod.widget,
     }
-    deps.manager.widgets:new("browserHeightSlider", params)
+    deps.manager.widgets:new("browserDurationSlider", params)
 
     return mod
 
@@ -139,7 +139,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.touchbar.widgets.height",
+    id              = "finalcutpro.touchbar.widgets.duration",
     group           = "finalcutpro",
     dependencies    = {
         ["core.touchbar.manager"] = "manager",
