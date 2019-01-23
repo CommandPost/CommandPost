@@ -97,7 +97,12 @@ function mod.widget()
             }
 
             if m == "mouseDown" or m == "mouseMove" then
-                fcp:libraries():appearanceAndFiltering():show():clipHeight():setValue(x/(canvasWidth/10))
+                --------------------------------------------------------------------------------
+                -- The height slider goes from 32 to 135:
+                --------------------------------------------------------------------------------
+                local value = x/(canvasWidth/10)
+                value = (value * (135 - 32) / 10) + 32
+                fcp:libraries():appearanceAndFiltering():show():clipHeight():value(value)
             elseif m == "mouseUp" then
                 fcp:libraries():appearanceAndFiltering():hide()
             end
