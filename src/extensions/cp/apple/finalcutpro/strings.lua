@@ -129,7 +129,7 @@ function mod:reset()
     })
 end
 
---- cp.apple.finalcutpro:string(key[, locale][, quiet]]) -> string
+--- cp.apple.finalcutpro.strings:find(key[, locale][, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`.
 --- If no `context` value is provided, the [current context](#context) is used.
@@ -157,7 +157,7 @@ function mod:find(key, locale, quiet)
     return self._strings and self._strings:find(key, context, quiet)
 end
 
---- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
+--- cp.apple.finalcutpro.strings:findKeys(string[, lang]) -> {string}
 --- Method
 --- Looks up an application string and returns an array of keys that match. It will take into account current language the app is running in, or use `lang` if provided.
 ---

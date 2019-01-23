@@ -8,6 +8,7 @@ local log                                       = require("hs.logger").new("tbMa
 
 local canvas                                    = require("hs.canvas")
 local fnutils                                   = require("hs.fnutils")
+local host                                      = require("hs.host")
 local image                                     = require("hs.image")
 local styledtext                                = require("hs.styledtext")
 
@@ -805,7 +806,7 @@ function mod.update()
     --------------------------------------------------------------------------------
     if items and items[activeGroupAndSubGroup] and items[activeGroupAndSubGroup]["bankLabel"] then
         local bankLabel = items[activeGroupAndSubGroup]["bankLabel"]
-        local id = "bankLabel"
+        local id = "bankLabel" .. activeGroupAndSubGroup .. host.uuid() -- I'm not sure why these need to be unique, but it seems to fix crashes.
         local bankLabelCanvas = canvas.new{x = 0, y = 0, h = 30, w = 50}
         bankLabelCanvas[1] = {
             type    = "text",
