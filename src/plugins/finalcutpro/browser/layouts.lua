@@ -1,6 +1,37 @@
 --- === plugins.finalcutpro.browser.layouts ===
 ---
 --- Allows you to save and restore Browser Layouts.
+---
+--- This plugin creates two different types of actions:
+---
+--- **Save/Restore Browser Layout to Memory**
+--- This feature allows you save and restore five custom browser layouts, which can be
+--- easily triggered by a CommandPost action, such as a keyboard shortcut.
+---
+--- *Save/Restore/Set Browser Layout for Selected Collection**
+--- This feature allows you to save a browser layout for the currently selected
+--- collection. This feature will only work if a single collection (either Keyword
+--- Collection or Smart Collection) is selected - if more than one is selected then
+--- you'll just hear an error beep. Once you save a browser layout, then the next time
+--- you click on the collection with your mouse, your previously saved browser layout
+--- will be automatically restored. Browser layouts are only automatically loaded when
+--- you use your mouse - collection layouts won't be loaded if you change collections
+--- using keyboard shortcuts. You can also temporarily prevent a browser layout from
+--- automatically loading by holding down the OPTION key.
+---
+--- **Developer Note:**
+--- This plugin currently uses a `hs.eventtap` rather than AX Notifications, because in
+--- testing we found the AX Notifications to be too unreliable. We also opted to just
+--- use the collection name as the reference point, rather than the path to the
+--- collection name (i.e. "Edits" instead of
+--- "Library Name > Event Name > Folder Name > Collection Name") so that browser
+--- layouts can easily be common across multiple libraries (i.e if you always have a
+--- Smart Collection called "Edits", then this smart collection will always have the
+--- same browser layout across all your libraries.
+---
+--- We're also currently using the menu position for selecting "Show/Hide All Columns"
+--- as the strings for these values are contained within a `.nib` file not a `.strings`
+--- file.
 
 local require           = require
 
@@ -47,6 +78,11 @@ local COLLECTION_LAYOUT_PREFERENCES_KEY = "finalcutpro.browser.collectionLayout"
 -- Constant
 -- The Browser Layout Preferences Key.
 local BROWSER_LAYOUT_PREFERENCES_KEY = "finalcutpro.browser.layout."
+
+--- plugins.finalcutpro.browser.layouts.busy -> boolean
+--- Variable
+--- Are we already in the process of doing something?
+mod.busy = false
 
 --- plugins.finalcutpro.browser.layouts.setupWatcher() -> none
 --- Function
@@ -535,7 +571,7 @@ function mod.restoreBrowserLayoutForSelectedCollection()
     if value then
         local collectionLayout = config.get(COLLECTION_LAYOUT_PREFERENCES_KEY, {})
         local selectedCollection = collectionLayout[value]
-        if selectedCollection then
+        if selectedCollection and not eventtap.checkKeyboardModifiers()["alt"] then
             if mod.lastCollection == value then
                 --------------------------------------------------------------------------------
                 -- Collection is already loaded:
@@ -641,12 +677,15 @@ function plugin.init(deps)
             :titled(i18n("saveBrowserLayoutToMemory") .. " " .. id)
             :groupedBy("browser")
             :whenActivated(function()
+                if mod.busy then return end
+                mod.busy = true
                 local result = mod.saveLayoutToTable()
                 if result then
                     config.set(BROWSER_LAYOUT_PREFERENCES_KEY .. id, result)
                 else
                     playErrorSound()
                 end
+                mod.busy = false
             end)
 
         fcpxCmds
@@ -654,10 +693,13 @@ function plugin.init(deps)
             :titled(i18n("restoreBrowserLayoutToMemory") .. " " .. id)
             :groupedBy("browser")
             :whenActivated(function()
+                if mod.busy then return end
+                mod.busy = true
                 local layout = config.get(BROWSER_LAYOUT_PREFERENCES_KEY .. id)
                 if not mod.restoreLayoutFromTable(layout) then
                     playErrorSound()
                 end
+                mod.busy = false
             end)
     end
 
@@ -667,17 +709,32 @@ function plugin.init(deps)
     fcpxCmds
         :add("saveBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
-        :whenActivated(mod.saveBrowserLayoutForSelectedCollection)
+        :whenActivated(function()
+            if mod.busy then return end
+            mod.busy = true
+            mod.saveBrowserLayoutForSelectedCollection()
+            mod.busy = false
+        end)
 
     fcpxCmds
         :add("restoreBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
-        :whenActivated(mod.restoreBrowserLayoutForSelectedCollection)
+        :whenActivated(function()
+            if mod.busy then return end
+            mod.busy = true
+            mod.restoreBrowserLayoutForSelectedCollection()
+            mod.busy = false
+        end)
 
     fcpxCmds
         :add("resetBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
-        :whenActivated(mod.resetBrowserLayoutForSelectedCollection)
+        :whenActivated(function()
+            if mod.busy then return end
+            mod.busy = true
+            mod.resetBrowserLayoutForSelectedCollection()
+            mod.busy = false
+        end)
 
     return mod
 
