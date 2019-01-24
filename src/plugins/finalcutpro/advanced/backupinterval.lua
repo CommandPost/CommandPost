@@ -72,8 +72,6 @@ function plugin.init(deps)
             }
         )
 
-    return mod
-
 end
 
 return plugin
