@@ -5,14 +5,14 @@
 local require = require
 
 local application		  = require("hs.application")
-local console			    = require("hs.console")
-local fs				      = require("hs.fs")
+local console			  = require("hs.console")
+local fs				  = require("hs.fs")
 local settings			  = require("hs.settings")
-local window			    = require("hs.window")
+local window			  = require("hs.window")
 
-local prop				    = require("cp.prop")
-local sourcewatcher		= require("cp.sourcewatcher")
-local watcher			    = require("cp.watcher")
+local prop				  = require("cp.prop")
+local sourcewatcher		  = require("cp.sourcewatcher")
+local watcher			  = require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --

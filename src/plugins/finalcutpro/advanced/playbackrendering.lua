@@ -37,13 +37,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addCheckbox(2204.1,
-        {
-            label = i18n("enableRenderingDuringPlayback"),
-            onchange = function(_, params) mod.enabled(params.checked) end,
-            checked = function() return not mod.enabled() end,
-        })
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addCheckbox(2204.1,
+            {
+                label = i18n("enableRenderingDuringPlayback"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = function() return not mod.enabled() end,
+            })
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

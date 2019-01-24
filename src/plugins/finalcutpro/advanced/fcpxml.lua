@@ -70,23 +70,22 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-          --------------------------------------------------------------------------------
-          -- Add Preferences Checkbox:
-          --------------------------------------------------------------------------------
-          :addCheckbox(2205,
-          {
-              label = i18n("showHiddenFCPXMLImportOptions"),
-              onchange = function(_, params) mod.importEnabled(params.checked) end,
-              checked = mod.importEnabled,
-          })
-          :addCheckbox(2206,
-          {
-              label = i18n("showHiddenFCPXMLExportOptions"),
-              onchange = function(_, params) mod.exportEnabled(params.checked) end,
-              checked = mod.exportEnabled,
-          })
-
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+              :addCheckbox(2205,
+              {
+                  label = i18n("showHiddenFCPXMLImportOptions"),
+                  onchange = function(_, params) mod.importEnabled(params.checked) end,
+                  checked = mod.importEnabled,
+              })
+              :addCheckbox(2206,
+              {
+                  label = i18n("showHiddenFCPXMLExportOptions"),
+                  onchange = function(_, params) mod.exportEnabled(params.checked) end,
+                  checked = mod.exportEnabled,
+              })
+    end
     return mod
 end
 

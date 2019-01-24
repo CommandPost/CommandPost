@@ -319,83 +319,86 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
+    local panel = deps.prefs.panel
+    if panel then
+        panel
 
-        :addContent(2000, ui.style ([[
-            .highLightPlayheadSelect {
-                width: 100px;
-                float: left;
-            }
-            .highlightPlayheadDiv::after {
-              content: "";
-              clear: both;
-              display: table;
-            }
-        ]]))
-        :addContent(2000.1,[[<div class="highlightPlayheadDiv">]], false)
-        :addHeading(2000.2, i18n("highlightPlayhead"))
-        :addSelect(2000.3,
-        {
-            label       = i18n("highlightPlayheadColour"),
-            value       = mod.getHighlightColor,
-            options     = {
-                {
-                    label = i18n("red"),
-                    value = "Red",
+            :addContent(2000, ui.style ([[
+                .highLightPlayheadSelect {
+                    width: 100px;
+                    float: left;
+                }
+                .highlightPlayheadDiv::after {
+                  content: "";
+                  clear: both;
+                  display: table;
+                }
+            ]]))
+            :addContent(2000.1,[[<div class="highlightPlayheadDiv">]], false)
+            :addHeading(2000.2, i18n("highlightPlayhead"))
+            :addSelect(2000.3,
+            {
+                label       = i18n("highlightPlayheadColour"),
+                value       = mod.getHighlightColor,
+                options     = {
+                    {
+                        label = i18n("red"),
+                        value = "Red",
+                    },
+                    {
+                        label = i18n("blue"),
+                        value = "Blue",
+                    },
+                    {
+                        label = i18n("green"),
+                        value = "Green",
+                    },
+                    {
+                        label = i18n("yellow"),
+                        value = "Yellow",
+                    },
+                    {
+                        label = i18n("custom"),
+                        value = "Custom",
+                    },
                 },
-                {
-                    label = i18n("blue"),
-                    value = "Blue",
+                required    = true,
+                onchange    = function(_, params) mod.changeHighlightColor(params.value) end,
+                class       = "highLightPlayheadSelect",
+            })
+            :addSelect(2000.4,
+            {
+                label       = i18n("highlightPlayheadShape"),
+                value       = mod.getHighlightShape,
+                options     = {
+                    {
+                        label = i18n("rectangle"),
+                        value = SHAPE_RECTANGLE,
+                    },
+                    {
+                        label = i18n("circle"),
+                        value = SHAPE_CIRCLE,
+                    },
+                    {
+                        label = i18n("diamond"),
+                        value = SHAPE_DIAMOND,
+                    },
                 },
-                {
-                    label = i18n("green"),
-                    value = "Green",
-                },
-                {
-                    label = i18n("yellow"),
-                    value = "Yellow",
-                },
-                {
-                    label = i18n("custom"),
-                    value = "Custom",
-                },
-            },
-            required    = true,
-            onchange    = function(_, params) mod.changeHighlightColor(params.value) end,
-            class       = "highLightPlayheadSelect",
-        })
-        :addSelect(2000.4,
-        {
-            label       = i18n("highlightPlayheadShape"),
-            value       = mod.getHighlightShape,
-            options     = {
-                {
-                    label = i18n("rectangle"),
-                    value = SHAPE_RECTANGLE,
-                },
-                {
-                    label = i18n("circle"),
-                    value = SHAPE_CIRCLE,
-                },
-                {
-                    label = i18n("diamond"),
-                    value = SHAPE_DIAMOND,
-                },
-            },
-            required    = true,
-            onchange    = function(_, params) mod.setHighlightShape(params.value) end,
-            class       = "highLightPlayheadSelect",
-        })
-        :addSelect(2000.5,
-        {
-            label       = i18n("highlightPlayheadTime"),
-            value       = mod.getHighlightTime,
-            options     = timeOptions(),
-            required    = true,
-            onchange    = function(_, params) mod.setHighlightTime(params.value) end,
-            class       = "highLightPlayheadSelect",
-        })
-        :addContent(2000.6,"</div>", false)
+                required    = true,
+                onchange    = function(_, params) mod.setHighlightShape(params.value) end,
+                class       = "highLightPlayheadSelect",
+            })
+            :addSelect(2000.5,
+            {
+                label       = i18n("highlightPlayheadTime"),
+                value       = mod.getHighlightTime,
+                options     = timeOptions(),
+                required    = true,
+                onchange    = function(_, params) mod.setHighlightTime(params.value) end,
+                class       = "highLightPlayheadSelect",
+            })
+            :addContent(2000.6,"</div>", false)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

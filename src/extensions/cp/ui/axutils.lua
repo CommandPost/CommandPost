@@ -4,8 +4,8 @@
 
 local require = require
 
-local canvas					= require("hs.canvas")
-local fnutils					= require("hs.fnutils")
+local canvas		  = require("hs.canvas")
+local fnutils		  = require("hs.fnutils")
 local prop            = require("cp.prop")
 local is              = require("cp.is")
 

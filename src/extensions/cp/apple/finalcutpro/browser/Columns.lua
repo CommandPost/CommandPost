@@ -4,17 +4,20 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("Columns")
+--local log                       = require("hs.logger").new("Columns")
 
-local geometry              = require("hs.geometry")
+local ax                        = require("hs._asm.axuielement")
 
-local axutils               = require("cp.ui.axutils")
-local tools                 = require("cp.tools")
+local geometry                  = require("hs.geometry")
 
-local Element               = require("cp.ui.Element")
-local Menu                  = require("cp.ui.Menu")
+local axutils                   = require("cp.ui.axutils")
+local tools                     = require("cp.tools")
 
-local childWithRole         = axutils.childWithRole
+local Element                   = require("cp.ui.Element")
+local Menu                      = require("cp.ui.Menu")
+
+local systemElementAtPosition   = ax.systemElementAtPosition
+local childWithRole             = axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --
@@ -51,10 +54,17 @@ end
 function Columns:show()
     local ui = self:UI()
     if ui then
-        local frame = ui:attributeValue("AXFrame")
-        if frame then
-            local point = geometry.point(frame.w/2, frame.y+4)
-            tools.ninjaRightMouseClick(point)
+        local scrollAreaFrame = ui:attributeValue("AXFrame")
+        local outlineUI = axutils.childWithRole(ui, "AXOutline")
+        local outlineFrame = outlineUI and outlineUI:attributeValue("AXFrame")
+        if scrollAreaFrame and outlineFrame then
+            local headerHeight = (scrollAreaFrame.h - outlineFrame.h) / 2
+            local point = geometry.point(scrollAreaFrame.x+headerHeight, scrollAreaFrame.y+headerHeight)
+            local element = point and systemElementAtPosition(point)
+            if element and element:attributeValue("AXParent"):attributeValue("AXParent") == outlineUI then
+                --cp.dev.highlightPoint(point)
+                tools.ninjaRightMouseClick(point)
+            end
         end
     end
     return self

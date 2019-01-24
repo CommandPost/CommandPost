@@ -52,13 +52,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addCheckbox(2204,
-        {
-            label = i18n("enableWaveformDrawing"),
-            onchange = function(_, params) mod.disableWaveform(params.checked) end,
-            checked = function() return mod.disableWaveform() end,
-        })
+    local panel = deps.prefs.panel
+    if panel then
+        deps.prefs.panel
+            :addCheckbox(2204,
+            {
+                label = i18n("enableWaveformDrawing"),
+                onchange = function(_, params) mod.disableWaveform(params.checked) end,
+                checked = function() return mod.disableWaveform() end,
+            })
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Command:
