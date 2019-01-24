@@ -4,9 +4,6 @@
 
 local require = require
 
-local log               = require("hs.logger").new("backup")
-
-local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
