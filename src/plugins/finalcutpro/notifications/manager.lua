@@ -4,7 +4,6 @@
 
 local require = require
 
-local distributednotifications                  = require("hs.distributednotifications")
 local fs                                        = require("hs.fs")
 
 local plist                                     = require("cp.plist")
@@ -111,6 +110,7 @@ local function ensureWatching()
         -- SHARE SUCCESSFUL NOTIFICATION WATCHER:
         --------------------------------------------------------------------------------
         -- NOTE: ProTranscoderDidCompleteNotification doesn't seem to trigger when exporting small clips.
+        local distributednotifications = require("hs.distributednotifications")
         mod.successWatcher = distributednotifications.new(notificationWatcherAction, "uploadSuccess")
         mod.successWatcher:start()
 

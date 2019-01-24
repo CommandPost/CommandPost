@@ -6,7 +6,6 @@
 
 local require = require
 
-local distributednotifications          = require("hs.distributednotifications")
 local eventtap                          = require("hs.eventtap")
 local mouse                             = require("hs.mouse")
 local pathwatcher                       = require("hs.pathwatcher")
@@ -390,6 +389,7 @@ function mod.start()
     --------------------------------------------------------------------------------
     -- Setup Mouse Watcher:
     --------------------------------------------------------------------------------
+    local distributednotifications = require("hs.distributednotifications")
     mod.distributedObserver = distributednotifications.new(function(name)
         if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
             --log.df("New Multi-touch Device Detected. Re-scanning...")
