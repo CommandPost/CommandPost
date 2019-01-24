@@ -158,7 +158,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * A table of active column names.
+---  * A table of active column names or an empty table if something goes wrong.
 function mod.getActiveColumnsNames()
     local libraries = fcp:libraries()
     local listUI = libraries:list():UI()
@@ -237,26 +237,14 @@ function mod.restoreLayoutFromTable(layout)
         --------------------------------------------------------------------------------
         -- Check to see if we actually need to change the column data:
         --------------------------------------------------------------------------------
-        local savedActiveColumnsNames = layout["activeColumnsNames"]
+        local savedActiveColumnsNames = layout["activeColumnsNames"] or {}
         local activeColumnsNames = mod.getActiveColumnsNames()
         local match = tableMatch(savedActiveColumnsNames, activeColumnsNames)
 
         --------------------------------------------------------------------------------
-        -- We only update the columns if needed:
+        -- We only update the columns if there's columns missing or need to be added:
         --------------------------------------------------------------------------------
         if not match then
-
-            --------------------------------------------------------------------------------
-            -- Calculate the differences in the columns:
-            --------------------------------------------------------------------------------
-            local differenceCount = 0
-            if savedActiveColumnsNames then
-                for i=1, #activeColumnsNames do
-                    if not tableContains(savedActiveColumnsNames, activeColumnsNames[i]) then
-                        differenceCount = differenceCount + 1
-                    end
-                end
-            end
 
             if not just.doUntil(function()
                 libraries:list():columns():show()
@@ -285,38 +273,29 @@ function mod.restoreLayoutFromTable(layout)
             end
 
             --------------------------------------------------------------------------------
-            -- Show All or Hide All if needed:
+            -- We press 'Show All Columns' or 'Hide All Columns' if half of the menu items
+            -- are different than what has been requested:
             --------------------------------------------------------------------------------
-            if differenceCount > 10 then
+            local threshold = 24/2
+            local activeColumnsNamesCount = tableCount(activeColumnsNames)
+            local savedActiveColumnsNamesCount = tableCount(savedActiveColumnsNames)
+            if (activeColumnsNamesCount > threshold and savedActiveColumnsNamesCount < threshold) or (activeColumnsNamesCount < threshold and savedActiveColumnsNamesCount > threshold) then
                 --------------------------------------------------------------------------------
                 -- Press 'Show All' or 'Hide All':
                 --------------------------------------------------------------------------------
-
-                --[[
-                    Final Cut Pro: Found resources containing "Show All Columns":
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListTagsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListCaptionsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFOrganizerFilmListView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFDataListClipsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListTagsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListCaptionsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFOrganizerFilmListView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFDataListClipsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListTagsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListCaptionsView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFOrganizerFilmListView.nib matches
-                    Binary file /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFDataListClipsView.nib matches
-                --]]
-
                 local success = false
                 if tableCount(savedActiveColumnsNames) > 10 then
-                    --local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Show All Columns")   -- TODO: This shouldn't be hardcoded in English
+                    --------------------------------------------------------------------------------
+                    -- Show All Columns:
+                    --------------------------------------------------------------------------------
                     local showAllUI = menu:UI():attributeValue("AXChildren")[6]
                     if showAllUI then
                         success = showAllUI:performAction("AXPress")
                     end
                 else
-                    --local showAllUI = axutils.childWith(menu:UI(), "AXTitle", "Hide All Columns")   -- TODO: This shouldn't be hardcoded in English
+                    --------------------------------------------------------------------------------
+                    -- Hide All Columns:
+                    --------------------------------------------------------------------------------
                     local showAllUI = menu:UI():attributeValue("AXChildren")[7]
                     if showAllUI then
                         success = showAllUI:performAction("AXPress")
@@ -333,20 +312,23 @@ function mod.restoreLayoutFromTable(layout)
                         log.ef("restoreLayoutFromTable: Failed to close menu after pressing a button.")
                         return
                     end
-
-                    --------------------------------------------------------------------------------
-                    -- Open it again:
-                    --------------------------------------------------------------------------------
-                    if not just.doUntil(function()
-                        libraries:list():columns():show()
-                        return libraries:list():columns():isMenuShowing()
-                    end) then
-                        log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
-                        return false
-                    end
                 end
             end
 
+            --------------------------------------------------------------------------------
+            -- Trigger the columns popup:
+            --------------------------------------------------------------------------------
+            if not just.doUntil(function()
+                libraries:list():columns():show()
+                return libraries:list():columns():isMenuShowing()
+            end) then
+                log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
+                return false
+            end
+
+            --------------------------------------------------------------------------------
+            -- Press individual menu items:
+            --------------------------------------------------------------------------------
             local numberOfMenuItems = #menuChildren
             for i=1, numberOfMenuItems do
 
@@ -391,10 +373,16 @@ function mod.restoreLayoutFromTable(layout)
             local kids = group:attributeValue("AXChildren")
             for _, button in pairs(kids) do
                 if layout["sortOrder"][button:attributeValue("AXTitle")] ~= "AXUnknownSortDirection" then
-                    button:performAction("AXPress")
-                    if layout["sortOrder"][button:attributeValue("AXTitle")] ~= button:attributeValue("AXSortDirection") then
+                    --------------------------------------------------------------------------------
+                    -- We only need to press the button if it's not already selected:
+                    --------------------------------------------------------------------------------
+                    if button:attributeValue("AXSortDirection") == "AXUnknownSortDirection" then
                         button:performAction("AXPress")
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- We then need to press it again if it's going the wrong direction:
+                    --------------------------------------------------------------------------------
                     if layout["sortOrder"][button:attributeValue("AXTitle")] ~= button:attributeValue("AXSortDirection") then
                         button:performAction("AXPress")
                     end
@@ -404,7 +392,7 @@ function mod.restoreLayoutFromTable(layout)
     end
 
     --------------------------------------------------------------------------------
-    -- Restore Appearance & Filtering Options:
+    -- Open the Appearance & Filtering Popup:
     --------------------------------------------------------------------------------
     if not just.doUntil(function()
         appearanceAndFiltering:show()
@@ -414,6 +402,9 @@ function mod.restoreLayoutFromTable(layout)
         return
     end
 
+    --------------------------------------------------------------------------------
+    -- Restore Appearance & Filtering Options:
+    --------------------------------------------------------------------------------
     appearanceAndFiltering:clipHeight():value(layout["clipHeight"])
     appearanceAndFiltering:duration():value(layout["duration"])
     appearanceAndFiltering:groupBy():value(layout["groupBy"])
@@ -421,7 +412,16 @@ function mod.restoreLayoutFromTable(layout)
     appearanceAndFiltering:waveforms():checked(layout["waveforms"])
     appearanceAndFiltering:continuousPlayback():checked(layout["continuousPlayback"])
 
+    --------------------------------------------------------------------------------
+    -- Close the Appearance & Filtering Popup:
+    --------------------------------------------------------------------------------
     appearanceAndFiltering:hide()
+    if not just.doUntil(function()
+        return not appearanceAndFiltering:isShowing()
+    end) then
+        log.ef("restoreLayoutFromTable: Could not close the Appearance & Filtering popup.")
+        return
+    end
 
     return true
 end
@@ -451,6 +451,9 @@ function mod.saveLayoutToTable()
         return false
     end
 
+    --------------------------------------------------------------------------------
+    -- Are we currently in list view?
+    --------------------------------------------------------------------------------
     local isListView = libraries:isListView()
 
     --------------------------------------------------------------------------------
@@ -459,6 +462,9 @@ function mod.saveLayoutToTable()
     local columnResult = {}
     if isListView then
 
+        --------------------------------------------------------------------------------
+        -- Open the Columns popup:
+        --------------------------------------------------------------------------------
         if not just.doUntil(function()
             libraries:list():columns():show()
             return libraries:list():columns():isMenuShowing()
@@ -485,7 +491,16 @@ function mod.saveLayoutToTable()
             columnResult[i] = menuItem:attributeValue("AXMenuItemMarkChar") ~= nil
         end
 
-        menu:close()
+        --------------------------------------------------------------------------------
+        -- Close the Columns popup:
+        --------------------------------------------------------------------------------
+        if not just.doUntil(function()
+            menu:close()
+            return not libraries:list():columns():isMenuShowing()
+        end) then
+            log.ef("saveLayoutToTable: Failed to close the columns menu popup when saving.")
+            return false
+        end
 
     end
 
@@ -508,7 +523,7 @@ function mod.saveLayoutToTable()
     end
 
     --------------------------------------------------------------------------------
-    -- Save Appearance & Filtering Options:
+    -- Open the Appearance & Filtering Popup:
     --------------------------------------------------------------------------------
     if not just.doUntil(function()
         appearanceAndFiltering:show()
@@ -518,10 +533,18 @@ function mod.saveLayoutToTable()
         return false
     end
 
+    --------------------------------------------------------------------------------
+    -- Get Active Column Names:
+    --------------------------------------------------------------------------------
+    local activeColumnsNames = mod.getActiveColumnsNames()
+
+    --------------------------------------------------------------------------------
+    -- Save Appearance & Filtering Options:
+    --------------------------------------------------------------------------------
     local result = {
         ["clipNameSize"] = mod.getClipNameSize(),
         ["columns"] = columnResult,
-        ["activeColumnsNames"] = mod.getActiveColumnsNames(),
+        ["activeColumnsNames"] = activeColumnsNames,
         ["sortOrder"] = sortOrder,
         ["isListView"] = isListView,
         ["clipHeight"] = appearanceAndFiltering:clipHeight():value(),
@@ -532,7 +555,16 @@ function mod.saveLayoutToTable()
         ["continuousPlayback"] = appearanceAndFiltering:continuousPlayback():checked(),
     }
 
+    --------------------------------------------------------------------------------
+    -- Close the Appearance & Filtering Popup:
+    --------------------------------------------------------------------------------
     appearanceAndFiltering:hide()
+    if not just.doUntil(function()
+        return not appearanceAndFiltering:isShowing()
+    end) then
+        log.ef("saveLayoutToTable: Could not close the Appearance & Filtering popup.")
+        return
+    end
 
     return result
 end
