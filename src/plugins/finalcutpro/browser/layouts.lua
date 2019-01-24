@@ -586,8 +586,6 @@ function mod.restoreBrowserLayoutForSelectedCollection()
         else
             mod.lastCollection = value
         end
-    else
-        playErrorSound()
     end
 end
 

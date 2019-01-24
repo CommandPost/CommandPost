@@ -123,13 +123,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addCheckbox(1.1,
-        {
-            label = i18n("ignoreInsertedCameraCards"),
-            onchange = function(_, params) mod.enabled(params.checked) end,
-            checked = mod.enabled,
-        })
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addCheckbox(1.1,
+            {
+                label = i18n("ignoreInsertedCameraCards"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = mod.enabled,
+            })
+    end
 
     --------------------------------------------------------------------------------
     -- Update the watcher status based on the settings:

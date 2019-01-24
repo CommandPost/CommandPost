@@ -585,50 +585,53 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addCheckbox(1.3,
-        {
-            label = i18n("allowZoomingWithModifierKey"),
-            onchange = function(_, params) mod.enabled(params.checked) end,
-            checked = mod.enabled,
-        })
-        :addContent(1.4, [[
-            <div style="padding-left: 19px">
-        ]], false)
-        :addSelect(1.5,
-        {
-            label		= i18n("modifierKey"),
-            value		= mod.customModifier,
-            options		= {
-                {
-                    label = "command ⌘",
-                    value = "cmd",
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addCheckbox(1.3,
+            {
+                label = i18n("allowZoomingWithModifierKey"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = mod.enabled,
+            })
+            :addContent(1.4, [[
+                <div style="padding-left: 19px">
+            ]], false)
+            :addSelect(1.5,
+            {
+                label		= i18n("modifierKey"),
+                value		= mod.customModifier,
+                options		= {
+                    {
+                        label = "command ⌘",
+                        value = "cmd",
+                    },
+                    {
+                        label = "option ⌥",
+                        value = "alt",
+                    },
+                    {
+                        label = "shift ⇧",
+                        value = "shift",
+                    },
+                    {
+                        label = "control ⌃",
+                        value = "ctrl",
+                    },
+                    {
+                        label = "caps lock",
+                        value = "capslock",
+                    },
+                    {
+                        label = "fn",
+                        value = "fn",
+                    },
                 },
-                {
-                    label = "option ⌥",
-                    value = "alt",
-                },
-                {
-                    label = "shift ⇧",
-                    value = "shift",
-                },
-                {
-                    label = "control ⌃",
-                    value = "ctrl",
-                },
-                {
-                    label = "caps lock",
-                    value = "capslock",
-                },
-                {
-                    label = "fn",
-                    value = "fn",
-                },
-            },
-            required	= true,
-            onchange	= function(_, params) mod.customModifier(params.value) end,
-        })
-        :addContent(1.6, "</div>", false)
+                required	= true,
+                onchange	= function(_, params) mod.customModifier(params.value) end,
+            })
+            :addContent(1.6, "</div>", false)
+    end
 
     return mod
 end

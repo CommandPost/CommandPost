@@ -40,13 +40,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addCheckbox(2204.2,
-        {
-            label = i18n("showTimelineInViewers"),
-            onchange = function(_, params) mod.enabled(params.checked) end,
-            checked = function() return mod.enabled() end,
-        })
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addCheckbox(2204.2,
+            {
+                label = i18n("showTimelineInViewers"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = function() return mod.enabled() end,
+            })
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

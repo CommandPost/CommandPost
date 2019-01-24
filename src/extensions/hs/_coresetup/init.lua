@@ -83,8 +83,7 @@ return {
         function hs.showError(err)
             local dialog = require("hs.dialog")
             local settings = require("hs.settings")
-            local debugMode = settings.get("cp.debugMode")
-            if debugMode then
+            if settings.get("MJConfigFile") ~= nil then
                 --------------------------------------------------------------------------------
                 -- DEBUG MODE:
                 --------------------------------------------------------------------------------

@@ -93,15 +93,18 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.prefs.panel
-        :addHeading(30, i18n("menubarHeading"))
-        :addCheckbox(31,
-            {
-                label = i18n("displayProxyOriginalIcon"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = mod.enabled,
-            }
-        )
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addHeading(30, i18n("menubarHeading"))
+            :addCheckbox(31,
+                {
+                    label = i18n("displayProxyOriginalIcon"),
+                    onchange = function(_, params) mod.enabled(params.checked) end,
+                    checked = mod.enabled,
+                }
+            )
+    end
 
     return mod
 end
