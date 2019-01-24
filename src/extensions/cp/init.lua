@@ -14,6 +14,7 @@ local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
+local timer                     = require("hs.timer")
 local toolbar                   = require("hs.webview.toolbar")
 local window                    = require("hs.window")
 
@@ -311,8 +312,11 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    collectgarbage("collect")
-    collectgarbage("collect")
+    mod.garbageCollector = timer.new(60, function()
+        collectgarbage("collect")
+        collectgarbage("collect")
+    end):start()
+    mod.garbageCollector:fire()
 
     --------------------------------------------------------------------------------
     -- Return the module:
