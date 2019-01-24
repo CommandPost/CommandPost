@@ -4,7 +4,7 @@
 
 local require = require
 
-local log                       = require("hs.logger").new("Columns")
+--local log                       = require("hs.logger").new("Columns")
 
 local ax                        = require("hs._asm.axuielement")
 
