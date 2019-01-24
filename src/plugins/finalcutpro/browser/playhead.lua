@@ -320,14 +320,21 @@ function plugin.init(deps)
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     deps.prefs.panel
+
         :addContent(2000, ui.style ([[
             .highLightPlayheadSelect {
                 width: 100px;
                 float: left;
             }
+            .highlightPlayheadDiv::after {
+              content: "";
+              clear: both;
+              display: table;
+            }
         ]]))
-        :addHeading(2000, i18n("highlightPlayhead"))
-        :addSelect(2001,
+        :addContent(2000.1,[[<div class="highlightPlayheadDiv">]], false)
+        :addHeading(2000.2, i18n("highlightPlayhead"))
+        :addSelect(2000.3,
         {
             label       = i18n("highlightPlayheadColour"),
             value       = mod.getHighlightColor,
@@ -357,7 +364,7 @@ function plugin.init(deps)
             onchange    = function(_, params) mod.changeHighlightColor(params.value) end,
             class       = "highLightPlayheadSelect",
         })
-        :addSelect(2002,
+        :addSelect(2000.4,
         {
             label       = i18n("highlightPlayheadShape"),
             value       = mod.getHighlightShape,
@@ -379,7 +386,7 @@ function plugin.init(deps)
             onchange    = function(_, params) mod.setHighlightShape(params.value) end,
             class       = "highLightPlayheadSelect",
         })
-        :addSelect(2003,
+        :addSelect(2000.5,
         {
             label       = i18n("highlightPlayheadTime"),
             value       = mod.getHighlightTime,
@@ -388,6 +395,7 @@ function plugin.init(deps)
             onchange    = function(_, params) mod.setHighlightTime(params.value) end,
             class       = "highLightPlayheadSelect",
         })
+        :addContent(2000.6,"</div>", false)
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

@@ -29,9 +29,9 @@ function plugin.init(deps)
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     deps.prefs.panel
-        :addHeading(2500, i18n("pluginCache"))
-        :addParagraph(2501, html.span { class="tbTip" } ( i18n("pluginCacheDescription") .. "<br /><br />", false ).. "\n\n")
-        :addButton(2502,
+        :addHeading(2008.2, i18n("pluginCache"))
+        :addParagraph(2008.3, html.span { class="tbTip" } ( i18n("pluginCacheDescription") .. "<br /><br />", false ).. "\n\n")
+        :addButton(2008.4,
             {
                 label = i18n("clearPluginCache"),
                 width = 200,
