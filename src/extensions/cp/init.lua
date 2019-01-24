@@ -312,10 +312,10 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    mod.garbageCollector = timer.doEvery(60, function()
+    mod.garbageCollector = timer.new(60, function()
         collectgarbage("collect")
         collectgarbage("collect")
-    end)
+    end):start()
     mod.garbageCollector:fire()
 
     --------------------------------------------------------------------------------
