@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log						= require("hs.logger").new("axutils")
+local log						= require("hs.logger").new("axutils")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -274,15 +274,20 @@ end
 --- Returns:
 ---  * The first matching child, or nil if none was found
 function axutils.childMatching(element, matcherFn, index)
+    log.df("childMatching: matcherFn type = %s", type(matcherFn))
+    assert(type(matcherFn) == "function", "The matcherFn must be a function.")
     index = index or 1
     if element then
+        log.df("childMatching: we have an element: %s", hs.inspect(element))
         local children = axutils.children(element)
         if children and #children > 0 then
             local count = 0
             for _,child in ipairs(children) do
+                log.df("childMatching: checking child: %s", hs.inspect(element))
                 if matcherFn(child) then
                     count = count + 1
                     if count == index then
+                        log.df("childMatching: found the matching child: %s", hs.inspect)
                         return child
                     end
                 end

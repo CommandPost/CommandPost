@@ -2,7 +2,7 @@
 ---
 --- Abstract base class for `AX` elements which form a grid, such as [Table2](cp.ui.Table2.md) and [Outline](cp.ui.Outline.md).
 
--- local log                       = require "hs.logger" .new "Grid"
+local log                       = require "hs.logger" .new "Grid"
 
 local fnutils	                = require "hs.fnutils"
 
@@ -35,6 +35,7 @@ end
 --- Function
 --- Checks if the `element` is an `Grid`.
 function Grid.static.matches(element)
+    log.df("matches: %s", hs.inspect(element))
     return Element.matches(element) and (element:attributeValue("AXRows") ~= nil or element:attributeValue("AXColumns") ~= nil)
 end
 
@@ -49,9 +50,13 @@ end
 --- Returns:
 --- * The new `Grid` instance.
 function Grid:initialize(parent, uiFinder)
+    log.df("initializing Element...")
     Element.initialize(self, parent, uiFinder)
+    log.df("Initializing rowCache...")
     self._rowCache = ElementCache(self, self.createRow)
+    log.df("Initializing columnCache...")
     self._columnCache = ElementCache(self, self.createColumn)
+    log.df("Initialization complete.")
 end
 
 --- cp.ui.Grid:childrenUI() -> table

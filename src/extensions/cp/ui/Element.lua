@@ -7,7 +7,7 @@
 --- * [CheckBox](cp.rx.CheckBox.md)
 --- * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
--- local log               = require("hs.logger").new("Element")
+local log               = require("hs.logger").new("Element")
 
 local axutils           = require("cp.ui.axutils")
 local prop              = require("cp.prop")
@@ -31,6 +31,7 @@ local Element = class("cp.ui.Element"):include(lazy)
 --- Returns:
 --- * `true` if the element is a valid instance of an `hs._asm.axuielement`.
 function Element.static.matches(element)
+    log.df("matches: %s", hs.inspect(element))
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
 
@@ -64,6 +65,8 @@ function Element:initialize(parent, uiFinder)
             end,
             self.class.matches)
         end)
+    else
+        error "Expected either a cp.prop or function for uiFinder."
     end
 
     prop.bind(self) {

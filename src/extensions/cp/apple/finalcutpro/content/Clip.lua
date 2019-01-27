@@ -12,7 +12,10 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local require           = require
-local Table             = require("cp.ui.Table")
+local class	            = require "middleclass"
+local lazy              = require "cp.lazy"
+local prop	            = require "cp.prop"
+local Element           = require "cp.ui.Element"
 
 --------------------------------------------------------------------------------
 --
@@ -20,71 +23,18 @@ local Table             = require("cp.ui.Table")
 --
 --------------------------------------------------------------------------------
 
-local Clip = {}
-Clip.mt = {}
-Clip.type = {}
+local Clip = class("cp.apple.finalcutpro.content.Clip"):include(lazy)
 
---- cp.apple.finalcutpro.content.Clip.type.filmstrip
---- Constant
---- A constant for clips which are represented by a filmstrip.
-Clip.type.filmstrip = "filmstrip"
-
---- cp.apple.finalcutpro.content.Clip.type.row
---- Constant
---- A constant for clips which are represented by a table row.
-Clip.type.row = "row"
-
---- cp.apple.finalcutpro.content.Clip:UI() -> axuielement
---- Method
---- Returns the `axuielement` for the clip.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `axuielement` for the clip.
-function Clip.mt:UI()
-    return self._element
+function Clip.static.matches(element)
+    return Element.matches(element)
 end
 
---- cp.apple.finalcutpro.content.Clip:getType() -> Clip.type
---- Method
---- Returns the type of clip (one of the `Clip.type` values)
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Clip.type` value (e.g. `Clip.type.row` or Clip.type.filmstrip`)
-function Clip.mt:getType()
-    return self._type
-end
-
---- cp.apple.finalcutpro.content.Clip:getTitle() -> String
---- Method
---- Returns the title of the clip.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The clip title.
-function Clip.mt:getTitle()
-    if self:getType() == Clip.type.row then
-        local colIndex = self._options.columnIndex
-        local cell = self._element[colIndex]
-        return Table.cellTextValue(cell)
-    else
-        return self._element:attributeValue("AXDescription")
-    end
-end
-
---- cp.apple.finalcutpro.content.Clip.new(element[, options]) -> Clip
+--- cp.apple.finalcutpro.content.Clip(element[, options]) -> Clip
 --- Constructor
 --- Creates a new `Clip` pointing at the specified element, with the specified options.
 ---
 --- Parameters:
----  * `element`        - The `axuielement` the clip represents.
+---  * `element`        - The [Element](cp.ui.Element.md) the clip represents.
 ---  * `options`        - A table containing the options for the clip.
 ---
 --- Returns:
@@ -93,26 +43,24 @@ end
 --- Notes:
 ---  * The options may be:
 ---  ** `columnIndex`   - A number which will be used to specify the column number to find the title in, if relevant.
-function Clip.new(element, options)
-    local o = {
-        _element    = element,
-        _options    = options or {},
-        _type       = element:attributeValue("AXRole") == "AXRow" and Clip.type.row or Clip.type.filmstrip,
-    }
-    return setmetatable(o, {__index = Clip.mt})
+function Clip:initialize(element, options)
+    self._element = element
+    self._options = options or {}
 end
 
---- cp.apple.finalcutpro.content.Clip.is(thing) -> boolean
---- Function
---- Checks if the specified `thing` is a `Clip` instance.
----
---- Parameters:
----  * `thing`  - The thing to check.
----
---- Returns:
----  * `true` if the `thing` is a `Clip`, otherwise returns `false`.
-function Clip.is(thing)
-    return thing and getmetatable(thing) == Clip.mt
+--- cp.apple.finalcutpro.content.Clip.UI <cp.prop: axuielement; read-only; live?>
+--- Field
+--- The `axuielement` for the clip.
+function Clip.lazy.prop:UI()
+    return prop.THIS(self._element.UI)
+end
+
+
+--- cp.apple.finalcutpro.content.Clip.title <cp.prop: string; read-only>
+--- Field
+--- The title of the clip. Must be overridden by subclasses.
+function Clip.lazy.prop.title()
+    error "Subclasses must implement `title`."
 end
 
 return Clip

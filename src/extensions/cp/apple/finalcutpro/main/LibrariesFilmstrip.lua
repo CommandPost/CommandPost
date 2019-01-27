@@ -12,15 +12,19 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils							= require("cp.ui.axutils")
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")
-local prop								= require("cp.prop")
+local FilmClip                          = require("cp.apple.finalcutpro.content.FilmClip")
+local Playhead                          = require("cp.apple.finalcutpro.main.Playhead")
+
+local go                                = require("cp.rx.go")
+local axutils                           = require("cp.ui.axutils")
+local ScrollArea	                    = require("cp.ui.ScrollArea")
+
+local If                                = go.If
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
-local _									= require("moses")
+local _                                    = require("moses")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -34,22 +38,9 @@ local childrenMatching                  = axutils.childrenMatching
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local LibrariesFilmstrip = {}
+local LibrariesFilmstrip = ScrollArea:subclass("cp.apple.finalcutpro.main.LibrariesFilmstrip")
 
---- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean
---- Function
---- Checks to see if an element matches what we think it should be.
----
---- Parameters:
----  * element - An `axuielementObject` to check.
----
---- Returns:
----  * `true` if matches otherwise `false`
-function LibrariesFilmstrip.matches(element)
-    return element and element:attributeValue("AXRole") == "AXScrollArea"
-end
-
---- cp.apple.finalcutpro.main.LibrariesFilmstrip.new(app) -> LibrariesFilmstrip
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip(app) -> LibrariesFilmstrip
 --- Constructor
 --- Creates a new `LibrariesFilmstrip` instance.
 ---
@@ -58,9 +49,8 @@ end
 ---
 --- Returns:
 ---  * A new `LibrariesFilmstrip` object.
-function LibrariesFilmstrip.new(parent)
-    local o = prop.extend({_parent = parent}, LibrariesFilmstrip)
-    local UI = parent.mainGroupUI:mutate(function(original, self) -- mainGroupUI is an AXSplitGroup (_NS:296)
+function LibrariesFilmstrip:initialize(parent)
+    local UI = parent.mainGroupUI:mutate(function(original) -- mainGroupUI is an AXSplitGroup (_NS:296)
         return cache(self, "_ui", function()
             local main = original()
             if main then
@@ -77,61 +67,24 @@ function LibrariesFilmstrip.new(parent)
         LibrariesFilmstrip.matches)
     end)
 
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The `axuielement` for the Libraries List, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Libraries Filmstrip is showing on screen.
-        isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
-
-        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the `axuielement` representing the 'vertical scroll bar', or `nil` if not available.
-        verticalScrollBarUI = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXVerticalScrollBar")
-        end),
-
-        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.contentsUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the `axuielement` representing the 'content', or `nil` if not available.
-        contentsUI = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:contents()[1]
-        end),
-    }
-
-    return o
+    ScrollArea.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.LibrariesFilmstrip:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function LibrariesFilmstrip:parent()
-    return self._parent
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Libraries Filmstrip is showing on screen.
+function LibrariesFilmstrip.lazy.prop:isShowing()
+    return self:parent().isShowing:AND(self.UI:ISNOT(nil))
 end
 
---- cp.apple.finalcutpro.main.LibrariesFilmstrip:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function LibrariesFilmstrip:app()
-    return self:parent():app()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `axuielement` representing the 'content', or `nil` if not available.
+function LibrariesFilmstrip.lazy.prop:contentsUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:contents()[1]
+    end)
 end
 
 -----------------------------------------------------------------------
@@ -156,6 +109,20 @@ function LibrariesFilmstrip:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:doShow() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will attempt to show the Libraries Browser in filmstrip mode.
+function LibrariesFilmstrip.lazy.method:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        If(self:parent():doShow())
+        :Then(self:parent():toggleViewMode():doPress())
+        :Otherwise(false)
+    )
+    :Otherwise(true)
+    :Label("LibrariesFilmstrip:doShow")
+end
+
 -----------------------------------------------------------------------
 --
 -- PLAYHEADS:
@@ -171,11 +138,8 @@ end
 ---
 --- Returns:
 ---  * `Playhead` object
-function LibrariesFilmstrip:playhead()
-    if not self._playhead then
-        self._playhead = Playhead(self, false, self.contentsUI, true)
-    end
-    return self._playhead
+function LibrariesFilmstrip.lazy.method:playhead()
+    return Playhead(self, false, self.contentsUI, true)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:skimmingPlayhead() -> Playhead
@@ -187,11 +151,8 @@ end
 ---
 --- Returns:
 ---  * `Playhead` object
-function LibrariesFilmstrip:skimmingPlayhead()
-    if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead(self, true, self.contentsUI, true)
-    end
-    return self._skimmingPlayhead
+function LibrariesFilmstrip.lazy.method:skimmingPlayhead()
+    return Playhead(self, true, self.contentsUI, true)
 end
 
 -----------------------------------------------------------------------
@@ -210,7 +171,7 @@ end
 ---
 --- Returns:
 ---  * `true` if clip A is above clip B, otherwise `false`.
-function LibrariesFilmstrip.sortClips(a, b)
+function LibrariesFilmstrip.static.sortClips(a, b)
     local aFrame = a:frame()
     local bFrame = b:frame()
     if aFrame.y < bFrame.y then -- a is above b
@@ -236,7 +197,7 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 local function _uiToClips(clipsUI)
-    return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+    return _.map(clipsUI, function(_,clipUI) return FilmClip(clipUI) end)
 end
 
 -- _clipsToUI(clips) -> none
@@ -342,37 +303,7 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`.
 function LibrariesFilmstrip:showClip(clip)
-    local clipUI = clip:UI()
-    local ui = self:UI()
-    if ui then
-        local vScroll = self:verticalScrollBarUI()
-        local vFrame = vScroll:frame()
-        local clipFrame = clipUI:frame()
-
-        local top = vFrame.y
-        local bottom = vFrame.y + vFrame.h
-
-        local clipTop = clipFrame.y
-        local clipBottom = clipFrame.y + clipFrame.h
-
-        if clipTop < top or clipBottom > bottom then
-            --------------------------------------------------------------------------------
-            -- We need to scroll:
-            --------------------------------------------------------------------------------
-            local oFrame = self:contentsUI():frame()
-            local scrollHeight = oFrame.h - vFrame.h
-
-            local vValue
-            if clipTop < top or clipFrame.h > vFrame.h then
-                vValue = (clipTop-oFrame.y)/scrollHeight
-            else
-                vValue = 1.0 - (oFrame.y + oFrame.h - clipBottom)/scrollHeight
-            end
-            vScroll:setAttributeValue("AXValue", vValue)
-        end
-        return true
-    end
-    return false
+    return self:showChild(clip:UI())
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:showClipAt(index) -> boolean
@@ -441,7 +372,7 @@ end
 function LibrariesFilmstrip:selectClipTitled(title)
     local clips = self:clips()
     for _,clip in ipairs(clips) do
-        if clip:getTitle() == title then
+        if clip:title() == title then
             return self:selectClip(clip)
         end
     end

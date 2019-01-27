@@ -22,11 +22,11 @@ local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 
+local LibrariesSidebar	                = require("cp.apple.finalcutpro.main.LibrariesSidebar")
 local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
 
 local Button							= require("cp.ui.Button")
-local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
 local Observable                        = require("cp.rx").Observable
@@ -373,7 +373,7 @@ end
 --- Returns:
 ---  * The `LibrariesBrowser` object.
 function LibrariesBrowser.lazy.method:filmstrip()
-    return LibrariesFilmstrip.new(self)
+    return LibrariesFilmstrip(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:list() -> LibrariesList
@@ -386,7 +386,7 @@ end
 --- Returns:
 ---  * The `LibrariesList` object.
 function LibrariesBrowser.lazy.method:list()
-    return LibrariesList.new(self)
+    return LibrariesList(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:sidebar() -> Table
@@ -399,9 +399,9 @@ end
 --- Returns:
 ---  * `Table` object.
 function LibrariesBrowser.lazy.method:sidebar()
-    return Table(self, function()
-        return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
-    end):uncached()
+    return LibrariesSidebar(self, self.mainGroupUI:mutate(function(original)
+        return childMatching(original(), LibrariesSidebar.matching)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
@@ -427,7 +427,7 @@ end
 --- Returns:
 ---  * A `Table` object.
 function LibrariesBrowser:selectLibrary(...)
-    return Table.selectRow(self:sidebar():topRowsUI(), table.pack(...))
+    return self:sidebar():selectLibrary(table.pack(...))
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:openClipTitled(name) -> boolean
@@ -624,7 +624,7 @@ function LibrariesBrowser:selectClipTitled(title)
     local clips = self:clips()
     if clips then
         for _,clip in ipairs(clips) do
-            if clip:getTitle() == title then
+            if clip:title() == title then
                 self:selectClip(clip)
                 return true
             end
@@ -656,7 +656,7 @@ end
 --- Returns:
 --- * The `Statement`.
 function LibrariesBrowser:doFindClipsTitled(title)
-    return self:doFindClips(function(clip) return clip and clip:getTitle() == title end)
+    return self:doFindClips(function(clip) return clip and clip:title() == title end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:doSelectClipTitled(title) -> cp.rx.go.Statement

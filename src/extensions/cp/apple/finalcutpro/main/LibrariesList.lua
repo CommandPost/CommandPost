@@ -12,17 +12,18 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils							= require("cp.ui.axutils")
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
-local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
-local prop								= require("cp.prop")
-local Table								= require("cp.ui.Table")
+local RowClip                           = require("cp.apple.finalcutpro.content.RowClip")
+local id                                = require("cp.apple.finalcutpro.ids") "LibrariesList"
+local Playhead                          = require("cp.apple.finalcutpro.main.Playhead")
+local go                                = require("cp.rx.go")
+local axutils                           = require("cp.ui.axutils")
+local SplitGroup	                    = require("cp.ui.SplitGroup")
+local Table                             = require("cp.ui.Table")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
-local _									= require("moses")
+local _                                 = require("moses")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -32,13 +33,14 @@ local childFromTop                      = axutils.childFromTop
 local childrenMatching                  = axutils.childrenMatching
 local childWithRole                     = axutils.childWithRole
 local isValid                           = axutils.isValid
+local If                                = go.If
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local LibrariesList = {}
+local LibrariesList = SplitGroup:subclass("cp.apple.finalcutpro.main.LibrariesList")
 
 --- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean
 --- Function
@@ -49,8 +51,8 @@ local LibrariesList = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function LibrariesList.matches(element)
-    return element and element:attributeValue("AXRole") == "AXSplitGroup"
+function LibrariesList.static.matches(element)
+    return SplitGroup.matches(element)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList.new(app) -> LibrariesList
@@ -62,11 +64,9 @@ end
 ---
 --- Returns:
 ---  * A new `LibrariesList` object.
-function LibrariesList.new(parent)
-    local o = prop.extend({_parent = parent}, LibrariesList)
-
+function LibrariesList:initialize(parent)
     local UI = parent.mainGroupUI:mutate(function(original)
-        return cache(o, "_ui", function()
+        return cache(self, "_ui", function()
             local main = original()
             if main then
                 for _,child in ipairs(main) do
@@ -80,65 +80,35 @@ function LibrariesList.new(parent)
             return nil
         end, LibrariesList.matches)
     end)
+    SplitGroup.initialize(self, parent, UI)
+end
 
-    local playerUI = UI:mutate(function(original, self)
+--- cp.apple.finalcutpro.main.LibrariesList.playerUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` for the player section of the Libraries List UI.
+function LibrariesList.lazy.prop:playerUI()
+    return self.UI:mutate(function(original)
         return cache(self, "_player", function()
             return childFromTop(original(), id "Player")
         end)
     end)
-
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.LibrariesList.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The `axuielement` for the Libraries List, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.LibrariesList.playerUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The `axuielement` for the player section of the Libraries List UI.
-        playerUI = playerUI,
-
-        --- cp.apple.finalcutpro.main.LibrariesList.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Libraries List is showing on screen.
-        isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
-
-        --- cp.apple.finalcutpro.main.LibrariesList.isFocused <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Libraries List is currently focused within FCPX.
-        isFocused = o:contents().isFocused:OR(playerUI:mutate(function(original)
-            local ui = original()
-            return ui ~= nil and ui:attributeValue("AXFocused") == true
-        end)),
-    }
-
-    return o
 end
 
---- cp.apple.finalcutpro.main.LibrariesList:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function LibrariesList:parent()
-    return self._parent
+--- cp.apple.finalcutpro.main.LibrariesList.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Libraries List is showing on screen.
+function LibrariesList.lazy.prop:isShowing()
+    return self:parent().isShowing:AND(self.UI:ISNOT(nil))
 end
 
---- cp.apple.finalcutpro.main.LibrariesList:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function LibrariesList:app()
-    return self:parent():app()
+--- cp.apple.finalcutpro.main.LibrariesList.isFocused <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Libraries List is currently focused within FCPX.
+function LibrariesList.lazy.prop:isFocused()
+    return self:contents().isFocused:OR(self.playerUI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and ui:attributeValue("AXFocused") == true
+    end))
 end
 
 -----------------------------------------------------------------------
@@ -162,6 +132,20 @@ function LibrariesList:show()
     end
 end
 
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:doShow() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will attempt to show the Libraries Browser in filmstrip mode.
+function LibrariesList.lazy.method:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        If(self:parent():doShow())
+        :Then(self:parent():toggleViewMode():doPress())
+        :Otherwise(false)
+    )
+    :Otherwise(true)
+    :Label("LibrariesFilmstrip:doShow")
+end
+
 -----------------------------------------------------------------------
 --
 -- PREVIEW PLAYER:
@@ -177,11 +161,8 @@ end
 ---
 --- Returns:
 ---  * `Playhead` object
-function LibrariesList:playhead()
-    if not self._playhead then
-        self._playhead = Playhead(self, false, self.playerUI, true)
-    end
-    return self._playhead
+function LibrariesList.lazy.method:playhead()
+    return Playhead(self, false, self.playerUI, true)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:skimmingPlayhead() -> Playhead
@@ -193,11 +174,8 @@ end
 ---
 --- Returns:
 ---  * `Playhead` object
-function LibrariesList:skimmingPlayhead()
-    if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead(self, true, self.playerUI, true)
-    end
-    return self._skimmingPlayhead
+function LibrariesList.lazy.method:skimmingPlayhead()
+    return Playhead(self, true, self.playerUI, true)
 end
 
 -----------------------------------------------------------------------
@@ -215,13 +193,10 @@ end
 ---
 --- Returns:
 ---  * `Table` object
-function LibrariesList:contents()
-    if not self._content then
-        self._content = Table(self, function()
-            return childWithRole(self:UI(), "AXScrollArea")
-        end)
-    end
-    return self._content
+function LibrariesList.lazy.method:contents()
+    return Table(self, function()
+        return childWithRole(self:UI(), "AXScrollArea")
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:clipsUI(filterFn) -> table | nil
@@ -263,7 +238,7 @@ function LibrariesList:_uiToClips(clipsUI)
     local columnIndex = self:contents():findColumnIndex("filmlist name col")
     local options = {columnIndex = columnIndex}
     return _.map(clipsUI, function(_,clipUI)
-        return Clip.new(clipUI, options)
+        return RowClip(clipUI, options)
     end)
 end
 
@@ -394,7 +369,7 @@ end
 function LibrariesList:selectClipTitled(title)
     local clips = self:clips()
     for _,clip in ipairs(clips) do
-        if clip:getTitle() == title then
+        if clip:title() == title then
             return self:selectClip(clip)
         end
     end
