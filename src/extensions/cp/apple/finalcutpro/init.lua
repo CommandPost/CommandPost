@@ -67,14 +67,15 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher                               = require("hs.pathwatcher")
 
+local axutils                                   = require("cp.ui.axutils")
 local config                                    = require("cp.config")
-local Set                                       = require("cp.collect.Set")
-local just										= require("cp.just")
+local go                                        = require("cp.rx.go")
 local i18n                                      = require("cp.i18n")
+local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
-local go                                        = require("cp.rx.go")
+local Set                                       = require("cp.collect.Set")
 
 local commandeditor								= require("cp.apple.commandeditor")
 
@@ -103,6 +104,8 @@ local lazy                                      = require("cp.lazy")
 
 local format, gsub 						        = string.format, string.gsub
 local Do, Throw                                 = go.Do, go.Throw
+
+local childMatching                             = axutils.childMatching
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -143,6 +146,7 @@ function fcp:initialize()
             self.activeCommandSet:update()
         end):start()
     end
+
 end
 
 -- cleanup
@@ -511,11 +515,9 @@ function fcp:getPath()
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- LIBRARIES
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:openLibrary(path) -> boolean
@@ -598,11 +600,9 @@ function fcp:closeLibrary(title)
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- SCAN PLUGINS
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:plugins() -> cp.apple.finalcutpro.plugins
@@ -632,13 +632,10 @@ function fcp:scanPlugins()
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- MENU BAR
 --
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
-
 
 --- cp.apple.finalcutpro:menu() -> cp.app.menu
 --- Method
@@ -703,11 +700,32 @@ function fcp:doSelectMenu(...)
 end
 
 ----------------------------------------------------------------------------------------
+--
+-- WORKSPACES
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.selectedWorkspace <cp.prop: string; live>
+--- Variable
+--- The currently selected workspace name. The result is cached, but updated
+--- automatically if the window layout changes.
+function fcp.lazy.prop:selectedWorkspace()
+    return prop(function()
+        local workspacesUI = self:menu():findMenuUI({"Window", "Workspaces"})
+        local children = workspacesUI and workspacesUI[1] and workspacesUI[1]:attributeValue("AXChildren")
+        local selected = children and childMatching(children, function(menuItem)
+            return menuItem:attributeValue("AXMenuItemMarkChar") ~= nil
+        end)
+        return selected and selected:attributeValue("AXTitle")
+    end)
+    :cached()
+    :monitor(self.app.windowsUI)
+end
+
 ----------------------------------------------------------------------------------------
 --
 -- WINDOWS
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:preferencesWindow() -> preferenceWindow object
@@ -828,11 +846,9 @@ function fcp.lazy.method:findAndReplaceTitleText()
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- APP SECTIONS
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
@@ -1018,11 +1034,9 @@ function fcp.lazy.method:alert()
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- PREFERENCES, SETTINGS, XML
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:importXML(path) -> boolean
@@ -1049,11 +1063,9 @@ function fcp:importXML(path)
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- SHORTCUTS
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.userCommandSetPath() -> string or nil
@@ -1186,11 +1198,9 @@ function fcp:doShortcut(whichShortcut)
 end
 
 ----------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------
 --
 -- LANGUAGE
 --
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro:isSupportedLocale(locale) -> boolean
@@ -1207,9 +1217,9 @@ function fcp:isSupportedLocale(locale)
 end
 
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   D E V E L O P M E N T      T O O L S                     --
---------------------------------------------------------------------------------
+--
+-- DEVELOPMENT TOOLS
+--
 --------------------------------------------------------------------------------
 
 -- cp.apple.finalcutpro:searchResources(value) -> hs.task

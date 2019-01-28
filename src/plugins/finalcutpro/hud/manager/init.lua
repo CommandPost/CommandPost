@@ -40,6 +40,31 @@ local tableMatch    = tools.tableMatch
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- SNAPPING_RANGE -> number
+-- Constant
+-- The amount of leeway when it comes to window snapping.
+local SNAPPING_RANGE = 30
+
+-- WEBVIEW_LABEL -> string
+-- Constant
+-- The webview Label.
+local WEBVIEW_LABEL = "hud"
+
+-- FCP_BUNDLE_ID -> string
+-- Constant
+-- Cached Final Cut Pro Bundle ID.
+local FCP_BUNDLE_ID = fcp:bundleID()
+
+-- CP_BUNDLE_ID -> string
+-- Constant
+-- Cached CommandPost Bundle ID.
+local CP_BUNDLE_ID = config.bundleID
+
+-- UNKNOWN_WORKSPACE -> string
+-- Constant
+-- The ID used when we can't detect a workspace name for some reason.
+local UNKNOWN_WORKSPACE = "Unknown Workspace"
+
 -- cpApp -> cp.app
 -- Variable
 -- CommandPost App
@@ -49,11 +74,6 @@ local cpApp = forBundleID(processInfo.bundleID)
 --- Field
 --- Is the HUD enabled in the settings?
 mod.enabled = config.prop("hub.enabled", false)
-
---- plugins.finalcutpro.hud.manager.WEBVIEW_LABEL -> string
---- Constant
---- The WebView Label
-mod.WEBVIEW_LABEL = "hud"
 
 --- plugins.finalcutpro.hud.manager.DEFAULT_HEIGHT -> number
 --- Constant
@@ -78,7 +98,12 @@ mod._handlers = {}
 --- plugins.finalcutpro.hud.manager.position
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("fcp.hud.position", nil)
+mod.position = config.prop("fcp.hud.position", {})
+
+--- plugins.finalcutpro.hud.manager.position
+--- Constant
+--- Returns the last frame saved in settings.
+mod.workspace = config.prop("fcp.hud.workspace", nil)
 
 --- plugins.finalcutpro.hud.manager.lastTab
 --- Constant
@@ -108,7 +133,7 @@ end
 --- Returns:
 ---  * The Webview label as a string.
 function mod.getLabel()
-    return mod.WEBVIEW_LABEL
+    return WEBVIEW_LABEL
 end
 
 --- plugins.finalcutpro.hud.manager.addHandler(id, handlerFn) -> string
@@ -136,19 +161,6 @@ end
 ---  * Table
 function mod.getHandler(id)
     return mod._handlers[id]
-end
-
---- plugins.finalcutpro.hud.manager.setPanelRenderer(renderer) -> none
---- Function
---- Sets a Panel Renderer
----
---- Parameters:
----  * renderer - The renderer
----
---- Returns:
----  * None
-function mod.setPanelRenderer(renderer)
-    mod._panelRenderer = renderer
 end
 
 -- isPanelIDValid() -> boolean
@@ -202,7 +214,7 @@ local function generateHTML()
     env.debugMode = config.developerMode()
     env.panels = mod._panels
     env.currentPanelID = mod.currentPanelID()
-    env.webviewLabel = mod.WEBVIEW_LABEL
+    env.webviewLabel = WEBVIEW_LABEL
 
     local result, err = mod._panelRenderer(env)
     if err then
@@ -232,27 +244,173 @@ local function windowCallback(action, _, frame)
         end
     elseif action == "frameChange" then
         if frame then
-            mod.position({
+            --------------------------------------------------------------------------------
+            -- Window Snapping:
+            --------------------------------------------------------------------------------
+            local timelineUI = fcp:timeline():UI()
+            local timelineFrame = timelineUI and timelineUI:attributeValue("AXFrame")
+
+            local browserUI = fcp:browser():UI()
+            local browserFrame = browserUI and browserUI:attributeValue("AXFrame")
+
+            local inspectorUI = fcp:inspector():UI()
+            local inspectorFrame = inspectorUI and inspectorUI:attributeValue("AXFrame")
+
+            local newFrame = frame
+
+            if timelineFrame then
+                --------------------------------------------------------------------------------
+                -- Snap to top of timeline frame:
+                --------------------------------------------------------------------------------
+                if frame.y >= (timelineFrame.y - SNAPPING_RANGE) and frame.y <= (timelineFrame.y + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = newFrame.x,
+                        y = timelineFrame.y,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+
+                --------------------------------------------------------------------------------
+                -- Snap to bottom of timeline frame:
+                --------------------------------------------------------------------------------
+                if (frame.y + frame.h) >= (timelineFrame.y - SNAPPING_RANGE) and (frame.y + frame.h) <= (timelineFrame.y + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = newFrame.x,
+                        y = timelineFrame.y - newFrame.h,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- We only need to snap to the browser frame if the timeline frame isn't visible:
+                --------------------------------------------------------------------------------
+                if browserFrame then
+                    --------------------------------------------------------------------------------
+                    -- Snap to top of browser frame:
+                    --------------------------------------------------------------------------------
+                    if frame.y >= (browserFrame.y - SNAPPING_RANGE) and frame.y <= (browserFrame.y + SNAPPING_RANGE) then
+                        newFrame = {
+                            x = newFrame.x,
+                            y = browserFrame.y,
+                            w = newFrame.w,
+                            h = newFrame.h
+                        }
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Snap to bottom of browser frame:
+                    --------------------------------------------------------------------------------
+                    if (frame.y + frame.h) >= (browserFrame.y - SNAPPING_RANGE) and (frame.y + frame.h) <= (browserFrame.y + SNAPPING_RANGE) then
+                        newFrame = {
+                            x = newFrame.x,
+                            y = browserFrame.y - newFrame.h,
+                            w = newFrame.w,
+                            h = newFrame.h
+                        }
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- We only need to snap to the inspector frame if the timeline frame isn't visible:
+                --------------------------------------------------------------------------------
+                if inspectorFrame then
+                    --------------------------------------------------------------------------------
+                    -- Snap to top of inspector frame:
+                    --------------------------------------------------------------------------------
+                    if frame.y >= (inspectorFrame.y - SNAPPING_RANGE) and frame.y <= (inspectorFrame.y + SNAPPING_RANGE) then
+                        newFrame = {
+                            x = newFrame.x,
+                            y = inspectorFrame.y,
+                            w = newFrame.w,
+                            h = newFrame.h
+                        }
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Snap to bottom of inspector frame:
+                    --------------------------------------------------------------------------------
+                    if (frame.y + frame.h) >= (inspectorFrame.y - SNAPPING_RANGE) and (frame.y + frame.h) <= (inspectorFrame.y + SNAPPING_RANGE) then
+                        newFrame = {
+                            x = newFrame.x,
+                            y = inspectorFrame.y - newFrame.h,
+                            w = newFrame.w,
+                            h = newFrame.h
+                        }
+                    end
+                end
+
+
+            end
+            if browserFrame then
+                --------------------------------------------------------------------------------
+                -- Snap to left of browser frame:
+                --------------------------------------------------------------------------------
+                if frame.x >= ((browserFrame.x + browserFrame.w) - SNAPPING_RANGE) and frame.x <= ((browserFrame.x + browserFrame.w) + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = browserFrame.x + browserFrame.w,
+                        y = newFrame.y,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+
+                --------------------------------------------------------------------------------
+                -- Snap to right of browser frame:
+                --------------------------------------------------------------------------------
+                if (frame.x + frame.w) >= ((browserFrame.x + browserFrame.w) - SNAPPING_RANGE) and (frame.x + frame.w) <= ((browserFrame.x + browserFrame.w) + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = (browserFrame.x + browserFrame.w) - newFrame.w,
+                        y = newFrame.y,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+            end
+            if inspectorFrame then
+                --------------------------------------------------------------------------------
+                -- Snap to left of inspector frame:
+                --------------------------------------------------------------------------------
+                if frame.x >= (inspectorFrame.x - SNAPPING_RANGE) and frame.x <= (inspectorFrame.x + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = inspectorFrame.x,
+                        y = newFrame.y,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+
+                --------------------------------------------------------------------------------
+                -- Snap to right of inspector frame:
+                --------------------------------------------------------------------------------
+                if (frame.x + frame.w) >= (inspectorFrame.x - SNAPPING_RANGE) and (frame.x + frame.w) <= (inspectorFrame.x + SNAPPING_RANGE) then
+                    newFrame = {
+                        x = inspectorFrame.x - newFrame.w,
+                        y = newFrame.y,
+                        w = newFrame.w,
+                        h = newFrame.h
+                    }
+                end
+
+            end
+            if not tools.tableMatch(frame, newFrame) then
+                mod._webview:frame(newFrame)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Save Frame Position Data per Workspace:
+            --------------------------------------------------------------------------------
+            local id = fcp:selectedWorkspace() or UNKNOWN_WORKSPACE
+            local position = mod.position()
+            position[id] = {
                 x = frame.x,
                 y = frame.y,
-            })
+            }
+            mod.position(position)
+            mod.workspace(id)
         end
     end
-end
-
---- plugins.finalcutpro.hud.manager.init() -> nothing
---- Function
---- Initialises the preferences panel.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Nothing
-function mod.init(env)
-    mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
-
-    return mod
 end
 
 --- plugins.finalcutpro.hud.manager.maxPanelHeight() -> number
@@ -310,8 +468,10 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:
     --------------------------------------------------------------------------------
+    local id = fcp:selectedWorkspace() or mod.workspace() or UNKNOWN_WORKSPACE
     local defaultRect = centredPosition()
-    local p = mod.position()
+    local position = mod.position()
+    local p = position and position[id]
     if p then
         local savedPosition = {x = p.x, y = p.y, w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
         if not tools.isOffScreen(defaultRect) then
@@ -323,7 +483,7 @@ function mod.new()
     -- Setup Web View Controller:
     --------------------------------------------------------------------------------
     if not mod._controller then
-        mod._controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
+        mod._controller = webview.usercontent.new(WEBVIEW_LABEL)
             :setCallback(function(message)
                 local body = message.body
                 local id = body.id
@@ -340,7 +500,7 @@ function mod.new()
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
     if not mod._toolbar then
-        mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+        mod._toolbar = toolbar.new(WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
@@ -499,7 +659,7 @@ function mod.injectScript(script)
             mod._webview:evaluateJavaScript(script,
                 function(_, theerror)
                     if theerror and theerror.code ~= 0 then
-                        log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                        log.ef("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
                     end
                 end)
         end, 0.01)
@@ -588,21 +748,6 @@ function mod.addPanel(params)
     return newPanel
 end
 
--- FCP_BUNDLE_ID -> string
--- Constant
--- Cached Final Cut Pro Bundle ID
-local FCP_BUNDLE_ID = fcp:bundleID()
-
--- CP_BUNDLE_ID -> string
--- Constant
--- Cached CommandPost Bundle ID
-local CP_BUNDLE_ID = config.bundleID
-
--- plugins.finalcutpro.hud.manager._updating -> boolean
--- Variable
--- Is the HUD already in the process of updating it's visibility?
-mod._updating = false
-
 --- plugins.finalcutpro.hud.manager.updateVisibility() -> none
 --- Function
 --- Update the visibility of the HUD.
@@ -635,7 +780,6 @@ function mod.updateVisibility()
                                 --------------------------------------------------------------------------------
                                 -- The HUD is frontmost:
                                 --------------------------------------------------------------------------------
-                                log.df("the hud is frontmost")
                                 mod.show()
                                 return
                             end
@@ -662,6 +806,35 @@ function mod.updateVisibility()
     end)
 end
 
+--- plugins.finalcutpro.hud.manager.updatePosition() -> none
+--- Function
+--- Updates the HUD position.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updatePosition()
+    local id = fcp:selectedWorkspace() or mod.workspace()
+    if id and mod._webview then
+        local f = mod._webview:frame()
+        local position = mod.position()
+        local p = position and position[id]
+        if p and f then
+            local newFrame = {
+                x = p.x,
+                y = p.y,
+                w = f.w,
+                h = f.h
+            }
+            if not tools.isOffScreen(newFrame) then
+                mod._webview:frame(newFrame)
+            end
+        end
+    end
+end
+
 --- plugins.finalcutpro.hud.manager.update() -> none
 --- Function
 --- Enables or Disables the HUD.
@@ -673,7 +846,6 @@ end
 ---  * None
 function mod.update()
     if mod.enabled() then
-        log.df("HUD is enabled")
         --------------------------------------------------------------------------------
         -- Setup Watchers:
         --------------------------------------------------------------------------------
@@ -687,12 +859,13 @@ function mod.update()
         cpApp.frontmost:watch(mod.updateVisibility)
         cpApp.showing:watch(mod.updateVisibility)
 
+        fcp.selectedWorkspace:watch(mod.updatePosition)
+
         --------------------------------------------------------------------------------
         -- Update Visibility:
         --------------------------------------------------------------------------------
         mod.updateVisibility()
     else
-        log.df("HUD is disabled")
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
@@ -705,6 +878,8 @@ function mod.update()
 
         cpApp.frontmost:unwatch(mod.updateVisibility)
         cpApp.showing:unwatch(mod.updateVisibility)
+
+        fcp.selectedWorkspace:unwatch(mod.updatePosition)
 
         --------------------------------------------------------------------------------
         -- Destroy the HUD:
@@ -742,9 +917,11 @@ function plugin.init(deps, env)
         :whenActivated(function() mod.enabled:toggle() end)
 
     --------------------------------------------------------------------------------
-    -- Initalise Module:
+    -- Set Panel Renderer:
     --------------------------------------------------------------------------------
-    return mod.init(env)
+    mod._panelRenderer = env:compileTemplate("html/panels.html")
+
+    return mod
 end
 
 function plugin.postInit()
