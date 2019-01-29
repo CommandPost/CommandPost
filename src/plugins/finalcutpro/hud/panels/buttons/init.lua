@@ -56,7 +56,7 @@ function plugin.init(deps, env)
             label       = "Buttons",
             tooltip     = "Buttons",
             image       = imageFromPath(iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
-            height      = 300,
+            height      = 220,
         })
 
         --------------------------------------------------------------------------------

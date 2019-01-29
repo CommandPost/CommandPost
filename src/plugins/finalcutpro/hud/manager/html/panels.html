@@ -19,11 +19,15 @@
 			}
 
 			function changeInnerHTMLByID(id, value) {
-				document.getElementById(id).innerHTML = value;
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).innerHTML = value;
+				}
 			}
 
 			function changeClassNameByID(id, className) {
-				document.getElementById(id).className = className;
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).className = className;
+				}
 			}
 		</script>
 	</head>
