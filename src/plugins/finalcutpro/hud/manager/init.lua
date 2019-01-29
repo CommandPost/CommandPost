@@ -504,8 +504,7 @@ function mod.new()
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
-                mod.selectPanel(id)
-                mod.refresh()
+                mod.refresh(id)
             end)
 
         local theToolbar = mod._toolbar
@@ -567,6 +566,20 @@ function mod.show()
 
     if mod._webview then
         mod._webview:show()
+
+        mod.showing = true
+
+        --------------------------------------------------------------------------------
+        -- Trigger Loaded Function:
+        --------------------------------------------------------------------------------
+        for _, thePanel in ipairs(mod._panels) do
+            if thePanel.id == mod.currentPanelID() then
+                if thePanel.loadedFn and type(thePanel.loadedFn) == "function" then
+                    thePanel.loadedFn()
+                end
+            end
+        end
+
     end
 
     return true
@@ -603,6 +616,7 @@ end
 function mod.hide()
     if mod._webview ~= nil then
         mod._webview:hide()
+        mod.showing = false
     end
 end
 
@@ -619,6 +633,7 @@ function mod.delete()
     if mod._webview ~= nil then
         mod._webview:delete()
         mod._webview = nil
+        mod.showing = false
     end
 end
 
@@ -631,10 +646,24 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.refresh()
+function mod.refresh(id)
     if mod._webview then
-        mod.selectPanel(mod.currentPanelID())
+        mod.selectPanel(id)
+
         mod._webview:html(generateHTML())
+
+        --------------------------------------------------------------------------------
+        -- Trigger Loaded Function:
+        --------------------------------------------------------------------------------
+        if mod.showing then
+            for _, thePanel in ipairs(mod._panels) do
+                if thePanel.id == mod.currentPanelID() then
+                    if thePanel.loadedFn and type(thePanel.loadedFn) == "function" then
+                        thePanel.loadedFn()
+                    end
+                end
+            end
+        end
 
         local frame = mod._webview:frame()
         mod._frameUUID = frame.w + frame.h
@@ -666,20 +695,22 @@ function mod.injectScript(script)
     end
 end
 
---- plugins.finalcutpro.hud.manager.selectPanel(id) -> none
+--- plugins.finalcutpro.hud.manager.selectPanel([id]) -> none
 --- Function
 --- Selects a HUD Panel.
 ---
 --- Parameters:
----  * id - the ID of the panel you want to select.
+---  * id - the optional ID of the panel you want to select. If no ID is supplied then
+---         the current panel ID will be used.
 ---
 --- Returns:
 ---  * None
 function mod.selectPanel(id)
 
-    if not mod._webview then
-        return
-    end
+    if not mod._webview then return end
+
+    local currentPanelID = mod.currentPanelID()
+    id = id or currentPanelID
 
     for _, thePanel in ipairs(mod._panels) do
         --------------------------------------------------------------------------------
@@ -695,6 +726,19 @@ function mod.selectPanel(id)
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
+        --------------------------------------------------------------------------------
+        -- Trigger Panel Open & Close Callbacks:
+        --------------------------------------------------------------------------------
+        if thePanel.id == id then
+            if thePanel.openFn and type(thePanel.openFn) == "function" then
+                thePanel.openFn()
+            end
+        end
+        if id ~= currentPanelID and thePanel.id == currentPanelID then
+            if thePanel.closeFn and type(thePanel.closeFn) == "function" then
+                thePanel.closeFn()
+            end
+        end
     end
 
     mod._toolbar:selectedItem(id)
@@ -737,14 +781,13 @@ end
 ---  ** `label`         - The human-readable label for the panel icon.
 ---  ** `image`         - The `hs.image` for the panel icon.
 ---  ** `tooltip`       - The human-readable details for the toolbar icon when the mouse is hovering over it.
----  ** `closeFn`       - A callback function that's triggered when the HUD is closed.
+---  ** `openFn`        - A callback function that's triggered when the panel is opened.
+---  ** `closeFn`       - A callback function that's triggered when the panel is closed.
+---  ** `loadedFn`      - A callback function that's triggered when the panel is loaded.
 function mod.addPanel(params)
-
     local newPanel = panel.new(params, mod)
-
     local index = sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
-
     return newPanel
 end
 

@@ -1,0 +1,21 @@
+<style>{(css/trix.css)}</style>
+<script>{(js/trix-core.js)}</script>
+<style>
+	trix-toolbar .trix-button {
+		background: #cccccc;
+	}
+	trix-editor {
+		height: 150px;
+	}
+</style>
+<script>
+
+// Save editor state to local storage
+//localStorage["editorState"] = JSON.stringify(element.editor)
+
+// Restore editor state from local storage
+//element.editor.loadJSON(JSON.parse(localStorage["editorState"]))
+
+</script>
+<trix-editor input="x"></trix-editor>
+<input type="hidden" id="x" value="This is still a fairly ugly interface.">

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<style>{(css/preferences.css)}</style>
-		<script>{(js/list.js)}</script>
+		<style>{(css/hud.css)}</style>
 		<script>
 			{% if not debugMode then %}
 				// Disable Right Clicking:
@@ -17,6 +16,14 @@
 
 			function postMessage(result) {
 				webkit.messageHandlers.{{ webviewLabel }}.postMessage(result)
+			}
+
+			function changeInnerHTMLByID(id, value) {
+				document.getElementById(id).innerHTML = value;
+			}
+
+			function changeClassNameByID(id, className) {
+				document.getElementById(id).className = className;
 			}
 		</script>
 	</head>

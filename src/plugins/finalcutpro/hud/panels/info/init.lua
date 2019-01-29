@@ -1,0 +1,162 @@
+--- === plugins.finalcutpro.hud.panels.info ===
+---
+--- Button Panel for the Final Cut Pro HUD.
+
+local require           = require
+
+local log               = require("hs.logger").new("info")
+
+local image             = require("hs.image")
+
+local fcp               = require("cp.apple.finalcutpro")
+local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
+
+local imageFromName     = image.imageFromName
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+-- getEnv() -> table
+-- Function
+-- Set up the template environment.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function getEnv()
+    local env = {}
+    env.i18n = i18n
+    return env
+end
+
+--- plugins.finalcutpro.hud.panels.info.updateInfo() -> none
+--- Function
+--- Update the Info Panel HTML content.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updateInfo()
+
+    local viewer = fcp:viewer()
+
+    local mediaText, mediaClass
+    local qualityText, qualityClass
+
+    if viewer:usingProxies() then
+        mediaText = i18n("proxy")
+        mediaClass = "bad"
+        qualityText = i18n("proxy")
+        qualityClass = "bad"
+    else
+        mediaText = i18n("originalOptimised")
+        mediaClass = "good"
+        if viewer:betterQuality() then
+            qualityText = i18n("betterQuality")
+            qualityClass = "good"
+        else
+            qualityText = i18n("betterPerformance")
+            qualityClass = "bad"
+        end
+    end
+
+    mod._manager.injectScript([[changeInnerHTMLByID("media", "]] .. mediaText .. [[")]])
+    mod._manager.injectScript([[changeClassNameByID("media", "]] .. mediaClass .. [[")]])
+
+    mod._manager.injectScript([[changeInnerHTMLByID("quality", "]] .. qualityText .. [[")]])
+    mod._manager.injectScript([[changeClassNameByID("quality", "]] .. qualityClass .. [[")]])
+
+    local backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true)
+
+    local backgroundRenderText, backgroundRenderClass
+
+    if backgroundRender() then
+        local autoRenderDelay = tonumber(fcp.preferences.FFAutoRenderDelay or "0.3")
+        backgroundRenderText = string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay}))
+        backgroundRenderClass = "good"
+    else
+        backgroundRenderText = i18n("disabled")
+        backgroundRenderClass = "bad"
+    end
+
+    mod._manager.injectScript([[changeInnerHTMLByID("backgroundRender", "]] .. backgroundRenderText .. [[")]])
+    mod._manager.injectScript([[changeClassNameByID("backgroundRender", "]] .. backgroundRenderClass .. [[")]])
+
+end
+
+--- plugins.finalcutpro.hud.panels.info.updateWatchers(enabled) -> none
+--- Function
+--- Sets up or destroys the Info Panel watchers.
+---
+--- Parameters:
+---  * enabled - `true` to setup, `false` to destroy
+---
+--- Returns:
+---  * None
+function mod.updateWatchers(enabled)
+    if enabled then
+        --------------------------------------------------------------------------------
+        -- Setup Watchers:
+        --------------------------------------------------------------------------------
+        fcp.app.preferences:prop("FFAutoStartBGRender"):watch(mod.updateInfo)
+        fcp.app.preferences:prop("FFAutoRenderDelay"):watch(mod.updateInfo)
+        fcp.app.preferences:prop("FFPlayerQuality"):watch(mod.updateInfo)
+    else
+        --------------------------------------------------------------------------------
+        -- Destroy Watchers:
+        --------------------------------------------------------------------------------
+        fcp.app.preferences:prop("FFAutoStartBGRender"):unwatch(mod.updateInfo)
+        fcp.app.preferences:prop("FFAutoRenderDelay"):unwatch(mod.updateInfo)
+        fcp.app.preferences:prop("FFPlayerQuality"):unwatch(mod.updateInfo)
+    end
+end
+
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
+local plugin = {
+    id              = "finalcutpro.hud.panels.info",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.hud.manager"]    = "manager",
+    }
+}
+
+function plugin.init(deps, env)
+    if fcp:isSupported() then
+        --------------------------------------------------------------------------------
+        -- Create new Panel:
+        --------------------------------------------------------------------------------
+        mod._manager = deps.manager
+        local panel = deps.manager.addPanel({
+            priority    = 1,
+            id          = "info",
+            label       = "Info Panel",
+            image       = imageFromName("NSInfo"),
+            tooltip     = "Info Panel",
+            openFn      = function() mod.updateWatchers(true) end,
+            closeFn     = function() mod.updateWatchers(false) end,
+            loadedFn    = mod.updateInfo,
+            height      = 150,
+        })
+
+        --------------------------------------------------------------------------------
+        -- Generate HTML for Panel:
+        --------------------------------------------------------------------------------
+        local renderPanel = env:compileTemplate("html/panel.html")
+        panel:addContent(1, function() return renderPanel(getEnv()) end, false)
+    end
+end
+
+return plugin
