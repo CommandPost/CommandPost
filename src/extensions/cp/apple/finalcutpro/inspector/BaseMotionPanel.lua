@@ -7,7 +7,7 @@
 
 local require = require
 
-local log								= require("hs.logger").new("bseMtnPnl")
+-- local log								= require("hs.logger").new("bseMtnPnl")
 
 local axutils							= require("cp.ui.axutils")
 

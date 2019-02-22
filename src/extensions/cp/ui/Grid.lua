@@ -35,7 +35,6 @@ end
 --- Function
 --- Checks if the `element` is an `Grid`.
 function Grid.static.matches(element)
-    log.df("matches: %s", hs.inspect(element))
     return Element.matches(element) and (element:attributeValue("AXRows") ~= nil or element:attributeValue("AXColumns") ~= nil)
 end
 

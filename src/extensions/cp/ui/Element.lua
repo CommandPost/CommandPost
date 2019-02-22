@@ -36,7 +36,6 @@ local Element = class("cp.ui.Element"):include(lazy)
 --- Returns:
 --- * `true` if the element is a valid instance of an `hs._asm.axuielement`.
 function Element.static.matches(element)
-    log.df("matches: %s", hs.inspect(element))
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
 

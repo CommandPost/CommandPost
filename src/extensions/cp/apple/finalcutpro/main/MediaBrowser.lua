@@ -244,7 +244,7 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function MediaBrowser:topCategoriesUI()
-    return self:sidebar():rowsUI(function(row)
+    return self:sidebar():contents():rowsUI(function(row)
         return row:attributeValue("AXDisclosureLevel") == 0
     end)
 end
@@ -262,7 +262,7 @@ function MediaBrowser:showSection(index)
     self:showSidebar()
     local topCategories = self:topCategoriesUI()
     if topCategories and #topCategories == MediaBrowser.MAX_SECTIONS then
-        self:sidebar():selectRow(topCategories[index])
+        self:sidebar():contents():selectRow(topCategories[index])
     end
     return self
 end

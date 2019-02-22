@@ -12,7 +12,6 @@ local Table2 = Grid:subclass("cp.ui.Table2")
 --- Function
 --- Checks if the `element` is an `Table2`.
 function Table2.static.matches(element)
-    log.df("matches: %s", hs.inspect(element))
     return Grid.matches(element) and element:attributeValue("AXRole") == "AXTable"
 end
 

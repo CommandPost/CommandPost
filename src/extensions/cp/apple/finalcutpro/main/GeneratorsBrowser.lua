@@ -265,7 +265,7 @@ end
 --- Returns:
 ---  * The array of category rows.
 function GeneratorsBrowser:topCategoriesUI()
-    return self:sidebar():rowsUI(function(row)
+    return self:sidebar():contents():rowsUI(function(row)
         return row:attributeValue("AXDisclosureLevel") == 0
     end)
 end
@@ -324,7 +324,7 @@ function GeneratorsBrowser:showAllTitles()
     self:showSidebar()
     local topCategories = self:topCategoriesUI()
     if topCategories and #topCategories == 2 then
-        self:sidebar():selectRow(topCategories[1])
+        self:sidebar():contents():selectRow(topCategories[1])
     end
     return self
 end
@@ -340,7 +340,7 @@ end
 ---  * The Generators Browser.
 function GeneratorsBrowser:showTitlesCategory(name)
     self:showSidebar()
-    Table.selectRow(self:sidebar():rowsUI(), {self:getTitlesRowLabel(), name})
+    Table.selectRow(self:sidebar():contents():rowsUI(), {self:getTitlesRowLabel(), name})
     return self
 end
 
@@ -370,7 +370,7 @@ function GeneratorsBrowser:showAllGenerators()
     self:showSidebar()
     local topCategories = self:topCategoriesUI()
     if topCategories and #topCategories == 2 then
-        self:sidebar():selectRow(topCategories[2])
+        self:sidebar():contents():selectRow(topCategories[2])
     end
     return self
 end
@@ -386,7 +386,7 @@ end
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:showGeneratorsCategory(name)
     self:showSidebar()
-    Table.selectRow(self:sidebar():rowsUI(), {self:getGeneratorsRowLabel(), name})
+    Table.selectRow(self:sidebar():contents():rowsUI(), {self:getGeneratorsRowLabel(), name})
     return self
 end
 

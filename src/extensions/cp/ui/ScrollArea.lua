@@ -57,6 +57,20 @@ function ScrollArea.lazy.prop:contentsUI()
     end)
 end
 
+--- cp.ui.ScrollArea:contents() -> Element
+--- Method
+--- Returns an [Element](cp.ui.Element.md) (or sublass thereof) representing the first item in the
+--- `axuielement` `contents` property.
+---
+--- Returns:
+--- * The `Element` (or subclass) for the contents.
+---
+--- Notes:
+--- * Subclasses should override this if they want to provide a more specific subclass of Element here.
+function ScrollArea.lazy.method:contents()
+    return Element(self, self.contentsUI)
+end
+
 --- cp.ui.ScrollArea:verticalScrollBar() -> cp.ui.ScrollBar
 --- Method
 --- Returns the vertical [ScrollBar](cp.ui.ScrollBar.md).
