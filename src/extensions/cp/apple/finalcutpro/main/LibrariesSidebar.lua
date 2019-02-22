@@ -8,12 +8,18 @@ local cache, childMatching      = axutils.cache, axutils.childMatching
 
 local LibrariesSidebar = ScrollArea:subclass("cp.apple.finalcutpro.main.LibrariesSidebar")
 
+function LibrariesSidebar:initialize(parent)
+    return ScrollArea.initialize(self, parent, parent.mainGroupUI:mutate(function(original)
+        return childMatching(original(), LibrariesSidebar.matches)
+    end))
+end
+
 function LibrariesSidebar.lazy.method:table()
     assert(type(Table2.matches) == "function")
     return Table2(self, self.UI:mutate(function(original)
         return cache(self, "_ui", function()
-            log.df("table: Table2.matches type = %s", type(Table2.matches))
-            return childMatching(original(), Table2.matches)
+            local ui = original()
+            return childMatching(ui, Table2.matches)
         end, Table2.matches)
     end))
 end

@@ -28,6 +28,7 @@ local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmst
 
 local Button							= require("cp.ui.Button")
 local TextField							= require("cp.ui.TextField")
+local SplitGroup                        = require("cp.ui.SplitGroup")
 
 local Observable                        = require("cp.rx").Observable
 local Do                                = require("cp.rx.go.Do")
@@ -66,15 +67,21 @@ end
 --- Returns:
 ---  * A new `LibrariesBrowser` object.
 function LibrariesBrowser:initialize(parent)
-    -- checks if the Libraries Browser is showing
-    local isShowing = parent.isShowing:AND(parent.librariesShowing)
-
     local UI = parent.UI:mutate(function(original)
-        return isShowing() and original() or nil
+        return self:isShowing() and original() or nil
     end)
 
     Element.initialize(self, parent, UI)
 end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.isShowing <cp.prop: boolean; read-only; live?>
+--- Field
+--- Checks if the browser is currently showing in the UI.
+function LibrariesBrowser.lazy.prop:isShowing()
+    local parent = self:parent()
+    return parent.isShowing:AND(parent.librariesShowing)
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the main group within the Libraries Browser, or `nil` if not available..
@@ -82,8 +89,8 @@ function LibrariesBrowser.lazy.prop:mainGroupUI()
     return self.UI:mutate(function(original)
         return cache(self, "_mainGroup", function()
             local ui = original()
-            return ui and childWithRole(ui, "AXSplitGroup")
-        end)
+            return ui and childMatching(ui, SplitGroup.matches)
+        end, SplitGroup.matches)
     end)
 end
 
@@ -399,9 +406,7 @@ end
 --- Returns:
 ---  * `Table` object.
 function LibrariesBrowser.lazy.method:sidebar()
-    return LibrariesSidebar(self, self.mainGroupUI:mutate(function(original)
-        return childMatching(original(), LibrariesSidebar.matching)
-    end))
+    return LibrariesSidebar(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
@@ -589,7 +594,7 @@ function LibrariesBrowser:selectClip(clip)
     elseif self:isFilmstripView() then
         return self:filmstrip():selectClip(clip)
     else
-        log.df("ERROR: cannot find either list or filmstrip UI")
+        log.ef("ERROR: cannot find either list or filmstrip UI")
         return false
     end
 end
