@@ -4,9 +4,11 @@
 
 local require = require
 
-local axutils						            = require("cp.ui.axutils")
+local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 local ScrollBar                     = require("cp.ui.ScrollBar")
+
+local childMatching                 = axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
@@ -28,17 +30,19 @@ function ScrollArea.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
---- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea(parent, uiFinder[, contentsClass]) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
 --- Parameters:
----  * parent		- The parent object.
----  * uiFinder		- A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
+---  * parent		    - The parent object.
+---  * uiFinder		    - A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
+---  * contentsClass    - (optional) a subclass of [Element](cp.ui.Element.md) which will represent the scroll area contents. Defaults to [Element](cp.ui.Element.md).
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
-function ScrollArea:initialize(parent, uiFinder)
+function ScrollArea:initialize(parent, uiFinder, contentsClass)
+    self.contentsClass = contentsClass or Element
     Element.initialize(self, parent, uiFinder)
 end
 
@@ -49,10 +53,7 @@ function ScrollArea.lazy.prop:contentsUI()
     return self.UI:mutate(function(original)
         local ui = original()
         if ui then
-            local role = ui:attributeValue("AXRole")
-            if role and role == "AXScrollArea" then
-                return ui:contents()[1]
-            end
+            return childMatching(ui:contents(), self.contentsClass.matches)
         end
     end)
 end
@@ -68,7 +69,7 @@ end
 --- Notes:
 --- * Subclasses should override this if they want to provide a more specific subclass of Element here.
 function ScrollArea.lazy.method:contents()
-    return Element(self, self.contentsUI)
+    return self.contentsClass(self, self.contentsUI)
 end
 
 --- cp.ui.ScrollArea:verticalScrollBar() -> cp.ui.ScrollBar

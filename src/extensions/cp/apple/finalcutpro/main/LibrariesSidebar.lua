@@ -4,23 +4,14 @@ local axutils	                = require "cp.ui.axutils"
 local ScrollArea	            = require "cp.ui.ScrollArea"
 local Outline	                = require "cp.ui.Outline"
 
-local cache, childMatching      = axutils.cache, axutils.childMatching
+local childMatching             = axutils.childMatching
 
 local LibrariesSidebar = ScrollArea:subclass("cp.apple.finalcutpro.main.LibrariesSidebar")
 
 function LibrariesSidebar:initialize(parent)
     return ScrollArea.initialize(self, parent, parent.mainGroupUI:mutate(function(original)
         return childMatching(original(), LibrariesSidebar.matches)
-    end))
-end
-
-function LibrariesSidebar.lazy.method:contents()
-    return Outline(self, self.UI:mutate(function(original)
-        return cache(self, "_ui", function()
-            local ui = original()
-            return childMatching(ui, Outline.matches)
-        end, Outline.matches)
-    end))
+    end), Outline)
 end
 
 function LibrariesSidebar:selectLibrary(path)
