@@ -8,30 +8,16 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tangentMan")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application                               = require("hs.application")
 local fs                                        = require("hs.fs")
 local inspect                                   = require("hs.inspect")
 local tangent                                   = require("hs.tangent")
 local timer                                     = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 local is                                        = require("cp.is")
@@ -39,18 +25,12 @@ local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 local x                                         = require("cp.web.xml")
 
---------------------------------------------------------------------------------
--- Local Requires:
---------------------------------------------------------------------------------
 local action                                    = require("action")
 local controls                                  = require("controls")
 local menu                                      = require("menu")
 local mode                                      = require("mode")
 local parameter                                 = require("parameter")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert, sort                              = table.insert, table.sort
 local format                                    = string.format
 
@@ -93,6 +73,15 @@ mod.controls = controls.new()
 
 local controlsXML
 
+--- plugins.core.tangent.manager.getControlsXML() -> string
+--- Function
+--- Gets the controls XML.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The XML controls
 function mod.getControlsXML()
     if not controlsXML then
         controlsXML = x._xml() .. x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
@@ -144,8 +133,8 @@ end
 ---  * None
 ---
 --- Returns:
----  *  `true` if successfully created otherwise `false` if an error occurred.
----  *  If an error occurs an error message will also be returned as a string.
+---  * `true` if successfully created otherwise `false` if an error occurred.
+---  * If an error occurs an error message will also be returned as a string.
 function mod.writeControlsXML()
 
     --------------------------------------------------------------------------------
@@ -694,11 +683,7 @@ local plugin = {
     required    = true,
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(_, env)
-
     --------------------------------------------------------------------------------
     -- Get XML Path:
     --------------------------------------------------------------------------------
@@ -723,17 +708,12 @@ function plugin.init(_, env)
         end
     end)
 
-
     --------------------------------------------------------------------------------
     -- Return Module:
     --------------------------------------------------------------------------------
     return mod
-
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     mod.enabled:update()
 end

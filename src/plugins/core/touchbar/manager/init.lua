@@ -2,29 +2,16 @@
 ---
 --- Touch Bar Manager Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tbManager")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local canvas                                    = require("hs.canvas")
 local fnutils                                   = require("hs.fnutils")
+local host                                      = require("hs.host")
 local image                                     = require("hs.image")
 local styledtext                                = require("hs.styledtext")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local i18n                                      = require("cp.i18n")
@@ -32,14 +19,8 @@ local json                                      = require("cp.json")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local touchbar                                  = require("hs._asm.undocumented.touchbar")
 
---------------------------------------------------------------------------------
--- Local Extensions:
---------------------------------------------------------------------------------
 local widgets                                   = require("widgets")
 local copy                                      = fnutils.copy
 
@@ -445,7 +426,6 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-
     if not mod._bar then
         mod._bar = touchbar.bar.new()
 
@@ -473,9 +453,7 @@ function mod.start()
         -- Update Touch Bar:
         --------------------------------------------------------------------------------
         mod.update()
-
     end
-
 end
 
 --- plugins.core.touchbar.manager.stop() -> none
@@ -523,7 +501,6 @@ end
 -- Returns:
 --  * None
 local function buttonCallback(item)
-
     local id = item:identifier()
     local idTable = tools.split(id, "_")
     local group = idTable[1]
@@ -534,7 +511,6 @@ local function buttonCallback(item)
 
     local handler = mod._actionmanager.getHandler(handlerID)
     handler:execute(action)
-
 end
 
 -- addButton(icon, action, label, id) -> none
@@ -607,7 +583,6 @@ end
 --- Returns:
 ---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
-
     local groupStatus = mod._groupStatus
     for group, status in pairs(groupStatus) do
         if status then
@@ -615,7 +590,6 @@ function mod.activeGroup()
         end
     end
     return mod.DEFAULT_GROUP
-
 end
 
 --- plugins.core.touchbar.manager.activeSubGroup() -> string
@@ -729,7 +703,6 @@ end
 --- Returns:
 ---  * None
 function mod.incrementActiveSubGroup()
-
     local currentSubGroup = mod._currentSubGroup()
 
     local items = mod._items()
@@ -764,7 +737,6 @@ function mod.incrementActiveSubGroup()
     mod._currentSubGroup(currentSubGroup)
 
     dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. result)
-
 end
 
 --- plugins.core.touchbar.manager.update() -> none
@@ -834,7 +806,7 @@ function mod.update()
     --------------------------------------------------------------------------------
     if items and items[activeGroupAndSubGroup] and items[activeGroupAndSubGroup]["bankLabel"] then
         local bankLabel = items[activeGroupAndSubGroup]["bankLabel"]
-        local id = "bankLabel"
+        local id = "bankLabel" .. activeGroupAndSubGroup .. host.uuid() -- I'm not sure why these need to be unique, but it seems to fix crashes.
         local bankLabelCanvas = canvas.new{x = 0, y = 0, h = 30, w = 50}
         bankLabelCanvas[1] = {
             type    = "text",
@@ -901,9 +873,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
     --------------------------------------------------------------------------------
@@ -917,9 +886,6 @@ function plugin.init(deps, env)
     return mod.init(deps, env)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit(deps)
 
     --------------------------------------------------------------------------------

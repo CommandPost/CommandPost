@@ -2,42 +2,19 @@
 ---
 --- Sends Apple a Bug Report or Feature Request for Compressor.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log               = require("hs.logger").new("compBug")
+local log                   = require("hs.logger").new("compBug")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local inspect           = require("hs.inspect")
-local screen            = require("hs.screen")
-local webview           = require("hs.webview")
+local inspect               = require("hs.inspect")
+local screen                = require("hs.screen")
+local webview               = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config            = require("cp.config")
-local compressor        = require("cp.apple.compressor")
-local just              = require("cp.just")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY          = 1000
-local FEEDBACK_URL      = "https://www.apple.com/feedback/compressor.html"
-local FEEDBACK_TYPE     = "Bug Report"
+local config                = require("cp.config")
+local compressor            = require("cp.apple.compressor")
+local just                  = require("cp.just")
+local tools                 = require("cp.tools")
+local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -46,26 +23,24 @@ local FEEDBACK_TYPE     = "Bug Report"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.compressor.feedback.bugreport.DEFAULT_WINDOW_STYLE -> table
---- Constant
---- Default Window Style
-mod.DEFAULT_WINDOW_STYLE = {"titled", "closable", "nonactivating", "resizable"}
+-- FEEDBACK_TYPE -> string
+-- Constant
+-- The currently selected feedback type. Either "Bug Report" or "Enhancement Request".
+local FEEDBACK_TYPE = "Bug Report"
 
---- plugins.compressor.feedback.bugreport.DEFAULT_WIDTH -> number
---- Constant
---- Default Window Width
-mod.DEFAULT_WIDTH = 650
+-- DEFAULT_WIDTH -> number
+-- Constant
+-- The default width of the webview.
+local DEFAULT_WIDTH = 650
 
---- plugins.compressor.feedback.bugreport.DEFAULT_HEIGHT -> number
---- Constant
---- Default Window Height
-mod.DEFAULT_HEIGHT = 500
+-- DEFAULT_HEIGHT -> number
+-- Constant
+-- The default height of the webview.
+local DEFAULT_HEIGHT = 500
 
---- plugins.compressor.feedback.bugreport.DEFAULT_TITLE -> string
---- Constant
---- Default Window Title
-mod.DEFAULT_TITLE = i18n("reportCompressorBugToApple")
-
+--- plugins.compressor.feedback.bugreport.position <cp.prop: table>
+--- Field
+--- The webview position.
 mod.position = config.prop("compressor.bugreport.position", nil)
 
 -- centredPosition() -> none
@@ -79,7 +54,7 @@ mod.position = config.prop("compressor.bugreport.position", nil)
 --  * Table
 local function centredPosition()
     local sf = screen.mainScreen():frame()
-    return {x = sf.x + (sf.w/2) - (mod.DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (mod.DEFAULT_HEIGHT/2), w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
+    return {x = sf.x + (sf.w/2) - (DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (DEFAULT_HEIGHT/2), w = DEFAULT_WIDTH, h = DEFAULT_HEIGHT}
 end
 
 -- windowCallback(action, webview, frame) -> none
@@ -372,15 +347,15 @@ function mod.open(bugReport)
     local prefs = {}
     prefs.developerExtrasEnabled = config.developerMode()
     mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+        :windowStyle({"titled", "closable", "nonactivating", "resizable"})
         :shadow(true)
         :allowNewWindows(false)
         :allowTextEntry(true)
-        :windowTitle(mod.DEFAULT_TITLE)
+        :windowTitle(i18n("reportCompressorBugToApple"))
         :deleteOnClose(true)
         :windowCallback(windowCallback)
         :navigationCallback(navigationCallback)
-        :url(FEEDBACK_URL)
+        :url("https://www.apple.com/feedback/compressor.html")
         :darkMode(true)
         :show()
 
@@ -411,22 +386,19 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menu.appleHelpAndSupport
-        :addItem(PRIORITY, function()
+        :addItem(1000, function()
             return { title = i18n("suggestCompressorFeatureToApple"), fn = function() mod.open(false) end }
         end)
-        :addItem(PRIORITY + 0.1, function()
+        :addItem(1000.1, function()
             return { title = i18n("reportCompressorBugToApple"),  fn = function() mod.open(true) end }
         end)
-        :addSeparator(PRIORITY + 0.2)
+        :addSeparator(1000.2)
 
     --------------------------------------------------------------------------------
     -- Commands:

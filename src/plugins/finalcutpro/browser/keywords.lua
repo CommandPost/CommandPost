@@ -2,16 +2,8 @@
 ---
 --- Browser Keywords Presets.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 local config                            = require("cp.config")
@@ -133,16 +125,15 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     for i=1, mod.NUMBER_OF_PRESETS do
-        deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
+        deps.fcpxCmds
+            :add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.restore(i) end)
 
-        deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
+        deps.fcpxCmds
+            :add("cpSaveKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.save(i) end)
     end

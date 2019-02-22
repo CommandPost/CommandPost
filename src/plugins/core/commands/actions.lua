@@ -3,39 +3,12 @@
 --- An `action` which will execute a command with matching group/id values.
 --- Registers itself with the `core.action.manager`.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format = string.format
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ID -> string
--- Constant
--- Commands ID.
-local ID    = "cmds"
-
--- GROUP -> string
--- Constant
--- Global ID.
-local GROUP = "global"
 
 --------------------------------------------------------------------------------
 --
@@ -43,6 +16,16 @@ local GROUP = "global"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- ID -> string
+-- Constant
+-- Commands ID.
+local ID = "cmds"
+
+-- GROUP -> string
+-- Constant
+-- Global ID.
+local GROUP = "global"
 
 --- plugins.core.commands.actions.init(actionmanager, cmds) -> none
 --- Function
@@ -183,16 +166,10 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init()
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit(deps)
     mod.init(deps.actionmanager, deps.cmds)
     return mod

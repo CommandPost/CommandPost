@@ -2,24 +2,11 @@
 ---
 --- Adds preferences for extra FCPXML import and export options.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("eGPU")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp                               = require("cp.apple.finalcutpro")
-local i18n                              = require("cp.i18n")
-local prop                              = require("cp.prop")
+local fcp           = require("cp.apple.finalcutpro")
+local i18n          = require("cp.i18n")
+local prop          = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -79,33 +66,26 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
-            :addCheckbox(2205,
-            {
-                label = i18n("showHiddenFCPXMLImportOptions"),
-                onchange = function(_, params) mod.importEnabled(params.checked) end,
-                checked = mod.importEnabled,
-            })
-            :addCheckbox(2206,
-            {
-                label = i18n("showHiddenFCPXMLExportOptions"),
-                onchange = function(_, params) mod.exportEnabled(params.checked) end,
-                checked = mod.exportEnabled,
-            })
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+              :addCheckbox(2205,
+              {
+                  label = i18n("showHiddenFCPXMLImportOptions"),
+                  onchange = function(_, params) mod.importEnabled(params.checked) end,
+                  checked = mod.importEnabled,
+              })
+              :addCheckbox(2206,
+              {
+                  label = i18n("showHiddenFCPXMLExportOptions"),
+                  onchange = function(_, params) mod.exportEnabled(params.checked) end,
+                  checked = mod.exportEnabled,
+              })
     end
-
     return mod
 end
 

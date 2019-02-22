@@ -13,6 +13,11 @@ local ElementCache	        = require "cp.ui.ElementCache"
 
 local If , Do               = go.If, go.Do
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Row = Element:subclass("cp.ui.Row")
 
 --- cp.ui.Row.matches(element) -> boolean

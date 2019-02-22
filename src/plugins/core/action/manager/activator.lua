@@ -17,21 +17,10 @@
 --- to instances of this activator, so disabling "videoEffect" in the "foobar" activator
 --- will not affect the "yadayada" activator.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require                   = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("activator")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
@@ -41,9 +30,6 @@ local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
 local timer                     = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local idle                      = require("cp.idle")
 local prop                      = require("cp.prop")
@@ -51,28 +37,11 @@ local i18n                      = require("cp.i18n")
 
 local Do                        = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _                         = require("moses")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local sort, insert, pack        = table.sort, table.insert, table.pack
 local concat                    = fnutils.concat
 local format                    = string.format
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PACKAGE -> string
--- Constant
--- The Package ID.
-local PACKAGE = "action.activator."
 
 --------------------------------------------------------------------------------
 --
@@ -82,6 +51,11 @@ local PACKAGE = "action.activator."
 local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
+
+-- PACKAGE -> string
+-- Constant
+-- The Package ID.
+local PACKAGE = "action.activator."
 
 -- applyHiddenTo(choice, hidden) -> none
 -- Function

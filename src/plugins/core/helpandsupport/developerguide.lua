@@ -2,16 +2,8 @@
 ---
 --- Developer Guide Menu Item.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -48,26 +40,19 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    if global then
-        global:add("cpDeveloperGuide")
-            :whenActivated(mod.show)
-            :groupedBy("helpandsupport")
-    end
+    deps.global
+        :add("cpDeveloperGuide")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
-    helpandsupport
+    deps.menuManager.commandPostHelpAndSupport
         :addItem(6, function() return { title = i18n("developerGuide"), fn = mod.show } end)
         :addSeparator(7)
 

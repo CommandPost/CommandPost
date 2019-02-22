@@ -2,21 +2,10 @@
 ---
 --- Match Frame Tools for Final Cut Pro.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                           = require("hs.logger").new("matchframe")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog                        = require("cp.dialog")
 local fcp                           = require("cp.apple.finalcutpro")
 local just                          = require("cp.just")
@@ -404,11 +393,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Link to dependencies:
     --------------------------------------------------------------------------------
@@ -418,24 +403,26 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        local cmds = deps.fcpxCmds
-        cmds:add("cpRevealMulticamClipInBrowserAndHighlight")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.multicamMatchFrame(true) end)
+    local cmds = deps.fcpxCmds
+    cmds
+        :add("cpRevealMulticamClipInBrowserAndHighlight")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.multicamMatchFrame(true) end)
 
-        cmds:add("cpRevealMulticamClipInAngleEditorAndHighlight")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.multicamMatchFrame(false) end)
+    cmds
+        :add("cpRevealMulticamClipInAngleEditorAndHighlight")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.multicamMatchFrame(false) end)
 
-        cmds:add("cpRevealInBrowserAndHighlight")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.matchFrame(false) end)
+    cmds
+        :add("cpRevealInBrowserAndHighlight")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.matchFrame(false) end)
 
-        cmds:add("cpSingleMatchFrameAndHighlight")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.matchFrame(true) end)
-    end
+    cmds
+        :add("cpSingleMatchFrameAndHighlight")
+        :groupedBy("timeline")
+        :whenActivated(function() mod.matchFrame(true) end)
 
     return mod
 end

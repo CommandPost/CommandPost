@@ -2,40 +2,26 @@
 ---
 --- Final Cut Pro Media Watch Folder Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log               = require("hs.logger").new("compressor")
+local fnutils       = require("hs.fnutils")
+local host          = require("hs.host")
+local image         = require("hs.image")
+local notify        = require("hs.notify")
+local pathwatcher   = require("hs.pathwatcher")
+local task          = require("hs.task")
+local timer         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fnutils           = require("hs.fnutils")
-local image             = require("hs.image")
-local notify            = require("hs.notify")
-local pathwatcher       = require("hs.pathwatcher")
-local task              = require("hs.task")
-local timer             = require("hs.timer")
-local uuid              = require("hs.host").uuid
+local compressor    = require("cp.apple.compressor")
+local config        = require("cp.config")
+local dialog        = require("cp.dialog")
+local Do            = require("cp.rx.go.Do")
+local html          = require("cp.web.html")
+local i18n          = require("cp.i18n")
+local tools         = require("cp.tools")
+local ui            = require("cp.web.ui")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local compressor        = require("cp.apple.compressor")
-local config            = require("cp.config")
-local dialog            = require("cp.dialog")
-local Do                = require("cp.rx.go.Do")
-local html              = require("cp.web.html")
-local i18n              = require("cp.i18n")
-local tools             = require("cp.tools")
-local ui                = require("cp.web.ui")
+local uuid          = host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -44,47 +30,47 @@ local ui                = require("cp.web.ui")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.compressor.watchfolders.panels.media.watchFolderTableID
---- Variable
---- Watch Folder Table ID
-mod.watchFolderTableID = "compressorWatchFoldersTable"
+-- WATCH_FOLDER_TABLE_ID -> string
+-- Variable
+-- Watch Folder Table ID
+local WATCH_FOLDER_TABLE_ID  = "compressorWatchFoldersTable"
 
---- plugins.compressor.watchfolders.panels.media.filesInTransit
+--- plugins.compressor.watchfolders.panels.media.filesInTransit -> table
 --- Variable
 --- Files currently being copied
 mod.filesInTransit = {}
 
---- plugins.compressor.watchfolders.panels.media.notifications
+--- plugins.compressor.watchfolders.panels.media.notifications -> table
 --- Variable
 --- Table of Path Watchers
 mod.pathwatchers = {}
 
---- plugins.compressor.watchfolders.panels.media.notifications
+--- plugins.compressor.watchfolders.panels.media.notifications -> table
 --- Variable
 --- Table of Notifications
 mod.notifications = {}
 
---- plugins.compressor.watchfolders.panels.media.disableImport
+--- plugins.compressor.watchfolders.panels.media.disableImport -> boolean
 --- Variable
 --- When `true` Notifications will no longer be triggered.
 mod.disableImport = false
 
---- plugins.compressor.watchfolders.panels.media.automaticallyImport
+--- plugins.compressor.watchfolders.panels.media.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.automaticallyImport = config.prop("compressor.watchFolders.automaticallyImport", false)
 
---- plugins.compressor.watchfolders.panels.media.savedNotifications
+--- plugins.compressor.watchfolders.panels.media.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
 mod.savedNotifications = config.prop("compressor.watchFolders.savedNotifications", {})
 
---- plugins.compressor.watchfolders.panels.media.deleteAfterImport
+--- plugins.compressor.watchfolders.panels.media.deleteAfterImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
 mod.deleteAfterImport = config.prop("compressor.watchFolders.deleteAfterImport", false)
 
---- plugins.compressor.watchfolders.panels.media.watchFolders
+--- plugins.compressor.watchfolders.panels.media.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
 mod.watchFolders = config.prop("compressor.watchFolders", {})
@@ -172,10 +158,10 @@ end
 function mod.refreshTable()
     local result = [[
         try {
-            var ]] .. mod.watchFolderTableID .. [[ = document.getElementById("]] .. mod.watchFolderTableID .. [[");
-            if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
+            var ]] .. WATCH_FOLDER_TABLE_ID .. [[ = document.getElementById("]] .. WATCH_FOLDER_TABLE_ID .. [[");
+            if (typeof(]] .. WATCH_FOLDER_TABLE_ID .. [[) != 'undefined' && ]] .. WATCH_FOLDER_TABLE_ID .. [[ != null)
             {
-                document.getElementById("]] .. mod.watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
+                document.getElementById("]] .. WATCH_FOLDER_TABLE_ID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
             }
         }
         catch(err) {
@@ -801,7 +787,7 @@ function mod.init(deps)
         :addParagraph(11, i18n("watchFolderCompressorHelp"), false)
         :addParagraph(12, "")
         :addHeading(13, i18n("watchFolders"), 3)
-        :addContent(14, html.div { id = mod.watchFolderTableID } ( mod.generateTable() ) )
+        :addContent(14, html.div { id = WATCH_FOLDER_TABLE_ID } ( mod.generateTable() ) )
         :addButton(15,
             {
                 label       = i18n("addWatchFolder"),
@@ -848,9 +834,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
     return mod.init(deps, env)
 end

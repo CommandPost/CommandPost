@@ -2,21 +2,10 @@
 ---
 --- Media Browser Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("mediaBrowser")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -25,9 +14,6 @@ local Table								= require("cp.ui.Table")
 local PopUpButton				        = require("cp.ui.PopUpButton")
 local TextField						    = require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childWithRole                     = axutils.childWithRole
 

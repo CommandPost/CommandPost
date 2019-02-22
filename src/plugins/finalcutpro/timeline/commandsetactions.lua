@@ -2,26 +2,12 @@
 ---
 --- Adds Actions to the Console for triggering Final Cut Pro shortcuts as defined in the Command Set files.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("commandsetactions")
+local log				  = require("hs.logger").new("commandsetactions")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer				= require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog			= require("cp.dialog")
 local fcp				  = require("cp.apple.finalcutpro")
 local plist				= require("cp.plist")
@@ -29,21 +15,15 @@ local i18n        = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- GROUP -> string
--- Constant
--- The group
-local GROUP 			= "fcpx"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- GROUP -> string
+-- Constant
+-- The group
+local GROUP = "fcpx"
 
 --- plugins.finalcutpro.timeline.commandsetactions.init() -> none
 --- Function
@@ -125,9 +105,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod.init()

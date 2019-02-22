@@ -2,28 +2,14 @@
 ---
 --- Adds the ability to control any Final Cut Pro User Interface Element via a MIDI Knob/Slider.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("midiCtrlSlider")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local ax 			          = require("hs._asm.axuielement")
 local eventtap          = require("hs.eventtap")
 local mouse			        = require("hs.mouse")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local deferred          = require("cp.deferred")
 local dialog            = require("cp.dialog")
 local i18n              = require("cp.i18n")
@@ -266,9 +252,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
     return mod.init()

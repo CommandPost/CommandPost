@@ -2,20 +2,8 @@
 ---
 --- A collection of handy miscellaneous tools for Lua development.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tools")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application                               = require("hs.application")
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
@@ -30,26 +18,18 @@ local sound                                     = require("hs.sound")
 local timer                                     = require("hs.timer")
 local window                                    = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                                         = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert                                    = table.insert
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local tools = {}
 
 -- LEFT_MOUSE_DOWN -> number
 -- Constant
@@ -80,13 +60,6 @@ local CLICK_STATE = eventtap.event.properties.mouseEventClickState
 -- Constant
 -- Default Delay.
 local DEFAULT_DELAY = 0
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local tools = {}
 
 -- string:split(delimiter) -> table
 -- Function
@@ -1480,6 +1453,27 @@ function tools.convertSingleHexStringToDecimalString(hex)
         ["F"]   = "1111",
     }
     return lookup[hex]
+end
+
+--- cp.tools.startsWith(value, startValue) -> boolean
+--- Function
+--- Checks to see if a string starts with a value.
+---
+--- Parameters:
+---  * value - The value to check
+---  * startValue - The value to look for
+---
+--- Returns:
+---  * `true` if value starts with the startValue, otherwise `false`
+function tools.startsWith(value, startValue)
+    if value and startValue then
+        local len = startValue:len()
+        if value:len() >= len then
+            local sub = value:sub(1, len)
+            return sub == startValue
+        end
+    end
+    return false
 end
 
 return tools

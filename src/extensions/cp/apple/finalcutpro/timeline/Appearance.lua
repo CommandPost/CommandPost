@@ -2,16 +2,8 @@
 ---
 --- Timeline Appearance Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -19,9 +11,6 @@ local axutils							= require("cp.ui.axutils")
 local CheckBox					        = require("cp.ui.CheckBox")
 local Slider							= require("cp.ui.Slider")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromRight                    = axutils.childFromRight
 local childFromTop                      = axutils.childFromTop

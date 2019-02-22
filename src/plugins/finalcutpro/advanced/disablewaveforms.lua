@@ -2,16 +2,8 @@
 ---
 --- Disable Waveforms Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local prop              = require("cp.prop")
@@ -56,19 +48,13 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
+    local panel = deps.prefs.panel
+    if panel then
         deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
             :addCheckbox(2204,
             {
                 label = i18n("enableWaveformDrawing"),
@@ -80,13 +66,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Command:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpDisableWaveforms")
-            :whenActivated(function() mod.enabled:toggle() end)
-    end
+    deps.fcpxCmds:add("cpDisableWaveforms")
+        :whenActivated(function() mod.enabled:toggle() end)
 
     return mod
-
 end
 
 return plugin

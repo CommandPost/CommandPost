@@ -83,23 +83,6 @@
 		</script>
 		{% end %}
 
-		<script>
-
-			// Something has been dropped onto our Dropbox:
-			function dropboxAction() {
-				var x = document.getElementById("dropbox");
-				var dropboxValue = x.value;
-
-				try {
-					webkit.messageHandlers.hud.postMessage(dropboxValue);
-				} catch(err) {
-					console.log('The controller does not exist yet');
-				}
-
-				x.value = "{{string.upper(i18n("hudDropZoneText"))}}";
-			}
-
-		</script>
 	</head>
 
 	<body>

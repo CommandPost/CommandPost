@@ -58,29 +58,15 @@
 --- end
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log										= require("hs.logger").new("fcp")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher                               = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local Set                                       = require("cp.collect.Set")
 local just										= require("cp.just")
@@ -109,17 +95,12 @@ local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+local FindAndReplaceTitleText	                = require("cp.apple.finalcutpro.main.FindAndReplaceTitleText")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v											= require("semver")
 local class                                     = require("middleclass")
 local lazy                                      = require("cp.lazy")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
 local Do, Throw                                 = go.Do, go.Throw
 
@@ -183,7 +164,7 @@ fcp.BUNDLE_ID = "com.apple.FinalCut"
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION -> string
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.4")
+fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.5")
 
 --- cp.apple.finalcutpro.PASTEBOARD_UTI -> string
 --- Constant
@@ -833,6 +814,19 @@ function fcp.lazy.method:exportDialog()
     return ExportDialog.new(self)
 end
 
+--- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
+--- Method
+--- Returns the [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The window.
+function fcp.lazy.method:findAndReplaceTitleText()
+    return FindAndReplaceTitleText(self.app)
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
@@ -1272,8 +1266,9 @@ end
 local result = fcp()
 
 -- Add `cp.dev.fcp` when in developer mode.
-if config.developerMode() and cp and cp.dev then
-    cp.dev.fcp = result
+if config.developerMode() then
+    local dev = require("cp.dev")
+    dev.fcp = result
 end
 
 return result

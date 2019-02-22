@@ -19,27 +19,19 @@
 --- myButton(false) == false	-- now false
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils                       = require("cp.ui.axutils")
+local axutils           = require("cp.ui.axutils")
 local Element						= require("cp.ui.Element")
 
-local If                            = require("cp.rx.go.If")
+local If                = require("cp.rx.go.If")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local CheckBox = Element:subclass("CheckBox")
+local CheckBox = Element:subclass("cp.ui.CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
 --- Function

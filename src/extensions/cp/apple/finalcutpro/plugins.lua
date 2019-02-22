@@ -7,29 +7,15 @@
 ---     require("cp.apple.finalcutpro"):plugins():scan()
 --- ```
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("scan")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local audiounit                 = require("hs.audiounit")
 local fnutils                   = require("hs.fnutils")
 local fs                        = require("hs.fs")
 --local inspect                   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
 local config                    = require("cp.config")
 local json                      = require("cp.json")
@@ -44,14 +30,8 @@ local watcher                   = require("cp.watcher")
 local fcpApp                    = require("cp.apple.finalcutpro.app")
 local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                         = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local getLocalizedName          = localized.getLocalizedName
@@ -161,7 +141,8 @@ mod.appBuiltinPlugins = {
         ["FFEffectCategoryColor"]   = { "FFCorrectorEffectName" },
         ["FFMaskEffect"]            = { "FFSplineMaskEffect", "FFShapeMaskEffect" },
         ["Stylize"]                 = { "DropShadow::Filter Name" },
-        ["FFEffectCategoryKeying"]  = { "Keyer::Filter Name", "LumaKeyer::Filter Name" }
+        ["FFEffectCategoryKeying"]  = { "Keyer::Filter Name", "LumaKeyer::Filter Name" },
+        ["FFEffectCategoryBasics"]  = { "FFNoiseReduction" }
     },
 
     --------------------------------------------------------------------------------

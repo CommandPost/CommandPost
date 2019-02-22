@@ -2,17 +2,9 @@
 ---
 --- Adds the "Setup Watch Folders" to the menu bar.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local i18n        = require("cp.i18n")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -23,18 +15,16 @@ local plugin = {
     id				= "core.watchfolders.menuitem",
     group			= "core",
     dependencies	= {
-        ["core.menu.manager"]			= "menu",
+        ["core.menu.manager"] = "menu",
         ["core.watchfolders.manager"]	= "watchfolders",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-    deps.menu.bottom:addItem(10.2, function()
-        return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
-    end)
+    deps.menu.bottom
+        :addItem(10.2, function()
+            return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
+        end)
 end
 
 return plugin

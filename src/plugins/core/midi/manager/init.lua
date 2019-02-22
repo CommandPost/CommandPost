@@ -2,47 +2,24 @@
 ---
 --- MIDI Manager Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("midiManager")
+local log         = require("hs.logger").new("midiManager")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fnutils                                   = require("hs.fnutils")
-local inspect                                   = require("hs.inspect")
-local midi                                      = require("hs.midi")
-local timer                                     = require("hs.timer")
+local fnutils     = require("hs.fnutils")
+local midi        = require("hs.midi")
+local timer       = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local i18n                                      = require("cp.i18n")
-local json                                      = require("cp.json")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
+local config      = require("cp.config")
+local dialog      = require("cp.dialog")
+local i18n        = require("cp.i18n")
+local json        = require("cp.json")
+local prop        = require("cp.prop")
 
---------------------------------------------------------------------------------
--- Local Extensions:
---------------------------------------------------------------------------------
-local controls                                  = require("controls")
-local default                                   = require("default")
+local controls    = require("controls")
+local default     = require("default")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local convertSingleHexStringToDecimalString     = tools.convertSingleHexStringToDecimalString
-local doAfter                                   = timer.doAfter
+local doAfter     = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -389,7 +366,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.midiCallback(object, deviceName, commandType, description, metadata)
+function mod.midiCallback(_, deviceName, commandType, _, metadata)
     --------------------------------------------------------------------------------
     -- Ignore callbacks when in learning mode:
     --------------------------------------------------------------------------------
@@ -722,9 +699,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup MIDI Device Callback:

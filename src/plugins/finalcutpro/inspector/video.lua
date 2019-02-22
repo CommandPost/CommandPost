@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Video Inspector Additions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log               = require("hs.logger").new("videoInspector")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local dialog            = require("cp.dialog")
@@ -66,28 +55,22 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds
-            :add("cpSetSpatialConformTypeToFit")
-            :whenActivated(doSpatialConformType("Fit"))
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds
+        :add("cpSetSpatialConformTypeToFit")
+        :whenActivated(doSpatialConformType("Fit"))
 
-        deps.fcpxCmds
-            :add("cpSetSpatialConformTypeToFill")
-            :whenActivated(doSpatialConformType("Fill"))
+    fcpxCmds
+        :add("cpSetSpatialConformTypeToFill")
+        :whenActivated(doSpatialConformType("Fill"))
 
-        deps.fcpxCmds
-            :add("cpSetSpatialConformTypeToNone")
-            :whenActivated(doSpatialConformType("None"))
-    end
-
+    fcpxCmds
+        :add("cpSetSpatialConformTypeToNone")
+        :whenActivated(doSpatialConformType("None"))
 end
 
 return plugin

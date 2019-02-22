@@ -2,33 +2,19 @@
 ---
 --- Plugins Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsPlugin")
+local log       = require("hs.logger").new("prefsPlugin")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local fs                                        = require("hs.fs")
-local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
+local dialog    = require("hs.dialog")
+local fs        = require("hs.fs")
+local image     = require("hs.image")
+local inspect   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local plugins                                   = require("cp.plugins")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config    = require("cp.config")
+local plugins   = require("cp.plugins")
+local tools     = require("cp.tools")
+local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -301,19 +287,18 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    global:add("cpOpenPluginsFolder")
+    deps.global
+        :add("cpOpenPluginsFolder")
         :whenActivated(openPluginsFolder)
         :groupedBy("commandPost")
 
+    --------------------------------------------------------------------------------
+    -- Initialise the module:
+    --------------------------------------------------------------------------------
     return mod.init(deps, env)
 end
 

@@ -2,16 +2,8 @@
 ---
 --- Timeline Toolbar
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
 
 local CheckBox                          = require("cp.ui.CheckBox")
@@ -20,11 +12,8 @@ local RadioButton						= require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 local StaticText                        = require("cp.ui.StaticText")
 
-local Appearance				= require("cp.apple.finalcutpro.timeline.Appearance")
+local Appearance				        = require("cp.apple.finalcutpro.timeline.Appearance")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childMatching                     = axutils.childMatching

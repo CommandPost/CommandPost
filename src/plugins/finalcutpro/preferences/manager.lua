@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Preferences Panel Manager.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local image                                     = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
@@ -34,9 +23,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     local mod = {}
 
@@ -47,7 +33,7 @@ function plugin.init(deps)
             label       = i18n("finalCutProPanelLabel"),
             image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
             tooltip     = i18n("finalCutProPanelTooltip"),
-            height      = 410,
+            height      = 490,
         })
     end
 

@@ -2,30 +2,14 @@
 ---
 --- Shared Pasteboard Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("sharedPasteboard")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local base64                                    = require("hs.base64")
 local fs                                        = require("hs.fs")
 local host                                      = require("hs.host")
 local json                                      = require("hs.json")
 local timer                                     = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
@@ -37,18 +21,15 @@ local Throw                                     = require("cp.rx.go.Throw")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local TOOLS_PRIORITY        = 2000
-local HISTORY_EXTENSION     = ".cpSharedPasteboard"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- HISTORY_EXTENSION -> string
+-- Constant
+-- Shared Pasteboard File Extension.
+local HISTORY_EXTENSION = ".cpSharedPasteboard"
 
 -- plugins.finalcutpro.pasteboard.shared._hostname -> string
 -- Variable
@@ -537,9 +518,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -556,7 +534,7 @@ function plugin.init(deps)
     -- Add menu items:
     --------------------------------------------------------------------------------
     deps.menu.pasteboard
-      :addMenu(TOOLS_PRIORITY, function() return i18n("sharedPasteboardHistory") end)
+      :addMenu(2000, function() return i18n("sharedPasteboardHistory") end)
       :addItem(1000, function()
           return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
       end)

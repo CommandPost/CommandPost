@@ -2,16 +2,8 @@
 ---
 --- Zoom the Timeline to fit the currently-selected clips.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -153,21 +145,6 @@ function mod.zoomToSelection()
     return true
 end
 
---- plugins.finalcutpro.timeline.zoomtoselection.init() -> none
---- Function
---- Initialise the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init()
-    mod.appearance = fcp:timeline():toolbar():appearance()
-    mod.zoomAmount = mod.appearance:zoomAmount()
-    mod.contents = fcp:timeline():contents()
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -181,27 +158,23 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Initialise the module:
     --------------------------------------------------------------------------------
-    mod.init()
+    mod.appearance = fcp:timeline():toolbar():appearance()
+    mod.zoomAmount = mod.appearance:zoomAmount()
+    mod.contents = fcp:timeline():contents()
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpZoomToSelection")
-            :activatedBy():option():shift("z")
-            :whenActivated(mod.zoomToSelection)
-    end
+    deps.fcpxCmds
+        :add("cpZoomToSelection")
+        :activatedBy():option():shift("z")
+        :whenActivated(mod.zoomToSelection)
 
     return mod
-
 end
 
 return plugin

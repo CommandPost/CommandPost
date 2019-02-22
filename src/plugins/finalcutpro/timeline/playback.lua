@@ -2,17 +2,9 @@
 ---
 --- Playback Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp							= require("cp.apple.finalcutpro")
+local fcp	= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -64,22 +56,15 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
+    local cmds = deps.fcpxCmds
+    cmds
+        :add("cpPlay")
+        :whenActivated(mod.play)
 
-    --------------------------------------------------------------------------------
-    -- Setup Commands:
-    --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        local cmds = deps.fcpxCmds
-        cmds:add("cpPlay")
-            :whenActivated(mod.play)
-
-        cmds:add("cpPause")
-            :whenActivated(mod.pause)
-    end
+    cmds
+        :add("cpPause")
+        :whenActivated(mod.pause)
 
     return mod
 end

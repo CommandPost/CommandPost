@@ -2,20 +2,15 @@
 ---
 --- Functions for Generating HTML UI Items
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
--- local log										= require("hs.logger").new("prefsGenerate")
-local mimetypes									= require("mimetypes")
-local base64									= require("hs.base64")
-local fs										= require("hs.fs")
-local template									= require("resty.template")
-local html										= require("cp.web.html")
 
-local compile									= template.compile
+local mimetypes									= require("mimetypes")
+local base64									  = require("hs.base64")
+local fs										    = require("hs.fs")
+local template									= require("resty.template")
+local html										  = require("cp.web.html")
+
+local compile									  = template.compile
 
 --------------------------------------------------------------------------------
 --
@@ -29,9 +24,9 @@ local mod = {}
 --------------------------------------------------------------------------------
 mod.UI_CHECKBOX								= 1
 mod.UI_HEADING								= 2
-mod.UI_BUTTON								= 3
+mod.UI_BUTTON							 	  = 3
 mod.UI_DROPDOWN								= 4
-mod.UI_TEXT									= 5
+mod.UI_TEXT									  = 5
 
 --------------------------------------------------------------------------------
 -- RANDOM STRING GENERATOR:

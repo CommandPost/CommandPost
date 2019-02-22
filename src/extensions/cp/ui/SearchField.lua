@@ -4,6 +4,11 @@
 
 local TextField         = require "cp.ui.TextField"
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local SearchField = TextField:subclass("cp.ui.SearchField")
 
 --- cp.ui.SearchField.matchesSearch(element) -> boolean

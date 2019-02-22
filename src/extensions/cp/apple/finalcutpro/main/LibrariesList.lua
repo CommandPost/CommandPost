@@ -2,18 +2,15 @@
 ---
 --- Libraries List Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local RowClip                           = require("cp.apple.finalcutpro.content.RowClip")
 local id                                = require("cp.apple.finalcutpro.ids") "LibrariesList"
+
+local Columns                           = require("cp.apple.finalcutpro.browser.Columns")
+local RowClip                           = require("cp.apple.finalcutpro.content.RowClip")
 local Playhead                          = require("cp.apple.finalcutpro.main.Playhead")
 local go                                = require("cp.rx.go")
 local axutils                           = require("cp.ui.axutils")
@@ -25,9 +22,6 @@ local Table                             = require("cp.ui.Table")
 --------------------------------------------------------------------------------
 local _                                 = require("moses")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromTop                      = axutils.childFromTop
 local childrenMatching                  = axutils.childrenMatching
@@ -109,6 +103,19 @@ function LibrariesList.lazy.prop:isFocused()
         local ui = original()
         return ui ~= nil and ui:attributeValue("AXFocused") == true
     end))
+end
+
+--- cp.apple.finalcutpro.main.LibrariesList:columns() -> Columns
+--- Method
+--- Gets the List View Columns object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `AppearanceAndFiltering` object.
+function LibrariesList:columns()
+    return Columns(self)
 end
 
 -----------------------------------------------------------------------

@@ -2,35 +2,22 @@
 ---
 --- Core CommandPost functionality.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local require = require
-local hs = hs
+local require                   = require
+local hs                        = hs
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local logger = require("hs.logger")
-logger.defaultLogLevel = "verbose"
+local logger                    = require("hs.logger")
+logger.defaultLogLevel          = "verbose"
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application               = require("hs.application")
 local console                   = require("hs.console")
 local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
+local timer                     = require("hs.timer")
 local toolbar                   = require("hs.webview.toolbar")
 local window                    = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local feedback                  = require("cp.feedback")
@@ -325,8 +312,11 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    collectgarbage("collect")
-    collectgarbage("collect")
+    mod.garbageCollector = timer.new(60, function()
+        collectgarbage("collect")
+        collectgarbage("collect")
+    end):start()
+    mod.garbageCollector:fire()
 
     --------------------------------------------------------------------------------
     -- Return the module:

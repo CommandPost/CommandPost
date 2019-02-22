@@ -2,21 +2,10 @@
 ---
 --- Final Cut Pro Tangent Playback Group/Management
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("fcptng_timeline")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
@@ -33,6 +22,7 @@ local mod = {}
 --- The `core.tangent.manager.group` that collects Final Cut Pro Playback actions/parameters/etc.
 mod.group = nil
 
+-- TODO: Add Documentation
 local function doShortcut(id)
     return fcp:doShortcut(id):Catch(function(message)
         log.wf("Unable to perform %q shortcut: %s", id, message)
@@ -129,9 +119,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Initalise the Module:

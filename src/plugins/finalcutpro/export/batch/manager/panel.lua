@@ -2,44 +2,14 @@
 ---
 --- CommandPost Batch Export Panel.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("prefPanel")
+local host              = require("hs.host")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local uuid                                      = require("hs.host").uuid
+local html              = require("cp.web.html")
+local ui                = require("cp.web.ui")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
---- plugins.finalcutpro.export.batch.manager.panel.DEFAULT_PRIORITY -> number
---- Constant
---- The default priority for panels.
-local DEFAULT_PRIORITY = 0
-
---- plugins.finalcutpro.export.batch.manager.panel.HANDLER_PRIORITY -> number
---- Constant
---- The default priority for handler scripts.
-local HANDLER_PRIORITY = 1000000
+local uuid              = host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -150,7 +120,7 @@ end
 --- * The panel.
 function panel:addContent(priority, content, escaped)
     -- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
-    priority = priority or DEFAULT_PRIORITY
+    priority = priority or 0
 
     local items = self._uiItems
     items[#items+1] = {
@@ -205,7 +175,7 @@ function panel:addHandler(event, id, handlerFn, keys)
     --------------------------------------------------------------------------------
     -- Add the script to the panel:
     --------------------------------------------------------------------------------
-    self:addContent(HANDLER_PRIORITY, script)
+    self:addContent(1000000, script)
 
     --------------------------------------------------------------------------------
     -- Register the handler function:

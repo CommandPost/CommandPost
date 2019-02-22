@@ -11,28 +11,12 @@
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
 --- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log				= require("hs.logger").new("tblsrc")
+local _					    = require("moses")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _					= require("moses")
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local find, len			= string.find, string.len
-local insert			= table.insert
+local insert			  = table.insert
 
 --------------------------------------------------------------------------------
 --

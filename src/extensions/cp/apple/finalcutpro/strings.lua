@@ -4,40 +4,20 @@
 --- This has been populated with common lookups for user interface values
 --- that appear in Final Cut Pro.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                   = require("hs.logger").new("fcpStrings")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 -- local inspect               = require("hs.inspect")
 local fs                    = require("hs.fs")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local app                   = require("cp.apple.finalcutpro.app")
 local config                = require("cp.config")
 local strings               = require("cp.strings")
 local localeID              = require("cp.i18n.localeID")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                     = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert, sort          = table.insert, table.sort
 
 --------------------------------------------------------------------------------
@@ -149,7 +129,7 @@ function mod:reset()
     })
 end
 
---- cp.apple.finalcutpro:string(key[, locale][, quiet]]) -> string
+--- cp.apple.finalcutpro.strings:find(key[, locale][, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`.
 --- If no `context` value is provided, the [current context](#context) is used.
@@ -177,7 +157,7 @@ function mod:find(key, locale, quiet)
     return self._strings and self._strings:find(key, context, quiet)
 end
 
---- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
+--- cp.apple.finalcutpro.strings:findKeys(string[, lang]) -> {string}
 --- Method
 --- Looks up an application string and returns an array of keys that match. It will take into account current language the app is running in, or use `lang` if provided.
 ---

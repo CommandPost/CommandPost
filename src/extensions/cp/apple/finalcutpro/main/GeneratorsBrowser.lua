@@ -2,26 +2,12 @@
 ---
 --- Generators Browser Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("timline")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 -- local inspect							= require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -34,9 +20,6 @@ local ScrollArea						= require("cp.ui.ScrollArea")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 

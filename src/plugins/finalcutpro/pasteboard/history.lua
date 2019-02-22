@@ -2,26 +2,12 @@
 ---
 --- Pasteboard History
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                   = require("hs.logger").new("pasteboardHistory")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer                                 = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local base64                                = require("hs.base64")
 local config                                = require("cp.config")
 local dialog                                = require("cp.dialog")
@@ -31,15 +17,6 @@ local json                                  = require("cp.json")
 
 local If                                    = require("cp.rx.go.If")
 local Do                                    = require("cp.rx.go.Do")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local DEFAULT_VALUE                         = false
-local TOOLS_PRIORITY                        = 1000
-local OPTIONS_PRIORITY                      = 1000
 
 --------------------------------------------------------------------------------
 --
@@ -66,7 +43,7 @@ mod.HISTORY_MAXIMUM_SIZE = 5
 --- plugins.finalcutpro.pasteboard.history.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable the Pasteboard History.
-mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
+mod.enabled = config.prop("enablePasteboardHistory", false)
 
 --- plugins.finalcutpro.pasteboard.history._history <cp.prop: table>
 --- Field
@@ -243,11 +220,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Initialise the module:
     --------------------------------------------------------------------------------
@@ -256,8 +229,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu.pasteboard:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
-        :addItem(OPTIONS_PRIORITY, function()
+    deps.menu.pasteboard:addMenu(1000, function() return i18n("localPasteboardHistory") end)
+        :addItem(1000, function()
             return { title = i18n("enablePasteboardHistory"),    fn = function()
                 mod.enabled:toggle()
                 mod.update()
@@ -286,11 +259,7 @@ function plugin.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
-
     --------------------------------------------------------------------------------
     -- Copy Legacy Property Pasteboard History to JSON:
     --------------------------------------------------------------------------------
@@ -309,7 +278,6 @@ function plugin.postInit()
 
         log.df("Copied Pasteboard History from Plist to JSON.")
     end
-
 end
 
 return plugin
