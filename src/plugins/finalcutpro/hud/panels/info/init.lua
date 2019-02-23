@@ -4,15 +4,13 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("info")
+--local log               = require("hs.logger").new("info")
 
 local image             = require("hs.image")
 
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
-
-local imageFromName     = image.imageFromName
 
 --------------------------------------------------------------------------------
 --
@@ -69,12 +67,6 @@ function mod.updateInfo()
         end
     end
 
-    mod._manager.injectScript([[changeInnerHTMLByID("media", "]] .. mediaText .. [[")]])
-    mod._manager.injectScript([[changeClassNameByID("media", "]] .. mediaClass .. [[")]])
-
-    mod._manager.injectScript([[changeInnerHTMLByID("quality", "]] .. qualityText .. [[")]])
-    mod._manager.injectScript([[changeClassNameByID("quality", "]] .. qualityClass .. [[")]])
-
     local backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true)
 
     local backgroundRenderText, backgroundRenderClass
@@ -88,8 +80,15 @@ function mod.updateInfo()
         backgroundRenderClass = "bad"
     end
 
-    mod._manager.injectScript([[changeInnerHTMLByID("backgroundRender", "]] .. backgroundRenderText .. [[")]])
-    mod._manager.injectScript([[changeClassNameByID("backgroundRender", "]] .. backgroundRenderClass .. [[")]])
+    local script = [[
+        changeInnerHTMLByID("backgroundRender", "]] .. backgroundRenderText .. [[");
+        changeClassNameByID("backgroundRender", "]] .. backgroundRenderClass .. [[");
+        changeInnerHTMLByID("media", "]] .. mediaText .. [[");
+        changeClassNameByID("media", "]] .. mediaClass .. [[");
+        changeInnerHTMLByID("quality", "]] .. qualityText .. [[");
+        changeClassNameByID("quality", "]] .. qualityClass .. [[");
+    ]]
+    mod._manager.injectScript(script)
 
 end
 
@@ -143,12 +142,12 @@ function plugin.init(deps, env)
             priority    = 1,
             id          = "info",
             label       = "Info Panel",
-            image       = imageFromName("NSInfo"),
+            image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/info.png"))),
             tooltip     = "Info Panel",
             openFn      = function() mod.updateWatchers(true) end,
             closeFn     = function() mod.updateWatchers(false) end,
             loadedFn    = mod.updateInfo,
-            height      = 150,
+            height      = 130,
         })
 
         --------------------------------------------------------------------------------

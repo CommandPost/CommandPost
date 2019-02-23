@@ -637,6 +637,26 @@ function mod.delete()
     end
 end
 
+--- plugins.finalcutpro.hud.manager.resize()
+--- Function
+--- Resizes the HUD.
+---
+--- Parameters:
+---  * height - The new height of the HUD as number.
+---
+--- Returns:
+---  * None
+function mod.resize(height)
+    if mod._webview then
+        local size = mod._webview:size()
+        size.h = height
+        mod._webview:size(size)
+
+        local frame = mod._webview:frame()
+        mod._frameUUID = frame.w + frame.h
+    end
+end
+
 --- plugins.finalcutpro.hud.manager.refresh() -> none
 --- Function
 --- Refreshes the HUD.
@@ -791,6 +811,53 @@ function mod.addPanel(params)
     return newPanel
 end
 
+local function showOrHideHUD()
+    --------------------------------------------------------------------------------
+    -- Ignore if the HUD is disabled:
+    --------------------------------------------------------------------------------
+    if not mod.enabled() then return end
+
+    --------------------------------------------------------------------------------
+    -- If CommandPost or Final Cut Pro is frontmost:
+    --------------------------------------------------------------------------------
+    local frontmostApplication = application.frontmostApplication()
+    if frontmostApplication then
+        local bundleID = frontmostApplication:bundleID()
+        if bundleID and (bundleID == CP_BUNDLE_ID or bundleID == FCP_BUNDLE_ID) then
+            if bundleID == CP_BUNDLE_ID then
+                if mod._frameUUID then
+                    local focusedWindow = frontmostApplication:focusedWindow()
+                    local focusedWindowFrame = focusedWindow and focusedWindow:frame()
+                    if focusedWindowFrame then
+                        if mod._frameUUID == focusedWindowFrame.w + focusedWindowFrame.h then
+                            --------------------------------------------------------------------------------
+                            -- The HUD is frontmost:
+                            --------------------------------------------------------------------------------
+                            mod.show()
+                            return
+                        end
+                    end
+                end
+            elseif bundleID == FCP_BUNDLE_ID then
+                if not fcp:fullScreenWindow():isShowing() and
+                not fcp:commandEditor():isShowing() and
+                not fcp:preferencesWindow():isShowing() then
+                    --------------------------------------------------------------------------------
+                    -- Final Cut Pro's main interface is frontmost:
+                    --------------------------------------------------------------------------------
+                    mod.show()
+                    return
+                end
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Otherwise hide the HUD:
+    --------------------------------------------------------------------------------
+    mod.hide()
+end
+
 --- plugins.finalcutpro.hud.manager.updateVisibility() -> none
 --- Function
 --- Update the visibility of the HUD.
@@ -802,50 +869,8 @@ end
 ---  * None
 function mod.updateVisibility()
     timer.doAfter(0.000000000001, function()
-        --------------------------------------------------------------------------------
-        -- Ignore if the HUD is disabled:
-        --------------------------------------------------------------------------------
-        if not mod.enabled() then return end
-
-        --------------------------------------------------------------------------------
-        -- If CommandPost or Final Cut Pro is frontmost:
-        --------------------------------------------------------------------------------
-        local frontmostApplication = application.frontmostApplication()
-        if frontmostApplication then
-            local bundleID = frontmostApplication:bundleID()
-            if bundleID and (bundleID == CP_BUNDLE_ID or bundleID == FCP_BUNDLE_ID) then
-                if bundleID == CP_BUNDLE_ID then
-                    if mod._frameUUID then
-                        local focusedWindow = frontmostApplication:focusedWindow()
-                        local focusedWindowFrame = focusedWindow and focusedWindow:frame()
-                        if focusedWindowFrame then
-                            if mod._frameUUID == focusedWindowFrame.w + focusedWindowFrame.h then
-                                --------------------------------------------------------------------------------
-                                -- The HUD is frontmost:
-                                --------------------------------------------------------------------------------
-                                mod.show()
-                                return
-                            end
-                        end
-                    end
-                elseif bundleID == FCP_BUNDLE_ID then
-                    if not fcp:fullScreenWindow():isShowing() and
-                    not fcp:commandEditor():isShowing() and
-                    not fcp:preferencesWindow():isShowing() then
-                        --------------------------------------------------------------------------------
-                        -- Final Cut Pro's main interface is frontmost:
-                        --------------------------------------------------------------------------------
-                        mod.show()
-                        return
-                    end
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Otherwise hide the HUD:
-        --------------------------------------------------------------------------------
-        mod.hide()
+        showOrHideHUD()
+        timer.doAfter(0.5, showOrHideHUD)
     end)
 end
 

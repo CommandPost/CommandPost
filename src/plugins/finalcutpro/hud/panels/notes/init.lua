@@ -4,16 +4,16 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("info")
+--local log               = require("hs.logger").new("info")
 
 local image             = require("hs.image")
+local fs                = require("hs.fs")
 
+local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
-
-local imageFromPath     = image.imageFromPath
-local iconFallback      = tools.iconFallback
+local json              = require("cp.json")
+local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -21,6 +21,18 @@ local iconFallback      = tools.iconFallback
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local FILENAME = "Notes.cpHUD"
+
+--- plugins.finalcutpro.hud.panels.notes.notes <cp.prop: table>
+--- Field
+--- Table of HUD note values.
+mod.notes = json.prop(config.userConfigRootPath, "HUD", "Notes.cpHUD", {})
+
+--- plugins.finalcutpro.hud.panels.notes.lastLocation <cp.prop: string>
+--- Field
+--- Last Location
+mod.lastLocation = config.prop("hub.notes.lastLocation", "Local Machine")
 
 -- getEnv() -> table
 -- Function
@@ -37,6 +49,21 @@ local function getEnv()
     return env
 end
 
+local function writeToFile(path, data)
+    local file = io.open(path .. "/" .. FILENAME, "w")
+    file:write(data)
+    file:close()
+end
+
+local function readFromFile(path)
+    local file = io.open(path .. "/" .. FILENAME, "r")
+    if file then
+        local data = file:read("*a")
+        file:close()
+        return data
+    end
+end
+
 --- plugins.finalcutpro.hud.panels.notes.updateInfo() -> none
 --- Function
 --- Update the Info Panel HTML content.
@@ -46,28 +73,43 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.updateInfo()
+local function updateInfo()
+    local script = ""
 
-end
+    local activeLibraryPaths = fcp.activeLibraryPaths()
+    if #activeLibraryPaths >= 1 then
+        for i=1, #activeLibraryPaths do
+            local path = activeLibraryPaths[i]
+            if path then
+                local filename = fs.displayName(path)
+                script = script .. "insertLocation('" .. filename .. "', '" .. path .. "');\n"
+            end
+        end
+    end
 
---- plugins.finalcutpro.hud.panels.notes.updateWatchers(enabled) -> none
---- Function
---- Sets up or destroys the Info Panel watchers.
----
---- Parameters:
----  * enabled - `true` to setup, `false` to destroy
----
---- Returns:
----  * None
-function mod.updateWatchers(enabled)
-    if enabled then
-        --------------------------------------------------------------------------------
-        -- Setup Watchers:
-        --------------------------------------------------------------------------------
+    local lastLocation = mod.lastLocation()
+    if tools.tableContains(activeLibraryPaths, lastLocation) then
+        script = script .. "setLocation('" .. lastLocation .. "');\n"
+    end
+
+    if lastLocation == "Local Machine" then
+        local notes = mod.notes()
+        if notes and notes.notes then
+            script = script .. "updateNotes(" .. notes.notes .. ");\n"
+        else
+            script = script .. "clearNotes();\n"
+        end
     else
-        --------------------------------------------------------------------------------
-        -- Destroy Watchers:
-        --------------------------------------------------------------------------------
+        local notes = readFromFile(lastLocation)
+        if notes then
+            script = script .. "updateNotes(" .. notes .. ");\n"
+        else
+            script = script .. "clearNotes();\n"
+        end
+    end
+
+    if script ~= "" then
+        mod._manager.injectScript(script)
     end
 end
 
@@ -94,11 +136,9 @@ function plugin.init(deps, env)
             priority    = 3,
             id          = "notes",
             label       = "Notes Panel",
-            image       = imageFromPath(iconFallback("/Applications/Notes.app/Contents/Resources/AppIcon.icns")),
+            image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/notes.png"))),
             tooltip     = "Notes Panel",
-            openFn      = function() mod.updateWatchers(true) end,
-            closeFn     = function() mod.updateWatchers(false) end,
-            loadedFn    = mod.updateInfo,
+            loadedFn    = updateInfo,
             height      = 300,
         })
 
@@ -107,6 +147,27 @@ function plugin.init(deps, env)
         --------------------------------------------------------------------------------
         local renderPanel = env:compileTemplate("html/panel.html")
         panel:addContent(1, function() return renderPanel(getEnv()) end, false)
+
+        --------------------------------------------------------------------------------
+        -- Setup Controller Callback:
+        --------------------------------------------------------------------------------
+        local controllerCallback = function(_, params)
+            if params["type"] == "locationChanged" then
+                local location = params["location"]
+                mod.lastLocation(location)
+                updateInfo()
+            elseif params["type"] == "notesChanged" then
+                if params["location"] == "Local Machine" then
+                    local notes = params["notes"]
+                    mod.notes({notes=notes})
+                else
+                    writeToFile(params["location"], params["notes"])
+                end
+            elseif params["type"] == "refresh" then
+                mod._manager.refresh()
+            end
+        end
+        deps.manager.addHandler("hudNotes", controllerCallback)
     end
 end
 

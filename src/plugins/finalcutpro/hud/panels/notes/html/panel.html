@@ -7,15 +7,107 @@
 	trix-editor {
 		height: 150px;
 	}
+	#location {
+		padding-bottom: 10px;
+	}
+	#locationDropdown {
+		/*width: 400px;*/
+	}
 </style>
 <script>
 
-// Save editor state to local storage
-//localStorage["editorState"] = JSON.stringify(element.editor)
+	function optionExists(needle, haystack){
+		var optionExists = false,
+			optionsLength = haystack.length;
+		while ( optionsLength-- )
+		{
+			if ( haystack.options[ optionsLength ].value === needle )
+			{
+				optionExists = true;
+				break;
+			}
+		}
+		return optionExists;
+	}
 
-// Restore editor state from local storage
-//element.editor.loadJSON(JSON.parse(localStorage["editorState"]))
+	function insertLocation(text, value){
+		var dropdown = document.getElementById("locationDropdown");
+		if (optionExists(value, dropdown) == false) {
+			var option = document.createElement("option");
+			option.text = text;
+			option.value = value;
+			dropdown.add(option);
+		}
+	}
+
+	function changeLocation(){
+		try {
+			var result = {
+				id: "hudNotes",
+				params: {
+					type: "locationChanged",
+					location: document.getElementById("locationDropdown").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function setLocation(value){
+		document.getElementById('locationDropdown').value=value;
+	}
+
+	function updateNotes(notes){
+		try {
+			document.querySelector("trix-editor").editor.loadJSON(notes);
+		} catch(err) {
+			try {
+				var result = {
+					id: "hudNotes",
+					params: {
+						type: "refresh",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+	function clearNotes(){
+		try {
+			document.querySelector("trix-editor").editor.loadHTML("");
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	addEventListener("trix-change", function(event) {
+		try {
+			var result = {
+				id: "hudNotes",
+				params: {
+					type: "notesChanged",
+					location: document.getElementById("locationDropdown").value,
+					notes: JSON.stringify(document.querySelector("trix-editor").editor),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	})
 
 </script>
-<trix-editor input="x"></trix-editor>
-<input type="hidden" id="x" value="This is still a fairly ugly interface.">
+
+<div id="location">
+	<strong>Notes Location:</strong>
+	<select id="locationDropdown" onchange="changeLocation()">
+	  <option value="Local Machine">Local Machine</option>
+	</select>
+</div>
+
+<trix-editor></trix-editor>

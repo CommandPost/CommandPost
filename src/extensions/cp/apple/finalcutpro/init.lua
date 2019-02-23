@@ -63,6 +63,7 @@ local require = require
 local log										= require("hs.logger").new("fcp")
 
 local fs 										= require("hs.fs")
+local hsplist                                   = require("hs.plist")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 local pathwatcher                               = require("hs.pathwatcher")
@@ -519,6 +520,29 @@ end
 -- LIBRARIES
 --
 ----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:activeLibraryPaths() -> table
+--- Method
+--- Gets a table of all the active library paths.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any active library paths.
+function fcp.activeLibraryPaths()
+    local paths = {}
+    local fcpPlist = hsplist.read("~/Library/Preferences/" .. fcp.BUNDLE_ID .. ".plist")
+    local FFActiveLibraries = fcpPlist and fcpPlist.FFActiveLibraries
+    if FFActiveLibraries and #FFActiveLibraries >= 1 then
+        for i=1, #FFActiveLibraries do
+            local activeLibrary = FFActiveLibraries[i]
+            local path = fs.getPathFromBookmark(activeLibrary)
+            table.insert(paths, path)
+        end
+    end
+    return paths
+end
 
 --- cp.apple.finalcutpro:openLibrary(path) -> boolean
 --- Method
