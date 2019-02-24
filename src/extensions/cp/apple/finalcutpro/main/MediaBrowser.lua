@@ -4,7 +4,7 @@
 
 local require = require
 
-local log								= require("hs.logger").new("mediaBrowser")
+-- local log								= require("hs.logger").new("mediaBrowser")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")

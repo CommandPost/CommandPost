@@ -2,7 +2,7 @@
 ---
 --- Abstract base class for `AX` elements which form a grid, such as [Table2](cp.ui.Table2.md) and [Outline](cp.ui.Outline.md).
 
-local log                       = require "hs.logger" .new "Grid"
+-- local log                       = require "hs.logger" .new "Grid"
 
 local fnutils	                = require "hs.fnutils"
 
