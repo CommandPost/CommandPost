@@ -85,6 +85,15 @@
 		}
 	}
 
+	function clearLocations(){
+		var selectobject=document.getElementById("locationDropdown");
+		for (var i=0; i<selectobject.length; i++){
+			if (selectobject.options[i].value != 'Local Machine' ) {
+				selectobject.remove(i);
+			}
+		}
+	}
+
 	addEventListener("trix-change", function(event) {
 		try {
 			var result = {
@@ -104,9 +113,9 @@
 </script>
 
 <div id="location">
-	<strong>Notes Location:</strong>
+	<strong>{{ i18n("notesLocation") }}:</strong>
 	<select id="locationDropdown" onchange="changeLocation()">
-	  <option value="Local Machine">Local Machine</option>
+	  <option value="Local Machine">{{ i18n("localMachine") }}</option>
 	</select>
 </div>
 

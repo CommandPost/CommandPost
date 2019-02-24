@@ -967,10 +967,21 @@ local plugin = {
     required        = true,
     dependencies    = {
         ["finalcutpro.commands"] = "fcpxCmds",
+        ["finalcutpro.menu.manager"] = "menu",
     }
 }
 
 function plugin.init(deps, env)
+
+    --------------------------------------------------------------------------------
+    -- Setup Menus:
+    --------------------------------------------------------------------------------
+   deps.menu.tools
+        :addMenu(10000, function() return i18n("hud") end)
+        :addItem(1000, function()
+            return { title = i18n("enableHUD"), fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
+        end)
+
     --------------------------------------------------------------------------------
     -- Setup Watcher:
     --------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 local require           = require
 
---local log               = require("hs.logger").new("info")
+local log               = require("hs.logger").new("notes")
 
 local image             = require("hs.image")
 local fs                = require("hs.fs")
@@ -12,7 +12,6 @@ local fs                = require("hs.fs")
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
-local json              = require("cp.json")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -22,12 +21,15 @@ local tools             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- FILENAME -> string
+-- Constant
+-- The filename used by the Notes HUD Panel.
 local FILENAME = "Notes.cpHUD"
 
---- plugins.finalcutpro.hud.panels.notes.notes <cp.prop: table>
---- Field
---- Table of HUD note values.
-mod.notes = json.prop(config.userConfigRootPath, "HUD", "Notes.cpHUD", {})
+-- LOCAL_MACHINE_PATH -> string
+-- Constant
+-- The path to the local machine Notes file.
+local LOCAL_MACHINE_PATH = config.userConfigRootPath .. "/HUD"
 
 --- plugins.finalcutpro.hud.panels.notes.lastLocation <cp.prop: string>
 --- Field
@@ -49,12 +51,31 @@ local function getEnv()
     return env
 end
 
+-- writeToFile(path, data) -> none
+-- Function
+-- Write data to a file at a given path.
+--
+-- Parameters:
+--  * path - The path of where you want to save the file.
+--  * data - The data to write to the file.
+--
+-- Returns:
+--  * None
 local function writeToFile(path, data)
     local file = io.open(path .. "/" .. FILENAME, "w")
     file:write(data)
     file:close()
 end
 
+-- readFromFile(path) -> string
+-- Function
+-- Read data from file.
+--
+-- Parameters:
+--  * path - The path of where you want to load the file.
+--
+-- Returns:
+--  * None
 local function readFromFile(path)
     local file = io.open(path .. "/" .. FILENAME, "r")
     if file then
@@ -74,7 +95,7 @@ end
 --- Returns:
 ---  * None
 local function updateInfo()
-    local script = ""
+    local script = "clearLocations();\n"
 
     local activeLibraryPaths = fcp.activeLibraryPaths()
     if #activeLibraryPaths >= 1 then
@@ -90,12 +111,15 @@ local function updateInfo()
     local lastLocation = mod.lastLocation()
     if tools.tableContains(activeLibraryPaths, lastLocation) then
         script = script .. "setLocation('" .. lastLocation .. "');\n"
+    else
+        lastLocation = "Local Machine"
+        mod.lastLocation(lastLocation)
     end
 
     if lastLocation == "Local Machine" then
-        local notes = mod.notes()
-        if notes and notes.notes then
-            script = script .. "updateNotes(" .. notes.notes .. ");\n"
+        local notes = readFromFile(LOCAL_MACHINE_PATH)
+        if notes then
+            script = script .. "updateNotes(" .. notes .. ");\n"
         else
             script = script .. "clearNotes();\n"
         end
@@ -108,8 +132,29 @@ local function updateInfo()
         end
     end
 
-    if script ~= "" then
-        mod._manager.injectScript(script)
+    mod._manager.injectScript(script)
+end
+
+-- updateWatchers(enabled) -> none
+-- Function
+-- Sets up or destroys the Notes Panel watchers.
+--
+-- Parameters:
+--  * enabled - `true` to setup, `false` to destroy
+--
+-- Returns:
+--  * None
+function updateWatchers(enabled)
+    if enabled then
+        --------------------------------------------------------------------------------
+        -- Setup Watchers:
+        --------------------------------------------------------------------------------
+        fcp.app.preferences:prop("FFActiveLibraries", nil, false):watch(updateInfo)
+    else
+        --------------------------------------------------------------------------------
+        -- Destroy Watchers:
+        --------------------------------------------------------------------------------
+        fcp.app.preferences:prop("FFActiveLibraries", nil, false):unwatch(updateInfo)
     end
 end
 
@@ -128,6 +173,12 @@ local plugin = {
 
 function plugin.init(deps, env)
     if fcp:isSupported() then
+
+        --------------------------------------------------------------------------------
+        -- Make sure the HUD application support folder exists:
+        --------------------------------------------------------------------------------
+        tools.ensureDirectoryExists(config.userConfigRootPath, "HUD")
+
         --------------------------------------------------------------------------------
         -- Create new Panel:
         --------------------------------------------------------------------------------
@@ -140,6 +191,8 @@ function plugin.init(deps, env)
             tooltip     = "Notes Panel",
             loadedFn    = updateInfo,
             height      = 300,
+            openFn      = function() updateWatchers(true) end,
+            closeFn     = function() updateWatchers(false) end,
         })
 
         --------------------------------------------------------------------------------
@@ -158,8 +211,7 @@ function plugin.init(deps, env)
                 updateInfo()
             elseif params["type"] == "notesChanged" then
                 if params["location"] == "Local Machine" then
-                    local notes = params["notes"]
-                    mod.notes({notes=notes})
+                    writeToFile(LOCAL_MACHINE_PATH, params["notes"])
                 else
                     writeToFile(params["location"], params["notes"])
                 end

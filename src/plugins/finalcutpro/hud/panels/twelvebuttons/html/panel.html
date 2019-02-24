@@ -1,0 +1,94 @@
+<style>
+	.minibutton {
+		text-align: center;
+		display:block;
+		width: 75px;
+		font-family: -apple-system;
+		font-size: 10px;
+		text-decoration: none;
+		background-color: #333333;
+		color: #bfbebb;
+		padding: 2px 6px 2px 6px;
+		border-top: 1px solid #161616;
+		border-right: 1px solid #161616;
+		border-bottom: 0.5px solid #161616;
+		border-left: 1px solid #161616;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	table {
+		width:100%;
+		text-align:left;
+	}
+</style>
+<script>
+	function leftClickHUDButton(buttonID){
+		try {
+			var result = {
+				id: "hudtwelvebuttons",
+				params: {
+					type: "leftClickHUDButton",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function rightClickHUDButton(buttonID){
+		try {
+			var result = {
+				id: "hudtwelvebuttons",
+				params: {
+					type: "rightClickHUDButton",
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function renamePrompt(buttonID, message, value){
+		var value = prompt(message, value);
+		if (value == null || value == "") {
+			// Cancelled
+		} else {
+			try {
+				var result = {
+					id: "hudtwelvebuttons",
+					params: {
+						type: "renameButton",
+						buttonID: buttonID,
+						value: value,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+</script>
+
+<table>
+	<tr>
+		<th><a id="button1" href="#" class="minibutton" onclick="leftClickHUDButton('1')" oncontextmenu="rightClickHUDButton('1'); return false;">-</a></th>
+		<th><a id="button2" href="#" class="minibutton" onclick="leftClickHUDButton('2')" oncontextmenu="rightClickHUDButton('2'); return false;">-</a></th>
+		<th><a id="button3" href="#" class="minibutton" onclick="leftClickHUDButton('3')" oncontextmenu="rightClickHUDButton('3'); return false;">-</a></th>
+		<th><a id="button4" href="#" class="minibutton" onclick="leftClickHUDButton('4')" oncontextmenu="rightClickHUDButton('4'); return false;">-</a></th>
+		<th><a id="button5" href="#" class="minibutton" onclick="leftClickHUDButton('5')" oncontextmenu="rightClickHUDButton('5'); return false;">-</a></th>
+		<th><a id="button6" href="#" class="minibutton" onclick="leftClickHUDButton('6')" oncontextmenu="rightClickHUDButton('6'); return false;">-</a></th>
+	<tr>
+	<tr>
+		<th><a id="button7" href="#" class="minibutton" onclick="leftClickHUDButton('7')" oncontextmenu="rightClickHUDButton('7'); return false;">-</a></th>
+		<th><a id="button8" href="#" class="minibutton" onclick="leftClickHUDButton('8')" oncontextmenu="rightClickHUDButton('8'); return false;">-</a></th>
+		<th><a id="button9" href="#" class="minibutton" onclick="leftClickHUDButton('9')" oncontextmenu="rightClickHUDButton('9'); return false;">-</a></th>
+		<th><a id="button10" href="#" class="minibutton" onclick="leftClickHUDButton('10')" oncontextmenu="rightClickHUDButton('10'); return false;">-</a></th>
+		<th><a id="button11" href="#" class="minibutton" onclick="leftClickHUDButton('11')" oncontextmenu="rightClickHUDButton('11'); return false;">-</a></th>
+		<th><a id="button12" href="#" class="minibutton" onclick="leftClickHUDButton('12')" oncontextmenu="rightClickHUDButton('12'); return false;">-</a></th>
+	<tr>
+</table>

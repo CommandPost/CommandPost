@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.hud.panels.tenbuttons ===
+--- === plugins.finalcutpro.hud.panels.twentyfourbuttons ===
 ---
---- Ten Panel for the Final Cut Pro HUD.
+--- Twenty Four Button Panel for the Final Cut Pro HUD.
 
 local require                   = require
 
@@ -31,12 +31,12 @@ local webviewAlert              = dialog.webviewAlert
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.hud.panels.tenbuttons.buttons <cp.prop: table>
+--- plugins.finalcutpro.hud.panels.twentyfourbuttons.buttons <cp.prop: table>
 --- Field
 --- Table of HUD button values.
-mod.buttons = json.prop(config.userConfigRootPath, "HUD", "Ten Buttons.cpHUD", {})
+mod.buttons = json.prop(config.userConfigRootPath, "HUD", "Twenty Four Buttons.cpHUD", {})
 
---- plugins.finalcutpro.hud.panels.tenbuttons.updateInfo() -> none
+--- plugins.finalcutpro.hud.panels.twentyfourbuttons.updateInfo() -> none
 --- Function
 --- Update the Buttons Panel HTML content.
 ---
@@ -48,11 +48,11 @@ mod.buttons = json.prop(config.userConfigRootPath, "HUD", "Ten Buttons.cpHUD", {
 local function updateInfo()
     local buttons = mod.buttons()
     local script = ""
-    for i=1, 10 do
+    for i=1, 24 do
         local button = buttons and buttons[tostring(i)]
         local value = button and (button.customTitle or button.actionTitle)
         if value then
-            value = stringMaxLength(cleanupButtonText(value), 35, "…")
+            value = stringMaxLength(cleanupButtonText(value), 11, "…")
             script = script .. [[changeInnerHTMLByID("button]] .. i .. [[", "]] .. value .. [[");]] .. "\n"
         else
             script = script .. [[changeInnerHTMLByID("button]] .. i .. [[", "-");]] .. "\n"
@@ -250,7 +250,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.hud.panels.tenbuttons",
+    id              = "finalcutpro.hud.panels.twentyfourbuttons",
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.hud.manager"]     = "manager",
@@ -266,11 +266,11 @@ function plugin.init(deps, env)
 
         local panel = deps.manager.addPanel({
             priority    = 2,
-            id          = "tenbuttons",
-            label       = "10 Buttons",
-            tooltip     = "10 Buttons",
-            image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/tenbuttons.png"))),
-            height      = 220,
+            id          = "twentyfourbuttons",
+            label       = "24 Buttons",
+            tooltip     = "24 Buttons",
+            image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/twentyfourbuttons.png"))),
+            height      = 170,
             loadedFn    = updateInfo,
         })
 
@@ -292,7 +292,7 @@ function plugin.init(deps, env)
                 renameButtonValue(params["buttonID"], params["value"])
             end
         end
-        deps.manager.addHandler("hudButtons", controllerCallback)
+        deps.manager.addHandler("hudtwentyfourbuttons", controllerCallback)
     end
 end
 
