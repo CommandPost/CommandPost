@@ -15,11 +15,11 @@ function LibrariesSidebar:initialize(parent)
 end
 
 function LibrariesSidebar:selectLibrary(path)
-    return self:table():selectRow(path)
+    return self:contents():selectRow(path)
 end
 
 function LibrariesSidebar:selectedRowsUI()
-    return self:table():selectedRowsUI()
+    return self:contents():selectedRowsUI()
 end
 
 return LibrariesSidebar

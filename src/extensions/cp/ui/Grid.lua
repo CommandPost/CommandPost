@@ -237,8 +237,9 @@ local function walkRows(rows, path, actionFn)
     if rows then
         local name = table.remove(path, 1)
         for _,row in ipairs(rows) do
-            local cell = row:cells()[1]
-            if cell:textValueIs(name) then
+            local cells = row:cells()
+            local cell = cells and cells[1]
+            if cell and cell:valueIs(name) then
                 if #path > 0 then
                     row:discloseRow()
                     return walkRows(row:disclosedRows(), path, actionFn)

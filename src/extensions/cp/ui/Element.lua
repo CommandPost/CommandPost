@@ -129,6 +129,43 @@ function Element.lazy.prop:frame()
     return axutils.prop(self.UI, "AXFrame")
 end
 
+--- cp.ui.Element.value <cp.prop: anything; live?>
+--- Field
+--- The 'AXValue' of the element.
+function Element.lazy.prop:value()
+    return axutils.prop(self.UI, "AXValue", true)
+end
+
+--- cp.ui.Element.textValue <cp.prop: string; read-only; live?>
+--- Field
+--- The 'AXValue' of the element, if it is a `string`.
+function Element.lazy.prop:textValue()
+    return self.value:mutate(function(original)
+        local value = original()
+        return type(value) == "string" and value or nil
+    end)
+end
+
+--- cp.ui.Element.valueIs(value) -> boolean
+--- Method
+--- Checks if the current value of this element is the provided value.
+---
+--- Parameters:
+--- * value - The value to compare to.
+---
+--- Returns:
+--- * `true` if the current [#value] is equal to the provided `value`.
+function Element:valueIs(value)
+    return self:value() == value
+end
+
+--- cp.ui.Element.title <cp.prop: string; read-only, live?>
+--- Field
+--- The 'AXTitle' of the element.
+function Element.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
+end
+
 --- cp.ui.Element.position <cp.prop: table; read-only; live?>
 --- Field
 --- Returns the table containing the `x` and `y` values for the `Element` frame, or `nil` if not available.
