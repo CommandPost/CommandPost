@@ -2,7 +2,7 @@
 ---
 --- Represents an `AXTable` `axuielement`.
 
-local log                       = require "hs.logger" .new "Table2"
+-- local log                       = require "hs.logger" .new "Table2"
 
 local Grid	                    = require "cp.ui.Grid"
 
