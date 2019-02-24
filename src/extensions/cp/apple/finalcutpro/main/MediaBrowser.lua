@@ -4,57 +4,87 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("mediaBrowser")
+local log								= require("hs.logger").new("mediaBrowser")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
+local go                                = require("cp.rx.go")
+
 local axutils							= require("cp.ui.axutils")
 
-local Table								= require("cp.ui.Table")
+local Group                             = require("cp.ui.Group")
+local Outline                           = require("cp.ui.Outline")
+local ScrollArea                        = require("cp.ui.ScrollArea")
+local SplitGroup                        = require("cp.ui.SplitGroup")
 local PopUpButton				        = require("cp.ui.PopUpButton")
 local TextField						    = require("cp.ui.TextField")
 
+local strings                           = require("cp.apple.finalcutpro.strings")
+
 local cache                             = axutils.cache
-local childWithRole                     = axutils.childWithRole
+local childMatching                     = axutils.childMatching
+local childWithTitle                    = axutils.childWithTitle
+
+local Do, WaitUntil, Done, If           = go.Do, go.WaitUntil, go.Done, go.If
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local MediaBrowser = {}
+local MediaBrowser = Group:subclass("cp.apple.finalcutpro.main.MediaBrowser")
 
 --- cp.apple.finalcutpro.main.MediaBrowser.TITLE -> string
 --- Constant
---- Photos & Audio Title.
-MediaBrowser.TITLE = "Photos and Audio"
+--- Photos & Audio Menu Title.
+MediaBrowser.static.TITLE = "Photos and Audio"
 
---- cp.apple.finalcutpro.main.MediaBrowser.MAX_SECTIONS -> number
---- Constant
---- Maximum Sections.
-MediaBrowser.MAX_SECTIONS = 4
+MediaBrowser.static.SECTION = {
+    PHOTOS = "media sidebar Photos library row",
+    APERTURE = "media sidebar Aperture library row",
+    GARAGEBAND = "project media sidebar garage band row",
+    LOGIC_PRO_X = "project media sidebar logic pro row",
+    ITUNES = "project media sidebar itunes row",
+    SOUND_EFFECTS = "project media sidebar sound effects row",
+}
 
---- cp.apple.finalcutpro.main.MediaBrowser.PHOTOS -> number
---- Constant
---- Photos ID.
-MediaBrowser.PHOTOS = 1
+-- rowWithTitle(row) -> function
+-- Function
+-- Creates a function which will check if a row contains an element with the specified title key, as per fcp.strings.
+--
+-- Parameters:
+-- * The row to check
+--
+-- Returns:
+-- * The matcher `function`
+local function rowWithTitle(titleKey)
+    return function(row)
+        return childWithTitle(row, strings:find(titleKey)) ~= nil
+    end
+end
 
---- cp.apple.finalcutpro.main.MediaBrowser.GARAGE_BAND -> number
---- Constant
---- Garage Band ID.
-MediaBrowser.GARAGE_BAND = 2
+-- soundEffectsRow(row) -> boolean
+-- Function
+-- Checks if the row is the "Sound Effects" row.
+local soundEffectsRow = rowWithTitle(MediaBrowser.SECTION.SOUND_EFFECTS)
 
---- cp.apple.finalcutpro.main.MediaBrowser.ITUNES -> number
---- Constant
---- iTunes ID.
-MediaBrowser.ITUNES = 3
+function MediaBrowser.static.matches(element)
+    if Group.matches(element) then
+        local splitGroup = childMatching(element, SplitGroup.matches)
+        if splitGroup then
+            local scrollArea = childMatching(splitGroup, SplitGroup.matches)
+            if scrollArea then
+                local outline = childMatching(scrollArea, Outline.matches)
+                if outline then
+                    return childMatching(outline, soundEffectsRow) ~= nil
+                end
+            end
+        end
+    end
+    return false
+end
 
---- cp.apple.finalcutpro.main.MediaBrowser.SOUND_EFFECTS -> number
---- Constant
---- Sound Effects ID.
-MediaBrowser.SOUND_EFFECTS = 4
-
---- cp.apple.finalcutpro.main.MediaBrowser.new(parent) -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser(parent) -> MediaBrowser
 --- Constructor
 --- Creates a new `Browser` instance.
 ---
@@ -63,62 +93,39 @@ MediaBrowser.SOUND_EFFECTS = 4
 ---
 --- Returns:
 ---  * A new `MediaBrowser` object.
-function MediaBrowser.new(parent)
-    local o = prop.extend({_parent = parent}, MediaBrowser)
-
-    local isShowing = parent.isShowing:AND(parent.mediaShowing)
-
-    local UI = prop.OR(isShowing:AND(parent.UI), prop.NIL)
-
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.MediaBrowser.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Media Browser is showing.
-        isShowing = isShowing,
-
-        --- cp.apple.finalcutpro.main.MediaBrowser.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the UI for the Media Browser, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the main group UI for the Media Browser, or `nil` if not available.
-        mainGroupUI = UI:mutate(function(original, self)
-            return cache(self, "_mainGroup", function()
-                local ui = original()
-                return ui and childWithRole(ui, "AXSplitGroup")
-            end)
-        end),
-    }
-
-    return o
+function MediaBrowser:initialize(parent)
+    local UI = prop.OR(parent.isShowing:AND(parent.mediaShowing):AND(parent.UI), prop.NIL)
+    Group.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function MediaBrowser:parent()
-    return self._parent
+--- cp.apple.finalcutpro.main.MediaBrowser.isShowing <cp.prop: boolean; read-only; live?>
+--- Field
+--- Indicates if the media browser is currently showing.
+function MediaBrowser.lazy.prop:isShowing()
+    local parent = self:parent()
+    return parent.isShowing:AND(parent.mediaShowing)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:app() -> App
+--- cp.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the main group UI for the Media Browser, or `nil` if not available.
+function MediaBrowser.lazy.prop:mainGroupUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_mainGroup", function()
+            local ui = original()
+            return ui and childMatching(ui, SplitGroup.matches)
+        end)
+    end)
+end
+
+--- cp.finalcutpro.main.MediaBrowser:mainGroup() -> SplitGroup
 --- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
+--- The [SplitGroup](cp.ui.SplitGroup.md) that contains the core elements of the `MediaBrowser`.
 ---
 --- Returns:
----  * App
-function MediaBrowser:app()
-    return self:parent():app()
+--- * The main [SplitGroup](cp.ui.SplitGroup.md)
+function MediaBrowser.lazy.method:mainGroup()
+    return SplitGroup(self, self:mainGroupUI())
 end
 
 -----------------------------------------------------------------------
@@ -146,6 +153,19 @@ function MediaBrowser:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.MediaBrowser:doShow() -> Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will show the `MediaBrowser`.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function MediaBrowser.lazy.method:doShow()
+    local menuBar = self:app():menu()
+    return Do(menuBar:doSelectMenu({"Window", "Go To", MediaBrowser.TITLE}))
+    :Then(WaitUntil(self.isShowing))
+    :Label("MediaBrowser:doShow")
+end
+
 --- cp.apple.finalcutpro.main.MediaBrowser:hide() -> MediaBrowser
 --- Method
 --- Hide the Media Browser.
@@ -160,28 +180,36 @@ function MediaBrowser:hide()
     return self
 end
 
+--- cp.apple.finalcutpro.main.MediaBrowser:doHide() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will hide the `MediaBrowser`.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md).
+function MediaBrowser.lazy.method:doHide()
+    return self:parent():doHide()
+end
+
 -----------------------------------------------------------------------------
 --
 -- SECTIONS:
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.MediaBrowser:sidebar() -> Table
+--- cp.apple.finalcutpro.main.MediaBrowser:sidebar() -> ScrollArea<Outline>
 --- Method
---- Get the Sidebar Table.
+--- Get the Sidebar Table. It will be a [ScrollArea](cp.ui.ScrollArea.md) with an
+--- [Outline](cp.ui.Outline.md) for it's `contents` value.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `Table` object.
-function MediaBrowser:sidebar()
-    if not self._sidebar then
-        self._sidebar = Table(self, function()
-            return childWithRole(self:mainGroupUI(), "AXScrollArea")
-        end)
-    end
-    return self._sidebar
+---  * `ScrollArea` object.
+function MediaBrowser.lazy.method:sidebar()
+    return ScrollArea(self, self.mainGroupUI:mutate(function(original)
+        return childMatching(original(), ScrollArea.matches)
+    end), Outline)
 end
 
 --- cp.apple.finalcutpro.main.MediaBrowser:group() -> PopUpButton
@@ -193,13 +221,10 @@ end
 ---
 --- Returns:
 ---  * `PopUpButton` object.
-function MediaBrowser:group()
-    if not self._group then
-        self._group = PopUpButton(self, function()
-            return childWithRole(self:UI(), "AXPopUpButton")
-        end)
-    end
-    return self._group
+function MediaBrowser.lazy.method:group()
+    return PopUpButton(self, function()
+        return childMatching(self:UI(), PopUpButton.matches)
+    end)
 end
 
 --- cp.apple.finalcutpro.main.MediaBrowser:search() -> TextField
@@ -211,16 +236,13 @@ end
 ---
 --- Returns:
 ---  * `TextField` object.
-function MediaBrowser:search()
-    if not self._search then
-        self._search = TextField(self, function()
-            return childWithRole(self:mainGroupUI(), "AXTextField")
-        end)
-    end
-    return self._search
+function MediaBrowser.lazy.method:search()
+    return TextField(self, function()
+        return childMatching(self:mainGroupUI(), TextField.matches)
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:showSidebar() -> MediaBrowser
 --- Method
 --- Show the Media Browser Sidebar.
 ---
@@ -230,93 +252,209 @@ end
 --- Returns:
 ---  * `MediaBrowser` object.
 function MediaBrowser:showSidebar()
-    self:app():menu():selectMenu({"Window", "Show in Workspace", "Sidebar"})
-    return self
-end
-
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> axuielementObject
---- Method
---- Get the Top Categories UI.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `axuielementObject` object.
-function MediaBrowser:topCategoriesUI()
-    return self:sidebar():contents():rowsUI(function(row)
-        return row:attributeValue("AXDisclosureLevel") == 0
-    end)
-end
-
---- cp.apple.finalcutpro.main.MediaBrowser:showSection(index) -> MediaBrowser
---- Method
---- Show a specific section.
----
---- Parameters:
----  * index - The index ID of the section you want to show as a number.
----
---- Returns:
----  * `MediaBrowser` object.
-function MediaBrowser:showSection(index)
-    self:showSidebar()
-    local topCategories = self:topCategoriesUI()
-    if topCategories and #topCategories == MediaBrowser.MAX_SECTIONS then
-        self:sidebar():contents():selectRow(topCategories[index])
+    self:show()
+    if self:isShowing() and not self:sidebar():isShowing() then
+        self:app():menu():selectMenu({"Window", "Show in Workspace", "Sidebar"})
     end
     return self
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:showPhotos() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowSidebar() -> Statement
 --- Method
---- Show Photos Section.
----
---- Parameters:
----  * None
+--- A [Statement](cp.rx.go.Statement.md) that will show the Media Browser Sidebar.
 ---
 --- Returns:
----  * `MediaBrowser` object.
-function MediaBrowser:showPhotos()
-    return self:showSection(MediaBrowser.PHOTOS)
+---  * The [Statement](cp.rx.go.Statement.md).
+function MediaBrowser.lazy.method:doShowSidebar()
+    return If(self:doShow())
+    :Then(
+        If(self:sidebar().isShowing):Is(false)
+        :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Sidebar"}))
+        :Otherwise(true)
+    ):Otherwise(false)
+    :Label("MediaBrowser:doShowSidebar")
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:showGarageBand() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:sections() -> table of Rows
 --- Method
---- Show Garage Band Section.
+--- Get the sections as [Row](cp.ui.Row.md)s.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `MediaBrowser` object.
-function MediaBrowser:showGarageBand()
-    return self:showSection(MediaBrowser.GARAGE_BAND)
+---  * a table of [Row](cp.ui.Row.md)s.
+function MediaBrowser:sections()
+    return self:sidebar():contents():filterRows(function(row)
+        return row:disclosureLevel() == 0
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:showITunes() -> MediaBrowser
---- Method
---- Show iTunes Section.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `MediaBrowser` object.
-function MediaBrowser:showITunes()
-    return self:showSection(MediaBrowser.ITUNES)
+function MediaBrowser:findSection(key)
+    local keyValue = strings:find(key)
+    return self:sidebar():contents():findRow(function(row)
+        return row:disclosureLevel() == 0 and row:hasValue(keyValue)
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:showSoundEffects() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:photos() -> cp.ui.Row or nil
 --- Method
---- Show Sound Effects Section.
+--- Finds the 'Photos' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:photos()
+    return self:findSection(MediaBrowser.SECTION.PHOTOS)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:aperture() -> cp.ui.Row or nil
+--- Method
+--- Finds the 'Aperture' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:aperture()
+    return self:findSection(MediaBrowser.SECTION.APERTURE)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:iTunes() -> cp.ui.Row or nil
+--- Method
+--- Finds the 'iTunes' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:iTunes()
+    return self:findSection(MediaBrowser.SECTION.ITUNES)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:garageBand() -> cp.ui.Row or nil
+--- Method
+--- Finds the 'GarageBand' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:garageBand()
+    return self:findSection(MediaBrowser.SECTION.GARAGEBAND)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:logicProX() -> cp.ui.Row or nil
+--- Method
+--- Finds the 'Logic Pro X' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:logicProX()
+    return self:findSection(MediaBrowser.SECTION.LOGIC_PRO_X)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:soundEffects() -> cp.ui.Row or nil
+--- Method
+--- Finds the 'SoundEffects' section as a [Row](cp.ui.Row.md)
+---
+--- Returns:
+--- * The [Row](cp.ui.Row.md) or `nil` if not available.
+function MediaBrowser:soundEffects()
+    return self:findSection(MediaBrowser.SECTION.SOUND_EFFECTS)
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowSection(key) -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show a specific section.
+---
+--- Parameters:
+---  * key - The index ID of the section you want to show as a number.
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser:doShowSection(key)
+    return Do(self:doShowSidebar())
+    :Then(function()
+        local section = self:findSection(key)
+        if section then
+            return section:doSelect()
+        else
+            return Done()
+        end
+    end)
+    :Label("MediaBrowser:doShowSection")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowPhotos() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show Photos Section.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `MediaBrowser` object.
-function MediaBrowser:showSoundEffects()
-    return self:showSection(MediaBrowser.SOUND_EFFECTS)
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser.lazy.method:doShowPhotos()
+    return self:doShowSection(MediaBrowser.SECTION.PHOTOS):Label("MediaBrowser:doShowPhotos")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowAperture() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show Aperture Section.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser.lazy.method:doShowAperture()
+    return self:doShowSection(MediaBrowser.SECTION.PHOTOS):Label("MediaBrowser:doShowAperture")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowGarageBand() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show Garage Band Section.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser.lazy.method:doShowGarageBand()
+    return self:doShowSection(MediaBrowser.SECTION.GARAGEBAND):Label("MediaBrowser:doShowGarageBand")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowLogicProX() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show Logic Pro X Section.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser.lazy.method:doShowLogicProX()
+    return self:doShowSection(MediaBrowser.SECTION.LOGIC_PRO_X):Label("MediaBrowser:doShowLogicProX")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowITunes() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show iTunes Section.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MediaBrowser.lazy.method:doShowITunes()
+    return self:doShowSection(MediaBrowser.SECTION.ITUNES):Label("MediaBrowser:doShowITunes")
+end
+
+--- cp.apple.finalcutpro.main.MediaBrowser:doShowSoundEffects() -> Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show the Sound Effects Section.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The cp.rx.go.Statement
+function MediaBrowser.lazy.method:doShowSoundEffects()
+    return self:doShowSection(MediaBrowser.SECTION.SOUND_EFFECTS):Label("MediaBrowser:doShowSoundEffects")
 end
 
 --- cp.apple.finalcutpro.main.MediaBrowser:saveLayout() -> table

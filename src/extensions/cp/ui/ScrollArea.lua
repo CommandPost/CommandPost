@@ -310,6 +310,7 @@ end
 function ScrollArea:saveLayout()
     local layout = Element.saveLayout(self)
 
+    layout.contents = self:contents():saveLayout()
     layout.horizontalScrollBar = self:horizontalScrollBar():saveLayout()
     layout.verticalScrollBar = self:verticalScrollBar():saveLayout()
     layout.selectedChildren = self:selectedChildrenUI()
@@ -330,6 +331,7 @@ function ScrollArea:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedChildren)
 
+        self:contents():loadLayout(layout.contents)
         self:verticalScrollBar():loadLayout(layout.verticalScrollBar)
         self:horizontalScrollBar():loadLayout(layout.horizontalScrollBar)
     end

@@ -382,7 +382,7 @@ end
 --- Returns:
 ---  * A `MediaBrowser` object.
 function Browser.lazy.method:media()
-    return MediaBrowser.new(self)
+    return MediaBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:generators() -> GeneratorsBrowser

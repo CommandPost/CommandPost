@@ -14,7 +14,9 @@ local ElementCache	            = require "cp.ui.ElementCache"
 local Row                       = require "cp.ui.Row"
 
 local valueOf                   = axutils.valueOf
-local ifilter	                = fnutils.ifilter
+local ifilter, find, map        = fnutils.ifilter, fnutils.find, fnutils.map
+
+local Do                        = require "cp.rx.go.Do"
 
 local Grid = Element:subclass("cp.ui.Grid")
 
@@ -49,23 +51,19 @@ end
 --- Returns:
 --- * The new `Grid` instance.
 function Grid:initialize(parent, uiFinder)
-    log.df("initializing Element...")
     Element.initialize(self, parent, uiFinder)
-    log.df("Initializing rowCache...")
     self._rowCache = ElementCache(self, self.createRow)
-    log.df("Initializing columnCache...")
     self._columnCache = ElementCache(self, self.createColumn)
-    log.df("Initialization complete.")
 end
 
---- cp.ui.Grid:childrenUI() -> table
+--- cp.ui.Grid:childrenUI() -> table of axuielements
 --- Method
 --- Provides a `table` containing the `axuielement`s which are children of the outline.
 function Grid:childrenUI()
     return valueOf(self:UI(), "AXChildren")
 end
 
---- cp.ui.Grid:columnsUI() -> table
+--- cp.ui.Grid:columnsUI() -> table of axuielements
 --- Method
 --- Provides a `table` containing the `axuielement`s which are columns of the outline.
 function Grid:columnsUI()
@@ -220,6 +218,21 @@ function Grid:filterRows(matcherFn)
     return rows and ifilter(rows, matcherFn)
 end
 
+--- cp.ui.Grid:findRow(matcherFn) -> cp.ui.Row or nil
+--- Method
+--- Returns a [Row](cp.ui.Row.md) that has a result of `true` when passed to the `matcherFn` predicate,
+--- or `nil` if none was matched.
+---
+--- Parameters:
+--- * matcherFn - The function to check the [Row](cp.ui.Row.md) with.
+---
+--- Returns:
+--- * The matching [Row](cp.ui.Row.md) or `nil`.
+function Grid:findRow(matcherFn)
+    local rows = self:rows()
+    return rows and find(rows, matcherFn)
+end
+
 local function walkRows(rows, path, actionFn)
     if rows then
         local name = table.remove(path, 1)
@@ -306,6 +319,21 @@ function Grid:selectRow(path)
     return self:visitRow(path, function(row) row:selected(true) end)
 end
 
+--- cp.ui.Grid:doSelectRow(path) -> [Statement](cp.rx.go.Statement.md)
+--- Method
+--- Selects the row at the sub-level named in the `path` table.
+---
+--- Parameters:
+--- * path - A `table` of names to navigate through to find the [Row](cp.ui.Row.md) to select.
+---
+--- Returns:
+--- * The selected [Row](cp.ui.Row.md), or `nil` if not found.
+function Grid:doSelectRow(path)
+    return Do(function()
+        return self:visitRow(path, function(row) row:selected(true) end)
+    end)
+end
+
 --- cp.ui.Grid.selectedRowsUI <cp.prop: table of axuielement; live?>
 --- Field
 --- Contains the list of currently-selected row `axuilements`. Can be set.
@@ -326,7 +354,7 @@ function Grid.lazy.prop:selectedRows()
     end),
     function(newRows, original)
         if newRows then
-            local rowsUI = fnutils.map(newRows, function(row) return row:UI() end)
+            local rowsUI = map(newRows, function(row) return row:UI() end)
             original(rowsUI)
         else
             original(nil)

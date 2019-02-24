@@ -4,6 +4,7 @@
 
 -- local log	                = require "hs.logger" .new "Row"
 
+local fnutils               = require "hs.fnutils"
 local go	                = require "cp.rx.go"
 local prop	                = require "cp.prop"
 local axutils	            = require "cp.ui.axutils"
@@ -12,6 +13,8 @@ local Element	            = require "cp.ui.Element"
 local ElementCache	        = require "cp.ui.ElementCache"
 
 local If , Do               = go.If, go.Do
+local ifilter, find         = fnutils.ifilter, fnutils.find
+local valueOf               = axutils.valueOf
 
 --------------------------------------------------------------------------------
 --
@@ -57,7 +60,11 @@ end
 --- Returns:
 --- * The new [Cell](cp.ui.Cell.md) (or subclass) instance.
 function Row:createCell(ui)
-    return Cell(self, prop.THIS(ui))
+    if Cell.matches(ui) then
+        return Cell(self, prop.THIS(ui))
+    else
+        return Element(self, prop.THIS(ui))
+    end
 end
 
 --- cp.ui.Row.disclosing <cp.prop: boolean>
@@ -128,6 +135,48 @@ function Row.lazy.prop:cells()
     return self.childrenUI:mutate(function(original)
         return self._cellCache:fetchElements(original())
     end)
+end
+
+--- cp.ui.Row:filterCells(matcherFn) -> table of Elements
+--- Method
+--- Filters the list of cells via the specified matcher function.
+---
+--- Parameters:
+--- * matcherFn - The `function` that will receive a cell and return `true` if the cell matches.
+---
+--- Returns:
+--- * The table of matching cells.
+function Row:filterCells(matcherFn)
+    return ifilter(self:cells(), matcherFn)
+end
+
+--- cp.ui.Row:findCell(matcherFn) -> Elements or nil
+--- Method
+--- Finds the first cell that matches the specified function.
+---
+--- Parameters:
+--- * matcherFn - The `function` that will receive a cell and return `true` if the cell matches.
+---
+--- Returns:
+--- * The table of matching cells.
+function Row:findCell(matcherFn)
+    return find(self:cells(), matcherFn)
+end
+
+--- cp.ui.Row:hasValue(title) -> boolean
+--- Method
+--- Checks if the `Row` has any cells with the specified 'AXValue' or 'AXTitle'.
+---
+--- Parameters:
+--- * title - The title to check.
+---
+--- Returns:
+--- * `true` if there is a cell with the title, or `false` otherwise.
+function Row:hasValue(value)
+    return self:findCell(function(cell)
+        local ui = cell:UI()
+        return valueOf(ui, "AXValue") == value or valueOf(ui, "AXTitle") == value
+    end) ~= nil
 end
 
 --- cp.ui.Row:doDisclose() -> cp.rx.go.Statement
