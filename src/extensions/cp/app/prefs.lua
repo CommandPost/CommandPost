@@ -229,10 +229,11 @@ end
 ---  * prefs         - The `prefs` instance.
 ---  * key           - The key to get/set.
 ---  * defaultValue  - The value if no default values is currently set.
+---  * deepTable     - Should the prop use deep table (defaults to `true`).
 ---
 --- Returns:
 ---  * The `cp.prop` for the key.
-function mod.prop(prefs, key, defaultValue)
+function mod.prop(prefs, key, defaultValue, deepTable)
     local props = prefsProps(prefs, true)
     local propValue = props[key]
 
@@ -240,7 +241,10 @@ function mod.prop(prefs, key, defaultValue)
         propValue = prop.new(
             function() return mod.get(prefs, key, defaultValue) end,
             function(value) mod.set(prefs, key, value) end
-        ):label(key):deepTable():preWatch(function() watchFiles(prefs) end)
+        ):label(key):preWatch(function() watchFiles(prefs) end)
+        if deepTable == true or deepTable == nil then
+            propValue:deepTable()
+        end
         props[key] = propValue
     end
 
@@ -256,6 +260,7 @@ function mod.mt:__index(key)
         --- Parameters:
         ---  * key          - The key name for the prop.
         ---  * defaultValue - The value to return if the prop is not currently set.
+        ---  * deepTable     - Should the prop use deep table (defaults to `true`).
         ---
         --- Returns:
         ---  * The `cp.prop` for the key.

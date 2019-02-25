@@ -10,10 +10,13 @@
 ---  * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
 
 local require                   = require
+
+local hs                        = hs
+
 local log                       = require("hs.logger").new("app")
 
 local application               = require("hs.application")
-local applicationwatcher		    = require("hs.application.watcher")
+local applicationwatcher		= require("hs.application.watcher")
 local ax                        = require("hs._asm.axuielement")
 local fs                        = require("hs.fs")
 local inspect                   = require("hs.inspect")
@@ -27,12 +30,12 @@ local languageID                = require("cp.i18n.languageID")
 local lazy                      = require("cp.lazy")
 local localeID                  = require("cp.i18n.localeID")
 local menu                      = require("cp.app.menu")
-local notifier					        = require("cp.ui.notifier")
+local notifier					= require("cp.ui.notifier")
 local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 
-local v							            = require("semver")
+local v							= require("semver")
 local class                     = require("middleclass")
 
 local format                    = string.format
