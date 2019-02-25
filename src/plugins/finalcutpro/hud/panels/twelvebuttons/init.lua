@@ -52,7 +52,7 @@ local function updateInfo()
         local button = buttons and buttons[tostring(i)]
         local value = button and (button.customTitle or button.actionTitle)
         if value then
-            value = stringMaxLength(cleanupButtonText(value), 11, "…")
+            value = stringMaxLength(cleanupButtonText(value), 10, "…")
             script = script .. [[changeInnerHTMLByID("button]] .. i .. [[", "]] .. value .. [[");]] .. "\n"
         else
             script = script .. [[changeInnerHTMLByID("button]] .. i .. [[", "-");]] .. "\n"
