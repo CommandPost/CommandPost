@@ -184,11 +184,11 @@ function plugin.init(deps, env)
         --------------------------------------------------------------------------------
         mod._manager = deps.manager
         local panel = deps.manager.addPanel({
-            priority    = 3,
+            priority    = 6,
             id          = "notes",
-            label       = "Notes Panel",
+            label       = i18n("notes"),
             image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/notes.png"))),
-            tooltip     = "Notes Panel",
+            tooltip     = i18n("notes"),
             loadedFn    = updateInfo,
             height      = 300,
             openFn      = function() updateWatchers(true) end,

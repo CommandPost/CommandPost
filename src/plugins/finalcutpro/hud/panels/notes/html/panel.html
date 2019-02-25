@@ -10,9 +10,6 @@
 	#location {
 		padding-bottom: 10px;
 	}
-	#locationDropdown {
-		/*width: 400px;*/
-	}
 </style>
 <script>
 
@@ -109,14 +106,11 @@
 			alertErrorMessage(err);
 		}
 	})
-
 </script>
-
 <div id="location">
 	<strong>{{ i18n("notesLocation") }}:</strong>
 	<select id="locationDropdown" onchange="changeLocation()">
 	  <option value="Local Machine">{{ i18n("localMachine") }}</option>
 	</select>
 </div>
-
 <trix-editor></trix-editor>

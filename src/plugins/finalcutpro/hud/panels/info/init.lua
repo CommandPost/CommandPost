@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.hud.panels.info ===
 ---
---- Button Panel for the Final Cut Pro HUD.
+--- Info Panel for the Final Cut Pro HUD.
 
 local require           = require
 
@@ -139,11 +139,11 @@ function plugin.init(deps, env)
         --------------------------------------------------------------------------------
         mod._manager = deps.manager
         local panel = deps.manager.addPanel({
-            priority    = 1,
+            priority    = 2,
             id          = "info",
-            label       = "Info Panel",
+            label       = i18n("info"),
             image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/info.png"))),
-            tooltip     = "Info Panel",
+            tooltip     = i18n("info"),
             openFn      = function() mod.updateWatchers(true) end,
             closeFn     = function() mod.updateWatchers(false) end,
             loadedFn    = mod.updateInfo,

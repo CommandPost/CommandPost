@@ -1,0 +1,187 @@
+<style>
+	.button {
+		text-align: center;
+		display:block;
+		width: 200px;
+		font-family: -apple-system;
+		font-size: 12px;
+		text-decoration: none;
+		background-color: #333333;
+		color: #bfbebb;
+		padding: 2px 6px 2px 6px;
+		border-top: 1px solid #161616;
+		border-right: 1px solid #161616;
+		border-bottom: 0.5px solid #161616;
+		border-left: 1px solid #161616;
+		margin-left: auto;
+		margin-right: auto;
+		float: left;
+	}
+	table {
+		width:100%;
+		text-align:left;
+	}
+	th {
+		width:50%;
+		font-weight: normal;
+	}
+	h1 {
+		font-size: 12px;
+		font-weight: bold;
+		text-align: center;
+		margin: 0px;
+		padding: 0px;
+	}
+	#dropbox {
+		width: 100%;
+		padding: 5px 5px;
+		margin: 8px 0;
+		box-sizing: border-box;
+		border: 4px solid #22426f;
+		border-radius: 4px;
+		background-color: black;
+		text-align:center;
+		resize: none;
+		height: 30px;
+		overflow:hidden;
+		color: transparent;
+	    text-shadow: 0px 0px 0px tomato;
+	}
+	#codeForm {
+		width: 580px;
+	}
+	#shortcutKeys {
+		font-size: 10px;
+	}
+</style>
+
+<script>{(js/codemirror.js)}</script>
+<style>{(css/codemirror.css)}</style>
+<script>{(js/mode/xml/xml.js)}</script>
+
+<style>{(js/addon/scroll/simplescrollbars.css)}</style>
+<script>{(js/addon/scroll/simplescrollbars.js)}</script>
+
+<style>{(js/addon/dialog/dialog.css)}</style>
+<style>{(js/addon/search/matchesonscrollbar.css)}</style>
+
+<script>{(js/addon/dialog/dialog.js)}</script>
+<script>{(js/addon/search/searchcursor.js)}</script>
+<script>{(js/addon/search/search.js)}</script>
+<script>{(js/addon/search/matchesonscrollbar.js)}</script>
+<script>{(js/addon/search/jump-to-line.js)}</script>
+
+<script>
+	function dropboxAction(){
+		try {
+			var result = {
+				id: "fcpxmlHUD",
+				params: {
+					type: "dropbox",
+					value: document.getElementById("dropbox").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+		document.getElementById("dropbox").value = "";
+	}
+</script>
+<table>
+	<tr>
+		<th style="width: 100%;">
+			<form>
+				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("hudDropZoneText")) }}"></textarea>
+			</form>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100%; padding-bottom:10px">
+			<strong>{{ i18n("fcpxmlEditor") }}:</strong>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100%;">
+			<form id="codeForm">
+				<textarea id="code" name="code" style="display: none;"></textarea>
+			</form>
+			<script>
+				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+					mode: "xml",
+					lineNumbers: true,
+					scrollbarStyle: "simple",
+        		});
+
+				editor.on("change",function(){
+					try {
+						var result = {
+							id: "fcpxmlHUD",
+							params: {
+								type: "update",
+								value: editor.getValue(),
+							},
+						}
+						postMessage(result);
+					} catch(err) {
+						alertErrorMessage(err);
+					}
+				});
+
+        		function setCode(value){
+        			editor.setValue(atob(value));
+        		}
+
+				function sendToFCP(){
+					try {
+						var result = {
+							id: "fcpxmlHUD",
+							params: {
+								type: "sendToFCP",
+								value: editor.getValue(),
+							},
+						}
+						postMessage(result);
+					} catch(err) {
+						alertErrorMessage(err);
+					}
+				}
+			</script>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100%; padding-top: 10px;">
+			<a id="sendToFCP" href="#" class="button" onclick="sendToFCP()">{{ i18n("sendToFinalCutPro") }}</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100%;">
+			<table id="shortcutKeys">
+				<tr>
+					<th><strong>{{ i18n("shortcutKeys") }}:</strong></th>
+					<th></th>
+				</tr>
+				<tr>
+					<th>CMD + F:</th>
+					<th>{{ i18n("find") }}</th>
+				</tr>
+				<tr>
+					<th>CMD + G</th>
+					<th>{{ i18n("findNext") }}</th>
+				</tr>
+				<tr>
+					<th>CMD + SHIFT + G</th>
+					<th>{{ i18n("findPrevious") }}</th>
+				</tr>
+				<tr>
+					<th>CMD + OPTION + F</th>
+					<th>{{ i18n("replace") }}</th>
+				</tr>
+				<tr>
+					<th>CMD + OPTION + SHIFT + F</th>
+					<th>{{ i18n("replaceAll") }}</th>
+				</tr>
+			</table>
+		</th>
+	</tr>
+</table>

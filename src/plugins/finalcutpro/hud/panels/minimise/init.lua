@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.hud.panels.minimise ===
 ---
---- Button Panel for the Final Cut Pro HUD.
+--- Minimise button for the Final Cut Pro HUD.
 
 local require           = require
 
@@ -54,7 +54,7 @@ function plugin.init(deps, env)
         -- Create new Panel:
         --------------------------------------------------------------------------------
         manager.addPanel({
-            priority    = 0.00000000001,
+            priority    = 1,
             id          = "minimise",
             label       = "Minimise",
             image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/minimise.png"))),

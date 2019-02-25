@@ -265,10 +265,10 @@ function plugin.init(deps, env)
         mod._actionManager = deps.actionManager
 
         local panel = deps.manager.addPanel({
-            priority    = 2,
+            priority    = 4,
             id          = "twelvebuttons",
-            label       = "12 Buttons",
-            tooltip     = "12 Buttons",
+            label       = "12 " .. i18n("buttons"),
+            tooltip     = "12 " .. i18n("buttons"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/twelvebuttons.png"))),
             height      = 120,
             loadedFn    = updateInfo,
