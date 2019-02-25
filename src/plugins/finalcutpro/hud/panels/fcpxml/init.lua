@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("fcpxmlHud")
+--local log               = require("hs.logger").new("fcpxmlHud")
 
 local base64            = require("hs.base64")
 local dialog            = require("hs.dialog")

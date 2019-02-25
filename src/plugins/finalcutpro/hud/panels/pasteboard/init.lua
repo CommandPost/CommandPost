@@ -6,7 +6,7 @@ local require           = require
 
 local hs                = hs
 
-local log               = require("hs.logger").new("fcpxmlHud")
+--local log               = require("hs.logger").new("fcpxmlHud")
 
 local base64            = require("hs.base64")
 local dialog            = require("hs.dialog")
@@ -17,7 +17,6 @@ local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local json              = require("cp.json")
-local plist             = require("cp.plist")
 local tools             = require("cp.tools")
 
 local encode            = base64.encode
@@ -85,7 +84,7 @@ local function getPasteboard()
         ------------------------------------------------
         -- Convert Binary into XML:
         ------------------------------------------------
-        local plainXML, executeStatus = hs.execute('plutil -convert xml1 "' .. tempFile .. '"')
+        local _, executeStatus = hs.execute('plutil -convert xml1 "' .. tempFile .. '"')
         if not executeStatus then return end
 
         ------------------------------------------------
@@ -107,14 +106,14 @@ local function convertXMLtoBinary(xml)
     -- Write data to disk:
     ------------------------------------------------
     local tempFile = os.tmpname()
-    file = io.open(tempFile, "w")
+    local file = io.open(tempFile, "w")
     file:write(xml)
     file:close()
 
     ------------------------------------------------
     --- Convert XML into Binary:
     ------------------------------------------------
-    local _, executeStatus = hs.execute('plutil -convert binary1 "' .. tempFile .. '"')
+    local _, executeStatus = execute('plutil -convert binary1 "' .. tempFile .. '"')
     if not executeStatus then return end
 
     ------------------------------------------------

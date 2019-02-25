@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("notes")
+--local log               = require("hs.logger").new("notes")
 
 local image             = require("hs.image")
 local fs                = require("hs.fs")
@@ -144,7 +144,7 @@ end
 --
 -- Returns:
 --  * None
-function updateWatchers(enabled)
+local function updateWatchers(enabled)
     if enabled then
         --------------------------------------------------------------------------------
         -- Setup Watchers:

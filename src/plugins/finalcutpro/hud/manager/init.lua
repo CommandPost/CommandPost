@@ -15,7 +15,6 @@ local screen        = require("hs.screen")
 local timer         = require("hs.timer")
 local toolbar       = require("hs.webview.toolbar")
 local webview       = require("hs.webview")
-local window        = require("hs.window")
 
 local app           = require("cp.app")
 local config        = require("cp.config")
@@ -31,7 +30,6 @@ local panel         = require("panel")
 local forBundleID   = app.forBundleID
 local processInfo   = hs.processInfo
 local sortedIndex   = moses.sortedIndex
-local tableMatch    = tools.tableMatch
 
 --------------------------------------------------------------------------------
 --
@@ -486,12 +484,12 @@ function mod.new()
         mod._controller = webview.usercontent.new(WEBVIEW_LABEL)
             :setCallback(function(message)
                 local body = message.body
-                local id = body.id
+                local bodyID = body.id
                 local params = body.params
 
-                local handler = mod.getHandler(id)
+                local handler = mod.getHandler(bodyID)
                 if handler then
-                    return handler(id, params)
+                    return handler(bodyID, params)
                 end
             end)
     end
@@ -503,8 +501,8 @@ function mod.new()
         mod._toolbar = toolbar.new(WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
-            :setCallback(function(_, _, id)
-                mod.refresh(id)
+            :setCallback(function(_, _, cbID)
+                mod.refresh(cbID)
             end)
 
         local theToolbar = mod._toolbar
