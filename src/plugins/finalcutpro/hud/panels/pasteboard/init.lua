@@ -30,6 +30,9 @@ local webviewAlert      = dialog.webviewAlert
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- PASTEBOARD_UTI -> string
+-- Constant
+-- Final Cut Pro Pasteboard UTI
 local PASTEBOARD_UTI = fcp.PASTEBOARD_UTI
 
 --- plugins.finalcutpro.hud.panels.pasteboard.lastValue <cp.prop: table>
@@ -95,6 +98,7 @@ local function getPasteboard()
         file:close()
 
         if xmlData then
+            pbData.ffpasteboardobject = ""
             return pbData, xmlData
         end
     end
@@ -208,6 +212,8 @@ function plugin.init(deps, env)
                 if webview then
                     webviewAlert(webview, function() end, "There was an error writing to the Pasteboard.", "Are you sure the XML is valid?", i18n("ok"))
                 end
+            elseif params["type"] == "clear" then
+                mod.lastValue({})
             elseif params["type"] == "update" then
                 --------------------------------------------------------------------------------
                 -- Update:
@@ -215,10 +221,11 @@ function plugin.init(deps, env)
                 local value = params["value"]
                 if value then
                     local lastValue = mod.lastValue()
-                    mod.lastValue({
+                    local newData = {
                         pbData = lastValue.pbData,
                         xmlData = value,
-                    })
+                    }
+                    mod.lastValue(newData)
                 end
             end
         end
