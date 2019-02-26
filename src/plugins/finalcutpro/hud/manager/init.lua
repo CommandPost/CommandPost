@@ -438,7 +438,7 @@ function mod.maxPanelHeight()
     return max
 end
 
--- centredPosition() -> none
+-- centredPosition() -> table
 -- Function
 -- Gets the Centred Position.
 --
@@ -450,6 +450,30 @@ end
 local function centredPosition()
     local sf = screen.mainScreen():frame()
     return {x = sf.x + (sf.w/2) - (mod.DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
+end
+
+-- navigationCallback(action) -> none
+-- Function
+-- Navigation Callback for the webview
+--
+-- Parameters:
+--  * action - a string indicating the webview's current status
+--
+-- Returns:
+--  * None
+local function navigationCallback(action)
+    if action == "didFinishNavigation" then
+        --------------------------------------------------------------------------------
+        -- Trigger the Loaded Function:
+        --------------------------------------------------------------------------------
+        for _, thePanel in ipairs(mod._panels) do
+            if thePanel.id == mod.currentPanelID() then
+                if thePanel.loadedFn and type(thePanel.loadedFn) == "function" then
+                    thePanel.loadedFn()
+                end
+            end
+        end
+    end
 end
 
 --- plugins.finalcutpro.hud.manager.new() -> none
@@ -537,6 +561,7 @@ function mod.new()
             :windowCallback(windowCallback)
             :level(drawing.windowLevels.floating)
             :darkMode(true)
+            :navigationCallback(navigationCallback)
     end
 
     return mod
@@ -564,20 +589,7 @@ function mod.show()
 
     if mod._webview then
         mod._webview:show()
-
         mod.showing = true
-
-        --------------------------------------------------------------------------------
-        -- Trigger Loaded Function:
-        --------------------------------------------------------------------------------
-        for _, thePanel in ipairs(mod._panels) do
-            if thePanel.id == mod.currentPanelID() then
-                if thePanel.loadedFn and type(thePanel.loadedFn) == "function" then
-                    thePanel.loadedFn()
-                end
-            end
-        end
-
     end
 
     return true
@@ -666,25 +678,14 @@ end
 ---  * None
 function mod.refresh(id)
     if mod._webview then
-        mod.selectPanel(id)
+        if mod.currentPanelID() ~= id then
+            mod.selectPanel(id)
 
-        mod._webview:html(generateHTML())
+            mod._webview:html(generateHTML())
 
-        --------------------------------------------------------------------------------
-        -- Trigger Loaded Function:
-        --------------------------------------------------------------------------------
-        if mod.showing then
-            for _, thePanel in ipairs(mod._panels) do
-                if thePanel.id == mod.currentPanelID() then
-                    if thePanel.loadedFn and type(thePanel.loadedFn) == "function" then
-                        thePanel.loadedFn()
-                    end
-                end
-            end
+            local frame = mod._webview:frame()
+            mod._frameUUID = frame.w + frame.h
         end
-
-        local frame = mod._webview:frame()
-        mod._frameUUID = frame.w + frame.h
     end
 end
 
@@ -698,18 +699,12 @@ end
 --- Returns:
 ---  * None
 function mod.injectScript(script)
-    if mod._webview and mod._webview:frame() then
-        --------------------------------------------------------------------------------
-        -- Wait until the Webview has loaded before executing JavaScript:
-        --------------------------------------------------------------------------------
-        timer.waitUntil(function() return not mod._webview:loading() end, function()
-            mod._webview:evaluateJavaScript(script,
-                function(_, theerror)
-                    if theerror and theerror.code ~= 0 then
-                        log.ef("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
-                    end
-                end)
-        end, 0.01)
+    if mod._webview and mod._webview:frame() and script and script ~= "" then
+        mod._webview:evaluateJavaScript(script, function(_, theerror)
+            if theerror and theerror.code ~= 0 then
+                log.ef("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+            end
+        end)
     end
 end
 

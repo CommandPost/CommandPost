@@ -215,8 +215,6 @@ function plugin.init(deps, env)
                 else
                     writeToFile(params["location"], params["notes"])
                 end
-            elseif params["type"] == "refresh" then
-                mod._manager.refresh()
             end
         end
         deps.manager.addHandler("hudNotes", controllerCallback)

@@ -2,7 +2,7 @@
 	.button {
 		text-align: center;
 		display:block;
-		width: 200px;
+		width: 150px;
 		font-family: -apple-system;
 		font-size: 12px;
 		text-decoration: none;
@@ -61,45 +61,18 @@
 
 <style>{(js/addon/scroll/simplescrollbars.css)}</style>
 <script>{(js/addon/scroll/simplescrollbars.js)}</script>
+<script>{(js/addon/scroll/annotatescrollbar.js)}</script>
 
 <style>{(js/addon/dialog/dialog.css)}</style>
+<script>{(js/addon/dialog/dialog.js)}</script>
+
 <style>{(js/addon/search/matchesonscrollbar.css)}</style>
 
-<script>{(js/addon/dialog/dialog.js)}</script>
 <script>{(js/addon/search/searchcursor.js)}</script>
 <script>{(js/addon/search/search.js)}</script>
 <script>{(js/addon/search/matchesonscrollbar.js)}</script>
 <script>{(js/addon/search/jump-to-line.js)}</script>
 
-<script>
-	function loadFromPasteboard(){
-		try {
-			var result = {
-				id: "pasteboardHUD",
-				params: {
-					type: "loadFromPasteboard",
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function loadFromPasteboard(){
-		try {
-			var result = {
-				id: "pasteboardHUD",
-				params: {
-					type: "loadFromPasteboard",
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-</script>
 <table>
 	<tr>
 		<th style="width: 100%; padding-bottom:10px">
@@ -114,6 +87,7 @@
 			<script>
 				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
 					mode: "xml",
+					dragDrop: false,
 					lineNumbers: true,
 					scrollbarStyle: "simple",
         		});
@@ -134,21 +108,58 @@
 				});
 
         		function setCode(value){
-        			editor.setValue(atob(value));
+        			if (editor != null) {
+	        			editor.setValue(atob(value));
+	        		}
         		}
 
-				function sendToPasteboard(){
-					try {
-						var result = {
-							id: "pasteboardHUD",
-							params: {
-								type: "sendToPasteboard",
-								value: editor.getValue(),
-							},
+				function loadFromPasteboard(){
+					if (editor != null) {
+						try {
+							var result = {
+								id: "pasteboardHUD",
+								params: {
+									type: "loadFromPasteboard",
+								},
+							}
+							postMessage(result);
+						} catch(err) {
+							alertErrorMessage(err);
 						}
-						postMessage(result);
-					} catch(err) {
-						alertErrorMessage(err);
+					}
+				}
+
+				function sendToPasteboard(){
+					if (editor != null) {
+						try {
+							var result = {
+								id: "pasteboardHUD",
+								params: {
+									type: "sendToPasteboard",
+									value: editor.getValue(),
+								},
+							}
+							postMessage(result);
+						} catch(err) {
+							alertErrorMessage(err);
+						}
+					}
+				}
+
+				function clearEditor(){
+					if (editor != null) {
+						editor.setValue("");
+						try {
+							var result = {
+								id: "pasteboardHUD",
+								params: {
+									type: "clear",
+								},
+							}
+							postMessage(result);
+						} catch(err) {
+							alertErrorMessage(err);
+						}
 					}
 				}
 			</script>
@@ -156,8 +167,9 @@
 	</tr>
 	<tr>
 		<th style="width: 100%; padding-top: 10px;">
-			<a id="sendToFCP" href="#" class="button" onclick="loadFromPasteboard()" style="margin-right: 15px">{{ i18n("loadFromPasteboard") }}</a>
-			<a id="sendToFCP" href="#" class="button" onclick="sendToPasteboard()">{{ i18n("sendToPasteboard") }}</a>
+			<a id="loadFromPasteboard" href="#" class="button" onclick="loadFromPasteboard()" style="margin-right: 15px">{{ i18n("loadFromPasteboard") }}</a>
+			<a id="sendToPasteboard" href="#" class="button" onclick="sendToPasteboard()"  style="margin-right: 15px">{{ i18n("sendToPasteboard") }}</a>
+			<a id="clearEditor" href="#" class="button" onclick="clearEditor()"  style="margin-right: 15px">{{ i18n("clear") }}</a>
 		</th>
 	</tr>
 	<tr>

@@ -28,43 +28,25 @@
 	}
 
 	function insertLocation(text, value){
-		var dropdown = document.getElementById("locationDropdown");
-		if (optionExists(value, dropdown) == false) {
-			var option = document.createElement("option");
-			option.text = text;
-			option.value = value;
-			dropdown.add(option);
+		if (document.getElementById("locationDropdown") != null) {
+			var dropdown = document.getElementById("locationDropdown");
+			if (optionExists(value, dropdown) == false) {
+				var option = document.createElement("option");
+				option.text = text;
+				option.value = value;
+				dropdown.add(option);
+			}
 		}
 	}
 
 	function changeLocation(){
-		try {
-			var result = {
-				id: "hudNotes",
-				params: {
-					type: "locationChanged",
-					location: document.getElementById("locationDropdown").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function setLocation(value){
-		document.getElementById('locationDropdown').value=value;
-	}
-
-	function updateNotes(notes){
-		try {
-			document.querySelector("trix-editor").editor.loadJSON(notes);
-		} catch(err) {
+		if (document.getElementById("locationDropdown") != null) {
 			try {
 				var result = {
 					id: "hudNotes",
 					params: {
-						type: "refresh",
+						type: "locationChanged",
+						location: document.getElementById("locationDropdown").value,
 					},
 				}
 				postMessage(result);
@@ -74,19 +56,31 @@
 		}
 	}
 
+	function setLocation(value){
+		if (document.getElementById('locationDropdown') != null) {
+			document.getElementById('locationDropdown').value=value;
+		}
+	}
+
+	function updateNotes(notes){
+		if (document.querySelector("trix-editor") != null) {
+			document.querySelector("trix-editor").editor.loadJSON(notes);
+		}
+	}
+
 	function clearNotes(){
-		try {
+		if (document.querySelector("trix-editor") != null) {
 			document.querySelector("trix-editor").editor.loadHTML("");
-		} catch(err) {
-			alertErrorMessage(err);
 		}
 	}
 
 	function clearLocations(){
-		var selectobject=document.getElementById("locationDropdown");
-		for (var i=0; i<selectobject.length; i++){
-			if (selectobject.options[i].value != 'Local Machine' ) {
-				selectobject.remove(i);
+		if (document.getElementById("locationDropdown") != null) {
+			var selectobject=document.getElementById("locationDropdown");
+			for (var i=0; i<selectobject.length; i++){
+				if (selectobject.options[i].value != 'Local Machine' ) {
+					selectobject.remove(i);
+				}
 			}
 		}
 	}
