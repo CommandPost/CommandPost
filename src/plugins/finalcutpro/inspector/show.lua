@@ -48,6 +48,12 @@ function plugin.init(deps)
         :add("goToVideoInspector")
         :whenActivated(function() fcp:inspector():video():show() end)
         :titled(i18n("goTo") .. " " .. i18n("video") .. " " .. i18n("inspector"))
+
+    deps.fcpxCmds
+        :add("goToGeneratorInspector")
+        :whenActivated(function() fcp:inspector():generator():show() end)
+        :titled(i18n("goTo") .. " " .. i18n("generator") .. " " .. i18n("inspector"))
+
 end
 
 return plugin
