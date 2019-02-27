@@ -4,9 +4,9 @@
 
 local require = require
 
-local shortcut		  = require("cp.commands.shortcut")
-local prop					= require("cp.prop")
 local i18n          = require("cp.i18n")
+local prop			= require("cp.prop")
+local shortcut		= require("cp.commands.shortcut")
 
 --------------------------------------------------------------------------------
 --
