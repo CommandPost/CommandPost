@@ -7,8 +7,8 @@ local require = require
 local timer             = require("hs.timer")
 
 local fcp               = require("cp.apple.finalcutpro")
-local plugins           = require("cp.apple.finalcutpro.plugins")
 local i18n              = require("cp.i18n")
+local plugins           = require("cp.apple.finalcutpro.plugins")
 
 --------------------------------------------------------------------------------
 --
@@ -69,10 +69,11 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
                         theme = plugin.theme
                         subText = subText.." ("..plugin.theme..")"
                     end
-                    choices:add(plugin.name)
+                    local name = plugin.name or "[" .. i18n("unknown") .. "]"
+                    choices:add(name)
                         :subText(subText)
                         :params(plugin)
-                        :id(GROUP .. "_" .. pluginType .. "_" .. plugin.name .. "_" .. category .. "_" .. theme)
+                        :id(GROUP .. "_" .. pluginType .. "_" .. name .. "_" .. category .. "_" .. theme)
                 end
             end
         end)
