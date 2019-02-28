@@ -741,9 +741,9 @@ function mod.selectPanel(id)
             -- Allow for different toolbar heights:
             --------------------------------------------------------------------------------
             local offset = 0
-            local toolbar = mod._toolbar
-            local displayMode = toolbar and toolbar:displayMode()   --"default", "label", "icon", or "both".
-            local sizeMode = toolbar and toolbar:sizeMode()         --"default", "regular", or "small".
+            local theToolbar = mod._toolbar
+            local displayMode = theToolbar and theToolbar:displayMode()   --"default", "label", "icon", or "both".
+            local sizeMode = theToolbar and theToolbar:sizeMode()         --"default", "regular", or "small".
 
             if displayMode == "icon" then
                 offset = 0
