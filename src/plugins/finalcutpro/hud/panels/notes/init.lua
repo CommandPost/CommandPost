@@ -190,7 +190,7 @@ function plugin.init(deps, env)
             image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/notes.png"))),
             tooltip     = i18n("notes"),
             loadedFn    = updateInfo,
-            height      = 300,
+            height      = 310,
             openFn      = function() updateWatchers(true) end,
             closeFn     = function() updateWatchers(false) end,
         })

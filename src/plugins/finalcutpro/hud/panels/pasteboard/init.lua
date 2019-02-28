@@ -157,7 +157,7 @@ function plugin.init(deps, env)
             image       = image.imageFromPath(tools.iconFallback(env:pathToAbsolute("/images/pasteboard.png"))),
             tooltip     = i18n("pasteboard"),
             loadedFn    = updateInfo,
-            height      = 540,
+            height      = 550,
         })
 
         --------------------------------------------------------------------------------

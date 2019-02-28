@@ -736,6 +736,28 @@ function mod.selectPanel(id)
             else
                 height = thePanel.height
             end
+
+            --------------------------------------------------------------------------------
+            -- Allow for different toolbar heights:
+            --------------------------------------------------------------------------------
+            local offset = 0
+            local toolbar = mod._toolbar
+            local displayMode = toolbar and toolbar:displayMode()   --"default", "label", "icon", or "both".
+            local sizeMode = toolbar and toolbar:sizeMode()         --"default", "regular", or "small".
+
+            if displayMode == "icon" then
+                offset = 0
+            elseif displayMode == "both" and sizeMode == "regular" then
+                offset = 17
+            elseif displayMode == "both" and sizeMode == "small" then
+                offset = 10
+            elseif displayMode == "label" and sizeMode == "regular" then
+                offset = -20
+            elseif displayMode == "label" and sizeMode == "small" then
+                offset = -22
+            end
+            height = height + offset
+
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
