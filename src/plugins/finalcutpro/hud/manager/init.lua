@@ -745,8 +745,10 @@ function mod.selectPanel(id)
             local displayMode = theToolbar and theToolbar:displayMode()   --"default", "label", "icon", or "both".
             local sizeMode = theToolbar and theToolbar:sizeMode()         --"default", "regular", or "small".
 
-            if displayMode == "icon" then
-                offset = 0
+            if displayMode == "icon" and sizeMode == "small" then
+                offset = -5
+            elseif displayMode == "icon" and sizeMode == "regular" then
+                offset = 5
             elseif displayMode == "both" and sizeMode == "regular" then
                 offset = 17
             elseif displayMode == "both" and sizeMode == "small" then
