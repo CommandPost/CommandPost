@@ -10,8 +10,6 @@ local dialog			= require("hs.dialog")
 local ipc				= require("hs.ipc")
 local timer             = require("hs.timer")
 
-local config			= require("cp.config")
-local html				= require("cp.web.html")
 local i18n              = require("cp.i18n")
 
 local execute           = hs.execute
@@ -23,24 +21,6 @@ local allowAppleScript  = hs.allowAppleScript
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
--- getCommandLineToolTitle() -> string
--- Function
--- Returns either "Install" or "Uninstall" as a string.
---
--- Parameters:
---  * None
---
--- Returns:
---  * A string
-local function getCommandLineToolTitle()
-    local cliStatus = ipc.cliStatus()
-    if cliStatus then
-        return i18n("uninstall")
-    else
-        return i18n("install")
-    end
-end
 
 -- updatePreferences() -> none
 -- Function
