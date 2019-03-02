@@ -4,7 +4,7 @@
 
 local require = require
 
-local log				= require("hs.logger").new("pluginActions")
+--local log				= require("hs.logger").new("pluginActions")
 
 local timer             = require("hs.timer")
 local image             = require("hs.image")
