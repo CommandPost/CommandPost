@@ -82,7 +82,7 @@ local plugin = {
     group = "core",
     dependencies = {
         ["core.commands.global"]                    = "global",
-        ["core.preferences.panels.general"]         = "prefs",
+        ["finder.preferences.panel"]                = "prefs",
     }
 }
 
