@@ -5,12 +5,15 @@
 
 local require = require
 
+local fnutils           = require("hs.fnutils")
+local image             = require("hs.image")
+
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
-local fnutils           = require("hs.fnutils")
-local idle              = require("cp.idle")
 local i18n              = require("cp.i18n")
+local idle              = require("cp.idle")
 
+local imageFromPath     = image.imageFromPath
 local insert, concat    = table.insert, table.concat
 
 --------------------------------------------------------------------------------
@@ -29,6 +32,11 @@ local ID = "menu"
 -- Constant
 -- The group ID.
 local GROUP = "fcpx"
+
+-- ICON -> hs.image object
+-- Constant
+-- Icon
+local ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/menu.png")
 
 --- plugins.finalcutpro.menu.menuaction.id() -> none
 --- Function
@@ -65,6 +73,7 @@ function mod.reload()
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
                 params = params,
+                image = ICON,
                 id = mod.actionId(params),
             })
         end
@@ -92,6 +101,7 @@ function mod.onChoices(choices)
         choices:add(choice.text)
             :subText(choice.subText)
             :params(choice.params)
+            :image(ICON)
             :id(choice.id)
     end
 end

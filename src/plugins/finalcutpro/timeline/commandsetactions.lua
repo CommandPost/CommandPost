@@ -4,14 +4,18 @@
 
 local require = require
 
-local log				  = require("hs.logger").new("commandsetactions")
+local log				= require("hs.logger").new("commandsetactions")
 
+local image             = require("hs.image")
 local timer				= require("hs.timer")
 
+local config            = require("cp.config")
 local dialog			= require("cp.dialog")
-local fcp				  = require("cp.apple.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 local plist				= require("cp.plist")
-local i18n        = require("cp.i18n")
+
+local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
 --
@@ -24,6 +28,11 @@ local mod = {}
 -- Constant
 -- The group
 local GROUP = "fcpx"
+
+-- ICON -> hs.image object
+-- Constant
+-- Icon
+local ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/shortcut.png")
 
 --- plugins.finalcutpro.timeline.commandsetactions.init() -> none
 --- Function
@@ -58,6 +67,7 @@ function mod.init()
                             :add(name)
                             :subText(subText)
                             :params(id)
+                            :image(ICON)
                             :id(id)
                     end
                 end

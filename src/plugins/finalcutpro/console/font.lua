@@ -4,17 +4,22 @@
 
 local require = require
 
-local log				        = require("hs.logger").new("fontConsole")
+local hs = hs
 
+local log				= require("hs.logger").new("fontConsole")
+
+local image             = require("hs.image")
 local styledtext        = require("hs.styledtext")
 
+local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 local just              = require("cp.just")
 local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
 
 local execute           = hs.execute
+local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
 --
@@ -22,6 +27,11 @@ local execute           = hs.execute
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- FONT_ICON -> hs.image object
+-- Constant
+-- Font Icon.
+local FONT_ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/font.png")
 
 --- plugins.finalcutpro.console.font.fontLookup -> table
 --- Variable
@@ -338,6 +348,7 @@ function mod.onChoices(choices)
                 choices
                     :add(name)
                     :id(fontName)
+                    :image(FONT_ICON)
                     :params({
                         fontName = fontName,
                     })
