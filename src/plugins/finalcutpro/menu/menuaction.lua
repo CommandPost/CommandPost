@@ -73,7 +73,6 @@ function mod.reload()
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
                 params = params,
-                image = ICON,
                 id = mod.actionId(params),
             })
         end
