@@ -6,7 +6,7 @@ local require       = require
 
 local hs            = hs
 
-local log		    = require("hs.logger").new("powerchime")
+--local log		    = require("hs.logger").new("powerchime")
 
 local battery       = require("hs.battery")
 
@@ -38,7 +38,7 @@ local plugin = {
 --
 -- Returns:
 --  * `true` if disabled otherwise `false`
-function powerChimeDisabled()
+local function powerChimeDisabled()
     local o, s, t, r = execute("defaults read com.apple.PowerChime ChimeOnNoHardware")
     if o and s and t == "exit" and r == 0 then
         if trim(o) == "1" then
@@ -57,7 +57,7 @@ end
 --
 -- Returns:
 --  * None
-function setPowerChime(disabled)
+local function setPowerChime(disabled)
     execute("defaults write com.apple.PowerChime ChimeOnNoHardware -bool " .. tostring(disabled))
     execute("killall PowerChime")
 end
