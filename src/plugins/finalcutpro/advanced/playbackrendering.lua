@@ -17,7 +17,7 @@ local mod = {}
 --- plugins.finalcutpro.advanced.playbackrendering.enabled <cp.prop: boolean>
 --- Variable
 --- Gets whether or not Playback Rendering is enabled.
-mod.enabled = fcp.preferences:prop("FFSuspendBGOpsDuringPlay", false)
+mod.enabled = fcp.preferences:prop("FFSuspendBGOpsDuringPlay", true)
 
 --------------------------------------------------------------------------------
 --
@@ -43,7 +43,7 @@ function plugin.init(deps)
             :addCheckbox(2204.1,
             {
                 label = i18n("enableRenderingDuringPlayback"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
+                onchange = function(_, params) mod.enabled(not params.checked) end,
                 checked = function() return not mod.enabled() end,
             })
     end
