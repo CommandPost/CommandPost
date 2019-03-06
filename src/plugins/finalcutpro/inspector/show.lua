@@ -54,6 +54,16 @@ function plugin.init(deps)
         :whenActivated(function() fcp:inspector():generator():show() end)
         :titled(i18n("goTo") .. " " .. i18n("generator") .. " " .. i18n("inspector"))
 
+    deps.fcpxCmds
+        :add("goToShareInspector")
+        :whenActivated(function() fcp:inspector():share():show() end)
+        :titled(i18n("goTo") .. " " .. i18n("share") .. " " .. i18n("inspector"))
+
+    deps.fcpxCmds
+        :add("goToTransitionInspector")
+        :whenActivated(function() fcp:inspector():transition():show() end)
+        :titled(i18n("goTo") .. " " .. i18n("transition") .. " " .. i18n("inspector"))
+
 end
 
 return plugin
