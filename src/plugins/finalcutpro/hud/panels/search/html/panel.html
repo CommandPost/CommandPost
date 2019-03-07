@@ -1,0 +1,58 @@
+<style>
+	th {
+		font-weight: normal;
+		text-align:left !important;
+	}
+</style>
+<script>
+	function sendMessage(action) {
+		try {
+			var result = {
+				id: "hudSearch",
+				params: {
+					type: action,
+					value: document.getElementById("searchField").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">Find:</span>
+		</th>
+		<th>
+			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update')" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">Search in:</span>
+		</th>
+		<th>
+			<select name="column" style="width: 115px">
+				<option value="volvo">Notes</option>
+			</select>
+		</th>
+	</tr>
+</table>
+<table style="padding-top: 5px;">
+	<tr>
+		<th>
+			<a id="find" href="#" class="button" onclick="sendMessage('find');">Find</a>
+		</th>
+		<th>
+			<a id="findNext" href="#" class="button" onclick="sendMessage('findNext');">Find Next</a>
+		</th>
+		<th>
+			<a id="findPrevious" href="#" class="button" onclick="sendMessage('findPrevious');">Find Previous</a>
+		</th>
+		<th>
+			<a id="clear" href="#" class="button" onclick="sendMessage('clear')">Clear</a>
+		</th>
+	</tr>
+</table>
