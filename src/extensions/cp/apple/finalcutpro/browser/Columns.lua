@@ -42,34 +42,6 @@ function Columns:initialize(parent)
     Element.initialize(self, parent, UI)
 end
 
---- getVisibleHeightOfAXOutline(ui) -> number | nil
---- Constructor
---- Gets the visible height of an `AXOutline` object.
----
---- Parameters:
----  * ui - The `AXOutline` object to check.
----
---- Returns:
----  * The height of the visible area of the `AXOutline` or `nil` if something goes wrong.
-local function getVisibleHeightOfAXOutline(ui)
-    if ui then
-        local visibleRows = ui:attributeValue("AXVisibleRows")
-        if visibleRows and #visibleRows >= 1 then
-            local firstRowUI = ui:attributeValue("AXChildren")[1]
-            local lastRowUI = ui:attributeValue("AXChildren")[#visibleRows]
-            if firstRowUI and lastRowUI then
-                local firstFrame = firstRowUI:attributeValue("AXFrame")
-                local lastFrame = lastRowUI:attributeValue("AXFrame")
-                local top = firstFrame and firstFrame.y
-                local bottom = lastFrame and lastFrame.y + lastFrame.h
-                if top and bottom then
-                    return bottom - top
-                end
-            end
-        end
-    end
-end
-
 --- cp.apple.finalcutpro.browser.Columns:show() -> self
 --- Method
 --- Shows the Browser List View columns menu popup.
@@ -84,14 +56,16 @@ function Columns:show()
     if ui then
         local scrollAreaFrame = ui:attributeValue("AXFrame")
         local outlineUI = childWithRole(ui, "AXOutline")
-        local visibleHeight = getVisibleHeightOfAXOutline(outlineUI)
+        local scrollbarUI = childWithRole(ui, "AXScrollBar")
+        local scrollbarFrame = scrollbarUI and scrollbarUI:attributeValue("AXFrame")
+        local scrollbarHeight = scrollbarFrame and scrollbarFrame.h
         local outlineFrame = outlineUI and outlineUI:attributeValue("AXFrame")
-        if scrollAreaFrame and outlineFrame and visibleHeight then
-            local headerHeight = (scrollAreaFrame.h - visibleHeight) / 2
+        if scrollAreaFrame and outlineFrame and scrollbarHeight then
+            local headerHeight = (scrollAreaFrame.h - scrollbarHeight) / 2
             local point = geometry.point(scrollAreaFrame.x+headerHeight, scrollAreaFrame.y+headerHeight)
             local element = point and systemElementAtPosition(point)
+            --cp.dev.highlightPoint(point)
             if element and element:attributeValue("AXParent"):attributeValue("AXParent") == outlineUI then
-                --cp.dev.highlightPoint(point)
                 tools.ninjaRightMouseClick(point)
             end
         end
