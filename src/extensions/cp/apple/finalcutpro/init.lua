@@ -169,7 +169,7 @@ fcp.BUNDLE_ID = "com.apple.FinalCut"
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION -> string
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.5")
+fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.4")
 
 --- cp.apple.finalcutpro.PASTEBOARD_UTI -> string
 --- Constant
