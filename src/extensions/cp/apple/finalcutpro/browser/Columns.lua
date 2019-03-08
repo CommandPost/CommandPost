@@ -56,7 +56,6 @@ function Columns:show()
     if ui then
         local scrollAreaFrame = ui:attributeValue("AXFrame")
         local outlineUI = childWithRole(ui, "AXOutline")
-        local outlineFrame = outlineUI and outlineUI:attributeValue("AXFrame")
         local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
         local buttonUI = groupUI and groupUI[1]
         local buttonSize = buttonUI and buttonUI:attributeValue("AXSize")
