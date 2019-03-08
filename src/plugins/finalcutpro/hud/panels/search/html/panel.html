@@ -11,6 +11,7 @@
 				id: "hudSearch",
 				params: {
 					type: action,
+					column: document.getElementById("column").value,
 					value: document.getElementById("searchField").value,
 				},
 			}
@@ -23,36 +24,34 @@
 <table>
 	<tr>
 		<th style="width: 100px;">
-			<span class="label">Find:</span>
+			<span class="label">{{ i18n("find") }}:</span>
 		</th>
 		<th>
-			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update')" />
+			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update');" />
 		</th>
 	</tr>
 	<tr>
 		<th style="width: 100px;">
-			<span class="label">Search in:</span>
+			<span class="label">{{ i18n("searchIn") }}:</span>
 		</th>
 		<th>
-			<select name="column" style="width: 115px">
-				<option value="volvo">Notes</option>
-			</select>
+			<select id="column" name="column" style="width: 115px" onchange="sendMessage('update');">{* options *}</select>
 		</th>
 	</tr>
 </table>
 <table style="padding-top: 5px;">
 	<tr>
 		<th>
-			<a id="find" href="#" class="button" onclick="sendMessage('find');">Find</a>
+			<a id="find" href="#" class="button" onclick="sendMessage('find');">{{ i18n("find") }}</a>
 		</th>
 		<th>
-			<a id="findNext" href="#" class="button" onclick="sendMessage('findNext');">Find Next</a>
+			<a id="findNext" href="#" class="button" onclick="sendMessage('findNext');">{{ i18n("findNext") }}</a>
 		</th>
 		<th>
-			<a id="findPrevious" href="#" class="button" onclick="sendMessage('findPrevious');">Find Previous</a>
+			<a id="findPrevious" href="#" class="button" onclick="sendMessage('findPrevious');">{{ i18n("findPrevious") }}</a>
 		</th>
 		<th>
-			<a id="clear" href="#" class="button" onclick="sendMessage('clear')">Clear</a>
+			<a id="clear" href="#" class="button" onclick="sendMessage('clear')">{{ i18n("clear") }}</a>
 		</th>
 	</tr>
 </table>
