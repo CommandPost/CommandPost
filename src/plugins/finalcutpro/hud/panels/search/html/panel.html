@@ -1,0 +1,57 @@
+<style>
+	th {
+		font-weight: normal;
+		text-align:left !important;
+	}
+</style>
+<script>
+	function sendMessage(action) {
+		try {
+			var result = {
+				id: "hudSearch",
+				params: {
+					type: action,
+					column: document.getElementById("column").value,
+					value: document.getElementById("searchField").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("find") }}:</span>
+		</th>
+		<th>
+			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("searchIn") }}:</span>
+		</th>
+		<th>
+			<select id="column" name="column" style="width: 115px" onchange="sendMessage('update');">{* options *}</select>
+		</th>
+	</tr>
+</table>
+<table style="padding-top: 5px;">
+	<tr>
+		<th>
+			<a id="find" href="#" class="button" onclick="sendMessage('find');">{{ i18n("find") }}</a>
+		</th>
+		<th>
+			<a id="findNext" href="#" class="button" onclick="sendMessage('findNext');">{{ i18n("findNext") }}</a>
+		</th>
+		<th>
+			<a id="findPrevious" href="#" class="button" onclick="sendMessage('findPrevious');">{{ i18n("findPrevious") }}</a>
+		</th>
+		<th>
+			<a id="clear" href="#" class="button" onclick="sendMessage('clear')">{{ i18n("clear") }}</a>
+		</th>
+	</tr>
+</table>
