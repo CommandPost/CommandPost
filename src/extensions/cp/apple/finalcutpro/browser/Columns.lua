@@ -56,12 +56,12 @@ function Columns:show()
     if ui then
         local scrollAreaFrame = ui:attributeValue("AXFrame")
         local outlineUI = childWithRole(ui, "AXOutline")
-        local scrollbarUI = childWithRole(ui, "AXScrollBar")
-        local scrollbarFrame = scrollbarUI and scrollbarUI:attributeValue("AXFrame")
-        local scrollbarHeight = scrollbarFrame and scrollbarFrame.h
         local outlineFrame = outlineUI and outlineUI:attributeValue("AXFrame")
-        if scrollAreaFrame and outlineFrame and scrollbarHeight then
-            local headerHeight = (scrollAreaFrame.h - scrollbarHeight) / 2
+        local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
+        local buttonUI = groupUI and groupUI[1]
+        local buttonSize = buttonUI and buttonUI:attributeValue("AXSize")
+        local headerHeight = buttonSize and (buttonSize.h / 2)
+        if headerHeight then
             local point = geometry.point(scrollAreaFrame.x+headerHeight, scrollAreaFrame.y+headerHeight)
             local element = point and systemElementAtPosition(point)
             --cp.dev.highlightPoint(point)
