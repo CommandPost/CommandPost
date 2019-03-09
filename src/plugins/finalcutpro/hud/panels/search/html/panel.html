@@ -32,6 +32,14 @@
 		</th>
 		<th>
 			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update');" />
+			<script>
+				document.getElementById("searchField").addEventListener("keyup", function(event) {
+				  if (event.keyCode === 13) {
+					event.preventDefault();
+					sendMessage('find');
+				  }
+				});
+			</script>
 		</th>
 	</tr>
 	<tr>
