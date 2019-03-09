@@ -30,6 +30,12 @@
 				}
 			}
 
+			function changeCheckedByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).checked = value;
+				}
+			}
+
 			function changeClassNameByID(id, className) {
 				if (document.getElementById(id) !== null) {
 					document.getElementById(id).className = className;
