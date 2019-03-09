@@ -6,13 +6,17 @@
 </style>
 <script>
 	function sendMessage(action) {
+		var columnElement = document.getElementById("column");
 		try {
 			var result = {
 				id: "hudSearch",
 				params: {
 					type: action,
-					column: document.getElementById("column").value,
+					columnID: columnElement.value,
+					column: columnElement.options[columnElement.selectedIndex].text,
 					value: document.getElementById("searchField").value,
+					matchCase: document.getElementById("matchCase").checked,
+					playAfterFind: document.getElementById("playAfterFind").checked,
 				},
 			}
 			postMessage(result);
@@ -36,6 +40,20 @@
 		</th>
 		<th>
 			<select id="column" name="column" style="width: 115px" onchange="sendMessage('update');">{* options *}</select>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th>
+			<label><input type="checkbox" id="matchCase" value="true" onchange="sendMessage('matchCase');"> {{ i18n("matchCase") }}</label>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th>
+			<label><input type="checkbox" id="playAfterFind" value="true" onchange="sendMessage('playAfterFind');"> {{ i18n("playAfterFind") }}</label>
 		</th>
 	</tr>
 </table>
