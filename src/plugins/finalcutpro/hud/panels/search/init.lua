@@ -540,7 +540,7 @@ local function showHistoryPopup()
     local menu = {}
     local history = mod.history()
 
-    for i, v in pairs(history) do
+    for _, v in pairs(history) do
         table.insert(menu, {
             title = v,
             fn = function()
