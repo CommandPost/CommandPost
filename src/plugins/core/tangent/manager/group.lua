@@ -146,24 +146,25 @@ function group.mt:_unregisterAll(controlList)
     end
 end
 
---- plugins.core.tangent.manager.group:action(id[, name]) -> action
+--- plugins.core.tangent.manager.group:action(id[, name[, localActive]]) -> action
 --- Method
 --- Adds an `action` to this group.
 ---
 --- Parameters
 ---  * id    - The ID number of the new action
 ---  * name  - The name of the action.
+---  * localActive - If true, the parent group's `active` state is ignored when determining if this action is active.
 ---
 --- Returns:
 ---  * The new `action`
-function group.mt:action(id, name)
+function group.mt:action(id, name, localActive)
     local actions = self._actions
     if not actions then
         actions = {}
         self._actions = actions
     end
 
-    local a = action.new(id, name, self)
+    local a = action.new(id, name, self, localActive)
     insert(actions, a)
 
     self:_register(a)
