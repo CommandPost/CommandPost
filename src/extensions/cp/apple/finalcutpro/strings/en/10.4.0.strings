@@ -11,5 +11,7 @@
     <string>Better Quality</string>
     <key>CPViewerViewBetterPerformance</key>
     <string>Better Performance</string>
+    <key>CPCodecs</key>
+    <string>Codecs</string>
 </dict>
 </plist>
