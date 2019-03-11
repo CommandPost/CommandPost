@@ -44,7 +44,7 @@ function action.new(id, name, parent, localActive)
         --- plugins.core.tangent.manager.action.localActive <cp.prop: boolean>
         --- Field
         --- Indicates if the action should ignore the parent's `enabled` state when determining if the action is active.
-        localActive = prop.THIS(localActive),
+        localActive = prop.THIS(localActive == true),
     }, action.mt)
 
     prop.bind(o) {
