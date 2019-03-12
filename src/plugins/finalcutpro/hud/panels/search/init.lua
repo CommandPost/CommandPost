@@ -315,7 +315,6 @@ end
 --  * `true` if matched, otherwise `false`
 local function doesMatchWords(source, find)
     if source and find then
-        local words = {}
         for word in find:gmatch("%S+") do
             if not string.find(source, word, nil, true) then
                 return false
@@ -494,8 +493,11 @@ local function find(searchString, column, findNext, findPrevious)
                                 value = value and string.lower(value)
                             end
 
-                            if value and (not mod.wholeWords() and doesMatch(value, searchString)) or (mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
-                                lastIndex = id
+                            if value
+                            and (not mod.wholeWords() and mod.matchWords() and doesMatch(value, searchString))
+                            or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
+                            or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
+                            or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
                                 fcp:launch()
                                 if not fcp:libraries():isFocused() then
                                     fcp:selectMenu({"Window", "Go To", "Libraries"})
@@ -561,7 +563,6 @@ local function find(searchString, column, findNext, findPrevious)
                         or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
                         or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
                         or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
-                            lastIndex = id
                             if not fcp:libraries():isFocused() then
                                 fcp:selectMenu({"Window", "Go To", "Libraries"})
                             end
