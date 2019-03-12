@@ -29,6 +29,7 @@
 					openProject: document.getElementById("openProject").checked,
 					wholeWords: document.getElementById("wholeWords").checked,
 					matchWords: document.getElementById("matchWords").checked,
+					filterBrowserBeforeSearch: document.getElementById("filterBrowserBeforeSearch").checked,
 				},
 			}
 			postMessage(result);
@@ -93,6 +94,13 @@
 		</th>
 		<th>
 			<label><input type="checkbox" id="playAfterFind" value="true" onchange="sendMessage('playAfterFind');"> {{ i18n("playAfterFind") }}</label>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th>
+			<label><input type="checkbox" id="filterBrowserBeforeSearch" value="true" onchange="sendMessage('filterBrowserBeforeSearch');"> {{ i18n("filterBrowserBeforeSearch") }}</label>
 		</th>
 	</tr>
 	<tr>

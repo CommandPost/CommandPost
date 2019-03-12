@@ -546,6 +546,7 @@
         "feedbackError": "The following error occurred trying to communicate with the CommandPost servers:\n\n%{message}\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
         "feedbackSuccess": "Your feedback was submitted successfully.\n\nThank you!",
         "fileCouldNotBeRead": "The selected file could not be read.",
+        "filterBrowserBeforeSearch": "Filter Browser Before Search",
         "finalCutPro": "Final Cut Pro",
         "finalcutpro_actions_custom_label": "Shortcuts: Custom Actions",
         "finalcutpro_advanced_backupinterval_label": "Advanced: Backup Interval",
@@ -1062,6 +1063,8 @@
         "scrollingTimelineActivated": "Scrolling Timeline Activated",
         "scrollingTimelineDeactivated": "Scrolling Timeline Deactivated",
         "search": "Search",
+        "searchAborted": "The search has been aborted.",
+        "searchAbortedDescription": "The search failed to find anything after searching 500 cells, so we've aborted it.\n\nYou can try using a Smart Collection or use the 'Filter Browser Before Search' option in the HUD Search Panel to narrow your selection in the Browser.",
         "searchIn": "Search in",
         "searchSubtext": "Search Subtext",
         "second": {
