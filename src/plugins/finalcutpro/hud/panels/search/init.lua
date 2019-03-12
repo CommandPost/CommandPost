@@ -40,20 +40,25 @@ local MAXIMUM_HISTORY = 5
 --- Last Value
 mod.lastValue = config.prop("hud.search.lastValue", "")
 
---- plugins.finalcutpro.hud.panels.search.lastIndex <cp.prop: number>
---- Variable
---- Last Index
-mod.lastIndex = config.prop("hud.search.lastIndex", nil)
-
 --- plugins.finalcutpro.hud.panels.search.lastColumn <cp.prop: string>
 --- Variable
 --- Last Column
-mod.lastColumn = config.prop("hud.search.lastColumn", "All")
+mod.lastColumn = config.prop("hud.search.lastColumn", "Name")
 
---- plugins.finalcutpro.hud.panels.search.lastColumn <cp.prop: boolean>
+--- plugins.finalcutpro.hud.panels.search.matchCase <cp.prop: boolean>
 --- Variable
 --- Match Case
 mod.matchCase = config.prop("hud.search.matchCase", false)
+
+--- plugins.finalcutpro.hud.panels.search.matchWords <cp.prop: boolean>
+--- Variable
+--- Match Case
+mod.matchWords = config.prop("hud.search.matchWords", true)
+
+--- plugins.finalcutpro.hud.panels.search.wholeWords <cp.prop: boolean>
+--- Variable
+--- Whole Words
+mod.wholeWords = config.prop("hud.search.wholeWords", false)
 
 --- plugins.finalcutpro.hud.panels.search.playAfterFind <cp.prop: boolean>
 --- Variable
@@ -86,7 +91,7 @@ mod.history = config.prop("hud.search.history", {})
 --  * A table.
 local function getColumnNames()
     return {
-        ["All"] = i18n("all"),
+        ["All"] = i18n("allVisibleColumns"),
         ["Name"] = fcp:string("Name"),
         ["Start"] = fcp:string("Start"),
         ["End"] = fcp:string("End"),
@@ -218,7 +223,9 @@ end
 --  * None
 local function updateInfo()
     local script = [[changeValueByID("searchField", "]] .. mod.lastValue() .. [[");]] .. "\n"
+    script = script .. [[changeCheckedByID('matchWords', ]] .. tostring(mod.matchWords()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('matchCase', ]] .. tostring(mod.matchCase()) .. [[);]] .. "\n"
+    script = script .. [[changeCheckedByID('wholeWords', ]] .. tostring(mod.wholeWords()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('playAfterFind', ]] .. tostring(mod.playAfterFind()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('loopSearch', ]] .. tostring(mod.loopSearch()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('openProject', ]] .. tostring(mod.openProject()) .. [[);]] .. "\n"
@@ -243,6 +250,83 @@ local function popupMessage(a, b)
     end
 end
 
+-- doesMatch(source, find) -> boolean
+-- Function
+-- Does Match?
+--
+-- Parameters:
+--  * source - The source string.
+--  * find - The string to search the source for.
+--
+-- Returns:
+--  * `true` if matched, otherwise `false`
+local function doesMatch(source, find)
+    return string.find(source, find, nil, true) ~= nil
+end
+
+-- doesMatchWholeWord(source, find) -> boolean
+-- Function
+-- Does Match Whole Word?
+--
+-- Parameters:
+--  * source - The source string.
+--  * find - The string to search the source for.
+--
+-- Returns:
+--  * `true` if matched, otherwise `false`.
+local function doesMatchWholeWord(source, find)
+    if source and find then
+        local a, b = string.find(source, find, nil, true)
+        if source == find then
+            return true
+        end
+        if a == 1 then
+            if b == string.len(source) then
+                return true
+            else
+                if string.sub(source, b + 1, b + 1) == " " then
+                    return true
+                end
+            end
+        end
+        if b == string.len(source) then
+            if string.sub(source, a - 1, a - 1) == " " then
+                return true
+            end
+        end
+        if a and b and string.len(source) > string.len(find) + 2 then
+            if string.sub(source, a - 1, a - 1) == " " and string.sub(source, b + 1, b + 1) == " " then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- doesMatchWords(source, find) -> boolean
+-- Function
+-- Does Match Words?
+--
+-- Parameters:
+--  * source - The source string.
+--  * find - The string to search the source for.
+--
+-- Returns:
+--  * `true` if matched, otherwise `false`
+local function doesMatchWords(source, find)
+    if source and find then
+        local words = {}
+        for word in find:gmatch("%S+") do
+            if not string.find(source, word, nil, true) then
+                return false
+            end
+        end
+        return true
+    else
+        return false
+    end
+end
+
 -- find(value) -> none
 -- Function
 -- Find a string in the Notes section of the Browser.
@@ -257,7 +341,7 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     -- Make sure the value is valid:
     --------------------------------------------------------------------------------
-    if tools.trim(searchString) == "" then
+    if searchString and tools.trim(searchString) == "" then
         popupMessage(i18n("invalidSearchField"), i18n("invalidSearchFieldDescription"))
         return
     end
@@ -294,9 +378,9 @@ local function find(searchString, column, findNext, findPrevious)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure the column is showing:
+    -- Make sure the column is showing (assuming we're not looking "all" columns):
     --------------------------------------------------------------------------------
-    if column ~= i18n("all") then
+    if column ~= i18n("allVisibleColumns") then
         if not tableContains(getActiveColumnsNames(), column) then
             if not showColumn(column) then
                 popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
@@ -306,27 +390,10 @@ local function find(searchString, column, findNext, findPrevious)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure all the rows are visible if it's a fresh search:
-    --------------------------------------------------------------------------------
-    if column ~= i18n("all") then
-        if not findNext and not findPrevious then
-            local list = fcp:libraries():list()
-            local contentUI = list:contents():contentUI()
-            if contentUI then
-                for _,child in ipairs(contentUI) do
-                    if child:attributeValue("AXRole") == "AXRow" and child:attributeValue("AXDisclosureLevel") <= 1 and child:attributeValue("AXDisclosing") == false then
-                        child:setAttributeValue("AXDisclosing", true)
-                    end
-                end
-            end
-        end
-    end
-
-    --------------------------------------------------------------------------------
     -- Get column number:
     --------------------------------------------------------------------------------
     local columnNumber
-    if column ~= i18n("all") then
+    if column ~= i18n("allVisibleColumns") then
         local listUI = fcp:libraries():list():UI()
         local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
         local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
@@ -352,43 +419,64 @@ local function find(searchString, column, findNext, findPrevious)
     -- Find our item:
     --------------------------------------------------------------------------------
     local firstAttempt = true
+    local lastIndex = 1
+
     local contentUI = fcp:libraries():list():contents():contentUI()
-    local maxRows
-    ::secondAttempt::
+    local maxRows = contentUI and contentUI:attributeValueCount("AXChildren")
+
+    ::secondAttempt:: -- Sorry David. I should really use a "while" instead.
     local isProject = false
     if contentUI then
-        maxRows = contentUI:attributeValueCount("AXChildren")
         if maxRows and maxRows > 1 then
             local start = 1
             local finish = maxRows
             local direction = 1
 
-            local lastIndex = mod.lastIndex()
-
-            if findNext and lastIndex then
-                start = mod.lastIndex() + 1
+            if firstAttempt then
+                local rows = contentUI:attributeValue("AXChildren")
+                local selectedRows = contentUI:attributeValue("AXSelectedRows")
+                if selectedRows and next(selectedRows) then
+                    lastIndex = axutils.childIndex(rows, selectedRows[#selectedRows])
+                end
             end
 
-            if findPrevious and lastIndex then
-                start = mod.lastIndex() - 1
+            if findNext then
+                start = lastIndex + 1
+            end
+
+            if findPrevious then
+                start = lastIndex - 1
                 finish = 1
                 direction = -1
             end
 
             for id=start, finish, direction do
-                if column == i18n("all") then
+                if column == i18n("allVisibleColumns") then
                     --------------------------------------------------------------------------------
                     -- Searching all columns:
                     --------------------------------------------------------------------------------
                     local row = contentUI[id]
                     if row and row:attributeValue("AXRole") == "AXRow" then
+                        --------------------------------------------------------------------------------
+                        -- Disclosure a row if needed and update contentUI:
+                        --------------------------------------------------------------------------------
+                        if row:attributeValue("AXDisclosureLevel") <= 1 and row:attributeValue("AXDisclosing") == false then
+                            row:setAttributeValue("AXDisclosing", true)
+                            contentUI = fcp:libraries():list():contents():contentUI()
+                            maxRows = contentUI:attributeValueCount("AXChildren")
+                            row = contentUI[id]
+                        end
+
                         local children = row:attributeValue("AXChildren")
+                        isProject = false
                         for _, cell in pairs(children) do
 
                             local textfield
                             if cell and cell[1] and cell[1]:attributeValue("AXRole") == "AXImage" then
                                 if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
                                     isProject = true
+                                else
+                                    isProject = false
                                 end
                                 textfield = cell[2]
                             else
@@ -405,8 +493,9 @@ local function find(searchString, column, findNext, findPrevious)
                             if not mod.matchCase() then
                                 value = value and string.lower(value)
                             end
-                            if value and string.find(value, searchString, nil, true) ~= nil then
-                                mod.lastIndex(id)
+
+                            if value and (not mod.wholeWords() and doesMatch(value, searchString)) or (mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
+                                lastIndex = id
                                 fcp:launch()
                                 if not fcp:libraries():isFocused() then
                                     fcp:selectMenu({"Window", "Go To", "Libraries"})
@@ -431,6 +520,16 @@ local function find(searchString, column, findNext, findPrevious)
                     --------------------------------------------------------------------------------
                     local row = contentUI[id]
                     if row and row:attributeValue("AXRole") == "AXRow" then
+                        --------------------------------------------------------------------------------
+                        -- Disclosure a row if needed and update contentUI:
+                        --------------------------------------------------------------------------------
+                        if row:attributeValue("AXDisclosureLevel") <= 1 and row:attributeValue("AXDisclosing") == false then
+                            row:setAttributeValue("AXDisclosing", true)
+                            contentUI = fcp:libraries():list():contents():contentUI()
+                            maxRows = contentUI:attributeValueCount("AXChildren")
+                            row = contentUI[id]
+                        end
+
                         local children = row:attributeValue("AXChildren")
                         local cell = children and children[columnNumber]
 
@@ -438,6 +537,8 @@ local function find(searchString, column, findNext, findPrevious)
                         if cell and cell[1]:attributeValue("AXRole") == "AXImage" then
                             if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
                                 isProject = true
+                            else
+                                isProject = false
                             end
                             textfield = cell[2]
                         else
@@ -454,8 +555,13 @@ local function find(searchString, column, findNext, findPrevious)
                         if not mod.matchCase() then
                             value = value and string.lower(value)
                         end
-                        if value and string.find(value, searchString, nil, true) ~= nil then
-                            mod.lastIndex(id)
+
+                        if value
+                        and (not mod.wholeWords() and mod.matchWords() and doesMatch(value, searchString))
+                        or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
+                        or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
+                        or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
+                            lastIndex = id
                             if not fcp:libraries():isFocused() then
                                 fcp:selectMenu({"Window", "Go To", "Libraries"})
                             end
@@ -483,9 +589,9 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     if mod.loopSearch() and firstAttempt and maxRows and maxRows > 1 and (findNext or findPrevious) then
         if findNext then
-            mod.lastIndex(0)
+            lastIndex = 1
         elseif findPrevious then
-            mod.lastIndex(maxRows)
+            lastIndex = maxRows
         end
         firstAttempt = false
         goto secondAttempt
@@ -599,7 +705,7 @@ function plugin.init(deps, env)
             label       = i18n("search"),
             tooltip     = i18n("search"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/search.png"))),
-            height      = 280,
+            height      = 325,
             loadedFn    = updateInfo,
         })
 
@@ -624,7 +730,6 @@ function plugin.init(deps, env)
                 find(value, column, false, true)
             elseif params["type"] == "clear" then
                 mod.lastValue("")
-                mod.lastIndex(nil)
                 updateInfo()
             elseif params["type"] == "update" then
                 if value then
@@ -635,6 +740,10 @@ function plugin.init(deps, env)
                 end
             elseif params["type"] == "matchCase" then
                 mod.matchCase(params["matchCase"])
+            elseif params["type"] == "matchWords" then
+                mod.matchWords(params["matchWords"])
+            elseif params["type"] == "wholeWords" then
+                mod.wholeWords(params["wholeWords"])
             elseif params["type"] == "playAfterFind" then
                 mod.playAfterFind(params["playAfterFind"])
             elseif params["type"] == "loopSearch" then
