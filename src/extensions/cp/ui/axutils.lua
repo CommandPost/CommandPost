@@ -541,6 +541,27 @@ function axutils.hasChild(element, matcherFn)
     return axutils.childMatching(element, matcherFn) ~= nil
 end
 
+--- cp.ui.axutils.childIndex(element, childElement) -> number or nil
+--- Function
+--- Finds the index of the specified child element, if it is present. If not, `nil` is returned.
+---
+--- Parameters:
+--- * element   - The parent `axuielement`.
+--- * childElement - The child `axuielement` to find the index of.
+---
+--- Returns:
+--- * The index (`1` or higher) of the `childElement`, or `nil` if it was not found.
+function axutils.childIndex(element, childElement)
+    local children = axutils.children(element)
+    if children and #children > 0 then
+        for i,child in ipairs(children) do
+            if child == childElement then
+                return i
+            end
+        end
+    end
+end
+
 --- cp.ui.axutils.isValid(element) -> boolean
 --- Function
 --- Checks if the axuilelement is still valid - that is, still active in the UI.
