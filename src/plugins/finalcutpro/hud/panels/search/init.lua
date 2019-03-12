@@ -16,10 +16,12 @@ local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
 local just                      = require("cp.just")
+local pattern                   = require("cp.pattern")
 local tools                     = require("cp.tools")
 
 local childrenWithRole          = axutils.childrenWithRole
 local childWithRole             = axutils.childWithRole
+local doesMatchPattern          = pattern.doesMatch
 local doUntil                   = just.doUntil
 local iconFallback              = tools.iconFallback
 local imageFromPath             = image.imageFromPath
@@ -32,6 +34,11 @@ local webviewAlert              = dialog.webviewAlert
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- NEW_SEARCH_LOGIC -> boolean
+-- Constant
+-- Sets whether we use David's pattern matching feature or Chris's sloppy functions.
+local NEW_SEARCH_LOGIC = true
 
 -- MAXIMUM_HISTORY -> number
 -- Constant
@@ -380,11 +387,30 @@ local function process(cell, row, searchString, isProject)
         value = value and string.lower(value)
     end
 
-    if value
-    and (not wholeWords and matchWords and doesMatch(value, searchString))
-    or  (wholeWords and not matchWords and doesMatchWholeWord(value, searchString))
-    or  (not matchWords and not wholeWords and doesMatchWords(value, searchString))
-    or  (matchWords and wholeWords and doesMatchWholeWord(value, searchString)) then
+    --------------------------------------------------------------------------------
+    -- Comparing between Chris & David's methods:
+    --------------------------------------------------------------------------------
+    local result = false
+    if NEW_SEARCH_LOGIC then
+        if value and doesMatchPattern(value, searchString, {
+                caseSensitive = matchCase,
+                exact = matchWords,
+                wholeWords = wholeWords,
+            })
+        then
+            result = true
+        end
+    else
+        if value
+        and (not wholeWords and matchWords and doesMatch(value, searchString))
+        or  (wholeWords and not matchWords and doesMatchWholeWord(value, searchString))
+        or  (not matchWords and not wholeWords and doesMatchWords(value, searchString))
+        or  (matchWords and wholeWords and doesMatchWholeWord(value, searchString)) then
+            result = true
+        end
+    end
+
+    if result then
         fcp:launch()
         if not fcp:libraries():isFocused() then
             fcp:selectMenu({"Window", "Go To", "Libraries"})
