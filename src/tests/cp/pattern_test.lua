@@ -1,4 +1,4 @@
--- test cases for `cp.is`
+-- test cases for `cp.pattern`
 local test      = require("cp.test")
 local pattern   = require("cp.pattern")
 
@@ -20,6 +20,9 @@ return test.suite("cp.app"):with {
     test("doesMatch exact", function()
         ok(eq(doesMatch("foobar", "foo bar", {exact = true}), false))
         ok(eq(doesMatch("foobar", "foo bar", {exact = false}), true))
+
+        ok(eq(doesMatch("foo bar", "bar foo", {exact = false}), true))
+        ok(eq(doesMatch("foo bar", "bar foo", {exact = true}), false))
 
         ok(eq(doesMatch("foobar", "FOO BAR", {exact = false}), false))
         ok(eq(doesMatch("foobar", "FOO BAR", {exact = false, caseSensitive = false}), true))
