@@ -13,6 +13,7 @@ local mouse                     = require("hs.mouse")
 
 local axutils                   = require("cp.ui.axutils")
 local config                    = require("cp.config")
+local pattern                   = require("cp.pattern")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
 local just                      = require("cp.just")
@@ -25,6 +26,8 @@ local iconFallback              = tools.iconFallback
 local imageFromPath             = image.imageFromPath
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
+
+local doesMatch                 = pattern.doesMatch
 
 --------------------------------------------------------------------------------
 --
@@ -250,81 +253,6 @@ local function popupMessage(a, b)
     end
 end
 
--- doesMatch(source, find) -> boolean
--- Function
--- Does Match?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`
-local function doesMatch(source, find)
-    return string.find(source, find, nil, true) ~= nil
-end
-
--- doesMatchWholeWord(source, find) -> boolean
--- Function
--- Does Match Whole Word?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`.
-local function doesMatchWholeWord(source, find)
-    if source and find then
-        local a, b = string.find(source, find, nil, true)
-        if source == find then
-            return true
-        end
-        if a == 1 then
-            if b == string.len(source) then
-                return true
-            else
-                if string.sub(source, b + 1, b + 1) == " " then
-                    return true
-                end
-            end
-        end
-        if b == string.len(source) then
-            if string.sub(source, a - 1, a - 1) == " " then
-                return true
-            end
-        end
-        if a and b and string.len(source) > string.len(find) + 2 then
-            if string.sub(source, a - 1, a - 1) == " " and string.sub(source, b + 1, b + 1) == " " then
-                return true
-            end
-        end
-    end
-    return false
-end
-
--- doesMatchWords(source, find) -> boolean
--- Function
--- Does Match Words?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`
-local function doesMatchWords(source, find)
-    if source and find then
-        for word in find:gmatch("%S+") do
-            if not string.find(source, word, nil, true) then
-                return false
-            end
-        end
-        return true
-    else
-        return false
-    end
-end
 
 -- find(value) -> none
 -- Function
@@ -489,15 +417,12 @@ local function find(searchString, column, findNext, findPrevious)
                                 value = textfield and textfield:attributeValue("AXValue")
                             end
 
-                            if not mod.matchCase() then
-                                value = value and string.lower(value)
-                            end
-
-                            if value
-                            and (not mod.wholeWords() and mod.matchWords() and doesMatch(value, searchString))
-                            or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
-                            or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
-                            or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
+                            if value and doesMatch(value, searchString, {
+                                    caseSensitive = mod.matchCase() == true,
+                                    exact = mod.matchWords() ~= true,
+                                    wholeWords =  mod.wholeWords() == true,
+                                })
+                            then
                                 fcp:launch()
                                 if not fcp:libraries():isFocused() then
                                     fcp:selectMenu({"Window", "Go To", "Libraries"})
@@ -554,15 +479,12 @@ local function find(searchString, column, findNext, findPrevious)
                             value = textfield and textfield:attributeValue("AXValue")
                         end
 
-                        if not mod.matchCase() then
-                            value = value and string.lower(value)
-                        end
-
-                        if value
-                        and (not mod.wholeWords() and mod.matchWords() and doesMatch(value, searchString))
-                        or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
-                        or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
-                        or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
+                        if value and doesMatch(value, searchString, {
+                                caseSensitive = mod.matchCase() == true,
+                                exact = mod.matchWords() ~= true,
+                                wholeWords =  mod.wholeWords() == true,
+                            })
+                        then
                             fcp:launch()
                             if not fcp:libraries():isFocused() then
                                 fcp:selectMenu({"Window", "Go To", "Libraries"})
