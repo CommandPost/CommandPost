@@ -563,10 +563,10 @@ local function find(searchString, column, findNext, findPrevious)
                         or  (mod.wholeWords() and not mod.matchWords() and doesMatchWholeWord(value, searchString))
                         or  (not mod.matchWords() and not mod.wholeWords() and doesMatchWords(value, searchString))
                         or  (mod.matchWords() and mod.wholeWords() and doesMatchWholeWord(value, searchString)) then
+                            fcp:launch()
                             if not fcp:libraries():isFocused() then
                                 fcp:selectMenu({"Window", "Go To", "Libraries"})
                             end
-                            fcp:selectMenu({"Window", "Go To", "Libraries"})
                             fcp:libraries():list():contents():selectRow(row)
                             fcp:libraries():list():contents():showRow(row)
                             if mod.openProject() and isProject then
