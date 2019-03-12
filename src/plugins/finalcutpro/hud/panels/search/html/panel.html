@@ -5,6 +5,14 @@
 	}
 </style>
 <script>
+	function focusOnSearchField() {
+		document.getElementById("searchField").focus();
+	}
+
+	window.onfocus = function() {
+		focusOnSearchField();
+	}
+
 	function sendMessage(action) {
 		var columnElement = document.getElementById("column");
 		try {
@@ -17,9 +25,12 @@
 					value: document.getElementById("searchField").value,
 					matchCase: document.getElementById("matchCase").checked,
 					playAfterFind: document.getElementById("playAfterFind").checked,
+					loopSearch: document.getElementById("loopSearch").checked,
+					openProject: document.getElementById("openProject").checked,
 				},
 			}
 			postMessage(result);
+			focusOnSearchField()
 		} catch(err) {
 			alertErrorMessage(err);
 		}
@@ -31,15 +42,18 @@
 			<span class="label">{{ i18n("find") }}:</span>
 		</th>
 		<th>
-			<input id="searchField" class="search" type="text" name="search" style="width: 450px" onchange="sendMessage('update');" />
+			<input id="searchField" class="search" type="text" name="search" style="width: 400px" onchange="sendMessage('update');" />
 			<script>
 				document.getElementById("searchField").addEventListener("keyup", function(event) {
 				  if (event.keyCode === 13) {
 					event.preventDefault();
-					sendMessage('find');
+					sendMessage('findNext');
 				  }
 				});
 			</script>
+		</th>
+		<th>
+			<a id="history" href="#" class="button" style="width:15px; padding: 2px 15px;" onclick="sendMessage('history');">🕓</a>
 		</th>
 	</tr>
 	<tr>
@@ -47,7 +61,7 @@
 			<span class="label">{{ i18n("searchIn") }}:</span>
 		</th>
 		<th>
-			<select id="column" name="column" style="width: 115px" onchange="sendMessage('update');">{* options *}</select>
+			<select id="column" name="column" style="width: 115px;" onchange="sendMessage('update');">{* options *}</select>
 		</th>
 	</tr>
 	<tr>
@@ -61,7 +75,21 @@
 		<th style="width: 100px;">
 		</th>
 		<th>
+			<label><input type="checkbox" id="openProject" value="true" onchange="sendMessage('openProject');"> {{ i18n("openProjectAfterFind") }}</label>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th>
 			<label><input type="checkbox" id="playAfterFind" value="true" onchange="sendMessage('playAfterFind');"> {{ i18n("playAfterFind") }}</label>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th>
+			<label><input type="checkbox" id="loopSearch" value="true" onchange="sendMessage('loopSearch');"> {{ i18n("loopSearch") }}</label>
 		</th>
 	</tr>
 </table>

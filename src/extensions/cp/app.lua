@@ -642,12 +642,14 @@ function app.lazy.method:doLaunch()
         If(self.frontmost):Is(false):Then(
             If(self.hsApplication):Then(function(hsApp)
                 hsApp:activate()
+                return true
             end)
             :Otherwise(function()
                 local ok = application.launchOrFocusByBundleID(self:bundleID())
                 if not ok then
                     return Throw("Unable to launch %s.", self:displayName())
                 end
+                return true
             end)
         )
         :Then(WaitUntil(self.frontmost))

@@ -19,17 +19,19 @@ local format            = string.format
 local action = {}
 action.mt = named({})
 
---- plugins.core.tangent.manager.action.new(id[, name]) -> action
+--- plugins.core.tangent.manager.action.new(id[, name[, parent[, localActive]]]) -> action
 --- Constructor
 --- Creates a new `Action` instance.
 ---
 --- Parameters:
 --- * id        - The ID number of the action.
 --- * name      - The name of the action.
+--- * parent    - The parent group. (optional)
+--- * localActive - If set to `true`, the parent's `active` state will be ignored when determining if this action is active. Defaults to `false`.
 ---
 --- Returns:
 --- * the new `action`.
-function action.new(id, name, parent)
+function action.new(id, name, parent, localActive)
     local o = prop.extend({
         id = id,
         _parent = parent,
@@ -38,6 +40,11 @@ function action.new(id, name, parent)
         --- Field
         --- Indicates if the action is enabled.
         enabled = prop.TRUE(),
+
+        --- plugins.core.tangent.manager.action.localActive <cp.prop: boolean>
+        --- Field
+        --- Indicates if the action should ignore the parent's `enabled` state when determining if the action is active.
+        localActive = prop.THIS(localActive == true),
     }, action.mt)
 
     prop.bind(o) {
@@ -45,7 +52,7 @@ function action.new(id, name, parent)
         --- Field
         --- Indicates if the action is active. It will only be active if
         --- the current action is `enabled` and if the parent group (if present) is `active`.
-        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE()
+        active = parent and prop.AND(o.localActive:OR(parent.active), o.enabled) or o.enabled:IMMUTABLE()
     }
 
     o:name(name)

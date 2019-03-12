@@ -8,6 +8,8 @@ local log                       = require("hs.logger").new("hudButton")
 
 local dialog                    = require("hs.dialog")
 local image                     = require("hs.image")
+local menubar                   = require("hs.menubar")
+local mouse                     = require("hs.mouse")
 
 local axutils                   = require("cp.ui.axutils")
 local config                    = require("cp.config")
@@ -31,6 +33,8 @@ local webviewAlert              = dialog.webviewAlert
 --------------------------------------------------------------------------------
 local mod = {}
 
+local MAXIMUM_HISTORY = 5
+
 --- plugins.finalcutpro.hud.panels.search.lastValue <cp.prop: string>
 --- Variable
 --- Last Value
@@ -44,7 +48,7 @@ mod.lastIndex = config.prop("hud.search.lastIndex", nil)
 --- plugins.finalcutpro.hud.panels.search.lastColumn <cp.prop: string>
 --- Variable
 --- Last Column
-mod.lastColumn = config.prop("hud.search.lastColumn", "Notes")
+mod.lastColumn = config.prop("hud.search.lastColumn", "All")
 
 --- plugins.finalcutpro.hud.panels.search.lastColumn <cp.prop: boolean>
 --- Variable
@@ -55,6 +59,21 @@ mod.matchCase = config.prop("hud.search.matchCase", false)
 --- Variable
 --- Play After Find
 mod.playAfterFind = config.prop("hud.search.playAfterFind", false)
+
+--- plugins.finalcutpro.hud.panels.search.loopSearch <cp.prop: boolean>
+--- Variable
+--- Loop Search
+mod.loopSearch = config.prop("hud.search.loopSearch", false)
+
+--- plugins.finalcutpro.hud.panels.search.openProject <cp.prop: boolean>
+--- Variable
+--- Open Project
+mod.openProject = config.prop("hud.search.openProject", false)
+
+--- plugins.finalcutpro.hud.panels.search.history <cp.prop: table>
+--- Variable
+--- Search History
+mod.history = config.prop("hud.search.history", {})
 
 -- getColumnNames() -> table
 -- Function
@@ -67,6 +86,8 @@ mod.playAfterFind = config.prop("hud.search.playAfterFind", false)
 --  * A table.
 local function getColumnNames()
     return {
+        ["All"] = i18n("all"),
+        ["Name"] = fcp:string("Name"),
         ["Start"] = fcp:string("Start"),
         ["End"] = fcp:string("End"),
         ["Duration"] = fcp:string("Duration"),
@@ -88,7 +109,7 @@ local function getColumnNames()
         ["Audio Configuration"] = fcp:string("Audio Channel Config"),
         ["File Type"] = fcp:string("file type"),
         ["Date Imported"] = fcp:string("Date Imported"),
-        ["Codecs"] = "Codecs", -- TODO: we need to find a way of getting the localisation for this.
+        ["Codecs"] = fcp:string("CPCodecs"),
         ["360° Mode"] = fcp:string("FFOrganizerFilterHUDFormatInfoSphericalType"),
         ["Stereoscopic Mode"] = fcp:string("FFMD3DStereoMode"),
     }
@@ -199,6 +220,9 @@ local function updateInfo()
     local script = [[changeValueByID("searchField", "]] .. mod.lastValue() .. [[");]] .. "\n"
     script = script .. [[changeCheckedByID('matchCase', ]] .. tostring(mod.matchCase()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('playAfterFind', ]] .. tostring(mod.playAfterFind()) .. [[);]] .. "\n"
+    script = script .. [[changeCheckedByID('loopSearch', ]] .. tostring(mod.loopSearch()) .. [[);]] .. "\n"
+    script = script .. [[changeCheckedByID('openProject', ]] .. tostring(mod.openProject()) .. [[);]] .. "\n"
+    script = script .. [[focusOnSearchField();]] .. "\n"
     mod._manager.injectScript(script)
 end
 
@@ -246,6 +270,18 @@ local function find(searchString, column, findNext, findPrevious)
     end
 
     --------------------------------------------------------------------------------
+    -- Add it to the history if it's unique:
+    --------------------------------------------------------------------------------
+    local history = mod.history()
+    if not tableContains(history, searchString) then
+        while (#(history) >= MAXIMUM_HISTORY) do
+            table.remove(history,1)
+        end
+        table.insert(history, searchString)
+        mod.history(history)
+    end
+
+    --------------------------------------------------------------------------------
     -- Make sure we're in list view:
     --------------------------------------------------------------------------------
     local libraries = fcp:libraries()
@@ -260,23 +296,27 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     -- Make sure the column is showing:
     --------------------------------------------------------------------------------
-    if not tableContains(getActiveColumnsNames(), column) then
-        if not showColumn(column) then
-            popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
-            return
+    if column ~= i18n("all") then
+        if not tableContains(getActiveColumnsNames(), column) then
+            if not showColumn(column) then
+                popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
+                return
+            end
         end
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure all the rows are visible:
+    -- Make sure all the rows are visible if it's a fresh search:
     --------------------------------------------------------------------------------
-    if not findNext and not findPrevious then
-        local list = fcp:libraries():list()
-        local contentUI = list:contents():contentUI()
-        if contentUI then
-            for _,child in ipairs(contentUI) do
-                if child:attributeValue("AXRole") == "AXRow" and child:attributeValue("AXDisclosureLevel") <= 1 and child:attributeValue("AXDisclosing") == false then
-                    child:setAttributeValue("AXDisclosing", true)
+    if column ~= i18n("all") then
+        if not findNext and not findPrevious then
+            local list = fcp:libraries():list()
+            local contentUI = list:contents():contentUI()
+            if contentUI then
+                for _,child in ipairs(contentUI) do
+                    if child:attributeValue("AXRole") == "AXRow" and child:attributeValue("AXDisclosureLevel") <= 1 and child:attributeValue("AXDisclosing") == false then
+                        child:setAttributeValue("AXDisclosing", true)
+                    end
                 end
             end
         end
@@ -285,33 +325,39 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     -- Get column number:
     --------------------------------------------------------------------------------
-    local listUI = fcp:libraries():list():UI()
-    local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
-    local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
-    local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
-    local buttons = groupUI and childrenWithRole(groupUI, "AXButton")
-    if not buttons then
-        popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
-        return
-    end
     local columnNumber
-    for i, button in pairs(buttons) do
-        if button:attributeValue("AXTitle") == column then
-            columnNumber = i
-            break
+    if column ~= i18n("all") then
+        local listUI = fcp:libraries():list():UI()
+        local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
+        local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
+        local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
+        local buttons = groupUI and childrenWithRole(groupUI, "AXButton")
+        if not buttons then
+            popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
+            return
         end
-    end
-    if not columnNumber then
-        popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
-        return
+        for i, button in pairs(buttons) do
+            if button:attributeValue("AXTitle") == column then
+                columnNumber = i
+                break
+            end
+        end
+        if not columnNumber then
+            popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
+            return
+        end
     end
 
     --------------------------------------------------------------------------------
     -- Find our item:
     --------------------------------------------------------------------------------
+    local firstAttempt = true
     local contentUI = fcp:libraries():list():contents():contentUI()
+    local maxRows
+    ::secondAttempt::
+    local isProject = false
     if contentUI then
-        local maxRows = contentUI:attributeValueCount("AXChildren")
+        maxRows = contentUI:attributeValueCount("AXChildren")
         if maxRows and maxRows > 1 then
             local start = 1
             local finish = maxRows
@@ -330,28 +376,119 @@ local function find(searchString, column, findNext, findPrevious)
             end
 
             for id=start, finish, direction do
-                local row = contentUI[id]
-                if row and row:attributeValue("AXRole") == "AXRow" then
-                    local children = row:attributeValue("AXChildren")
-                    local cell = children and children[columnNumber]
-                    local textfield = cell and cell[1]
-                    local value = textfield and textfield:attributeValue("AXValue")
-                    if not mod.matchCase() then
-                        value = string.lower(value)
-                    end
-                    if value and string.find(value, searchString, nil, true) ~= nil then
-                        mod.lastIndex(id)
-                        fcp:launch()
-                        fcp:libraries():list():contents():selectRow(row)
-                        fcp:libraries():list():contents():showRow(row)
-                        if mod.playAfterFind() then
-                            fcp:selectMenu({"View", "Playback", "Play"})
+                if column == i18n("all") then
+                    --------------------------------------------------------------------------------
+                    -- Searching all columns:
+                    --------------------------------------------------------------------------------
+                    local row = contentUI[id]
+                    if row and row:attributeValue("AXRole") == "AXRow" then
+                        local children = row:attributeValue("AXChildren")
+                        for _, cell in pairs(children) do
+
+                            local textfield
+                            if cell and cell[1] and cell[1]:attributeValue("AXRole") == "AXImage" then
+                                if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
+                                    isProject = true
+                                end
+                                textfield = cell[2]
+                            else
+                                textfield = cell and cell[1]
+                            end
+
+                            local value
+                            if textfield and textfield:attributeValue("AXRole") == "AXMenuButton" then
+                                value = textfield and textfield:attributeValue("AXTitle")
+                            else
+                                value = textfield and textfield:attributeValue("AXValue")
+                            end
+
+                            if not mod.matchCase() then
+                                value = value and string.lower(value)
+                            end
+                            if value and string.find(value, searchString, nil, true) ~= nil then
+                                mod.lastIndex(id)
+                                fcp:launch()
+                                if not fcp:libraries():isFocused() then
+                                    fcp:selectMenu({"Window", "Go To", "Libraries"})
+                                end
+                                fcp:libraries():list():contents():selectRow(row)
+                                fcp:libraries():list():contents():showRow(row)
+                                if mod.openProject() and isProject then
+                                    fcp:selectMenu({"Clip", "Open Clip"})
+                                end
+                                if mod.playAfterFind() then
+                                    if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+                                        fcp:selectMenu({"View", "Playback", "Play"})
+                                    end
+                                end
+                                return
+                            end
                         end
-                        return
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Searching specific column:
+                    --------------------------------------------------------------------------------
+                    local row = contentUI[id]
+                    if row and row:attributeValue("AXRole") == "AXRow" then
+                        local children = row:attributeValue("AXChildren")
+                        local cell = children and children[columnNumber]
+
+                        local textfield
+                        if cell and cell[1]:attributeValue("AXRole") == "AXImage" then
+                            if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
+                                isProject = true
+                            end
+                            textfield = cell[2]
+                        else
+                            textfield = cell and cell[1]
+                        end
+
+                        local value
+                        if textfield and textfield:attributeValue("AXRole") == "AXMenuButton" then
+                            value = textfield and textfield:attributeValue("AXTitle")
+                        else
+                            value = textfield and textfield:attributeValue("AXValue")
+                        end
+
+                        if not mod.matchCase() then
+                            value = value and string.lower(value)
+                        end
+                        if value and string.find(value, searchString, nil, true) ~= nil then
+                            mod.lastIndex(id)
+                            if not fcp:libraries():isFocused() then
+                                fcp:selectMenu({"Window", "Go To", "Libraries"})
+                            end
+                            fcp:selectMenu({"Window", "Go To", "Libraries"})
+                            fcp:libraries():list():contents():selectRow(row)
+                            fcp:libraries():list():contents():showRow(row)
+                            if mod.openProject() and isProject then
+                                fcp:selectMenu({"Clip", "Open Clip"})
+                            end
+                            if mod.playAfterFind() then
+                                if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+                                    fcp:selectMenu({"View", "Playback", "Play"})
+                                end
+                            end
+                            return
+                        end
                     end
                 end
             end
         end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Loop Search:
+    --------------------------------------------------------------------------------
+    if mod.loopSearch() and firstAttempt and maxRows and maxRows > 1 and (findNext or findPrevious) then
+        if findNext then
+            mod.lastIndex(0)
+        elseif findPrevious then
+            mod.lastIndex(maxRows)
+        end
+        firstAttempt = false
+        goto secondAttempt
     end
 
     --------------------------------------------------------------------------------
@@ -377,7 +514,7 @@ local function getEnv()
     --------------------------------------------------------------------------------
     local columnNames = getColumnNames()
     local options = ""
-    for i, v in pairs(columnNames) do
+    for i, v in tools.spairs(columnNames) do
         local selected = ""
         if mod.lastColumn() == i then
             selected = [[ selected="selected" ]]
@@ -388,6 +525,52 @@ local function getEnv()
 
     env.i18n = i18n
     return env
+end
+
+-- showHistoryPopup() -> none
+-- Function
+-- Shows the History Popup.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function showHistoryPopup()
+    local menu = {}
+    local history = mod.history()
+
+    for _, v in pairs(history) do
+        table.insert(menu, {
+            title = v,
+            fn = function()
+                local script = [[changeValueByID("searchField", "]] .. v .. [[");]] .. "\n"
+                script = script .. [[focusOnSearchField();]] .. "\n"
+                mod._manager.injectScript(script)
+            end,
+        })
+    end
+
+    if next(history) then
+        table.insert(menu, {
+            title = "-"
+        })
+
+        table.insert(menu, {
+            title = i18n("clearHistory"),
+            fn = function() mod.history({}) end
+        })
+    else
+        table.insert(menu, {
+            title = i18n("historyIsEmpty"),
+            disabled = true,
+        })
+    end
+
+    local popup = menubar.new()
+    popup:setMenu(menu)
+    popup:removeFromMenuBar()
+    popup:popupMenu(mouse.getAbsolutePosition(), true)
 end
 
 --------------------------------------------------------------------------------
@@ -416,7 +599,7 @@ function plugin.init(deps, env)
             label       = i18n("search"),
             tooltip     = i18n("search"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/search.png"))),
-            height      = 240,
+            height      = 280,
             loadedFn    = updateInfo,
         })
 
@@ -454,6 +637,12 @@ function plugin.init(deps, env)
                 mod.matchCase(params["matchCase"])
             elseif params["type"] == "playAfterFind" then
                 mod.playAfterFind(params["playAfterFind"])
+            elseif params["type"] == "loopSearch" then
+                mod.loopSearch(params["loopSearch"])
+            elseif params["type"] == "openProject" then
+                mod.openProject(params["openProject"])
+            elseif params["type"] == "history" then
+                showHistoryPopup()
             end
         end
         deps.manager.addHandler("hudSearch", controllerCallback)

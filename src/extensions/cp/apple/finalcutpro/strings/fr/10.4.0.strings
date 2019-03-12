@@ -15,5 +15,7 @@
     <string>Intermédiaires</string>
     <key>CPColorBoardHighlights</key>
     <string>Tons clairs</string>
+    <key>CPCodecs</key>
+    <string>Codecs</string>
 </dict>
 </plist>
