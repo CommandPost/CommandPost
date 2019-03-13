@@ -16,8 +16,8 @@ local function buildPattern(searchString, wholeWords)
 end
 
 local defaultOptions = {
-    caseSensitive = true,
-    exact = true,
+    caseSensitive = false,
+    exact = false,
     wholeWords = false,
 }
 
@@ -50,18 +50,15 @@ function mod.doesMatch(value, searchString, options)
     value = " " .. (caseSensitive and value or value:lower()) .. " "
 
     if exact then
-        pattern = buildPattern(pattern, wholeWords)
+        return value:find(buildPattern(pattern, wholeWords)) ~= nil
     else
-        local p = ""
         for word in pattern:gmatch("%S+") do
-            p = p .. ".*" .. buildPattern(word, exact, wholeWords)
+            if value:find(buildPattern(word, wholeWords)) == nil then
+                return false
+            end
         end
-        pattern = p
+        return true
     end
-
-    pattern = "^.*" .. pattern .. ".*$"
-
-    return value:find(pattern) == 1
 end
 
 return mod

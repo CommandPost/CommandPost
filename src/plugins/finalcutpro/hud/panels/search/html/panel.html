@@ -28,7 +28,7 @@
 					loopSearch: document.getElementById("loopSearch").checked,
 					openProject: document.getElementById("openProject").checked,
 					wholeWords: document.getElementById("wholeWords").checked,
-					matchWords: document.getElementById("matchWords").checked,
+					exactMatch: document.getElementById("exactMatch").checked,
 					filterBrowserBeforeSearch: document.getElementById("filterBrowserBeforeSearch").checked,
 				},
 			}
@@ -61,29 +61,23 @@
 			<select id="column" name="column" style="width: 200px;" onchange="sendMessage('update');">{* options *}</select>
 		</th>
 	</tr>
+</table>
+<table>
 	<tr>
 		<th style="width: 100px;">
 		</th>
+		<th style="width: 200px;">
+			<label><input type="checkbox" id="exactMatch" value="true" onchange="sendMessage('exactMatch');"> {{ i18n("exactMatch") }}</label>
+		</th>
 		<th>
-			<label><input type="checkbox" id="matchWords" value="true" onchange="sendMessage('matchWords');"> {{ i18n("matchWords") }}</label>
+			<label><input type="checkbox" id="playAfterFind" value="true" onchange="sendMessage('playAfterFind');"> {{ i18n("playAfterFind") }}</label>
 		</th>
 	</tr>
 	<tr>
 		<th style="width: 100px;">
 		</th>
-		<th>
+		<th style="width: 200px;">
 			<label><input type="checkbox" id="matchCase" value="true" onchange="sendMessage('matchCase');"> {{ i18n("matchCase") }}</label>
-		</th>
-	</tr>
-	<tr>
-		<th style="width: 100px;">
-		</th>
-		<th>
-			<label><input type="checkbox" id="wholeWords" value="true" onchange="sendMessage('wholeWords');"> {{ i18n("wholeWords") }}</label>
-		</th>
-	</tr>
-	<tr>
-		<th style="width: 100px;">
 		</th>
 		<th>
 			<label><input type="checkbox" id="openProject" value="true" onchange="sendMessage('openProject');"> {{ i18n("openProjectAfterFind") }}</label>
@@ -92,12 +86,8 @@
 	<tr>
 		<th style="width: 100px;">
 		</th>
-		<th>
-			<label><input type="checkbox" id="playAfterFind" value="true" onchange="sendMessage('playAfterFind');"> {{ i18n("playAfterFind") }}</label>
-		</th>
-	</tr>
-	<tr>
-		<th style="width: 100px;">
+		<th style="width: 200px;">
+			<label><input type="checkbox" id="wholeWords" value="true" onchange="sendMessage('wholeWords');"> {{ i18n("wholeWords") }}</label>
 		</th>
 		<th>
 			<label><input type="checkbox" id="filterBrowserBeforeSearch" value="true" onchange="sendMessage('filterBrowserBeforeSearch');"> {{ i18n("filterBrowserBeforeSearch") }}</label>
