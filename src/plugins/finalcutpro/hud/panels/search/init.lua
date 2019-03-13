@@ -70,7 +70,7 @@ mod.matchCase = config.prop("hud.search.matchCase", false)
 --- plugins.finalcutpro.hud.panels.search.exactMatch <cp.prop: boolean>
 --- Variable
 --- Match Case
-mod.exactMatch = config.prop("hud.search.exactMatch", true)
+mod.exactMatch = config.prop("hud.search.exactMatch", false)
 
 --- plugins.finalcutpro.hud.panels.search.filterBrowserBeforeSearch <cp.prop: boolean>
 --- Variable
@@ -90,7 +90,7 @@ mod.playAfterFind = config.prop("hud.search.playAfterFind", false)
 --- plugins.finalcutpro.hud.panels.search.loopSearch <cp.prop: boolean>
 --- Variable
 --- Loop Search
-mod.loopSearch = config.prop("hud.search.loopSearch", false)
+mod.loopSearch = config.prop("hud.search.loopSearch", true)
 
 --- plugins.finalcutpro.hud.panels.search.openProject <cp.prop: boolean>
 --- Variable
