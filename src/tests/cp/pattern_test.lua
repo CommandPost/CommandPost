@@ -9,6 +9,10 @@ return test.suite("cp.app"):with {
         ok(eq(doesMatch("foobar", "foo"), true))
         ok(eq(doesMatch("foobar", "bar"), true))
         ok(eq(doesMatch("foobar", "foobar"), true))
+        ok(eq(doesMatch("foobar", "foo bar"), true))
+        ok(eq(doesMatch("foobar", "bar foo"), true))
+        ok(eq(doesMatch("foobar", "FOO"), true))
+
         ok(eq(doesMatch("blahfoobarblah", "foo"), true))
     end),
 
@@ -24,8 +28,8 @@ return test.suite("cp.app"):with {
         ok(eq(doesMatch("foo bar", "bar foo", {exact = false}), true))
         ok(eq(doesMatch("foo bar", "bar foo", {exact = true}), false))
 
-        ok(eq(doesMatch("foobar", "FOO BAR", {exact = false}), false))
-        ok(eq(doesMatch("foobar", "FOO BAR", {exact = false, caseSensitive = false}), true))
+        ok(eq(doesMatch("foobar", "FOOBAR", {exact = true}), true))
+        ok(eq(doesMatch("foobar", "FOOBAR", {exact = true, caseSensitive = true}), false))
     end),
 
     test("doesMatch wholeWords", function()
