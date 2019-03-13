@@ -2,27 +2,13 @@
 ---
 --- Effects Browser Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("EffectsBrowser")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 local just								= require("cp.just")
@@ -33,8 +19,6 @@ local ScrollArea						= require("cp.ui.ScrollArea")
 local CheckBox							= require("cp.ui.CheckBox")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
-
-local id								= require("cp.apple.finalcutpro.ids") "EffectsBrowser"
 
 --------------------------------------------------------------------------------
 --
@@ -167,9 +151,9 @@ function EffectsBrowser:toggleButton()
         local button = nil
         local type = self:type()
         if type == EffectsBrowser.EFFECTS then
-            button = toolbar:effectsToggle()
+            button = toolbar:browser():effects()
         elseif type == EffectsBrowser.TRANSITIONS then
-            button = toolbar:transitionsToggle()
+            button = toolbar:browser():transitions()
         end
         self._toggleButton = button
     end
@@ -624,7 +608,7 @@ end
 function EffectsBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
+            return axutils.childFromLeft(self:mainGroupUI(), 1, ScrollArea.matches)
         end):uncached()
     end
     return self._sidebar
@@ -642,7 +626,9 @@ end
 function EffectsBrowser:contents()
     if not self._contents then
         self._contents = ScrollArea(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Contents")
+            return axutils.childFromRight(self:mainGroupUI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXScrollArea"
+            end)
         end)
     end
     return self._contents

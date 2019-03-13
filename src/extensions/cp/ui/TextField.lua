@@ -2,22 +2,13 @@
 ---
 --- Text Field Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log							= require("hs.logger").new("textField")
+local go	                        = require "cp.rx.go"
+local axutils	                    = require "cp.ui.axutils"
+local Element                     = require "cp.ui.Element"
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local Element                       = require("cp.ui.Element")
+local If                          = go.If
 
 --------------------------------------------------------------------------------
 --
@@ -26,17 +17,19 @@ local Element                       = require("cp.ui.Element")
 --------------------------------------------------------------------------------
 local TextField = Element:subclass("cp.ui.TextField")
 
---- cp.ui.TextField.matches(element) -> boolean
+--- cp.ui.TextField.matches(element[, subrole]) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
 --- Parameters:
 ---  * element - An `axuielementObject` to check.
+---  * subrole - (optional) If provided, the field must have the specified subrole.
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function TextField.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField"
+function TextField.static.matches(element, subrole)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField" and
+        (subrole == nil or element:attributeValue("AXSubrole") == subrole)
 end
 
 --- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
@@ -86,17 +79,21 @@ function TextField.lazy.prop:value()
                 value = tostring(value)
                 local focused
                 if self._forceFocus then
-                    focused = ui:attributeValue("AXFocused")
-                    ui:setAttributeValue("AXFocused", true)
+                    focused = self:focused()
+                    self:focused(true)
                 end
                 ui:setAttributeValue("AXValue", value)
                 if self._forceFocus then
-                    ui:setAttributeValue("AXFocused", focused)
+                    self:focused(focused)
                 end
                 ui:performAction("AXConfirm")
             end
         end
     )
+end
+
+function TextField.lazy.prop:focused()
+    return axutils.prop(self.UI, "AXFocused", true)
 end
 
 --- cp.ui.TextField:forceFocus()
@@ -147,6 +144,34 @@ end
 function TextField:clear()
     self.value:set("")
     return self
+end
+
+--- cp.ui.TextField:doConfirm() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will confirm the current text value.
+function TextField.lazy.method:doConfirm()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:performAction("AXConfirm")
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("TextField:doConfirm")
+end
+
+--- cp.ui.TextField:doFocus() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the current `TextField`.
+function TextField.lazy.method:doFocus()
+    return If(self.focused):Is(false)
+    :Then(function()
+        self:focused(true)
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("TextField:doFocus")
 end
 
 --- cp.ui.TextField:saveLayout() -> table

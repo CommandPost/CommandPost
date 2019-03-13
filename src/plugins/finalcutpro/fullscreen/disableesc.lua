@@ -2,27 +2,11 @@
 ---
 --- Disables the ESC key when Final Cut Pro is in fullscreen mode.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("disableesc")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local keycodes                          = require("hs.keycodes")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local app                               = require("cp.app")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
@@ -72,15 +56,11 @@ local plugin = {
     id              = "finalcutpro.fullscreen.disableesc",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
@@ -101,9 +81,6 @@ function plugin.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     mod.fcpActiveFullScreen:update()
 end

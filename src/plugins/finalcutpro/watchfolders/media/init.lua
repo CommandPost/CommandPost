@@ -2,38 +2,14 @@
 ---
 --- Final Cut Pro Media Watch Folder Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("fcpwatch")
--- local inspect           = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
--- Local Extensions:
---------------------------------------------------------------------------------
 local MediaFolder       = require("MediaFolder")
 local panel             = require("panel")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert            = table.insert
 
 --------------------------------------------------------------------------------
@@ -46,17 +22,18 @@ local mod = {}
 -- The storage for the media folders.
 local savedMediaFolders = config.prop("fcp.watchFolders.mediaFolders", {})
 
---- plugins.finalcutpro.watchfolders.media.mediaFolders
+--- plugins.finalcutpro.watchfolders.media.mediaFolders -> table
 --- Variable
 --- The table of MediaFolders currently configured.
-
 local mediaFolders = nil
 
+-- TODO: Add documentation
 function mod.addMediaFolder(path, videoTag, audioTag, imageTag)
     insert(mediaFolders, MediaFolder.new(mod, path, videoTag, audioTag, imageTag):init())
     mod.saveMediaFolders()
 end
 
+-- TODO: Add documentation
 function mod.removeMediaFolder(path)
     for i,f in ipairs(mediaFolders) do
         if f.path == path then
@@ -67,6 +44,7 @@ function mod.removeMediaFolder(path)
     end
 end
 
+-- TODO: Add documentation
 function mod.hasMediaFolder(path)
     for _,folder in ipairs(mediaFolders) do
         if folder.path == path then
@@ -75,6 +53,7 @@ function mod.hasMediaFolder(path)
     end
 end
 
+-- TODO: Add documentation
 function mod.mediaFolders()
     return mediaFolders
 end
@@ -150,7 +129,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Ignore Panel if Final Cut Pro isn't installed.
     --------------------------------------------------------------------------------
-    fcp.isInstalled:watch(function(installed)
+    fcp.isSupported:watch(function(installed)
         --------------------------------------------------------------------------------
         -- Setup Watchers:
         --------------------------------------------------------------------------------
@@ -181,9 +160,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
     return mod.init(deps, env)
 end

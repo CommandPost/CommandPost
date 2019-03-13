@@ -5,32 +5,11 @@
 --- Tables with `named` in it's metatable chain will have `name` methods added
 --- as described below.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("tg_named")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
--- local inspect           = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local tools             = require("cp.tools")
 local x                 = require("cp.web.xml")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local match             = string.match
 
 --------------------------------------------------------------------------------
@@ -39,6 +18,9 @@ local match             = string.match
 --
 --------------------------------------------------------------------------------
 local named = {}
+named.mt = {}
+
+local id = {}
 
 -- makeStringTangentFriendly(value) -> none
 -- Function
@@ -73,9 +55,16 @@ local function makeStringTangentFriendly(value)
     return result
 end
 
-named.mt = {}
-
-local id = {}
+-- getNames(self, create) -> table
+-- Function
+-- Gets a table of names.
+--
+-- Parameters:
+-- * self - The named module.
+-- * create - A boolean.
+--
+-- Returns:
+--  * Names as table.
 local function getNames(self, create)
     local names = rawget(self, id)
     if not names and create then

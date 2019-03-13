@@ -2,21 +2,17 @@
 ---
 --- Slider Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
-local axutils						= require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
+
+local axutils			= require("cp.ui.axutils")
+local Element           = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Slider = Element:subclass("Element")
+local Slider = Element:subclass("cp.ui.Slider")
 
 --- cp.ui.Slider.matches(element) -> boolean
 --- Function

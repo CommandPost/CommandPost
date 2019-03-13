@@ -2,24 +2,11 @@
 ---
 --- Commands Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log					= require("hs.logger").new("command")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local shortcut		  = require("cp.commands.shortcut")
-local prop					= require("cp.prop")
 local i18n          = require("cp.i18n")
+local prop			= require("cp.prop")
+local shortcut		= require("cp.commands.shortcut")
 
 --------------------------------------------------------------------------------
 --
@@ -144,6 +131,19 @@ end
 ---  * setFn - The function that sets the action.
 function command.mt:getAction()
     return self._actionGetFn, self._actionSetFn
+end
+
+--- cp.commands.command:hasAction() -> boolean
+--- Method
+--- Gets whether or not any action callbacks have been assigned.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if action callbacks have been assigned, otherwise `false`.
+function command.mt:hasAction()
+    return (self._actionGetFn ~= nil and self._actionSetFn ~= nil) or false
 end
 
 --- cp.commands.command:getTitle() -> string

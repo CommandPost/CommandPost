@@ -2,31 +2,15 @@
 ---
 --- Watch Folder Media Panel.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log           = require("hs.logger").new("batch")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local host              = require("hs.host")
 local image             = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local Do                = require("cp.rx.go.Do")
 local fcp               = require("cp.apple.finalcutpro")
-local html				= require("cp.web.html")
+local html				      = require("cp.web.html")
 local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 local ui                = require("cp.web.ui")

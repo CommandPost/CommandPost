@@ -2,41 +2,20 @@
 ---
 --- Adds Actions to the Console for triggering Final Cut Pro shortcuts as defined in the Command Set files.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log				= require("hs.logger").new("commandsetactions")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
+local image             = require("hs.image")
 local timer				= require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
+local config            = require("cp.config")
 local dialog			= require("cp.dialog")
-local fcp				  = require("cp.apple.finalcutpro")
+local fcp				= require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 local plist				= require("cp.plist")
-local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- GROUP -> string
--- Constant
--- The group
-local GROUP 			= "fcpx"
+local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
 --
@@ -44,6 +23,16 @@ local GROUP 			= "fcpx"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- GROUP -> string
+-- Constant
+-- The group
+local GROUP = "fcpx"
+
+-- ICON -> hs.image object
+-- Constant
+-- Icon
+local ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/shortcut.png")
 
 --- plugins.finalcutpro.timeline.commandsetactions.init() -> none
 --- Function
@@ -78,6 +67,7 @@ function mod.init()
                             :add(name)
                             :subText(subText)
                             :params(id)
+                            :image(ICON)
                             :id(id)
                     end
                 end
@@ -125,9 +115,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod.init()

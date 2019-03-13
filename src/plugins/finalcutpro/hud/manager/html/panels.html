@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<style>{(css/hud.css)}</style>
+		<script>
+			{% if not debugMode then %}
+				// Disable Right Clicking:
+				document.addEventListener("contextmenu", function(e){
+					e.preventDefault();
+				}, false);
+			{% end %}
+
+			function alertErrorMessage(err) {
+				alert('An error has occurred communicating between the Webview Javascript & CommandPost: ' + err);
+			}
+
+			function postMessage(result) {
+				webkit.messageHandlers.{{ webviewLabel }}.postMessage(result)
+			}
+
+			function changeInnerHTMLByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).innerHTML = value;
+				}
+			}
+
+			function changeValueByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).value = value;
+				}
+			}
+
+			function changeCheckedByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).checked = value;
+				}
+			}
+
+			function changeClassNameByID(id, className) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).className = className;
+				}
+			}
+		</script>
+	</head>
+	<body>
+{%	for i, panel in ipairs(panels) do
+		if panel.id == currentPanelID then
+%}
+			<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
+				{* panel:generateContent() *}
+			</div>
+{%		end
+	end %}
+	</body>
+</html>

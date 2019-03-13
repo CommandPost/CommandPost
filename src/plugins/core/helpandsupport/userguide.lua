@@ -2,17 +2,9 @@
 ---
 --- User Guide Menu Item.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -43,34 +35,25 @@ local plugin = {
     id              = "core.helpandsupport.userguide",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    if global then
-        global:add("cpUserGuide")
-            :whenActivated(mod.show)
-            :groupedBy("helpandsupport")
-    end
+    deps.global
+        :add("cpUserGuide")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        helpandsupport
-            :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
-    end
+    deps.menuManager.commandPostHelpAndSupport
+        :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
 
     return mod
 end

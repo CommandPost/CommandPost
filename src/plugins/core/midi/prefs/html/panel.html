@@ -1,0 +1,202 @@
+<style>{(css/midi.css)}</style>
+<script>
+	function changeMidiDevice(groupID, buttonID, value) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateDevice",
+					groupID: groupID,
+					buttonID: buttonID,
+					device: value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeMidiCommandType(groupID, buttonID, value) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateCommandType",
+					groupID: groupID,
+					buttonID: buttonID,
+					commandType: value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeMidiNumber(groupID, buttonID, value) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateNumber",
+					groupID: groupID,
+					buttonID: buttonID,
+					number: value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeMidiChannel(groupID, buttonID, value) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateChannel",
+					groupID: groupID,
+					buttonID: buttonID,
+					channel: value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeMidiValue(groupID, buttonID, value) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateValue",
+					groupID: groupID,
+					buttonID: buttonID,
+					value: value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressMidiActionButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateAction",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressMidiClearButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "clear",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressMidiLearnButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "learnButton",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function setMidiValue(groupID, buttonID, field, value) {
+		document.getElementById("midi" + groupID + "_button" + buttonID + "_" + field).value = value;
+	}
+
+	function startLearnMode(groupID, buttonID, stopText) {
+
+		var x = document.getElementsByClassName("midiLearnButton");
+		var i;
+		for (i = 0; i < x.length; i++) {
+		  x[i].style.visibility = "hidden";
+		}
+
+		var x = document.getElementsByTagName("tr");
+		var i;
+		for (i = 0; i < x.length; i++) {
+		  x[i].style.backgroundColor = "";
+		}
+
+		document.getElementById("midi" + groupID + "_button" + buttonID + "_learnButton").style.visibility = "visible";
+		document.getElementById("midi" + groupID + "_button" + buttonID + "_learnButton").innerHTML = stopText;
+	}
+
+	function stopLearnMode(learnText) {
+		var x = document.getElementsByClassName("midiLearnButton");
+		var i;
+		for (i = 0; i < x.length; i++) {
+		  x[i].style.visibility = "visible";
+		  x[i].innerHTML = learnText;
+		}
+
+		var x = document.getElementsByTagName("tr");
+		var i;
+		for (i = 0; i < x.length; i++) {
+		  x[i].style.backgroundColor = "";
+		}
+	}
+
+	function highlightRowRed(groupID, buttonID) {
+		document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.backgroundColor = "#cc5e53";
+        document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 1s");
+	}
+
+	function unhighlightRowRed(groupID, buttonID) {
+		document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.backgroundColor = "";
+        document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 0s");
+	}
+
+	function saveScrollbarPosition(groupID, element) {
+		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
+			try {
+				var result = {
+					id: "midiPanelCallback",
+					params: {
+						type: "scrollBarPosition",
+						groupID: groupID,
+						value: element.scrollTop,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+</script>
+<h3 class="uiItem"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>{* midiGroupSelect *}</span>{{ i18nMidiEditor }}</h3>
+{(html/controls.html, context)}

@@ -3,20 +3,49 @@
 	<head>
 		<style>{(css/preferences.css)}</style>
 		<script>{(js/list.js)}</script>
-		{% if not debugMode then %}
 		<script>
-			// Disable Right Clicking:
-			document.addEventListener("contextmenu", function(e){
-			    e.preventDefault();
-			}, false);
+			{% if not debugMode then %}
+				// Disable Right Clicking:
+				document.addEventListener("contextmenu", function(e){
+					e.preventDefault();
+				}, false);
+			{% end %}
+
+			function alertErrorMessage(err) {
+				alert('An error has occurred communicating between the Webview Javascript & CommandPost: ' + err);
+			}
+
+			function postMessage(result) {
+				webkit.messageHandlers.{{ webviewLabel }}.postMessage(result)
+			}
+
+			function changeInnerHTMLByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).innerHTML = value;
+				}
+			}
+
+			function changeClassNameByID(id, className) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).className = className;
+				}
+			}
+
+			function changeCheckedByID(id, value) {
+				if (document.getElementById(id) !== null) {
+					document.getElementById(id).checked = value;
+				}
+			}
 		</script>
-		{% end %}
 	</head>
 	<body>
-{%	for i, panel in ipairs(panels) do %}
-		<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
-			{* panel:generateContent() *}
-		</div>
-{%	end %}
+{%	for i, panel in ipairs(panels) do
+		if panel.id == currentPanelID then
+%}
+			<div id="{{ panel.id }}" style="display: {{ panel.id == currentPanelID and "block" or "none" }};">
+				{* panel:generateContent() *}
+			</div>
+{%		end
+	end %}
 	</body>
 </html>

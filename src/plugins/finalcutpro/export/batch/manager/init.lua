@@ -2,44 +2,24 @@
 ---
 --- Manager for the Batch Export Window.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("batchExportManager")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fnutils                                   = require("hs.fnutils")
 local inspect                                   = require("hs.inspect")
 local screen                                    = require("hs.screen")
 local toolbar                                   = require("hs.webview.toolbar")
 local webview                                   = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local just                                      = require("cp.just")
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local moses                                     = require("moses")
 
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
 local panel                                     = require("panel")
 
 --------------------------------------------------------------------------------
@@ -54,11 +34,6 @@ local mod = {}
 --- The WebView Label
 mod.WEBVIEW_LABEL = "batchExport"
 
---- plugins.finalcutpro.export.batch.manager.DEFAULT_WINDOW_STYLE -> table
---- Constant
---- Default Webview Window Style of Preferences Window
-mod.DEFAULT_WINDOW_STYLE  = {"titled", "closable", "nonactivating"}
-
 --- plugins.finalcutpro.export.batch.manager.DEFAULT_HEIGHT -> number
 --- Constant
 --- Default Height of Preferences Window
@@ -67,12 +42,7 @@ mod.DEFAULT_HEIGHT = 338
 --- plugins.finalcutpro.export.batch.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of Preferences Window
-mod.DEFAULT_WIDTH = 500
-
---- plugins.finalcutpro.export.batch.manager.DEFAULT_TITLE -> string
---- Constant
---- Default Title of Preferences Window
-mod.DEFAULT_TITLE = i18n("batchExport")
+mod.DEFAULT_WIDTH = 400
 
 --- plugins.finalcutpro.export.batch.manager._panels -> table
 --- Variable
@@ -379,12 +349,12 @@ function mod.new()
         local prefs = {}
         prefs.developerExtrasEnabled = config.developerMode()
         mod._webview = webview.new(defaultRect, prefs, mod._controller)
-            :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+            :windowStyle({"titled", "closable", "nonactivating"})
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
-            :windowTitle(mod.DEFAULT_TITLE)
-            :attachedToolbar(mod._toolbar)
+            :windowTitle(i18n("batchExport"))
+            --:attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
             :darkMode(true)
@@ -605,9 +575,6 @@ local plugin = {
     required        = true,
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(_, env)
     return mod.init(env)
 end

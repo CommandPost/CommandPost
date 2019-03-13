@@ -2,21 +2,8 @@
 ---
 --- Alert UI Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                           = require("hs.logger").new("alert")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 local Button                        = require("cp.ui.Button")
@@ -29,7 +16,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Alert = Element:subclass("Alert")
+local Alert = Element:subclass("cp.ui.Alert")
 
 --- cp.ui.Alert.matches(element) -> boolean
 --- Function

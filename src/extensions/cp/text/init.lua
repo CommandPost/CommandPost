@@ -38,33 +38,17 @@
 ---
 --- This module provides support for loading, manipulating, and comparing unicode text data.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log					= require("hs.logger").new("text")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local utf16LE							= require("cp.utf16.le")
 local utf16BE							= require("cp.utf16.be")
 local protect							= require("cp.protect")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local utf8char, utf8codepoint 			= utf8.char, utf8.codepoint
+local utf8char, utf8codepoint 			  = utf8.char, utf8.codepoint
 local utf16LEchar, utf16LEcodepoint 	= utf16LE.char, utf16LE.codepoint
 local utf16BEchar, utf16BEcodepoint 	= utf16BE.char, utf16BE.codepoint
-local unpack, pack						= table.unpack, table.pack
-local floor								= math.floor
+local unpack, pack						        = table.unpack, table.pack
+local floor								            = math.floor
 
 --------------------------------------------------------------------------------
 --

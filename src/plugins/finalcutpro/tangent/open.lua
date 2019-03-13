@@ -1,17 +1,9 @@
---- === plugins.finalcutpro.tangent.timeline ===
+--- === plugins.finalcutpro.tangent.open ===
 ---
---- Final Cut Pro Tangent Timeline Group/Management
+--- Final Cut Pro Tangent Open FCPX.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 
@@ -28,13 +20,10 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     local fcpGroup = deps.fcpGroup
     local id = 0x00050000
-    fcpGroup:action(id, i18n("cpLaunchFinalCutPro" .. "_title"))
+    fcpGroup:action(id, i18n("cpLaunchFinalCutPro" .. "_title"), true)
         :onPress(fcp:doLaunch())
 
     return fcpGroup

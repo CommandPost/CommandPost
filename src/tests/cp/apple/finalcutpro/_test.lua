@@ -1,32 +1,45 @@
 -- test cases for the FCP API
--- By default, this will run test cases across all supported locales in FCPX.
+-- By default, this will run all test cases across all supported locales in Final Cut Pro:
+--
+-- ```lua
+-- _test("cp.apple.finalcutpro")()
+-- ```
+--
+-- You can also trigger a specific version of Final Cut Pro by supplying it's path:
+--
+-- ```lua
+-- _test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
+-- ```
+--
 -- If you want to just run a specific test against a specific locale, you can do this:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")("en", "Launch FCP")
+-- _test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
 -- ```
 --
 -- You can run multiple specific locales like so:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, "Launch FCP", "Command Editor")
+-- _test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
 -- ```
+
+local require = require
 
 local log           = require("hs.logger").new("testfcp")
 local inspect       = require("hs.inspect")
 
+local application   = require("hs.application")
 local fs            = require("hs.fs")
 local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
-local ids           = require("cp.apple.finalcutpro.ids")
-local localeID      = require("cp.i18n.localeID")
 local just          = require("cp.just")
+local localeID      = require("cp.i18n.localeID")
 local test          = require("cp.test")
 local tools         = require("cp.tools")
 
-local v = require("semver")
+local v             = require("semver")
 
 local format = string.format
 local rmdir, mkdir, attributes = tools.rmdir, fs.mkdir, fs.attributes
@@ -37,12 +50,18 @@ local TEST_DIRECTORY = fs.temporaryDirectory() .. "CommandPost"
 
 local libraryCount = 0
 
+local APP_PATH
+
 return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Launch FCP",
         function()
             -- Launch FCP
-            fcp:launch()
+            if APP_PATH then
+                fcp:launch(nil, APP_PATH)
+            else
+                fcp:launch()
+            end
             ok(fcp:isRunning(), "FCP is running")
         end
     ),
@@ -135,14 +154,14 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- switch to viewer > proxy mode, which has an additional warning message
             fcp:viewer():usingProxies(true)
-            _, err = export:show(1, true, true, true)
+            _, err = export:show(1, true, true, true, true)
             ok(err == nil)
             ok(export:isShowing())
             export:hide()
             ok(not export:isShowing())
 
             -- fail on proxies this time, quietly
-            _, err = export:show(1, false, true, true)
+            _, err = export:show(1, false, true, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
             ok(eq(fcp:alert():isShowing(), false))
@@ -467,12 +486,32 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local toolbar = fcp:timeline():toolbar()
 
-            ok(toolbar:isShowing())
-            ok(toolbar:skimmingGroupUI() ~= nil)
-            ok(toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "SkimmingGroup")
+            local skimmingId, effectsGroup
+            local version = fcp.version()
 
-            ok(toolbar:effectsGroupUI() ~= nil)
-            ok(toolbar:effectsGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "EffectsGroup")
+            ok(version and type(version) == "table")
+
+            if version >= v("10.3.2") then
+                skimmingId = "_NS:178"
+                effectsGroup = "_NS:165"
+            end
+
+            if version >= v("10.3.3") then
+                skimmingId = "_NS:179"
+                effectsGroup = "_NS:166"
+            end
+
+            if version >= v("10.4.4") then
+                skimmingId = "_NS:183"
+                effectsGroup = "_NS:170"
+            end
+
+            ok(toolbar:isShowing())
+            ok(toolbar:skimming():UI() ~= nil)
+            ok(skimmingId and toolbar:skimming():UI():attributeValue("AXIdentifier") == skimmingId)
+
+            ok(toolbar:effectsGroup():UI() ~= nil)
+            ok(effectsGroup and toolbar:effectsGroup():UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(
@@ -529,8 +568,17 @@ return test.suite("cp.apple.finalcutpro"):with(
 ):
 onRun(
     -- custom run function, that loops through all locales (or locales provided)
-    function(self, runTests, locales, ...)
+    function(self, runTests, locales, path, ...)
         local wasRunning = fcp:isRunning()
+
+        if path then
+            if tools.doesDirectoryExist(path .. ".app") then
+                log.df("Using specific Final Cut Pro path: %s", path)
+                APP_PATH = path
+            else
+                error(string.format("Invalid application path: %s", path))
+            end
+        end
 
         -- Figure out which locales to test
         if type(locales) == "table" then
@@ -570,7 +618,7 @@ onRun(
             -- log.df("Testing FCPX in the '%s' language...", locale)
             self.name = originalName .. " > " .. locale.code
             if fcp.app:currentLocale(locale) then
-                just.doUntil(fcp.isRunning)
+                just.doUntil(fcp.isRunning, 10)
 
                 -- run the actual tests
                 runTests(self, ...)
@@ -601,8 +649,16 @@ onRun(
             error(format("Unable to create the '%s' directory: %s", targetDirectory, err))
         end
 
+        local version = fcp:version()
+        if APP_PATH then
+            local info = application.infoForBundlePath(APP_PATH .. ".app")
+            if info and info.CFBundleShortVersionString then
+                version = info.CFBundleShortVersionString
+            end
+        end
+
         -- copy the test library to the temporary directory
-        local sourceLibraryPath = format("%s/cp/apple/finalcutpro/_libraries/%s/%s.fcpbundle", config.testsPath, fcp:version(), TEST_LIBRARY)
+        local sourceLibraryPath = format("%s/cp/apple/finalcutpro/_libraries/%s/%s.fcpbundle", config.testsPath, version, TEST_LIBRARY)
 
         -- check it exists
         if fs.pathToAbsolute(sourceLibraryPath) == nil then
@@ -625,8 +681,13 @@ onRun(
         -- give the OS a second to catch up.
         just.wait(1)
 
-        fcp:launch()
-        just.doUntil(function() return fcp:isRunning() end, 10)
+        if APP_PATH then
+            fcp:launch(nil, APP_PATH)
+        else
+            fcp:launch()
+        end
+
+        just.doUntil(function() return fcp:isRunning() end, 10, 0.1)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
@@ -635,11 +696,11 @@ onRun(
         end
 
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
-        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 5.0) then
+        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
             error(format("Unable to open the '%s' Library.", targetLibrary))
         end
 
-        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10) then
+        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10, 0.1) then
             error(format("Unable to open the 'Test Project' clip."))
         end
     end
@@ -652,7 +713,7 @@ onRun(
         -- do this after each test.
         if fcp:closeLibrary(targetLibrary) then
             -- wait until the library actually closes...
-            just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 5, 0.1)
+            just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 10, 0.1)
 
             timer.doAfter(1, function()
                 -- delete the temporary library copy.

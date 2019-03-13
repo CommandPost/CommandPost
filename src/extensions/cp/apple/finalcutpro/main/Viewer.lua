@@ -2,30 +2,16 @@
 ---
 --- Viewer Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local canvas					        = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
--- local inspect                           = require("hs.inspect")
+local pasteboard                        = require("hs.pasteboard")
 local timer                             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 local Button                            = require("cp.ui.Button")
@@ -46,9 +32,6 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 local go                                = require("cp.rx.go")
 local Do, If                            = go.Do, go.If
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
@@ -239,7 +222,7 @@ end
 --- Field
 --- Checks if the Viewer is showing on the Secondary Window.
 function Viewer.lazy.prop:isOnSecondary()
-    return self:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and SecondaryWindow.matches(ui:window())
     end)
@@ -249,7 +232,7 @@ end
 --- Field
 --- Checks if the Viewer is showing on the Primary Window.
 function Viewer.lazy.prop:isOnPrimary()
-    return self:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and PrimaryWindow.matches(ui:window())
     end)
@@ -333,15 +316,27 @@ function Viewer.lazy.prop:timecode()
         function(timecodeValue, original)
             local tcField = self:timecodeText()
             if not tcField:isShowing() then
+                log.ef("Timecode text not showing (cp.apple.finalcutpro.main.Viewer.timecode).")
                 return
             end
-            local framerate = self:framerate()
-            local tc = framerate and flicks.parse(timecodeValue, framerate)
-            if tc then
-                local center = geometry(tcField:frame()).center
+            if timecodeValue then
+                local frame = tcField:frame()
+                if not frame then
+                    log.ef("Failed to find timecode frame (cp.apple.finalcutpro.main.Viewer.timecode).")
+                    return
+                end
+                local center = geometry(frame).center
                 --------------------------------------------------------------------------------
                 -- Double click the timecode value in the Viewer:
                 --------------------------------------------------------------------------------
+                self:app():launch()
+                local result = just.doUntil(function()
+                    return self:app():isFrontmost()
+                end)
+                if not result then
+                    log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.main.Viewer.timecode).")
+                    return
+                end
                 tools.ninjaMouseClick(center)
 
                 --------------------------------------------------------------------------------
@@ -353,14 +348,63 @@ function Viewer.lazy.prop:timecode()
                 end, 5)
                 if ready then
                     --------------------------------------------------------------------------------
-                    -- Type in Original Timecode & Press Return Key:
+                    -- Get current Pasteboard Contents:
                     --------------------------------------------------------------------------------
-                    eventtap.keyStrokes(tc:toTimecode(framerate))
-                    eventtap.keyStroke({}, 'return')
+                    local originalPasteboard = pasteboard.getContents()
+
+                    --------------------------------------------------------------------------------
+                    -- Set Pasteboard Contents to timecode value we want to go to:
+                    --------------------------------------------------------------------------------
+                    pasteboard.setContents(timecodeValue)
+
+                    --------------------------------------------------------------------------------
+                    -- Wait until the timecode is on the pasteboard:
+                    --------------------------------------------------------------------------------
+                    local pasteboardReady = just.doUntil(function()
+                        return pasteboard.getContents() == timecodeValue
+                    end, 5)
+
+                    if not pasteboardReady then
+                        log.ef("Failed to add timecode to pasteboard (cp.apple.finalcutpro.main.Viewer.timecode).")
+                        return
+                    else
+                        --------------------------------------------------------------------------------
+                        -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
+                        -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
+                        --------------------------------------------------------------------------------
+                        eventtap.keyStroke({"cmd"}, "v")
+
+                        --------------------------------------------------------------------------------
+                        -- Wait until we see the timecode in the viewer:
+                        --------------------------------------------------------------------------------
+                        local pasteboardPasteResult = just.doUntil(function()
+                            local blank = "00:00:00:00"
+                            local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
+                            return tcField:value() == formattedTimecodeValue
+                        end, 5)
+
+                        --------------------------------------------------------------------------------
+                        -- Press return to complete the timecode entry:
+                        --------------------------------------------------------------------------------
+                        if not pasteboardPasteResult then
+                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
+                            return
+                        else
+                            eventtap.keyStroke({}, 'return')
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Restore Original Pasteboard Contents:
+                    --------------------------------------------------------------------------------
+                    if originalPasteboard then
+                        pasteboard.setContents(originalPasteboard)
+                    end
+
                     return self
                 end
             else
-                log.ef("Timecode value is invalid: %s", timecodeValue)
+                log.ef("Timecode value is invalid: %s (cp.apple.finalcutpro.main.Viewer.timecode).", timecodeValue)
             end
         end
     )
@@ -402,42 +446,43 @@ function Viewer.lazy.prop:isPlaying()
             local element = self:playButton():UI()
             if element then
                 local window = element:attributeValue("AXWindow")
+                if window then
+                    local hsWindow = window:asHSWindow()
+                    local windowSnap = hsWindow:snapshot()
+                    local windowFrame = window:frame()
+                    local shotSize = windowSnap:size()
 
-                local hsWindow = window:asHSWindow()
-                local windowSnap = hsWindow:snapshot()
-                local windowFrame = window:frame()
-                local shotSize = windowSnap:size()
+                    local ratio = shotSize.h/windowFrame.h
+                    local elementFrame = element:frame()
 
-                local ratio = shotSize.h/windowFrame.h
-                local elementFrame = element:frame()
+                    local imageFrame = {
+                        x = (windowFrame.x-elementFrame.x)*ratio,
+                        y = (windowFrame.y-elementFrame.y)*ratio,
+                        w = shotSize.w,
+                        h = shotSize.h,
+                    }
 
-                local imageFrame = {
-                    x = (windowFrame.x-elementFrame.x)*ratio,
-                    y = (windowFrame.y-elementFrame.y)*ratio,
-                    w = shotSize.w,
-                    h = shotSize.h,
-                }
+                    --------------------------------------------------------------------------------
+                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
+                    --------------------------------------------------------------------------------
 
-                --------------------------------------------------------------------------------
-                -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                --------------------------------------------------------------------------------
+                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+                    c[1] = {
+                        type = "image",
+                        image = windowSnap,
+                        imageScaling = "none",
+                        imageAlignment = "topLeft",
+                        frame = imageFrame,
+                    }
 
-                local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-                c[1] = {
-                    type = "image",
-                    image = windowSnap,
-                    imageScaling = "none",
-                    imageAlignment = "topLeft",
-                    frame = imageFrame,
-                }
+                    local elementSnap = c:imageFromCanvas()
+                    c:delete()
 
-                local elementSnap = c:imageFromCanvas()
-                c:delete()
-
-                if elementSnap then
-                    elementSnap:size({h=60,w=60})
-                    local spot = elementSnap:colorAt({x=31,y=31})
-                    return spot and spot.blue < 0.5
+                    if elementSnap then
+                        elementSnap:size({h=60,w=60})
+                        local spot = elementSnap:colorAt({x=31,y=31})
+                        return spot and spot.blue < 0.5
+                    end
                 end
             end
             return false

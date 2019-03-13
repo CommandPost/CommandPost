@@ -2,27 +2,16 @@
 ---
 --- Provides access to the list of Share Destinations configured for the user.
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require                   = require
+
 local log                       = require("hs.logger").new("destinations")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs                        = require("hs.fs")
 local pathwatcher               = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local plist                     = require("cp.plist")
 local archiver                  = require("cp.plist.archiver")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _                         = require("moses")
 
 --------------------------------------------------------------------------------
@@ -140,7 +129,7 @@ function mod.details()
     return mod._details
 end
 
---- cp.apple.finalcutpro.export.destinations.names() -> table
+--- cp.apple.finalcutpro.export.destinations.names() -> table | nil, string
 --- Function
 --- Returns an array of the names of destinations, in their current order.
 ---
@@ -148,7 +137,8 @@ end
 ---  * None
 ---
 --- Returns:
----  * The table of Share Destination names.
+---  * The table of Share Destination names, or `nil` if an error has occurred.
+---  * An error message as a string.
 function mod.names()
     local list, err = mod.details()
     if list then

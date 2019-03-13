@@ -2,27 +2,9 @@
 ---
 --- Represents an `AXRadioGroup`, providing utility methods.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log							= require("hs.logger").new("radioGroup")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
---local inspect						= require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local Element						= require("cp.ui.Element")
+local Element						            = require("cp.ui.Element")
 
 local go                            = require("cp.rx.go")
 local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
@@ -32,7 +14,7 @@ local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local RadioGroup = Element:subclass("RadioGroup")
+local RadioGroup = Element:subclass("cp.ui.RadioGroup")
 
 --- cp.ui.RadioGroup.matches(element) -> boolean
 --- Function
@@ -71,6 +53,17 @@ function RadioGroup.lazy.prop:optionCount()
             return ui and #ui or 0
         end
     )
+end
+
+--- cp.ui.RadioGroup:options() -> table
+--- Method
+--- The `table` of options available in the radio group.
+---
+--- Returns:
+--- * The table of options.
+function RadioGroup:options()
+    local ui = self.UI
+    return ui and ui:children()
 end
 
 --- cp.ui.RadioGroup.selectedOption <cp.prop: number>
@@ -210,10 +203,6 @@ function RadioGroup.lazy.method:doPreviousOption()
     end)
     :Otherwise(Throw("The radio group is unavailable."))
     :Label("RadioGroup:doNextOption")
-end
-
-function RadioGroup.__tostring()
-    return "cp.ui.RadioGroup"
 end
 
 return RadioGroup

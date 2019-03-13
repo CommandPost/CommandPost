@@ -2,30 +2,18 @@
 ---
 --- Scroll Area Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log								= require("hs.logger").new("ScrollArea")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
+local axutils						            = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
+local ScrollBar                     = require("cp.ui.ScrollBar")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ScrollArea = Element:subclass("ScrollArea")
+local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
@@ -69,18 +57,18 @@ function ScrollArea.lazy.prop:contentsUI()
     end)
 end
 
---- cp.ui.ScrollArea.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- Returns the `axuielement` representing the Vertical Scroll Bar, or `nil` if not available.
-function ScrollArea.lazy.prop:verticalScrollBarUI()
-    return axutils.prop(self.UI, "AXVerticalScrollBar")
+--- cp.ui.ScrollArea:verticalScrollBar() -> cp.ui.ScrollBar
+--- Method
+--- Returns the vertical [ScrollBar](cp.ui.ScrollBar.md).
+function ScrollArea.lazy.method:verticalScrollBar()
+    return ScrollBar(self, axutils.prop(self.UI, "AXVerticalScrollBar"))
 end
 
---- cp.ui.ScrollArea.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- Returns the `axuielement` representing the Horizontal Scroll Bar, or `nil` if not available.
-function ScrollArea.lazy.prop:horizontalScrollBarUI()
-    return axutils.prop(self.UI, "AXHorizontalScrollBar")
+--- cp.ui.ScrollArea:horizontalScrollBar() -> cp.ui.ScrollBar
+--- Method
+--- Returns the horizontal [ScrollBar](cp.ui.ScrollBar.md).
+function ScrollArea.lazy.method:horizontalScrollBar()
+    return ScrollBar(self, axutils.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
 --- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs._asm.axuielement; read-only; live?>
@@ -153,17 +141,17 @@ end
 ---  * The frame in the form of a `hs.geometry` rect object.
 function ScrollArea:viewFrame()
     local ui = self:UI()
-    local hScroll = self:horizontalScrollBarUI()
-    local vScroll = self:verticalScrollBarUI()
+    local hScroll = self:horizontalScrollBar():frame()
+    local vScroll = self:verticalScrollBar():frame()
 
     local frame = ui:frame()
 
     if hScroll then
-        frame.h = frame.h - hScroll:frame().h
+        frame.h = frame.h - hScroll.h
     end
 
     if vScroll then
-        frame.w = frame.w - vScroll:frame().w
+        frame.w = frame.w - vScroll.w
     end
     return frame
 end
@@ -200,10 +188,7 @@ function ScrollArea:showChild(childUI)
             else
                 vValue = 1.0 - (oFrame.y + oFrame.h - childBottom)/scrollHeight
             end
-            local vScroll = self:verticalScrollBarUI()
-            if vScroll then
-                vScroll:setAttributeValue("AXValue", vValue)
-            end
+            self:verticalScrollBar().value:set(vValue)
         end
     end
     return self
@@ -308,15 +293,10 @@ end
 --- Returns:
 ---  * A table containing the current Scroll Area Layout.
 function ScrollArea:saveLayout()
-    local layout = {}
-    local hScroll = self:horizontalScrollBarUI()
-    if hScroll then
-        layout.horizontalScrollBar = hScroll:value()
-    end
-    local vScroll = self:verticalScrollBarUI()
-    if vScroll then
-        layout.verticalScrollBar = vScroll:value()
-    end
+    local layout = Element.saveLayout(self)
+
+    layout.horizontalScrollBar = self:horizontalScrollBar():saveLayout()
+    layout.verticalScrollBar = self:verticalScrollBar():saveLayout()
     layout.selectedChildren = self:selectedChildrenUI()
 
     return layout
@@ -334,14 +314,9 @@ end
 function ScrollArea:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedChildren)
-        local vScroll = self:verticalScrollBarUI()
-        if vScroll then
-            vScroll:setValue(layout.verticalScrollBar)
-        end
-        local hScroll = self:horizontalScrollBarUI()
-        if hScroll then
-            hScroll:setValue(layout.horizontalScrollBar)
-        end
+
+        self:verticalScrollBar():loadLayout(layout.verticalScrollBar)
+        self:horizontalScrollBar():loadLayout(layout.horizontalScrollBar)
     end
 end
 

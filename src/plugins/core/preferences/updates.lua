@@ -2,24 +2,10 @@
 ---
 --- Updates Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
+local hs = hs
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local i18n        = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local UPDATE_BANNER_PRIORITY            = 1
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +27,6 @@ function mod.toggleCheckForUpdates()
     local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
     hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
     mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
-
     if not automaticallyCheckForUpdates then
         hs.checkForUpdates(true)
     end
@@ -57,6 +42,7 @@ end
 --- Returns:
 ---  * `true` or `false`
 function mod.checkForUpdates()
+    hs.focus()
     hs.checkForUpdates()
 end
 
@@ -69,14 +55,11 @@ local plugin = {
     id              = "core.preferences.updates",
     group           = "core",
     dependencies    = {
-        ["core.menu.top"]                   = "menu",
+        ["core.menu.manager"]               = "menu",
         ["core.preferences.panels.general"] = "general",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
@@ -85,7 +68,7 @@ function plugin.init(deps)
         hs.checkForUpdates(true)
     end
 
-    deps.menu:addItem(UPDATE_BANNER_PRIORITY, function()
+    deps.menu.top:addItem(0.00000000000000000000000000001, function()
         if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
             return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",    fn = mod.checkForUpdates }
         end

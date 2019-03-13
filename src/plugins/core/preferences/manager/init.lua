@@ -2,45 +2,25 @@
 ---
 --- Manager for the CommandPost Preferences Window.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsMgr")
+local log         = require("hs.logger").new("prefsMgr")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local inspect                                   = require("hs.inspect")
-local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
-local toolbar                                   = require("hs.webview.toolbar")
-local webview                                   = require("hs.webview")
+local inspect     = require("hs.inspect")
+local screen      = require("hs.screen")
+local timer       = require("hs.timer")
+local toolbar     = require("hs.webview.toolbar")
+local webview     = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local just                                      = require("cp.just")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config      = require("cp.config")
+local dialog      = require("cp.dialog")
+local just        = require("cp.just")
+local tools       = require("cp.tools")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _           = require("moses")
 
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
-local panel                                     = require("panel")
+local panel       = require("panel")
 
 --------------------------------------------------------------------------------
 --
@@ -54,11 +34,6 @@ local mod = {}
 --- The WebView Label
 mod.WEBVIEW_LABEL = "preferences"
 
---- plugins.core.preferences.manager.DEFAULT_WINDOW_STYLE -> table
---- Constant
---- Default Webview Window Style of Preferences Window
-mod.DEFAULT_WINDOW_STYLE  = {"titled", "closable", "nonactivating"}
-
 --- plugins.core.preferences.manager.DEFAULT_HEIGHT -> number
 --- Constant
 --- Default Height of Preferences Window
@@ -68,11 +43,6 @@ mod.DEFAULT_HEIGHT = 338
 --- Constant
 --- Default Width of Preferences Window
 mod.DEFAULT_WIDTH = 1000
-
---- plugins.core.preferences.manager.DEFAULT_TITLE -> string
---- Constant
---- Default Title of Preferences Window
-mod.DEFAULT_TITLE = i18n("preferences")
 
 --- plugins.core.preferences.manager._panels -> table
 --- Variable
@@ -178,16 +148,16 @@ local function isPanelIDValid(whichID)
     return false
 end
 
--- currentPanelID() -> string
--- Function
--- Returns the panel ID with the highest priority.
---
--- Parameters:
--- * None
---
--- Returns:
--- * The panel ID as a string
-local function currentPanelID()
+--- plugins.core.preferences.manager.currentPanelID() -> string
+--- Function
+--- Returns the panel ID with the highest priority.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The panel ID as a string
+function mod.currentPanelID()
     local id = mod.lastTab()
     if id and isPanelIDValid(id) then
         return id
@@ -210,7 +180,8 @@ local function generateHTML()
 
     env.debugMode = config.developerMode()
     env.panels = mod._panels
-    env.currentPanelID = currentPanelID()
+    env.currentPanelID = mod.currentPanelID()
+    env.webviewLabel = mod.WEBVIEW_LABEL
 
     local result, err = mod._panelRenderer(env)
     if err then
@@ -364,6 +335,7 @@ function mod.new()
             :autosaves(true)
             :setCallback(function(_, _, id)
                 mod.selectPanel(id)
+                mod.refresh()
             end)
 
         local theToolbar = mod._toolbar
@@ -383,11 +355,11 @@ function mod.new()
         local prefs = {}
         prefs.developerExtrasEnabled = config.developerMode()
         mod._webview = webview.new(defaultRect, prefs, mod._controller)
-            :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+            :windowStyle({"titled", "closable", "nonactivating"})
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
-            :windowTitle(mod.DEFAULT_TITLE)
+            :windowTitle(i18n("preferences"))
             :attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
@@ -415,7 +387,7 @@ function mod.show()
         dialog.displayMessage("There are no Preferences Panels to display.")
         return nil
     else
-        mod.selectPanel(currentPanelID())
+        mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
         mod._webview:show()
         mod.focus()
@@ -470,7 +442,7 @@ end
 ---  * None
 function mod.refresh()
     if mod._webview then
-        mod.selectPanel(currentPanelID())
+        mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
     end
 end
@@ -515,8 +487,6 @@ function mod.selectPanel(id)
         return
     end
 
-    local js = ""
-
     for _, thePanel in ipairs(mod._panels) do
         --------------------------------------------------------------------------------
         -- Resize Panel:
@@ -531,13 +501,8 @@ function mod.selectPanel(id)
             mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
-        local style = thePanel.id == id and "block" or "none"
-        js = js .. [[
-            document.getElementById(']] .. thePanel.id .. [[').style.display = ']] .. style .. [[';
-        ]]
     end
 
-    mod._webview:evaluateJavaScript(js)
     mod._toolbar:selectedItem(id)
 
     --------------------------------------------------------------------------------
@@ -603,19 +568,18 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    global:add("cpPreferences")
+    deps.global
+        :add("cpPreferences")
         :whenActivated(mod.show)
         :groupedBy("commandPost")
 
+    --------------------------------------------------------------------------------
+    -- Initalise Module:
+    --------------------------------------------------------------------------------
     return mod.init(env)
 end
 

@@ -75,7 +75,7 @@ end
 ---  * The `Statement`, resolving to `true` if successful and sending an error if not.
 function BasePanel.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
-        self:parent():doSelectTab("Info")
+        self:parent():doSelectTab(self:panelType())
     ):Otherwise(true)
     :Label(self:panelType() .. ":doShow")
 end

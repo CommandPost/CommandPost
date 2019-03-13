@@ -2,33 +2,17 @@
 ---
 --- Manage CommandPost's constants and settings.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("config")
+local application		  = require("hs.application")
+local console			  = require("hs.console")
+local fs				  = require("hs.fs")
+local settings			  = require("hs.settings")
+local window			  = require("hs.window")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local application		= require("hs.application")
-local console			= require("hs.console")
-local fs				= require("hs.fs")
-local settings			= require("hs.settings")
-local window			= require("hs.window")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local prop				= require("cp.prop")
-local sourcewatcher		= require("cp.sourcewatcher")
-local watcher			= require("cp.watcher")
+local prop				  = require("cp.prop")
+local sourcewatcher		  = require("cp.sourcewatcher")
+local watcher			  = require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -40,27 +24,27 @@ local mod = {}
 --- cp.config.appName -> string
 --- Constant
 --- The name of the Application
-mod.appName			= "CommandPost"
+mod.appName = "CommandPost"
 
 --- cp.config.appVersion -> string
 --- Constant
 --- Prefix used for Configuration Settings
-mod.appVersion       = hs.processInfo["version"]
+mod.appVersion = hs.processInfo["version"]
 
 --- cp.config.configPrefix -> string
 --- Constant
 --- Prefix used for Configuration Settings
-mod.configPrefix		= "cp"
+mod.configPrefix = "cp"
 
 --- cp.config.privacyPolicyURL -> string
 --- Constant
 --- URL for Privacy Policy
-mod.privacyPolicyURL      = "https://help.commandpost.io/getting_started/privacy_policy/"
+mod.privacyPolicyURL = "https://help.commandpost.io/getting_started/privacy_policy/"
 
 --- cp.config.translationURL -> string
 --- Constant
 --- URL for Translations
-mod.translationURL      = "https://poeditor.com/join/project/QWvOQlF1Sy"
+mod.translationURL = "https://poeditor.com/join/project/QWvOQlF1Sy"
 
 --- cp.config.scriptPath -> string
 --- Constant
@@ -85,7 +69,7 @@ end
 --- cp.config.assetsPath -> string
 --- Constant
 --- Path to where Application Assets are stored
-mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets"
+mod.assetsPath = mod.scriptPath .. "/cp/resources/assets"
 
 --- cp.config.basePath -> string
 --- Constant
@@ -95,7 +79,7 @@ mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..")
 --- cp.config.bundledPluginsPath -> string
 --- Constant
 --- The path to bundled plugins
-mod.bundledPluginsPath	= mod.basePath .. "/plugins"
+mod.bundledPluginsPath = mod.basePath .. "/plugins"
 
 --- cp.config.userConfigRootPath -> string
 --- Constant
@@ -110,12 +94,12 @@ mod.cachePath = os.getenv("HOME") .. "/Library/Caches/" .. hs.processInfo.bundle
 --- cp.config.userPluginsPath -> string
 --- Constant
 --- The path to user plugins
-mod.userPluginsPath		= mod.userConfigRootPath .. "/Plugins"
+mod.userPluginsPath = mod.userConfigRootPath .. "/Plugins"
 
 --- cp.config.pluginPaths -> table
 --- Constant
 --- Table of Plugins Paths. Earlier entries take precedence.
-mod.pluginPaths			= {
+mod.pluginPaths	= {
     mod.userPluginsPath,
     mod.bundledPluginsPath,
 }
@@ -123,37 +107,40 @@ mod.pluginPaths			= {
 --- cp.config.iconPath -> string
 --- Constant
 --- Path to the Application Icon
-mod.iconPath            = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
+mod.iconPath = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
 
 --- cp.config.menubarIconPath -> string
 --- Constant
 --- Path to the Menubar Application Icon
-mod.menubarIconPath     = mod.assetsPath .. "/CommandPost.png"
+mod.menubarIconPath = mod.assetsPath .. "/CommandPost.png"
 
 --- cp.config.languagePath -> string
 --- Constant
 --- Path to the Languages Folder
-mod.languagePath		= mod.scriptPath .. "/languages/"
+mod.languagePath = mod.scriptPath .. "/languages/"
 
 --- cp.config.sourceExtensions -> table
 --- Constant
 --- Extensions for files which will trigger a reload when modified.
-mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
+mod.sourceExtensions = { ".lua", ".html", ".htm", ".css", ".json" }
 
 --- cp.config.sourceWatcher -> SourceWatcher
 --- Constant
 --- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
-mod.sourceWatcher		= sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
+mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions)
+    :watchPath(mod.scriptPath)
+    :watchPath(mod.userPluginsPath)
+    :watchPath(mod.bundledPluginsPath)
 
 --- cp.config.bundleID -> string
 --- Constant
 --- Application's Bundle ID
-mod.bundleID			= hs.processInfo["bundleID"]
+mod.bundleID = hs.processInfo["bundleID"]
 
 --- cp.config.processID -> number
 --- Constant
 --- Application's Process ID
-mod.processID			= hs.processInfo["processID"]
+mod.processID = hs.processInfo["processID"]
 
 --- cp.config.application() -> hs.application object
 --- Function
@@ -313,29 +300,22 @@ function mod.unwatch(id)
     return mod.watcher:unwatch(id)
 end
 
---- cp.config.developerMode <cp.prop: boolean>
---- Constant
+--- cp.config.developerMode <cp.prop: boolean; read-only>
+--- Field
 --- When `true`, the app is in developer mode.
-mod.developerMode = mod.prop("debugMode", false):watch(function(value)
-    if value then
-        --log.df("Developer Mode Enabled")
-    else
-        --log.df("Developer Mode Disabled")
-    end
-end)
+mod.developerMode = prop.new(function() return settings.get("MJConfigFile") ~= nil end)
 
 --- cp.config.automaticScriptReloading <cp.prop: boolean>
 --- Variable
 --- Automatic Script Reloading.
 mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
     if value then
-        --log.df("Automatic Script Reloading Enabled")
         mod.sourceWatcher:start()
     else
-        --log.df("Automatic Script Reloading Disabled")
         mod.sourceWatcher:stop()
     end
 end)
+mod.automaticScriptReloading:update()
 
 --------------------------------------------------------------------------------
 --

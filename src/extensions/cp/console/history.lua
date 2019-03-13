@@ -5,56 +5,14 @@
 --- Based on code by @asmagill
 --- https://github.com/asmagill/hammerspoon-config-take2/blob/master/utils/_actions/consoleHistory.lua
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log      = require("hs.logger").new("history")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local console  = require("hs.console")
 local hash     = require("hs.hash")
 local timer    = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config   = require("cp.config")
 local json     = require("cp.json")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- FILE_NAME -> string
--- Constant
--- File name of settings file.
-local FILE_NAME = "History.cpCache"
-
--- FOLDER_NAME -> string
--- Constant
--- Folder Name where settings file is contained.
-local FOLDER_NAME = "Error Log"
-
--- CHECK_INTERVAL -> number
--- Constant
--- How often to check for changes.
---local CHECK_INTERVAL = 1
-
--- MAXIMUM -> number
--- Constant
--- Maximum history to save
-local MAXIMUM = 100
 
 --------------------------------------------------------------------------------
 --
@@ -62,6 +20,11 @@ local MAXIMUM = 100
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- MAXIMUM -> number
+-- Constant
+-- Maximum history to save
+local MAXIMUM = 100
 
 -- hashFN -> function
 -- Variable
@@ -76,7 +39,7 @@ local currentHistoryCount = #console.getHistory()
 --- cp.console.history.cache <cp.prop: table>
 --- Field
 --- Console History Cache
-mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, nil)
+mod.cache = json.prop(config.cachePath, "Error Log", "History.cpCache", {})
 
 -- uniqueHistory(raw) -> table
 -- Function
@@ -211,26 +174,6 @@ end
 --- Returns:
 ---  * Self
 function mod.init()
-
-    --------------------------------------------------------------------------------
-    -- Setup Autosave Timer:
-    --------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- NOTE: Chris has disabled this, because he THINKS it's the source of a
-    --       memory leak. However, the Console history SHOULD still work
-    --       as it's called as part of garbage collection.
-    --------------------------------------------------------------------------------
-
-    --[[
-    mod.autosaveHistory = timer.new(CHECK_INTERVAL, function()
-        local historyNow = console.getHistory()
-        if #historyNow ~= currentHistoryCount then
-            currentHistoryCount = #historyNow
-            mod.saveHistory()
-        end
-    end):start()
-    --]]
 
     --------------------------------------------------------------------------------
     -- Retrieve History on Boot:

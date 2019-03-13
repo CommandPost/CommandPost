@@ -14,10 +14,10 @@ local builder = {}
 --- Creates a new choice builder instance.
 ---
 --- Parameters:
---- * `choice`	- The choice instance to configure.
+---  * `choice`	- The choice instance to configure.
 ---
 --- Returns:
---- * The new choice builder.
+---  * The new choice builder.
 function builder.new(choice)
     local o = {
         _choice 		= choice,
@@ -32,10 +32,10 @@ end
 --- Specifies the text value for the choice being built.
 ---
 --- Parameters:
---- * `value`	- The text title for the choice.
+---  * `value`	- The text title for the choice.
 ---
 --- Returns:
---- * The choice builder, added to the choices set.
+---  * The choice builder, added to the choices set.
 function builder:text(value)
     self._choice.text = value
     return self
@@ -46,10 +46,10 @@ end
 --- Specifies the `subText` value for the choice being built.
 ---
 --- Parameters:
---- * `value`	- The subText title for the choice.
+---  * `value`	- The subText title for the choice.
 ---
 --- Returns:
---- * The choice builder.
+---  * The choice builder.
 function builder:subText(value)
     self._choice.subText = value
     return self
@@ -60,12 +60,28 @@ end
 --- Sets the ID of the choice.
 ---
 --- Parameters:
---- * `value`	- The ID.
+---  * `value`	- The ID.
 ---
 --- Returns:
---- * The choice builder.
+---  * The choice builder.
 function builder:id(value)
     self._choice.id = value
+    return self
+end
+
+--- cp.choices.builder:image(value) -> builder
+--- Method
+--- Sets the image of the choice.
+---
+--- Parameters:
+---  * value - A `hs.image` image object that will be displayed next to the choice
+---
+--- Returns:
+---  * The choice builder.
+function builder:image(value)
+    if value then
+        self._choice.image = value
+    end
     return self
 end
 
@@ -75,10 +91,10 @@ end
 --- values need to be simple - text, numbers, booleans, or tables.
 ---
 --- Parameters:
---- * `value`	- The table of parameters.
+---  * `value`	- The table of parameters.
 ---
 --- Returns:
---- * The choice builder, added to the choices set.
+---  * The choice builder, added to the choices set.
 function builder:params(value)
     self._choice.params = value
     return self
@@ -103,10 +119,10 @@ mod.builder = builder
 --- Creates a new `cp.choices` instance for the specified type.
 ---
 --- Parameters:
---- * `type`	- The unique ID for the type.
+---  * `type`	- The unique ID for the type.
 ---
 --- Returns:
---- * The new `choices` instance.
+---  * The new `choices` instance.
 function mod.new(type)
     if type == nil then
         error(string.format("cp.choice instances require a type, but was provided `nil`."))

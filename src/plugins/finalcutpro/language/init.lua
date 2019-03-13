@@ -2,36 +2,14 @@
 ---
 --- Final Cut Pro Language Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog        = require("cp.dialog")
 local fcp           = require("cp.apple.finalcutpro")
 local localeID      = require("cp.i18n.localeID")
 local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert        = table.insert
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY
--- Constant
--- The menubar position priority.
-local PRIORITY = 6
 
 --------------------------------------------------------------------------------
 --
@@ -110,25 +88,21 @@ local plugin = {
     id = "finalcutpro.language",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.top"]            = "top",
+        ["core.menu.manager"] = "menu",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     -------------------------------------------------------------------------------
     -- New Menu Section:
     -------------------------------------------------------------------------------
-    local section = deps.top:addSection(PRIORITY)
+    local section = deps.menu.bottom:addSection(10.3)
 
     -------------------------------------------------------------------------------
     -- The FCPX Languages Menu:
     -------------------------------------------------------------------------------
     local fcpxLangs = section:addMenu(100, function()
-        if fcp.app:installed() then
+        if fcp:isSupported() then
             return i18n("finalCutProLanguage")
         end
     end)

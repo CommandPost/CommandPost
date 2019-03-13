@@ -2,41 +2,14 @@
 ---
 --- Manages features relating to the Timeline Playhead.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                       = require("hs.logger").new("scrolling")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap                  = require("hs.eventtap")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 1000
 
 --------------------------------------------------------------------------------
 --
@@ -135,39 +108,34 @@ local plugin = {
     id = "finalcutpro.timeline.playhead",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.timeline"]               = "timelineMenu",
+        ["finalcutpro.menu.manager"]                = "menuManager",
         ["finalcutpro.commands"]                    = "fcpxCmds",
-        ["finalcutpro.preferences.app"]             = "prefs",
+        ["finalcutpro.preferences.manager"]             = "prefs",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-    local menu, cmds = deps.timelineMenu, deps.fcpxCmds
+    local menu, cmds = deps.menuManager.timeline, deps.fcpxCmds
 
     --------------------------------------------------------------------------------
     -- Setup Menu:
     --------------------------------------------------------------------------------
-    if menu then
-        local section = menu:addSection(PRIORITY)
-        section:addItems(1000, function()
+    local section = menu:addSection(1000)
+    section
+        :addItems(1000, function()
             return {
                 { title = i18n("enableScrollingTimeline"),      fn = function() mod.scrollingTimeline:toggle() end,     checked = mod.scrollingTimeline() },
             }
         end)
-    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if cmds then
-        cmds:add("cpScrollingTimeline")
-            :groupedBy("timeline")
-            :activatedBy():ctrl():option():cmd("w")
-            :whenActivated(function() mod.scrollingTimeline:toggle() end)
-    end
+    cmds
+        :add("cpScrollingTimeline")
+        :groupedBy("timeline")
+        :activatedBy():ctrl():option():cmd("w")
+        :whenActivated(function() mod.scrollingTimeline:toggle() end)
 
     return mod
 end

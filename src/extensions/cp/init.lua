@@ -2,51 +2,33 @@
 ---
 --- Core CommandPost functionality.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local require = require
-local hs = hs
+local require                   = require
+local hs                        = hs
 
---------------------------------------------------------------------------------
--- ZeroBraneStudio Debugger:
---------------------------------------------------------------------------------
---[[
-local ZBS = "/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio"
-package.path = package.path .. ";" .. ZBS .. "/lualibs/?/?.lua;" .. ZBS .. "/lualibs/?.lua"
-package.cpath = package.cpath .. ";" .. ZBS .. "/bin/?.dylib;" .. ZBS .. "/bin/clibs53/?.dylib"
-require("mobdebug").start()
---]]
+local logger                    = require("hs.logger")
+logger.defaultLogLevel          = "verbose"
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local logger = require("hs.logger")
-logger.defaultLogLevel = "verbose"
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application               = require("hs.application")
 local console                   = require("hs.console")
 local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
+local timer                     = require("hs.timer")
 local toolbar                   = require("hs.webview.toolbar")
 local window                    = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local feedback                  = require("cp.feedback")
 local i18n                      = require("cp.i18n")
 local plugins                   = require("cp.plugins")
 local tools                     = require("cp.tools")
+
+--------------------------------------------------------------------------------
+-- Not used in `init.lua`, but is required to "jump start" the CLI support:
+--------------------------------------------------------------------------------
+require("hs.ipc")
 
 --------------------------------------------------------------------------------
 --
@@ -72,62 +54,11 @@ function mod.init()
     local log = logger.new("cp")
 
     --------------------------------------------------------------------------------
-    -- GARBAGE COLLECTION:
-    --
-    -- Lua performs automatic memory management. This means that you have to worry
-    -- neither about allocating memory for new objects nor about freeing it when the
-    -- objects are no longer needed. Lua manages memory automatically by running a
-    -- garbage collector from time to time to collect all dead objects (that is,
-    -- objects that are no longer accessible from Lua). All memory used by Lua is
-    -- subject to automatic management: tables, userdata, functions, threads, strings, etc.
-    --
-    -- Lua implements an incremental mark-and-sweep collector. It uses two numbers to
-    -- control its garbage-collection cycles: the garbage-collector pause and the
-    -- garbage-collector step multiplier. Both use percentage points as units (so that
-    -- a value of 100 means an internal value of 1).
-    --------------------------------------------------------------------------------
-
-        --------------------------------------------------------------------------------
-        -- GARBAGE COLLECTOR PAUSE (default value 200):
-        --
-        -- Garbage collector pause is used for controlling how long the garbage
-        -- collector needs to wait, before; it is called again by the Lua's automatic
-        -- memory management. Values less than 100 would mean that Lua will not wait for
-        -- the next cycle. Similarly, higher values of this value would result in the
-        -- garbage collector being slow and less aggressive in nature. A value of 200,
-        -- means that the collector waits for the total memory in use to double before
-        -- starting a new cycle. Hence, depending on the nature and speed of
-        -- application, there may be a requirement to alter this value to get best
-        -- performance in Lua applications.
-        --------------------------------------------------------------------------------
-        --collectgarbage("setpause",100)
-        --log.df("Garbage Collector Pause: %s", collectgarbage("setpause"))
-
-        --------------------------------------------------------------------------------
-        -- GARBAGE COLLECTOR STEP MULTIPLIER (default value 200):
-        --
-        -- This step multiplier controls the relative speed of garbage collector to
-        -- that of memory allocation in Lua program. Larger step values will lead to
-        -- garbage collector to be more aggressive and it also increases the step size
-        -- of each incremental step of garbage collection. Values less than 100 could
-        -- often lead to avoid the garbage collector not to complete its cycle and its
-        -- not generally preferred. The default value is 200, which means the garbage
-        -- collector runs twice as the speed of memory allocation.
-        --------------------------------------------------------------------------------
-        --collectgarbage("setstepmul",200)
-        --log.df("Garbage Collector Step Multiplier: %s", collectgarbage("setstepmul"))
-
-    --------------------------------------------------------------------------------
     -- Show Dock Icon:
     --------------------------------------------------------------------------------
     if config.get("dockIcon", true) then
         hs.dockIcon(true)
     end
-
-    --------------------------------------------------------------------------------
-    -- Not used in `init.lua`, but is required to "jump start" the CLI support:
-    --------------------------------------------------------------------------------
-    require("hs.ipc")
 
     --------------------------------------------------------------------------------
     -- Save Error Log History across sessions:
@@ -152,14 +83,6 @@ function mod.init()
     console.consolePrintColor(grey)
     console.consoleResultColor(grey)
     console.outputBackgroundColor({hex = "#161616", alpha = 1})
-
-    --------------------------------------------------------------------------------
-    -- Debug Mode:
-    --------------------------------------------------------------------------------
-    local debugMode = config.developerMode()
-    if debugMode then
-        require("cp.developer")
-    end
 
     --------------------------------------------------------------------------------
     -- Add Toolbar To Error Log:
@@ -329,6 +252,7 @@ function mod.init()
     local osVersion             = tools.macOSVersion() or "Unknown"
     local fcpLocale             = fcp:currentLocale()
     local fcpLanguage           = fcpLocale and fcpLocale.code or "Unknown"
+    local debugMode             = config.developerMode()
 
     --------------------------------------------------------------------------------
     -- Clear The Console:
@@ -393,8 +317,11 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    collectgarbage("collect")
-    collectgarbage("collect")
+    mod.garbageCollector = timer.new(60, function()
+        collectgarbage("collect")
+        collectgarbage("collect")
+    end):start()
+    mod.garbageCollector:fire()
 
     --------------------------------------------------------------------------------
     -- Return the module:

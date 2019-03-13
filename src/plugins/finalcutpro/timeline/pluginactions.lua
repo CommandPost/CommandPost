@@ -2,40 +2,19 @@
 ---
 --- Adds Final Cut Pro Plugins (i.e. Effects, Generators, Titles and Transitions) to CommandPost Actions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("plgnactns")
+--local log				= require("hs.logger").new("pluginActions")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer             = require("hs.timer")
+local image             = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
+local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
-local plugins           = require("cp.apple.finalcutpro.plugins")
 local i18n              = require("cp.i18n")
+local plugins           = require("cp.apple.finalcutpro.plugins")
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- GROUP -> string
--- Constant
--- The group.
-local GROUP = "fcpx"
+local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
 --
@@ -43,6 +22,27 @@ local GROUP = "fcpx"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- GROUP -> string
+-- Constant
+-- The group.
+local GROUP = "fcpx"
+
+-- ICON_PATH -> string
+-- Constant
+-- Path to the icons.
+local ICON_PATH = config.basePath .. "/plugins/finalcutpro/console/images/"
+
+-- ICONS -> table
+-- Constant
+-- A table of Final Cut Pro plugin icons.
+local ICONS = {
+    audioEffect = imageFromPath(ICON_PATH .. "audioEffect.png"),
+    generator = imageFromPath(ICON_PATH .. "generator.png"),
+    title = imageFromPath(ICON_PATH .. "title.png"),
+    transition = imageFromPath(ICON_PATH .. "transition.png"),
+    videoEffect = imageFromPath(ICON_PATH .. "videoEffect.png"),
+}
 
 --- plugins.finalcutpro.timeline.pluginactions.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects) -> module
 --- Function
@@ -80,6 +80,12 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
             local list = fcp:plugins():ofType(pluginType)
             if list then
                 for _,plugin in ipairs(list) do
+
+                    local icon
+                    if ICONS[pluginType] then
+                        icon = ICONS[pluginType]
+                    end
+
                     local subText = i18n(pluginType .. "_group")
                     local category = "none"
                     if plugin.category then
@@ -91,10 +97,12 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
                         theme = plugin.theme
                         subText = subText.." ("..plugin.theme..")"
                     end
-                    choices:add(plugin.name)
+                    local name = plugin.name or "[" .. i18n("unknown") .. "]"
+                    choices:add(name)
                         :subText(subText)
                         :params(plugin)
-                        :id(GROUP .. "_" .. pluginType .. "_" .. plugin.name .. "_" .. category .. "_" .. theme)
+                        :image(icon)
+                        :id(GROUP .. "_" .. pluginType .. "_" .. name .. "_" .. category .. "_" .. theme)
                 end
             end
         end)
@@ -140,9 +148,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end

@@ -2,42 +2,22 @@
 ---
 --- Static Text Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log							= require("hs.logger").new("staticText")
+local timer               = require("hs.timer")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
---local inspect                       = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local Element                       = require("cp.ui.element")
+local Element             = require("cp.ui.element")
 local notifier						= require("cp.ui.notifier")
-local prop							= require("cp.prop")
-local timer                         = require("hs.timer")
+local prop							  = require("cp.prop")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local delayedTimer                  = timer.delayed
+local delayedTimer        = timer.delayed
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local StaticText = Element:subclass("StaticText")
+local StaticText = Element:subclass("cp.ui.StaticText")
 
 --- cp.ui.StaticText.matches(element) -> boolean
 --- Function

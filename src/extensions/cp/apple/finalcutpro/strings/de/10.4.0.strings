@@ -15,5 +15,7 @@
     <string>Mitteltöne</string>
     <key>CPColorBoardHighlights</key>
     <string>Hervorhebungen</string>
+    <key>CPCodecs</key>
+    <string>Codecs</string>
 </dict>
 </plist>

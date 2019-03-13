@@ -2,23 +2,10 @@
 ---
 --- MIDI Control Bank Actions.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("banks")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local dialog                        = require("cp.dialog")
-local i18n                          = require("cp.i18n")
+local dialog = require("cp.dialog")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -40,18 +27,18 @@ function mod.init()
     mod._handler = mod._actionmanager.addHandler("global_midibanks")
         :onChoices(function(choices)
             for i=1, mod._manager.numberOfSubGroups do
-                choices:add(i18n("midiBank") .. " " .. tostring(i))
+                choices:add(i18n("midi") .. " " .. i18n("bank") .. " " .. tostring(i))
                     :subText(i18n("midiBankDescription"))
                     :params({ id = i })
                     :id(i)
             end
 
-            choices:add(i18n("next") .. " " .. i18n("midiBank"))
+            choices:add(i18n("next") .. " " .. i18n("midi") .. " " .. i18n("bank"))
                 :subText(i18n("midiBankDescription"))
                 :params({ id = "next" })
                 :id("next")
 
-            choices:add(i18n("previous") .. " " .. i18n("midiBank"))
+            choices:add(i18n("previous") .. " " .. i18n("midi") .. " " .. i18n("bank"))
                 :subText(i18n("midiBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
@@ -72,7 +59,7 @@ function mod.init()
                 local activeGroup = mod._manager.activeGroup()
                 local activeSubGroup = mod._manager.activeSubGroup()
                 if activeGroup and activeSubGroup then
-                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midiBank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
                 end
             end
         end)
@@ -94,9 +81,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
     mod._actionmanager = deps.actionmanager

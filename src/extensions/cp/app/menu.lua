@@ -3,27 +3,11 @@
 --- Represents an app's menu bar, providing multi-lingual access to find and
 --- trigger menu items.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require                   = require
 local log                       = require("hs.logger").new("menu")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs                        = require("hs.fs")
-local inspect                   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
 local axutils                   = require("cp.ui.axutils")
 local localeID                  = require("cp.i18n.localeID")
@@ -32,9 +16,6 @@ local prop                      = require("cp.prop")
 local rx                        = require("cp.rx")
 local go                        = require("cp.rx.go")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local format                    = string.format
 local insert, remove, concat    = table.insert, table.remove, table.concat
 local Observable                = rx.Observable
@@ -42,9 +23,11 @@ local Do, If, Throw, Last       = go.Do, go.If, go.Throw, go.Last
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local menu = {}
+menu.mt = {}
 
 -- BASE_LOCALE -> string
 -- Constant
@@ -65,14 +48,6 @@ local STRINGS_EXT = "strings"
 -- Constant
 -- Menu File Path.
 local MENU_FILE_PATH = "%s/Contents/Resources/%s.lproj/%s.%s"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local menu = {}
-menu.mt = {}
 
 --- cp.app.menu.ROLE -> string
 --- Constant
@@ -728,7 +703,7 @@ function menu.mt:findMenuUI(path, options)
     --------------------------------------------------------------------------------
     -- Step through the path:
     --------------------------------------------------------------------------------
-    for i, step in ipairs(path) do
+    for _, step in ipairs(path) do
         menuItemUI = nil
         --------------------------------------------------------------------------------
         -- Check what type of step it is:
@@ -811,8 +786,8 @@ function menu.mt:findMenuUI(path, options)
             end
             insert(currentPath, menuItemName)
         else
-            local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
-            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            --local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
+            --log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
             return nil
         end
     end

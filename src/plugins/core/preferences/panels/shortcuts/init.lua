@@ -2,40 +2,23 @@
 ---
 --- Shortcuts Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsShortcuts")
+local log         = require("hs.logger").new("prefsShortcuts")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local fnutils                                   = require("hs.fnutils")
-local hotkey                                    = require("hs.hotkey")
-local image                                     = require("hs.image")
-local keycodes                                  = require("hs.keycodes")
+local dialog      = require("hs.dialog")
+local fnutils     = require("hs.fnutils")
+local hotkey      = require("hs.hotkey")
+local image       = require("hs.image")
+local keycodes    = require("hs.keycodes")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
-local config                                    = require("cp.config")
-local tools                                     = require("cp.tools")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local commands    = require("cp.commands")
+local config      = require("cp.config")
+local tools       = require("cp.tools")
+local ui          = require("cp.web.ui")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _           = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -241,7 +224,7 @@ end
 -- Returns:
 --  * None
 local function shortcutsPanelCallback(_, params)
-
+    local injectScript = mod._manager.injectScript
     if params then
         local paramsType = params["type"]
         if paramsType == "updateGroup" then
@@ -249,6 +232,7 @@ local function shortcutsPanelCallback(_, params)
             -- Update Group:
             --------------------------------------------------------------------------------
             mod.lastGroup(params["groupID"])
+            mod._manager.refresh()
             return
         elseif paramsType == "updateAction" then
             --------------------------------------------------------------------------------
@@ -259,19 +243,16 @@ local function shortcutsPanelCallback(_, params)
             if theCommand then
                 local getFn, setFn = theCommand:getAction()
                 if setFn then
-                    local elementID = params["elementID"]
                     local ok, result = xpcall(function()
                         setFn(false, function()
                             local getFnResult = getFn()
-                            if elementID and getFnResult then
-                                mod._manager.injectScript([[
-                                    document.getElementById("]] .. elementID .. [[").value = "]] .. (getFnResult or i18n("none")) .. [["
-                                ]])
+                            if getFnResult then
+                                injectScript("setShortcutsAction('" .. params["group"] .. "', '" .. params["command"] .. "', '" .. (getFnResult or i18n("none")) .. "')")
                             end
                         end)
                     end, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        log.ef("Error while triggering setFn for Group '%s', Command '%s':\n%s", params["group"], params["command"], result)
                         return nil
                     end
                 end
@@ -286,17 +267,12 @@ local function shortcutsPanelCallback(_, params)
             if theCommand then
                 local _, setFn = theCommand:getAction()
                 if setFn then
-                    local elementID = params["elementID"]
                     local ok, result = xpcall(function()
                         setFn(true)
-                        if elementID then
-                            mod._manager.injectScript([[
-                                document.getElementById("]] .. elementID .. [[").value = "]] .. i18n("none") .. [["
-                            ]])
-                        end
+                        injectScript("setShortcutsAction('" .. params["group"] .. "', '" .. params["command"] .. "', '" .. i18n("none") .. "')")
                     end, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        log.ef("Error while triggering setFn for Group '%s', Command '%s':\n%s", params["group"], params["command"], result)
                         return nil
                     end
                 end
@@ -719,11 +695,7 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Reset Watcher:
     --------------------------------------------------------------------------------
@@ -734,11 +706,7 @@ function plugin.init(deps, env)
     return mod.init(deps, env)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
-
     --------------------------------------------------------------------------------
     -- Cache all the default shortcuts:
     --------------------------------------------------------------------------------
@@ -753,10 +721,8 @@ function plugin.postInit()
     -- If no Default Shortcut File Exists, lets create one:
     --------------------------------------------------------------------------------
     if not result then
-        local filePath = commands.getShortcutsPath(mod.DEFAULT_SHORTCUTS)
         commands.saveToFile(mod.DEFAULT_SHORTCUTS)
     end
-
 end
 
 return plugin

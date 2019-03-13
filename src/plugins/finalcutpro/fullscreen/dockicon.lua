@@ -6,29 +6,13 @@
 --- CP 'dockless' when an app we are working with goes full-screen. Otherwise
 --- our drawing/canvas images will not display correctly.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                               = require("hs.logger").new("dockicon")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer                             = require("hs.timer")
 local window                            = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local app                               = require("cp.app")
-local config			                = require("cp.config")
+local config			                      = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local prop                              = require("cp.prop")
 
@@ -95,16 +79,10 @@ local plugin = {
     group           = "finalcutpro",
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init()
     return mod
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update Dock Icon:

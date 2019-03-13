@@ -2,23 +2,12 @@
 ---
 --- Show setup panel if Final Cut Pro needs scanning.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local timer         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config        = require("cp.config")
-local fcp			= require("cp.apple.finalcutpro")
+local fcp			      = require("cp.apple.finalcutpro")
 local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -38,7 +27,7 @@ local mod = {}
 --- Returns:
 ---  * self
 function mod.init(deps)
-    if fcp:isInstalled() then
+    if fcp:isSupported() then
         if not fcp:plugins().scanned() then
             --------------------------------------------------------------------------------
             -- Final Cut Pro hasn't been scanned yet:
@@ -97,9 +86,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps)
 end

@@ -2,27 +2,13 @@
 ---
 --- Represents a single Color Well in the Color Wheels Inspector.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("colorWell")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local color                             = require("hs.drawing.color")
 local inspect                           = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local Element                           = require("cp.ui.Element")
 local Do                                = require("cp.rx.go.Do")
 
@@ -46,6 +32,18 @@ local COLOR_THRESHOLD = 1/25500
 -- Brightness Clamp as a number.
 local BRIGHTNESS_CLAMP = 85/255
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell.KEY_PRESS
+--- Constant
+--- This can be used with `nudge` to shift by the same distance
+--- as a key press. Multiple key presses can be simulated by
+--- multiplying it by the number of keys. For example:
+---
+--- ```lua
+--- -- Nudge it two key presses to the right
+--- colorWell:nudge(2*ColorWell.KEY_PRESS, 0)
+--- ```
+ColorWell.static.KEY_PRESS = 1/600
+
 -- toColorValue(value) -> number
 -- Function
 -- Converts a color value.
@@ -63,34 +61,16 @@ local function toColorValue(value)
     return value
 end
 
--- cleanColor(value) -> number
--- Function
--- Gets Clean Color.
---
--- Parameters:
---  * `value` - The value to convert.
---
--- Returns:
---  * Color value as number.
-local function cleanColor(value)
-    for k,v in pairs(value) do
-        value[k] = toColorValue(v)
-    end
-    return value
-end
-
 -- colorWellValueToTable(value, hueShift) -> table | nil
 -- Function
 -- Converts a AXColorWell Value to a `hs.drawing.color` table.
 --
 -- Parameters:
 --  * value         - A AXColorWell Value String (i.e. "rgb 0.5 0 1 0")
---  * hueShift      - The amoutn to shift the hue.
 --
 -- Returns:
 --  * A table or `nil` if an error occurred.
-local function colorWellValueToColor(value, hueShift)
-    hueShift = hueShift or 0
+local function colorWellValueToColor(value)
     if type(value) ~= "string" then
         log.ef("Invalid AXColorWell value: %s", inspect(value))
         return nil
@@ -105,15 +85,6 @@ local function colorWellValueToColor(value, hueShift)
         blue = toColorValue(valueToTable[4]),
         alpha = toColorValue(valueToTable[5]),
     }
-
-    -- NOTE: There is a bug in AXColorWell which shifts the output value color from the actual value.
-    -- This code compensates for that shift.
-    local hsbValue = asHSB(rgbValue)
-    local theHue = hsbValue.hue
-    theHue = theHue + hueShift
-    theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
-    hsbValue.hue = theHue
-    rgbValue = cleanColor(asRGB(hsbValue))
 
     return rgbValue
 end
@@ -263,17 +234,6 @@ local function fromXY(pos, frame, absolute, hueShift)
     return fromOrientation(o, hueShift)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell.KEY_PRESS
---- Constant
---- This can be used with `nudge` to shift by the same distance
---- as a key press. Multiple key presses can be simulated by
---- multiplying it by the number of keys. For example:
----
---- ```lua
---- -- Nudge it two key presses to the right
---- colorWell:nudge(2*ColorWell.KEY_PRESS, 0)
---- ```
-ColorWell.static.KEY_PRESS = 1/600
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.matches(element)
 --- Function
@@ -323,7 +283,7 @@ function ColorWell.lazy.prop:value()
     return self.UI:mutate(
         function(original)
             local ui = original()
-            return ui and colorWellValueToColor(ui:attributeValue("AXValue"), self:hueShift()) or nil
+            return ui and colorWellValueToColor(ui:attributeValue("AXValue")) or nil
         end,
         function(value, original)
             local ui = original()

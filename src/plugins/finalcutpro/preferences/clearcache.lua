@@ -2,22 +2,10 @@
 ---
 --- Adds a "Clear Cache" button to the Final Cut Pro Preferences.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local dialog        = require("hs.dialog")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
 local html          = require("cp.web.html")
 local i18n          = require("cp.i18n")
@@ -31,31 +19,21 @@ local plugin = {
     id              = "finalcutpro.preferences.clearcache",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
         ["core.preferences.manager"]    = "manager",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Heading:
-            --------------------------------------------------------------------------------
-            :addHeading(2500, i18n("pluginCache"))
-            :addParagraph(2501, html.span { class="tbTip" } ( i18n("pluginCacheDescription") .. "<br /><br />", false ).. "\n\n")
-
-            --------------------------------------------------------------------------------
-            -- Add Clear Plugin Cache Button:
-            --------------------------------------------------------------------------------
-            :addButton(2502,
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addHeading(2008.2, i18n("pluginCache"))
+            :addParagraph(2008.3, html.span { class="tbTip" } ( i18n("pluginCacheDescription") .. "<br /><br />", false ).. "\n\n")
+            :addButton(2008.4,
                 {
                     label = i18n("clearPluginCache"),
                     width = 200,

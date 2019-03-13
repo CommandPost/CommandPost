@@ -2,24 +2,13 @@
 ---
 --- Browser Playhead Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local dialog                        = require("hs.dialog")
 local drawing                       = require("hs.drawing")
 local geometry                      = require("hs.geometry")
 local timer                         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                        = require("cp.config")
 local fcp                           = require("cp.apple.finalcutpro")
 local i18n                          = require("cp.i18n")
@@ -28,22 +17,17 @@ local ui                            = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
+
 local DEFAULT_TIME                  = 3
 local DEFAULT_COLOR                 = "Red"
 
 local SHAPE_RECTANGLE               = "Rectangle"
 local SHAPE_CIRCLE                  = "Circle"
 local SHAPE_DIAMOND                 = "Diamond"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
 
 --- plugins.finalcutpro.browser.playhead.getHighlightColor() -> table
 --- Function
@@ -309,15 +293,11 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]        = "fcpxCmds",
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Remove Highlight when Final Cut Pro is inactive:
     --------------------------------------------------------------------------------
@@ -339,16 +319,24 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+
             :addContent(2000, ui.style ([[
                 .highLightPlayheadSelect {
                     width: 100px;
                     float: left;
                 }
+                .highlightPlayheadDiv::after {
+                  content: "";
+                  clear: both;
+                  display: table;
+                }
             ]]))
-            :addHeading(2000, i18n("highlightPlayhead"))
-            :addSelect(2001,
+            :addContent(2000.1,[[<div class="highlightPlayheadDiv">]], false)
+            :addHeading(2000.2, i18n("highlightPlayhead"))
+            :addSelect(2000.3,
             {
                 label       = i18n("highlightPlayheadColour"),
                 value       = mod.getHighlightColor,
@@ -378,7 +366,7 @@ function plugin.init(deps)
                 onchange    = function(_, params) mod.changeHighlightColor(params.value) end,
                 class       = "highLightPlayheadSelect",
             })
-            :addSelect(2002,
+            :addSelect(2000.4,
             {
                 label       = i18n("highlightPlayheadShape"),
                 value       = mod.getHighlightShape,
@@ -400,7 +388,7 @@ function plugin.init(deps)
                 onchange    = function(_, params) mod.setHighlightShape(params.value) end,
                 class       = "highLightPlayheadSelect",
             })
-            :addSelect(2003,
+            :addSelect(2000.5,
             {
                 label       = i18n("highlightPlayheadTime"),
                 value       = mod.getHighlightTime,
@@ -409,6 +397,7 @@ function plugin.init(deps)
                 onchange    = function(_, params) mod.setHighlightTime(params.value) end,
                 class       = "highLightPlayheadSelect",
             })
+            :addContent(2000.6,"</div>", false)
     end
 
     --------------------------------------------------------------------------------

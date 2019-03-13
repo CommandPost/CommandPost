@@ -10,44 +10,20 @@
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
 --- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
-
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log				= require("hs.logger").new("plistsrc")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
--- local inspect           = require("hs.inspect")
-local fs				= require("hs.fs")
+local fs				  = require("hs.fs")
 local timer				= require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local plist				= require("cp.plist")
-local is                = require("cp.is")
+local is          = require("cp.is")
 local text				= require("cp.web.text")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                 = require("moses")
+local _           = require("moses")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local escapeXML, unescapeXML = text.escapeXML, text.unescapeXML
-local find, len			= string.find, string.len
-local insert			= table.insert
+local escapeXML, unescapeXML      = text.escapeXML, text.unescapeXML
+local find, len			              = string.find, string.len
+local insert			                = table.insert
 
 --------------------------------------------------------------------------------
 --

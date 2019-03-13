@@ -2,22 +2,11 @@
 ---
 --- Controls Final Cut Pro's Generators.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local base64            = require("hs.base64")
 local timer             = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
@@ -32,20 +21,10 @@ local just              = require("cp.just")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.generators.FILE_NAME -> string
---- Constant
---- File name of settings file.
-mod.FILE_NAME = "Generators.cpCache"
-
---- plugins.finalcutpro.timeline.generators.FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
-mod.FOLDER_NAME = "Final Cut Pro"
-
 -- plugins.finalcutpro.timeline.generators._cache <cp.prop: table>
 -- Field
 -- Titles cache.
-mod._cache = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, {})
+mod._cache = json.prop(config.cachePath, "Final Cut Pro", "Generators.cpCache", {})
 
 --- plugins.finalcutpro.timeline.generators.apply(action) -> boolean
 --- Function
@@ -377,9 +356,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.pasteboardManager = deps.pasteboardManager
     return mod

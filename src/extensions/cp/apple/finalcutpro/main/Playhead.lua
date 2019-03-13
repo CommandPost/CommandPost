@@ -2,27 +2,14 @@
 ---
 --- Playhead Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log                               = require("hs.logger").new("fcpPlayhead")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local geometry                          = require("hs.geometry")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -30,7 +17,7 @@ local prop                              = require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Playhead = {}
+local Playhead = Element:subclass("cp.apple.finalcutpro.main.Playhead")
 
 --- cp.apple.finalcutpro.main.Playhead.matches(element) -> boolean
 --- Function
@@ -41,7 +28,7 @@ local Playhead = {}
 ---
 --- Returns:
 ---  * `true` if the `element` is the Playhead otherwise `false`
-function Playhead.matches(element)
+function Playhead.static.matches(element)
     return element and element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
@@ -55,7 +42,7 @@ end
 ---
 --- Returns:
 ---  * The playhead `hs._asm.axuielement` object or `nil` if not found.
-function Playhead.find(containerUI, skimming)
+function Playhead.static.find(containerUI, skimming)
     local ui = containerUI
     if ui and #ui > 0 then
         --------------------------------------------------------------------------------
@@ -79,7 +66,7 @@ function Playhead.find(containerUI, skimming)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Playhead.new(parent[, skimming[, containerFn[, useEventViewer]]]) -> Playhead
+--- cp.apple.finalcutpro.main.Playhead(parent[, skimming[, containerFn[, useEventViewer]]]) -> Playhead
 --- Constructor
 --- Constructs a new Playhead
 ---
@@ -91,14 +78,11 @@ end
 ---
 --- Returns:
 ---  * The new `Playhead` instance.
-function Playhead.new(parent, skimming, containerUI, useEventViewer)
+function Playhead:initialize(parent, skimming, containerUI, useEventViewer)
     containerUI = containerUI or parent.UI
 
-    local o = prop.extend({
-        _parent = parent,
-        isSkimming = prop.THIS(skimming == true):IMMUTABLE(),
-        _useEventViewer = useEventViewer,
-    }, Playhead)
+    self.isSkimming = prop.THIS(skimming == true):IMMUTABLE():bind(self)
+    self._useEventViewer = useEventViewer
 
     local UI = containerUI:mutate(function(original, self)
         return axutils.cache(self, "_ui", function()
@@ -106,102 +90,97 @@ function Playhead.new(parent, skimming, containerUI, useEventViewer)
         end, Playhead.matches)
     end)
 
-    local frame = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:frame()
-    end)
+    Element.initialize(self, parent, UI)
+end
 
-    local viewer = o:app():viewer()
-    local eventViewer = o:app():eventViewer()
+function Playhead.lazy.method:viewer()
+    return self:app():viewer()
+end
 
-    local currentViewer = prop.new(function()
-        if useEventViewer and eventViewer:isShowing() then
-            return eventViewer
-        else
-            return viewer
-        end
-    end)
-    if useEventViewer then
-        currentViewer:monitor(eventViewer.isShowing)
-    end
-
-    local timecode = currentViewer:mutate(
-        function()
-            local ui = UI()
-            return ui and ui:attributeValue("AXValue")
-        end,
-        function(newTimecode, original)
-            original():timecode(newTimecode)
-        end
-    ):monitor(viewer.timecode)
-
-    if useEventViewer then
-        timecode:monitor(eventViewer.timecode)
-    end
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.main.Playhead.UI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- Returns the `hs._asm.axuielement` object for the Playhead
-        UI = UI,
+function Playhead.lazy.method:eventViewer()
+    return self:app():eventViewer()
+end
 
 --- cp.apple.finalcutpro.main.Playhead.isShowing <cp.prop: boolean; read-only; live?>
 --- Field
 --- Is the playhead showing?
-        isShowing = UI:ISNOT(nil),
+function Playhead.lazy.prop:isShowing()
+    return self.UI:ISNOT(nil)
+end
 
 --- cp.apple.finalcutpro.main.Playhead.isPersistent <cp.prop: boolean; read-only>
 --- Field
 --- Is the playhead persistent?
-        isPersistent = o.isSkimming:NOT(),
+function Playhead.lazy.prop:isPersistent()
+    return self.isSkimming:NOT()
+end
 
 --- cp.apple.finalcutpro.main.Playhead.frame <cp.prop: hs.geometry.frame; read-only; live?>
 --- Field
 --- Gets the frame of the playhead.
-        frame = frame,
+function Playhead.lazy.prop:frame()
+    return  self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:frame()
+    end)
+end
 
 --- cp.apple.finalcutpro.main.Playhead.position <cp.prop; number; read-only; live?>
 --- Field
 --- Gets the horizontal position of the playhead line, which may be different to the `x` position of the playhead.
-        position = frame:mutate(function(original)
-            local frm = original()
-            return frm and (frm.x + frm.w/2 + 1.0)
-        end),
+function Playhead.lazy.prop:position()
+    return self.frame:mutate(function(original)
+        local frm = original()
+        return frm and (frm.x + frm.w/2 + 1.0)
+    end)
+end
 
 --- cp.apple.finalcutpro.main.Playhead.center <cp.prop: hs.geometry.point; read-only; live?>
 --- Field
 --- Gets the centre point (`{x, y}`) of the playhead.
-        center = frame:mutate(function(original)
-            local frm = original()
-            return frm and geometry.rect(frm).center
-        end),
+function Playhead.lazy.prop:center()
+    return self.frame:mutate(function(original)
+        local frm = original()
+        return frm and geometry.rect(frm).center
+    end)
+end
 
 --- cp.apple.finalcutpro.main.Playhead.currentViewer <cp.prop: cp.apple.finalcutpro.main.Viewer; read-only; live>
 --- Field
 --- Represents the current viewer for the playhead. This may be either the primary Viewer or the Event Viewer,
 --- depending on the Playhead instance and whether the Event Viewer is enabled.
-        currentViewer = currentViewer,
+function Playhead.lazy.prop:currentViewer()
+    local currentViewer = prop.new(function()
+        if self._useEventViewer and self:eventViewer():isShowing() then
+            return self:eventViewer()
+        else
+            return self:viewer()
+        end
+    end)
+    if self._useEventViewer then
+        currentViewer:monitor(self:eventViewer().isShowing)
+    end
+    return currentViewer
+end
 
 --- cp.apple.finalcutpro.main.Playhead.timecode <cp.prop: string; live?>
 --- Field
 --- Gets and sets the current timecode.
-        timecode = timecode,
-    }
+function Playhead.lazy.prop:timecode()
+    local timecode = self.currentViewer:mutate(
+        function()
+            local ui = self:UI()
+            return ui and ui:attributeValue("AXValue")
+        end,
+        function(newTimecode, original)
+            original():timecode(newTimecode)
+        end
+    ):monitor(self:viewer().timecode)
 
-    return o
-end
-
---- cp.apple.finalcutpro.main.Playhead:parent() -> table
---- Method
---- Returns the Playhead's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function Playhead:parent()
-    return self._parent
+    if self._useEventViewer then
+        timecode:monitor(self:eventViewer().timecode)
+    end
+    return timecode
 end
 
 --- cp.apple.finalcutpro.main.Playhead:app() -> table

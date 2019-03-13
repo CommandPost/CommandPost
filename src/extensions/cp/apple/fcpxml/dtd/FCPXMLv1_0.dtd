@@ -1,0 +1,253 @@
+<!-- FCP X Interchange Format, Version 1.0 -->
+<!-- Copyright (c) 2011 Apple Inc. All rights reserved. -->
+
+<!-- FCPXML -->
+<!ELEMENT fcpxml (project)>
+<!ATTLIST fcpxml version CDATA #FIXED "1.0">
+
+<!-- COMMON ENTITIES -->
+
+<!-- 'time' attributes are expressed as a rational number of seconds (e.g., "1001/30000s") -->
+<!-- with a 64-bit numerator and 32-bit denominator. -->
+<!-- Integer 'time' values, such as 5 seconds, may be expressed as whole numbers (e.g., '5s'). -->
+<!ENTITY % time "CDATA">
+
+<!-- An exported event contains zero or more 'clip' or 'audition' elements. -->
+<!-- An exported project contains exactly one 'sequence' element. -->
+<!ELEMENT project (resources, (sequence | (clip | audition)*))>
+<!ATTLIST project name CDATA #IMPLIED>
+<!ATTLIST project uid CDATA #IMPLIED>
+<!ATTLIST project eventID CDATA #IMPLIED>			<!-- 'uid' of default event -->
+<!ATTLIST project location CDATA #IMPLIED>			<!-- URL of project storage location -->
+
+
+<!-- RESOURCE ELEMENTS -->
+<!-- A 'resource' is an asset, effect, format, or external project reference shared throughout a project. -->
+<!ELEMENT resources (asset | effect | format | projectRef)*>
+
+<!-- A 'projectRef' defines a reference to an external project via an FCP-assigned unique identifier. -->
+<!-- 'uid' is an FCP-assigned unique ID; if missing, FCP will create a new event. -->
+<!ELEMENT projectRef EMPTY>
+<!ATTLIST projectRef id ID #REQUIRED>
+<!ATTLIST projectRef name CDATA #IMPLIED>
+<!ATTLIST projectRef uid CDATA #IMPLIED>	
+
+<!-- A 'format' describes video properties. -->
+<!ELEMENT format EMPTY>
+<!ATTLIST format id ID #REQUIRED>
+<!ATTLIST format name CDATA #IMPLIED>
+<!ATTLIST format frameDuration %time; #IMPLIED>
+<!ATTLIST format fieldOrder CDATA #IMPLIED>			<!-- (progressive | upper first | lower first ) -->
+<!ATTLIST format width CDATA #IMPLIED>
+<!ATTLIST format height CDATA #IMPLIED>
+<!ATTLIST format paspH CDATA #IMPLIED>
+<!ATTLIST format paspV CDATA #IMPLIED>
+<!ATTLIST format colorOverride CDATA #IMPLIED>
+
+<!-- An 'asset' defines a reference to the original source media (i.e., a local file). -->
+<!-- 'uid' is an FCP-assigned unique ID; if missing, FCP will create a new asset. -->
+<!ELEMENT asset EMPTY>
+<!ATTLIST asset id ID #REQUIRED>
+<!ATTLIST asset name CDATA #IMPLIED>
+<!ATTLIST asset uid CDATA #IMPLIED>						
+<!ATTLIST asset projectRef IDREF #IMPLIED>
+<!ATTLIST asset src CDATA #IMPLIED>				<!-- file: URL -->
+<!ATTLIST asset start %time; #IMPLIED>
+<!ATTLIST asset duration %time; #IMPLIED>
+<!ATTLIST asset hasVideo CDATA #IMPLIED>
+<!ATTLIST asset hasAudio CDATA #IMPLIED>
+<!ATTLIST asset audioSources CDATA #IMPLIED>
+<!ATTLIST asset audioChannels CDATA #IMPLIED>
+<!ATTLIST asset audioRate CDATA #IMPLIED>
+
+<!-- An 'effect' defines a reference to a built-in or user-defined Motion effect, FxPlug plug-in, audio bundle, or audio unit. -->
+<!ELEMENT effect EMPTY>
+<!ATTLIST effect id ID #REQUIRED>
+<!ATTLIST effect name CDATA #IMPLIED>
+<!ATTLIST effect uid CDATA #REQUIRED>
+
+
+<!-- STORY ELEMENTS -->
+
+<!-- The 'ao_attrs' entity declares the attributes common to 'anchorable' objects. -->
+<!-- The 'lane' attribute sepcifies where the object is contained/anchored relative to its parent: -->
+<!--	0 = contained inside its parent (default) -->
+<!--	>0 = anchored above its parent -->
+<!--	<0 = anchored below its parent -->
+<!-- The 'offset' attribute defines the location of the object in the parent timeline (default is '0s'). -->
+<!ENTITY % ao_attrs "
+	lane CDATA #IMPLIED
+	offset %time; #IMPLIED
+">
+
+<!-- The 'clip_attrs' entity declares the attributes common to all story elements. -->
+<!-- The 'start' attribute defines a local timeline to schedule contained and anchored items. -->
+<!-- The default start value is '0s'. -->
+<!ENTITY % clip_attrs "
+	%ao_attrs;
+	name CDATA #IMPLIED
+	start %time; #IMPLIED
+	duration %time; #REQUIRED
+">
+
+<!ENTITY % audioHz "( 32k | 44.1k | 48k | 88.2k | 96k | 176.4k | 192k )">
+
+<!ENTITY % outputChannel "( L | R | C | LFE | Ls | Rs | X )">
+
+<!ENTITY % fadeType "(linear | easeIn | easeOut | easeInOut)">
+
+<!-- A 'fadeIn' element animates a parameter from its min value to its implied value over a specified duration. -->
+<!ELEMENT fadeIn EMPTY>
+<!ATTLIST fadeIn type %fadeType; #IMPLIED>			<!-- default is 'easeIn' -->
+<!ATTLIST fadeIn duration %time; #REQUIRED>
+
+<!-- A 'fadeOut' element animates a parameter from its implied value to its min value over a specified duration. -->
+<!ELEMENT fadeOut EMPTY>
+<!ATTLIST fadeOut type %fadeType; #IMPLIED>			<!-- default is 'easeOut' -->
+<!ATTLIST fadeOut duration %time; #REQUIRED>
+
+<!-- A 'param' specifies the range for a parameter over time. -->
+<!-- The 'value' attribute supports contstant values only. -->
+<!-- Fade-in and fade-out are optional. -->
+<!ELEMENT param (fadeIn?, fadeOut?)>
+<!ATTLIST param name CDATA #REQUIRED>
+<!ATTLIST param value CDATA #IMPLIED>
+
+<!-- The 'anchor_item' entity declares the valid anchorable story elements. -->
+<!-- When present, anchored items must have a non-zero 'lane' value. -->
+<!ENTITY % anchor_item "audio | video | clip | title | audition | spine">
+
+<!-- The 'clip_item' entity declares the primary story elements that may appear inside a clip. -->
+<!ENTITY % clip_item "audio | video | clip | title | audition | gap">
+
+<!-- A 'spine' (or storyline) contains elements ordered serially in time. -->
+<!-- Only one story element is active at a given time, except when a transition is present. -->
+<!ELEMENT spine (audio | video | clip | title | audition | gap | transition)* >
+<!ATTLIST spine	%ao_attrs;>
+<!ATTLIST spine name CDATA #IMPLIED>
+<!ATTLIST spine format IDREF #IMPLIED>				<!-- default is same as parent -->
+
+<!-- An 'audition' is a container with one active story element followed by alternative story elements. -->
+<!ELEMENT audition (audio | video | title | clip)+ >
+<!ATTLIST audition %ao_attrs;>
+
+<!-- A 'sequence' is the root/parent container for a 'spine' of story elements. -->
+<!-- Sequences have a local timeline which is used to schedule the story elements in its spine. -->
+<!-- For example, in a sequence with a 'tcStart' of '3600s', a child element that starts 30 seconds from the start has an 'offset' of '3630s'. -->
+<!ELEMENT sequence (note?, spine)>
+<!ATTLIST sequence format IDREF #REQUIRED>			<!-- output 'format' resource ID -->
+<!ATTLIST sequence duration %time; #IMPLIED>
+<!ATTLIST sequence tcStart %time; #IMPLIED>			<!-- sequence timecode origin -->
+<!ATTLIST sequence tcFormat (DF | NDF) #IMPLIED>		<!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+<!ATTLIST sequence audioLayout (stereo | surround) #IMPLIED>
+<!ATTLIST sequence audioRate %audioHz; #IMPLIED>
+<!ATTLIST sequence renderFormat CDATA #IMPLIED>
+
+<!-- A 'clip' is a container for other story elements. -->
+<!-- Clips have only one primary item, and zero or more anchored items. -->
+<!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+<!ELEMENT clip (note?, timeMap?, param*, (spine | (%clip_item;))*, (marker | rating | keyword)*, filter*)>
+<!ATTLIST clip %clip_attrs;>
+<!ATTLIST clip format IDREF #IMPLIED>				<!-- default is same as parent -->
+<!ATTLIST clip audioStart %time; #IMPLIED>
+<!ATTLIST clip audioDuration %time; #IMPLIED>
+<!ATTLIST clip tcStart %time; #IMPLIED>				<!-- clip timecode origin -->
+<!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>		<!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+<!ATTLIST clip audioLayout (stereo | surround) #IMPLIED>
+<!ATTLIST clip audioRate %audioHz; #IMPLIED>
+<!ATTLIST clip enabled CDATA #IMPLIED>				<!-- default is '1' (0=disabled, 1=enabled) -->
+
+<!-- An 'audio' element defines a range of audio data in a source asset. -->
+<!ELEMENT audio (note?, timeMap?, param*, (%anchor_item;)*, marker*, filter*)>
+<!ATTLIST audio ref IDREF #REQUIRED>				<!-- 'asset' or 'effect' ID -->
+<!ATTLIST audio %clip_attrs;>
+<!ATTLIST audio srcID CDATA #IMPLIED>				<!-- source/track identifier in asset (if not '1') -->
+<!ATTLIST audio enabled CDATA #IMPLIED>				<!-- default is '1' (0=disabled, 1=enabled) -->
+<!ATTLIST audio role CDATA #IMPLIED>
+<!ATTLIST audio srcCh CDATA #IMPLIED>				<!-- source audio channels in asset (comma separated, 1-based index) -->
+<!ATTLIST audio outCh CDATA #IMPLIED>				<!-- output audio channels (comma separated, from: L,R,C,LFE,Ls,Rs,X) %outputChannel -->
+
+<!-- A 'video' element defines a range of video data in a source asset. -->
+<!ELEMENT video (note?, timeMap?, param*, (%anchor_item;)*, marker*, filter*)>
+<!ATTLIST video ref IDREF #REQUIRED>				<!-- 'asset' or 'effect' ID -->
+<!ATTLIST video %clip_attrs;>
+<!ATTLIST video srcID CDATA #IMPLIED>				<!-- source/track identifier in asset (if not '1') -->
+<!ATTLIST video enabled CDATA #IMPLIED>				<!-- default is '1' (0=disabled, 1=enabled) -->
+<!ATTLIST video role CDATA #IMPLIED>				<!-- default is 'video' -->
+
+<!-- A 'gap' element defines a placeholder with no associated media. -->
+<!-- Gaps cannot be anchored to other objects. -->
+<!ELEMENT gap (note?, (%anchor_item;)*, marker*)>
+<!ATTLIST gap name CDATA #IMPLIED>
+<!ATTLIST gap offset %time; #IMPLIED>
+<!ATTLIST gap start %time; #IMPLIED>
+<!ATTLIST gap duration %time; #REQUIRED>
+
+<!-- A 'title' element contains one or more 'text' elements that customize a referenced effect. -->
+<!ELEMENT title (note?, timeMap?, (%anchor_item;)*, marker*, filter*, text*)>
+<!ATTLIST title ref IDREF #REQUIRED>				<!-- 'effect' ID for a Motion template -->
+<!ATTLIST title %clip_attrs;>
+<!ATTLIST title enabled CDATA #IMPLIED>				<!-- default is '1' (0=disabled, 1=enabled) -->
+<!ATTLIST title role CDATA #IMPLIED>
+
+<!-- A 'text' element defines an unformatted text string for a 'title' element. -->
+<!ELEMENT text (#PCDATA)>
+
+<!-- A 'transition' element defines an effect that overlaps two adjacent story elements. -->
+<!-- For example,
+	<video ref="1" duration="5s"/>
+	<transition ref="2" duration="2s"/>
+	<video ref="3" duration="5s"/>
+Here, the transition element overlaps the last 2 seconds of the previous video (ref="1") and the first 2 seconds of the next video (ref="3"). -->
+<!ELEMENT transition EMPTY>
+<!ATTLIST transition ref IDREF #REQUIRED>			<!-- 'effect' ID -->
+<!ATTLIST transition name CDATA #IMPLIED>
+<!ATTLIST transition offset %time; #IMPLIED>
+<!ATTLIST transition duration %time; #REQUIRED>
+
+<!-- A 'filter' defines effect adjustments to apply to its parent element. -->
+<!-- Filters are concatenated in the order in which they appear. -->
+<!ELEMENT filter (param*)>
+<!ATTLIST filter ref IDREF #REQUIRED>				<!-- 'effect' ID -->
+<!ATTLIST filter name CDATA #IMPLIED>
+<!ATTLIST filter enabled CDATA #IMPLIED>			<!-- default is '1' (0=disbled, 1=enabled) -->
+
+<!-- A 'timeMap' is a container for 'timept' elements that change the output speed of the clip's local timeline. -->
+<!-- When present, a 'timeMap' defines a new adjusted time range for the clip using the first and last 'timept' elements. -->
+<!-- All other time values are interpolated from the specified 'timept' elements. -->
+<!ELEMENT timeMap (timept)+>
+
+<!-- A 'timept' defines the re-mapped time values for a 'timeMap'. -->
+<!-- For example,
+	<timeMap>
+		<timept time="0s" value="0s" interp="linear"/>
+		<timept time="10s" value="5s" interp="linear"/>
+		<timept time="20s" value="0s" interp="linear"/>
+	</timeMap>
+Here, when applied to a clip whose original timeline was 0-5s, the 'timeMap' will adjust the clip's timeline to 0-20s 
+and play the original content at 50% speed, followed by -50% speed. -->
+<!ELEMENT timept EMPTY>
+<!ATTLIST timept time %time; #REQUIRED>				<!-- new adjusted clip time -->
+<!ATTLIST timept value CDATA #REQUIRED>				<!-- original clip time -->
+<!ATTLIST timept interp (smooth | linear) #REQUIRED> <!-- interpolation type for next segment -->
+
+
+<!-- KEYWORDS, MARKERS, NOTES -->
+<!-- If 'completed' is specified, this marker becomes a to-do item. -->
+<!ELEMENT marker EMPTY>
+<!ATTLIST marker start %time; #REQUIRED>
+<!ATTLIST marker duration %time; #IMPLIED>
+<!ATTLIST marker value CDATA #REQUIRED>
+<!ATTLIST marker completed CDATA #IMPLIED>			<!-- (0=not completed, 1=completed) -->
+
+<!ELEMENT rating EMPTY>
+<!ATTLIST rating start %time; #IMPLIED>
+<!ATTLIST rating duration %time; #IMPLIED>
+<!ATTLIST rating value (favorite | reject) #REQUIRED>
+
+<!ELEMENT keyword EMPTY>
+<!ATTLIST keyword start %time; #IMPLIED>
+<!ATTLIST keyword duration %time; #IMPLIED>
+<!ATTLIST keyword value CDATA #REQUIRED>			<!-- comma-separated list of keywords -->
+
+<!ELEMENT note (#PCDATA)>

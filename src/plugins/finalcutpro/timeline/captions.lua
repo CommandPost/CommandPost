@@ -2,35 +2,16 @@
 ---
 --- Caption Tools
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("doPasteTextAsCaption")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local keycodes                          = require("hs.keycodes")
 local pasteboard                        = require("hs.pasteboard")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 local go                                = require("cp.rx.go")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local event                             = eventtap.event
 local Given, Require, Retry             = go.Given, go.Require, go.Retry
 local map                               = keycodes.map
@@ -101,18 +82,13 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpPasteTextAsCaption")
-            :whenActivated(mod.doPasteTextAsCaption())
-    end
+    deps.fcpxCmds
+        :add("cpPasteTextAsCaption")
+        :whenActivated(mod.doPasteTextAsCaption())
 
     return mod
 end

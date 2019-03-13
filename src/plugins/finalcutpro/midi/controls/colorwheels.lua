@@ -2,27 +2,13 @@
 ---
 --- Final Cut Pro MIDI Color Controls.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log             = require("hs.logger").new("colorMIDI")
+local log               = require("hs.logger").new("colorMIDI")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap          = require("hs.eventtap")
 local inspect           = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
@@ -65,10 +51,20 @@ end
 -- Wheel Color Orientation          -1 to 1
 --------------------------------------------------------------------------------
 
-local MAX_14BIT = 0x3FFF    -- 16383
-local MAX_7BIT  = 0x7F      -- 127
+-- MAX_14BIT -> number
+-- Constant
+-- Maximum 14bit Limit (16383)
+local MAX_14BIT = 0x3FFF
 
-local UNSHIFTED_SCALE = 20/100 -- Scale unshifted 7-bit by 20%
+-- MAX_7BIT -> number
+-- Constant
+-- Maximum 7bit Limit (127)
+local MAX_7BIT  = 0x7F
+
+-- UNSHIFTED_SCALE -> number
+-- Constant
+-- Scale unshifted 7-bit by 20%
+local UNSHIFTED_SCALE = 20/100
 
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
@@ -674,9 +670,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps)
 end

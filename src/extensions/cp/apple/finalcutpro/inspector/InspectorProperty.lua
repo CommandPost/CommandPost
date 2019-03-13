@@ -7,21 +7,10 @@
 --- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log                   = require("hs.logger").new("InspectorProperty")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local is                    = require("cp.is")
 local prop                  = require("cp.prop")
 
@@ -36,9 +25,6 @@ local TextField             = require("cp.ui.TextField")
 
 local Do                    = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
 local childrenMatching              = axutils.childrenMatching
 

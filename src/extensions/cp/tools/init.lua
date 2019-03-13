@@ -2,20 +2,8 @@
 ---
 --- A collection of handy miscellaneous tools for Lua development.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tools")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application                               = require("hs.application")
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
@@ -30,26 +18,18 @@ local sound                                     = require("hs.sound")
 local timer                                     = require("hs.timer")
 local window                                    = require("hs.window")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v                                         = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert                                    = table.insert
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local tools = {}
 
 -- LEFT_MOUSE_DOWN -> number
 -- Constant
@@ -61,6 +41,16 @@ local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
 -- Left Mouse Up ID.
 local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
 
+-- RIGHT_MOUSE_DOWN -> number
+-- Constant
+-- Right Mouse Down ID.
+local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+
+-- RIGHT_MOUSE_UP -> number
+-- Constant
+-- Right Mouse Up ID.
+local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+
 -- CLICK_STATE -> number
 -- Constant
 -- Click State ID.
@@ -70,13 +60,6 @@ local CLICK_STATE = eventtap.event.properties.mouseEventClickState
 -- Constant
 -- Default Delay.
 local DEFAULT_DELAY = 0
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local tools = {}
 
 -- string:split(delimiter) -> table
 -- Function
@@ -337,10 +320,48 @@ function tools.getModelName()
             if modelName == "MacBook Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
                 local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
-                if minorVersion >= 2 and majorVersion >= 13 then
-                    return "MacBook Pro (Touch Bar)"
+                if majorVersion == 15 and minorVersion == 1 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 15 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 1 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 4 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 5 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 12 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
                 else
-                    return "MacBook Pro"
+                    return ""
                 end
             elseif modelName == "Mac Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
@@ -355,6 +376,8 @@ function tools.getModelName()
                 return "MacBook"
             elseif modelName == "iMac" then
                 return "iMac"
+            elseif modelName == "iMac Pro" then
+                return "iMac Pro"
             elseif modelName == "Mac mini" then
                 return "Mac mini"
             end
@@ -417,7 +440,9 @@ function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
         local result = ""
-        if v(macOSVersion) >= v("10.13") then
+        if v(macOSVersion) >= v("10.14") then
+            result = "macOS Mojave" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.13") then
             result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
         elseif v(macOSVersion) >= v("10.12") then
             result = "macOS Sierra 10.12.x"
@@ -905,6 +930,25 @@ function tools.leftClick(point, delay, clickNumber)
     eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
+--- cp.tools.rightClick(point[, delay, clickNumber]) -> none
+--- Function
+--- Performs a Right Mouse Click.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---  * clickNumber - The optional number of times you want to perform the click.
+---
+--- Returns:
+---  * None
+function tools.rightClick(point, delay, clickNumber)
+    delay = delay or DEFAULT_DELAY
+    clickNumber = clickNumber or 1
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    if delay > 0 then timer.usleep(delay) end
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+end
+
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
 --- Function
 --- Performs a Left Mouse Double Click.
@@ -935,6 +979,24 @@ function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
+    if delay > 0 then timer.usleep(delay) end
+    mouse.setAbsolutePosition(originalMousePoint)
+end
+
+--- cp.tools.ninjaRightMouseClick(point[, delay]) -> none
+--- Function
+--- Performs a right mouse click, but returns the mouse to the original position without the users knowledge.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
+function tools.ninjaRightMouseClick(point, delay)
+    delay = delay or DEFAULT_DELAY
+    local originalMousePoint = mouse.getAbsolutePosition()
+    tools.rightClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
@@ -1362,5 +1424,56 @@ function tools.tableMatch(t1,t2,ignoreMetatable)
     return true
 end
 
+--- cp.tools.convertSingleHexStringToDecimalString(hex) -> string
+--- Function
+--- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
+---
+--- Parameters:
+---  * hex - A single string character
+---
+--- Returns:
+---  * A four character string
+function tools.convertSingleHexStringToDecimalString(hex)
+    local lookup = {
+        ["0"]   = "0000",
+        ["1"]   = "0001",
+        ["2"]   = "0010",
+        ["3"]   = "0011",
+        ["4"]   = "0100",
+        ["5"]   = "0101",
+        ["6"]   = "0110",
+        ["7"]   = "0111",
+        ["8"]   = "1000",
+        ["9"]   = "1001",
+        ["A"]   = "1010",
+        ["B"]   = "1011",
+        ["C"]   = "1100",
+        ["D"]   = "1101",
+        ["E"]   = "1110",
+        ["F"]   = "1111",
+    }
+    return lookup[hex]
+end
+
+--- cp.tools.startsWith(value, startValue) -> boolean
+--- Function
+--- Checks to see if a string starts with a value.
+---
+--- Parameters:
+---  * value - The value to check
+---  * startValue - The value to look for
+---
+--- Returns:
+---  * `true` if value starts with the startValue, otherwise `false`
+function tools.startsWith(value, startValue)
+    if value and startValue then
+        local len = startValue:len()
+        if value:len() >= len then
+            local sub = value:sub(1, len)
+            return sub == startValue
+        end
+    end
+    return false
+end
 
 return tools

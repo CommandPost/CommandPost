@@ -2,30 +2,16 @@
 ---
 --- Final Cut Pro Menu.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 -- local log                       = require("hs.logger").new("fcp_menu")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local fcpApp                    = require("cp.apple.finalcutpro.app")
 local strings                   = require("cp.apple.finalcutpro.strings")
-local destinations				= require("cp.apple.finalcutpro.export.destinations")
+local destinations              = require("cp.apple.finalcutpro.export.destinations")
 
 local axutils                   = require("cp.ui.axutils")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local isEqual                   = require("moses").isEqual
 
 --------------------------------------------------------------------------------
@@ -53,11 +39,12 @@ end)
 -- Add a finder for missing menus:
 ----------------------------------------------------------------------------------------
 local missingMenuMap = {
-    { path = {"Final Cut Pro"},					child = "Commands",			key = "CommandSubmenu" },
-    { path = {"Final Cut Pro", "Commands"},		child = "Customize…",		key = "Customize" },
-    { path = {"Clip"},							child = "Open Clip",		key = "FFOpenInTimeline" },
-    { path = {"Window", "Show in Workspace"},	child = "Sidebar",			key = "PEEventsLibrary" },
-    { path = {"Window", "Show in Workspace"},	child = "Timeline",			key = "PETimeline" },
+    { path = {"Final Cut Pro"},                 child = "Commands",                 key = "CommandSubmenu" },
+    { path = {"Final Cut Pro", "Commands"},     child = "Customize…",               key = "Customize" },
+    { path = {"Clip"},                          child = "Open Clip",                key = "FFOpenInTimeline" },
+    { path = {"Clip"},                          child = "Open in Angle Editor",     key = "FFOpenInAngleEditor" },
+    { path = {"Window", "Show in Workspace"},   child = "Sidebar",                  key = "PEEventsLibrary" },
+    { path = {"Window", "Show in Workspace"},   child = "Timeline",                 key = "PETimeline" },
 }
 
 menu:addMenuFinder(function(parentItem, path, childName)

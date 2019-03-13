@@ -1,0 +1,379 @@
+<!-- FCP X Interchange Format, Version 1.1 -->
+<!-- Copyright (c) 2011 Apple Inc. All rights reserved. -->
+
+<!-- FCPXML -->
+<!ELEMENT fcpxml (project)>
+<!ATTLIST fcpxml version CDATA #FIXED "1.1">
+
+<!-- COMMON ENTITIES -->
+
+<!-- 'time' attributes are expressed as a rational number of seconds (e.g., "1001/30000s") -->
+<!-- with a 64-bit numerator and 32-bit denominator. -->
+<!-- Integer 'time' values, such as 5 seconds, may be expressed as whole numbers (e.g., '5s'). -->
+<!ENTITY % time "CDATA">
+
+<!-- A 'timelist' is a semi-colon-separated list of time values -->
+<!ENTITY % timelist "CDATA">
+
+
+<!-- PROJECT ELEMENTS -->
+<!-- An exported event contains zero or more 'clip', 'audition', or 'multicam' elements. -->
+<!-- An exported project contains exactly one 'sequence' element. -->
+<!ELEMENT project (resources, (sequence | (clip | audition | mc-clip)*))>
+<!ATTLIST project name CDATA #IMPLIED>
+<!ATTLIST project uid CDATA #IMPLIED>
+<!ATTLIST project eventID CDATA #IMPLIED>			<!-- 'uid' of default event -->
+<!ATTLIST project location CDATA #IMPLIED>			<!-- URL of project storage location -->
+
+
+<!-- RESOURCE ELEMENTS -->
+<!-- A 'resource' is a project element potentially referenced by other project elements. -->
+<!-- To support such references, all resource instances require a local ID attribute. -->
+<!ELEMENT resources (asset | effect | format | media | projectRef)*>
+
+<!-- A 'projectRef' defines a reference to an external project via an FCP-assigned unique identifier ('uid'). -->
+<!-- If 'uid' is not specified, FCP creates a new project instance for this reference. -->
+<!ELEMENT projectRef EMPTY>
+<!ATTLIST projectRef id ID #REQUIRED>
+<!ATTLIST projectRef name CDATA #IMPLIED>
+<!ATTLIST projectRef uid CDATA #IMPLIED>	
+
+<!-- A 'media' defines a reference to new or existing media via an FCP-assigned unique identifier ('uid'). -->
+<!-- If 'uid' is not specified, FCP creates a new media object as specified by the optional child element. -->
+<!-- If 'projectRef' is not specified, FCP uses the default instance. -->
+<!ELEMENT media (multicam)?>
+<!ATTLIST media id ID #REQUIRED>
+<!ATTLIST media name CDATA #IMPLIED>
+<!ATTLIST media uid CDATA #IMPLIED>
+<!ATTLIST media projectRef IDREF #IMPLIED>
+
+<!-- A 'format' describes video properties. -->
+<!ELEMENT format EMPTY>
+<!ATTLIST format id ID #REQUIRED>
+<!ATTLIST format name CDATA #IMPLIED>
+<!ATTLIST format frameDuration %time; #IMPLIED>
+<!ATTLIST format fieldOrder CDATA #IMPLIED>			<!-- (progressive | upper first | lower first ) -->
+<!ATTLIST format width CDATA #IMPLIED>
+<!ATTLIST format height CDATA #IMPLIED>
+<!ATTLIST format paspH CDATA #IMPLIED>
+<!ATTLIST format paspV CDATA #IMPLIED>
+
+<!-- An 'asset' defines a reference to external source media (i.e., a local file). -->
+<!-- 'uid' is an FCP-assigned unique ID; if not specified, FCP creates a new default clip for the asset. -->
+<!ELEMENT asset EMPTY>
+<!ATTLIST asset id ID #REQUIRED>
+<!ATTLIST asset name CDATA #IMPLIED>
+<!ATTLIST asset uid CDATA #IMPLIED>						
+<!ATTLIST asset projectRef IDREF #IMPLIED>
+<!ATTLIST asset src CDATA #IMPLIED>				<!-- file: URL -->
+<!ATTLIST asset start %time; #IMPLIED>
+<!ATTLIST asset duration %time; #IMPLIED>
+<!ATTLIST asset hasVideo CDATA #IMPLIED>
+<!ATTLIST asset hasAudio CDATA #IMPLIED>
+<!ATTLIST asset audioSources CDATA #IMPLIED>
+<!ATTLIST asset audioChannels CDATA #IMPLIED>
+<!ATTLIST asset audioRate CDATA #IMPLIED>
+<!ATTLIST asset colorOverride CDATA #IMPLIED>
+
+<!-- An 'effect' defines a reference to a built-in or user-defined Motion effect, FxPlug plug-in, audio bundle, or audio unit. -->
+<!ELEMENT effect EMPTY>
+<!ATTLIST effect id ID #REQUIRED>
+<!ATTLIST effect name CDATA #IMPLIED>
+<!ATTLIST effect uid CDATA #REQUIRED>
+
+
+<!-- STORY ELEMENTS -->
+
+<!-- The 'ao_attrs' entity declares the attributes common to 'anchorable' objects. -->
+<!-- The 'lane' attribute sepcifies where the object is contained/anchored relative to its parent: -->
+<!--	0 = contained inside its parent (default) -->
+<!--	>0 = anchored above its parent -->
+<!--	<0 = anchored below its parent -->
+<!-- The 'offset' attribute defines the location of the object in the parent timeline (default is '0s'). -->
+<!ENTITY % ao_attrs "
+	lane CDATA #IMPLIED
+	offset %time; #IMPLIED
+">
+
+<!-- The 'clip_attrs' entity declares the attributes common to all story elements. -->
+<!-- The 'start' attribute defines a local timeline to schedule contained and anchored items. -->
+<!-- The default start value is '0s'. -->
+<!ENTITY % clip_attrs "
+	%ao_attrs;
+	name CDATA #IMPLIED
+	start %time; #IMPLIED
+	duration %time; #REQUIRED
+	enabled (0 | 1) '1'
+">
+
+<!ENTITY % audioHz "( 32k | 44.1k | 48k | 88.2k | 96k | 176.4k | 192k )">
+
+<!-- The 'media_attrs' entity declares the attributes common to media instances. -->
+<!-- 'format' specifies a <format> resource ID. -->
+<!-- 'tcStart' specifies the timecode origin of the media. -->
+<!-- 'tcFormat' specifies the timecode display format (DF=drop frame; NDF=non-drop frame). -->
+<!ENTITY % media_attrs "
+	format IDREF #REQUIRED
+	duration %time; #IMPLIED
+	tcStart %time; #IMPLIED
+	tcFormat (DF | NDF) #IMPLIED
+	audioLayout (stereo | surround) #IMPLIED
+	audioRate %audioHz; #IMPLIED
+">
+
+<!ENTITY % outputChannel "( L | R | C | LFE | Ls | Rs | X )">
+
+<!ENTITY % fadeType "(linear | easeIn | easeOut | easeInOut)">
+
+<!-- A 'fadeIn' element animates a parameter from its min value to its implied value over a specified duration. -->
+<!ELEMENT fadeIn EMPTY>
+<!ATTLIST fadeIn type %fadeType; #IMPLIED>			<!-- default is 'easeIn' -->
+<!ATTLIST fadeIn duration %time; #REQUIRED>
+
+<!-- A 'fadeOut' element animates a parameter from its implied value to its min value over a specified duration. -->
+<!ELEMENT fadeOut EMPTY>
+<!ATTLIST fadeOut type %fadeType; #IMPLIED>			<!-- default is 'easeOut' -->
+<!ATTLIST fadeOut duration %time; #REQUIRED>
+
+<!-- A 'param' specifies the range for a parameter over time, optionally including key-framed values. -->
+<!-- Fade-in and fade-out are optional. -->
+<!ELEMENT param (fadeIn?, fadeOut?, param*)>
+<!ATTLIST param name CDATA #REQUIRED>
+<!ATTLIST param value CDATA #IMPLIED>				<!-- initial value -->
+<!ATTLIST param keyValues CDATA #IMPLIED>			<!-- list of keyframed values (delimited by ;) -->
+<!ATTLIST param keyTimes %timelist; #IMPLIED>		<!-- list of time offsets for keyframed values (delimited by ;) -->
+
+<!-- A 'crop-rect' specifies crop values as a percentage of original frame height. -->
+<!ELEMENT crop-rect (param*)>
+<!ATTLIST crop-rect left CDATA "0">
+<!ATTLIST crop-rect top CDATA "0">
+<!ATTLIST crop-rect right CDATA "0">
+<!ATTLIST crop-rect bottom CDATA "0">
+
+<!-- A 'trim-rect' specifies trim values as a percentage of original frame height. -->
+<!ELEMENT trim-rect (param*)>
+<!ATTLIST trim-rect left CDATA "0">
+<!ATTLIST trim-rect top CDATA "0">
+<!ATTLIST trim-rect right CDATA "0">
+<!ATTLIST trim-rect bottom CDATA "0">
+
+<!-- A 'pan-rect' specifies the initial or final crop values for a "Ken Burns" animation. -->
+<!-- The attributes of a pan-rect cannot be keyframed. -->
+<!ELEMENT pan-rect EMPTY>
+<!ATTLIST pan-rect left CDATA "0">
+<!ATTLIST pan-rect top CDATA "0">
+<!ATTLIST pan-rect right CDATA "0">
+<!ATTLIST pan-rect bottom CDATA "0">
+
+<!-- An 'info-asc-cdl' describes a primary color correction in the form of an ASC CDL (American Society of Cinematographers Color Decision List). -->
+<!-- Each attribute is a vector of "red green blue" adjustments. -->
+<!-- This element is not processed during import. -->
+<!ELEMENT info-asc-cdl EMPTY>
+<!ATTLIST info-asc-cdl slope CDATA "1.0 1.0 1.0">		
+<!ATTLIST info-asc-cdl offset CDATA "0.0 0.0 0.0">
+<!ATTLIST info-asc-cdl power CDATA "1.0 1.0 1.0">
+
+<!-- The 'adjust-crop' element modifies the visible image width and height. -->
+<!-- This element contains an optional adjustment for each crop mode, although only one mode is active. --> 
+<!ELEMENT adjust-crop (crop-rect?, trim-rect?, (pan-rect, pan-rect)?)>
+<!ATTLIST adjust-crop mode (trim | crop | pan) #REQUIRED>
+<!ATTLIST adjust-crop enabled (0 | 1) "1">
+
+<!ELEMENT adjust-corners (param*)>
+<!ATTLIST adjust-corners enabled (0 | 1) "1">
+<!ATTLIST adjust-corners botLeft CDATA "0 0">
+<!ATTLIST adjust-corners topLeft CDATA "0 0">
+<!ATTLIST adjust-corners topRight CDATA "0 0">
+<!ATTLIST adjust-corners botRight CDATA "0 0">
+
+<!ELEMENT adjust-conform EMPTY>
+<!ATTLIST adjust-conform type (fit | fill | none) "fit">
+
+<!ELEMENT adjust-transform (param*)>
+<!ATTLIST adjust-transform enabled (0 | 1) "1">
+<!ATTLIST adjust-transform position CDATA "0 0">
+<!ATTLIST adjust-transform scale CDATA "1 1">
+<!ATTLIST adjust-transform rotation CDATA "0">
+<!ATTLIST adjust-transform anchor CDATA "0 0">
+
+<!ELEMENT adjust-blend (param*)>
+<!ATTLIST adjust-blend amount CDATA "1.0">
+<!ATTLIST adjust-blend mode CDATA #IMPLIED>
+
+<!ELEMENT adjust-volume (param*)>
+<!ATTLIST adjust-volume amount CDATA "0dB">
+
+<!ELEMENT adjust-panner (param*)>
+<!ATTLIST adjust-panner mode CDATA #IMPLIED>
+<!ATTLIST adjust-panner amount CDATA "0">
+<!ATTLIST adjust-panner original_decoded_mix CDATA #IMPLIED>
+<!ATTLIST adjust-panner ambient_direct_mix CDATA #IMPLIED>
+<!ATTLIST adjust-panner surround_width CDATA #IMPLIED>
+<!ATTLIST adjust-panner left_right_mix CDATA #IMPLIED> 
+<!ATTLIST adjust-panner front_back_mix CDATA #IMPLIED> 
+<!ATTLIST adjust-panner LFE_balance CDATA #IMPLIED>
+<!ATTLIST adjust-panner rotation CDATA #IMPLIED>
+<!ATTLIST adjust-panner stereo_spread CDATA #IMPLIED>
+<!ATTLIST adjust-panner attenuate_collapse_mix CDATA #IMPLIED>
+<!ATTLIST adjust-panner center_balance CDATA #IMPLIED>
+
+<!-- The 'intrinsic-params' entities declare instrinsic video and audio adjustments. -->
+<!ENTITY % intrinsic-params-video "(info-asc-cdl?, adjust-crop?, adjust-corners?, adjust-conform?, adjust-transform?, adjust-blend?)">
+<!ENTITY % intrinsic-params-audio "(adjust-volume?, adjust-panner?)">
+<!ENTITY % intrinsic-params "(%intrinsic-params-video;, %intrinsic-params-audio;)">
+
+<!-- The 'anchor_item' entity declares the valid anchorable story elements. -->
+<!-- When present, anchored items must have a non-zero 'lane' value. -->
+<!ENTITY % anchor_item "audio | video | clip | title | mc-clip | audition | spine">
+
+<!-- The 'clip_item' entity declares the primary story elements that may appear inside a clip. -->
+<!ENTITY % clip_item "audio | video | clip | title | mc-clip | audition | gap">
+
+<!-- An 'audition' is a container with one active story element followed by alternative story elements. -->
+<!ELEMENT audition (audio | video | title | mc-clip | clip)+ >
+<!ATTLIST audition %ao_attrs;>
+
+<!-- A 'spine' is a container for elements ordered serially in time. -->
+<!-- Only one story element is active at a given time, except when a transition is present. -->
+<!ELEMENT spine (%clip_item; | transition)* >
+<!ATTLIST spine	%ao_attrs;>
+<!ATTLIST spine name CDATA #IMPLIED>
+<!ATTLIST spine format IDREF #IMPLIED>				<!-- default is same as parent -->
+
+<!-- A 'sequence' is a container for a spine of story elements in a sequence project. -->
+<!ELEMENT sequence (note?, spine)>
+<!ATTLIST sequence %media_attrs;>
+<!ATTLIST sequence renderFormat CDATA #IMPLIED>
+
+<!-- A 'multicam' is a container for multiple "angles" of related content. -->
+<!ELEMENT multicam (mc-angle*)>
+<!ATTLIST multicam %media_attrs;>
+<!ATTLIST multicam renderFormat CDATA #IMPLIED>
+
+<!-- An 'mc-angle' is a container for elements ordered serially in time for one angle of a multicam clip.-->
+<!-- Only one story element is active at a given time, except when a transition is present. -->
+<!ELEMENT mc-angle ((%clip_item; | transition)*) >
+<!ATTLIST mc-angle name CDATA #IMPLIED>
+<!ATTLIST mc-angle angleID CDATA #REQUIRED>
+
+<!-- An 'mc-clip' element defines an edited range of a/v data from a source 'multicam' media. -->
+<!ELEMENT mc-clip (note?, timeMap?, %intrinsic-params;, mc-source*, (%anchor_item;)*, (marker | rating | keyword)*)>
+<!ATTLIST mc-clip ref IDREF #REQUIRED>				<!-- 'media' ID -->
+<!ATTLIST mc-clip %clip_attrs;>
+<!ATTLIST mc-clip audioAngleID CDATA #IMPLIED>		<!-- angleID of the active audio angle -->
+<!ATTLIST mc-clip videoAngleID CDATA #IMPLIED>		<!-- angleID of the active video angle -->
+<!ATTLIST mc-clip audioStart %time; #IMPLIED>
+<!ATTLIST mc-clip audioDuration %time; #IMPLIED>
+
+<!-- An 'mc-source' element defines custom filters to apply to an angle of a multicam clip or edit. -->
+<!ELEMENT mc-source (filter*)>
+<!ATTLIST mc-source angleID CDATA #REQUIRED>
+
+<!-- A 'clip' is a container for other story elements. -->
+<!-- Clips have only one primary item, and zero or more anchored items. -->
+<!-- Use 'audioStart' and 'audioDuration' to define J/L cuts (i.e., split edits) on composite A/V clips. -->
+<!ELEMENT clip (note?, timeMap?, %intrinsic-params;, (spine | (%clip_item;))*, (marker | rating | keyword)*, filter*)>
+<!ATTLIST clip %clip_attrs;>
+<!ATTLIST clip format IDREF #IMPLIED>				<!-- default is same as parent -->
+<!ATTLIST clip audioStart %time; #IMPLIED>
+<!ATTLIST clip audioDuration %time; #IMPLIED>
+<!ATTLIST clip tcStart %time; #IMPLIED>				<!-- clip timecode origin -->
+<!ATTLIST clip tcFormat (DF | NDF) #IMPLIED>		<!-- timecode display format (DF=drop frame; NDF=non-drop frame) -->
+<!ATTLIST clip audioLayout (stereo | surround) #IMPLIED>
+<!ATTLIST clip audioRate %audioHz; #IMPLIED>
+
+<!-- An 'audio' element defines a range of audio data in a source asset. -->
+<!ELEMENT audio (note?, timeMap?, %intrinsic-params-audio;, (%anchor_item;)*, marker*, filter*)>
+<!ATTLIST audio ref IDREF #REQUIRED>				<!-- 'asset' or 'effect' ID -->
+<!ATTLIST audio %clip_attrs;>
+<!ATTLIST audio srcID CDATA #IMPLIED>				<!-- source/track identifier in asset (if not '1') -->
+<!ATTLIST audio role CDATA #IMPLIED>
+<!ATTLIST audio srcCh CDATA #IMPLIED>				<!-- source audio channels in asset (comma separated, 1-based index) -->
+<!ATTLIST audio outCh CDATA #IMPLIED>				<!-- output audio channels (comma separated, from: L,R,C,LFE,Ls,Rs,X) %outputChannel -->
+
+<!-- A 'video' element defines a range of video data in a source asset. -->
+<!ELEMENT video (note?, timeMap?, %intrinsic-params-video;, (%anchor_item;)*, marker*, filter*)>
+<!ATTLIST video ref IDREF #REQUIRED>				<!-- 'asset' or 'effect' ID -->
+<!ATTLIST video %clip_attrs;>
+<!ATTLIST video srcID CDATA #IMPLIED>				<!-- source/track identifier in asset (if not '1') -->
+<!ATTLIST video role CDATA #IMPLIED>				<!-- default is 'video' -->
+
+<!-- A 'gap' element defines a placeholder with no associated media. -->
+<!-- Gaps cannot be anchored to other objects. -->
+<!ELEMENT gap (note?, (%anchor_item;)*, marker*)>
+<!ATTLIST gap name CDATA #IMPLIED>
+<!ATTLIST gap offset %time; #IMPLIED>
+<!ATTLIST gap start %time; #IMPLIED>
+<!ATTLIST gap duration %time; #REQUIRED>
+<!ATTLIST gap enabled (0 | 1) "1">
+
+<!-- A 'title' element contains one or more 'text' elements that customize a referenced effect. -->
+<!ELEMENT title (note?, timeMap?, %intrinsic-params-video;, (%anchor_item;)*, marker*, filter*, text*)>
+<!ATTLIST title ref IDREF #REQUIRED>				<!-- 'effect' ID for a Motion template -->
+<!ATTLIST title %clip_attrs;>
+<!ATTLIST title role CDATA #IMPLIED>
+
+<!-- A 'text' element defines an unformatted text string for a 'title' element. -->
+<!ELEMENT text (#PCDATA)>
+
+<!-- A 'transition' element defines an effect that overlaps two adjacent story elements. -->
+<!-- For example,
+	<video ref="1" duration="5s"/>
+	<transition ref="2" duration="2s"/>
+	<video ref="3" duration="5s"/>
+Here, the transition element overlaps the last 2 seconds of the previous video (ref="1") and the first 2 seconds of the next video (ref="3"). -->
+<!ELEMENT transition (marker*)>
+<!ATTLIST transition ref IDREF #REQUIRED>			<!-- 'effect' ID -->
+<!ATTLIST transition name CDATA #IMPLIED>
+<!ATTLIST transition offset %time; #IMPLIED>
+<!ATTLIST transition duration %time; #REQUIRED>
+
+<!-- A 'filter' defines an effect that's applied to its parent element. -->
+<!-- Filters are concatenated in the order in which they appear. -->
+<!ELEMENT filter EMPTY>
+<!ATTLIST filter ref IDREF #REQUIRED>				<!-- 'effect' ID -->
+<!ATTLIST filter name CDATA #IMPLIED>
+<!ATTLIST filter enabled (0 | 1) "1">
+
+<!-- A 'timeMap' is a container for 'timept' elements that change the output speed of the clip's local timeline. -->
+<!-- When present, a 'timeMap' defines a new adjusted time range for the clip using the first and last 'timept' elements. -->
+<!-- All other time values are interpolated from the specified 'timept' elements. -->
+<!ELEMENT timeMap (timept)+>
+
+<!-- A 'timept' defines the re-mapped time values for a 'timeMap'. -->
+<!-- For example,
+	<timeMap>
+		<timept time="0s" value="0s" interp="linear"/>
+		<timept time="10s" value="5s" interp="linear"/>
+		<timept time="20s" value="0s" interp="linear"/>
+	</timeMap>
+Here, when applied to a clip whose original timeline was 0-5s, the 'timeMap' will adjust the clip's timeline to 0-20s 
+and play the original content at 50% speed, followed by -50% speed. -->
+<!ELEMENT timept EMPTY>
+<!ATTLIST timept time %time; #REQUIRED>				<!-- new adjusted clip time -->
+<!ATTLIST timept value CDATA #REQUIRED>				<!-- original clip time -->
+<!ATTLIST timept interp (smooth | linear) #REQUIRED> <!-- interpolation type for next segment -->
+
+
+<!-- KEYWORDS, MARKERS, NOTES -->
+<!-- If 'completed' is specified, this marker becomes a to-do item. -->
+<!ELEMENT marker EMPTY>
+<!ATTLIST marker start %time; #REQUIRED>
+<!ATTLIST marker duration %time; #IMPLIED>
+<!ATTLIST marker value CDATA #REQUIRED>
+<!ATTLIST marker completed CDATA #IMPLIED>			<!-- (0=not completed, 1=completed) -->
+<!ATTLIST marker note CDATA #IMPLIED>
+
+<!ELEMENT rating EMPTY>
+<!ATTLIST rating start %time; #IMPLIED>
+<!ATTLIST rating duration %time; #IMPLIED>
+<!ATTLIST rating value (favorite | reject) #REQUIRED>
+<!ATTLIST rating note CDATA #IMPLIED>
+
+<!ELEMENT keyword EMPTY>
+<!ATTLIST keyword start %time; #IMPLIED>
+<!ATTLIST keyword duration %time; #IMPLIED>
+<!ATTLIST keyword value CDATA #REQUIRED>			<!-- comma-separated list of keywords -->
+<!ATTLIST keyword note CDATA #IMPLIED>
+
+<!ELEMENT note (#PCDATA)>

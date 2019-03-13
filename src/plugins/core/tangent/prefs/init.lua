@@ -2,34 +2,17 @@
 ---
 --- Tangent Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("tangentPref")
+local log         = require("hs.logger").new("tangentPref")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local image                                     = require("hs.image")
+local dialog      = require("hs.dialog")
+local image       = require("hs.image")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local html                                      = require("cp.web.html")
-local i18n                                      = require("cp.i18n")
+local html        = require("cp.web.html")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
+local _           = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -38,15 +21,15 @@ local _                                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.tangent.prefs.TANGENT_WEBSITE -> string
---- Constant
---- Tangent Website URL.
-mod.TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
+-- TANGENT_WEBSITE -> string
+-- Constant
+-- Tangent Website URL.
+local TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 
---- plugins.core.tangent.prefs.DOWNLOAD_TANGENT_HUB -> string
---- Constant
---- URL to download Tangent Hub Application.
-mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
+-- DOWNLOAD_TANGENT_HUB -> string
+-- Constant
+-- URL to download Tangent Hub Application.
+local DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
 
 -- renderPanel(context) -> none
 -- Function
@@ -101,6 +84,7 @@ end
 -- Returns:
 --  * None
 local function tangentPanelCallback(id, params)
+    local injectScript = mod._prefsManager.injectScript
     if params and params["type"] then
         if params["type"] == "updateAction" then
 
@@ -132,7 +116,7 @@ local function tangentPanelCallback(id, params)
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
                     mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
-                    mod._prefsManager.refresh()
+                    injectScript("setTangentAction(" .. buttonID .. ", '" .. actionTitle .. "')")
                 end)
 
             --------------------------------------------------------------------------------
@@ -142,7 +126,8 @@ local function tangentPanelCallback(id, params)
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
             mod._favourites.clearAction(buttonID)
-            mod._prefsManager.refresh()
+            injectScript("setTangentAction(" .. buttonID .. ", '" .. i18n("none") .. "')")
+
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -164,7 +149,6 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
@@ -257,7 +241,7 @@ function mod.init(deps, env)
             {
                 label = i18n("downloadTangentHub"),
                 onclick = function()
-                    os.execute('open "' .. mod.DOWNLOAD_TANGENT_HUB .. '"')
+                    os.execute('open "' .. DOWNLOAD_TANGENT_HUB .. '"')
                 end,
                 class = "tangentButtonTwo",
             }
@@ -269,7 +253,7 @@ function mod.init(deps, env)
             {
                 label = i18n("visitTangentWebsite"),
                 onclick = function()
-                    os.execute('open "' .. mod.TANGENT_WEBSITE .. '"')
+                    os.execute('open "' .. TANGENT_WEBSITE .. '"')
                 end,
                 class = "tangentButtonTwo",
             }
@@ -305,9 +289,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
     return mod.init(deps, env)
 end

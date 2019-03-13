@@ -2,30 +2,17 @@
 ---
 --- Represents an AXTable in the Apple Accessibility UX API.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log							= require("hs.logger").new("Table")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
+local Element           = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Table = Element:subclass("Table")
+local Table = Element:subclass("cp.ui.Table")
 
 --- cp.ui.Table.is(thing) -> boolean
 --- Function

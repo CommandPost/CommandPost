@@ -38,26 +38,12 @@
 ---  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content contained.
 ---  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment block.
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require = require
--- local log				= require "hs.logger" .new "html"
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
--- local inspect			= require "hs.inspect"
+local block				    = require "cp.web.block"
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local block				= require "cp.web.block"
+local template 			  = require "resty.template"
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local template 			= require "resty.template"
 local htmlEscape			= template.escape
 
 --------------------------------------------------------------------------------

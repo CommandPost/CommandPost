@@ -2,36 +2,15 @@
 ---
 --- Menu Button Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                       = require("hs.logger").new("MenuButton")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
--- local inspect                   = require("hs.inspect")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
-local Element						= require("cp.ui.Element")
-local just							= require("cp.just")
+local Element						            = require("cp.ui.Element")
+local just							            = require("cp.just")
 
 local go                            = require("cp.rx.go")
 local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local find                          = string.find
 
 --------------------------------------------------------------------------------
@@ -39,7 +18,7 @@ local find                          = string.find
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local MenuButton = Element:subclass("MenuButton")
+local MenuButton = Element:subclass("cp.ui.MenuButton")
 
 --- cp.ui.MenuButton.matches(element) -> boolean
 --- Function

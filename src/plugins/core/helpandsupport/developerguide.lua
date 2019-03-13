@@ -2,17 +2,9 @@
 ---
 --- Developer Guide Menu Item.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -43,35 +35,26 @@ local plugin = {
     id              = "core.helpandsupport.developerguide",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    if global then
-        global:add("cpDeveloperGuide")
-            :whenActivated(mod.show)
-            :groupedBy("helpandsupport")
-    end
+    deps.global
+        :add("cpDeveloperGuide")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        deps.helpandsupport
-            :addItem(6, function() return { title = i18n("developerGuide"), fn = mod.show } end)
-            :addSeparator(7)
-    end
+    deps.menuManager.commandPostHelpAndSupport
+        :addItem(6, function() return { title = i18n("developerGuide"), fn = mod.show } end)
+        :addSeparator(7)
 
     return mod
 end

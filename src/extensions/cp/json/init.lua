@@ -2,27 +2,13 @@
 ---
 --- A collection of handy JSON tools.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("json")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local fs                                        = require("hs.fs")
 local json                                      = require("hs.json")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
@@ -86,7 +72,7 @@ function mod.write(path, data)
         log.ef("Path is required for `cp.json.write`.")
         return false
     end
-    local encodedData = json.encode(data)
+    local encodedData = json.encode(data, true)
     if encodedData then
         local file = io.open(path, "w")
         if file then
@@ -190,7 +176,7 @@ function mod.prop(path, folder, filename, defaultValue)
         else
             log.ef("Failed to create JSON folder: %s", fullPath)
         end
-    end)
+    end):deepTable()
 
 end
 

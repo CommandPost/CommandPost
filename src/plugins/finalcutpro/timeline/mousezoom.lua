@@ -4,54 +4,20 @@
 ---
 --- Special Thanks: Iain Anderson (@funwithstuff) for all his incredible testing!
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("mousezoom")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local distributednotifications          = require("hs.distributednotifications")
 local eventtap                          = require("hs.eventtap")
 local mouse                             = require("hs.mouse")
 local pathwatcher                       = require("hs.pathwatcher")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local tools                             = require("cp.tools")
 local i18n                              = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local semver                            = require("semver")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local touchdevice
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ENABLED_DEFAULT -> number
--- Constant
--- Is this feature enabled by default?
-local ENABLED_DEFAULT = false
 
 --------------------------------------------------------------------------------
 --
@@ -110,7 +76,7 @@ end
 --- plugins.finalcutpro.timeline.mousezoom.enabled <cp.prop: boolean>
 --- Variable
 --- Toggles the Enable Proxy Menu Icon
-mod.enabled = config.prop("enablemousezoom", ENABLED_DEFAULT):watch(mod.update)
+mod.enabled = config.prop("enablemousezoom", false):watch(mod.update)
 
 --- plugins.finalcutpro.timeline.mousezoom.customModifier <cp.prop: string>
 --- Variable
@@ -423,6 +389,7 @@ function mod.start()
     --------------------------------------------------------------------------------
     -- Setup Mouse Watcher:
     --------------------------------------------------------------------------------
+    local distributednotifications = require("hs.distributednotifications")
     mod.distributedObserver = distributednotifications.new(function(name)
         if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
             --log.df("New Multi-touch Device Detected. Re-scanning...")
@@ -572,13 +539,10 @@ local plugin = {
     id = "finalcutpro.timeline.mousezoom",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
@@ -621,21 +585,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
-            :addCheckbox(101,
+    local panel = deps.prefs.panel
+    if panel then
+        panel
+            :addCheckbox(1.3,
             {
                 label = i18n("allowZoomingWithModifierKey"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             })
-            :addContent(101.2, [[
+            :addContent(1.4, [[
                 <div style="padding-left: 19px">
             ]], false)
-            :addSelect(101.3,
+            :addSelect(1.5,
             {
                 label		= i18n("modifierKey"),
                 value		= mod.customModifier,
@@ -668,7 +630,7 @@ function plugin.init(deps)
                 required	= true,
                 onchange	= function(_, params) mod.customModifier(params.value) end,
             })
-            :addContent(101.4, "</div>", false)
+            :addContent(1.6, "</div>", false)
     end
 
     return mod

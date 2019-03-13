@@ -2,29 +2,21 @@
 ---
 --- Watch Folder Panel Manager.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local uuid                                      = require("hs.host").uuid
+local host      = require("hs.host")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
+local html      = require("cp.web.html")
+local ui        = require("cp.web.ui")
+
+local uuid      = host.uuid
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local panel = {}
 
 -- DEFAULT_PRIORITY -> number
 -- Constant
@@ -35,13 +27,6 @@ local DEFAULT_PRIORITY = 0
 -- Constant
 -- The default priority for handler scripts.
 local HANDLER_PRIORITY = 1000000
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local panel = {}
 
 --- plugins.core.watchfolders.manager.panel.new(priority, id) -> panel object
 --- Constructor

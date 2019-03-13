@@ -2,32 +2,16 @@
 ---
 --- Final Cut Pro FCPXML Watch Folder Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log				= require("hs.logger").new("fcpxml")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local eventtap          = require("hs.eventtap")
 local fnutils           = require("hs.fnutils")
+local host              = require("hs.host")
 local image             = require("hs.image")
 local notify            = require("hs.notify")
 local pathwatcher       = require("hs.pathwatcher")
 local timer             = require("hs.timer")
-local uuid              = require("hs.host").uuid
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local Do                = require("cp.rx.go.Do")
@@ -36,6 +20,8 @@ local html              = require("cp.web.html")
 local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 local ui                = require("cp.web.ui")
+
+local uuid              = host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -787,11 +773,10 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-    return mod.init(deps, env)
+    if fcp:isSupported() then
+        return mod.init(deps, env)
+    end
 end
 
 return plugin

@@ -2,25 +2,16 @@
 ---
 --- Libraries Browser Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local log								= require("hs.logger").new("librariesBrowser")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local i18n                              = require("cp.i18n")
 local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
+
+local AppearanceAndFiltering            = require("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
 
 local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
@@ -29,14 +20,18 @@ local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesBrowser"
-
 local Observable                        = require("cp.rx").Observable
 local Do                                = require("cp.rx.go.Do")
 local Given                             = require("cp.rx.go.Given")
 local First                             = require("cp.rx.go.First")
 local If                                = require("cp.rx.go.If")
 local Throw                             = require("cp.rx.go.Throw")
+
+local cache                             = axutils.cache
+local childFromRight                    = axutils.childFromRight
+local childMatching                     = axutils.childMatching
+local childrenWithRole                  = axutils.childrenWithRole
+local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --
@@ -73,9 +68,9 @@ end
 --- Returns the main group within the Libraries Browser, or `nil` if not available..
 function LibrariesBrowser.lazy.prop:mainGroupUI()
     return self.UI:mutate(function(original)
-        return axutils.cache(self, "_mainGroup", function()
+        return cache(self, "_mainGroup", function()
             local ui = original()
-            return ui and axutils.childWithRole(ui, "AXSplitGroup")
+            return ui and childWithRole(ui, "AXSplitGroup")
         end)
     end)
 end
@@ -86,7 +81,7 @@ end
 function LibrariesBrowser.lazy.prop:isFocused()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
+        return ui and ui:attributeValue("AXFocused") or childWith(ui, "AXFocused", true) ~= nil
     end)
 end
 
@@ -234,22 +229,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser.lazy.method:toggleViewMode()
     return Button(self, function()
-        return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
-    end)
-end
-
---- cp.apple.finalcutpro.main.LibrariesBrowser:appearanceAndFiltering() -> Button
---- Method
---- Get Appearance & Filtering Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` object.
-function LibrariesBrowser.lazy.method:appearanceAndFiltering()
-    return Button(self, function()
-        return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
+        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 3)
     end)
 end
 
@@ -264,7 +244,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser.lazy.method:searchToggle()
     return Button(self, function()
-        return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
+        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 1)
     end)
 end
 
@@ -279,7 +259,7 @@ end
 ---  * The `TextField` object.
 function LibrariesBrowser.lazy.method:search()
     return TextField(self, function()
-        return axutils.childWithID(self:mainGroupUI(), id "Search")
+        return childWithRole(self:mainGroupUI(), "AXTextField")
     end)
 end
 
@@ -294,8 +274,21 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser.lazy.method:filterToggle()
     return Button(self, function()
-        return axutils.childWithRole(self:mainGroupUI(), "AXButton")
+        return childWithRole(self:mainGroupUI(), "AXButton")
     end)
+end
+
+--- cp.apple.finalcutpro.main.Browser:appearanceAndFiltering() -> AppearanceAndFiltering
+--- Method
+--- The Clip Appearance & Filtering Menu Popover
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `AppearanceAndFiltering` object.
+function LibrariesBrowser.lazy.method:appearanceAndFiltering()
+    return AppearanceAndFiltering(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
@@ -340,7 +333,7 @@ LibrariesBrowser.static.UNUSED = 6
 function LibrariesBrowser:selectClipFiltering(filterType)
     local ui = self:UI()
     if ui then
-        local button = axutils.childWithID(ui, id "FilterButton")
+        local button = childWithRole(ui, "AXButton")
         if button then
             local menu = button[1]
             if not menu then
@@ -393,7 +386,7 @@ end
 ---  * `Table` object.
 function LibrariesBrowser.lazy.method:sidebar()
     return Table(self, function()
-        return axutils.childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
+        return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
     end):uncached()
 end
 
@@ -408,7 +401,6 @@ end
 ---  * `true` if there's a match, otherwise `false`.
 function LibrariesBrowser.matchesSidebar(element)
     return element and element:attributeValue("AXRole") == "AXScrollArea"
-        and element:attributeValue("AXIdentifier") == id "Sidebar"
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table

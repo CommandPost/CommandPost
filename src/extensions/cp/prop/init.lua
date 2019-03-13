@@ -2,7 +2,9 @@
 ---
 --- This is a utility library for helping keep track of single-value property states. Each property provides access to a single value. Must be readable, but may be read-only. It works by creating a table which has a `get` and (optionally) a `set` function which are called when changing the state.
 ---
---- ## Features
+--- --
+---
+--- ## Features:
 --- ### 1. Callable
 --- A `prop` can be called like a function once created. Eg:
 ---
@@ -32,7 +34,7 @@
 ---
 --- This will also work on [AND](#and) and [OR][#or] properties. Any changes from component properties will trigger a notification.
 ---
---- ### 3. Observable
+--- ### 4. Observable
 --- Similarly, you can 'observe' a prop as a `cp.rx.Observer` by calling the `observe` method:
 ---
 --- ```lua
@@ -41,7 +43,7 @@
 ---
 --- These will never emit an `onError` or `onComplete` message, just `onNext` with either `nil` or the current value as it changes.
 ---
---- ### 4. Combinable
+--- ### 5. Combinable
 --- We can combine or modify properties with AND/OR and NOT operations. The resulting values will be a live combination of the underlying `prop` values. They can also be watched, and will be notified when the underlying `prop` values change. For example:
 ---
 --- ```lua
@@ -76,7 +78,7 @@
 ---
 --- You can also use non-boolean properties. Any non-`nil` value is considered to be `true`.
 ---
---- ## 5. Immutable
+--- ### 6. Immutable
 --- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense.
 ---
 --- Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
@@ -92,7 +94,7 @@
 --- propValue:toggle()      -- prints "isImmutable changed to false"
 --- ```
 ---
---- ## 6. Bindable
+--- ### 7. Bindable
 --- A property can be bound to an 'owning' table. This table will be passed into the `get` and `set` functions for the property if present. This is mostly useful if your property depends on internal instance values of a table. For example, you might want to make a property work as a method instead of a function:
 ---
 --- ```lua
@@ -135,7 +137,7 @@
 ---
 --- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.
 ---
---- ## 7. Extendable
+--- ### 8. Extendable
 --- A common use case is using metatables to provide shared fields and methods across multiple instances. A typical example might be:
 ---
 --- ```lua
@@ -186,9 +188,14 @@
 ---
 --- The `prop.extend` function will set the `source` table as a metatable of the `target`, as well as binding any bound props that are in the `source` to `target`.
 ---
---- # Tables
+--- ## Tables
 ---
---- Because tables are copied by reference rather than by value, changes made inside a table will not necessarily trigger an update when setting a value with an updated table value. By default, tables are simply passed in and out without modification. You can nominate for a property to make copies of tables (not userdata) when getting or setting, which effectively isolates the value being stored from outside modification. This can be done with the [deepTable](#deepTable) and[shallowTable](#shallowTable) methods. Below is an example of them in action:
+--- Because tables are copied by reference rather than by value, changes made inside a table will not necessarily
+--- trigger an update when setting a value with an updated table value. By default, tables are simply passed in
+--- and out without modification. You can nominate for a property to make copies of tables (not userdata) when
+--- getting or setting, which effectively isolates the value being stored from outside modification. This can be
+--- done with the [deepTable](#deepTable) and [shallowTable](#shallowTable) methods. Below is an example of them
+--- in action:
 ---
 --- ```lua
 --- local value = { a = 1, b = { c = 1 } }
@@ -259,25 +266,15 @@
 --- ```
 ---
 --- So, a little bit tricky. The general rule of thumb is:
---- 1. If working with immutable objects, use the default 'value' value copy, which preserves the original.
---- 2. If working with an array of immutible objects, use the 'shallow' table copy.
---- 3. In most other cases, use a 'deep' table copy.
+---
+--- 1. If working with immutable objects, use the default `value` value copy, which preserves the original.
+--- 2. If working with an array of immutible objects, use the `shallow` table copy.
+--- 3. In most other cases, use a `deep` table copy.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log             = require("hs.logger").new("prop")
+local log               = require("hs.logger").new("prop")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local inspect           = require("hs.inspect")
 local fnutils           = require("hs.fnutils")
 
@@ -1385,7 +1382,6 @@ function prop.IMMUTABLE(propValue)
     return immutable
 end
 
-
 --- cp.prop.NIL -> cp.prop
 --- Constant
 --- Returns a `cp.prop` which will always be `nil`.
@@ -1423,7 +1419,6 @@ prop.mt.IMMUTABLE = prop.IMMUTABLE
 function prop.TRUE()
     return prop.THIS(true)
 end
-
 
 --- cp.prop.FALSE() -> cp.prop
 --- Function

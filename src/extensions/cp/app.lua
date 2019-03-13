@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.app ===
 ---
 --- This class assists with working with macOS apps. It provides functions for
@@ -15,21 +9,12 @@
 ---  * `cp.app` instances are long-lived. You request it once and it will stay up-to-date even if the app quits.
 ---  * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
 local require                   = require
+
+local hs                        = hs
+
 local log                       = require("hs.logger").new("app")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local application               = require("hs.application")
 local applicationwatcher		= require("hs.application.watcher")
 local ax                        = require("hs._asm.axuielement")
@@ -38,14 +23,11 @@ local inspect                   = require("hs.inspect")
 local task                      = require("hs.task")
 local timer                     = require("hs.timer")
 
-local printf                    = hs.printf
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local axutils                   = require("cp.ui.axutils")
+local go                        = require("cp.rx.go")
 local just                      = require("cp.just")
 local languageID                = require("cp.i18n.languageID")
+local lazy                      = require("cp.lazy")
 local localeID                  = require("cp.i18n.localeID")
 local menu                      = require("cp.app.menu")
 local notifier					= require("cp.ui.notifier")
@@ -53,39 +35,15 @@ local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 
-local go                        = require("cp.rx.go")
-
-local Given                     = go.Given
-local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
-
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local v							= require("semver")
 local class                     = require("middleclass")
-local lazy                      = require("cp.lazy")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local insert                    = table.insert
 local format                    = string.format
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- COMMANDPOST_BUNDLE_ID -> string
--- Constant
--- CommandPost's Bundle ID string.
-local COMMANDPOST_BUNDLE_ID = hs.processInfo.bundleID
-
--- BASE_LOCALE -> string
--- Constant
--- Base Locale.
-local BASE_LOCALE = "Base"
+local Given                     = go.Given
+local insert                    = table.insert
+local printf                    = hs.printf
+local processInfo               = hs.processInfo
+local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 
 --------------------------------------------------------------------------------
 --
@@ -94,7 +52,19 @@ local BASE_LOCALE = "Base"
 --------------------------------------------------------------------------------
 local app = class("app"):include(lazy)
 
--- keeps a log of all apps that have been created.
+-- COMMANDPOST_BUNDLE_ID -> string
+-- Constant
+-- CommandPost's Bundle ID string.
+local COMMANDPOST_BUNDLE_ID = processInfo.bundleID
+
+-- BASE_LOCALE -> string
+-- Constant
+-- Base Locale.
+local BASE_LOCALE = "Base"
+
+-- apps -> table
+-- Variable
+-- Keeps a log of all apps that have been created.
 local apps = {}
 
 --- cp.app.is(thing) -> boolean
@@ -617,25 +587,40 @@ function app.lazy.method:menu()
     return menu.new(self)
 end
 
---- cp.app:launch([waitSeconds]) -> self
+--- cp.app:launch([waitSeconds], [path]) -> self
 --- Method
 --- Launches the application, or brings it to the front if it was already running.
 ---
 --- Parameters:
----  * `waitSeconds`    - If povided, the number of seconds to wait until the launch completes. If `nil`, it will return immediately.
+---  * `waitSeconds` - If provided, the number of seconds to wait until the launch
+---                    completes. If `nil`, it will return immediately.
+---  * `path`        - An optional full path to an application without an extension
+---                    (i.e `/Applications/Final Cut Pro 10.3.4`). This allows you to
+---                    load previous versions of the application.
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function app:launch(waitSeconds)
+function app:launch(waitSeconds, path)
     local hsApp = self:hsApplication()
     if hsApp == nil or not hsApp:isFrontmost() then
         -- Closed:
-        local ok = application.launchOrFocusByBundleID(self:bundleID())
-        if ok and waitSeconds then
-            just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+        if path then
+            path = path .. ".app"
+            if tools.doesDirectoryExist(path) then
+                local ok = application.open(path)
+                if ok and waitSeconds then
+                    just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+                end
+            else
+                log.ef("Application path does not exist: %s", path)
+            end
+        else
+            local ok = application.launchOrFocusByBundleID(self:bundleID())
+            if ok and waitSeconds then
+                just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+            end
         end
     end
-
     return self
 end
 
@@ -651,18 +636,20 @@ end
 ---  * The `Statement`, resolving to `true` after the app is frontmost.
 ---
 --- Notes:
---- * By default the `Statement` will time out after 30 seconds, sending an error signal.
+---  * By default the `Statement` will time out after 30 seconds, sending an error signal.
 function app.lazy.method:doLaunch()
     return If(self.installed):Then(
         If(self.frontmost):Is(false):Then(
             If(self.hsApplication):Then(function(hsApp)
                 hsApp:activate()
+                return true
             end)
             :Otherwise(function()
                 local ok = application.launchOrFocusByBundleID(self:bundleID())
                 if not ok then
                     return Throw("Unable to launch %s.", self:displayName())
                 end
+                return true
             end)
         )
         :Then(WaitUntil(self.frontmost))
@@ -956,6 +943,7 @@ function app:update()
     return self
 end
 
+-- TODO: Add documentation
 local whiches = {}
 local function which(cmd)
     local path = whiches[cmd]
@@ -977,13 +965,13 @@ end
 --- of the current app.
 ---
 --- Parameters:
---- * value     - The string value to search for.
+---  * value     - The string value to search for.
 ---
 --- Returns:
---- * `hs.task` which is already running, searching for the `value`. Results will be output in the Error Log.
+---  * `hs.task` which is already running, searching for the `value`. Results will be output in the Error Log.
 ---
 --- Notes:
---- * This may take some time to complete, depending on how many resources the app contains.
+---  * This may take some time to complete, depending on how many resources the app contains.
 function app:searchResources(value)
     local grep = which("grep")
     if grep and value then

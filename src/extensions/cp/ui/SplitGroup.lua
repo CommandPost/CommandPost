@@ -2,16 +2,8 @@
 ---
 --- Split Group UI.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local Element           = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
@@ -19,7 +11,7 @@ local Element           = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local SplitGroup = Element:subclass("SplitGroup")
+local SplitGroup = Element:subclass("cp.ui.SplitGroup")
 
 --- cp.ui.SplitGroup.matches(element) -> boolean
 --- Function

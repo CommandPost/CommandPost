@@ -3,21 +3,8 @@
 --- Represents a Tangent Group. Groups can also be used to enable/disable multiple
 --- Parameters/Actions/Menus by enabling/disabling the containing group.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("tangentControls")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local is                = require("cp.is")
 local prop              = require("cp.prop")
 local tools             = require("cp.tools")
@@ -28,9 +15,6 @@ local parameter         = require("parameter")
 local menu              = require("menu")
 local binding           = require("binding")
 
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
 local insert            = table.insert
 local format            = string.format
 
@@ -42,14 +26,15 @@ local format            = string.format
 local group = {}
 group.mt = {}
 
---- plugins.core.tangent.manager.group.new(name, parent, controls)
+--- plugins.core.tangent.manager.group.new(name[, parent[, localActive]])
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
 ---  * name      - The name of the group.
 ---  * parent    - The parent group.
-function group.new(name, parent)
+---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
+function group.new(name, parent, localActive)
     if is.blank(name) then
         error("Group names cannot be empty")
     end
@@ -61,6 +46,11 @@ function group.new(name, parent)
         --- Field
         --- Indicates if the group is enabled.
         enabled = prop.TRUE(),
+
+        --- plugins.core.tangent.manager.group.localActive <cp.prop: boolean>
+        --- Field
+        --- Indicates if the group should ignore the parent's `enabled` state when determining if the group is active.
+        localActive = prop.THIS(localActive == true)
     }, group.mt)
 
     prop.bind(o) {
@@ -68,7 +58,7 @@ function group.new(name, parent)
         --- Field
         --- Indicates if the group is active. It will only be active if
         --- the current group is `enabled` and if the parent group (if present) is `active`.
-        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE(),
+        active = parent and prop.AND(o.localActive:OR(parent.active), o.enabled) or o.enabled:IMMUTABLE(),
     }
 
     return o
@@ -118,23 +108,24 @@ function group.mt:controls()
     end
 end
 
---- plugins.core.tangent.manager.group:group(name) -> group
+--- plugins.core.tangent.manager.group:group(name[, localActive]) -> group
 --- Method
 --- Adds a subgroup to this group.
 ---
 --- Parameters
 ---  * name  - the name of the new sub-group
+---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
 ---
 --- Returns:
 ---  * The new `group`
-function group.mt:group(name)
+function group.mt:group(name, localActive)
     local groups = self._groups
     if not groups then
         groups = {}
         self._groups = groups
     end
 
-    local g = group.new(name, self)
+    local g = group.new(name, self, localActive)
     insert(groups, g)
 
     return g
@@ -162,24 +153,25 @@ function group.mt:_unregisterAll(controlList)
     end
 end
 
---- plugins.core.tangent.manager.group:action(id[, name]) -> action
+--- plugins.core.tangent.manager.group:action(id[, name[, localActive]]) -> action
 --- Method
 --- Adds an `action` to this group.
 ---
 --- Parameters
 ---  * id    - The ID number of the new action
 ---  * name  - The name of the action.
+---  * localActive - If true, the parent group's `active` state is ignored when determining if this action is active.
 ---
 --- Returns:
 ---  * The new `action`
-function group.mt:action(id, name)
+function group.mt:action(id, name, localActive)
     local actions = self._actions
     if not actions then
         actions = {}
         self._actions = actions
     end
 
-    local a = action.new(id, name, self)
+    local a = action.new(id, name, self, localActive)
     insert(actions, a)
 
     self:_register(a)

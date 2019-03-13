@@ -2,42 +2,15 @@
 ---
 --- Menu Manager Plugin.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log										= require("hs.logger").new("menumgr")
--- local inspect									= require("hs.inspect")
+local image     = require("hs.image")
+local menubar		= require("hs.menubar")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local image										= require("hs.image")
-local menubar									= require("hs.menubar")
+local config		= require("cp.config")
+local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config									= require("cp.config")
-local i18n                    = require("cp.i18n")
-
---------------------------------------------------------------------------------
--- Module Extensions:
---------------------------------------------------------------------------------
-local section									= require("section")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local DEFAULT_DISPLAY_MENUBAR_AS_ICON 			= true
+local section		= require("section")
 
 --------------------------------------------------------------------------------
 --
@@ -156,7 +129,10 @@ function manager.updateMenubarIcon()
     title = title .. titleSuffix
 
     manager.menubar:setIcon(icon)
-    -- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
+    --------------------------------------------------------------------------------
+    -- Issue #406:
+    -- For some reason setting the title to " " temporarily fixes El Capitan.
+    --------------------------------------------------------------------------------
     manager.menubar:setTitle(" ")
     manager.menubar:setTitle(title)
 
@@ -165,7 +141,7 @@ end
 --- plugins.core.menu.manager.displayMenubarAsIcon <cp.prop: boolean>
 --- Field
 --- If `true`, the menubar item will be the app icon. If not, it will be the app name.
-manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(manager.updateMenubarIcon)
+manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true):watch(manager.updateMenubarIcon)
 
 --- plugins.core.menu.manager.addSection(priority) -> section
 --- Function
@@ -190,7 +166,6 @@ end
 --- Returns:
 ---  * None
 function manager.addTitleSuffix(fnTitleSuffix)
-
     manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
     manager.updateMenubarIcon()
 end
@@ -218,29 +193,89 @@ local plugin = {
     group		= "core",
     required	= true,
     dependencies	= {
-        ["core.setup"] 			= "setup",
+        ["core.preferences.panels.menubar"] = "prefs",
+        ["core.preferences.manager"] = "prefsManager",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Disable the menu when the Setup Panel is open:
+    -- Plugin Dependancies:
     --------------------------------------------------------------------------------
-    deps.setup.visible:watch(function(visible)
-        if visible then
-            manager.disable()
-        else
-            if manager.menubar then
-                manager.enable()
-            else
-                manager.init()
-            end
-        end
-    end, true)
+    local prefs = deps.prefs
+    local prefsManager = deps.prefsManager
+
+    --------------------------------------------------------------------------------
+    -- Setup Menubar Manager:
+    --------------------------------------------------------------------------------
+    manager.init()
+    manager.enable()
+
+    --------------------------------------------------------------------------------
+    -- Top Section:
+    --------------------------------------------------------------------------------
+    manager.top = manager.addSection(1)
+
+    --------------------------------------------------------------------------------
+    -- Bottom Section:
+    --------------------------------------------------------------------------------
+    manager.bottom = manager.addSection(9999999)
+        :addItem(0, function()
+            return { title = "-" }
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Help & Support Section:
+    --------------------------------------------------------------------------------
+    local helpAndSupport = manager.addSection(8888888)
+    local helpAndSupportEnabled = config.prop("menubarHelpEnabled", true)
+    helpAndSupport:setDisabledFn(function() return not helpAndSupportEnabled() end)
+    helpAndSupport:addHeading(i18n("helpAndSupport"))
+    prefs:addCheckbox(104,
+        {
+            label = i18n("show") .. " " .. i18n("helpAndSupport"),
+            onchange = function(_, params) helpAndSupportEnabled(params.checked) end,
+            checked = helpAndSupportEnabled,
+        }
+    )
+    manager.helpAndSupport = helpAndSupport
+
+    --------------------------------------------------------------------------------
+    -- Help & Support > CommandPost Section:
+    --------------------------------------------------------------------------------
+    manager.commandPostHelpAndSupport = helpAndSupport:addMenu(10, function() return i18n("appName") end)
+
+    --------------------------------------------------------------------------------
+    -- Help & Support > Apple Section:
+    --------------------------------------------------------------------------------
+    manager.appleHelpAndSupport = helpAndSupport:addMenu(20, function() return i18n("apple") end)
+
+    --------------------------------------------------------------------------------
+    -- Settings Section:
+    --------------------------------------------------------------------------------
+    manager.settings = manager.bottom
+        :addHeading(i18n("settings"))
+        :addItem(10.1, function()
+            return { title = i18n("preferences") .. "...", fn = prefsManager.show }
+        end)
+        :addItem(11, function()
+            return { title = "-" }
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Restart Menu Item:
+    --------------------------------------------------------------------------------
+    manager.bottom:addSeparator(9999999):addItem(10000000, function()
+        return { title = i18n("restart"),  fn = hs.reload }
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Quit Menu Item:
+    --------------------------------------------------------------------------------
+    manager.bottom:addItem(99999999, function()
+        return { title = i18n("quit"),  fn = function() config.application():kill() end }
+    end)
 
     return manager
 end

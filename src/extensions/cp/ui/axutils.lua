@@ -2,30 +2,14 @@
 ---
 --- Utility functions to support `hs._asm.axuielement`.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log						= require("hs.logger").new("axutils")
+local canvas		  = require("hs.canvas")
+local fnutils		  = require("hs.fnutils")
+local prop            = require("cp.prop")
+local is              = require("cp.is")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local canvas					= require("hs.canvas")
-local fnutils					= require("hs.fnutils")
-local prop                      = require("cp.prop")
-local is                        = require("cp.is")
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local sort                      = table.sort
+local sort            = table.sort
 
 --------------------------------------------------------------------------------
 --
@@ -33,6 +17,85 @@ local sort                      = table.sort
 --
 --------------------------------------------------------------------------------
 local axutils = {}
+
+--- cp.ui.axutils.valueOf(element, name[, default]) -> anything
+--- Function
+--- Returns the named `AX` attribute value, or the `default` if it is empty.
+---
+--- Parameters:
+--- * element - the `axuielement` to retrieve the attribute value for.
+--- * attribute - The attribute name (e.g. "AXValue")
+--- * default - (optional) if provided, this will be returned if the attribute is `nil`.
+---
+--- Returns:
+--- * The attribute value, or the `default` if none is found.
+function axutils.valueOf(element, attribute, default)
+    if axutils.isValid(element) then
+        return element:attributeValue(attribute) or default
+    end
+end
+
+--- cp.ui.axutils.childrenInColumn(element, role, startIndex) -> table | nil
+--- Function
+--- Finds the children for an element, then checks to see if they match the supplied
+--- role. It then compares the vertical position data of all matching children
+--- and returns a table with only the elements that line up to the element defined
+--- by the startIndex.
+---
+--- Parameters:
+---  * element     - The element to retrieve the children from.
+---  * role        - The required role as a string.
+---  * startIndex  - A number which defines the index of the first element to use.
+---
+--- Returns:
+---  * The table of `axuielement` objects, otherwise `nil`.
+function axutils.childrenInColumn(element, role, startIndex, childIndex)
+    local children = axutils.childrenWith(element, "AXRole", role)
+    if children and #children >= 2 then
+        local baseElement = children[startIndex]
+        if baseElement then
+            local frame = baseElement:attributeValue("AXFrame")
+            if frame then
+                local result = {}
+                for i=startIndex, #children do
+                    local child = children[i]
+                    local f = child and child:attributeValue("AXFrame")
+                    if child and f.x >= frame.x and f.x <= frame.x + frame.w then
+                        table.insert(result, child)
+                    end
+                end
+                if next(result) ~= nil then
+                    if childIndex then
+                        if result[childIndex] then
+                            return result[childIndex]
+                        end
+                    else
+                        return result
+                    end
+                end
+            end
+        end
+    end
+end
+
+--- cp.ui.axutils.childInColumn(element, role, startIndex, childIndex) -> table | nil
+--- Function
+--- Finds the children for an element, then checks to see if they match the supplied
+--- role. It then compares the vertical position data of all matching children
+--- and returns an element defined by the `childIndex`, which lines up vertially
+--- with the element defined by the `startIndex`.
+---
+--- Parameters:
+---  * element     - The element to retrieve the children from.
+---  * role        - The required role as a string.
+---  * startIndex  - A number which defines the index of the first element to use.
+---  * childIndex  - A number which defines the index of the element to return.
+---
+--- Returns:
+---  * The `axuielement` if it matches, otherwise `nil`.
+function axutils.childInColumn(element, role, startIndex, childIndex)
+    return axutils.childrenInColumn(element, role, startIndex, childIndex)
+end
 
 --- cp.ui.axutils.children(element) -> table | nil
 --- Function
@@ -53,15 +116,71 @@ function axutils.children(element)
     -- NOTE: There seems to be some weirdness with some elements coming from
     --       `axuielement` without the correct metatable.
     --------------------------------------------------------------------------------
-    if element.attributeValue then
+    if element and element.attributeValue then
         --------------------------------------------------------------------------------
         -- It's an AXUIElement:
         --------------------------------------------------------------------------------
         children = element:attributeValue("AXChildren") or element
-    elseif is.callable(element.children) then
+    elseif element and is.callable(element.children) then
         children = element:children()
     end
     return children
+end
+
+local function isBelow(a)
+    return function(b)
+        if b == nil then
+            return false
+        elseif a == nil then
+            return true
+        else
+            local aFrame, bFrame = a:frame(), b:frame()
+            return aFrame.y + aFrame.h < bFrame.y
+        end
+    end
+end
+
+local function isAbove(a)
+    return function(b)
+        if b == nil then
+            return false
+        elseif a == nil then
+            return true
+        else
+            local aFrame, bFrame = a:frame(), b:frame()
+            return aFrame.y < bFrame.y + bFrame.h
+        end
+    end
+end
+
+--- cp.ui.axutils.childrenBelow(element, topElement) -> table of axuielement or nil
+--- Function
+--- Finds the list of `axuielement` children from the `element` which are below the specified `topElement`.
+--- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+---
+--- Parameters:
+--- * element - The `axuielement` to find the children of.
+--- * topElement - The `axuielement` that the other children must be below.
+---
+--- Returns:
+--- * The table of `axuielements` that are below, or `nil` if the element is not available.
+function axutils.childrenBelow(element, topElement)
+    return element and axutils.childrenMatching(element, isBelow(topElement))
+end
+
+--- cp.ui.axutils.childrenAbove(element, bottomElement) -> table of axuielement or nil
+--- Function
+--- Finds the list of `axuielement` children from the `element` which are above the specified `bottomElement`.
+--- If the `element` is `nil`, `nil` is returned. If the `topElement` is `nil` all children are returned.
+---
+--- Parameters:
+--- * element - The `axuielement` to find the children of.
+--- * topElement - The `axuielement` that the other children must be above.
+---
+--- Returns:
+--- * The table of `axuielements` that are above, or `nil` if the element is not available.
+function axutils.childrenAbove(element, topElement)
+    return element and axutils.childrenMatching(element, isAbove(topElement))
 end
 
 --- cp.ui.axutils.hasAttributeValue(element, name, value) -> boolean
@@ -85,12 +204,12 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * name          - The name of the attribute to check
---- * value         - The value of the attribute
+---  * element       - The element to check
+---  * name          - The name of the attribute to check
+---  * value         - The value of the attribute
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withAttributeValue(element, name, value)
     return axutils.hasAttributeValue(element, name, value) and element or nil
 end
@@ -101,11 +220,11 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * role          - The required role
+---  * element       - The element to check
+---  * role          - The required role
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withRole(element, role)
     return axutils.withAttributeValue(element, "AXRole", role)
 end
@@ -116,11 +235,11 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * value         - The required value
+---  * element       - The element to check
+---  * value         - The required value
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withValue(element, value)
     return axutils.withAttributeValue(element, "AXValue", value)
 end
@@ -403,9 +522,44 @@ end
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenMatching(element, matcherFn)
     if element then
-        return fnutils.ifilter(element, matcherFn)
+        return fnutils.ifilter(axutils.children(element), matcherFn)
     end
     return nil
+end
+
+--- cp.ui.axutils.hasChild(element, matcherFn) -> boolean
+--- Function
+--- Checks if the axuielement has a child that passes the `matcherFn`.
+---
+--- Parameters:
+--- * element - the `axuielement` to check.
+--- * matcherFn - the `function` that accepts an `axuielement` and returns a `boolean`
+---
+--- Returns:
+--- * `true` if any child matches, otherwise `false`.
+function axutils.hasChild(element, matcherFn)
+    return axutils.childMatching(element, matcherFn) ~= nil
+end
+
+--- cp.ui.axutils.childIndex(element, childElement) -> number or nil
+--- Function
+--- Finds the index of the specified child element, if it is present. If not, `nil` is returned.
+---
+--- Parameters:
+--- * element   - The parent `axuielement`.
+--- * childElement - The child `axuielement` to find the index of.
+---
+--- Returns:
+--- * The index (`1` or higher) of the `childElement`, or `nil` if it was not found.
+function axutils.childIndex(element, childElement)
+    local children = axutils.children(element)
+    if children and #children > 0 then
+        for i,child in ipairs(children) do
+            if child == childElement then
+                return i
+            end
+        end
+    end
 end
 
 --- cp.ui.axutils.isValid(element) -> boolean
@@ -532,15 +686,15 @@ end
 --- get/set the value (if settable is `true`).
 ---
 --- Parameters:
---- * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
---- * attributeName - the `AX` atrribute name the property links to.
---- * settable      - Defaults to `false`. If `true`, the property will also be settable.
+---  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
+---  * attributeName - the `AX` atrribute name the property links to.
+---  * settable      - Defaults to `false`. If `true`, the property will also be settable.
 ---
 --- Returns:
---- * The `cp.prop` for the attribute.
+---  * The `cp.prop` for the attribute.
 ---
 --- Notes:
---- * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
+---  * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
 function axutils.prop(uiFinder, attributeName, settable)
     if prop.is(uiFinder) then
         return uiFinder:mutate(function(original)
@@ -562,10 +716,10 @@ axutils.match = {}
 --- Returns a `match` function that will return true if the `axuielement` has the specified `AXRole`.
 ---
 --- Parameters:
---- * roleName  - The role to check for.
+---  * roleName  - The role to check for.
 ---
 --- Returns:
---- * `function(element) -> boolean` that checks the `AXRole` is `roleName`
+---  * `function(element) -> boolean` that checks the `AXRole` is `roleName`
 function axutils.match.role(roleName)
     return function(element)
         return axutils.hasAttributeValue(element, "AXRole", roleName)

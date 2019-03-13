@@ -2,26 +2,18 @@
 ---
 --- Libraries Filmstrip Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local require = require
+
 local axutils							= require("cp.ui.axutils")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								  = require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
-local Playhead					  = require("cp.apple.finalcutpro.main.Playhead")
+local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
 local _									= require("moses")
+
+local cache                             = axutils.cache
+local isValid                           = axutils.isValid
+local childrenMatching                  = axutils.childrenMatching
 
 --------------------------------------------------------------------------------
 --
@@ -40,7 +32,7 @@ local LibrariesFilmstrip = {}
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function LibrariesFilmstrip.matches(element)
-    return element and element:attributeValue("AXIdentifier") == id("Content")
+    return element and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip.new(app) -> LibrariesFilmstrip
@@ -54,9 +46,8 @@ end
 ---  * A new `LibrariesFilmstrip` object.
 function LibrariesFilmstrip.new(parent)
     local o = prop.extend({_parent = parent}, LibrariesFilmstrip)
-
-    local UI = parent.mainGroupUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
+    local UI = parent.mainGroupUI:mutate(function(original, self) -- mainGroupUI is an AXSplitGroup (_NS:296)
+        return cache(self, "_ui", function()
             local main = original()
             if main then
                 for _,child in ipairs(main) do
@@ -168,7 +159,7 @@ end
 ---  * `Playhead` object
 function LibrariesFilmstrip:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, self.contentsUI, true)
+        self._playhead = Playhead(self, false, self.contentsUI, true)
     end
     return self._playhead
 end
@@ -184,7 +175,7 @@ end
 ---  * `Playhead` object
 function LibrariesFilmstrip:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, self.contentsUI, true)
+        self._skimmingPlayhead = Playhead(self, true, self.contentsUI, true)
     end
     return self._skimmingPlayhead
 end
@@ -259,7 +250,7 @@ end
 function LibrariesFilmstrip:clipsUI(filterFn)
     local ui = self:contentsUI()
     if ui then
-        local clips = axutils.childrenMatching(ui, function(child)
+        local clips = childrenMatching(ui, function(child)
             return child:attributeValue("AXRole") == "AXGroup"
                and (filterFn == nil or filterFn(child))
         end)
@@ -281,11 +272,14 @@ end
 --- Returns:
 ---  * A table of `Clip` objects or `nil` if no clip UI could be found.
 function LibrariesFilmstrip:clips(filterFn)
-    local clips = _uiToClips(self:clipsUI())
-    if filterFn then
-        clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+    local clipsUI = self:clipsUI()
+    if clipsUI then
+        local clips = _uiToClips(clipsUI)
+        if filterFn then
+            clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+        end
+        return clips
     end
-    return clips
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectedClipsUI() -> table | nil
@@ -396,7 +390,7 @@ end
 function LibrariesFilmstrip:selectClip(clip) -- luacheck:ignore
     if clip then
         local clipUI = clip:UI()
-        if axutils.isValid(clipUI) then
+        if isValid(clipUI) then
             clipUI:parent():setSelectedChildren( { clipUI } )
             return true
         end

@@ -2,22 +2,11 @@
 ---
 --- Controls sections for the CommandPost menu.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log									= require("hs.logger").new("section")
+local config = require("cp.config")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fnutils 								= require("hs.fnutils")
+local fnutils = require("hs.fnutils")
 
 --------------------------------------------------------------------------------
 --
@@ -29,12 +18,12 @@ local section = {}
 --- plugins.core.menu.manager.section.DEFAULT_PRIORITY -> number
 --- Constant
 --- The default priority
-section.DEFAULT_PRIORITY = 0
+section.DEFAULT_PRIORITY = 1
 
---- plugins.core.menu.manager.section.WARNING_LIMIT -> number
+--- plugins.core.menu.manager.section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX -> string
 --- Constant
---- The limit of how much time a menu item takes to load before we post warnings to the Error Log
-section.WARNING_LIMIT = 0.005
+--- The preferences key prefix for a disabled section.
+section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX = "menubar.sectionDisabled."
 
 --- plugins.core.menu.manager.section:new() -> section
 --- Method
@@ -55,7 +44,21 @@ function section:new()
     return o
 end
 
---- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> none
+--- plugins.core.menu.manager.section:setDisabledPreferenceKey(key) -> self
+--- Method
+--- Sets the Disabled Preferences Key.
+---
+--- Parameters:
+---  * key - A string which contains the unique preferences key.
+---
+--- Returns:
+---  * Self
+function section:setDisabledPreferenceKey(key)
+    self._key = key
+    return self
+end
+
+--- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> self
 --- Method
 --- Sets the Disabled Function
 ---
@@ -63,12 +66,26 @@ end
 ---  * disabledFn - The disabled function.
 ---
 --- Returns:
----  * None
+---  * Self
 function section:setDisabledFn(disabledFn)
     self._disabledFn = disabledFn
+    return self
 end
 
---- plugins.core.menu.manager.section:isDisabled() -> voolean
+--- plugins.core.menu.manager.section:getDisabledPreferenceKey() -> string
+--- Method
+--- Gets the disabled preferences key.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the section has a disabled preferences key defined, otherwise `false`.
+function section:getDisabledPreferenceKey()
+    return self._key
+end
+
+--- plugins.core.menu.manager.section:isDisabled() -> boolean
 --- Method
 --- Gets the disabled status
 ---
@@ -78,18 +95,18 @@ end
 --- Returns:
 ---  * `true` if the section is disabled, otherwise `false`
 function section:isDisabled()
-    return self._disabledFn and self._disabledFn()
+    return (self._key and config.get(section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. self._key, false)) or (self._disabledFn and self._disabledFn())
 end
 
---- plugins.core.menu.manager.section:_addGenerator() -> section
---- Method
---- A private method for registering a generator. This should not be called directly.
----
---- Parameters:
----  * `generator`	- The generator being added.
----
---- Returns:
----  * section - The section.
+-- plugins.core.menu.manager.section:_addGenerator() -> section
+-- Method
+-- A private method for registering a generator. This should not be called directly.
+--
+-- Parameters:
+--  * `generator`	- The generator being added.
+--
+-- Returns:
+--  * section - The section.
 function section:_addGenerator(generator)
     self._generators[#self._generators + 1] = generator
     table.sort(self._generators, function(a, b) return a.priority < b.priority end)
@@ -132,6 +149,66 @@ function section:addItems(priority, itemsFn)
         itemsFn = itemsFn
     })
     return self
+end
+
+--- plugins.core.menu.manager.section:addHeading(title) -> section
+--- Method
+--- Adds a heading to the top of a section.
+---
+--- Parameters:
+---  * title - The title of the heading.
+---
+--- Returns:
+---  * section - The new section that was created.
+function section:addHeading(title)
+    title = title and string.upper(title) or "TITLE MISSING"
+    self
+        :addSeparator(0.1)
+        :addItem(0.2, function()
+            if config.get("showSectionHeadingsInMenubar", false) then
+                return {
+                    title = title,
+                    disabled = true,
+                }
+            end
+        end)
+    return self
+end
+
+--- plugins.core.menu.manager.section:addApplicationHeading(title) -> section
+--- Method
+--- Adds a heading to the top of the section.
+---
+--- Parameters:
+---  * title - The title of the Application Heading.
+---
+--- Returns:
+---  * section - The new section that was created.
+function section:addApplicationHeading(title)
+    self._isApplicationHeading = true
+    title = title or "APPLICATION TITLE MISSING"
+    self
+        :addItem(0.00001, function()
+            return {
+                title = title,
+                disabled = true,
+            }
+        end)
+        :addSeparator(0.00002)
+    return self
+end
+
+--- plugins.core.menu.manager.section:isApplicationHeading() -> boolean
+--- Method
+--- Does this section contain an application heading?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if it does contain an application heading, otherwise `false`.
+function section:isApplicationHeading()
+    return self._isApplicationHeading
 end
 
 --- plugins.core.menu.manager.section:addSeparator(priority) -> section

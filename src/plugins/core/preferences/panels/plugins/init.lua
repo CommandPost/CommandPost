@@ -2,33 +2,19 @@
 ---
 --- Plugins Preferences Panel
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefsPlugin")
+local log       = require("hs.logger").new("prefsPlugin")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local fs                                        = require("hs.fs")
-local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
+local dialog    = require("hs.dialog")
+local fs        = require("hs.fs")
+local image     = require("hs.image")
+local inspect   = require("hs.inspect")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local plugins                                   = require("cp.plugins")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config    = require("cp.config")
+local plugins   = require("cp.plugins")
+local tools     = require("cp.tools")
+local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -172,9 +158,9 @@ local function controllerCallback(id, params)
     elseif action == "pluginsFolder" then
         openPluginsFolder()
     elseif action == "disable" then
-        disablePlugin(id)
+        disablePlugin(params.pluginID)
     elseif action == "enable" then
-        enablePlugin(id)
+        enablePlugin(params.pluginID)
     else
         log.ef("Unrecognised action: %s %s", id, inspect(params))
     end
@@ -222,8 +208,6 @@ local function generateContent()
         end
 
         pluginInfo[#pluginInfo+1] = info
-        mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
-
     end
 
     table.sort(pluginInfo, function(a, b)
@@ -244,6 +228,11 @@ local function generateContent()
     -- Handle the 'Open Plugin Folder' button:
     --------------------------------------------------------------------------------
     mod.panel:addHandler("onclick", "openPluginsFolder", openPluginsFolder)
+
+    --------------------------------------------------------------------------------
+    -- Handle the Plugin Actions:
+    --------------------------------------------------------------------------------
+    mod.panel:addHandler("onchange", "pluginsPanelCallback", controllerCallback)
 
     local env = {
         i18n        = i18n,
@@ -298,19 +287,18 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    global:add("cpOpenPluginsFolder")
+    deps.global
+        :add("cpOpenPluginsFolder")
         :whenActivated(openPluginsFolder)
         :groupedBy("commandPost")
 
+    --------------------------------------------------------------------------------
+    -- Initialise the module:
+    --------------------------------------------------------------------------------
     return mod.init(deps, env)
 end
 

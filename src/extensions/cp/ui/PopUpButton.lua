@@ -2,22 +2,9 @@
 ---
 --- Pop Up Button Module.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                           = require("hs.logger").new("popUpButton")
-
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
+local axutils						            = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 
 local go                            = require("cp.rx.go")
@@ -28,7 +15,7 @@ local If, WaitUntil                 = go.If, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = Element:subclass("PopUpButton")
+local PopUpButton = Element:subclass("cp.ui.PopUpButton")
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function

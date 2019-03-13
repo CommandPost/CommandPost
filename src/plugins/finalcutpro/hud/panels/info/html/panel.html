@@ -1,0 +1,39 @@
+<style>
+	table.info {
+		width:100%;
+		text-align:left;
+		font-size:11px;
+	}
+	th.description {
+		width:200px;
+		text-align:left;
+	}
+	h1 {
+		font-size: 12px;
+		font-weight: bold;
+		text-align: center;
+		margin: 0px;
+		padding: 0px;
+	}
+	.good {
+		color: #3f9253;
+	}
+	.bad {
+		color: #d1393e;
+	}
+</style>
+<table class="info">
+	<tr>
+		<th class="description">{{ i18n("media") }}:</th>
+		<th><span id="media">Loading...</span><th>
+	</tr>
+	<tr>
+		<th class="description">{{ i18n("quality") }}:</th>
+		<th><span id="quality">Loading...</span><th>
+	</tr>
+
+	<tr>
+		<th class="description">{{ i18n("backgroundRender") }}:</th>
+		<th><span id="backgroundRender">Loading...</span></th>
+	</tr>
+</table>

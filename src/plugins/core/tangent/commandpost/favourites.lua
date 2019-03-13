@@ -2,46 +2,18 @@
 ---
 --- Tangent Favourites.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("tng_favs")
+local log         = require("hs.logger").new("tng_favs")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local fs                                        = require("hs.fs")
-local inspect                                   = require("hs.inspect")
-local json                                      = require("hs.json")
+local fs          = require("hs.fs")
+local inspect     = require("hs.inspect")
+local json        = require("hs.json")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local tools       = require("cp.tools")
+local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local _                                         = require("moses")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- FAVOURITES_FILE -> number
--- Constant
--- Favourites File Name.
-local FAVOURITES_FILE = "Default.cpTangent"
+local _           = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -49,6 +21,11 @@ local FAVOURITES_FILE = "Default.cpTangent"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- FAVOURITES_FILE -> number
+-- Constant
+-- Favourites File Name.
+local FAVOURITES_FILE = "Default.cpTangent"
 
 -- plugins.core.tangent.commandpost.favourites.ID -> number
 -- Constant
@@ -195,7 +172,7 @@ local function saveToFile(favourites)
     --------------------------------------------------------------------------------
     local faves = {}
     for i = 1, mod.MAX_ITEMS do
-        local favourite = favourites[i]
+        local favourite = favourites and favourites[i]
         if favourite then
             faves[tostring(i)] = favourite
         end
@@ -296,9 +273,6 @@ local plugin = {
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.tangentManager, deps.actionManager, deps.cpGroup)
     return mod

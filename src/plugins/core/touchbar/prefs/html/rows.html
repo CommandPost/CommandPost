@@ -1,0 +1,53 @@
+{%
+	for i=1,maxItems,1 do
+%}
+			<tr>
+				<td class="tbRowIcon">
+					{%
+						local result = tb.getIcon(tostring(i), groupID)
+						local class=""
+						if result then
+							class = " dropped"
+						end
+					%}
+
+					<div id="touchbar_{{ groupID }}_dropzone{{ i }}" class="dropzone{{ class }}" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
+						<div id="touchbar_{{ groupID }}_dropzone{{ i }}_preview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
+							{%
+
+								if result then
+							%}
+							<img src="{{ result }}" />
+							{%
+								else
+							%}
+								icon
+							{%
+								end
+							%}
+						</div>
+						<input id="touchbar_{{ groupID }}_button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeTouchBarDropZone('{{ groupID }}', '{{ i }}', this)" onclick="pressTouchBarDropZone('{{ groupID }}', '{{ i }}')" />
+					</div>
+				</td>
+				<td class="tbRowAction">
+					<input type="text" id="touchbar_{{ groupID }}_button{{ i }}_action" class="tbActionTextbox" value="{{ tb.getActionTitle(tostring(i), groupID) or "None" }}" disabled>
+				</td>
+				<td class="tbRowActionButton">
+					<a id="touchbar_{{ groupID }}_button{{ i }}_actionButton" href="#" class="button tbActionButton" onclick="pressTouchBarActionButton('{{ groupID }}', '{{ i }}')">Select</a>
+					<a id="touchbar_{{ groupID }}_button{{ i }}_clearActionButton" href="#" class="button tbActionButton" onclick="pressTouchBarClearButton('{{ groupID }}', '{{ i }}')">Clear</a>
+				</td>
+				<td class="tbRowLabel">
+					<input type="text" id="touchbar_{{ groupID }}_button{{ i }}_label" class="tbButtonLabel" value="{{ tb.getLabel(tostring(i), groupID) or "None" }}" onchange="changeTouchBarLabel('{{ groupID }}', '{{ i }}', this.value)">
+				</td>
+				<td class="tbRowOrder">
+					{% if i ~= 1  then %}
+					<a id="touchbar_{{ groupID }}_button{{ i }}_upButton" href="#" class="button tbActionButton" onclick="pressTouchBarUpButton('{{ groupID }}', '{{ i }}')">⬆</a>
+					{% end
+					if i ~= maxItems then %}
+					<a id="touchbar_{{ groupID }}_button{{ i }}_downButton" href="#" class="button tbActionButton" onclick="pressTouchBarDownButton('{{ groupID }}', '{{ i }}')">⬇</a>
+					{% end %}
+				</td>
+			</tr>
+{%
+	end
+%}

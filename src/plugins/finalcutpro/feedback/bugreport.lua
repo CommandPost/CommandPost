@@ -2,28 +2,14 @@
 ---
 --- Sends Apple a Bug Report or Feature Request for Final Cut Pro.
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local require = require
 
---------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log               = require("hs.logger").new("bugreport")
+local log               = require("hs.logger").new("fcpBug")
 
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
 local inspect           = require("hs.inspect")
 local screen            = require("hs.screen")
 local webview           = require("hs.webview")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local just              = require("cp.just")
@@ -32,24 +18,15 @@ local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY          = 1
-local FEEDBACK_URL      = "https://www.apple.com/feedback/finalcutpro.html"
-local FEEDBACK_TYPE     = "Bug Report"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_WINDOW_STYLE -> table
---- Constant
---- Default Window Style
-mod.DEFAULT_WINDOW_STYLE = {"titled", "closable", "nonactivating", "resizable"}
+-- FEEDBACK_TYPE -> string
+-- Constant
+-- Feedback Type
+local FEEDBACK_TYPE = "Bug Report"
 
 --- plugins.finalcutpro.feedback.bugreport.DEFAULT_WIDTH -> number
 --- Constant
@@ -61,13 +38,10 @@ mod.DEFAULT_WIDTH = 650
 --- Default Window Height
 mod.DEFAULT_HEIGHT = 500
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_TITLE -> string
---- Constant
---- Default Window Title
-mod.DEFAULT_TITLE = i18n("reportBugToApple")
-
-
-mod.position = config.prop("bugreportPosition", nil)
+--- plugins.finalcutpro.feedback.bugreport.position -> <cp.prop: table>
+--- Field
+--- Webview Position
+mod.position = config.prop("finalcutpro.bugreport.position", nil)
 
 -- centredPosition() -> none
 -- Function
@@ -306,21 +280,21 @@ function mod.open(bugReport)
     --------------------------------------------------------------------------------
     -- Gather Data:
     --------------------------------------------------------------------------------
-    mod.fullname = config.get("bugReportCustomerName", "")
+    mod.fullname = config.get("finalCutPro.bugReportCustomerName", "")
     if mod.fullname == "" then
         mod.fullname = tools.getFullname() or ""
     end
 
-    mod.email = config.get("bugReportCustomerEmail", "")
+    mod.email = config.get("finalCutPro.bugReportCustomerEmail", "")
     if mod.email == "" and mod.fullname ~= "" then
         mod.email = tools.getEmail(mod.fullname) or ""
     end
 
-    mod.videoOutput = config.get("bugReportVideoOutput", "")
-    mod.feedback = config.get("bugReportFeedback", "")
-    mod.fcpUsage = config.get("bugReportFCPUsage", "")
-    mod.documentationUsage = config.get("bugReportDocumentationUsage", "")
-    mod.documentationContext = config.get("bugReportDocumentationContext", "")
+    mod.videoOutput = config.get("finalCutPro.bugReportVideoOutput", "None")
+    mod.feedback = config.get("finalCutPro.bugReportFeedback", "")
+    mod.fcpUsage = config.get("finalCutPro.bugReportFCPUsage", "")
+    mod.documentationUsage = config.get("finalCutPro.bugReportDocumentationUsage", "")
+    mod.documentationContext = config.get("finalCutPro.bugReportDocumentationContext", "")
 
     if not mod.macOSVersion then
         mod.macOSVersion = tools.getmacOSVersion()
@@ -361,19 +335,19 @@ function mod.open(bugReport)
             --log.df("Result: %s | %s", id, value)
 
             if id == "customerName" then
-                config.set("bugReportCustomerName", value)
+                config.set("finalCutPro.bugReportCustomerName", value)
             elseif id == "customerEmail" then
-                config.set("bugReportCustomerEmail", value)
+                config.set("finalCutPro.bugReportCustomerEmail", value)
             elseif id == "feedback" then
-                config.set("bugReportFeedback", value)
+                config.set("finalCutPro.bugReportFeedback", value)
             elseif id == "fcpUsage" then
-                config.set("bugReportFCPUsage", value)
+                config.set("finalCutPro.bugReportFCPUsage", value)
             elseif id == "documentationUsage" then
-                config.set("bugReportDocumentationUsage", value)
+                config.set("finalCutPro.bugReportDocumentationUsage", value)
             elseif id == "documentationContext" then
-                config.set("bugReportDocumentationContext", value)
+                config.set("finalCutPro.bugReportDocumentationContext", value)
             elseif id == "videoOutput" then
-                config.set("bugReportVideoOutput", value)
+                config.set("finalCutPro.bugReportVideoOutput", value)
             else
                 log.ef("Bug Report Controller recieved something it didn't expect.")
             end
@@ -386,15 +360,15 @@ function mod.open(bugReport)
     local prefs = {}
     prefs.developerExtrasEnabled = config.developerMode()
     mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+        :windowStyle({"titled", "closable", "nonactivating", "resizable"})
         :shadow(true)
         :allowNewWindows(false)
         :allowTextEntry(true)
-        :windowTitle(mod.DEFAULT_TITLE)
+        :windowTitle(i18n("reportFinalCutProBugToApple"))
         :deleteOnClose(true)
         :windowCallback(windowCallback)
         :navigationCallback(navigationCallback)
-        :url(FEEDBACK_URL)
+        :url("https://www.apple.com/feedback/finalcutpro.html")
         :darkMode(true)
         :show()
 
@@ -411,6 +385,19 @@ function mod.open(bugReport)
 
 end
 
+-- appleBugReporter() -> none
+-- Function
+-- Opens the Apple Bug Reporter
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function appleBugReporter()
+    os.execute('open "https://bugreport.apple.com/"')
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -420,41 +407,52 @@ local plugin = {
     id              = "finalcutpro.feedback.bugreport",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.helpandsupport.finalcutpro"]     = "menu",
+        ["core.menu.manager"]           = "menu",
         ["core.commands.global"]        = "global",
     }
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.menu
-        :addItem(PRIORITY, function()
-            return { title = i18n("suggestFeatureToApple"), fn = function() mod.open(false) end }
+    local appleHelpAndSupport = deps.menu.appleHelpAndSupport
+    appleHelpAndSupport
+        :addItem(1.2, function()
+            return { title = i18n("suggestFinalCutProFeatureToApple"), fn = function() mod.open(false) end }
         end)
-        :addItem(PRIORITY + 0.1, function()
-            return { title = i18n("reportBugToApple"),  fn = function() mod.open(true) end }
+        :addItem(1.3, function()
+            return { title = i18n("reportFinalCutProBugToApple"),  fn = function() mod.open(true) end }
         end)
-        :addSeparator(PRIORITY + 0.2)
+        :addSeparator(1.4)
+        :addSeparator(10000.1)
+        :addItem(10000, function()
+            return { title = i18n("appleBugReporter"), fn = appleBugReporter }
+        end)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpBugReport")
+    local global = deps.global
+    global
+        :add("cpFinalCutProBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("reportFinalCutProBugToApple"))
 
-    deps.global:add("cpFeatureRequest")
+    global
+        :add("cpFinalCutProFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("suggestFinalCutProFeatureToApple"))
+
+    global
+        :add("cpAppleBugReporter")
+        :whenActivated(appleBugReporter)
+        :groupedBy("helpandsupport")
+        :titled(i18n("appleBugReporter"))
 
     return mod
-
 end
 
 return plugin

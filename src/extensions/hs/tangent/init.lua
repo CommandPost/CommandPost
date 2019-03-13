@@ -14,11 +14,6 @@
 ---
 --- This extension was thrown together by [Chris Hocking](https://github.com/latenitefilms), then dramatically improved by [David Peterson](https://github.com/randomeizer) for [CommandPost](http://commandpost.io).
 
---------------------------------------------------------------------------------
---
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tangent")
 local inspect                                   = require("hs.inspect")
 
