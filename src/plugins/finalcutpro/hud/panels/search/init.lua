@@ -37,11 +37,6 @@ local webviewAlert              = dialog.webviewAlert
 --------------------------------------------------------------------------------
 local mod = {}
 
--- NEW_SEARCH_LOGIC -> boolean
--- Constant
--- Sets whether we use David's pattern matching feature or Chris's sloppy functions.
-local NEW_SEARCH_LOGIC = true
-
 -- MAXIMUM_HISTORY -> number
 -- Constant
 -- The Maximum Number of History items.
