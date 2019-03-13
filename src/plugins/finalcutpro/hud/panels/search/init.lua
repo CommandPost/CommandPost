@@ -25,7 +25,9 @@ local doesMatchPattern          = pattern.doesMatch
 local doUntil                   = just.doUntil
 local iconFallback              = tools.iconFallback
 local imageFromPath             = image.imageFromPath
+local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
+local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
 --------------------------------------------------------------------------------
@@ -65,10 +67,10 @@ mod.lastColumn = config.prop("hud.search.lastColumn", "Name")
 --- Match Case
 mod.matchCase = config.prop("hud.search.matchCase", false)
 
---- plugins.finalcutpro.hud.panels.search.matchWords <cp.prop: boolean>
+--- plugins.finalcutpro.hud.panels.search.exactMatch <cp.prop: boolean>
 --- Variable
 --- Match Case
-mod.matchWords = config.prop("hud.search.matchWords", true)
+mod.exactMatch = config.prop("hud.search.exactMatch", true)
 
 --- plugins.finalcutpro.hud.panels.search.filterBrowserBeforeSearch <cp.prop: boolean>
 --- Variable
@@ -243,7 +245,7 @@ end
 --  * None
 local function updateInfo()
     local script = [[changeValueByID("searchField", "]] .. mod.lastValue() .. [[");]] .. "\n"
-    script = script .. [[changeCheckedByID('matchWords', ]] .. tostring(mod.matchWords()) .. [[);]] .. "\n"
+    script = script .. [[changeCheckedByID('exactMatch', ]] .. tostring(mod.exactMatch()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('matchCase', ]] .. tostring(mod.matchCase()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('wholeWords', ]] .. tostring(mod.wholeWords()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('playAfterFind', ]] .. tostring(mod.playAfterFind()) .. [[);]] .. "\n"
@@ -271,95 +273,21 @@ local function popupMessage(a, b)
     end
 end
 
--- doesMatch(source, find) -> boolean
--- Function
--- Does Match?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`
-local function doesMatch(source, find)
-    return string.find(source, find, nil, true) ~= nil
-end
-
--- doesMatchWholeWord(source, find) -> boolean
--- Function
--- Does Match Whole Word?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`.
-local function doesMatchWholeWord(source, find)
-    if source and find then
-        local a, b = string.find(source, find, nil, true)
-        if source == find then
-            return true
-        end
-        if a == 1 then
-            if b == string.len(source) then
-                return true
-            else
-                if string.sub(source, b + 1, b + 1) == " " then
-                    return true
-                end
-            end
-        end
-        if b == string.len(source) then
-            if string.sub(source, a - 1, a - 1) == " " then
-                return true
-            end
-        end
-        if a and b and string.len(source) > string.len(find) + 2 then
-            if string.sub(source, a - 1, a - 1) == " " and string.sub(source, b + 1, b + 1) == " " then
-                return true
-            end
-        end
-    end
-    return false
-end
-
--- doesMatchWords(source, find) -> boolean
--- Function
--- Does Match Words?
---
--- Parameters:
---  * source - The source string.
---  * find - The string to search the source for.
---
--- Returns:
---  * `true` if matched, otherwise `false`
-local function doesMatchWords(source, find)
-    if source and find then
-        for word in find:gmatch("%S+") do
-            if not string.find(source, word, nil, true) then
-                return false
-            end
-        end
-        return true
-    else
-        return false
-    end
-end
-
--- process(cell, isProject) -> boolean
+-- process(cell, row, searchString, isProject) -> boolean
 -- Function
 -- Process a cell.
 --
 -- Parameters:
---  * cell - The UI element to process.
---  * isProject - Is it a project?
+--  * cell - The UI element of the cell.
+--  * row - The UI element of the row.
+--  * searchString - The search string.
+--  * isProject - A boolean that passes along whether or not the row refers to a project.
 --
 -- Returns:
 --  * `true` if matched, otherwise `false`
 local function process(cell, row, searchString, isProject)
     local matchCase         = mod.matchCase()
-    local matchWords        = mod.matchWords()
+    local exactMatch        = mod.exactMatch()
     local wholeWords        = mod.wholeWords()
     local openProject       = mod.openProject()
     local playAfterFind     = mod.playAfterFind()
@@ -383,34 +311,12 @@ local function process(cell, row, searchString, isProject)
         value = textfield and textfield:attributeValue("AXValue")
     end
 
-    if not matchCase then
-        value = value and string.lower(value)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Comparing between Chris & David's methods:
-    --------------------------------------------------------------------------------
-    local result = false
-    if NEW_SEARCH_LOGIC then
-        if value and doesMatchPattern(value, searchString, {
-                caseSensitive = matchCase,
-                exact = matchWords,
-                wholeWords = wholeWords,
-            })
-        then
-            result = true
-        end
-    else
-        if value
-        and (not wholeWords and matchWords and doesMatch(value, searchString))
-        or  (wholeWords and not matchWords and doesMatchWholeWord(value, searchString))
-        or  (not matchWords and not wholeWords and doesMatchWords(value, searchString))
-        or  (matchWords and wholeWords and doesMatchWholeWord(value, searchString)) then
-            result = true
-        end
-    end
-
-    if result then
+    if value and doesMatchPattern(value, searchString, {
+            caseSensitive = matchCase,
+            exact = exactMatch,
+            wholeWords = wholeWords,
+        })
+    then
         fcp:launch()
         if not fcp:libraries():isFocused() then
             fcp:selectMenu({"Window", "Go To", "Libraries"})
@@ -425,10 +331,10 @@ local function process(cell, row, searchString, isProject)
                 fcp:selectMenu({"View", "Playback", "Play"})
             end
         end
-        return true
+        return true, isProject
     end
 
-    return false
+    return false, isProject
 end
 
 -- find(value) -> none
@@ -442,19 +348,13 @@ end
 -- Returns:
 --  * None
 local function find(searchString, column, findNext, findPrevious)
+
     --------------------------------------------------------------------------------
     -- Make sure the value is valid:
     --------------------------------------------------------------------------------
-    if searchString and tools.trim(searchString) == "" then
+    if searchString and trim(searchString) == "" then
         popupMessage(i18n("invalidSearchField"), i18n("invalidSearchFieldDescription"))
         return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Keep it lowercase unless we're matching case:
-    --------------------------------------------------------------------------------
-    if not mod.matchCase() then
-        searchString = string.lower(searchString)
     end
 
     --------------------------------------------------------------------------------
@@ -484,7 +384,8 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     -- Filter Browser Before Search:
     --------------------------------------------------------------------------------
-    if mod.filterBrowserBeforeSearch() then
+    local filterBrowserBeforeSearch = mod.filterBrowserBeforeSearch()
+    if filterBrowserBeforeSearch then
         --------------------------------------------------------------------------------
         -- Ensure the Search Bar is visible
         --------------------------------------------------------------------------------
@@ -513,9 +414,9 @@ local function find(searchString, column, findNext, findPrevious)
     end
 
     --------------------------------------------------------------------------------
-    -- Get column number:
+    -- Get column ID unless we're looking at "all" columns:
     --------------------------------------------------------------------------------
-    local columnNumber
+    local columnID
     if column ~= i18n("allVisibleColumns") then
         local listUI = fcp:libraries():list():UI()
         local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
@@ -528,11 +429,11 @@ local function find(searchString, column, findNext, findPrevious)
         end
         for i, button in pairs(buttons) do
             if button:attributeValue("AXTitle") == column then
-                columnNumber = i
+                columnID = i
                 break
             end
         end
-        if not columnNumber then
+        if not columnID then
             popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
             return
         end
@@ -605,7 +506,7 @@ local function find(searchString, column, findNext, findPrevious)
                 else
                     local isProject = false
                     local children = row:attributeValue("AXChildren")
-                    local cell = children and children[columnNumber]
+                    local cell = children and children[columnID]
                     if process(cell, row, searchString, isProject) then
                         return
                     end
@@ -641,7 +542,7 @@ local function find(searchString, column, findNext, findPrevious)
 
     if loopCount > MAXIMUM_LOOPS then
         --------------------------------------------------------------------------------
-        -- Aborted:
+        -- Aborted due to going over the maximum number of loops:
         --------------------------------------------------------------------------------
         popupMessage(i18n("searchAborted"), i18n("searchAbortedDescription"))
     else
@@ -670,7 +571,7 @@ local function getEnv()
     --------------------------------------------------------------------------------
     local columnNames = getColumnNames()
     local options = ""
-    for i, v in tools.spairs(columnNames) do
+    for i, v in spairs(columnNames) do
         local selected = ""
         if mod.lastColumn() == i then
             selected = [[ selected="selected" ]]
@@ -695,9 +596,10 @@ end
 local function showHistoryPopup()
     local menu = {}
     local history = mod.history()
+    local insert = table.insert
 
     for _, v in pairs(history) do
-        table.insert(menu, {
+        insert(menu, {
             title = v,
             fn = function()
                 local script = [[changeValueByID("searchField", "]] .. v .. [[");]] .. "\n"
@@ -708,16 +610,16 @@ local function showHistoryPopup()
     end
 
     if next(history) then
-        table.insert(menu, {
+        insert(menu, {
             title = "-"
         })
 
-        table.insert(menu, {
+        insert(menu, {
             title = i18n("clearHistory"),
             fn = function() mod.history({}) end
         })
     else
-        table.insert(menu, {
+        insert(menu, {
             title = i18n("historyIsEmpty"),
             disabled = true,
         })
@@ -755,7 +657,7 @@ function plugin.init(deps, env)
             label       = i18n("search"),
             tooltip     = i18n("search"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/search.png"))),
-            height      = 345,
+            height      = 285,
             loadedFn    = updateInfo,
         })
 
@@ -790,8 +692,8 @@ function plugin.init(deps, env)
                 end
             elseif params["type"] == "matchCase" then
                 mod.matchCase(params["matchCase"])
-            elseif params["type"] == "matchWords" then
-                mod.matchWords(params["matchWords"])
+            elseif params["type"] == "exactMatch" then
+                mod.exactMatch(params["exactMatch"])
             elseif params["type"] == "wholeWords" then
                 mod.wholeWords(params["wholeWords"])
             elseif params["type"] == "playAfterFind" then
