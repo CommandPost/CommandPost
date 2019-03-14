@@ -1217,7 +1217,7 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
     return mod.send(byteString)
 end
 
---- hs.tangent.setParameterValue(paramID, value[, atDefault]) -> boolean, string
+--- hs.tangent.sendParameterValue(paramID, value[, atDefault]) -> boolean, string
 --- Function
 --- Updates the Hub with a parameter value.
 --- The Hub then updates the displays of any panels which are currently
