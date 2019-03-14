@@ -288,15 +288,17 @@ local function process(cell, row, searchString, isProject)
     local playAfterFind     = mod.playAfterFind()
 
     local textfield
-    if cell and cell[1]:attributeValue("AXRole") == "AXImage" then
-        if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
-            isProject = true
+    if cell and cell[1] then
+        if cell[1]:attributeValue("AXRole") == "AXImage" then
+            if cell[1]:attributeValue("AXDescription") == "F General ObjectGlyphs Project" then
+                isProject = true
+            else
+                isProject = false
+            end
+            textfield = cell[2]
         else
-            isProject = false
+            textfield = cell[1]
         end
-        textfield = cell[2]
-    else
-        textfield = cell and cell[1]
     end
 
     local value
