@@ -30,6 +30,7 @@
 					wholeWords: document.getElementById("wholeWords").checked,
 					exactMatch: document.getElementById("exactMatch").checked,
 					filterBrowserBeforeSearch: document.getElementById("filterBrowserBeforeSearch").checked,
+					searchEntireLibrary: document.getElementById("searchEntireLibrary").checked,
 				},
 			}
 			postMessage(result);
@@ -96,9 +97,13 @@
 	<tr>
 		<th style="width: 100px;">
 		</th>
-		<th>
+		<th style="width: 200px;">
 			<label><input type="checkbox" id="loopSearch" value="true" onchange="sendMessage('loopSearch');"> {{ i18n("loopSearch") }}</label>
 		</th>
+		<th>
+			<label><input type="checkbox" id="searchEntireLibrary" value="true" onchange="sendMessage('searchEntireLibrary');"> {{ i18n("searchEntireLibrary") }}</label>
+		</th>
+
 	</tr>
 </table>
 <table style="padding-top: 5px;">
