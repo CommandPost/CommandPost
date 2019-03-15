@@ -257,8 +257,8 @@ function mod.init(tangentManager, fcpGroup)
         --------------------------------------------------------------------------------
         -- Update all three displays on the Tangent Element when you move a wheel:
         --------------------------------------------------------------------------------
-        local updateWheelScreen = function(wheel)
-            local colorValue = wheel:colorValue()
+        local updateWheelScreen = function(w)
+            local colorValue = w:colorValue()
             if colorValue then
                 local offset = 255
                 tangent.sendParameterValue(id + 3, round(colorValue.red * offset))
