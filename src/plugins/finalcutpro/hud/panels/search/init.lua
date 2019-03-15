@@ -92,6 +92,11 @@ mod.loopSearch = config.prop("hud.search.loopSearch", true)
 --- Open Project
 mod.openProject = config.prop("hud.search.openProject", false)
 
+--- plugins.finalcutpro.hud.panels.search.searchEntireLibrary <cp.prop: boolean>
+--- Variable
+--- Search Entire Library
+mod.searchEntireLibrary = config.prop("hud.search.searchEntireLibrary", false)
+
 --- plugins.finalcutpro.hud.panels.search.history <cp.prop: table>
 --- Variable
 --- Search History
@@ -247,6 +252,7 @@ local function updateInfo()
     script = script .. [[changeCheckedByID('filterBrowserBeforeSearch', ]] .. tostring(mod.filterBrowserBeforeSearch()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('loopSearch', ]] .. tostring(mod.loopSearch()) .. [[);]] .. "\n"
     script = script .. [[changeCheckedByID('openProject', ]] .. tostring(mod.openProject()) .. [[);]] .. "\n"
+    script = script .. [[changeCheckedByID('searchEntireLibrary', ]] .. tostring(mod.searchEntireLibrary()) .. [[);]] .. "\n"
     script = script .. [[focusOnSearchField();]] .. "\n"
     mod._manager.injectScript(script)
 end
@@ -376,6 +382,36 @@ local function find(searchString, column, findNext, findPrevious)
     end) then
         popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
         return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Search Entire Library:
+    --------------------------------------------------------------------------------
+    if mod.searchEntireLibrary() then
+        local browser = fcp:browser()
+        if not libraries:sidebar():isShowing() then
+            browser:showLibraries():press()
+        end
+        local scrollArea = libraries:sidebar():UI()
+        local outline = scrollArea and scrollArea[1]
+        if outline and outline:attributeValue("AXRole") == "AXOutline" then
+            local children = outline:attributeValue("AXChildren")
+            if children then
+                local foundSelected = false
+                for i=#children, 1, -1 do
+                    local child = children[i]
+                    if child and child:attributeValue("AXSelected") then
+                        foundSelected = true
+                    end
+                    if foundSelected then
+                        if child and child:attributeValue("AXDisclosureLevel") == 0 then
+                            outline:setAttributeValue("AXSelectedRows", {child})
+                            break
+                        end
+                    end
+                end
+            end
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -701,6 +737,8 @@ function plugin.init(deps, env)
                 mod.filterBrowserBeforeSearch(params["filterBrowserBeforeSearch"])
             elseif params["type"] == "openProject" then
                 mod.openProject(params["openProject"])
+            elseif params["type"] == "searchEntireLibrary" then
+                mod.searchEntireLibrary(params["searchEntireLibrary"])
             elseif params["type"] == "history" then
                 showHistoryPopup()
             end
