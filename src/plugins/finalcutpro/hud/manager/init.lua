@@ -27,9 +27,11 @@ local tools         = require("cp.tools")
 local moses         = require("moses")
 local panel         = require("panel")
 
+local doAfter       = timer.doAfter
 local forBundleID   = app.forBundleID
 local processInfo   = hs.processInfo
 local sortedIndex   = moses.sortedIndex
+local waitUntil     = timer.waitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -526,7 +528,9 @@ function mod.new()
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, cbID)
-                mod.refresh(cbID)
+                waitUntil(function() return not mod._webview:loading() end, function()
+                    mod.refresh(cbID)
+                end, 0.01)
             end)
 
         local theToolbar = mod._toolbar
@@ -885,9 +889,9 @@ end
 --- Returns:
 ---  * None
 function mod.updateVisibility()
-    timer.doAfter(0.000000000001, function()
+    doAfter(0.000000000001, function()
         showOrHideHUD()
-        timer.doAfter(0.5, showOrHideHUD)
+        doAfter(0.5, showOrHideHUD)
     end)
 end
 
