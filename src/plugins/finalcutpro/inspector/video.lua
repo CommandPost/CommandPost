@@ -58,8 +58,7 @@ end
 -- Changes the Blend Mode.
 --
 -- Parameters:
---  * value - The blend mode you wish to change the clip(s) too as a string
---            (as it appears in the Inspector in English).
+--  * value - The blend mode you wish to change the clip(s) too as a string.
 --
 -- Returns:
 --  * None
@@ -341,41 +340,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Blend Modes:
     --------------------------------------------------------------------------------
-    local blendModes = {
-        ["FFHeliumBlendModeNormal"] = "Normal",
-        ["FFHeliumBlendModeSubtract"] = "Subtract",
-        ["FFHeliumBlendModeDarken"] = "Darken",
-        ["FFHeliumBlendModeMultiply"] = "Multiply",
-        ["FFHeliumBlendModeColorBurn"] = "Color Burn",
-        ["FFHeliumBlendModeLinearBurn"] = "Linear Burn",
-        ["FFHeliumBlendModeAdd"] = "Add",
-        ["FFHeliumBlendModeLighten"] = "Lighten",
-        ["FFHeliumBlendModeScreen"] = "Screen",
-        ["FFHeliumBlendModeColorDodge"] = "Color Dodge",
-        ["FFHeliumBlendModeLinearDodge"] = "Linear Dodge",
-        ["FFHeliumBlendModeOverlay"] = "Overlay",
-        ["FFHeliumBlendModeSoftLight"] = "Soft Light",
-        ["FFHeliumBlendModeHardLight"] = "Hard Light",
-        ["FFHeliumBlendModeVividLight"] = "Vivid Light",
-        ["FFHeliumBlendModeLinearLight"] = "Linear Light",
-        ["FFHeliumBlendModePinLight"] = "Pin Light",
-        ["FFHeliumBlendModeHardMix"] = "Hard Mix",
-        ["FFHeliumBlendModeDifference"] = "Difference",
-        ["FFHeliumBlendModeExclusion"] = "Exclusion",
-        ["FFHeliumBlendModeStencilAlpha"] = "Stencil Alpha",
-        ["FFHeliumBlendModeStencilLuma"] = "Stencil Luma",
-        ["FFHeliumBlendModeSilhouetteAlpha"] = "Silhouette Alpha",
-        ["FFHeliumBlendModeSilhouetteLuma"] = "Silhouette Luma",
-        ["FFHeliumBlendModeBehind"] = "Behind",
-        ["FFHeliumBlendModeAlphaAdd"] = "Alpha Add",
-        ["FFHeliumBlendModePremultipliedMix"] = "Premultiplied Mix",
-    }
-    local title = fcp:string("FFHeliumBlendMode")
+    local blendModes = fcp:inspector():video().blendModes
     for code, name in pairs(blendModes) do
         fcpxCmds
             :add(name)
-            :whenActivated(doBlendMode(name))
-            :titled(title .. ": " .. fcp:string(code))
+            :whenActivated(doBlendMode(fcp:string(code)))
+            :titled(i18n("blendMode") .. ": " .. fcp:string(code))
     end
 end
 

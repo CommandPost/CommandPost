@@ -265,6 +265,13 @@
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730009</Key> <!-- Blend Mode -->
+                                <Display>Bar</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>

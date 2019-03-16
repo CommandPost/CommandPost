@@ -75,10 +75,10 @@ end
 --- Checks if the provided element could be a VideoInspector.
 ---
 --- Parameters:
---- * element   - The element to check
+---  * element   - The element to check
 ---
 --- Returns:
---- * `true` if it matches, `false` if not.
+---  * `true` if it matches, `false` if not.
 function VideoInspector.static.matches(element)
     local contentUI = findContentUI(element)
     return contentUI and #contentUI > 0 and childMatching(contentUI, function(child)
@@ -152,6 +152,48 @@ function VideoInspector.lazy.prop:contentUI()
             return findContentUI(original())
         end)
     end)
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.blendModes() -> table
+--- Function
+--- Returns a table of Blend Modes where the key is the string ID, and the value
+--- is the name of the blend mode in English.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of blend modes
+function VideoInspector.lazy.value.blendModes()
+    return {
+        ["FFHeliumBlendModeNormal"] = "Normal",
+        ["FFHeliumBlendModeSubtract"] = "Subtract",
+        ["FFHeliumBlendModeDarken"] = "Darken",
+        ["FFHeliumBlendModeMultiply"] = "Multiply",
+        ["FFHeliumBlendModeColorBurn"] = "Color Burn",
+        ["FFHeliumBlendModeLinearBurn"] = "Linear Burn",
+        ["FFHeliumBlendModeAdd"] = "Add",
+        ["FFHeliumBlendModeLighten"] = "Lighten",
+        ["FFHeliumBlendModeScreen"] = "Screen",
+        ["FFHeliumBlendModeColorDodge"] = "Color Dodge",
+        ["FFHeliumBlendModeLinearDodge"] = "Linear Dodge",
+        ["FFHeliumBlendModeOverlay"] = "Overlay",
+        ["FFHeliumBlendModeSoftLight"] = "Soft Light",
+        ["FFHeliumBlendModeHardLight"] = "Hard Light",
+        ["FFHeliumBlendModeVividLight"] = "Vivid Light",
+        ["FFHeliumBlendModeLinearLight"] = "Linear Light",
+        ["FFHeliumBlendModePinLight"] = "Pin Light",
+        ["FFHeliumBlendModeHardMix"] = "Hard Mix",
+        ["FFHeliumBlendModeDifference"] = "Difference",
+        ["FFHeliumBlendModeExclusion"] = "Exclusion",
+        ["FFHeliumBlendModeStencilAlpha"] = "Stencil Alpha",
+        ["FFHeliumBlendModeStencilLuma"] = "Stencil Luma",
+        ["FFHeliumBlendModeSilhouetteAlpha"] = "Silhouette Alpha",
+        ["FFHeliumBlendModeSilhouetteLuma"] = "Silhouette Luma",
+        ["FFHeliumBlendModeBehind"] = "Behind",
+        ["FFHeliumBlendModeAlphaAdd"] = "Alpha Add",
+        ["FFHeliumBlendModePremultipliedMix"] = "Premultiplied Mix",
+    }
 end
 
 return VideoInspector
