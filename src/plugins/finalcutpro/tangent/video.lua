@@ -7,6 +7,7 @@ local require = require
 local log                   = require("hs.logger").new("tangentVideo")
 
 local deferred              = require("cp.deferred")
+local dialog                = require("cp.dialog")
 local Do                    = require("cp.rx.go.Do")
 local fcp                   = require("cp.apple.finalcutpro")
 local go                    = require("cp.rx.go")
@@ -278,9 +279,9 @@ function mod.init(deps)
     local numberOfBlendModes = 27
 
     local blendModeNameToID = function(value)
-        for id, code in pairs(blendModes) do
+        for i, code in pairs(blendModes) do
             if value == fcp:string(code) then
-                return id
+                return i
             end
         end
     end

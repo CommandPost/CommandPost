@@ -164,7 +164,7 @@ end
 ---
 --- Returns:
 ---  * A table of blend modes
-function VideoInspector.lazy.value:blendModes()
+function VideoInspector.lazy.value.blendModes()
     return {
         ["FFHeliumBlendModeNormal"] = "Normal",
         ["FFHeliumBlendModeSubtract"] = "Subtract",
