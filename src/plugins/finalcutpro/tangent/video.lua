@@ -247,6 +247,122 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Video Blend Modes Knob:
     --------------------------------------------------------------------------------
+    local getShortBlendModei18n = function(i)
+        if i == 1 then
+            return i18n("normal9")
+        elseif i == 2 then
+            return i18n("subtract9")
+        elseif i == 3 then
+            return i18n("darken9")
+        elseif i == 4 then
+            return i18n("multiply9")
+        elseif i == 5 then
+            return i18n("colorBurn9")
+        elseif i == 6 then
+            return i18n("linearBurn9")
+        elseif i == 7 then
+            return i18n("add9")
+        elseif i == 8 then
+            return i18n("lighten9")
+        elseif i == 9 then
+            return i18n("screen9")
+        elseif i == 10 then
+            return i18n("colorDodge9")
+        elseif i == 11 then
+            return i18n("linearDodge9")
+        elseif i == 12 then
+            return i18n("overlay9")
+        elseif i == 13 then
+            return i18n("softLight9")
+        elseif i == 14 then
+            return i18n("hardLight9")
+        elseif i == 15 then
+            return i18n("viviLight9")
+        elseif i == 16 then
+            return i18n("linearLight9")
+        elseif i == 17 then
+            return i18n("pinLight9")
+        elseif i == 18 then
+            return i18n("hardMix9")
+        elseif i == 19 then
+            return i18n("difference9")
+        elseif i == 20 then
+            return i18n("exclusion9")
+        elseif i == 21 then
+            return i18n("stencilAlpha9")
+        elseif i == 22 then
+            return i18n("stencilLuma9")
+        elseif i == 23 then
+            return i18n("silhouetteAlpha9")
+        elseif i == 24 then
+            return i18n("silhouetteLuma9")
+        elseif i == 25 then
+            return i18n("behind9")
+        elseif i == 26 then
+            return i18n("alphaAdd9")
+        elseif i == 27 then
+            return i18n("premultipliedMix9")
+        end
+    end
+
+    local getLongBlendModei18n = function(name)
+        if name == "Normal" then
+            return i18n("normal")
+        elseif name == "Subtract" then
+            return i18n("subtract")
+        elseif name == "Darken" then
+            return i18n("darken")
+        elseif name == "Multiply" then
+            return i18n("multiply")
+        elseif name == "Color Burn" then
+            return i18n("colorBurn")
+        elseif name == "Linear Burn" then
+            return i18n("linearBurn")
+        elseif name == "Add" then
+            return i18n("add")
+        elseif name == "Lighten" then
+            return i18n("lighten")
+        elseif name == "Screen" then
+            return i18n("screen")
+        elseif name == "Color Dodge" then
+            return i18n("colorDodge")
+        elseif name == "Linear Dodge" then
+            return i18n("linearDodge")
+        elseif name == "Overlay" then
+            return i18n("overlay")
+        elseif name == "Soft Light" then
+            return i18n("softLight")
+        elseif name == "Hard Light" then
+            return i18n("hardLight")
+        elseif name == "Vivid Light" then
+            return i18n("vividLight")
+        elseif name == "Linear Light" then
+            return i18n("linearLight")
+        elseif name == "Pin Light" then
+            return i18n("pinLight")
+        elseif name == "Hard Mix" then
+            return i18n("hardMix")
+        elseif name == "Difference" then
+            return i18n("difference")
+        elseif name == "Exclusion" then
+            return i18n("exclusion")
+        elseif name == "Stencil Alpha" then
+            return i18n("stencilAlpha")
+        elseif name == "Stencil Luma" then
+            return i18n("stencilLuma")
+        elseif name == "Silhouette Alpha" then
+            return i18n("silhouetteAlpha")
+        elseif name == "Silhouette Luma" then
+            return i18n("silhouetteLuma")
+        elseif name == "Behind" then
+            return i18n("behind")
+        elseif name == "Alpha Add" then
+            return i18n("alphaAdd")
+        elseif name == "Premultiplied Mix" then
+            return i18n("premultipliedMix")
+        end
+    end
+
     local blendModes = {
         [1] = "FFHeliumBlendModeNormal",
         [2] = "FFHeliumBlendModeSubtract",
@@ -286,34 +402,19 @@ function mod.init(deps)
         end
     end
 
-    local blendModeUpdate = deferred.new(0.1):action(function()
+    local blendModeUpdate = deferred.new(0.5):action(function()
         video:compositing():blendMode():value(mod._nextBlendMode)
         mod.cachedBlendModeID = nil
     end)
 
     mod.cachedBlendModeID = nil
 
-    mod._videoGroup:parameter(id + 1)
-        :name(i18n("blendMode"))
-        :name9(i18n("blendMode9"))
-        :minValue(1)
-        :maxValue(numberOfBlendModes)
-        :stepSize(1)
-        :onGet(function()
-            if video and video:isShowing() then
-                local currentBlendMode = video:compositing():blendMode():value()
-                local result = currentBlendMode and blendModeNameToID(currentBlendMode)
-                return result
-            end
-        end)
-        :onChange(function(change)
-            local increase = change >= 1
+    local onChange = function(increase)
+        video:compositing():blendMode():show()
 
-            video:compositing():blendMode():show()
-
-            local currentBlendMode = video:compositing():blendMode():value()
-            local currentBlendModeID = mod.cachedBlendModeID or (currentBlendMode and blendModeNameToID(currentBlendMode))
-
+        local currentBlendMode = video:compositing():blendMode():value()
+        local currentBlendModeID = mod.cachedBlendModeID or (currentBlendMode and blendModeNameToID(currentBlendMode))
+        if currentBlendModeID then
             if increase then
                 currentBlendModeID = currentBlendModeID + 1
                 if currentBlendModeID > numberOfBlendModes then
@@ -333,7 +434,23 @@ function mod.init(deps)
                 mod._nextBlendMode = newName
                 blendModeUpdate()
             end
+        end
+    end
+
+    mod._videoGroup:menu(id + 1)
+        :name(i18n("blendMode"))
+        :name9(i18n("blendMode9"))
+        :onGet(function()
+            if mod.cachedBlendModeID then
+                return getShortBlendModei18n(mod.cachedBlendModeID)
+            else
+                local currentBlendMode = video:compositing():blendMode():value()
+                local result = currentBlendMode and blendModeNameToID(currentBlendMode)
+                return result and getShortBlendModei18n(result)
+            end
         end)
+        :onNext(function() onChange(true) end)
+        :onPrev(function() onChange(false) end)
         :onReset(function()
             video:compositing():blendMode():show():value(fcp:string("FFHeliumBlendModeNormal"))
         end)
@@ -344,7 +461,7 @@ function mod.init(deps)
     mod._videoBlendGroup = mod._videoGroup:group("Blend Modes")
     for code, name in spairs(fcp:inspector():video().blendModes) do
         mod._videoBlendGroup
-            :action(id + 2, name)
+            :action(id + 2, getLongBlendModei18n(name))
             :onPress(doBlendMode(fcp:string(code)))
         id = id + 1
     end
