@@ -505,7 +505,7 @@
         "favourite": "Favourite",
         "favourites": "Favourites",
         "fcpMediaFolder_Error_NoFiles": "No files were provided to import.",
-        "fcpMediaFolder_Error_ProjectRequire": "There must be a Project or Compound Clip in the Timeline.",
+        "fcpMediaFolder_Error_ProjectRequired": "There must be a Project or Compound Clip in the Timeline.",
         "fcpMediaFolder_Error_ShowTimeline": "Unable to show the Timeline",
         "fcpMediaFolder_Error_UnableToPaste": {
             "one": "Unable to add '%{file}' and one other to the Pasteboard.",
