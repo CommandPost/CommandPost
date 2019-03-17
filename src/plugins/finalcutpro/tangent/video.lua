@@ -247,90 +247,60 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Video Blend Modes Knob:
     --------------------------------------------------------------------------------
-    local shortBlendModes = {
-        [1]     = "Normal",
-        [2]     = "Subtract",
-        [3]     = "Darken",
-        [4]     = "Multiply",
-        [5]     = "ColorBurn",
-        [6]     = "LinBurn",
-        [7]     = "Add",
-        [8]     = "Lighten",
-        [9]     = "Screen",
-        [10]    = "ColorDodg",
-        [11]    = "LinDodg",
-        [12]    = "Overlay",
-        [13]    = "SoftLight",
-        [14]    = "HardLight",
-        [15]    = "VivLight",
-        [16]    = "LinLight",
-        [17]    = "PinLight",
-        [18]    = "HardMix",
-        [19]    = "Diff",
-        [20]    = "Exclusion",
-        [21]    = "Stencil A",
-        [22]    = "Stencil L",
-        [23]    = "Sil Alpha",
-        [24]    = "Sil Luma",
-        [25]    = "Behind",
-        [26]    = "Alpha Add",
-        [27]    = "Premulti",
-    }
-
-    local getShortBlendModei18n = function(id)
-        if id == 1 then
+    local getShortBlendModei18n = function(i)
+        if i == 1 then
             return i18n("normal9")
-        elseif id == 2 then
+        elseif i == 2 then
             return i18n("subtract9")
-        elseif id == 3 then
+        elseif i == 3 then
             return i18n("darken9")
-        elseif id == 4 then
+        elseif i == 4 then
             return i18n("multiply9")
-        elseif id == 5 then
+        elseif i == 5 then
             return i18n("colorBurn9")
-        elseif id == 6 then
+        elseif i == 6 then
             return i18n("linearBurn9")
-        elseif id == 7 then
+        elseif i == 7 then
             return i18n("add9")
-        elseif id == 8 then
+        elseif i == 8 then
             return i18n("lighten9")
-        elseif id == 9 then
+        elseif i == 9 then
             return i18n("screen9")
-        elseif id == 10 then
+        elseif i == 10 then
             return i18n("colorDodge9")
-        elseif id == 11 then
+        elseif i == 11 then
             return i18n("linearDodge9")
-        elseif id == 12 then
+        elseif i == 12 then
             return i18n("overlay9")
-        elseif id == 13 then
+        elseif i == 13 then
             return i18n("softLight9")
-        elseif id == 14 then
+        elseif i == 14 then
             return i18n("hardLight9")
-        elseif id == 15 then
-            return i18n("vividLight9")
-        elseif id == 16 then
+        elseif i == 15 then
+            return i18n("viviLight9")
+        elseif i == 16 then
             return i18n("linearLight9")
-        elseif id == 17 then
+        elseif i == 17 then
             return i18n("pinLight9")
-        elseif id == 18 then
+        elseif i == 18 then
             return i18n("hardMix9")
-        elseif id == 19 then
+        elseif i == 19 then
             return i18n("difference9")
-        elseif id == 20 then
+        elseif i == 20 then
             return i18n("exclusion9")
-        elseif id == 21 then
+        elseif i == 21 then
             return i18n("stencilAlpha9")
-        elseif id == 22 then
+        elseif i == 22 then
             return i18n("stencilLuma9")
-        elseif id == 23 then
+        elseif i == 23 then
             return i18n("silhouetteAlpha9")
-        elseif id == 24 then
+        elseif i == 24 then
             return i18n("silhouetteLuma9")
-        elseif id == 25 then
+        elseif i == 25 then
             return i18n("behind9")
-        elseif id == 26 then
+        elseif i == 26 then
             return i18n("alphaAdd9")
-        elseif id == 27 then
+        elseif i == 27 then
             return i18n("premultipliedMix9")
         end
     end
