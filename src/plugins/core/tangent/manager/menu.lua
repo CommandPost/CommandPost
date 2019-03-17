@@ -161,6 +161,43 @@ function menu.mt:onNext(nextFn)
     return self
 end
 
+--- plugins.core.tangent.manager.menu:onReset(resetFn) -> self
+--- Method
+--- Sets the function that will be called when the Tangent sends a 'parameter reset' request.
+--- This function should have this signature:
+---
+--- `function() -> nil`
+---
+--- Parameters:
+---  * resetFn     - The function to call when the Tangent requests the parameter reset.
+---
+--- Returns:
+---  * The `parameter` instance.
+function menu.mt:onReset(resetFn)
+    if is.nt.callable(resetFn) then
+        error(format("Please provide a `reset` function: %s", type(resetFn)))
+    end
+    self._reset = resetFn
+    return self
+end
+
+--- plugins.core.tangent.manager.menu:reset() -> number
+--- Method
+--- Executes the `reset` function if present. Returns the current value of the parameter after reset.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The current value, or `nil` if it can't be accessed.
+function menu.mt:reset()
+    if self._reset and self:active() then
+        self._reset()
+    end
+    return self:get()
+end
+
+
 --- plugins.core.tangent.manager.menu:next() -> nil
 --- Method
 --- Executes the `next` function, if present.

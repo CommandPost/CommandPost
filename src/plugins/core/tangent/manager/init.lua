@@ -401,11 +401,21 @@ local fromHub = {
         if menu.is(control) then
             if increment == 1 then
                 control:next()
+            else
+                control:prev()
+            end
+            --------------------------------------------------------------------------------
+            -- For some strange reason, instead of returning -1 when you turn the knob
+            -- anti-clockwise, it returns 4294967295. No idea why!
+            --
+            --[[
             elseif increment == -1 then
                 control:prev()
             else
                 log.ef("Unexpected 'menu change' increment from Tangent: %s", increment)
             end
+            --]]
+            --------------------------------------------------------------------------------
             local value = control:get()
             if value ~= nil then
                 tangent.sendMenuString(control.id, value)
