@@ -10,6 +10,8 @@ local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
+local doAfter           = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -119,7 +121,7 @@ function mod.apply(action)
     transitions:applyItem(transition)
 
     -- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
-    timer.doAfter(0.1, function()
+    doAfter(0.1, function()
         transitions:loadLayout(transitionsLayout)
         if effectsLayout then effects:loadLayout(effectsLayout) end
         if not transitionsShowing then transitions:hide() end

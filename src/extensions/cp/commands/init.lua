@@ -4,18 +4,20 @@
 
 local require = require
 
-local log						  = require("hs.logger").new("commands")
+local log                       = require("hs.logger").new("commands")
 
-local fs						  = require("hs.fs")
-local json						= require("hs.json")
-local timer						= require("hs.timer")
+local fs                        = require("hs.fs")
+local json                      = require("hs.json")
+local timer                     = require("hs.timer")
 
-local command					= require("cp.commands.command")
-local config					= require("cp.config")
-local prop						= require("cp.prop")
-local tools						= require("cp.tools")
+local command                   = require("cp.commands.command")
+local config                    = require("cp.config")
+local prop                      = require("cp.prop")
+local tools                     = require("cp.tools")
 
-local moses						= require("moses")
+local moses                     = require("moses")
+
+local waitUntil                 = timer.waitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -59,7 +61,7 @@ end
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 ---
 --- Parameters:
---- * `id`		- The ID to retrieve
+--- * `id`      - The ID to retrieve
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
@@ -72,7 +74,7 @@ end
 --- Returns a table with the set of commands.
 ---
 --- Parameters:
---- * `id`		- The ID to retrieve
+--- * `id`      - The ID to retrieve
 ---
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
@@ -85,7 +87,7 @@ end
 --- Creates a collection of commands. These commands can be enabled or disabled as a group.
 ---
 --- Parameters:
----  * `id`		- The unique ID for this command group.
+---  * `id`     - The unique ID for this command group.
 ---
 --- Returns:
 ---  * cp.commands - The command group that was created.
@@ -145,7 +147,7 @@ end
 --- ```
 ---
 --- Parameters:
---- * `commandId`	- The unique ID for the new command.
+--- * `commandId`   - The unique ID for the new command.
 ---
 --- Returns:
 --- * The new `cp.commands.command` instance.
@@ -162,7 +164,7 @@ end
 --- Returns the command with the specified ID, or `nil` if none exists.
 ---
 --- Parameters:
---- * `commandId`	- The command ID to retrieve.
+--- * `commandId`   - The command ID to retrieve.
 ---
 --- Returns:
 --- * The `cp.commands.command`, or `nil`.
@@ -176,7 +178,7 @@ end
 ---
 --- ```lua
 --- for id,cmd in pairs(myCommands:getAll()) do
---- 	...
+---     ...
 --- end
 --- ```
 function commands.mt:getAll()
@@ -247,17 +249,17 @@ end
 --- Adds an event watcher to the command group.
 ---
 --- Parameters:
---- * events	- The table of events to watch for (see Notes).
+--- * events    - The table of events to watch for (see Notes).
 ---
 --- Returns:
 --- * The command group instance.
 ---
 --- Notes:
 --- * The table can have properties with the following functions, which will be called for the specific event:
---- ** `add(command)`: 		Called after the provided `cp.commands.command` instance has been added.
---- ** `activate()`			Called when the command group is activated.
---- ** `enable()`:			Called when the command group is enabled.
---- ** `disable()`:			Called when the command group is disabled.
+--- ** `add(command)`:      Called after the provided `cp.commands.command` instance has been added.
+--- ** `activate()`         Called when the command group is activated.
+--- ** `enable()`:          Called when the command group is enabled.
+--- ** `disable()`:         Called when the command group is disabled.
 function commands.mt:watch(events)
     if not self.watchers then
         self.watchers = {}
@@ -271,8 +273,8 @@ end
 -- Called when notifying watchers about an event type.
 --
 -- Parameters:
--- * type		- The string ID for the event type.
--- * ...		- The list of parameters to pass to watchers.
+-- * type       - The string ID for the event type.
+-- * ...        - The list of parameters to pass to watchers.
 --
 -- Returns:
 -- * Nothing.
@@ -292,16 +294,20 @@ end
 --- command group is not enabled within 5 seconds.
 ---
 --- Parameters:
---- * successFn		- the function to call if successfully activated.
---- * failureFn		- the function to call if not activated after 5 seconds.
+--- * successFn     - the function to call if successfully activated.
+--- * failureFn     - the function to call if not activated after 5 seconds.
 ---
 --- Returns:
 --- * Nothing.
+commands._count = 0
 function commands.mt:activate(successFn, failureFn)
     self:_notify('activate')
-    local count = 0
-    timer.waitUntil(
-        function() count = count + 1; return self:isEnabled() or count == 5000 end,
+    commands._count = 0
+    waitUntil(
+        function()
+            commands._count = commands._count + 1
+            return self:isEnabled() or commands._count == 5000
+        end,
         function()
             if self:isEnabled() then
                 if successFn then
@@ -313,8 +319,7 @@ function commands.mt:activate(successFn, failureFn)
                 end
             end
         end,
-        0.001
-    )
+    0.001)
 end
 
 --- cp.commands:saveShortcuts() -> table
@@ -349,7 +354,7 @@ end
 --- The data should probably come from the `saveShortcuts` method.
 ---
 --- Parameters:
---- * data		- The data table containing shortcuts.
+--- * data      - The data table containing shortcuts.
 ---
 --- Returns:
 --- * Nothing
@@ -389,7 +394,7 @@ end
 --- Loads a shortcut set from the standard location with the specified name.
 ---
 --- Parameters:
---- * name		- The name of the shortcut set. E.g. "My Custom Shortcuts"
+--- * name      - The name of the shortcut set. E.g. "My Custom Shortcuts"
 ---
 --- Returns:
 --- * `true` if the file was found and loaded successfully.
@@ -441,7 +446,7 @@ end
 --- Saves the current shortcuts for all groups to a file in the standard location with the provided name.
 ---
 --- Parameters:
---- * name		- The name of the command set. E.g. "My Custom Commands"
+--- * name      - The name of the command set. E.g. "My Custom Commands"
 ---
 --- Returns:
 --- * `true` if the shortcuts were saved successfully.

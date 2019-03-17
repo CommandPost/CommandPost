@@ -12,9 +12,11 @@ local timer                             = require("hs.timer")
 local window                            = require("hs.window")
 
 local app                               = require("cp.app")
-local config			                      = require("cp.config")
+local config			                = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local prop                              = require("cp.prop")
+
+local doAfter                           = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -50,7 +52,7 @@ mod.dockIconEnabled = prop(
         hs.dockIcon(enabled)
 
         if focusedWindow then
-            timer.doAfter(0.3, function()
+            doAfter(0.3, function()
                 focusedWindow:focus()
                 mod._working = false
             end)

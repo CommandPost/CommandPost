@@ -21,6 +21,9 @@ local i18n          = require("cp.i18n")
 local panel         = require("panel")
 local _             = require("moses")
 
+local doAfter       = timer.doAfter
+local waitUntil     = timer.waitUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -211,8 +214,6 @@ local function windowCallback(action, wv, frame)
                     -- Wait until the Webview has loaded before triggering individual panels
                     -- functions:
                     --------------------------------------------------------------------------------
-                    --log.df("Executing Load Function via manager.windowCallback.")
-                    --timer.waitUntil(function() return not wv:loading() end, v.loadFn, 0.01)
                     if just.doUntil(function() return not wv:loading() end) then
                         v.loadFn()
                     else
@@ -362,7 +363,7 @@ function mod.show()
     else
         mod._webview:html(generateHTML())
         mod._webview:show()
-        timer.doAfter(0.1, function()
+        doAfter(0.1, function()
             --log.df("Attempting to bring Preferences Panel to focus.")
             mod._webview:hswindow():raise():focus()
         end)
@@ -406,7 +407,7 @@ function mod.injectScript(script)
         --------------------------------------------------------------------------------
         -- Wait until the Webview has loaded before executing JavaScript:
         --------------------------------------------------------------------------------
-        timer.waitUntil(function() return not mod._webview:loading() end, function()
+        waitUntil(function() return not mod._webview:loading() end, function()
             mod._webview:evaluateJavaScript(script,
                 function(_, theerror)
                     if theerror and theerror.code ~= 0 then

@@ -22,6 +22,8 @@ local tools                                 = require("cp.tools")
 local go                                    = require("cp.rx.go")
 local Do, Throw                             = go.Do, go.Throw
 
+local doAfter                               = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -649,7 +651,7 @@ function ColorPuck:loop()
     if yShift then pct:value(pctValue) end
     if xShift then angle:value(angleValue) end
 
-    timer.doAfter(0.01, function() self:loop() end)
+    doAfter(0.01, function() self:loop() end)
 end
 
 -- cp.apple.finalcutpro.inspector.color.ColorPuck:__tostring() -> string

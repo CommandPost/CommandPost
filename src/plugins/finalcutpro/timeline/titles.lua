@@ -14,6 +14,8 @@ local i18n              = require("cp.i18n")
 local json              = require("cp.json")
 local just              = require("cp.just")
 
+local doAfter           = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -128,7 +130,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Restore Pasteboard:
         --------------------------------------------------------------------------------
-        timer.doAfter(1, function()
+        doAfter(1, function()
 
             --------------------------------------------------------------------------------
             -- Restore Original Pasteboard Contents:
@@ -309,7 +311,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Restore Layout:
     --------------------------------------------------------------------------------
-    timer.doAfter(0.1, function()
+    doAfter(0.1, function()
         generators:loadLayout(generatorsLayout)
         if browserLayout then browser:loadLayout(browserLayout) end
     end)
@@ -317,7 +319,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Restore Pasteboard:
     --------------------------------------------------------------------------------
-    timer.doAfter(1, function()
+    doAfter(1, function()
 
         --------------------------------------------------------------------------------
         -- Restore Original Pasteboard Contents:

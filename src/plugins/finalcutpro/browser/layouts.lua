@@ -57,6 +57,8 @@ local playErrorSound    = tools.playErrorSound
 local childrenWithRole  = axutils.childrenWithRole
 local childWithRole     = axutils.childWithRole
 
+local doAfter           = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -110,7 +112,7 @@ function mod.setupWatcher()
                             --------------------------------------------------------------------------------
                             -- We need to add in a delay to give the UI time to update:
                             --------------------------------------------------------------------------------
-                            timer.doAfter(0.1, function()
+                            doAfter(0.1, function()
                                 mod.restoreBrowserLayoutForSelectedCollection()
                             end)
                         end

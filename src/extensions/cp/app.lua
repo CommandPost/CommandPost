@@ -38,6 +38,7 @@ local tools                     = require("cp.tools")
 local v							= require("semver")
 local class                     = require("middleclass")
 
+local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
 local insert                    = table.insert
@@ -1041,20 +1042,20 @@ function app.static._initWatchers()
 
             if cpApp then
                 if eventType == applicationwatcher.activated then
-                    timer.doAfter(0.01, function()
+                    doAfter(0.01, function()
                         cpApp.showing:update()
                         cpApp.frontmost:update()
                         updateFrontmostApp(cpApp)
                     end)
                     return
                 elseif eventType == applicationwatcher.deactivated then
-                    timer.doAfter(0.01, function()
+                    doAfter(0.01, function()
                         cpApp.showing:update()
                         cpApp.frontmost:update()
                     end)
                     return
                 elseif eventType == applicationwatcher.launched then
-                    timer.doAfter(0.01, function()
+                    doAfter(0.01, function()
                         cpApp.hsApplication:update()
                         cpApp.running:update()
                         cpApp.frontmost:update()
@@ -1062,7 +1063,7 @@ function app.static._initWatchers()
                     end)
                     return
                 elseif eventType == applicationwatcher.terminated then
-                    timer.doAfter(0.01, function()
+                    doAfter(0.01, function()
                         cpApp.hsApplication:update()
                         cpApp.running:update()
                         cpApp.frontmost:update()

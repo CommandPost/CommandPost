@@ -21,6 +21,7 @@ local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 local ui                = require("cp.web.ui")
 
+local doAfter           = timer.doAfter
 local uuid              = host.uuid
 
 --------------------------------------------------------------------------------
@@ -322,7 +323,7 @@ function mod.insertFilesIntoFinalCutPro(files)
     --------------------------------------------------------------------------------
     if mod.deleteAfterImport() then
         for _, file in pairs(files) do
-            timer.doAfter(mod.SECONDS_UNTIL_DELETE, function()
+            doAfter(mod.SECONDS_UNTIL_DELETE, function()
                 os.remove(file)
             end)
         end

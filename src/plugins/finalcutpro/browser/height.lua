@@ -9,6 +9,8 @@ local eventtap                          = require("hs.eventtap")
 
 local fcp                               = require("cp.apple.finalcutpro")
 
+local doUntil                           = timer.doUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -88,7 +90,7 @@ function mod.changeBrowserClipHeight(direction)
     -- Keep looping it until the key is released.
     --------------------------------------------------------------------------------
     if result then
-        timer.doUntil(function() return not mod.changeBrowserClipHeightAlreadyInProgress end, function()
+        doUntil(function() return not mod.changeBrowserClipHeightAlreadyInProgress end, function()
             shiftClipHeight(direction)
         end, eventtap.keyRepeatInterval())
     end

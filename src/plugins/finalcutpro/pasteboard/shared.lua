@@ -19,6 +19,8 @@ local i18n                                      = require("cp.i18n")
 local Do                                        = require("cp.rx.go.Do")
 local Throw                                     = require("cp.rx.go.Throw")
 
+local doAfter                                   = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -402,7 +404,7 @@ function mod.doPasteHistoryItem(folderName, index)
             --------------------------------------------------------------------------------
             -- Restore the original Pasteboard Contents:
             --------------------------------------------------------------------------------
-            timer.doAfter(0.3, function()
+            doAfter(0.3, function()
                 mod._manager.writeFCPXData(originalContents, true)
             end)
         end

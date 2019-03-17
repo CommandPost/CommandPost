@@ -41,7 +41,9 @@ local tools         = require("cp.tools")
 
 local v             = require("semver")
 
-local format = string.format
+local doAfter       = timer.doAfter
+local format        = string.format
+
 local rmdir, mkdir, attributes = tools.rmdir, fs.mkdir, fs.attributes
 
 local TEST_LIBRARY = "Test Library"
@@ -715,7 +717,7 @@ onRun(
             -- wait until the library actually closes...
             just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 10, 0.1)
 
-            timer.doAfter(1, function()
+            doAfter(1, function()
                 -- delete the temporary library copy.
                 local ok, err = rmdir(targetLibraryPath, true)
                 if not ok then

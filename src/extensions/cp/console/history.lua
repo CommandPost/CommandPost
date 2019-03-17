@@ -7,12 +7,14 @@
 
 local require = require
 
-local console  = require("hs.console")
-local hash     = require("hs.hash")
-local timer    = require("hs.timer")
+local console   = require("hs.console")
+local hash      = require("hs.hash")
+local timer     = require("hs.timer")
 
-local config   = require("cp.config")
-local json     = require("cp.json")
+local config    = require("cp.config")
+local json      = require("cp.json")
+
+local doAfter   = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -144,7 +146,7 @@ function mod.history(toFind)
         local command = history[toFind]
         if command then
             print(">> " .. command)
-            timer.doAfter(.1, function()
+            doAfter(.1, function()
                 local newHistory = console.getHistory()
                 newHistory[#newHistory] = command
                 console.setHistory(newHistory)

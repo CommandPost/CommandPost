@@ -31,17 +31,18 @@ local screen                    = require("hs.screen")
 local timer                     = require("hs.timer")
 
 local config                    = require("cp.config")
+local i18n                      = require("cp.i18n")
 local idle                      = require("cp.idle")
 local prop                      = require("cp.prop")
-local i18n                      = require("cp.i18n")
 
 local Do                        = require("cp.rx.go.Do")
 
 local _                         = require("moses")
 
-local sort, insert, pack        = table.sort, table.insert, table.pack
 local concat                    = fnutils.concat
+local doAfter                   = timer.doAfter
 local format                    = string.format
+local sort, insert, pack        = table.sort, table.insert, table.pack
 
 --------------------------------------------------------------------------------
 --
@@ -184,14 +185,14 @@ function activator.new(id, manager)
     --- Contains the set of choice IDs which are favorites in this activator, mapped to a boolean value.
     --- If set to `true`, the choice is a favorite.
     o.favoriteChoices = config.prop(prefix .. "favoriteChoices", {}):cached():bind(o)
-    :watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
+    :watch(function() doAfter(1.0, function() o:sortChoices() end) end)
 
     --- plugins.core.action.activator.popularChoices <cp.prop: table of integers>
     --- Field
     --- Keeps track of how popular particular choices are. Returns a table of choice IDs
     --- mapped to the number of times they have been activated.
     o.popularChoices = config.prop(prefix .. "popularChoices", {}):cached():bind(o)
-    :watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
+    :watch(function() doAfter(1.0, function() o:sortChoices() end) end)
 
     --- plugins.core.action.activator.configurable <cp.prop: boolean>
     --- Field

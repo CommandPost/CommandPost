@@ -23,6 +23,7 @@ local config                                    = require("cp.config")
 local v                                         = require("semver")
 
 local insert                                    = table.insert
+local usleep                                    = timer.usleep
 
 --------------------------------------------------------------------------------
 --
@@ -948,7 +949,7 @@ function tools.leftClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
     eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
@@ -967,7 +968,7 @@ function tools.rightClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
     eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
@@ -1001,7 +1002,7 @@ function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 
@@ -1019,7 +1020,7 @@ function tools.ninjaRightMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.rightClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 
@@ -1037,7 +1038,7 @@ function tools.ninjaDoubleClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.doubleLeftClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 

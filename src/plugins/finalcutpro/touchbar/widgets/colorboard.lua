@@ -15,9 +15,10 @@ local prop              = require("cp.prop")
 
 local touchbar          = require("hs._asm.undocumented.touchbar")
 
-local insert            = table.insert
-local format            = string.format
 local abs               = math.abs
+local doAfter           = timer.doAfter
+local format            = string.format
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -199,7 +200,7 @@ function mod.start(delay)
     end
 
     if delay and type(delay) == "number" then
-        timer.doAfter(delay, function()
+        doAfter(delay, function()
             mod._timer:start()
         end)
     else
@@ -358,7 +359,7 @@ local function puckWidget(id, puck)
                 else
                     mod._doubleTap[id] = true
                 end
-                timer.doAfter(eventtap.doubleClickInterval(), function()
+                doAfter(eventtap.doubleClickInterval(), function()
                     mod._doubleTap[id] = false
                 end)
             end
