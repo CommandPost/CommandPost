@@ -4,6 +4,8 @@
 
 local require = require
 
+--local log				        = require("hs.logger").new("ignorecard")
+
 local application               = require("hs.application")
 local fs                        = require("hs.fs")
 local timer                     = require("hs.timer")
@@ -12,6 +14,9 @@ local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
 
+local doEvery                   = timer.doEvery
+local volume                    = fs.volume
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -19,68 +24,72 @@ local i18n                      = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.import.ignorecard.getDeviceWatcher() -> none
+--- plugins.finalcutpro.import.ignorecard.start() -> none
 --- Function
---- Media Import Window Watcher
+--- Starts the Media Import Window Watcher
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An `hs.fs.volume` object
-function mod.getDeviceWatcher()
-    if not mod.newDeviceMounted then
-        --log.df("Watching for new media...")
-        mod.newDeviceMounted = fs.volume.new(function(event)
-            if event == fs.volume.didMount then
-
-                --log.df("Media Inserted.")
-
-                local mediaImport = fcp:mediaImport()
-
-                if mediaImport:isShowing() then
-                    -- Media Import was already open. Bail!
-                    --log.df("Already in Media Import. Continuing...")
-                    return
-                end
-
-                local mediaImportCount = 0
-                local stopMediaImportTimer = false
-                local currentApplication = application.frontmostApplication()
-                --log.df("Currently using '"..currentApplication:name().."'")
-
-                local fcpxHidden = not fcp:isShowing()
-
-                mod.mediaImportTimer = timer.doUntil(
-                    function()
-                        return stopMediaImportTimer
-                    end,
-                    function()
-                        if not fcp:isRunning() then
-                            --log.df("FCPX is not running. Stop watching.")
-                            stopMediaImportTimer = true
-                        else
-                            if mediaImport:isShowing() then
-                                mediaImport:hide()
-                                if fcpxHidden then fcp:hide() end
-                                currentApplication:activate()
-                                --log.df("Hid FCPX and returned to '"..currentApplication:name().."'.")
-                                stopMediaImportTimer = true
-                            end
-                            mediaImportCount = mediaImportCount + 1
-                            if mediaImportCount == 500 then
-                                --log.df("Gave up watching for the Media Import window after 5 seconds.")
-                                stopMediaImportTimer = true
-                            end
-                        end
-                    end,
-                    0.01
-                )
-
+---  * None
+function mod.start()
+    if not mod._volumeWatcher then
+        mod._volumeWatcher = volume.new(function(event)
+            if event == volume.didMount and fcp:isRunning() and not fcp:mediaImport():isShowing() then
+                --------------------------------------------------------------------------------
+                -- Setup a timer to check for the Media Import window:
+                --------------------------------------------------------------------------------
+                mod._mediaImportCount = 0
+                mod._fcpxHidden = not fcp:isShowing()
+                mod._currentApplication = application.frontmostApplication()
+                mod.mediaImportTimer = doEvery(0.01, function()
+                    local mediaImport = fcp:mediaImport()
+                    if mediaImport:isShowing() then
+                        --------------------------------------------------------------------------------
+                        -- Hide the Media Import Window:
+                        --------------------------------------------------------------------------------
+                        mediaImport:hide()
+                        if mod._fcpxHidden then fcp:hide() end
+                        mod._currentApplication:activate()
+                        mod._fcpxHidden = nil
+                        mod._mediaImportCount = nil
+                        mod._currentApplication = nil
+                        mod.mediaImportTimer:stop()
+                    end
+                    mod._mediaImportCount = mod._mediaImportCount + 1
+                    if mod._mediaImportCount == 500 then
+                        --------------------------------------------------------------------------------
+                        -- Gave up watching for the Media Import window, so cleaning up:
+                        --------------------------------------------------------------------------------
+                        mod._fcpxHidden = nil
+                        mod._mediaImportCount = nil
+                        mod._currentApplication = nil
+                        mod.mediaImportTimer:stop()
+                    end
+                end)
             end
-        end)
+        end):start()
     end
-    return mod.newDeviceMounted
+end
+
+--- plugins.finalcutpro.import.ignorecard.stop() -> none
+--- Function
+--- Stops the Media Import Window Watcher
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stop()
+    if mod._volumeWatcher then
+        mod._volumeWatcher:stop()
+        mod._volumeWatcher = nil
+        mod.mediaImportTimer = nil
+        mod._mediaImportCount = nil
+        mod._fcpxHidden = nil
+    end
 end
 
 --- plugins.finalcutpro.import.ignorecard.update() -> none
@@ -93,11 +102,10 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-    local watcher = mod.getDeviceWatcher()
     if mod.enabled() then
-        watcher:start()
+        mod.start()
     else
-        watcher:stop()
+        mod.stop()
     end
 end
 

@@ -31,8 +31,9 @@ local menu                                      = require("menu")
 local mode                                      = require("mode")
 local parameter                                 = require("parameter")
 
-local insert, sort                              = table.insert, table.sort
+local doAfter                                   = timer.doAfter
 local format                                    = string.format
+local insert, sort                              = table.insert, table.sort
 
 --------------------------------------------------------------------------------
 --
@@ -324,7 +325,7 @@ local fromHub = {
         --------------------------------------------------------------------------------
         -- Display CommandPost Version on Tangent Screen:
         --------------------------------------------------------------------------------
-        timer.doAfter(1, function()
+        doAfter(1, function()
             local version = tostring(config.appVersion)
             tangent.sendDisplayText({"CommandPost "..version})
         end)
@@ -586,7 +587,7 @@ local function callback(commands)
 
         local fn = fromHub[id]
         if fn then
-            timer.doAfter(0, function()
+            doAfter(0, function()
                 local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
                 if not ok then
                     log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
@@ -710,7 +711,7 @@ function plugin.init(_, env)
                 local frontmostApp = application.frontmostApplication()
                 cpApp:activate()
                 if frontmostApp then
-                    timer.doAfter(0.5, function()
+                    doAfter(0.5, function()
                         frontmostApp:activate()
                     end)
                 end

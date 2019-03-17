@@ -4,13 +4,13 @@
 
 local require = require
 
-local timer               = require("hs.timer")
+local timer                 = require("hs.timer")
 
-local Element             = require("cp.ui.element")
-local notifier						= require("cp.ui.notifier")
-local prop							  = require("cp.prop")
+local Element               = require("cp.ui.element")
+local notifier              = require("cp.ui.notifier")
+local prop                  = require("cp.prop")
 
-local delayedTimer        = timer.delayed
+local delayedTimer          = timer.delayed
 
 --------------------------------------------------------------------------------
 --
@@ -24,7 +24,7 @@ local StaticText = Element:subclass("cp.ui.StaticText")
 --- Checks if the element is a Static Text element.
 ---
 --- Parameters:
----  * element		- The `axuielement` to check.
+---  * element      - The `axuielement` to check.
 ---
 --- Returns:
 ---  * If `true`, the element is a Static Text element.
@@ -49,9 +49,9 @@ end
 --- ```
 ---
 --- Parameters:
----  * parent	- The parent object.
----  * uiFinder	- The function will return the `axuielement` for the StaticText.
----  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
+---  * parent   - The parent object.
+---  * uiFinder - The function will return the `axuielement` for the StaticText.
+---  * convertFn    - (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
 ---  * The new `StaticText`.

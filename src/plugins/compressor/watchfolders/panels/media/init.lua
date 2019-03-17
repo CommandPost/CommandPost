@@ -23,6 +23,8 @@ local ui            = require("cp.web.ui")
 
 local uuid          = host.uuid
 
+local doEvery       = timer.doEvery
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -320,7 +322,7 @@ end
 mod.statusTimer = {}
 function mod.watchCompressorStatus(jobID, file, destinationPath)
     --log.df("Lets track the status of: %s", jobID)
-    mod.statusTimer[jobID] = timer.doEvery(5, function()
+    mod.statusTimer[jobID] = doEvery(5, function()
         local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
         local compressorStatusTask = task.new(compressorPath, nil, function(_, stdOut)
             if stdOut and string.match(stdOut, [[status="([^%s]+)"]]) then

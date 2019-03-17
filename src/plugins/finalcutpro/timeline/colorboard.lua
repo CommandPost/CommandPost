@@ -4,17 +4,18 @@
 
 local require = require
 
-local log								                = require("hs.logger").new("colorBoard")
+local log                   = require("hs.logger").new("colorBoard")
 
-local eventtap                          = require("hs.eventtap")
-local timer                             = require("hs.timer")
+local eventtap              = require("hs.eventtap")
+local timer                 = require("hs.timer")
 
-local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
-local i18n                              = require("cp.i18n")
-local tools                             = require("cp.tools")
+local dialog                = require("cp.dialog")
+local fcp                   = require("cp.apple.finalcutpro")
+local i18n                  = require("cp.i18n")
+local tools                 = require("cp.tools")
 
-local format                            = string.format
+local doWhile               = timer.doWhile
+local format                = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -28,9 +29,9 @@ local mod = {}
 --- Starts shifting the puck, repeating at the keyboard repeat rate. Runs until `stopShiftingPuck()` is called.
 ---
 --- Parameters:
----  * puck			- The puck to shift
----  * property		- The property to shift (typically the `percent` or `angle` value for the puck)
----  * amount		- The amount to shift the property.
+---  * puck         - The puck to shift
+---  * property     - The property to shift (typically the `percent` or `angle` value for the puck)
+---  * amount       - The amount to shift the property.
 ---
 --- Returns:
 ---  * None
@@ -41,7 +42,7 @@ function mod.startShiftingPuck(puck, property, amount)
     end
 
     mod.puckShifting = true
-    timer.doWhile(function() return mod.puckShifting end, function()
+    doWhile(function() return mod.puckShifting end, function()
         local value = property()
         if value ~= nil then property(value + amount) end
     end, eventtap.keyRepeatInterval())

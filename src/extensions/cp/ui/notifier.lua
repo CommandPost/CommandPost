@@ -28,7 +28,9 @@ local prop                  = require("cp.prop")
 
 local ax                    = require("hs._asm.axuielement")
 
+local doAfter               = timer.doAfter
 local insert                = table.insert
+
 local LAUNCHED, TERMINATED  = applicationwatcher.launched, applicationwatcher.terminated
 
 --------------------------------------------------------------------------------
@@ -386,7 +388,7 @@ function mod.mt:_observer(create)
             if mod.__observersFn[pid] then
                 for _, v in pairs(mod.__observersFn[pid]) do
                     if type(v) == "function" then
-                        timer.doAfter(0.00000000000001, function()
+                        doAfter(0.00000000000001, function()
                             v(_, element, notification, details)
                         end)
                     end

@@ -160,6 +160,8 @@ local env                           = require("cp.plugins.env")
 local plugin                        = require("cp.plugins.plugin")
 local tools                         = require("cp.tools")
 
+local doAfter                       = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -514,7 +516,7 @@ function mod.disable(...)
 
         config.set(mod.SETTINGS_DISABLED, disabled)
         -- reload CP after returning `true`
-        timer.doAfter(0.001, function()
+        doAfter(0.001, function()
             console.clearConsole()
             hs.reload()
         end)
@@ -546,7 +548,7 @@ function mod.enable(...)
             end
         end
         config.set(mod.SETTINGS_DISABLED, disabled)
-        timer.doAfter(0.001, function()
+        doAfter(0.001, function()
             console.clearConsole()
             hs.reload()
         end)

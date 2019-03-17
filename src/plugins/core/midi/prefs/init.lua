@@ -21,6 +21,8 @@ local i18n                                      = require("cp.i18n")
 
 local _                                         = require("moses")
 
+local delayed                                   = timer.delayed
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -813,7 +815,7 @@ function mod.init(deps, env)
     -- There's a slight delay on this, otherwise CommandPost gets stuck in an
     -- infinite loop.
     --------------------------------------------------------------------------------
-    mod._refreshTimer = timer.delayed.new(0.2, function()
+    mod._refreshTimer = delayed.new(0.2, function()
         if mod._manager._webview ~= nil and mod._manager.currentPanelID() == panelID then
             --log.df("Refreshing MIDI Preferences as number of MIDI Devices have changed.")
             mod._manager.refresh()

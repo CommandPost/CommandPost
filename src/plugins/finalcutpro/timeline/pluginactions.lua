@@ -14,6 +14,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local plugins           = require("cp.apple.finalcutpro.plugins")
 
+local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
@@ -123,7 +124,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
     fcp.currentLocale:watch(function()
         for _,handler in pairs(mod._handlers) do
             handler:reset()
-            timer.doAfter(0.01, function() handler.choices:update() end)
+            doAfter(0.01, function() handler.choices:update() end)
         end
     end)
 

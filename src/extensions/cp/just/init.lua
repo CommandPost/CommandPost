@@ -5,7 +5,10 @@
 
 local require = require
 
-local timer = require("hs.timer")
+local timer                 = require("hs.timer")
+
+local secondsSinceEpoch     = timer.secondsSinceEpoch
+local usleep                = timer.usleep
 
 --------------------------------------------------------------------------------
 --
@@ -31,12 +34,12 @@ function just.doWhile(actionFn, timeout, frequency)
     frequency = frequency or 0.001
 
     local period = frequency * 1000000
-    local stopTime = timer.secondsSinceEpoch() + timeout
+    local stopTime = secondsSinceEpoch() + timeout
 
     local result = true
-    while result and timer.secondsSinceEpoch() < stopTime do
+    while result and secondsSinceEpoch() < stopTime do
         result = actionFn()
-        timer.usleep(period)
+        usleep(period)
     end
     return result
 end
@@ -58,12 +61,12 @@ function just.doUntil(actionFn, timeout, frequency)
     frequency = frequency or 0.001
 
     local period = frequency * 1000000
-    local stopTime = timer.secondsSinceEpoch() + timeout
+    local stopTime = secondsSinceEpoch() + timeout
 
     local result = false
-    while not result and timer.secondsSinceEpoch() < stopTime do
+    while not result and secondsSinceEpoch() < stopTime do
         result = actionFn()
-        timer.usleep(period)
+        usleep(period)
     end
     return result
 end
@@ -78,7 +81,7 @@ end
 --- Returns:
 ---  * None
 function just.wait(periodInSeconds)
-    timer.usleep(periodInSeconds * 1000000)
+    usleep(periodInSeconds * 1000000)
 end
 
 return just

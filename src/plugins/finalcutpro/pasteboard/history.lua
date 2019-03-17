@@ -4,19 +4,21 @@
 
 local require = require
 
-local log                                   = require("hs.logger").new("pasteboardHistory")
+local log               = require("hs.logger").new("pasteboardHistory")
 
-local timer                                 = require("hs.timer")
+local timer             = require("hs.timer")
 
-local base64                                = require("hs.base64")
-local config                                = require("cp.config")
-local dialog                                = require("cp.dialog")
-local fcp                                   = require("cp.apple.finalcutpro")
-local i18n                                  = require("cp.i18n")
-local json                                  = require("cp.json")
+local base64            = require("hs.base64")
+local config            = require("cp.config")
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
+local json              = require("cp.json")
 
-local If                                    = require("cp.rx.go.If")
-local Do                                    = require("cp.rx.go.Do")
+local If                = require("cp.rx.go.If")
+local Do                = require("cp.rx.go.Do")
+
+local doAfter           = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -129,7 +131,7 @@ function mod.doPasteHistoryItem(index)
                     -- Restore the original Pasteboard Contents:
                     --------------------------------------------------------------------------------
                     if originalContents then
-                        timer.doAfter(0.3, function()
+                        doAfter(0.3, function()
                             mod._manager.writeFCPXData(originalContents, true)
                         end)
                     end

@@ -6,7 +6,7 @@
 
 local require = require
 
-local log						  = require("hs.logger").new("idle")
+local log						= require("hs.logger").new("idle")
 
 local host						= require("hs.host")
 local timer						= require("hs.timer")

@@ -21,6 +21,8 @@ local tools                                     = require("cp.tools")
 
 local template                                  = require("resty.template")
 
+local doAfter                                   = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -147,7 +149,7 @@ end
 --- Returns:
 ---  * None
 function mod.showFeedback(quitOnComplete)
-    timer.doAfter(0.000000001, function()
+    doAfter(0.000000001, function()
         --------------------------------------------------------------------------------
         -- Feedback window already open:
         --------------------------------------------------------------------------------
@@ -257,7 +259,7 @@ function mod.showFeedback(quitOnComplete)
         --------------------------------------------------------------------------------
         mod.feedbackWebView:show()
         mod.isOpen = true
-        timer.doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
+        doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
     end)
 end
 

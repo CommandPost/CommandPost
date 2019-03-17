@@ -7,11 +7,13 @@ local require = require
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
 
+local commandeditor                     = require("cp.apple.commandeditor")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local commandeditor						          = require("cp.apple.commandeditor")
-local shortcut                          = require("cp.commands.shortcut")
 local i18n                              = require("cp.i18n")
+local shortcut                          = require("cp.commands.shortcut")
+
+local doAfter                           = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -75,7 +77,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watc
 
         if not mod.keyUpWatcher then
             mod.keyUpWatcher = eventtap.new({ eventtap.event.types.keyUp }, function()
-                timer.doAfter(0.0000001, function()
+                doAfter(0.0000001, function()
                     mod.watcherWorking = false
                 end)
             end)
@@ -83,7 +85,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watc
 
         if not mod.keyDownWatcher then
             mod.keyDownWatcher = eventtap.new({ eventtap.event.types.keyDown }, function(event)
-                timer.doAfter(0.0000001, function() mod.checkCommand(event:getFlags(), event:getKeyCode()) end)
+                doAfter(0.0000001, function() mod.checkCommand(event:getFlags(), event:getKeyCode()) end)
             end)
         end
 

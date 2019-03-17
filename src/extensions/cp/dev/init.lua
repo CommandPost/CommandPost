@@ -15,6 +15,8 @@ local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 
+local doAfter       = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -268,7 +270,7 @@ function mod.highlight(e)
     --------------------------------------------------------------------------------
     -- Set a timer to delete the highlight after 3 seconds:
     --------------------------------------------------------------------------------
-    timer.doAfter(3,
+    mod._highlightTimer = doAfter(3,
     function()
         highlight:delete()
     end)
@@ -309,7 +311,7 @@ function mod.highlightPoint(point)
     --------------------------------------------------------------------------------
     -- Set a timer to delete the highlight after 10 seconds:
     --------------------------------------------------------------------------------
-    timer.doAfter(10,
+    mod._highlightPointTimer = doAfter(10,
     function()
         vert:delete()
         horiz:delete()

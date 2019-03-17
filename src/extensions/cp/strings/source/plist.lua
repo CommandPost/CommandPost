@@ -12,18 +12,19 @@
 
 local require = require
 
-local fs				  = require("hs.fs")
-local timer				= require("hs.timer")
+local fs                            = require("hs.fs")
+local timer                         = require("hs.timer")
 
-local plist				= require("cp.plist")
-local is          = require("cp.is")
-local text				= require("cp.web.text")
+local plist                         = require("cp.plist")
+local is                            = require("cp.is")
+local text                          = require("cp.web.text")
 
-local _           = require("moses")
+local _                             = require("moses")
 
-local escapeXML, unescapeXML      = text.escapeXML, text.unescapeXML
-local find, len			              = string.find, string.len
-local insert			                = table.insert
+local delayed                       = timer.delayed
+local escapeXML, unescapeXML        = text.escapeXML, text.unescapeXML
+local find, len                     = string.find, string.len
+local insert                        = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -70,7 +71,7 @@ end
 --- Finds the abolute path to the `plist` represented by this source for the specified langauge, or `nil` if it does not exist.
 ---
 --- Parameters:
----  * `context`	- The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
+---  * `context`    - The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
 ---
 --- Returns:
 ---  * The path to the file, or `nil` if not found.
@@ -110,7 +111,7 @@ end
 --- Loads the plist file for the specified context, returning the value as a table.
 ---
 --- Parameters:
----  * `context`	- The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
+---  * `context`    - The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
 ---
 --- Returns:
 ---  * The table for the specified language, or `nil` if the file doesn't exist.
@@ -130,8 +131,8 @@ end
 --- Finds the specified `key` value in the plist, if the plist can be found, and contains matching key value.
 ---
 --- Parameters:
----  * `key`		- The key to retrieve from the file.
----  * `context`	- Optional table with additional/alternate context. It will be added to the current context temporarily.
+---  * `key`        - The key to retrieve from the file.
+---  * `context`    - Optional table with additional/alternate context. It will be added to the current context temporarily.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
@@ -197,8 +198,8 @@ end
 --- Creates a new `cp.strings` source that loads strings from a plist file.
 ---
 --- Parameters:
----  * `pathPattern`	- The path to load from. May contain a special `${language}` marker which will be replace with the provided langauge when searching.
----  * `cacheSeconds`	- (optional) How long in seconds to keep the loaded values cached in memory. Defaults to [defaultCacheSeconds](#defaultCacheSeconds)
+---  * `pathPattern`    - The path to load from. May contain a special `${language}` marker which will be replace with the provided langauge when searching.
+---  * `cacheSeconds`   - (optional) How long in seconds to keep the loaded values cached in memory. Defaults to [defaultCacheSeconds](#defaultCacheSeconds)
 ---
 --- Returns:
 ---  * The new plist `source` instance.
@@ -208,7 +209,7 @@ mod.new = function(pathPattern, cacheSeconds)
         _pathPattern = pathPattern,
         _context = {},
     }
-    o._cleanup = timer.delayed.new(cacheSeconds, function() o:reset() end)
+    o._cleanup = delayed.new(cacheSeconds, function() o:reset() end)
     return setmetatable(o, {__index = mod.mt})
 end
 
