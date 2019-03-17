@@ -4,7 +4,7 @@
 
 local require = require
 
-local log				        = require("hs.logger").new("ignorecard")
+--local log				        = require("hs.logger").new("ignorecard")
 
 local application               = require("hs.application")
 local fs                        = require("hs.fs")
