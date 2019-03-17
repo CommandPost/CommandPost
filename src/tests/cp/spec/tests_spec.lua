@@ -3,7 +3,7 @@ local timer             = require "hs.timer"
 
 local describe, context, it      = spec.describe, spec.context, spec.it
 
-return describe "cp.spec" {
+return describe "cp.spec.tests" {
     it "passes when all asserts are true"
     :doing(function()
         assert(true, "OK")
@@ -28,6 +28,15 @@ return describe "cp.spec" {
         this:wait(1)
         timer.doAfter(2, function()
             assert(not this:isActive(), "Timeout failed!")
+            this:done()
+        end)
+    end),
+
+    it "will send an error in an async before being done."
+    :doing(function(this)
+        this:wait(2)
+        timer.doAfter(0.5, function()
+            error("This should be an abort.")
             this:done()
         end)
     end),

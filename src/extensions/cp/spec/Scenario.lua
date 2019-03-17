@@ -1,8 +1,9 @@
 local require               = require
 
-local log                   = require "hs.logger" .new "Scenario"
+-- local log                   = require "hs.logger" .new "Scenario"
 
 local Definition            = require "cp.spec.Definition"
+local Handled               = require "cp.spec.Handled"
 local Run                   = require "cp.spec.Run"
 local Where                 = require "cp.spec.Where"
 
@@ -123,10 +124,12 @@ function Scenario:doing(testFn)
 end
 
 local ASSERT = {}
+local ERROR = {}
 
 local function hijackAssert(this)
     -- log.df("hijackAssert: called")
     this.run[ASSERT] = _G.assert
+    this.run[ERROR] = _G.error
     _G.assert = function(ok, message, ...)
         -- log.df("hijacked assert: called")
         if ok then
@@ -136,8 +139,13 @@ local function hijackAssert(this)
             -- log.df("hijacked assert: failed")
             local msg = format(message, ...)
             this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-            error(msg, 2, true)
+            this.run[ASSERT](ok, Handled(msg))
         end
+    end
+
+    _G.error = function(msg, level)
+        this:abort(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
+        this.run[ERROR](msg, level and level + 1 or 2)
     end
 end
 
@@ -147,6 +155,10 @@ local function restoreAssert(this)
         -- log.df("restoreAssert: resetting assert")
         _G.assert = this.run[ASSERT]
         this.run[ASSERT] = nil
+    end
+    if this.run[ERROR] then
+        _G.error = this.run[ERROR]
+        this.run[ERROR] = nil
     end
 end
 

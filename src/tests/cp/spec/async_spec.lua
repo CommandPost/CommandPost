@@ -2,7 +2,7 @@ local spec  = require "cp.spec"
 local timer = require "hs.timer"
 local log   = require "hs.logger" .new "asyncspec"
 
-local describe, it = spec.describe, spec.it
+local it = spec.it
 
 return it "passes asynchronously"
     :doing(function(this)

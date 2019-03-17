@@ -4,6 +4,8 @@ local log                       = require "hs.logger" .new "spec"
 
 local class                     = require "middleclass"
 local timer                     = require "hs.timer"
+local Handled                   = require "cp.spec.Handled"
+local Message                   = require "cp.spec.Message"
 local Result                    = require "cp.spec.Result"
 
 local format                    = string.format
@@ -157,6 +159,7 @@ end
 function Run.This:abort(message)
     self:log("This: abort: %s", message)
     self.run.result:aborted(message)
+    self.aborted = true
     self.passing = false
     self:done()
 end
@@ -170,6 +173,7 @@ end
 function Run.This:fail(message)
     self:log("This: fail: %s", message)
     self.run.result:failed(message)
+    self.failed = true
     self.passing = false
     self:done()
 end
@@ -177,16 +181,7 @@ end
 --- cp.spec.Run.This:prepare()
 --- Method
 --- Prepares this to run.
-function Run.This:prepare()
-    if not self._error then
-        self._error = _G.error
-        _G.error = function(message, level, skipAbort)
-            if not skipAbort then
-                self:abort(message)
-            end
-            self._error(message, level and level + 1 or 2)
-        end
-    end
+function Run.This.prepare()
 end
 
 --- cp.spec.Run.This:cleanup()
@@ -196,10 +191,6 @@ function Run.This:cleanup()
     if self.timeoutTimer then
         self.timeoutTimer:stop()
         self.timeoutTimer = nil
-    end
-    if self._error then
-        _G.error = self._error
-        self._error = nil
     end
 end
 
@@ -351,9 +342,15 @@ function Run:_doNextAction(index)
             self._currentTimer = nil
             local this = Run.This(self, index)
             this:prepare()
-            local ok, err = xpcall(function() actionFn(this) end, debug.traceback)
+            local ok, err = xpcall(function() actionFn(this) end, function(err)
+                if not Message.is(err) then
+                    err = Message(err)
+                end
+                err:traceback()
+                return err
+            end)
 
-            if ok ~= true and this.passing then
+            if ok ~= true and not Handled.is(err) then
                 this:cleanup()
                 self:log("Action #%d failed. Aborting...", index)
                 self:_doAbort(err)
@@ -435,7 +432,7 @@ function Run:verbose(isVerbose)
         return self
     else
         local parent = self:parent()
-        return self._verbose == true or parent and parent:verbose()
+        return self._verbose == true or parent ~= nil and parent:verbose()
     end
 end
 

@@ -63,10 +63,12 @@ function Where:initialize(scenario, whereData)
 end
 
 function Where:run(...)
-    self.currentRun = Run(function(this)
-        this:continues()
+    self.currentRun = Run(self.name)
+    :onRunning(function(this)
+        this:wait()
         self:runNext(1, this)
     end)
+
     return self.currentRun
 end
 
@@ -84,7 +86,7 @@ function Where:runNext(index, whereThis)
     if data then
         local currentName = interpolate(self.name, data)
         local run = Run(currentName, self.testFn)
-        :start(function(this)
+        :onStart(function(this)
             for k,v in pairs(data) do
                 if this[k] then
                     error(format("Existing %q value in `this`: %s", k, type(this[k])))
@@ -92,9 +94,9 @@ function Where:runNext(index, whereThis)
                 this[k] = v
             end
         end)
-        :complete(function(this)
+        :onComplete(function(this)
             -- output a summary if we have a parent and it's verbose
-            if this.run.parent ~= nil and self:verbose() then
+            if this.run.parent ~= nil and this.run:verbose() then
                 self.result:summary()
             end
 
@@ -106,15 +108,15 @@ function Where:runNext(index, whereThis)
         :parent(self.currentRun)
 
         if self._beforeEach then
-            run:before(self._beforeEach)
+            run:onBefore(self._beforeEach)
         end
         if self._afterEach then
-            run:after(self._afterEach)
+            run:onAfter(self._afterEach)
         end
     else
         -- drop the extra pass for the suite itself
         whereThis.run.result.passes = whereThis.run.result.passes - 1
-        whereThis:passed()
+        whereThis:done()
     end
 end
 

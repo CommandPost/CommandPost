@@ -1,5 +1,6 @@
 -- it cases for `cp.is`
 local spec                  = require("cp.spec")
+local expect                = require("cp.spec.expect")
 local is                    = require("cp.is")
 
 local describe, it, context = spec.describe, spec.it, spec.context
@@ -22,7 +23,7 @@ return describe "cp.is" {
     context "calling `nothing`" {
         it "returns ${result} when given ${input}"
         :doing(function(this)
-            assert(is.nothing(this.input) == this.result)
+            expect(is.nothing(this.input)):is(this.result)
         end)
         :where {
             { "input",  "result"    },
@@ -38,13 +39,13 @@ return describe "cp.is" {
         :doing(function(this)
             assert(is.string(this.input) == this.result)
         end)
-        :where( "input",    "result")
-        :is(
+        :where {
+            {   "input",    "result"},
             {   "foobar",   true    },
             {   "",         true    },
             {   nil,        false   },
             {   {},         false   }
-        ),
+        },
     },
 
     context "calling `fn`" {
@@ -169,40 +170,40 @@ return describe "cp.is" {
     end),
 
     it("truthy", function()
-        ok(eq(is.truthy(true), true))
-        ok(eq(is.truthy(callable), true))
-        ok(eq(is.truthy(nil), false))
-        ok(eq(is.truthy(false), false))
-        ok(eq(is.truthy(0), true))
-        ok(eq(is.truthy(1), true))
+        expect(is.truthy(true)):is(true)
+        expect(is.truthy(callable)):is(true)
+        expect(is.truthy(nil)):is(false)
+        expect(is.truthy(false)):is(false)
+        expect(is.truthy(0)):is(true)
+        expect(is.truthy(1)):is(true)
     end),
 
     it("falsey", function()
-        ok(eq(is.falsey(true), false))
-        ok(eq(is.falsey(callable), false))
-        ok(eq(is.falsey(nil), true))
-        ok(eq(is.falsey(false), true))
-        ok(eq(is.falsey(0), false))
-        ok(eq(is.falsey(1), false))
+        expect(is.falsey(true)):is(false)
+        expect(is.falsey(callable)):is(false)
+        expect(is.falsey(nil)):is(true)
+        expect(is.falsey(false)):is(true)
+        expect(is.falsey(0)):is(false)
+        expect(is.falsey(1)):is(false)
     end),
 
     it("callable", function()
-        ok(eq(is.callable(function() end), true))
-        ok(eq(is.callable(callable), true))
-        ok(eq(is.callable(subcallable), true))
-        ok(eq(is.callable({}), false))
-        ok(eq(is.callable("string"), false))
+        expect(is.callable(function() end)):is(true)
+        expect(is.callable(callable)):is(true)
+        expect(is.callable(subcallable)):is(true)
+        expect(is.callable({})):is(false)
+        expect(is.callable("string")):is(false)
     end),
 
     it("blank", function()
-        ok(eq(is.blank(nil), true))
-        ok(eq(is.blank(""), true))
-        ok(eq(is.blank(" "), false))
-        ok(eq(is.blank(0), false))
+        expect(is.blank(nil)):is(true)
+        expect(is.blank("")):is(true)
+        expect(is.blank(" ")):is(false)
+        expect(is.blank(0)):is(false)
     end),
 
     it("is.nt", function()
-        ok(eq(is.nt.blank(nil), false))
-        ok(eq(is.nt.blank("Hello World!"), true))
+        expect(is.nt.blank(nil)):is(false)
+        expect(is.nt.blank("Hello World!")):is(true)
     end)
 }

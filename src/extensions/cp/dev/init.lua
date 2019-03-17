@@ -418,8 +418,10 @@ function mod.spec(id)
 
     if not ok then
         error(result)
+    elseif type(result) == "boolean" then
+        error("Ensure the spec file returns the test specification.")
     else
-        return result
+        return result:run()
     end
 end
 

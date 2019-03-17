@@ -12,6 +12,8 @@ local Where                 = require "cp.spec.Where"
 local Scenario              = require "cp.spec.Scenario"
 local Specification         = require "cp.spec.Specification"
 
+local expect                = require "cp.spec.expect"
+
 --- cp.spec.describe(name) -> function(definitions) -> cp.spec.Specification
 --- Function
 --- Returns a `function` which will accept a list of test [Definitions](cp.spec.Definition.md),
@@ -74,6 +76,7 @@ return setmetatable({
     describe = describe,
     context = context,
     it = it,
+    expect = expect,
 }, {
     __call = function(_, ...)
         return run(...)
