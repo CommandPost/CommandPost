@@ -1,6 +1,6 @@
 local require               = require
 
-local log                   = require "hs.logger" .new "Specification"
+-- local log                   = require "hs.logger" .new "Specification"
 
 local Definition            = require "cp.spec.Definition"
 local Run                   = require "cp.spec.Run"
@@ -12,6 +12,19 @@ local insert                = table.insert
 --- A Specification is a list of [definitions](cp.spec.Definition.md) which
 --- will be run in sequence, and the results are collated. It is often created via
 --- the [describe](cp.spec.md#describe) function.
+---
+--- Example usage:
+--- ```
+--- local spec = require "cp.spec"
+--- local describe, it = spec.describe, spec.it
+---
+--- return describe "a specification" {
+---     it "performs an assertion"
+---     :doing(function()
+---         assert(true, "should not fail")
+---     end),
+--- }
+--- ```
 local Specification = Definition:subclass("cp.spec.Specification")
 
 --- cp.spec.Specification(name) -> cp.spec.Specification
@@ -30,12 +43,10 @@ end
 function Specification:run()
     return Run(self.name)
     :onRunning(function(this)
-        log.df("%s: onRunning: marking as waiting, calling runNext", self.name)
         this:wait()
         self:runNext(1, this)
     end)
     :onComplete(function(this)
-        log.df("%s: onComplete: checking if we should output the summary.", self.name)
         -- output the summary if this is the root.
         if this.run:parent() == nil or this.run:verbose() then
             this.run.result:summary()
@@ -48,10 +59,9 @@ end
 -- Runs the next test definition at the specified `index`, if available.
 -- If not, the `this:passed()` method is called to complete the test.
 function Specification:runNext(index, this)
-    log.df("runNext()")
     local t = self.definitions[index]
     if t then
-        log.df("%s: runNext: Running definition %s", self.name, index)
+        this:log("Running definition #%s", index)
         local run
         run = t:run()
         :onComplete(function()
@@ -71,7 +81,7 @@ function Specification:runNext(index, this)
             run:onAfter(self._afterEach)
         end
     else
-        log.df("%s: runNext: No more definitions. We're done.", self.name)
+        this:log("No more definitions. We're done.")
         this:done()
     end
 end

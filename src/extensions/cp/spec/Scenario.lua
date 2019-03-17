@@ -125,28 +125,28 @@ end
 local ASSERT = {}
 
 local function hijackAssert(this)
-    log.df("hijackAssert: called")
-    this[ASSERT] = _G.assert
+    -- log.df("hijackAssert: called")
+    this.run[ASSERT] = _G.assert
     _G.assert = function(ok, message, ...)
-        log.df("hijacked assert: called")
+        -- log.df("hijacked assert: called")
         if ok then
-            log.df("hijacked assert: passed")
+            -- log.df("hijacked assert: passed")
             return ok, message, ...
         else
-            log.df("hijacked assert: failed")
+            -- log.df("hijacked assert: failed")
             local msg = format(message, ...)
-            this:fail(format("[%s:%d] %s"..message, debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
+            this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
             error(msg, 2, true)
         end
     end
 end
 
 local function restoreAssert(this)
-    log.df("restoreAssert: called")
-    if this[ASSERT] then
-        log.df("restoreAssert: resetting assert")
-        _G.assert = this[ASSERT]
-        this[ASSERT] = nil
+    -- log.df("restoreAssert: called")
+    if this.run[ASSERT] then
+        -- log.df("restoreAssert: resetting assert")
+        _G.assert = this.run[ASSERT]
+        this.run[ASSERT] = nil
     end
 end
 

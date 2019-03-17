@@ -1,6 +1,6 @@
 local require                   = require
 
-local log                       = require "hs.logger" .new "Run"
+local log                       = require "hs.logger" .new "spec"
 
 local class                     = require "middleclass"
 local timer                     = require "hs.timer"
@@ -54,7 +54,7 @@ function Run.This.static.defaultTimeout(timeout)
     return asyncTimeout
 end
 
---- cp.spec.Run.This(run) -> cp.spec.Run.This
+--- cp.spec.Run.This(run, index) -> cp.spec.Run.This
 --- Constructor
 --- Creates a new `Run.This` instance for a [Run](cp.spec.Run.md).
 ---
@@ -65,6 +65,8 @@ end
 --- Returns:
 --- * The new `Run.This`.
 function Run.This:initialize(run, index)
+    assert(run ~= nil, "The Run must be provided.")
+    assert(type(run) == "table", "The Run must be a Run instance.")
     self.run = run
     self.index = index
     self.currentPhase = run.phase
@@ -89,11 +91,14 @@ end
 ---
 --- Parameters:
 --- * timeout       - (optional) The number of seconds to wait before timing out.
----     If not provided, [Run.This.defaultTimeout()](cp.spec.Run.This.md#defaultTimeout) is used.
+---
+--- Notes:
+--- * If not provided, [Run.This.defaultTimeout()](cp.spec.Run.This.md#defaultTimeout) is used.
 function Run.This:wait(timeout)
     self.state = Run.This.state.waiting
-    if timeout then
-        self.timeout = timeout or Run.This.defaultTimeout()
+    self.timeout = timeout or Run.This.defaultTimeout()
+
+    if self.timeout then
         self.timeoutTimer = timer.doAfter(self.timeout, function()
             self.timeoutTimer = nil
             local seconds = self.timeout == 1 and "second" or "seconds"
@@ -113,18 +118,23 @@ function Run.This:isWaiting()
     return self.state == Run.This.state.waiting
 end
 
+--- cp.spec.Run.This:log(message[, ...])
+--- Method
+--- When the current [Run](cp.spec.Run.md) is in [debug](cp.spec.Run.md#debug) mode, output the message to the console.
+---
+--- Parameters:
+--- * message   - the text message to output.
+--- * ...       - optional parameters, to be injected into the message, ala `string.format`.
+function Run.This:log(message, ...)
+    self.run:log(message, ...)
+end
+
 --- cp.spec.Run.This:done()
 --- Method
 --- Indicates that the test is completed. Must only be called after calling [Run.This:wait(...)](#wait).
----
---- Parameters:
---- * message       - (optional) The message to send if successful.
 function Run.This:done()
-    log.df("%s: This: done", self.run.name)
-    if self.timeoutTimer then
-        self.timeoutTimer:stop()
-        self.timeoutTimer = nil
-    end
+    self:log("This: done")
+    self:cleanup()
     if self:isActive() then
         self.state = Run.This.state.done
         self.run:_doNextAction(self.index + 1)
@@ -145,7 +155,7 @@ end
 --- Parameters:
 --- * message   - The optional message to output.
 function Run.This:abort(message)
-    log.df("This: abort: %s", message)
+    self:log("This: abort: %s", message)
     self.run.result:aborted(message)
     self.passing = false
     self:done()
@@ -158,7 +168,7 @@ end
 --- Parameters:
 --- * message   - The optional message to output.
 function Run.This:fail(message)
-    log.df("This: fail: %s", message)
+    self:log("This: fail: %s", message)
     self.run.result:failed(message)
     self.passing = false
     self:done()
@@ -174,7 +184,7 @@ function Run.This:prepare()
             if not skipAbort then
                 self:abort(message)
             end
-            self._error(message, level)
+            self._error(message, level and level + 1 or 2)
         end
     end
 end
@@ -183,10 +193,18 @@ end
 --- Method
 --- Cleans up This after a step.
 function Run.This:cleanup()
+    if self.timeoutTimer then
+        self.timeoutTimer:stop()
+        self.timeoutTimer = nil
+    end
     if self._error then
         _G.error = self._error
         self._error = nil
     end
+end
+
+function Run.This:__tostring()
+    return "This: " .. self.run
 end
 
 Run.Phase = class("cp.spec.Run.Phase")
@@ -265,13 +283,47 @@ function Run:initialize(name)
     end)
 end
 
+--- cp.spec.Run:debug() -> cp.spec.Run
+--- Method
+--- Enables debugging on this `Run`. Any calls to [#log] will be output to the console.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The same `Run` instance.
+function Run:debug()
+    self._debug = true
+    return self
+end
+
+--- cp.spec.Run:isDebugging() -> boolean
+--- Method
+--- Checks if `debug` has been enabled on this or any parent `Run`.
+function Run:isDebugging()
+    return self._debug or self._parent ~= nil and self._parent:isDebugging()
+end
+
+--- cp.spec.Run:log(message[, ...])
+--- Method
+--- When the current [Run](cp.spec.Run.md) is in [debug](#debug) mode, output the message to the console.
+---
+--- Parameters:
+--- * message   - the text message to output.
+--- * ...       - optional parameters, to be injected into the message, ala `string.format`.
+function Run:log(message, ...)
+    if self:isDebugging() then
+        log.df("%s: " .. message, self, ...)
+    end
+end
+
 -- cp.spec.Run:_doPhase(nextPhase)
 -- Method
 -- If `nextPhase` is `nil`, starts performing any actions for that phase.
 -- Once all actions are completed, it moves onto the `next` phase. If there
 -- is an abort (error), it will move on to the `abort` phase.
 function Run:_doPhase(nextPhase)
-    -- log.df("_doPhase: %s", nextPhase)
+    self:log("Starting phase: %s", nextPhase)
     if type(nextPhase) == "string" then
         nextPhase = Run.phase[nextPhase]
     end
@@ -288,30 +340,31 @@ end
 -- triggers an error, it is logged in the `result` and we move to the `abort`
 -- phase for the current phase.
 function Run:_doNextAction(index)
-    -- log.df("_doNextAction: %d", index)
+    -- self:log("_doNextAction: %d", index)
     local currentPhase = self.phase
     local currentActions = self.phaseActions[currentPhase]
     local actionFn = currentActions and currentActions[index]
     if actionFn then
+        self:log("Running action #%d in %s phase...", index, currentPhase)
         self._currentTimer = timer.doAfter(0, function()
-            -- log.df("_doNextAction: running timer...")
+            -- self:log("_doNextAction: running timer...")
             self._currentTimer = nil
             local this = Run.This(self, index)
             this:prepare()
             local ok, err = xpcall(function() actionFn(this) end, debug.traceback)
-            this:cleanup()
 
-            log.df("_doNextAction: this.passing: %s", hs.inspect(this.passing))
             if ok ~= true and this.passing then
-                log.df("_onNextAction: not ok. Aborting...")
+                this:cleanup()
+                self:log("Action #%d failed. Aborting...", index)
                 self:_doAbort(err)
             elseif not this:isWaiting() then
-                log.df("_onNextAction: not waiting.")
+                self:log("Action #%d completed.", index)
                 this:done()
+            else
+                self:log("Action #%d is waiting...", index)
             end
         end)
     else
-        -- log.df("_doNextAction: From: %s; Next phase: %s", currentPhase, currentPhase.next)
         self:_doPhase(currentPhase.next)
     end
 end

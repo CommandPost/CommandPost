@@ -35,4 +35,8 @@ function Definition.run()
     error "Undefined."
 end
 
+function Definition:__tostring()
+    return self.name
+end
+
 return Definition

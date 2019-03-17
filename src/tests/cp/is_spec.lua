@@ -13,6 +13,7 @@ setmetatable(callable, mt)
 local subcallable = {}
 setmetatable(subcallable, callable)
 
+-- an example of a `userdata` value.
 local function newUserdata()
     return require("hs.canvas").new({x=0,y=0,w=1,h=1})
 end
@@ -122,25 +123,25 @@ return describe "cp.is" {
             local alpha = {}
             local beta = setmetatable({}, {__index = alpha})
             local gamma = setmetatable({}, {__class = alpha, __index = function(_, key) return alpha[key] end})
-    
+
             local a = setmetatable({}, {__index = alpha})
             local b = setmetatable({}, {__index = beta})
             local g = setmetatable({}, {__index = gamma})
-    
+
             assert(is.instance(beta, alpha) == true)
             assert(is.instance(gamma, alpha) == true)
             assert(is.instance(beta, gamma) == false)
             assert(is.instance(alpha, beta) == false)
             assert(is.instance(alpha, gamma) == false)
-    
+
             assert(is.instance(a, alpha) == true)
             assert(is.instance(a, beta) == false)
             assert(is.instance(a, gamma) == false)
-    
+
             assert(is.instance(b, alpha) == true)
             assert(is.instance(b, beta) == true)
             assert(is.instance(b, gamma) == false)
-    
+
             assert(is.instance(g, alpha) == true)
             assert(is.instance(g, beta) == false)
             assert(is.instance(g, gamma) == true)
