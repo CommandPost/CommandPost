@@ -89,6 +89,28 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.rescale(value, inMin, inMax, outMin, outMax) -> number | nil
+--- Function
+--- Takes an input, rescales it, and provides a new output.
+---
+--- Parameters:
+---  * value - The value you want to process as a number
+---  * inMin - The minimum value of the input as a number
+---  * inMax - The maximum value of the input as a number
+---  * outMin - The minimum value of the output as a number
+---  * outMax - The maximum value of the output as a number
+---
+--- Returns:
+---  * The rescaled value as a number or `nil`.
+function tools.rescale(value, inMin, inMax, outMin, outMax)
+    if value and inMin and inMax and outMin and outMax and
+    type(value) == "number" and type(inMin) == "number" and type(inMax) == "number" and type(outMin) == "number" and type(outMax) == "number" and
+    value >= inMin and
+    value <= inMax then
+        return ((value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin)
+    end
+end
+
 --- cp.tools.getKeysSortedByValue(tbl, sortFunction) -> table
 --- Function
 --- Sorts table keys by a value
