@@ -336,18 +336,18 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("stabilizationMethodAutomatic")
-        :whenActivated(doStabilizationMethod("Automatic"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationDynamic"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationDynamic")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("automatic"))
 
     fcpxCmds
         :add("stabilizationMethodInertiaCam")
-        :whenActivated(doStabilizationMethod("InertiaCam"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationUseInertiaCam"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseInertiaCam")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("inertiaCam"))
 
     fcpxCmds
         :add("stabilizationMethodSmoothCam")
-        :whenActivated(doStabilizationMethod("SmoothCam"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationUseSmoothCam"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseSmoothCam")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("smoothCam"))
 
     --------------------------------------------------------------------------------
     -- Rolling Shutter:
@@ -363,14 +363,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rolling Shutter Amount:
     --------------------------------------------------------------------------------
-    local rollingShutterAmounts = {
-        ["FFRollingShutterAmountNone"] = "None",
-        ["FFRollingShutterAmountLow"] = "Low",
-        ["FFRollingShutterAmountMedium"] = "Medium",
-        ["FFRollingShutterAmountHigh"] = "High",
-        ["FFRollingShutterAmountExtraHigh"] = "Extra High",
-    }
-
+    local rollingShutterAmounts = fcp:inspector():video().rollingShutterAmounts
     local rollingShutterTitle = fcp:string("FFRollingShutterEffect")
     local rollingShutterAmount = fcp:string("FFRollingShutterAmount")
     for code, name in pairs(rollingShutterAmounts) do

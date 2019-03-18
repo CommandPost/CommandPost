@@ -133,6 +133,9 @@ function VideoInspector:initialize(parent)
             method          = popUpButton "FFStabilizationAlgorithmRequested",
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
             tripodMode      = checkBox "FFStabilizationUseTripodMode",
+          translationSmooth = slider "FFStabilizationTranslationSmooth",
+            rotationSmoooth = slider "FFStabilizationRotationSmooth",
+            scaleSmooth     = slider "FFStabilizationScaleSmooth",
         },
         rollingShutter      = section "FFRollingShutterEffect" {
             amount          = popUpButton "FFRollingShutterAmount",
@@ -193,6 +196,62 @@ function VideoInspector.lazy.value.blendModes()
         ["FFHeliumBlendModeBehind"] = "Behind",
         ["FFHeliumBlendModeAlphaAdd"] = "Alpha Add",
         ["FFHeliumBlendModePremultipliedMix"] = "Premultiplied Mix",
+    }
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.cropTypes() -> table
+--- Function
+--- Returns a table of Crop Types where the key is the string ID, and the value
+--- is the name of the crop type in English.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of crop types
+function VideoInspector.lazy.value.cropTypes()
+    return {
+        ["FFTrim"] = "Trim",
+        ["FFCrop"] = "Crop",
+        ["FFKenBurns"] = "Ken Burns"
+    }
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.rollingShutterAmounts() -> table
+--- Function
+--- Returns a table of Rolling Shutter Amounts where the key is the string ID, and the value
+--- is the name of the Rolling Shutter Amount in English.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of rolling shutter amounts
+function VideoInspector.lazy.value.rollingShutterAmounts()
+    return {
+        ["FFRollingShutterAmountNone"] = "None",
+        ["FFRollingShutterAmountLow"] = "Low",
+        ["FFRollingShutterAmountMedium"] = "Medium",
+        ["FFRollingShutterAmountHigh"] = "High",
+        ["FFRollingShutterAmountExtraHigh"] = "Extra High",
+    }
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.stabilizationMethods() -> table
+--- Function
+--- Returns a table of Stabilization Methods where the key is the string ID, and the value
+--- is the name of the Stabilization Method in English.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Stabilization Methods
+function VideoInspector.lazy.value.stabilizationMethods()
+    return {
+        ["FFStabilizationDynamic"] = "Automatic",
+        ["FFStabilizationUseInertiaCam"] = "InertiaCam",
+        ["FFStabilizationUseSmoothCam"] = "SmoothCam",
     }
 end
 

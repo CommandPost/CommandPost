@@ -6,6 +6,8 @@ local require = require
 
 local log                   = require("hs.logger").new("tangentVideo")
 
+local timer                 = require("hs.timer")
+
 local deferred              = require("cp.deferred")
 local dialog                = require("cp.dialog")
 local Do                    = require("cp.rx.go.Do")
@@ -15,6 +17,7 @@ local i18n                  = require("cp.i18n")
 local If                    = require('cp.rx.go.If')
 local tools                 = require("cp.tools")
 
+local delayed               = timer.delayed
 local spairs                = tools.spairs
 local WaitUntil             = go.WaitUntil
 
@@ -29,6 +32,44 @@ local mod = {}
 -- Constant
 -- The amount of time to defer UI updates
 local DEFER = 0.01
+
+-- doStabilizationMethod(value) -> none
+-- Function
+-- Enables or disables Stabilisation.
+--
+-- Parameters:
+--  * value - The stabilisation mode you wish to change the clip(s) too as a string
+--            (as it appears in the Inspector in English).
+--
+-- Returns:
+--  * None
+local function doStabilizationMethod(value)
+    local timeline = fcp:timeline()
+    local timelineContents = timeline:contents()
+    local method = fcp:inspector():video():stabilization():method()
+
+    return Do(function()
+        --------------------------------------------------------------------------------
+        -- Make sure at least one clip is selected:
+        --------------------------------------------------------------------------------
+        local clips = timelineContents:selectedClipsUI()
+        if clips and #clips == 0 then
+            log.ef("Set Blend Mode Failed: No clips selected.")
+            tools.playErrorSound()
+            return false
+        end
+
+        return Do(method:doSelectValue(value))
+        :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
+        :Then(true)
+    end)
+    :Catch(function(message)
+        dialog.displayErrorMessage(message)
+        return false
+    end)
+    :Label("video.doStabilizationMethod")
+end
+
 
 -- xyParameter() -> none
 -- Function
@@ -217,13 +258,16 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Video Mode:
     --------------------------------------------------------------------------------
-    deps.tangentManager.addMode(0x00010010, "FCP: Video")
+    deps.tangentManager.addMode(0x00010010, "FCP: " .. i18n("video"))
+
+    --------------------------------------------------------------------------------
+    -- Video Group:
+    --------------------------------------------------------------------------------
+    mod._videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
 
     --------------------------------------------------------------------------------
     -- Transform Group:
     --------------------------------------------------------------------------------
-    mod._videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
-
     local transform = video:transform()
     local transformGroup = mod._videoGroup:group(transform:label())
 
@@ -437,7 +481,11 @@ function mod.init(deps)
         end
     end
 
-    mod._videoGroup:menu(id + 1)
+    local compositing = video:compositing()
+    local compositingGroup = mod._videoGroup:group(compositing:label())
+
+    id = id + 1
+    compositingGroup:menu(id)
         :name(i18n("blendMode"))
         :name9(i18n("blendMode9"))
         :onGet(function()
@@ -458,13 +506,232 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Video Blend Modes Buttons:
     --------------------------------------------------------------------------------
-    mod._videoBlendGroup = mod._videoGroup:group("Blend Modes")
+    id = id + 1
+    mod._videoBlendGroup = compositingGroup:group("Blend Modes")
     for code, name in spairs(fcp:inspector():video().blendModes) do
         mod._videoBlendGroup
-            :action(id + 2, getLongBlendModei18n(name))
+            :action(id, getLongBlendModei18n(name))
             :onPress(doBlendMode(fcp:string(code)))
         id = id + 1
     end
+
+    --------------------------------------------------------------------------------
+    -- Crop Group:
+    --------------------------------------------------------------------------------
+    id = id + 1
+    local crop = video:crop()
+    local cropGroup = mod._videoGroup:group(crop:label())
+
+    id = sliderParameter(cropGroup, crop:left(), id, 0, 1080, 0.1, 0)
+    id = sliderParameter(cropGroup, crop:right(), id, 0, 1080, 0.1, 0)
+    id = sliderParameter(cropGroup, crop:top(), id, 0, 1080, 0.1, 0)
+    id = sliderParameter(cropGroup, crop:bottom(), id, 0, 1080, 0.1, 0)
+
+    --------------------------------------------------------------------------------
+    -- Crop Type Buttons:
+    --------------------------------------------------------------------------------
+    local cropTypes = {
+        [1] = {flexoID = "FFTrim", i18n = "trim"},
+        [2] = {flexoID = "FFCrop", i18n = "crop"},
+        [3] = {flexoID = "FFKenBurns", i18n = "kenBurns"},
+    }
+
+    id = id + 1
+    for _, v in pairs(cropTypes) do
+        cropGroup
+            :action(id, i18n(v.i18n))
+            :onPress(function()
+                video:crop():type():show()
+                video:crop():type():value(fcp:string(v.flexoID))
+            end)
+        id = id + 1
+    end
+
+    --------------------------------------------------------------------------------
+    -- Crop Type Knob:
+    --------------------------------------------------------------------------------
+    local cropTypeNameToID = function(name)
+        for i, v in pairs(cropTypes) do
+            if name == fcp:string(v.flexoID) then
+                return i
+            end
+        end
+    end
+
+    local cropTypeUpdate = delayed.new(0.5, function()
+        video:crop():type():value(fcp:string(cropTypes[mod._cropTypeCache].flexoID))
+        mod._cropTypeCache = nil
+    end)
+
+    mod._cropTypeCache = nil
+    cropGroup:menu(id)
+        :name(i18n("type"))
+        :name9(i18n("type"))
+        :onGet(function()
+            if mod._cropTypeCache then
+                return i18n(cropTypes[mod._cropTypeCache].i18n)
+            else
+                return video:crop():type():value()
+            end
+        end)
+        :onNext(function()
+            video:crop():type():show()
+            local currentValue = video:crop():type():value()
+            local currentValueID = mod._cropTypeCache or (currentValue and cropTypeNameToID(currentValue))
+            local newID = currentValueID and currentValueID + 1
+            if newID == 4 then newID = 1 end
+            mod._cropTypeCache = newID
+            cropTypeUpdate:start()
+        end)
+        :onPrev(function()
+            video:crop():type():show()
+            local currentValue = video:crop():type():value()
+            local currentValueID = mod._cropTypeCache or (currentValue and cropTypeNameToID(currentValue))
+            local newID = currentValueID and currentValueID - 1
+            if newID == 0 then newID = 3 end
+            mod._cropTypeCache = newID
+            cropTypeUpdate:start()
+        end)
+        :onReset(function()
+            video:crop():type():show()
+            video:crop():type():value(fcp:string("FFTrim"))
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Distort Group:
+    --------------------------------------------------------------------------------
+    local distort = video:distort()
+    local distortGroup = mod._videoGroup:group(distort:label())
+
+    id = id + 1
+    id = xyParameter(distortGroup, distort:bottomLeft(), id, 0, 1080, 0.1)
+    id = xyParameter(distortGroup, distort:bottomRight(), id, 0, 1080, 0.1)
+    id = xyParameter(distortGroup, distort:topRight(), id, 0, 1080, 0.1)
+    id = xyParameter(distortGroup, distort:topLeft(), id, 0, 1080, 0.1)
+
+    --------------------------------------------------------------------------------
+    -- Opacity:
+    --------------------------------------------------------------------------------
+    id = sliderParameter(compositingGroup, compositing:opacity(), id, 0, 100, 0.1, 100)
+
+    --------------------------------------------------------------------------------
+    -- Stabilization Enable/Disable:
+    --------------------------------------------------------------------------------
+    local stabilization = video:stabilization()
+    local stabilizationGroup = mod._videoGroup:group(stabilization:label())
+
+    id = id + 1
+    stabilizationGroup
+        :action(id, i18n("toggle"))
+        :onPress(function()
+            stabilization:show()
+            local checkbox = stabilization.enabled
+            if checkbox then
+                checkbox:toggle()
+            end
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Stabilization Method Buttons:
+    --------------------------------------------------------------------------------
+    id = id + 1
+    stabilizationGroup
+        :action(id, i18n("automatic"))
+        :onPress(doStabilizationMethod("Automatic"))
+
+
+    id = id + 1
+    stabilizationGroup
+        :action(id, i18n("inertiaCam"))
+        :onPress(doStabilizationMethod("InertiaCam"))
+
+    id = id + 1
+    stabilizationGroup
+        :action(id, i18n("smoothCam"))
+        :onPress(doStabilizationMethod("SmoothCam"))
+
+    --------------------------------------------------------------------------------
+    -- Stabilization Method Knob:
+    --------------------------------------------------------------------------------
+    local stabilizationMethods = {
+        [1] = {flexoID = "FFStabilizationDynamic", i18n="automatic"},
+        [2] = {flexoID = "FFStabilizationUseInertiaCam", i18n="inertiaCam"},
+        [3] = {flexoID = "FFStabilizationUseSmoothCam", i18n="smoothCam"},
+    }
+
+    local stabilizationMethodToID = function(name)
+        for i, v in pairs(stabilizationMethods) do
+            if name == fcp:string(v.flexoID) then
+                return i
+            end
+        end
+    end
+
+    local stabilizationMethodUpdate = delayed.new(0.5, function()
+        video:stabilization():method():value(fcp:string(stabilizationMethods[mod._stabilizationMethodCache].flexoID))
+        mod._stabilizationMethodCache = nil
+    end)
+
+    mod._stabilizationMethodCache = nil
+    id = id + 1
+    stabilizationGroup:menu(id)
+        :name(i18n("method"))
+        :name9(i18n("method"))
+        :onGet(function()
+            if mod._stabilizationMethodCache then
+                return i18n(stabilizationMethods[mod._stabilizationMethodCache].i18n)
+            else
+                return stabilization:method():value()
+            end
+        end)
+        :onNext(function()
+            stabilization:method():show()
+            local currentValue = stabilization:method():value()
+            local currentValueID = mod._stabilizationMethodCache or (currentValue and stabilizationMethodToID(currentValue))
+            local newID = currentValueID and currentValueID + 1
+            if newID == 4 then newID = 1 end
+            mod._stabilizationMethodCache = newID
+            stabilizationMethodUpdate:start()
+        end)
+        :onPrev(function()
+            stabilization:method():show()
+            local currentValue = stabilization:method():value()
+            local currentValueID = mod._stabilizationMethodCache or (currentValue and stabilizationMethodToID(currentValue))
+            local newID = currentValueID and currentValueID - 1
+            if newID == 0 then newID = 3 end
+            mod._stabilizationMethodCache = newID
+            stabilizationMethodUpdate:start()
+        end)
+        :onReset(function()
+            mod._stabilizationMethodCache = 1
+            video:stabilization():method():show()
+            video:stabilization():method():value(fcp:string("FFStabilizationDynamic"))
+            mod._stabilizationMethodCache = nil
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Stabilization Sliders:
+    --------------------------------------------------------------------------------
+    id = id + 1
+    id = sliderParameter(stabilizationGroup, stabilization:translationSmooth(), id, 0, 4.5, 0.1, 1.5)
+    id = sliderParameter(stabilizationGroup, stabilization:rotationSmoooth(), id, 0, 4.5, 0.1, 1.5)
+    id = sliderParameter(stabilizationGroup, stabilization:scaleSmooth(), id, 0, 4.5, 0.1, 1.5)
+    id = sliderParameter(stabilizationGroup, stabilization:smoothing(), id, 0, 3, 0.1, 1)
+
+    --------------------------------------------------------------------------------
+    -- Stabilization Checkboxes:
+    --------------------------------------------------------------------------------
+    --tripodMode
+
+    --------------------------------------------------------------------------------
+    -- Rolling Shutter:
+    --------------------------------------------------------------------------------
+    -- TODO
+
+    --------------------------------------------------------------------------------
+    -- Spatial Conform:
+    --------------------------------------------------------------------------------
+    -- TODO
 
     return mod
 end
