@@ -804,7 +804,7 @@ end
 --- Returns:
 ---  * The `cp.app` instance.
 function app:hide()
-    local hsApp = self:application()
+    local hsApp = self:hsApplication()
     if hsApp then
         hsApp:hide()
     end

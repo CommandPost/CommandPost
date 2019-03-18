@@ -40,7 +40,6 @@ function mod.start()
                 --------------------------------------------------------------------------------
                 -- Setup a timer to check for the Media Import window:
                 --------------------------------------------------------------------------------
-                mod._mediaImportCount = 0
                 mod._fcpxHidden = not fcp:isShowing()
                 mod._currentApplication = application.frontmostApplication()
                 mod.mediaImportTimer = doEvery(0.01, function()
@@ -56,6 +55,9 @@ function mod.start()
                         mod._mediaImportCount = nil
                         mod._currentApplication = nil
                         mod.mediaImportTimer:stop()
+                    end
+                    if type(mod._mediaImportCount) ~= "number" then
+                        mod._mediaImportCount = 0
                     end
                     mod._mediaImportCount = mod._mediaImportCount + 1
                     if mod._mediaImportCount == 500 then
