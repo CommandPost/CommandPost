@@ -55,13 +55,6 @@ end
 ---  * None
 function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
-    -- Add Final Cut Pro Modes:
-    --------------------------------------------------------------------------------
-    tangentManager.addMode(0x00010003, "FCP: Board")
-
-    tangentManager.addMode(0x00010004, "FCP: Wheels")
-
-    --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
     --------------------------------------------------------------------------------
     local updateUI = deferred.new(0.01)
