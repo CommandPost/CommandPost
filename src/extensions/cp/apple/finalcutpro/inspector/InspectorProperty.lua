@@ -164,8 +164,6 @@ function mod.section(labelKey, index)
                     end
                 end
             ):bind(row)
-                            
-            
 
             if subProps then
                 prop.bind(row)(subProps)
@@ -180,12 +178,19 @@ function mod.section(labelKey, index)
                 end
             end
 
+            if self._extendFn then
+                row:extend(self._extendFn)
+            end
+
             return row
         end):cached()
         
         -- add access to the `PropertyRow:extend()` function
         function section:extend(extendFn)
-            self:get():extend(extendFn)
+            self._extendFn = extendFn
+            if self:owner() then -- already bound...
+                self:get():extend(extendFn)
+            end
             return self
         end
 
@@ -213,7 +218,7 @@ local function simple(labelKey, prepareFn, index)
         prepareFn = nil
     end
 
-    return prop(function(self)
+    local simple = return prop(function(self)
         local row = PropertyRow(self, labelKey, index)
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
 
@@ -221,8 +226,23 @@ local function simple(labelKey, prepareFn, index)
             prepareFn(row)
         end
 
+        if self._extendFn then
+            row:extend(self._extendFn)
+        end
+
         return row
     end):cached()
+
+    -- add access to the `PropertyRow:extend()` function
+    function section:extend(extendFn)
+        self._extendFn = extendFn
+        if self:owner() then -- already bound...
+            self:get():extend(extendFn)
+        end
+        return self
+    end
+
+    return simple
 end
 
 mod.simple = simple
