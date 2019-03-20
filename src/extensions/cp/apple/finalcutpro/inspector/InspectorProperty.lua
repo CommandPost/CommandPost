@@ -133,7 +133,7 @@ end
 function mod.section(labelKey, index)
     return function(subProps)
         local extendFn = nil
-        local section = prop(function(owner)
+        local result = prop(function(owner)
             local row = PropertyRow(owner, labelKey, index)
             -- sections are also parents of other PropertyRows.
             PropertyRow.prepareParent(row, row.propertiesUI:mutate(function(original)
@@ -187,7 +187,7 @@ function mod.section(labelKey, index)
         end):cached()
         
         -- add access to the `PropertyRow:extend()` function
-        function section:extend(fn)
+        function result:extend(fn)
             extendFn = fn
             if self:owner() then -- already bound...
                 self:get():extend(extendFn)
@@ -195,7 +195,7 @@ function mod.section(labelKey, index)
             return self
         end
 
-        return section
+        return result
     end
 end
 
@@ -220,8 +220,9 @@ local function simple(labelKey, prepareFn, index)
     end
 
     local extendFn = nil
-    local simple = return prop(function(self)
-        local row = PropertyRow(self, labelKey, index)
+    local result = return prop(function(owner)
+        local row = PropertyRow(owner, labelKey, index)
+
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
 
         if prepareFn then
@@ -236,7 +237,7 @@ local function simple(labelKey, prepareFn, index)
     end):cached()
 
     -- add access to the `PropertyRow:extend()` function
-    function simple:extend(fn)
+    function result:extend(fn)
         extendFn = fn
         if self:owner() then -- already bound...
             self:get():extend(extendFn)
@@ -244,7 +245,7 @@ local function simple(labelKey, prepareFn, index)
         return self
     end
 
-    return simple
+    return result
 end
 
 mod.simple = simple
