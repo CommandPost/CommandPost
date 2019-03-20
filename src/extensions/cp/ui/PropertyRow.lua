@@ -165,6 +165,22 @@ function PropertyRow:initialize(parent, labelKey, index)
     self._index = index or 1
 end
 
+--- cp.ui.PropertyRow:extend(extendFn) -> cp.ui.PropertyRow
+--- Method
+--- This method will call the provided function, passing it the current `PropertyRow`.
+--- This can be used to add addtional tweaks to the row, such as adding custom Elements.
+---
+--- Parameters:
+---  * extendFn     - A `function` that will be passed the current row.
+---
+--- Returns:
+---  * The same `PropertyRow` instance.
+function PropertyRow:extend(extendFn)
+    assert(type(extendFn) == "function", "Please provide a function.")
+    extendFn(self)
+    return self
+end
+
 --- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` from the parent that contains the properties.
