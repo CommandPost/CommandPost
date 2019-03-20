@@ -9,7 +9,7 @@
 
 local require = require
 
--- local log                   = require("hs.logger").new("InspectorProperty")
+--local log                   = require("hs.logger").new("InspectorProperty")
 
 local is                    = require("cp.is")
 local prop                  = require("cp.prop")
@@ -150,9 +150,9 @@ function mod.section(labelKey, index)
                 return nil
             end))
 
-            row.enabled     = CheckBox(row, function() return childFromLeft(row:children(), 1) end)
-            row.toggle      = CheckBox(row, function() return childFromRight(row:children(), 2) end)
-            row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
+            row.enabled     = CheckBox(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)
+            row.toggle      = CheckBox(row, function() return childFromLeft(row:children(), 3, CheckBox.matches) end)
+            row.reset       = Button(row, function() return childFromRight(row:children(), 1, Button.matches) end)
             row.expanded    = prop(
                 function(theRow)
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
@@ -185,7 +185,7 @@ function mod.section(labelKey, index)
 
             return row
         end):cached()
-        
+
         -- add access to the `PropertyRow:extend()` function
         function result:extend(fn)
             extendFn = fn
@@ -220,7 +220,7 @@ local function simple(labelKey, prepareFn, index)
     end
 
     local extendFn = nil
-    local result = return prop(function(owner)
+    local result = prop(function(owner)
         local row = PropertyRow(owner, labelKey, index)
 
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)

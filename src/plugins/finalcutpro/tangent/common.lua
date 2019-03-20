@@ -4,8 +4,9 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("tangentVideo")
+local log                   = require("hs.logger").new("tangentVideo")
 
+local geometry              = require("hs.geometry")
 local timer                 = require("hs.timer")
 
 local axutils               = require("cp.ui.axutils")
@@ -18,6 +19,7 @@ local tools                 = require("cp.tools")
 
 local childrenMatching      = axutils.childrenMatching
 local delayed               = timer.delayed
+local ninjaMouseClick       = tools.ninjaMouseClick
 local playErrorSound        = tools.playErrorSound
 local tableCount            = tools.tableCount
 
@@ -50,7 +52,11 @@ local DEFER = 0.01
 function mod.popupParameter(group, param, id, value, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(param:doSelectValue(value))
+        :onPress(
+            Do(param:doShow())
+                :Then(param:doSelectValue(value))
+                :Label("plugins.finalcutpro.tangent.common.popupParameter")
+        )
     return id + 1
 end
 
@@ -75,17 +81,26 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
 
     local popupSliderCache = nil
 
+    local maxValue = tableCount(options)
+
     local loopupID = function(name)
         for i, v in pairs(options) do
-            if name == fcp:string(v.flexoID) then
-                return i
+            if v.flexoID then
+                if name == fcp:string(v.flexoID) then
+                    return i
+                end
             end
         end
     end
 
     local updateUI = delayed.new(0.5, function()
-       param:value(fcp:string(options[popupSliderCache].flexoID))
-        popupSliderCache = nil
+        Do(param:doShow())
+            :Then(param:doSelectValue(fcp:string(options[popupSliderCache].flexoID)))
+            :Then(function()
+                popupSliderCache = nil
+            end)
+            :Label("plugins.finalcutpro.tangent.common.popupSliderParameter.updateUI")
+            :Now()
     end)
 
     group:menu(id + 1)
@@ -93,9 +108,14 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
         :name9(i18n(label .. "9", {default=i18n(label, {default=label})}))
         :onGet(function()
             if popupSliderCache then
-                return i18n(options[popupSliderCache].i18n)
+                if options[popupSliderCache].i18n ~= nil then
+                    local v = options[popupSliderCache].i18n
+                    return i18n(v .. "9", {default= i18n(v, {default=v})})
+                end
             else
-                return param:value()
+                local i = loopupID(param:value())
+                local v = options[i] and options[i].i18n
+                return v and i18n(v .. "9", {default=i18n(v, {default=v})})
             end
         end)
         :onNext(function()
@@ -103,7 +123,20 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             local currentValue = param:value()
             local currentValueID = popupSliderCache or (currentValue and loopupID(currentValue))
             local newID = currentValueID and currentValueID + 1
-            if newID == 4 then newID = 1 end
+            if newID == maxValue then newID = 1 end
+
+            --------------------------------------------------------------------------------
+            -- This is a horrible temporary workaround for menu non-enabled items.
+            -- It should probably be some kind of loop.
+            --------------------------------------------------------------------------------
+            if options[newID].flexoID == nil then
+                newID = newID + 1
+            end
+            if options[newID].flexoID == nil then
+                newID = newID + 1
+            end
+            --------------------------------------------------------------------------------
+
             popupSliderCache = newID
             updateUI:start()
         end)
@@ -112,17 +145,35 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             local currentValue = param:value()
             local currentValueID = popupSliderCache or (currentValue and loopupID(currentValue))
             local newID = currentValueID and currentValueID - 1
-            if newID == 0 then newID = 3 end
+            if newID == 0 then newID = maxValue - 1 end
+
+            --------------------------------------------------------------------------------
+            -- This is a horrible temporary workaround for menu non-enabled items.
+            -- It should probably be some kind of loop.
+            --------------------------------------------------------------------------------
+            if options[newID].flexoID == nil then
+                newID = newID - 1
+            end
+            if options[newID].flexoID == nil then
+                newID = newID - 1
+            end
+            if newID <= 0 then newID = maxValue - 1 end
+            --------------------------------------------------------------------------------
+
             popupSliderCache = newID
             updateUI:start()
         end)
-        :onReset(function()
-            popupSliderCache = 1
-            param:show()
-            param:value(fcp:string(options[resetIndex].flexoID))
-            popupSliderCache = nil
-        end)
-
+        :onReset(
+            Do(function()
+                popupSliderCache = 1
+            end)
+                :Then(param:doShow())
+                :Then(param:doSelectValue(fcp:string(options[resetIndex].flexoID)))
+                :Then(function()
+                    popupSliderCache = nil
+                end)
+                :Label("plugins.finalcutpro.tangent.common.popupSliderParameter.reset")
+        )
     return id + 1
 
 end
@@ -144,7 +195,9 @@ end
 function mod.popupParameters(group, param, id, options)
     for i=1, tableCount(options) do
         local v = options[i]
-        id = mod.popupParameter(group, param, id, fcp:string(v.flexoID), v.i18n)
+        if v.flexoID ~= nil then
+            id = mod.popupParameter(group, param, id, fcp:string(v.flexoID), v.i18n)
+        end
     end
     return id
 end
@@ -165,12 +218,67 @@ end
 function mod.checkboxParameter(group, param, id, label)
     group
         :action(id + 1, i18n(label, {default=label}))
+        :onPress(
+            Do(param:doShow()):Then(
+                If(param.enabled):Is(nil):Then():Otherwise(
+                    param.enabled:doPress()
+                )
+            ):Label("plugins.finalcutpro.tangent.common.checkboxParameter")
+        )
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.buttonParameter() -> none
+--- Function
+--- Sets up a new Button Parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * param - The Parameter
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---
+--- Returns:
+---  * An updated ID
+function mod.buttonParameter(group, param, id, label)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(
+            Do(param:doShow()):Then(
+                param:doPress()
+            ):Label("plugins.finalcutpro.tangent.common.buttonParameter")
+        )
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.buttonParameter() -> none
+--- Function
+--- Sets up a new Button Parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * param - The Parameter
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---
+--- Returns:
+---  * An updated ID
+function mod.ninjaButtonParameter(group, param, id, label)
+    group
+        :action(id + 1, i18n(label, {default=label}))
         :onPress(function()
-            param:show():expanded(true)
-            local checkbox = param.enabled
-            if checkbox then
-                checkbox:toggle()
+            param:show()
+            local frame = param:frame()
+            if frame then
+                local center = geometry(frame).center
+                if center then
+                    ninjaMouseClick(center)
+                    return
+                end
             end
+            playErrorSound()
         end)
     return id + 1
 end
@@ -199,13 +307,15 @@ function mod.checkboxParameterByIndex(group, section, nextSection, id, label, in
             local sectionFrame = section and section:UI() and section:UI():frame()
             local nextSectionFrame = nextSection and nextSection:UI() and nextSection:UI():frame()
             local allowedX = section and section.enabled and section.enabled:UI() and section.enabled:UI():frame().x
-            if sectionFrame and nextSectionFrame and allowedX then
+            if sectionFrame and allowedX then
                 local checkboxes = childrenMatching(children, function(e)
                     local frame = e:attributeValue("AXFrame")
                     local result = e:attributeValue("AXRole") == "AXCheckBox"
                         and frame.x == allowedX
                         and frame.y > (sectionFrame.y + sectionFrame.h)
-                        and (frame.y + frame.h) < nextSectionFrame.y
+                    if nextSectionFrame then
+                        result = result and ((frame.y + frame.h) < nextSectionFrame.y)
+                    end
                     return result
                 end)
                 local checkbox = checkboxes and checkboxes[index]
@@ -264,7 +374,7 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
                 end
                 updating = false
             end)
-        )
+        ):Label("plugins.finalcutpro.tangent.common.xyParameter.updateUI")
     )
 
     local label = param:label()
@@ -335,7 +445,7 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
                 end
                 updating = false
             end)
-        )
+        ):Label("plugins.finalcutpro.tangent.common.sliderParameter.updateUI")
     )
 
     default = default or 0

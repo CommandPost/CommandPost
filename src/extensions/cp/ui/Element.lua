@@ -7,14 +7,16 @@
 --- * [CheckBox](cp.rx.CheckBox.md)
 --- * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
+
 -- local log               = require("hs.logger").new("Element")
 
 local axutils           = require("cp.ui.axutils")
-local prop              = require("cp.prop")
 local go	            = require("cp.rx.go")
+local If                = require("cp.rx.go.If")
+local lazy              = require("cp.lazy")
+local prop              = require("cp.prop")
 
 local class             = require("middleclass")
-local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
 local Do, Given         = go.Do, go.Given
@@ -90,6 +92,29 @@ function Element.lazy.prop:isShowing()
         isShowing:monitor(parent.isShowing)
     end
     return isShowing
+end
+
+--- cp.ui.Element:doShow() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the Element is showing.
+function Element.lazy.method:doShow()
+    return If(function() return self:parent() end)
+    :Then(function(parent) return parent:doShow() end)
+    :Otherwise(false)
+end
+
+--- cp.ui.Element:show() -> self
+--- Method
+--- Shows the Element.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function Element:show()
+    self:parent():show()
+    return self
 end
 
 --- cp.ui.Element.role <cp.prop: string; read-only>

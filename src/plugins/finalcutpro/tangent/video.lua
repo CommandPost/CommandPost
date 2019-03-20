@@ -14,83 +14,6 @@ local tableCount            = tools.tableCount
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
---
---------------------------------------------------------------------------------
-
--- BLEND_MODES -> table
--- Constant
--- Blend Modes
-local BLEND_MODES = {
-    [1]     = {flexoID = "FFHeliumBlendModeNormal", i18n="normal"},
-    [2]     = {flexoID = "FFHeliumBlendModeSubtract", i18n="subtract"},
-    [3]     = {flexoID = "FFHeliumBlendModeDarken", i18n="darken"},
-    [4]     = {flexoID = "FFHeliumBlendModeMultiply", i18n="multiply"},
-    [5]     = {flexoID = "FFHeliumBlendModeColorBurn", i18n="colorBurn"},
-    [6]     = {flexoID = "FFHeliumBlendModeLinearBurn", i18n="linearBurn"},
-    [7]     = {flexoID = "FFHeliumBlendModeAdd", i18n="add"},
-    [8]     = {flexoID = "FFHeliumBlendModeLighten", i18n="lighten"},
-    [9]     = {flexoID = "FFHeliumBlendModeScreen", i18n="screen"},
-    [10]    = {flexoID = "FFHeliumBlendModeColorDodge", i18n="colorDodge"},
-    [11]    = {flexoID = "FFHeliumBlendModeLinearDodge", i18n="linearDodge"},
-    [12]    = {flexoID = "FFHeliumBlendModeOverlay", i18n="overlay"},
-    [13]    = {flexoID = "FFHeliumBlendModeSoftLight", i18n="softLight"},
-    [14]    = {flexoID = "FFHeliumBlendModeHardLight", i18n="hardLight"},
-    [15]    = {flexoID = "FFHeliumBlendModeVividLight", i18n="vividLight"},
-    [16]    = {flexoID = "FFHeliumBlendModeLinearLight", i18n="linearLight"},
-    [17]    = {flexoID = "FFHeliumBlendModePinLight", i18n="pinLight"},
-    [18]    = {flexoID = "FFHeliumBlendModeHardMix", i18n="hardMix"},
-    [19]    = {flexoID = "FFHeliumBlendModeDifference", i18n="difference"},
-    [20]    = {flexoID = "FFHeliumBlendModeExclusion", i18n="exclusion"},
-    [21]    = {flexoID = "FFHeliumBlendModeStencilAlpha", i18n="stencilAlpha"},
-    [22]    = {flexoID = "FFHeliumBlendModeStencilLuma", i18n="stencilLuma"},
-    [23]    = {flexoID = "FFHeliumBlendModeSilhouetteAlpha", i18n="silhouetteAlpha"},
-    [24]    = {flexoID = "FFHeliumBlendModeSilhouetteLuma", i18n="silhouetteLuma"},
-    [25]    = {flexoID = "FFHeliumBlendModeBehind", i18n="behind"},
-    [26]    = {flexoID = "FFHeliumBlendModeAlphaAdd", i18n="alphaAdd"},
-    [27]    = {flexoID = "FFHeliumBlendModePremultipliedMix", i18n="premultipliedMix"},
-}
-
--- CROP_TYPES -> table
--- Constant
--- Crop Types
-local CROP_TYPES = {
-    [1]     = {flexoID = "FFTrim", i18n = "trim"},
-    [2]     = {flexoID = "FFCrop", i18n = "crop"},
-    [3]     = {flexoID = "FFKenBurns", i18n = "kenBurns"},
-}
-
--- STABILIZATION_METHODS -> table
--- Constant
--- Stabilisation Methods
-local STABILIZATION_METHODS = {
-    [1]     = {flexoID = "FFStabilizationDynamic", i18n="automatic"},
-    [2]     = {flexoID = "FFStabilizationUseInertiaCam", i18n="inertiaCam"},
-    [3]     = {flexoID = "FFStabilizationUseSmoothCam", i18n="smoothCam"},
-}
-
--- ROLLING_SHUTTER_AMOUNTS -> table
--- Constant
--- Rolling Shutter Amounts
-local ROLLING_SHUTTER_AMOUNTS = {
-    [1]     = {flexoID = "FFRollingShutterAmountNone", i18n="none"},
-    [2]     = {flexoID = "FFRollingShutterAmountLow", i18n="low"},
-    [3]     = {flexoID = "FFRollingShutterAmountMedium", i18n="medium"},
-    [4]     = {flexoID = "FFRollingShutterAmountHigh", i18n="high"},
-    [5]     = {flexoID = "FFRollingShutterAmountExtraHigh", i18n="extraHigh"},
-}
-
--- SPATIAL_CONFORM_TYPES -> table
--- Constant
--- Spatial Conform Types
-local SPATIAL_CONFORM_TYPES = {
-    [1]     = {flexoID = "FFConformTypeFit", i18n="fit"},
-    [2]     = {flexoID = "FFConformTypeFill", i18n="fill"},
-    [3]     = {flexoID = "FFConformTypeNone", i18n="none"},
-}
-
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -100,29 +23,39 @@ local plugin = {
     dependencies = {
         ["finalcutpro.tangent.common"]  = "common",
         ["finalcutpro.tangent.group"]   = "fcpGroup",
-        ["core.tangent.manager"]        = "tangentManager",
     }
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Setup:
+    --------------------------------------------------------------------------------
+    local id                            = 0x0F730000
 
-    local id = 0x0F730000
+    local common                        = deps.common
+    local fcpGroup                      = deps.fcpGroup
 
-    local common                = deps.common
-
-    local checkboxParameterByIndex        = common.checkboxParameterByIndex
-    local checkboxParameter     = common.checkboxParameter
-    local popupParameter        = common.popupParameter
-    local popupParameters       = common.popupParameters
-    local popupSliderParameter  = common.popupSliderParameter
-    local sliderParameter       = common.sliderParameter
-    local xyParameter           = common.xyParameter
+    local buttonParameter               = common.buttonParameter
+    local checkboxParameter             = common.checkboxParameter
+    local checkboxParameterByIndex      = common.checkboxParameterByIndex
+    local ninjaButtonParameter          = common.ninjaButtonParameter
+    local popupParameter                = common.popupParameter
+    local popupParameters               = common.popupParameters
+    local popupSliderParameter          = common.popupSliderParameter
+    local sliderParameter               = common.sliderParameter
+    local xyParameter                   = common.xyParameter
 
     --------------------------------------------------------------------------------
     -- VIDEO INSPECTOR:
     --------------------------------------------------------------------------------
-    local video = fcp:inspector():video()
-    local videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
+    local video                         = fcp:inspector():video()
+    local videoGroup                    = fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
+
+    local BLEND_MODES                   = video.BLEND_MODES
+    local CROP_TYPES                    = video.CROP_TYPES
+    local STABILIZATION_METHODS         = video.STABILIZATION_METHODS
+    local ROLLING_SHUTTER_AMOUNTS       = video.ROLLING_SHUTTER_AMOUNTS
+    local SPATIAL_CONFORM_TYPES         = video.SPATIAL_CONFORM_TYPES
 
         --------------------------------------------------------------------------------
         --
@@ -130,7 +63,7 @@ function plugin.init(deps)
         --
         --------------------------------------------------------------------------------
         local effects = video:effects()
-        local effectsGroup = videoGroup:group(effects:label())
+        local effectsGroup = videoGroup:group(i18n("effects"))
 
             --------------------------------------------------------------------------------
             -- Enable/Disable:
@@ -152,6 +85,11 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         local compositing = video:compositing()
         local compositingGroup = videoGroup:group(compositing:label())
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(compositingGroup, compositing.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Blend Mode (Buttons):
@@ -185,6 +123,16 @@ function plugin.init(deps)
             -- Enable/Disable:
             --------------------------------------------------------------------------------
             id = checkboxParameter(transformGroup, transform, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Toggle UI:
+            --------------------------------------------------------------------------------
+            id = buttonParameter(transformGroup, transform.toggle, id, "toggleControls")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(transformGroup, transform.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Position:
@@ -225,6 +173,16 @@ function plugin.init(deps)
             id = checkboxParameter(cropGroup, crop, id, "toggle")
 
             --------------------------------------------------------------------------------
+            -- Toggle UI:
+            --------------------------------------------------------------------------------
+            id = buttonParameter(cropGroup, crop.toggle, id, "toggleControls")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(cropGroup, crop.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
             -- Type (Buttons):
             --------------------------------------------------------------------------------
             local cropType = fcp:inspector():video():crop():type()
@@ -258,6 +216,16 @@ function plugin.init(deps)
             id = checkboxParameter(distortGroup, distort, id, "toggle")
 
             --------------------------------------------------------------------------------
+            -- Toggle UI:
+            --------------------------------------------------------------------------------
+            id = buttonParameter(distortGroup, distort.toggle, id, "toggleControls")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(distortGroup, distort.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
             -- Bottom Left / Bottom Right / Top Right / Top Left:
             --------------------------------------------------------------------------------
             id = xyParameter(distortGroup, distort:bottomLeft(), id, 0, 1080, 0.1)
@@ -277,6 +245,11 @@ function plugin.init(deps)
             -- Enable/Disable:
             --------------------------------------------------------------------------------
             id = checkboxParameter(stabilizationGroup, stabilization, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(stabilizationGroup, stabilization.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Method (Buttons):
@@ -312,6 +285,11 @@ function plugin.init(deps)
             id = checkboxParameter(rollingShutterGroup, rollingShutter, id, "toggle")
 
             --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(rollingShutterGroup, rollingShutter.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
             -- Amount (Buttons):
             --------------------------------------------------------------------------------
             local rollingShutterAmount = rollingShutter:amount()
@@ -330,6 +308,11 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         local spatialConform = video:spatialConform()
         local spatialConformGroup = videoGroup:group(spatialConform:label())
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(spatialConformGroup, spatialConform.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Type (Buttons):
