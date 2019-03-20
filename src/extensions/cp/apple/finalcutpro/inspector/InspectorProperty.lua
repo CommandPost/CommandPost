@@ -234,7 +234,7 @@ local function simple(labelKey, prepareFn, index)
     end):cached()
 
     -- add access to the `PropertyRow:extend()` function
-    function section:extend(extendFn)
+    function simple:extend(extendFn)
         self._extendFn = extendFn
         if self:owner() then -- already bound...
             self:get():extend(extendFn)
