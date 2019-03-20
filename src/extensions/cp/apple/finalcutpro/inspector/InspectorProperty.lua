@@ -132,8 +132,9 @@ end
 ---  * A function which will create the section row when called.
 function mod.section(labelKey, index)
     return function(subProps)
-        local section = prop(function(self)
-            local row = PropertyRow(self, labelKey, index)
+        local extendFn = nil
+        local section = prop(function(owner)
+            local row = PropertyRow(owner, labelKey, index)
             -- sections are also parents of other PropertyRows.
             PropertyRow.prepareParent(row, row.propertiesUI:mutate(function(original)
                 local propsUI = original()
@@ -178,16 +179,16 @@ function mod.section(labelKey, index)
                 end
             end
 
-            if self._extendFn then
-                row:extend(self._extendFn)
+            if extendFn then
+                row:extend(extendFn)
             end
 
             return row
         end):cached()
         
         -- add access to the `PropertyRow:extend()` function
-        function section:extend(extendFn)
-            self._extendFn = extendFn
+        function section:extend(fn)
+            extendFn = fn
             if self:owner() then -- already bound...
                 self:get():extend(extendFn)
             end
@@ -218,6 +219,7 @@ local function simple(labelKey, prepareFn, index)
         prepareFn = nil
     end
 
+    local extendFn = nil
     local simple = return prop(function(self)
         local row = PropertyRow(self, labelKey, index)
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
@@ -226,16 +228,16 @@ local function simple(labelKey, prepareFn, index)
             prepareFn(row)
         end
 
-        if self._extendFn then
-            row:extend(self._extendFn)
+        if extendFn then
+            row:extend(extendFn)
         end
 
         return row
     end):cached()
 
     -- add access to the `PropertyRow:extend()` function
-    function simple:extend(extendFn)
-        self._extendFn = extendFn
+    function simple:extend(fn)
+        extendFn = fn
         if self:owner() then -- already bound...
             self:get():extend(extendFn)
         end
