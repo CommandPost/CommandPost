@@ -164,6 +164,8 @@ function mod.section(labelKey, index)
                     end
                 end
             ):bind(row)
+                            
+            
 
             if subProps then
                 prop.bind(row)(subProps)
@@ -180,6 +182,12 @@ function mod.section(labelKey, index)
 
             return row
         end):cached()
+        
+        -- add access to the `PropertyRow:extend()` function
+        function section:extend(extendFn)
+            self:get():extend(extendFn)
+            return self
+        end
 
         return section
     end
