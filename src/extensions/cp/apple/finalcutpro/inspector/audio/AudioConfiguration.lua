@@ -7,10 +7,10 @@ local require = require
 local log                               = require("hs.logger").new("audioConfiguration")
 
 local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
 local CheckBox                          = require("cp.ui.CheckBox")
 local just                              = require("cp.just")
 local MenuButton                        = require("cp.ui.MenuButton")
+local ScrollArea                        = require("cp.ui.ScrollArea")
 
 local Do                                = require("cp.rx.go.Do")
 local If                                = require("cp.rx.go.If")
@@ -26,10 +26,6 @@ local sort = table.sort
 --------------------------------------------------------------------------------
 local AudioConfiguration = ScrollArea:subclass("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
 
-function AudioConfiguration.__tostring()
-    return "cp.apple.finalcutpro.inspector.audio.AudioConfiguration"
-end
-
 --- cp.apple.finalcutpro.inspector.audio.AudioConfiguration.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
@@ -40,7 +36,7 @@ end
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function AudioConfiguration.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
+    return ScrollArea.matches(element)
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioConfiguration(parent) -> AudioConfiguration
@@ -68,7 +64,7 @@ function AudioConfiguration:initialize(parent)
             AudioConfiguration.matches
         )
     end)
-    Element.initialize(self, parent, UI)
+    ScrollArea.initialize(self, parent, UI)
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:enableCheckboxes() -> table
