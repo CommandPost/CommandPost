@@ -24,7 +24,7 @@ local sort = table.sort
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local AudioConfiguration = Element:subclass("AudioConfiguration")
+local AudioConfiguration = ScrollArea:subclass("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
 
 function AudioConfiguration.__tostring()
     return "cp.apple.finalcutpro.inspector.audio.AudioConfiguration"
