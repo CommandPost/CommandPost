@@ -233,6 +233,23 @@ function plugin.init(deps)
                 id = checkboxParameterByIndex(individualEffectsGroup, effects, nil, id, i18n("toggle") .. " " .. i, i)
             end
 
+        --------------------------------------------------------------------------------
+        --
+        -- Audio Configuration:
+        --
+        --------------------------------------------------------------------------------
+        local audioConfiguration = audio:audioConfiguration()
+        local audioConfigurationGroup = audioGroup:group(i18n("audioConfiguration"))
+
+            --------------------------------------------------------------------------------
+            -- Individual Components:
+            --------------------------------------------------------------------------------
+            local componentsGroup = audioConfigurationGroup:group(i18n("components"))
+            id = buttonParameter(componentsGroup, audioConfiguration:topComponent():enabled(), id, i18n("toggle") .. " 1")
+            for i=2, 9 do
+                id = buttonParameter(componentsGroup, audioConfiguration:subComponent(i-1):enabled(), id, i18n("toggle") .. " " .. i)
+            end
+
 end
 
 return plugin

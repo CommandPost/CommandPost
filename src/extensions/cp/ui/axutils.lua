@@ -4,10 +4,13 @@
 
 local require = require
 
-local canvas		  = require("hs.canvas")
-local fnutils		  = require("hs.fnutils")
-local prop            = require("cp.prop")
-local is              = require("cp.is")
+local canvas        = require("hs.canvas")
+local fnutils       = require("hs.fnutils")
+local geometry      = require("hs.geometry")
+
+local is            = require("cp.is")
+local prop          = require("cp.prop")
+
 
 local sort            = table.sort
 
@@ -32,6 +35,33 @@ local axutils = {}
 function axutils.valueOf(element, attribute, default)
     if axutils.isValid(element) then
         return element:attributeValue(attribute) or default
+    end
+end
+
+--- cp.ui.axutils.childrenInLine(element) -> table | nil
+--- Function
+--- Gets a table of children that are all in the same family and line as the
+--- supplied element.
+---
+--- Parameters:
+---  * element     - The base element.
+---
+--- Returns:
+---  * The table of `axuielement` objects, otherwise `nil`.
+function axutils.childrenInLine(element)
+    local elements = element and element:attributeValue("AXParent")
+    local children = elements and elements:attributeValue("AXChildren")
+    local baseFrame = element and element:attributeValue("AXFrame")
+    local result = {}
+    if children and baseFrame then
+        baseFrame = geometry.new(baseFrame)
+        for _, child in pairs(children) do
+             local childFrame = child:attributeValue("AXFrame")
+             if baseFrame:intersect(childFrame).h > 0 then
+                table.insert(result, child)
+             end
+        end
+        return result
     end
 end
 
@@ -188,9 +218,9 @@ end
 --- Checks to see if an element has a specific value.
 ---
 --- Parameters:
----  * element	- the `axuielement`
----  * name		- the name of the attribute
----  * value	- the value of the attribute
+---  * element  - the `axuielement`
+---  * name     - the name of the attribute
+---  * value    - the value of the attribute
 ---
 --- Returns:
 ---  * `true` if the `element` has the supplied attribute value, otherwise `false`.
@@ -249,9 +279,9 @@ end
 --- This searches for the first child of the specified element which has an attribute with the matching name and value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * name		- the name of the attribute
----  * value	- the value of the attribute
+---  * element  - the axuielement
+---  * name     - the name of the attribute
+---  * value    - the value of the attribute
 ---
 --- Returns:
 ---  * The first matching child, or nil if none was found
@@ -264,8 +294,8 @@ end
 --- This searches for the first child of the specified element which has `AXIdentifier` with the specified value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * value	- the value
+---  * element  - the axuielement
+---  * value    - the value
 ---
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
@@ -278,8 +308,8 @@ end
 --- This searches for the first child of the specified element which has `AXRole` with the specified value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * value	- the value
+---  * element  - the axuielement
+---  * value    - the value
 ---
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
@@ -292,8 +322,8 @@ end
 --- This searches for the first child of the specified element which has `AXDescription` with the specified value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * value	- the value
+---  * element  - the axuielement
+---  * value    - the value
 ---
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
@@ -307,9 +337,9 @@ end
 --- The function will receive one parameter - the current child.
 ---
 --- Parameters:
----  * element		- the axuielement
----  * matcherFn	- the function which checks if the child matches the requirements.
----  * index		- the number of matching child to return. Defaults to `1`.
+---  * element      - the axuielement
+---  * matcherFn    - the function which checks if the child matches the requirements.
+---  * index        - the number of matching child to return. Defaults to `1`.
 ---
 --- Returns:
 ---  * The first matching child, or nil if none was found
@@ -337,9 +367,9 @@ end
 --- Searches for the child element which is at number `index` when sorted using the `compareFn`.
 ---
 --- Parameters:
----  * element		- the axuielement or array of axuielements
----  * index		- the index number of the child to find.
----  * compareFn	- a function to compare the elements.
+---  * element      - the axuielement or array of axuielements
+---  * index        - the index number of the child to find.
+---  * compareFn    - a function to compare the elements.
 ---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
@@ -365,8 +395,8 @@ end
 --- Returns `true` if element `a` is left of element `b`. May be used with `table.sort`.
 ---
 --- Parameters
----  * a	- The first element
----  * b	- The second element
+---  * a    - The first element
+---  * b    - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is left of `b`.
@@ -380,8 +410,8 @@ end
 --- Returns `true` if element `a` is right of element `b`. May be used with `table.sort`.
 ---
 --- Parameters
----  * a	- The first element
----  * b	- The second element
+---  * a    - The first element
+---  * b    - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is right of `b`.
@@ -395,8 +425,8 @@ end
 --- Returns `true` if element `a` is above element `b`. May be used with `table.sort`.
 ---
 --- Parameters
----  * a	- The first element
----  * b	- The second element
+---  * a    - The first element
+---  * b    - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is above `b`.
@@ -410,8 +440,8 @@ end
 --- Returns `true` if element `a` is below element `b`. May be used with `table.sort`.
 ---
 --- Parameters
----  * a	- The first element
----  * b	- The second element
+---  * a    - The first element
+---  * b    - The second element
 ---
 --- Returns:
 ---  * `true` if `a` is below `b`.
@@ -425,8 +455,8 @@ end
 --- Searches for the child element which is at number `index` when sorted left-to-right.
 ---
 --- Parameters:
----  * element		- the axuielement or array of axuielements
----  * index		- the index number of the child to find.
+---  * element      - the axuielement or array of axuielements
+---  * index        - the index number of the child to find.
 ---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
@@ -440,8 +470,8 @@ end
 --- Searches for the child element which is at number `index` when sorted right-to-left.
 ---
 --- Parameters:
----  * element		- the axuielement or array of axuielements
----  * index		- the index number of the child to find.
+---  * element      - the axuielement or array of axuielements
+---  * index        - the index number of the child to find.
 ---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
@@ -455,8 +485,8 @@ end
 --- Searches for the child element which is at number `index` when sorted top-to-bottom.
 ---
 --- Parameters:
----  * element		- the axuielement or array of axuielements
----  * index		- the index number of the child to find.
+---  * element      - the axuielement or array of axuielements
+---  * index        - the index number of the child to find.
 ---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
@@ -470,8 +500,8 @@ end
 --- Searches for the child element which is at number `index` when sorted bottom-to-top.
 ---
 --- Parameters:
----  * element		- the axuielement or array of axuielements
----  * index		- the index number of the child to find.
+---  * element      - the axuielement or array of axuielements
+---  * index        - the index number of the child to find.
 ---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
@@ -485,9 +515,9 @@ end
 --- This searches for all children of the specified element which has an attribute with the matching name and value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * name		- the name of the attribute
----  * value	- the value of the attribute
+---  * element  - the axuielement
+---  * name     - the name of the attribute
+---  * value    - the value of the attribute
 ---
 --- Returns:
 ---  * All matching children, or `nil` if none was found
@@ -500,8 +530,8 @@ end
 --- This searches for all children of the specified element which has an `AXRole` attribute with the matching value.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * value	- the value of the attribute
+---  * element  - the axuielement
+---  * value    - the value of the attribute
 ---
 --- Returns:
 ---  * All matching children, or `nil` if none was found
@@ -515,8 +545,8 @@ end
 --- function returns `true`. The function will receive one parameter - the current child.
 ---
 --- Parameters:
----  * element	- the axuielement
----  * matcherFn	- the function which checks if the child matches the requirements.
+---  * element  - the axuielement
+---  * matcherFn    - the function which checks if the child matches the requirements.
 ---
 --- Returns:
 ---  * All matching children, or `nil` if none was found
@@ -567,7 +597,7 @@ end
 --- Checks if the axuilelement is still valid - that is, still active in the UI.
 ---
 --- Parameters:
----  * element	- the axuielement
+---  * element  - the axuielement
 ---
 --- Returns:
 ---  * `true` if the element is valid.
@@ -602,10 +632,10 @@ end
 --- to return `true` or `false`.
 ---
 --- Parameters:
----  * source		- the table containing the cache
----  * key			- the key the value is cached under
----  * finderFn		- the function which will return the element if not found.
----  * [verifyFn]	- an optional function which will check the cached element to verify it is still valid.
+---  * source       - the table containing the cache
+---  * key          - the key the value is cached under
+---  * finderFn     - the function which will return the element if not found.
+---  * [verifyFn]   - an optional function which will check the cached element to verify it is still valid.
 ---
 --- Returns:
 ---  * The valid cached value.
@@ -635,8 +665,8 @@ end
 --- If the `filename` is provided it also saves the file to the specified location.
 ---
 --- Parameters:
----  * element		- The `axuielement` to snap.
----  * filename		- (optional) The path to save the image as a PNG file.
+---  * element      - The `axuielement` to snap.
+---  * filename     - (optional) The path to save the image as a PNG file.
 ---
 --- Returns:
 ---  * An `hs.image` file, or `nil` if the element could not be snapped.

@@ -4,11 +4,14 @@
 
 local require = require
 
---local log                               = require("hs.logger").new("audioConfiguration")
+local log                               = require("hs.logger").new("audioConfiguration")
 
 local axutils                           = require("cp.ui.axutils")
 local just                              = require("cp.just")
+
 local ScrollArea                        = require("cp.ui.ScrollArea")
+
+local AudioComponent                    = require("cp.apple.finalcutpro.inspector.audio.AudioComponent")
 
 --------------------------------------------------------------------------------
 --
@@ -58,7 +61,11 @@ function AudioConfiguration:initialize(parent)
     ScrollArea.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:enableCheckboxes() -> table
+function AudioConfiguration.static.matches(element)
+    return ScrollArea.matches(element)
+end
+
+--- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:topComponent() -> AudioComponent
 --- Method
 --- Returns a table of `hs._asm.axuielement` objects for each enable/disable toggle.
 ---
@@ -67,31 +74,26 @@ end
 ---
 --- Returns:
 ---  * A table containing `hs._asm.axuielement` objects.
-function AudioConfiguration.lazy.prop:enableCheckboxes()
-    return self.UI:mutate(function(original)
-        local ui = original()
-        local children = ui and ui:children()
-        local firstElement = true
-        local result = {}
-        local firstElementFrame = nil
-        for _, child in pairs(children) do
-            if firstElement then
-                if child:attributeValue("AXRole") == "AXButton" then
-                    table.insert(result, child)
-                    firstElementFrame = child:attributeValue("AXFrame")
-                    firstElement = false
-                end
-            else
-                local childFrame = child:attributeValue("AXFrame")
-                if child:attributeValue("AXRole") == "AXButton" and childFrame.w == firstElementFrame.w and childFrame.h == firstElementFrame.h then
-                    table.insert(result, child)
-                end
-            end
-        end
-        return result
-    end)
+function AudioConfiguration.lazy.method:topComponent()
+    return AudioComponent(self, true)
 end
 
+--- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:subCompontents() -> table
+--- Method
+--- Returns a table of `hs._asm.axuielement` objects for each enable/disable toggle.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing `hs._asm.axuielement` objects.
+function AudioConfiguration:subComponent(index)
+    if type(index) ~= "number" then
+        log.ef("subComponent: Index needs to be a valid number.")
+    else
+        return AudioComponent(self, false, index)
+    end
+end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:show() -> self
 --- Method
