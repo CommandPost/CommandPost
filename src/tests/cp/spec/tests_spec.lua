@@ -14,10 +14,17 @@ return describe "cp.spec.tests" {
         assert(false, "This should fail.")
     end),
 
+    it "passes again"
+    :doing(function()
+        assert(true, "This should not fail.")
+    end),
+
     it "will wait until an async is done"
     :doing(function(this)
-        this:wait()
+        this:log("waiting...")
+        this:wait(10)
         timer.doAfter(2, function()
+            this:log("completing...")
             assert(true, "Asynched!")
             this:done()
         end)

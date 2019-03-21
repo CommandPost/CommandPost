@@ -137,7 +137,7 @@ local function hijackAssert(this)
             return ok, message, ...
         else
             -- log.df("hijacked assert: failed")
-            local msg = format(message, ...)
+            local msg = type(message) == "string" and format(message, ...) or tostring(message)
             this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
             this.run[ASSERT](ok, Handled(msg))
         end
@@ -170,23 +170,15 @@ end
 --- * ...   - The list of filters. The first one will be compared to this scenario to determine it should be run.
 function Scenario:run(...)
     -- TODO: support filtering
-    return Run(self.name, self.testFn)
+    return Run(self.name)
     :onBefore(hijackAssert)
-    :onRunning(function(this)
-        this.run.result:start()
-        self.testFn(this)
-        if not this:isWaiting() then
-            this.run.result:passed()
-        end
-    end)
+    :onRunning(self.testFn)
     :onAfter(restoreAssert)
     :onComplete(function(this)
-        -- output the summary if this is the root.
-        if this.run:parent() == nil or this.run:verbose() then
-            this.run.result:summary()
+        if this.run.result == Run.result.running then
+            this.run.report:passed()
         end
     end)
-
 end
 
 --- cp.spec.Scenario:where(data) -> cp.spec.Where

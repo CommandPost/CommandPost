@@ -94,6 +94,14 @@ function DefaultHandler:aborted(run, msg)
     self:printf(" [ABORT] %s: %s", run, msg)
 end
 
+--- cp.spec.DefaultHandler:waiting(run, timeout)
+--- Method
+--- Prints a "[WAIT]" message with the timeout value..
+function DefaultHandler:waiting(run, timeout)
+    local seconds = timeout == 1 and "second" or "seconds"
+    self:printf("  [WAIT] %s: Waiting asynchronously for %d %s.", run, timeout, seconds)
+end
+
 --- cp.spec.DefaultHandler:filter(run, msg)
 --- Method
 --- Prints a "[FILTER]" message.
@@ -105,15 +113,15 @@ function DefaultHandler:filter(run, msg)
     self:printf("[FILTER] %s: %s", run, msg)
 end
 
---- cp.spec.DefaultHandler:summary(run, result)
+--- cp.spec.DefaultHandler:summary(run, report)
 --- Method
 --- If the handler or run is verbose, prints a "[RESULT]" message.
 ---
 --- Parameters:
 --- * run      - the [run](cp.spec.Run.md)
---- * result    - the [result](cp.spec.Result.md)
-function DefaultHandler:summary(run, result)
-    self:printf("[RESULT] %s: %s", run, result)
+--- * report    - the [report](cp.spec.Report.md)
+function DefaultHandler:summary(run, report)
+    self:printf("[RESULT] %s: %s", run, report)
 end
 
 -- set DefaultHandler to the default.

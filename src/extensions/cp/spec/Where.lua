@@ -3,7 +3,6 @@ local require                   = require
 local Definition                = require "cp.spec.Definition"
 local Run                       = require "cp.spec.Run"
 
-local format                    = string.format
 local insert                    = table.insert
 
 -- === cp.spec.RunWhere ===
@@ -18,9 +17,20 @@ local insert                    = table.insert
 -- Extends [Run](cp.spec.Run.md).
 local RunWhere = Run:subclass("cp.spec.RunWhere")
 
-function RunWhere:initialize(definition, where)
-    Run.initialize(self, definition)
+function RunWhere:initialize(where)
+    Run.initialize(self, "[Where]")
     self.where = where
+    setmetatable(self.shared, {
+        __index = function(_, key)
+            if self.data then
+                return self.data[key]
+            end
+            -- look up the parent Run's shared data, if available.
+            if self._parent then
+                return self._parent.shared[key]
+            end
+        end
+    })
 end
 
 --- === cp.spec.Where ===
@@ -55,57 +65,48 @@ end
 --
 -- Parameters:
 -- * scenario     - The [Scenario](cp.spec.Scenario.md) where it spawned from.
-function Where:initialize(scenario, whereData)
-    self.testFn = scenario.testFn
+function Where:initialize(definition, whereData)
     self.whereData = convertData(whereData)
+    self.definition = definition
 
-    Definition.initialize(self, scenario.name)
+    Definition.initialize(self, definition.name)
 end
 
 function Where:run(...)
-    self.currentRun = Run(self.name)
+    self.currentRun = Run("[Where]")
     :onRunning(function(this)
         this:wait()
-        self:runNext(1, this)
+        self:_runNext(1, this)
     end)
 
     return self.currentRun
 end
 
-local function interpolate(name, data)
-    -- TODO: implement interpolation
-    return name
-end
-
--- runNext(suite, index, this)
+-- cp.spec.Where:_runNext(suite, index, this)
 -- Function
 -- Runs the next test definition at the specified `index`, if available.
 -- If not, the `this:passed()` method is called to complete the test.
-function Where:runNext(index, whereThis)
+function Where:_runNext(index, whereThis)
     local data = self.whereData[index]
     if data then
-        local currentName = interpolate(self.name, data)
-        local run = Run(currentName, self.testFn)
-        :onStart(function(this)
-            for k,v in pairs(data) do
-                if this[k] then
-                    error(format("Existing %q value in `this`: %s", k, type(this[k])))
-                end
-                this[k] = v
-            end
-        end)
+        whereThis:log("running data row #1...")
+
+        whereThis.run.data = data
+
+        local run = self.definition:run()
+
+        run:parent(self.currentRun)
         :onComplete(function(this)
-            -- output a summary if we have a parent and it's verbose
-            if this.run.parent ~= nil and this.run:verbose() then
-                self.result:summary()
+            local report = this.run.report
+            if this.run.result == Run.result.running then
+                report:passed()
             end
 
-            -- add the run results
-            this.run.result:add(self.currentRun.result)
+            -- add the run reports
+            report:add(self.currentRun.report)
             -- onto the next run...
-            self:runNext(index + 1, this)
+            self:_runNext(index + 1, whereThis)
         end)
-        :parent(self.currentRun)
 
         if self._beforeEach then
             run:onBefore(self._beforeEach)
@@ -114,9 +115,8 @@ function Where:runNext(index, whereThis)
             run:onAfter(self._afterEach)
         end
     else
-        -- drop the extra pass for the suite itself
-        whereThis.run.result.passes = whereThis.run.result.passes - 1
-        whereThis:done()
+        whereThis:log("done...")
+        whereThis:done(true)
     end
 end
 

@@ -1,7 +1,7 @@
 
 --- === cp.spec.Handler ===
 ---
---- Subclasses of this can customise how results are handled.
+--- Subclasses of this can customise how reports are handled.
 --- All methods do nothing.
 ---
 --- See [DefaultHandler](cp.spec.DefaultHandler.md).
@@ -84,7 +84,6 @@ function Handler.stop(_) end
 ---
 --- Parameters:
 --- * run      - The test run.
---- * msg       - The message.
 function Handler.passed(_, _) end
 
 --- cp.spec.Handler:failed(run)
@@ -105,6 +104,15 @@ function Handler.failed(_, _) end
 --- * msg       - The message.
 function Handler.aborted(_, _) end
 
+--- cp.spec.Handler:waiting(run, timeout)
+--- Method
+--- Call to indicate that the run is waiting asynchronously.
+---
+--- Parameters:
+--- * run      - The test run.
+--- * timeout  - The timeout, in seconds.
+function Handler.waiting(_, _) end
+
 --- cp.spec.Handler:filter(run, msg)
 --- Method
 --- Call to indicate the [run](cp.spec.Run.md) is running due to being filtered.
@@ -114,13 +122,13 @@ function Handler.aborted(_, _) end
 --- * msg       - The message.
 function Handler.filter(_, _) end
 
---- cp.spec.Handler:summary(run, result)
+--- cp.spec.Handler:summary(run, report)
 --- Method
---- Call to indicate the [run](cp.spec.Run.md) has passed with the given [result](cp.spec.Result.md).
+--- Call to indicate the [run](cp.spec.Run.md) has passed with the given [report](cp.spec.Report.md).
 ---
 --- Parameters:
 --- * run          - The test run.
---- * result        - The test results.
+--- * report        - The test reports.
 function Handler.summary(_, _) end
 
 return Handler

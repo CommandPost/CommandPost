@@ -5,7 +5,7 @@ local require               = require
 
 local Handler               = require "cp.spec.Handler"
 local DefaultHandler        = require "cp.spec.DefaultHandler"
-local Result                = require "cp.spec.Result"
+local Report                = require "cp.spec.Report"
 local Run                   = require "cp.spec.Run"
 local Definition            = require "cp.spec.Definition"
 local Where                 = require "cp.spec.Where"
@@ -67,7 +67,7 @@ end
 return setmetatable({
     Handler = Handler,
     DefaultHandler = DefaultHandler,
-    Result = Result,
+    Report = Report,
     Run = Run,
     Definition = Definition,
     Scenario = Scenario,

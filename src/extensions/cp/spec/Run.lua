@@ -6,7 +6,8 @@ local class                     = require "middleclass"
 local timer                     = require "hs.timer"
 local Handled                   = require "cp.spec.Handled"
 local Message                   = require "cp.spec.Message"
-local Result                    = require "cp.spec.Result"
+local Report                    = require "cp.spec.Report"
+local interpolate               = require "i18n.interpolate"
 
 local format                    = string.format
 local insert                    = table.insert
@@ -70,10 +71,10 @@ function Run.This:initialize(run, index)
     assert(run ~= nil, "The Run must be provided.")
     assert(type(run) == "table", "The Run must be a Run instance.")
     self.run = run
+    self.shared = run.shared
     self.index = index
     self.currentPhase = run.phase
     self.state = Run.This.state.running
-    self.passing = true
 end
 
 --- cp.spec.Run.This:isActive() -> boolean
@@ -106,6 +107,7 @@ function Run.This:wait(timeout)
             local seconds = self.timeout == 1 and "second" or "seconds"
             self:abort(format("Timed out after %d %s.", self.timeout, seconds))
         end)
+        self.run.report:waiting(self.timeout)
     end
 end
 
@@ -133,9 +135,16 @@ end
 
 --- cp.spec.Run.This:done()
 --- Method
---- Indicates that the test is completed. Must only be called after calling [Run.This:wait(...)](#wait).
+--- Indicates that the test is completed.
 function Run.This:done()
     self:log("This: done")
+    self:_complete()
+end
+
+-- cp.spec.Run.This:_complete()
+-- Method
+-- Completes this run.
+function Run.This:_complete()
     self:cleanup()
     if self:isActive() then
         self.state = Run.This.state.done
@@ -158,10 +167,9 @@ end
 --- * message   - The optional message to output.
 function Run.This:abort(message)
     self:log("This: abort: %s", message)
-    self.run.result:aborted(message)
-    self.aborted = true
-    self.passing = false
-    self:done()
+    self.run.report:aborted(message)
+    self.run.result = Run.result.aborted
+    self:_complete()
 end
 
 --- cp.spec.Run.This:fail([message])
@@ -172,10 +180,9 @@ end
 --- * message   - The optional message to output.
 function Run.This:fail(message)
     self:log("This: fail: %s", message)
-    self.run.result:failed(message)
-    self.failed = true
-    self.passing = false
-    self:done()
+    self.run.report:failed(message)
+    self.run.result = Run.result.failed
+    self:_complete()
 end
 
 --- cp.spec.Run.This:prepare()
@@ -192,6 +199,10 @@ function Run.This:cleanup()
         self.timeoutTimer:stop()
         self.timeoutTimer = nil
     end
+end
+
+function Run.This:__index(key)
+    return self.shared[key]
 end
 
 function Run.This:__tostring()
@@ -245,6 +256,21 @@ Run.static.phase = {
     complete = Run.Phase("complete"),
 }
 
+--- cp.spec.Run.result <table>
+--- Constant
+--- A collection of result states for a `Run`.
+---
+--- Notes:
+--- * Report states include:
+---   * running         - The Run is currently running. Runs start in this state by default.
+---   * failed          - An assertion failed.
+---   * aborted         - An unexpected error happened.
+Run.static.result = {
+    running = "running",
+    failed = "failed",
+    aborted = "aborted",
+}
+
 --- cp.spec.Run(name) -> cp.spec.Run
 --- Constructor
 --- Creates a new test run.
@@ -253,23 +279,43 @@ Run.static.phase = {
 --- * name          - The name of the run.
 function Run:initialize(name)
 
---- cp.spec.Run.result <cp.spec.Result>
+--- cp.spec.Run.report <cp.spec.Report>
 --- Field
---- The results of the run.
-    self.result = Result(self)
+--- The reports of the run.
+    self.report = Report(self)
 
-    self.name = name
+    self._name = name
+    log.df("Run:initialize: self.realName = %s", type(self.realName))
 
     self.phaseActions = {}
+
+--- cp.spec.Run.shared <table>
+--- Field
+--- The set of data shared by all phases of the Run. Data from parent Runs will also be available.
+    self.shared = setmetatable({}, {
+        __index = function(_, key)
+            -- look up the parent Run's shared data, if available.
+            if self._parent then
+                return self._parent.shared[key]
+            end
+        end
+    })
 
 --- cp.spec.Run.phase <cp.spec.Run.phase>
 --- Field
 --- The current [phase](#phase) of the run.
     self.phase = nil
 
+--- cp.spec.Run.result <cp.spec.Run.result>
+--- Field
+--- The current result. Defaults to `Run.result.passing`.
+    self.result = nil
+
     -- set a timer to automatically start the run
     self._currentTimer = timer.doAfter(0, function()
         self._currentTimer = nil
+        self.report:start()
+        self.result = Run.result.running
         self:_doPhase(Run.phase.start)
     end)
 end
@@ -321,6 +367,18 @@ function Run:_doPhase(nextPhase)
     if nextPhase then
         self.phase = nextPhase
         self:_doNextAction(1)
+    else
+        self:_doReport()
+    end
+end
+
+-- cp.spec.Run:_doReport()
+-- Method
+-- Outputs the [Report](cp.spec.Report.md) for the run, if appropriate.
+function Run:_doReport()
+    self.report:stop()
+    if self:parent() == nil or self:verbose() then
+        self.report:summary()
     end
 end
 
@@ -328,7 +386,7 @@ end
 -- Method
 -- Performs the next action in the current phase at the specifed index.
 -- If none is available, it moves onto the next phase. If the action
--- triggers an error, it is logged in the `result` and we move to the `abort`
+-- triggers an error, it is logged in the `report` and we move to the `abort`
 -- phase for the current phase.
 function Run:_doNextAction(index)
     -- self:log("_doNextAction: %d", index)
@@ -368,10 +426,10 @@ end
 
 -- cp.spec.Run:_doAbort(err)
 -- Method
--- Logs the error with the current result's `aborted` log and begins processing the
+-- Logs the error with the current report's `aborted` log and begins processing the
 -- `abort` phase for the current phase.
 function Run:_doAbort(err)
-    self.result:aborted(err)
+    self.report:aborted(err)
     local currentPhase = self.phase
     if currentPhase then
         self:_doPhase(currentPhase.abort)
@@ -474,19 +532,18 @@ function Run:onComplete(actionFn)
     return self:_addAction(Run.phase.complete, actionFn)
 end
 
---- cp.spec.Run:childCompleted(childRun)
---- Method
---- This is called when the specified child Run has completed.
---- The default implementation does nothing. Subclasses should override if relevant.
----
---- Parameters:
---- * childRun      - The child `Run` which has completed.
-function Run.childCompleted() end
+function Run:realName()
+    self:log("Retrieving name: %s", self._name)
+    -- return interpolate(self._name, self.shared)
+    return self._name
+end
 
 function Run:fullName()
     local parent = self:parent()
     local parentName = parent and parent:fullName() .. " > " or ""
-    return parentName .. self.name
+    log.df("Run:fullName: realName = %s", hs.inspect(self.realName))
+    log.df("Run:fullName: _name = %s", hs.inspect(self._name))
+    return parentName .. self:realName()
 end
 
 function Run:__tostring()

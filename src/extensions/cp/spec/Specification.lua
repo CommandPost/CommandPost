@@ -44,31 +44,25 @@ function Specification:run()
     return Run(self.name)
     :onRunning(function(this)
         this:wait()
-        self:runNext(1, this)
-    end)
-    :onComplete(function(this)
-        -- output the summary if this is the root.
-        if this.run:parent() == nil or this.run:verbose() then
-            this.run.result:summary()
-        end
+        self:_runNext(1, this)
     end)
 end
 
--- runNext(suite, index, this)
--- Function
+-- cp.spec.Specification:_runNext(suite, index, this)
+-- Method
 -- Runs the next test definition at the specified `index`, if available.
 -- If not, the `this:passed()` method is called to complete the test.
-function Specification:runNext(index, this)
+function Specification:_runNext(index, this)
     local t = self.definitions[index]
     if t then
         this:log("Running definition #%s", index)
         local run
         run = t:run()
         :onComplete(function()
-            -- add the run results
-            this.run.result:add(run.result)
+            -- add the run reports
+            this.run.report:add(run.report)
             -- onto the next run...
-            self:runNext(index + 1, this)
+            self:_runNext(index + 1, this)
         end)
 
         -- set ourselves as the parent
@@ -82,7 +76,7 @@ function Specification:runNext(index, this)
         end
     else
         this:log("No more definitions. We're done.")
-        this:done()
+        this:done(true)
     end
 end
 

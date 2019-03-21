@@ -7,123 +7,133 @@ local Handler               = require "cp.spec.Handler"
 
 local format                = string.format
 
---- === cp.spec.Result ===
+--- === cp.spec.Report ===
 ---
 --- The results of a test [run](cp.spec.Run.md).
-local Result = class("cp.spec.Result")
+local Report = class("cp.spec.Report")
 
---- cp.spec.Result(run) -> cp.spec.Result
+--- cp.spec.Report(run) -> cp.spec.Report
 --- Constructor
---- Creates a new test result.
-function Result:initialize(run)
+--- Creates a new test report.
+function Report:initialize(run)
 
---- cp.spec.Result.run <cp.spec.Run>
+--- cp.spec.Report.run <cp.spec.Run>
 --- Field
---- The [run](cp.spec.Run.md) the results are for.
+--- The [run](cp.spec.Run.md) the reports are for.
     self.run = run
 
---- cp.spec.Result.passes <number>
+--- cp.spec.Report.passes <number>
 --- Field
 --- The number of passes in the run.
     self.passes = 0
 
---- cp.spec.Result.failures <number>
+--- cp.spec.Report.failures <number>
 --- Field
 --- The number of failures in the run.
     self.failures = 0
 
---- cp.spec.Result.aborts <number>
+--- cp.spec.Report.aborts <number>
 --- Field
 --- The number of aborts in the run.
     self.aborts = 0
 
---- cp.spec.Result.startTime <number>
+--- cp.spec.Report.startTime <number>
 --- Field
 --- The number of seconds since epoch when the test started, or `nil` if not started yet.
     self.startTime = nil
 
---- cp.spec.Result.stopTime <number>
+--- cp.spec.Report.stopTime <number>
 --- Field
 --- The number of seconds since epoch when the tests stopped, or `nil` if not stopped yet.
     self.stopTime = nil
 
---- cp.spec.Result.totalTime <number>
+--- cp.spec.Report.totalTime <number>
 --- Field
 --- The number of seconds the run took (may be decimal), or `nil` if the test hasn't run.
     self.totalTime = nil
 end
 
---- cp.spec.Result:start() -> nil
+--- cp.spec.Report:start() -> nil
 --- Method
 --- Logs the start time.
-function Result:start()
+function Report:start()
     self.startTime = timer.secondsSinceEpoch()
     Handler.default():start(self.run)
 end
 
---- cp.spec.Result:stop() -> nil
+--- cp.spec.Report:stop() -> nil
 --- Method
 --- Logs the end time.
-function Result:stop()
+function Report:stop()
     self.stopTime = timer.secondsSinceEpoch()
     self.totalTime = self.stopTime - self.startTime
     Handler.default():stop(self.run)
 end
 
---- cp.spec.Result:passed([message])
+--- cp.spec.Report:passed([message])
 --- Method
 --- Records a pass, with the specified message.
 ---
 --- Parameters:
 --- * message       - an optional additional message to output.
-function Result:passed(message)
+function Report:passed(message)
     self.passes = self.passes + 1
     Handler.default():passed(self.run, message)
 end
 
---- cp.spec.Result:failed(message)
+--- cp.spec.Report:failed(message)
 --- Method
 --- Records a fail, with the specified message.
 ---
 --- Parameters:
 --- * message       - The related message to output.
-function Result:failed(message)
+function Report:failed(message)
     self.failures = self.failures + 1
     Handler.default():failed(self.run, message)
 end
 
---- cp.spec.Result:aborted(message)
+--- cp.spec.Report:aborted(message)
 --- Method
 --- Records an abort, with the specified message.
 ---
 --- Parameters:
 --- * message       - The related message to output.
-function Result:aborted(message)
+function Report:aborted(message)
     self.aborts = self.aborts + 1
     Handler.default():aborted(self.run, message)
 end
 
---- cp.spec.Result:summary()
+--- cp.spec.Report:waiting(timeout)
 --- Method
---- Summarise the results.
-function Result:summary()
+--- Records that a run is waiting for up to the specified amount of time.
+---
+--- Parameters:
+--- * timeout   - The timeout to wait for, in seconds.
+function Report:waiting(timeout)
+    Handler.default():waiting(self.run, timeout)
+end
+
+--- cp.spec.Report:summary()
+--- Method
+--- Summarise the reports.
+function Report:summary()
     Handler.default():summary(self.run, self)
 end
 
---- cp.spec.Result:add(otherResult) -> nil
+--- cp.spec.Report:add(otherReport) -> nil
 --- Method
---- Adds the passes/failures/aborts from the other result into this one.
+--- Adds the passes/failures/aborts from the other report into this one.
 ---
 --- Parameters:
---- * otherResult   - The other result to add.
-function Result:add(otherResult)
-    self.passes = self.passes + otherResult.passes
-    self.failures = self.failures + otherResult.failures
-    self.aborts = self.aborts + otherResult.aborts
+--- * otherReport   - The other report to add.
+function Report:add(otherReport)
+    self.passes = self.passes + otherReport.passes
+    self.failures = self.failures + otherReport.failures
+    self.aborts = self.aborts + otherReport.aborts
 end
 
-function Result:__tostring()
+function Report:__tostring()
     return format("passed: %s; failed: %s; aborted: %s; time: %.4fs", self.passes, self.failures, self.aborts, self.totalTime or 0)
 end
 
-return Result
+return Report
