@@ -43,13 +43,12 @@
 
 local require                                       = require
 
-local log                                           = require("hs.logger").new("AudioInspector")
+-- local log                                           = require("hs.logger").new("AudioInspector")
 
 local axutils                                       = require("cp.ui.axutils")
 local prop                                          = require("cp.prop")
 
 local Button                                        = require("cp.ui.Button")
-local CheckBox                                      = require("cp.ui.CheckBox")
 local Group                                         = require("cp.ui.Group")
 local PopUpButton                                   = require("cp.ui.PopUpButton")
 local RadioButton                                   = require("cp.ui.RadioButton")
