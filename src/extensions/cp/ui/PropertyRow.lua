@@ -37,6 +37,11 @@ local UI_FINDER = {}
 -- UI Finder Label.
 local UI_FINDER_LABEL = "PropertyRow UI Finder"
 
+--- cp.ui.PropertyRow.intersectBuffer
+--- Constant
+--- Defines the buffer for intersections with the `labelUI`.
+PropertyRow.static.intersectBuffer = 2
+
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function
 --- Returns the `cp.prop` which finds the `hs._asm.axuielement` that contains property rows from the parent.
@@ -341,7 +346,7 @@ function PropertyRow:children()
             children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
                 local childFrame = child and child:attributeValue("AXFrame")
-                return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
+                return childFrame ~= nil and labelFrame:intersect(childFrame).h > PropertyRow.intersectBuffer and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then
                 table.sort(children, axutils.compareLeftToRight)

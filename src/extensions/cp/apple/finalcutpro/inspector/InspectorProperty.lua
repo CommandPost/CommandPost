@@ -144,7 +144,7 @@ function mod.section(labelKey, index)
                     local rowPos = frame.y + frame.h
                     return childrenMatching(propsUI, function(child)
                         local childFrame = child:attributeValue("AXFrame")
-                        return childFrame ~= nil and childFrame.y >= rowPos
+                        return childFrame ~= nil and childFrame.y >= rowPos - PropertyRow.intersectBuffer
                     end)
                 end
                 return nil
