@@ -56,6 +56,7 @@ local SplitGroup                                    = require("cp.ui.SplitGroup"
 
 local BasePanel                                     = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                            = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local AudioConfiguration                            = require("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
 
 local childFromLeft, childFromRight                 = axutils.childFromLeft, axutils.childFromRight
 local withRole, childWithRole                       = axutils.withRole, axutils.childWithRole
@@ -216,6 +217,19 @@ end
 --- Effects
 function AudioInspector.lazy.prop:effects()
     return self:mainProperties().effects
+end
+
+--- cp.apple.finalcutpro.inspector.audio.AudioInspector:audioConfiguration() -> AudioConfiguration
+--- Method
+--- Returns the `AudioConfiguration` instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `CorrectionsBar` instance.
+function AudioInspector.lazy.method:audioConfiguration()
+    return AudioConfiguration(self)
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector.PAN_MODES -> table

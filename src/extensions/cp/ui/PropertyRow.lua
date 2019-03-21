@@ -4,15 +4,15 @@
 
 local require = require
 
-local log						    = require("hs.logger").new("PropertyRow")
+local log               = require("hs.logger").new("PropertyRow")
 
 local inspect           = require("hs.inspect")
-local geometry					= require("hs.geometry")
+local geometry          = require("hs.geometry")
 
-local axutils					  = require("cp.ui.axutils")
-local Button					  = require("cp.ui.Button")
+local axutils           = require("cp.ui.axutils")
+local Button            = require("cp.ui.Button")
 local is                = require("cp.is")
-local prop						  = require("cp.prop")
+local prop              = require("cp.prop")
 
 local Element           = require("cp.ui.Element")
 
