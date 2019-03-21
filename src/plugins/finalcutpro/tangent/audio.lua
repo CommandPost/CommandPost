@@ -8,9 +8,6 @@ local require = require
 
 local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
-local tools                 = require("cp.tools")
-
-local tableCount            = tools.tableCount
 
 --------------------------------------------------------------------------------
 --
@@ -38,17 +35,17 @@ function plugin.init(deps)
     local buttonParameter               = common.buttonParameter
     local checkboxParameter             = common.checkboxParameter
     local checkboxParameterByIndex      = common.checkboxParameterByIndex
-    local popupParameter                = common.popupParameter
+    local ninjaButtonParameter          = common.ninjaButtonParameter
     local popupParameters               = common.popupParameters
     local popupSliderParameter          = common.popupSliderParameter
+    local radioButtonParameter          = common.radioButtonParameter
     local sliderParameter               = common.sliderParameter
-    local xyParameter                   = common.xyParameter
 
     --------------------------------------------------------------------------------
     -- AUDIO INSPECTOR:
     --------------------------------------------------------------------------------
     local audio                         = fcp:inspector():audio()
-    local audioGroup                    = deps.fcpGroup:group(i18n("audio") .. " " .. i18n("inspector"))
+    local audioGroup                    = fcpGroup:group(i18n("audio") .. " " .. i18n("inspector"))
 
     local PAN_MODES                     = audio.PAN_MODES
     local EQ_MODES                      = audio.EQ_MODES
@@ -71,12 +68,18 @@ function plugin.init(deps)
         --
         --------------------------------------------------------------------------------
         local audioEnhancements = audio:audioEnhancements()
+        local audioEnhancementsGroup = audioGroup:group(i18n("audioEnhancements"))
+
+                --------------------------------------------------------------------------------
+                -- Reset:
+                --------------------------------------------------------------------------------
+                id = ninjaButtonParameter(audioEnhancementsGroup, audioEnhancements.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Equalisation:
             --------------------------------------------------------------------------------
             local equalization = audioEnhancements:equalization()
-            local equalizationGroup = audioGroup:group(i18n("equalization"))
+            local equalizationGroup = audioEnhancementsGroup:group(i18n("equalization"))
 
                 --------------------------------------------------------------------------------
                 -- Enable/Disable:
@@ -87,7 +90,7 @@ function plugin.init(deps)
                 -- EQ Modes (Buttons):
                 --------------------------------------------------------------------------------
                 local eqMode = equalization.mode
-                local eqModeGroup = equalizationGroup:group(i18n("mode"))
+                local eqModeGroup = equalizationGroup:group(i18n("modes"))
                 id = popupParameters(eqModeGroup, eqMode, id, EQ_MODES)
 
                 --------------------------------------------------------------------------------
@@ -105,7 +108,12 @@ function plugin.init(deps)
             -- Audio Analysis:
             --------------------------------------------------------------------------------
             local audioAnalysis = audioEnhancements:audioAnalysis()
-            local audioAnalysisGroup = audioGroup:group(i18n("audioAnalysis"))
+            local audioAnalysisGroup = audioEnhancementsGroup:group(i18n("audioAnalysis"))
+
+                    --------------------------------------------------------------------------------
+                    -- Reset:
+                    --------------------------------------------------------------------------------
+                    id = ninjaButtonParameter(audioAnalysisGroup, audioAnalysis.reset, id, "reset")
 
                     --------------------------------------------------------------------------------
                     -- Magic Button:
@@ -125,6 +133,11 @@ function plugin.init(deps)
                     id = checkboxParameter(loudnessGroup, loudness, id, "toggle")
 
                     --------------------------------------------------------------------------------
+                    -- Reset:
+                    --------------------------------------------------------------------------------
+                    id = ninjaButtonParameter(loudnessGroup, loudness.reset, id, "reset")
+
+                    --------------------------------------------------------------------------------
                     -- Amount / Uniformity:
                     --------------------------------------------------------------------------------
                     id = sliderParameter(loudnessGroup, loudness:amount(), id, 0, 100, 0.1, 100.0)
@@ -134,12 +147,17 @@ function plugin.init(deps)
                 -- Noise Removal:
                 --------------------------------------------------------------------------------
                 local noiseRemoval = audioAnalysis:noiseRemoval()
-                local noiseRemovalGroup = audioGroup:group(i18n("noiseRemoval"))
+                local noiseRemovalGroup = audioEnhancementsGroup:group(i18n("noiseRemoval"))
 
                     --------------------------------------------------------------------------------
                     -- Enable/Disable:
                     --------------------------------------------------------------------------------
                     id = checkboxParameter(noiseRemovalGroup, noiseRemoval, id, "toggle")
+
+                    --------------------------------------------------------------------------------
+                    -- Reset:
+                    --------------------------------------------------------------------------------
+                    id = ninjaButtonParameter(noiseRemovalGroup, noiseRemoval.reset, id, "reset")
 
                     --------------------------------------------------------------------------------
                     -- Amount / Uniformity:
@@ -150,7 +168,7 @@ function plugin.init(deps)
                 -- Hum Removal:
                 --------------------------------------------------------------------------------
                 local humRemoval = audioAnalysis:humRemoval()
-                local humRemovalGroup = audioGroup:group(i18n("humRemoval"))
+                local humRemovalGroup = audioEnhancementsGroup:group(i18n("humRemoval"))
 
                     --------------------------------------------------------------------------------
                     -- Enable/Disable:
@@ -158,11 +176,16 @@ function plugin.init(deps)
                     id = checkboxParameter(humRemovalGroup, humRemoval, id, "toggle")
 
                     --------------------------------------------------------------------------------
+                    -- Reset:
+                    --------------------------------------------------------------------------------
+                    id = ninjaButtonParameter(humRemovalGroup, humRemoval.reset, id, "reset")
+
+                    --------------------------------------------------------------------------------
                     -- Frequency - 50Hz / 60Hz:
                     --------------------------------------------------------------------------------
                     local frequency = humRemoval:frequency()
-                    --id = checkboxParameter(humRemovalGroup, frequency.fiftyHz, id, "fiftyHz")
-                    --id = checkboxParameter(humRemovalGroup, humRemoval.fiftyHz, id, "sixtyHz")
+                    id = radioButtonParameter(humRemovalGroup, frequency.fiftyHz, id, "fiftyHz")
+                    id = radioButtonParameter(humRemovalGroup, frequency.sixtyHz, id, "sixtyHz")
 
         --------------------------------------------------------------------------------
         --
@@ -173,10 +196,15 @@ function plugin.init(deps)
         local panGroup = audioGroup:group(i18n("pan"))
 
             --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(panGroup, pan.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
             -- Mode (Buttons):
             --------------------------------------------------------------------------------
             local panMode = pan:mode()
-            local panModeGroup = panGroup:group(i18n("mode"))
+            local panModeGroup = panGroup:group(i18n("modes"))
             id = popupParameters(panModeGroup, panMode, id, PAN_MODES)
 
             --------------------------------------------------------------------------------
@@ -191,6 +219,11 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         local effects = audio:effects()
         local effectsGroup = audioGroup:group(i18n("effects"))
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(effectsGroup, effects.reset, id, "reset")
 
             --------------------------------------------------------------------------------
             -- Individual Effects:

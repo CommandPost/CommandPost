@@ -9,6 +9,7 @@ local log                   = require("hs.logger").new("tangentVideo")
 local geometry              = require("hs.geometry")
 local timer                 = require("hs.timer")
 
+local dialog                = require("cp.dialog")
 local axutils               = require("cp.ui.axutils")
 local deferred              = require("cp.deferred")
 local Do                    = require("cp.rx.go.Do")
@@ -19,6 +20,7 @@ local tools                 = require("cp.tools")
 
 local childrenMatching      = axutils.childrenMatching
 local delayed               = timer.delayed
+local displayMessage        = dialog.displayMessage
 local ninjaMouseClick       = tools.ninjaMouseClick
 local playErrorSound        = tools.playErrorSound
 local tableCount            = tools.tableCount
@@ -126,7 +128,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             if newID == maxValue then newID = 1 end
 
             --------------------------------------------------------------------------------
-            -- This is a horrible temporary workaround for menu non-enabled items.
+            -- TODO: This is a horrible temporary workaround for menu non-enabled items.
             -- It should probably be some kind of loop.
             --------------------------------------------------------------------------------
             if options[newID].flexoID == nil then
@@ -148,7 +150,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             if newID == 0 then newID = maxValue - 1 end
 
             --------------------------------------------------------------------------------
-            -- This is a horrible temporary workaround for menu non-enabled items.
+            -- TODO: This is a horrible temporary workaround for menu non-enabled items.
             -- It should probably be some kind of loop.
             --------------------------------------------------------------------------------
             if options[newID].flexoID == nil then
@@ -224,6 +226,46 @@ function mod.checkboxParameter(group, param, id, label)
                     param.enabled:doPress()
                 )
             ):Label("plugins.finalcutpro.tangent.common.checkboxParameter")
+        )
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.doShortcut(id) -> none
+--- Function
+--- Triggers a shortcut via Rx.
+---
+--- Parameters:
+---  * id - The ID of the shortcut.
+---
+--- Returns:
+---  * None
+function mod.doShortcut(id)
+    return fcp:doShortcut(id):Catch(function(message)
+        log.wf("Unable to perform %q shortcut: %s", id, message)
+        displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+    end)
+end
+
+--- plugins.finalcutpro.tangent.common.radioButtonParameter() -> none
+--- Function
+--- Sets up a new Checkbox Parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * param - The Parameter
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---
+--- Returns:
+---  * An updated ID
+function mod.radioButtonParameter(group, param, id, label)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(
+            Do(param:doShow())
+                :Then(param:doPress())
+                :Label("plugins.finalcutpro.tangent.common.radioButtonParameter")
         )
     return id + 1
 end

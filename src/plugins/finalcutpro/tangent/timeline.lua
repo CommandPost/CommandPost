@@ -4,7 +4,7 @@
 
 local require = require
 
-local log                   = require("hs.logger").new("tangentTimeline")
+--local log                   = require("hs.logger").new("tangentTimeline")
 
 local timer                 = require("hs.timer")
 

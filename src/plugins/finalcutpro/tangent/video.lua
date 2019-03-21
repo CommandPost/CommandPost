@@ -255,7 +255,7 @@ function plugin.init(deps)
             -- Method (Buttons):
             --------------------------------------------------------------------------------
             local stabilizationMethod = stabilization:method()
-            local stabilizationMethodGroup = stabilizationGroup:group(i18n("method"))
+            local stabilizationMethodGroup = stabilizationGroup:group(i18n("methods"))
             id = popupParameters(stabilizationMethodGroup, stabilizationMethod, id, STABILIZATION_METHODS)
 
             --------------------------------------------------------------------------------
@@ -293,7 +293,7 @@ function plugin.init(deps)
             -- Amount (Buttons):
             --------------------------------------------------------------------------------
             local rollingShutterAmount = rollingShutter:amount()
-            local rollingShutterAmountGroup = rollingShutterGroup:group(i18n("amount"))
+            local rollingShutterAmountGroup = rollingShutterGroup:group(i18n("amounts"))
             id = popupParameters(rollingShutterAmountGroup, rollingShutterAmount, id, ROLLING_SHUTTER_AMOUNTS)
 
             --------------------------------------------------------------------------------
@@ -318,7 +318,7 @@ function plugin.init(deps)
             -- Type (Buttons):
             --------------------------------------------------------------------------------
             local spatialConformType = spatialConform:type()
-            local spatialConformTypeGroup = spatialConformGroup:group(i18n("type"))
+            local spatialConformTypeGroup = spatialConformGroup:group(i18n("types"))
             id = popupParameters(spatialConformTypeGroup, spatialConformType, id, SPATIAL_CONFORM_TYPES)
 
             --------------------------------------------------------------------------------
