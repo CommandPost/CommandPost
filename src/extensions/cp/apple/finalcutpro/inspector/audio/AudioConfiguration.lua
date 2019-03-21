@@ -4,20 +4,11 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("audioConfiguration")
+--local log                               = require("hs.logger").new("audioConfiguration")
 
 local axutils                           = require("cp.ui.axutils")
-local CheckBox                          = require("cp.ui.CheckBox")
 local just                              = require("cp.just")
-local MenuButton                        = require("cp.ui.MenuButton")
 local ScrollArea                        = require("cp.ui.ScrollArea")
-
-local Do                                = require("cp.rx.go.Do")
-local If                                = require("cp.rx.go.If")
-local Throw                             = require("cp.rx.go.Throw")
-local Require                           = require("cp.rx.go.Require")
-
-local sort = table.sort
 
 --------------------------------------------------------------------------------
 --
