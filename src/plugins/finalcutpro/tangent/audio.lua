@@ -245,9 +245,16 @@ function plugin.init(deps)
             -- Individual Components:
             --------------------------------------------------------------------------------
             local componentsGroup = audioConfigurationGroup:group(i18n("components"))
-            id = buttonParameter(componentsGroup, audioConfiguration:topComponent():enabled(), id, i18n("toggle") .. " 1")
-            for i=2, 9 do
-                id = buttonParameter(componentsGroup, audioConfiguration:subComponent(i-1):enabled(), id, i18n("toggle") .. " " .. i)
+            for i=1, 9 do
+                id = buttonParameter(componentsGroup, audioConfiguration:component(i):enabled(), id, i18n("toggle") .. " " .. i)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Individual Subcomponents:
+            --------------------------------------------------------------------------------
+            local subcomponentsGroup = audioConfigurationGroup:group(i18n("subcomponents"))
+            for i=1, 9 do
+                id = buttonParameter(subcomponentsGroup, audioConfiguration:subcomponent(i):enabled(), id, i18n("toggle") .. " " .. i)
             end
 
 end

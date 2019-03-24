@@ -61,37 +61,37 @@ function AudioConfiguration:initialize(parent)
     ScrollArea.initialize(self, parent, UI)
 end
 
-function AudioConfiguration.static.matches(element)
-    return ScrollArea.matches(element)
-end
-
---- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:topComponent() -> AudioComponent
+--- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:component() -> table
 --- Method
---- Returns a table of `hs._asm.axuielement` objects for each enable/disable toggle.
+--- Returns a table of `AudioComponent` objects for all main audio components.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A table containing `hs._asm.axuielement` objects.
-function AudioConfiguration.lazy.method:topComponent()
-    return AudioComponent(self, true)
-end
-
---- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:subCompontents() -> table
---- Method
---- Returns a table of `hs._asm.axuielement` objects for each enable/disable toggle.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table containing `hs._asm.axuielement` objects.
-function AudioConfiguration:subComponent(index)
+---  * A table containing `AudioComponent` objects.
+function AudioConfiguration:component(index)
     if type(index) ~= "number" then
-        log.ef("subComponent: Index needs to be a valid number.")
+        log.ef("component: index needs to be a valid number.")
     else
         return AudioComponent(self, false, index)
+    end
+end
+
+--- cp.apple.finalcutpro.inspector.audio.AudioConfiguration:subcomponent() -> table
+--- Method
+--- Returns a table of `AudioComponent` objects for all audio subcomponents.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing `AudioComponent` objects.
+function AudioConfiguration:subcomponent(index)
+    if type(index) ~= "number" then
+        log.ef("subcomponent: index needs to be a valid number.")
+    else
+        return AudioComponent(self, true, index)
     end
 end
 
