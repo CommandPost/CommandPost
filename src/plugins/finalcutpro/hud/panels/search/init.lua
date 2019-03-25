@@ -19,6 +19,7 @@ local just                      = require("cp.just")
 local pattern                   = require("cp.pattern")
 local tools                     = require("cp.tools")
 
+local childIndex                = axutils.childIndex
 local childrenWithRole          = axutils.childrenWithRole
 local childWithRole             = axutils.childWithRole
 local doesMatchPattern          = pattern.doesMatch
@@ -489,7 +490,7 @@ local function find(searchString, column, findNext, findPrevious)
         local rows = contentUI:attributeValue("AXChildren")
         local selectedRows = contentUI:attributeValue("AXSelectedRows")
         if selectedRows and next(selectedRows) then
-            currentRowID = axutils.childIndex(rows, selectedRows[#selectedRows])
+            currentRowID = childIndex(selectedRows[#selectedRows])
         else
             currentRowID = 0
         end

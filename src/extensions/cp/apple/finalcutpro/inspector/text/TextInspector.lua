@@ -43,20 +43,27 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("textInspect")
+local log								= require("hs.logger").new("textInspect")
 
 local axutils							= require("cp.ui.axutils")
+
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
 local PopUpButton                       = require("cp.ui.PopUpButton")
 local RadioButton                       = require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
+local ScrollArea                        = require("cp.ui.ScrollArea")
+local TextArea                          = require("cp.ui.TextArea")
+local TextField                         = require("cp.ui.TextField")
 
 local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local childFromTop                      = axutils.childFromTop
+local childrenInLine                    = axutils.childrenInLine
 local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
+
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
 
@@ -166,6 +173,70 @@ function TextInspector:initialize(parent)
             baseline            = slider "Text Format Baseline",
             allCaps             = checkBox "Text Format All Caps",
             allCapsSize         = slider "Text Format All Caps Size",
+            position            = section "Text Sequence Channel Position" {}
+                                  :extend(function(row)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3]
+                                                    end, tonumber)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4]
+                                                    end, tonumber)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4 + 4]
+                                                    end, tonumber)
+                                   end),
+            rotation            = section "Text Sequence Channel Rotation" {}
+                                  :extend(function(row)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6]
+                                                    end, tonumber)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5]
+                                                    end, tonumber)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5 + 5]
+                                                    end, tonumber)
+                                  row.animate   =   PopUpButton(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5 + 5 + 2]
+                                                    end)
+                                   end),
+            scale               = section "Text Format Scale" {}
+                                  :extend(function(row)
+                                   row.master   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local childrenInLine = rowUI and childrenInLine(rowUI)
+                                                        return childrenInLine and childFromLeft(childrenInLine, 1, TextField.matches)
+                                                    end, tonumber)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7]
+                                                    end, tonumber)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5]
+                                                    end, tonumber)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5 + 5]
+                                                    end, tonumber)
+                                   end),
         },
         threeDeeText        = section "Text Style 3D Extrusion Properties" {
             depth               = slider "3D Property Extrusion Depth",
@@ -254,11 +325,22 @@ function TextInspector.lazy.value:shapePreset()
     end)
 end
 
---------------------------------------------------------------------------------
---
--- VIDEO INSPECTOR:
---
---------------------------------------------------------------------------------
+--- cp.apple.finalcutpro.inspector.text.TextInspector:textArea() -> TextArea
+--- Method
+--- Gets the Text Inspector main Text Area.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `TextArea` object.
+function TextInspector:textArea()
+    return TextArea(self, function()
+        local contentUI = self.contentUI()
+        local scrollArea = contentUI and childFromTop(contentUI, 1, ScrollArea.matches)
+        return scrollArea and TextArea.matches(scrollArea[1]) and scrollArea[1]
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector:show() -> TextInspector
 --- Method
@@ -275,7 +357,6 @@ function TextInspector:show()
     end
     return self
 end
-
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector:doShow() -> cp.rx.go.Statement
 --- Method

@@ -1,6 +1,6 @@
---- === cp.ui.Image ===
+--- === cp.ui.ColorWell ===
 ---
---- UI Image.
+--- UI ColorWell.
 
 local require = require
 
@@ -12,19 +12,19 @@ local Element = require("cp.ui.Element")
 --
 --------------------------------------------------------------------------------
 
---- cp.ui.Image(parent, uiFinder) -> Image
+--- cp.ui.ColorWell(parent, uiFinder) -> Image
 --- Constructor
---- Creates a new `Image` instance.
+--- Creates a new `ColorWell` instance.
 ---
 --- Parameters:
 ---  * parent - The parent object.
 ---  * uiFinder - A function which will return the `hs._asm.axuielement` when available.
 ---
 --- Returns:
----  * A new `Image` object.
-local Image = Element:subclass("cp.ui.Image")
+---  * A new `ColorWell` object.
+local ColorWell = Element:subclass("cp.ui.ColorWell")
 
---- cp.ui.Image.matches(element) -> boolean
+--- cp.ui.ColorWell.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -33,8 +33,8 @@ local Image = Element:subclass("cp.ui.Image")
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Image.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXImage"
+function ColorWell.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXColorWell"
 end
 
-return Image
+return ColorWell

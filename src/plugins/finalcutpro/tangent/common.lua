@@ -62,6 +62,106 @@ function mod.popupParameter(group, param, id, value, label)
     return id + 1
 end
 
+--- plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter() -> none
+--- Function
+--- Sets up a new Popup Slider parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * param - The Parameter
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * options - A table of options. The key for each option should be a number ID
+---              (in the order it appears in the UI), and the value should be another
+---              table with keys for `flexoID` and `i18n` values.
+---  * resetIndex - An index of which item to use when "reset" is triggered.
+---
+--- Returns:
+---  * An updated ID
+function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
+
+    local getSelectedIndex = function(menuUI)
+        if menuUI then
+            local children = menuUI:attributeValue("AXChildren")
+            for i, v in pairs(children) do
+                if v:attributeValue("AXMenuItemMarkChar") ~= nil then
+                    return i
+                end
+            end
+        end
+    end
+
+    local popupSliderCache = nil
+
+    local updateUI = delayed.new(0.5, function()
+        Do(param:doShow())
+            :Then(
+                If(function() return param:menuUI() ~= nil end)
+                    :Then(
+                        param:doSelectValue(param:menuUI():attributeValue("AXChildren")[popupSliderCache]:attributeValue("AXTitle"))
+                    )
+            )
+            :Then(function()
+                popupSliderCache = nil
+            end)
+            :Label("plugins.finalcutpro.tangent.common.popupSliderParameter.updateUI")
+            :Now()
+    end)
+
+    group:menu(id + 1)
+        :name(i18n(label, {default=label}))
+        :name9(i18n(label .. "9", {default=i18n(label, {default=label})}))
+        :onGet(function()
+            if popupSliderCache and param:menuUI() then
+                return param:menuUI():attributeValue("AXChildren")[popupSliderCache]:attributeValue("AXTitle")
+            else
+                return param:value()
+            end
+        end)
+        :onNext(function()
+            param:show()
+            if not param:menuUI() then
+                param:press()
+            end
+            if param:menuUI() then
+                local max = param:menuUI():attributeValueCount("AXChildren")
+                local currentValueID = popupSliderCache or getSelectedIndex(param:menuUI())
+                currentValueID = currentValueID + 1
+                if currentValueID > max then currentValueID = 1 end
+                popupSliderCache = currentValueID
+                updateUI:start()
+            end
+        end)
+        :onPrev(function()
+            param:show()
+            if not param:menuUI() then
+                param:press()
+            end
+            if param:menuUI() then
+                local max = param:menuUI():attributeValueCount("AXChildren")
+                local currentValueID = popupSliderCache or getSelectedIndex(param:menuUI())
+                currentValueID = currentValueID - 1
+                if currentValueID <= 0 then currentValueID = max end
+                popupSliderCache = currentValueID
+                updateUI:start()
+            end
+        end)
+        :onReset(
+            Do(function()
+                popupSliderCache = 1
+            end)
+                :Then(param:doShow())
+                :Then(param:doSelectValue(defaultValue))
+                :Then(function()
+                    popupSliderCache = nil
+                end)
+                :Label("plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter.reset")
+        )
+    return id + 1
+
+end
+
 --- plugins.finalcutpro.tangent.common.popupSliderParameter() -> none
 --- Function
 --- Sets up a new Popup Slider parameter for the Tangent
@@ -222,12 +322,100 @@ function mod.checkboxParameter(group, param, id, label)
         :action(id + 1, i18n(label, {default=label}))
         :onPress(
             Do(param:doShow()):Then(
-                If(param.enabled):Is(nil):Then():Otherwise(
-                    param.enabled:doPress()
+                If(param):Is(nil):Then():Otherwise(
+                    param:doPress()
                 )
             ):Label("plugins.finalcutpro.tangent.common.checkboxParameter")
         )
     return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.checkboxSliderParameter() -> none
+--- Function
+--- Sets up a new Popup Slider parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * options - A table of options. The key for each option should be a number ID
+---              (in the order it appears in the UI), and the value should be another
+---              table with keys for `flexoID` and `i18n` values.
+---  * resetIndex - An index of which item to use when "reset" is triggered.
+---
+--- Returns:
+---  * An updated ID
+function mod.checkboxSliderParameter(group, id, label, options, resetIndex)
+
+    local getIndexOfSelectedCheckbox = function()
+        for i, v in pairs(options) do
+            local ui = v.param and v.param:UI()
+            if ui and ui:attributeValue("AXValue") == 1 then
+                return i
+            end
+        end
+    end
+
+    local cachedValue = nil
+
+    local maxValue = tableCount(options)
+
+    local updateUI = delayed.new(0.5, function()
+        Do(options[1].param:doShow())
+            :Then(
+                options[cachedValue].param:doPress()
+            )
+            :Then(function()
+                cachedValue = nil
+            end)
+            :Label("plugins.finalcutpro.tangent.common.checkboxSliderParameter.updateUI")
+            :Now()
+    end)
+
+    group:menu(id + 1)
+        :name(i18n(label, {default=label}))
+        :name9(i18n(label .. "9", {default=i18n(label, {default=label})}))
+        :onGet(function()
+            local index = cachedValue or getIndexOfSelectedCheckbox()
+            local result = index and options[index].i18n
+            return result and i18n(result .. "9", {default=i18n(result, {default=result})})
+        end)
+        :onNext(function()
+            options[1].param:show()
+            local indexOfSelectedCheckbox = getIndexOfSelectedCheckbox()
+            if indexOfSelectedCheckbox then
+                local currentValueID = cachedValue or getIndexOfSelectedCheckbox()
+                local newID = currentValueID and currentValueID + 1
+                if newID > maxValue then newID = 1 end
+                cachedValue = newID
+                updateUI:start()
+            end
+        end)
+        :onPrev(function()
+            options[1].param:show()
+            local indexOfSelectedCheckbox = getIndexOfSelectedCheckbox()
+            if indexOfSelectedCheckbox then
+                local currentValueID = cachedValue or getIndexOfSelectedCheckbox()
+                local newID = currentValueID and currentValueID - 1
+                if newID == 0 then newID = maxValue - 1 end
+                cachedValue = newID
+                updateUI:start()
+            end
+        end)
+        :onReset(
+            Do(function()
+                cachedValue = 1
+            end)
+                :Then(options[1].param:doShow())
+                :Then(options[resetIndex].param:doPress())
+                :Then(function()
+                    cachedValue = nil
+                end)
+                :Label("plugins.finalcutpro.tangent.common.checkboxSliderParameter.reset")
+        )
+    return id + 1
+
 end
 
 --- plugins.finalcutpro.tangent.common.doShortcut(id) -> none
@@ -461,12 +649,14 @@ end
 ---  * maxValue - The maximum value
 ---  * stepSize - The step size
 ---  * default - The default value
+---  * label - An optional label
 ---
 --- Returns:
 ---  * An updated ID
 ---  * The parameters value
-function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, default)
-    local label = param:label()
+function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, default, label)
+
+    label = label or param:label()
 
     --------------------------------------------------------------------------------
     -- Set up deferred update:
@@ -497,7 +687,92 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
         :minValue(minValue)
         :maxValue(maxValue)
         :stepSize(stepSize)
-        :onGet(function() return param:value() end)
+        :onGet(function()
+            local currentValue = param:value()
+            return currentValue and currentValue + value
+        end)
+        :onChange(function(amount)
+            value = value + amount
+            updateUI()
+        end)
+        :onReset(function() param:value(default) end)
+
+    return id + 1, valueParam
+end
+
+--- plugins.finalcutpro.tangent.common.volumeSliderParameter() -> none
+--- Function
+--- Sets up a new Volume Slider Parameter
+---
+--- Parameters:
+---  * group - The Tangent Group
+---  * param - The Parameter
+---  * id - The Tangent ID
+---  * minValue - The minimum value
+---  * maxValue - The maximum value
+---  * stepSize - The step size
+---  * default - The default value
+---  * label - An optional label
+---
+--- Returns:
+---  * An updated ID
+---  * The parameters value
+function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSize, default, label)
+
+    local label = label or param:label()
+
+    --------------------------------------------------------------------------------
+    -- Set up deferred update:
+    --------------------------------------------------------------------------------
+    local value = 0
+    local updateUI = deferred.new(DEFER)
+    local updating = false
+    local wasPlaying = false
+    updateUI:action(
+        If(function() return not updating and value ~= 0 end)
+        :Then(
+            Do(param:doShow())
+            :Then(function()
+                updating = true
+                end)
+            :Then(
+                If(function()
+                    wasPlaying = fcp:timeline():isPlaying()
+                    return wasPlaying
+                end)
+                :Then(fcp:doSelectMenu({"View", "Playback", "Play"}))
+                :Then(fcp:doSelectMenu({"Modify", "Add Keyframe to Selected Effect in Animation Editor"}))
+            )
+            :Then(function()
+                local currentValue = param:value()
+                if currentValue then
+                    param:value(currentValue + value)
+                    value = 0
+                end
+            end)
+            :Then(
+                If(function()
+                    return wasPlaying
+                end)
+                :Then(fcp:doSelectMenu({"View", "Playback", "Play"}))
+            )
+            :Then(function()
+                updating = false
+                end)
+        ):Label("plugins.finalcutpro.tangent.common.volumeSliderParameter.updateUI")
+    )
+
+    default = default or 0
+
+    local valueParam = group:parameter(id + 1)
+        :name(label)
+        :minValue(minValue)
+        :maxValue(maxValue)
+        :stepSize(stepSize)
+        :onGet(function()
+            local currentValue = param:value()
+            return currentValue and currentValue + value
+        end)
         :onChange(function(amount)
             value = value + amount
             updateUI()

@@ -24,6 +24,7 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
     --------------------------------------------------------------------------------
     -- Setup:
     --------------------------------------------------------------------------------
@@ -40,6 +41,7 @@ function plugin.init(deps)
     local popupSliderParameter          = common.popupSliderParameter
     local radioButtonParameter          = common.radioButtonParameter
     local sliderParameter               = common.sliderParameter
+    local volumeSliderParameter         = common.volumeSliderParameter
 
     --------------------------------------------------------------------------------
     -- AUDIO INSPECTOR:
@@ -56,11 +58,17 @@ function plugin.init(deps)
         --
         --------------------------------------------------------------------------------
         local volume = audio:volume()
+        local volumeGroup = audioGroup:group(i18n("volume"))
 
             --------------------------------------------------------------------------------
             -- Volume:
             --------------------------------------------------------------------------------
-            id = sliderParameter(audioGroup, volume, id, -95, 12, 0.1, 0)
+            id = sliderParameter(volumeGroup, volume, id, -95, 12, 0.1, 0)
+
+            --------------------------------------------------------------------------------
+            -- Volume (Automatic Keyframes):
+            --------------------------------------------------------------------------------
+            id = volumeSliderParameter(volumeGroup, volume, id, -95, 12, 0.1, 0, i18n("volume") .. " (" .. i18n("automaticKeyframes") .. ")")
 
         --------------------------------------------------------------------------------
         --
@@ -84,7 +92,7 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 -- Enable/Disable:
                 --------------------------------------------------------------------------------
-                id = checkboxParameter(equalizationGroup, equalization, id, "toggle")
+                id = checkboxParameter(equalizationGroup, equalization.enabled, id, "toggle")
 
                 --------------------------------------------------------------------------------
                 -- EQ Modes (Buttons):
@@ -130,7 +138,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Enable/Disable:
                     --------------------------------------------------------------------------------
-                    id = checkboxParameter(loudnessGroup, loudness, id, "toggle")
+                    id = checkboxParameter(loudnessGroup, loudness.enabled, id, "toggle")
 
                     --------------------------------------------------------------------------------
                     -- Reset:
@@ -152,7 +160,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Enable/Disable:
                     --------------------------------------------------------------------------------
-                    id = checkboxParameter(noiseRemovalGroup, noiseRemoval, id, "toggle")
+                    id = checkboxParameter(noiseRemovalGroup, noiseRemoval.enabled, id, "toggle")
 
                     --------------------------------------------------------------------------------
                     -- Reset:
@@ -173,7 +181,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Enable/Disable:
                     --------------------------------------------------------------------------------
-                    id = checkboxParameter(humRemovalGroup, humRemoval, id, "toggle")
+                    id = checkboxParameter(humRemovalGroup, humRemoval.enabled, id, "toggle")
 
                     --------------------------------------------------------------------------------
                     -- Reset:

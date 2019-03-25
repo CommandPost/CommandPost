@@ -37,4 +37,25 @@ function TextArea.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXTextArea"
 end
 
+--- cp.ui.TextArea.value <cp.prop: string>
+--- Field
+--- The current value of the text field.
+function TextArea.lazy.prop:value()
+    return self.UI:mutate(
+        function(original)
+            local ui = original()
+            local value = ui and ui:attributeValue("AXValue") or nil
+            return value
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                value = tostring(value)
+                ui:setAttributeValue("AXValue", value)
+                ui:performAction("AXConfirm")
+            end
+        end
+    )
+end
+
 return TextArea

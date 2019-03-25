@@ -4,11 +4,11 @@
 
 local require = require
 
-local go	                        = require "cp.rx.go"
-local axutils	                    = require "cp.ui.axutils"
-local Element                     = require "cp.ui.Element"
+local go                        = require "cp.rx.go"
+local axutils                   = require "cp.ui.axutils"
+local Element                   = require "cp.ui.Element"
 
-local If                          = go.If
+local If                        = go.If
 
 --------------------------------------------------------------------------------
 --
@@ -49,9 +49,9 @@ end
 --- ```
 ---
 --- Parameters:
----  * parent	- The parent object.
----  * uiFinder	- The function will return the `axuielement` for the TextField.
----  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
+---  * parent   - The parent object.
+---  * uiFinder - The function will return the `axuielement` for the TextField.
+---  * convertFn    - (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
 ---  * The new `TextField`.

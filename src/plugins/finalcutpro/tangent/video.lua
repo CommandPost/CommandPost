@@ -68,7 +68,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(effectsGroup, effects, id, "toggle")
+            id = checkboxParameter(effectsGroup, effects.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Individual Effects:
@@ -122,7 +122,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(transformGroup, transform, id, "toggle")
+            id = checkboxParameter(transformGroup, transform.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Toggle UI:
@@ -170,7 +170,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(cropGroup, crop, id, "toggle")
+            id = checkboxParameter(cropGroup, crop.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Toggle UI:
@@ -213,7 +213,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(distortGroup, distort, id, "toggle")
+            id = checkboxParameter(distortGroup, distort.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Toggle UI:
@@ -244,7 +244,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(stabilizationGroup, stabilization, id, "toggle")
+            id = checkboxParameter(stabilizationGroup, stabilization.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Reset:
@@ -282,7 +282,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Enable/Disable:
             --------------------------------------------------------------------------------
-            id = checkboxParameter(rollingShutterGroup, rollingShutter, id, "toggle")
+            id = checkboxParameter(rollingShutterGroup, rollingShutter.enabled, id, "toggle")
 
             --------------------------------------------------------------------------------
             -- Reset:
