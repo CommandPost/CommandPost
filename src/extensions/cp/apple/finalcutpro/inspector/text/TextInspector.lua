@@ -43,7 +43,7 @@
 
 local require = require
 
-local log								= require("hs.logger").new("textInspect")
+--local log								= require("hs.logger").new("textInspect")
 
 local axutils							= require("cp.ui.axutils")
 
@@ -218,8 +218,8 @@ function TextInspector:initialize(parent)
                                   :extend(function(row)
                                    row.master   =   TextField(row, function()
                                                         local rowUI = row:UI()
-                                                        local childrenInLine = rowUI and childrenInLine(rowUI)
-                                                        return childrenInLine and childFromLeft(childrenInLine, 1, TextField.matches)
+                                                        local children = rowUI and childrenInLine(rowUI)
+                                                        return children and childFromLeft(children, 1, TextField.matches)
                                                     end, tonumber)
                                         row.x   =   TextField(row, function()
                                                         local rowUI = row:UI()

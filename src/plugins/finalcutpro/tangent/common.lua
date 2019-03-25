@@ -719,7 +719,7 @@ end
 ---  * The parameters value
 function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSize, default, label)
 
-    local label = label or param:label()
+    label = label or param:label()
 
     --------------------------------------------------------------------------------
     -- Set up deferred update:

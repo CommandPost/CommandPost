@@ -33,16 +33,11 @@ function plugin.init(deps)
     local common                        = deps.common
     local fcpGroup                      = deps.fcpGroup
 
-    local buttonParameter               = common.buttonParameter
     local checkboxParameter             = common.checkboxParameter
-    local checkboxParameterByIndex      = common.checkboxParameterByIndex
     local checkboxSliderParameter       = common.checkboxSliderParameter
     local dynamicPopupSliderParameter   = common.dynamicPopupSliderParameter
     local ninjaButtonParameter          = common.ninjaButtonParameter
     local popupParameter                = common.popupParameter
-    local popupParameters               = common.popupParameters
-    local popupSliderParameter          = common.popupSliderParameter
-    local radioButtonParameter          = common.radioButtonParameter
     local sliderParameter               = common.sliderParameter
 
     --------------------------------------------------------------------------------
@@ -186,7 +181,7 @@ function plugin.init(deps)
             id = sliderParameter(scaleGroup, basic:scale().master, id, 0, 400, 0.1, 0, "Master")
             id = sliderParameter(scaleGroup, basic:scale().x, id, 0, 400, 0.1, 0, "X")
             id = sliderParameter(scaleGroup, basic:scale().y, id, 0, 400, 0.1, 0, "Y")
-            id = sliderParameter(scaleGroup, basic:scale().z, id, 0, 400, 0.1, 0, "Z")
+            sliderParameter(scaleGroup, basic:scale().z, id, 0, 400, 0.1, 0, "Z")
 
         --------------------------------------------------------------------------------
         --
