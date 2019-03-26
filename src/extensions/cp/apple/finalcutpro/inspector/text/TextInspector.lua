@@ -46,6 +46,8 @@ local require = require
 --local log								= require("hs.logger").new("textInspect")
 
 local axutils							= require("cp.ui.axutils")
+local If                                = require("cp.rx.go.If")
+local tools                             = require("cp.tools")
 
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
@@ -67,7 +69,10 @@ local withRole, childWithRole           = axutils.withRole, axutils.childWithRol
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
 
-local If                                = require("cp.rx.go.If")
+local toRegionalNumber                  = tools.toRegionalNumber
+local toRegionalNumberString            = tools.toRegionalNumberString
+
+
 
 --------------------------------------------------------------------------------
 --
@@ -179,17 +184,17 @@ function TextInspector:initialize(parent)
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 3]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.y   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.z   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4 + 4]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                    end),
             rotation            = section "Text Sequence Channel Rotation" {}
                                   :extend(function(row)
@@ -197,17 +202,17 @@ function TextInspector:initialize(parent)
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 6]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.y   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.z   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5 + 5]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                   row.animate   =   PopUpButton(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
@@ -220,22 +225,22 @@ function TextInspector:initialize(parent)
                                                         local rowUI = row:UI()
                                                         local children = rowUI and childrenInLine(rowUI)
                                                         return children and childFromLeft(children, 1, TextField.matches)
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.x   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 7]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.y   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                         row.z   =   TextField(row, function()
                                                         local rowUI = row:UI()
                                                         local index = rowUI and axutils.childIndex(rowUI)
                                                         return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5 + 5]
-                                                    end, tonumber)
+                                                    end, toRegionalNumber, toRegionalNumberString)
                                    end),
         },
         threeDeeText        = section "Text Style 3D Extrusion Properties" {

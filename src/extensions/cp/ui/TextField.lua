@@ -45,19 +45,21 @@ end
 --- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
 ---
 --- ```lua
---- local numberField = TextField(parent, function() return ... end, tonumber)
+--- local numberField = TextField(parent, function() return ... end, tonumber, tostring)
 --- ```
 ---
 --- Parameters:
 ---  * parent   - The parent object.
 ---  * uiFinder - The function will return the `axuielement` for the TextField.
----  * convertFn    - (optional) If provided, will be passed the `string` value when returning.
+---  * getConvertFn    - (optional) If provided, will be passed the `string` value when returning.
+---  * setConvertFn    - (optional) If provided, will be passed the `number` value when setting.
 ---
 --- Returns:
 ---  * The new `TextField`.
-function TextField:initialize(parent, uiFinder, convertFn)
+function TextField:initialize(parent, uiFinder, getConvertFn, setConvertFn)
     Element.initialize(self, parent, uiFinder)
-    self._convert = convertFn
+    self._getConvertFn = getConvertFn
+    self._setConvertFn = setConvertFn
 end
 
 --- cp.ui.TextField.value <cp.prop: string>
@@ -68,15 +70,19 @@ function TextField.lazy.prop:value()
         function(original)
             local ui = original()
             local value = ui and ui:attributeValue("AXValue") or nil
-            if value and self._convert then
-                value = self._convert(value)
+            if value and self._getConvertFn then
+                value = self._getConvertFn(value)
             end
             return value
         end,
         function(value, original)
             local ui = original()
             if ui then
-                value = tostring(value)
+                if value and self._setConvertFn then
+                    value = self._setConvertFn(value)
+                else
+                    value = tostring(value)
+                end
                 local focused
                 if self._forceFocus then
                     focused = self:focused()
