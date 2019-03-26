@@ -4,7 +4,7 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("tangentVideo")
+--local log                   = require("hs.logger").new("tangentText")
 
 local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
@@ -171,8 +171,14 @@ function plugin.init(deps)
             id = sliderParameter(rotationGroup, basic:rotation().y, id, -5000, 5000, 0.1, 0, "Y")
             id = sliderParameter(rotationGroup, basic:rotation().z, id, -5000, 5000, 0.1, 0, "Z")
 
-            id = popupParameter(rotationGroup, basic:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[1], i18n("useRotation"))
-            id = popupParameter(rotationGroup, basic:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[2], i18n("useOrientation"))
+                --------------------------------------------------------------------------------
+                -- Animate:
+                --------------------------------------------------------------------------------
+                id = dynamicPopupSliderParameter(rotationGroup, basic:rotation().animate, id, "animate" , fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[1])
+
+                local rotationAnimateGroup = rotationGroup:group(i18n("animate"))
+                id = popupParameter(rotationAnimateGroup, basic:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[1], i18n("useRotation"))
+                id = popupParameter(rotationAnimateGroup, basic:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[2], i18n("useOrientation"))
 
             --------------------------------------------------------------------------------
             -- Scale:
@@ -181,25 +187,287 @@ function plugin.init(deps)
             id = sliderParameter(scaleGroup, basic:scale().master, id, 0, 400, 0.1, 0, "Master")
             id = sliderParameter(scaleGroup, basic:scale().x, id, 0, 400, 0.1, 0, "X")
             id = sliderParameter(scaleGroup, basic:scale().y, id, 0, 400, 0.1, 0, "Y")
-            sliderParameter(scaleGroup, basic:scale().z, id, 0, 400, 0.1, 0, "Z")
+            id = sliderParameter(scaleGroup, basic:scale().z, id, 0, 400, 0.1, 0, "Z")
 
         --------------------------------------------------------------------------------
         --
         -- 3D TEXT:
         --
         --------------------------------------------------------------------------------
+        local threeDeeText              = text:threeDeeText()
+        local threeDeeTextGroup         = textGroup:group(i18n("threeDeeText"))
+
+            --------------------------------------------------------------------------------
+            -- Enable/Disable:
+            --------------------------------------------------------------------------------
+            id = checkboxParameter(threeDeeTextGroup, threeDeeText.enabled, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(threeDeeTextGroup, threeDeeText.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
+            -- Depth:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:depth(), id, 0, 100, 0.1, 10, "depth")
+
+            --------------------------------------------------------------------------------
+            -- Depth Direction:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:depthDirection().value, id, "depthDirection" , fcp:string("Bevel Properties Extrude Direction Enum"):split(";")[3])
+
+            -- TODO: Add individual buttons for all parameters.
+
+            --------------------------------------------------------------------------------
+            -- Weight:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:weight(), id, -5, 5, 0.1, 0, "weight")
+
+            --------------------------------------------------------------------------------
+            -- Front Edge:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:frontEdge().value, id, "frontEdge" , fcp:string("Bevel Properties Front Profile Enum"):split(";")[3])
+
+            -- TODO: Add individual buttons for all parameters.
+
+            --------------------------------------------------------------------------------
+            -- Front Edge Size:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:frontEdgeSize().master, id, 0, 10, 0.1, 4, "frontEdgeSize", threeDeeText:frontEdgeSize().width, threeDeeText:frontEdgeSize().depth)
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:frontEdgeSize().width, id, 0, 10, 0.1, 4, "frontEdgeSizeWidth")
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:frontEdgeSize().depth, id, 0, 10, 0.1, 4, "frontEdgeSizeDepth")
+
+            --------------------------------------------------------------------------------
+            -- Back Edge:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:backEdge().value, id, "backEdge" , fcp:string("Bevel Properties Back Profile Enum"):split(";")[1])
+
+            -- TODO: Add individual buttons for all parameters.
+
+            --------------------------------------------------------------------------------
+            -- Inside Corners:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:insideCorners().value, id, "insideCorners" , fcp:string("Bevel Properties Corner Style Enum"):split(";")[1])
+
+            -- TODO: Add individual buttons for all parameters.
+
+            --------------------------------------------------------------------------------
+            -- LIGHTING:
+            --------------------------------------------------------------------------------
+            local lighting                  = text:lighting()
+            local lightingGroup             = threeDeeTextGroup:group(i18n("lighting"))
+
+                --------------------------------------------------------------------------------
+                -- Reset:
+                --------------------------------------------------------------------------------
+                id = ninjaButtonParameter(lightingGroup, lighting.reset, id, "reset")
+
+                --------------------------------------------------------------------------------
+                -- Lighting Style:
+                --------------------------------------------------------------------------------
+                id = dynamicPopupSliderParameter(lightingGroup, lighting:lightingStyle().value, id, "lightingStyle" , fcp:string("Bevel Properties Lighting Style Enum"):split(";")[2])
+
+                -- TODO: Add individual buttons for all parameters.
+
+                --------------------------------------------------------------------------------
+                -- Intensity:
+                --------------------------------------------------------------------------------
+                id = sliderParameter(lightingGroup, lighting:intensity(), id, 0, 100, 0.1, 100, "intensity")
+
+                --------------------------------------------------------------------------------
+                -- SELF SHADOWS:
+                --------------------------------------------------------------------------------
+                local selfShadows               = lighting:selfShadows()
+                local selfShadowsGroup          = lightingGroup:group(i18n("selfShadows"))
+
+                    --------------------------------------------------------------------------------
+                    -- Enable/Disable:
+                    --------------------------------------------------------------------------------
+                    id = checkboxParameter(selfShadowsGroup, selfShadows.enabled, id, "toggle")
+
+                    --------------------------------------------------------------------------------
+                    -- Reset:
+                    --------------------------------------------------------------------------------
+                    id = ninjaButtonParameter(selfShadowsGroup, selfShadows.reset, id, "reset")
+
+                    --------------------------------------------------------------------------------
+                    -- Opacity:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(selfShadowsGroup, selfShadows:opacity(), id, 0, 100, 0.1, 100, "opacity")
+
+                    --------------------------------------------------------------------------------
+                    -- Softness:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(selfShadowsGroup, selfShadows:softness(), id, 0, 100, 0.1, 0, "softness")
+
+                --------------------------------------------------------------------------------
+                -- ENVIRONMENT:
+                --------------------------------------------------------------------------------
+                local environment               = lighting:environment()
+                local environmentGroup          = lightingGroup:group(i18n("environment"))
+
+                    --------------------------------------------------------------------------------
+                    -- Type:
+                    --------------------------------------------------------------------------------
+                    id = dynamicPopupSliderParameter(environmentGroup, environment:type().value, id, "type" , fcp:string("Material Environment Map Selection Enum"):split(";")[4])
+
+                    -- TODO: Add individual buttons for all parameters.
+
+                    --------------------------------------------------------------------------------
+                    -- Intensity:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(environmentGroup, environment:intensity(), id, 0, 100, 0.1, 100, "intensity")
+
+                    --------------------------------------------------------------------------------
+                    -- Rotation:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(environmentGroup, environment:rotation().master, id, -5000, 5000, 0.1, 0, "master")
+                    id = sliderParameter(environmentGroup, environment:rotation().x, id, -5000, 5000, 0.1, 0, "X")
+                    id = sliderParameter(environmentGroup, environment:rotation().y, id, -5000, 5000, 0.1, 0, "Y")
+                    id = sliderParameter(environmentGroup, environment:rotation().z, id, -5000, 5000, 0.1, 0, "Z")
+
+                        --------------------------------------------------------------------------------
+                        -- Animate:
+                        --------------------------------------------------------------------------------
+                        id = dynamicPopupSliderParameter(environmentGroup, environment:rotation().animate, id, "animate" , fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[1])
+
+                        local environmentAnimateGroup = environmentGroup:group(i18n("animate"))
+                        id = popupParameter(environmentAnimateGroup, environment:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[1], i18n("useRotation"))
+                        id = popupParameter(environmentAnimateGroup, environment:rotation().animate, id, fcp:string("Channel Rotation3D Iterpolation Enum"):split(";")[2], i18n("useOrientation"))
+
+                    --------------------------------------------------------------------------------
+                    -- Contrast:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(environmentGroup, environment:contrast(), id, 0, 100, 0.1, 100, "contrast")
+
+                    --------------------------------------------------------------------------------
+                    -- Saturation:
+                    --------------------------------------------------------------------------------
+                    id = sliderParameter(environmentGroup, environment:saturation(), id, 0, 100, 0.1, 100, "saturation")
+
+                    --------------------------------------------------------------------------------
+                    -- Anisotropic:
+                    --------------------------------------------------------------------------------
+                    id = checkboxParameter(environmentGroup, environment:anisotropic().value, id, "anisotropic")
+
+        --------------------------------------------------------------------------------
+        --
+        -- MATERIAL:
+        --
+        --------------------------------------------------------------------------------
+        -- TODO: Add Material section once added to the FCPX API.
+        -- Reserving 20 IDs just in case
+        id = id + 20
 
         --------------------------------------------------------------------------------
         --
         -- FACE:
         --
         --------------------------------------------------------------------------------
+        local face                      = text:face()
+        local faceGroup                 = textGroup:group(i18n("face"))
+
+            --------------------------------------------------------------------------------
+            -- Enable/Disable:
+            --------------------------------------------------------------------------------
+            id = checkboxParameter(faceGroup, face.enabled, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(faceGroup, face.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
+            -- Fill with:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(faceGroup, face:fillWith().value, id, "fillWith" , fcp:string("Text Color Source Enum"):split(";")[1])
+
+            local faceFillWithGroup = faceGroup:group(i18n("fillWith"))
+            id = popupParameter(faceFillWithGroup, face:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[1], i18n("color"))
+            id = popupParameter(faceFillWithGroup, face:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[2], i18n("gradient"))
+            id = popupParameter(faceFillWithGroup, face:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[3], i18n("texture"))
+
+            --------------------------------------------------------------------------------
+            -- Color:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
+            --       let's reserve some IDs just in case.
+            id = id + 10
+
+            --------------------------------------------------------------------------------
+            -- Gradient:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Controls for gradients, but
+            --       let's reserve some IDs just in case.
+            id = id + 20
+
+            --------------------------------------------------------------------------------
+            -- Opacity:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(faceGroup, face:opacity(), id, 0, 100, 0.1, 100, "opacity")
+
+            --------------------------------------------------------------------------------
+            -- Blur:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(faceGroup, face:blur(), id, 0, 10, 0.1, 0, "blur")
 
         --------------------------------------------------------------------------------
         --
         -- OUTLINE:
         --
         --------------------------------------------------------------------------------
+        local outline                   = text:outline()
+        local outlineGroup              = textGroup:group(i18n("outline"))
+
+            --------------------------------------------------------------------------------
+            -- Enable/Disable:
+            --------------------------------------------------------------------------------
+            id = checkboxParameter(outlineGroup, outline.enabled, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(outlineGroup, outline.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
+            -- Fill with:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(outlineGroup, outline:fillWith().value, id, "fillWith" , fcp:string("Text Color Source Enum"):split(";")[1])
+
+            local outlineFillWithGroup = outlineGroup:group(i18n("fillWith"))
+            id = popupParameter(outlineFillWithGroup, outline:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[1], i18n("color"))
+            id = popupParameter(outlineFillWithGroup, outline:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[2], i18n("gradient"))
+            id = popupParameter(outlineFillWithGroup, outline:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[3], i18n("texture"))
+
+            --------------------------------------------------------------------------------
+            -- Color:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
+            --       let's reserve some IDs just in case.
+            id = id + 10
+
+            --------------------------------------------------------------------------------
+            -- Gradient:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Controls for gradients, but
+            --       let's reserve some IDs just in case.
+            id = id + 20
+
+            --------------------------------------------------------------------------------
+            -- Opacity:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(outlineGroup, outline:opacity(), id, 0, 100, 0.1, 100, "opacity")
+
+            --------------------------------------------------------------------------------
+            -- Blur:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(outlineGroup, outline:blur(), id, 0, 10, 0.1, 0, "blur")
+
+            --------------------------------------------------------------------------------
+            -- Width:
+            --------------------------------------------------------------------------------
+            sliderParameter(outlineGroup, outline:width(), id, 0, 15, 0.1, 1, "width")
 
         --------------------------------------------------------------------------------
         --
@@ -207,13 +475,15 @@ function plugin.init(deps)
         --
         --------------------------------------------------------------------------------
 
+        -- TODO: Finish this.
+
         --------------------------------------------------------------------------------
         --
         -- TEXT DROP SHADOW:
         --
         --------------------------------------------------------------------------------
 
-
+        -- TODO: Finish this.
 
 end
 

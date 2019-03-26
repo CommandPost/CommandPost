@@ -4,6 +4,8 @@
 
 local require = require
 
+--local log           = require("hs.logger").new("axutils")
+
 local canvas        = require("hs.canvas")
 local fnutils       = require("hs.fnutils")
 local geometry      = require("hs.geometry")
@@ -11,8 +13,7 @@ local geometry      = require("hs.geometry")
 local is            = require("cp.is")
 local prop          = require("cp.prop")
 
-
-local sort            = table.sort
+local sort          = table.sort
 
 --------------------------------------------------------------------------------
 --
@@ -62,6 +63,36 @@ function axutils.childrenInLine(element)
              end
         end
         return result
+    end
+end
+
+--- cp.ui.axutils.childrenInNextLine(element) -> table | nil
+--- Function
+--- Gets a table of children that are in the next line in relation to the supplied
+--- element. Scrollbars will be ignored.
+---
+--- Parameters:
+---  * element - The base element.
+---
+--- Returns:
+---  * The table of `axuielement` objects, otherwise `nil`.
+function axutils.childrenInNextLine(element)
+    local parent = element and element:attributeValue("AXParent")
+    local childrenInLine = element and axutils.childrenInLine(element)
+    local highestIndex = 0
+    if childrenInLine then
+        for _, child in pairs(childrenInLine) do
+            if child:attributeValue("AXRole") ~= "AXScrollBar" then
+                local childIndex = axutils.childIndex(child)
+                if childIndex and childIndex > highestIndex then
+                    highestIndex = childIndex
+                end
+            end
+        end
+    end
+    local rightChild = childrenInLine and axutils.childFromRight(childrenInLine, 1, function(e) return e:attributeValue("AXRole") ~= "AXScrollBar" end)
+    if element and parent and highestIndex ~= 0 and parent:attributeValue("AXChildren")[highestIndex + 1] then
+        return axutils.childrenInLine(parent:attributeValue("AXChildren")[highestIndex + 1])
     end
 end
 

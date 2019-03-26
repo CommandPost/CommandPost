@@ -55,6 +55,8 @@ local PopUpButton                       = require("cp.ui.PopUpButton")
 local RadioButton                       = require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 local ScrollArea                        = require("cp.ui.ScrollArea")
+local Slider                            = require("cp.ui.Slider")
+local StaticText                        = require("cp.ui.StaticText")
 local TextArea                          = require("cp.ui.TextArea")
 local TextField                         = require("cp.ui.TextField")
 
@@ -64,15 +66,15 @@ local IP                                = require("cp.apple.finalcutpro.inspecto
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop                      = axutils.childFromTop
 local childrenInLine                    = axutils.childrenInLine
+local childrenInNextLine                = axutils.childrenInNextLine
 local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
 
 local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
+local popUpButton, checkBox             = IP.popUpButton, IP.checkBox
+local section, slider                   = IP.section, IP.slider
 
 local toRegionalNumber                  = tools.toRegionalNumber
 local toRegionalNumberString            = tools.toRegionalNumberString
-
-
 
 --------------------------------------------------------------------------------
 --
@@ -248,7 +250,32 @@ function TextInspector:initialize(parent)
             depthDirection      = popUpButton "Bevel Properties Extrude Direction",
             weight              = slider "3D Property Extrusion Weight",
             frontEdge           = popUpButton "Bevel Properties Front Edge Profile",
-            frontEdgeSize       = slider "Bevel Properties Front Edge Size",
+            frontEdgeSize       = simple("Bevel Properties Front Edge Size", function(row)
+                                    row.master = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInLine(rowUI)
+                                        return children and childFromLeft(children, 1, TextField.matches)
+                                    end)
+
+                                    row.width = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInNextLine(rowUI)
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Text Sequence Channel OutlineWidth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+
+                                    row.depth = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local widthChildren = rowUI and childrenInNextLine(rowUI)
+                                        local children = widthChildren and widthChildren[1] and childrenInNextLine(widthChildren[1])
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("3D Property Extrusion Depth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+                                  end),
             backEdge            = popUpButton "Bevel Properties Back Edge Profile",
             insideCorners       = popUpButton "Bevel Properties Corner Style",
         },
@@ -262,25 +289,82 @@ function TextInspector:initialize(parent)
             environment         = section "Material Environment Properties" {
                 type                = popUpButton "Material Environment Type",
                 intensity           = slider "Material Environment Intensity",
-                rotation            = slider "Material Environment Rotation",
+                rotation            = simple("Material Environment Rotation", function(row)
+                                            row.master = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local children = rowUI and childrenInLine(rowUI)
+                                                return children and childFromLeft(children, 1, TextField.matches)
+                                            end)
+
+                                            row.x = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local children = rowUI and childrenInNextLine(rowUI)
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "X" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.y = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local children = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "Y" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.z = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local yChildren = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local children = yChildren and yChildren[1] and childrenInNextLine(yChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "Z" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.animate = PopUpButton(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local yChildren = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local zChildren = yChildren and yChildren[1] and childrenInNextLine(yChildren[1])
+                                                local children = zChildren and zChildren[1] and childrenInNextLine(zChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Channel Rotation3D Iterpolation Label") then
+                                                    return childFromLeft(children, 1, PopUpButton.matches)
+                                                end
+                                            end)
+                                      end),
                 contrast            = slider "Material Environment Contrast",
                 saturation          = slider "Material Environment Saturation",
                 anisotropic         = checkBox "Material Environment Anisotropy Enable",
             },
         },
-        -- TODO: skipping "Material" for now...
+        material            = section "Material Short Desc" {},
+            --------------------------------------------------------------------------------
+            -- TODO: Add "Material" section contents.
+            --------------------------------------------------------------------------------
         face                = section "Text Face" {
             fillWith            = popUpButton "Text Face Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Face Color",
-            -- TODO: Complete 'Gradient' options.
+            --------------------------------------------------------------------------------
+            -- TODO: Complete 'Gradient' options:
+            --------------------------------------------------------------------------------
             gradient            = section "Text Face Gradient" {},
             opacity             = slider "Text Face Opacity",
             blur                = slider "Text Face Blur",
         },
         outline             = section "Text Outline" {
             fillWith            = popUpButton "Text Outline Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Outline Color",
             opacity             = slider "Text Outline Opacity",
             blur                = slider "Text Outline Blur",
@@ -288,7 +372,9 @@ function TextInspector:initialize(parent)
         },
         glow                = section "Text Glow" {
             fillWith            = popUpButton "Text Glow Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Glow Color",
             opacity             = slider "Text Glow Opacity",
             blur                = slider "Text Glow Blur",
@@ -296,7 +382,9 @@ function TextInspector:initialize(parent)
         },
         dropShadow          = section "Text Drop Shadow" {
             fillWith            = popUpButton "Text Drop Shadow Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Drop Shadow Color",
             opacity             = slider "Text Drop Shadow Opacity",
             blur                = slider "Text Drop Shadow Blur",

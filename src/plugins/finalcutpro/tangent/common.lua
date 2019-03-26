@@ -37,6 +37,11 @@ local mod = {}
 -- The amount of time to defer UI updates
 local DEFER = 0.01
 
+-- DELAY -> number
+-- Constant
+-- The amount of time to delay UI updates
+local DELAY = 0.5
+
 --- plugins.finalcutpro.tangent.common.popupParameter() -> none
 --- Function
 --- Sets up a new Popup Parameter for the Tangent
@@ -94,7 +99,7 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
 
     local popupSliderCache = nil
 
-    local updateUI = delayed.new(0.5, function()
+    local updateUI = delayed.new(DELAY, function()
         Do(param:doShow())
             :Then(
                 If(function() return param:menuUI() ~= nil end)
@@ -195,7 +200,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
         end
     end
 
-    local updateUI = delayed.new(0.5, function()
+    local updateUI = delayed.new(DELAY, function()
         Do(param:doShow())
             :Then(param:doSelectValue(fcp:string(options[popupSliderCache].flexoID)))
             :Then(function()
@@ -361,7 +366,7 @@ function mod.checkboxSliderParameter(group, id, label, options, resetIndex)
 
     local maxValue = tableCount(options)
 
-    local updateUI = delayed.new(0.5, function()
+    local updateUI = delayed.new(DELAY, function()
         Do(options[1].param:doShow())
             :Then(
                 options[cachedValue].param:doPress()
@@ -649,15 +654,15 @@ end
 ---  * maxValue - The maximum value
 ---  * stepSize - The step size
 ---  * default - The default value
----  * label - An optional label
+---  * label - An optional label as an i18n ID or plain string. If no label is supplied the
+---            `param` label will be used.
+---  * optionalParamA - An optional parameter. Useful if you need to link parameters.
+---  * optionalParamB - An optional parameter. Useful if you need to link parameters.
 ---
 --- Returns:
 ---  * An updated ID
 ---  * The parameters value
-function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, default, label)
-
-    label = label or param:label()
-
+function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, default, label, optionalParamA, optionalParamB)
     --------------------------------------------------------------------------------
     -- Set up deferred update:
     --------------------------------------------------------------------------------
@@ -673,6 +678,12 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
                 local currentValue = param:value()
                 if currentValue then
                     param:value(currentValue + value)
+                    if optionalParamA then
+                        optionalParamA:value(currentValue + value)
+                    end
+                    if optionalParamB then
+                        optionalParamB:value(currentValue + value)
+                    end
                     value = 0
                 end
                 updating = false
@@ -681,6 +692,7 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
     )
 
     default = default or 0
+    label = (label and i18n(label, {default=label})) or param:label()
 
     local valueParam = group:parameter(id + 1)
         :name(label)
@@ -712,15 +724,13 @@ end
 ---  * maxValue - The maximum value
 ---  * stepSize - The step size
 ---  * default - The default value
----  * label - An optional label
+---  * label - An optional label as an i18n ID or plain string. If no label is supplied the
+---            `param` label will be used.
 ---
 --- Returns:
 ---  * An updated ID
 ---  * The parameters value
 function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSize, default, label)
-
-    label = label or param:label()
-
     --------------------------------------------------------------------------------
     -- Set up deferred update:
     --------------------------------------------------------------------------------
@@ -763,6 +773,7 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
     )
 
     default = default or 0
+    label = (label and i18n(label, {default=label})) or param:label()
 
     local valueParam = group:parameter(id + 1)
         :name(label)

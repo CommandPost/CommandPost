@@ -99,7 +99,7 @@ end
 --- Returns a `Statement` that will ensure the Element is showing.
 function Element.lazy.method:doShow()
     return If(function() return self:parent() end)
-    :Then(function(parent) return parent:doShow() end)
+    :Then(function(parent) return parent.doShow and parent:doShow() end)
     :Otherwise(false)
 end
 
