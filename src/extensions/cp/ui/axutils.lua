@@ -90,7 +90,6 @@ function axutils.childrenInNextLine(element)
             end
         end
     end
-    local rightChild = childrenInLine and axutils.childFromRight(childrenInLine, 1, function(e) return e:attributeValue("AXRole") ~= "AXScrollBar" end)
     if element and parent and highestIndex ~= 0 and parent:attributeValue("AXChildren")[highestIndex + 1] then
         return axutils.childrenInLine(parent:attributeValue("AXChildren")[highestIndex + 1])
     end

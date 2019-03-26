@@ -43,9 +43,9 @@
 
 local require = require
 
---local log								= require("hs.logger").new("textInspect")
+--local log                             = require("hs.logger").new("textInspect")
 
-local axutils							= require("cp.ui.axutils")
+local axutils                           = require("cp.ui.axutils")
 local If                                = require("cp.rx.go.If")
 local tools                             = require("cp.tools")
 
@@ -55,7 +55,6 @@ local PopUpButton                       = require("cp.ui.PopUpButton")
 local RadioButton                       = require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 local ScrollArea                        = require("cp.ui.ScrollArea")
-local Slider                            = require("cp.ui.Slider")
 local StaticText                        = require("cp.ui.StaticText")
 local TextArea                          = require("cp.ui.TextArea")
 local TextField                         = require("cp.ui.TextField")
@@ -103,7 +102,7 @@ end
 --- Creates a new `TextInspector` object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A `TextInspector` object
