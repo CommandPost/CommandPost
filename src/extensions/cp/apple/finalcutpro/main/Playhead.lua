@@ -84,7 +84,7 @@ function Playhead:initialize(parent, skimming, containerUI, useEventViewer)
     self.isSkimming = prop.THIS(skimming == true):IMMUTABLE():bind(self)
     self._useEventViewer = useEventViewer
 
-    local UI = containerUI:mutate(function(original, self)
+    local UI = containerUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             return Playhead.find(original(), self:isSkimming())
         end, Playhead.matches)
@@ -145,7 +145,7 @@ function Playhead.lazy.prop:center()
     end)
 end
 
---- cp.apple.finalcutpro.main.Playhead.currentViewer <cp.prop: cp.apple.finalcutpro.main.Viewer; read-only; live>
+--- cp.apple.finalcutpro.main.Playhead.currentViewer <cp.prop: cp.apple.finalcutpro.viewer.Viewer; read-only; live>
 --- Field
 --- Represents the current viewer for the playhead. This may be either the primary Viewer or the Event Viewer,
 --- depending on the Playhead instance and whether the Event Viewer is enabled.

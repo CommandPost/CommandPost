@@ -9,7 +9,7 @@ local log								= require("hs.logger").new("librariesBrowser")
 local i18n                              = require("cp.i18n")
 local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
+local Group                             = require("cp.ui.Group")
 
 local AppearanceAndFiltering            = require("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
 
@@ -30,7 +30,6 @@ local Throw                             = require("cp.rx.go.Throw")
 local cache                             = axutils.cache
 local childFromRight                    = axutils.childFromRight
 local childMatching                     = axutils.childMatching
-local childrenWithRole                  = axutils.childrenWithRole
 local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
 
 --------------------------------------------------------------------------------
@@ -38,10 +37,10 @@ local childWith, childWithRole          = axutils.childWith, axutils.childWithRo
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local LibrariesBrowser = Element:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
+local LibrariesBrowser = Group:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
 function LibrariesBrowser.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
+    return Group.matches(element)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser(app) -> LibrariesBrowser
@@ -61,8 +60,9 @@ function LibrariesBrowser:initialize(parent)
         return isShowing() and original() or nil
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
 end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the main group within the Libraries Browser, or `nil` if not available..
@@ -218,76 +218,46 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:toggleViewMode() -> Button
---- Method
---- Get Toggle View Mode button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` object.
-function LibrariesBrowser.lazy.method:toggleViewMode()
-    return Button(self, function()
-        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 3)
-    end)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.toggleViewMode <cp.ui.Button>
+--- Field
+--- The Toggle View Mode [Button](cp.ui.Button.md).
+function LibrariesBrowser.lazy.value:toggleViewMode()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(original(), 3, Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:searchToggle() -> Button
---- Method
---- Get Search Toggle Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` object.
-function LibrariesBrowser.lazy.method:searchToggle()
-    return Button(self, function()
-        return childFromRight(childrenWithRole(self:UI(), "AXButton"), 1)
-    end)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.searchToggle <cp.ui.Button>
+--- Field
+--- The Search Toggle [Button](cp.ui.Button.md).
+function LibrariesBrowser.lazy.value:searchToggle()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(original(), 1, Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:search() -> TextField
---- Method
---- Get Search Text Field.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `TextField` object.
-function LibrariesBrowser.lazy.method:search()
-    return TextField(self, function()
-        return childWithRole(self:mainGroupUI(), "AXTextField")
-    end)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.search <cp.ui.TextField>
+--- Field
+--- The Search [TextField](cp.ui.TextField.md).
+function LibrariesBrowser.lazy.value:search()
+    return TextField(self, self.mainGroupUI:mutate(function(original)
+        return childMatching(original(), TextField.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:filterToggle() -> Button
---- Method
---- The Filter Toggle Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` object.
-function LibrariesBrowser.lazy.method:filterToggle()
-    return Button(self, function()
-        return childWithRole(self:mainGroupUI(), "AXButton")
-    end)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.filterToggle <cp.ui.Button>
+--- Field
+--- The Filter Toggle [Button](cp.ui.Button.md).
+function LibrariesBrowser.lazy.value:filterToggle()
+    return Button(self, self.mainGroupUI:mutate(function(original)
+        return childMatching(original(), Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser:appearanceAndFiltering() -> AppearanceAndFiltering
+--- cp.apple.finalcutpro.main.Browser.appearanceAndFiltering <cp.apple.finalcutpro.main.AppearanceAndFiltering>
 --- Method
---- The Clip Appearance & Filtering Menu Popover
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `AppearanceAndFiltering` object.
-function LibrariesBrowser.lazy.method:appearanceAndFiltering()
+--- The Clip [AppearanceAndFiltering](cp.apple.finalcutpro.main.AppearanceAndFiltering.md) Menu Popover
+function LibrariesBrowser.lazy.value:appearanceAndFiltering()
     return AppearanceAndFiltering(self)
 end
 
@@ -375,16 +345,10 @@ function LibrariesBrowser.lazy.method:list()
     return LibrariesList.new(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:sidebar() -> Table
---- Method
---- Get Libraries sidebar object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Table` object.
-function LibrariesBrowser.lazy.method:sidebar()
+--- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.ui.Table>
+--- Field
+--- Get Libraries sidebar [Table](cp.ui.Table.md).
+function LibrariesBrowser.lazy.value:sidebar()
     return Table(self, function()
         return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
     end):uncached()
@@ -712,7 +676,7 @@ function LibrariesBrowser:saveLayout()
     local layout = {}
     if self:isShowing() then
         layout.showing = true
-        layout.sidebar = self:sidebar():saveLayout()
+        layout.sidebar = self.sidebar:saveLayout()
         layout.selectedClips = self:selectedClips()
     end
     return layout
@@ -730,7 +694,7 @@ end
 function LibrariesBrowser:loadLayout(layout)
     if layout and layout.showing then
         self:show()
-        self:sidebar():loadLayout(layout.sidebar)
+        self.sidebar:loadLayout(layout.sidebar)
         self:selectAll(layout.selectedClips)
     end
 end

@@ -45,11 +45,11 @@ local require = require
 
 -- local log								= require("hs.logger").new("shareInspect")
 
-local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 local StaticText                        = require("cp.ui.StaticText")
 
 local strings                           = require("cp.apple.finalcutpro.strings")
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local childFromBottom, childFromTop     = axutils.childFromBottom, axutils.childFromTop
@@ -63,7 +63,7 @@ local section                           = IP.section
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ShareInspector = {}
+local ShareInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.ShareInspector")
 
 --- cp.apple.finalcutpro.inspector.share.ShareInspector.matches(element)
 --- Function
@@ -74,8 +74,8 @@ local ShareInspector = {}
 ---
 --- Returns:
 --- * `true` if it matches, `false` if not.
-function ShareInspector.matches(element)
-    if element then
+function ShareInspector.static.matches(element)
+    if BasePanel.matches(element) then
         if element:attributeValue("AXRole") == "AXGroup" and #element > 1 then
             local scrollArea = childFromBottom(element, 1)
             if scrollArea:attributeValue("AXRole") == "AXScrollArea" then
@@ -97,105 +97,29 @@ end
 ---
 --- Returns:
 ---  * A `ShareInspector` object
-function ShareInspector.new(parent)
-    local o
-    o = prop.extend({
-        _parent = parent,
-        _child = {},
-        _rows = {},
+function ShareInspector:initialize(parent)
+    BasePanel.initialize(self, parent, "Share")
 
---- cp.apple.finalcutpro.inspector.color.ShareInspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `hs._asm.axuielement` object for the Share Inspector.
-        UI = parent.panelUI:mutate(function(original)
-            return axutils.cache(o, "_ui",
-                function()
-                    local ui = original()
-                    return ShareInspector.matches(ui) and ui or nil
-                end,
-                ShareInspector.matches
-            )
-        end),
-
-    }, ShareInspector)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.ShareInspector.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the ShareInspector is currently showing.
-        isShowing = o.UI:mutate(function(original)
-            return original() ~= nil
-        end),
+    -- specify that the `contentUI` contains the PropertyRows.
+    hasProperties(self, self.contentUI) {
+        published             = section "Inspector Published Parameters Heading" {},
+    }
+end
 
 --- cp.apple.finalcutpro.inspector.color.ShareInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
-        contentUI = o.UI:mutate(function(original)
-            return axutils.cache(o, "_contentUI", function()
-                local ui = original()
-                if ui then
-                    local scrollArea = ui[1][1]
-                    return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea or nil
-                end
-                return nil
-            end)
-        end),
-    }
-
-    -- specify that the `contentUI` contains the PropertyRows.
-    hasProperties(o, o.contentUI) {
-        published             = section "Inspector Published Parameters Heading" {},
-    }
-
-    return o
-end
-
---- cp.apple.finalcutpro.inspector.share.ShareInspector:parent() -> table
---- Method
---- Returns the ShareInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function ShareInspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.share.ShareInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function ShareInspector:app()
-    return self:parent():app()
-end
-
---------------------------------------------------------------------------------
---
--- VIDEO INSPECTOR:
---
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.share.ShareInspector:show() -> ShareInspector
---- Method
---- Shows the Share Inspector
----
---- Parameters:
----  * None
----
---- Returns:
----  * ShareInspector
-function ShareInspector:show()
-    if not self:isShowing() then
-        self:parent():selectTab("Share")
-    end
-    return self
+function ShareInspector.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_contentUI", function()
+            local ui = original()
+            if ui then
+                local scrollArea = ui[1][1]
+                return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea or nil
+            end
+            return nil
+        end)
+    end)
 end
 
 return ShareInspector

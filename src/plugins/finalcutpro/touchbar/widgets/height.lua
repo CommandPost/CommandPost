@@ -102,9 +102,9 @@ function mod.widget()
                 --------------------------------------------------------------------------------
                 local value = x/(canvasWidth/10)
                 value = (value * (135 - 32) / 10) + 32
-                fcp:libraries():appearanceAndFiltering():show():clipHeight():value(value)
+                fcp.libraries.appearanceAndFiltering:show():clipHeight():value(value)
             elseif m == "mouseUp" then
-                fcp:libraries():appearanceAndFiltering():hide()
+                fcp.libraries.appearanceAndFiltering:hide()
             end
     end)
 

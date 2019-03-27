@@ -1,38 +1,22 @@
 --- === cp.ui.Image ===
 ---
---- UI Image.
-
-local require = require
-
-local Element = require("cp.ui.Element")
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-
---- cp.ui.Image(parent, uiFinder) -> Image
---- Constructor
---- Creates a new `Image` instance.
+--- Represents an `AXImage` `axuielement` value.
 ---
---- Parameters:
----  * parent - The parent object.
----  * uiFinder - A function which will return the `hs._asm.axuielement` when available.
----
---- Returns:
----  * A new `Image` object.
+--- Extends [Element](cp.ui.Element.md).
+
+local Element           = require "cp.ui.Element"
+
 local Image = Element:subclass("cp.ui.Image")
 
---- cp.ui.Image.matches(element) -> boolean
+--- cp.ui.Image.matches(element)
 --- Function
---- Checks to see if an element matches what we think it should be.
+--- Checks if the provided `axuielement` is an `AXImage`.
 ---
 --- Parameters:
----  * element - An `axuielementObject` to check.
+---  * element  - The `axuielement` to check.
 ---
 --- Returns:
----  * `true` if matches otherwise `false`
+--- * `true` if it is an `AXImage`, otherwise `false`.
 function Image.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXImage"
 end

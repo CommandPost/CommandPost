@@ -506,7 +506,7 @@ function mod._completeProcess()
         local filmstripView = false
         if libraries:isFilmstripView() then
             filmstripView = true
-            libraries:toggleViewMode():press()
+            libraries:toggleViewMode()
         end
 
         --------------------------------------------------------------------------------
@@ -575,7 +575,7 @@ function mod._completeProcess()
         -- Restore Filmstrip View:
         --------------------------------------------------------------------------------
         if filmstripView then
-            libraries:toggleViewMode():press()
+            libraries:toggleViewMode()
         end
 
         --------------------------------------------------------------------------------
