@@ -562,7 +562,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Angle:
             --------------------------------------------------------------------------------
-            id = sliderParameter(dropShadowGroup, dropShadow:angle(), id, -5000, 5000, 0.1, 315, "angle")
+            sliderParameter(dropShadowGroup, dropShadow:angle(), id, -5000, 5000, 0.1, 315, "angle")
 
 end
 

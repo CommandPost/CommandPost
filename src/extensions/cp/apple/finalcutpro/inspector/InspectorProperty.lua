@@ -15,9 +15,9 @@ local require = require
 --local mouse                 = require("hs.mouse")
 
 local is                    = require("cp.is")
-local just                  = require("cp.just")
+--local just                  = require("cp.just")
 local prop                  = require("cp.prop")
-local tools                 = require("cp.tools")
+--local tools                 = require("cp.tools")
 
 local axutils               = require("cp.ui.axutils")
 local Button                = require("cp.ui.Button")
