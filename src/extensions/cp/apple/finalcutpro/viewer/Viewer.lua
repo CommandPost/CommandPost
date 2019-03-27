@@ -1,4 +1,4 @@
---- === cp.apple.finalcutpro.main.Viewer ===
+--- === cp.apple.finalcutpro.viewer.Viewer ===
 ---
 --- Viewer Module.
 
@@ -6,47 +6,39 @@ local require = require
 
 local log                               = require("hs.logger").new("viewer")
 
-local canvas					        = require("hs.canvas")
-local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
-local pasteboard                        = require("hs.pasteboard")
 local timer                             = require("hs.timer")
 
 local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local Button                            = require("cp.ui.Button")
+local Group                             = require("cp.ui.Group")
+local SplitGroup                        = require("cp.ui.SplitGroup")
 local deferred                          = require("cp.deferred")
-local flicks                            = require("cp.time.flicks")
-local just                              = require("cp.just")
-local MenuButton                        = require("cp.ui.MenuButton")
 local notifier                          = require("cp.ui.notifier")
 local prop                              = require("cp.prop")
-local StaticText                        = require("cp.ui.StaticText")
-local tools                             = require("cp.tools")
 
 local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
 
-local id                                = require("cp.apple.finalcutpro.ids") "Viewer"
+local ControlBar                        = require("cp.apple.finalcutpro.viewer.ControlBar")
+local InfoBar                           = require("cp.apple.finalcutpro.viewer.InfoBar")
 
 local go                                = require("cp.rx.go")
 local Do, If                            = go.Do, go.If
 
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
-local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
 local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local childWithRole                     = axutils.childWithRole
+local topToBottom                       = axutils.compareTopToBottom
 local delayedTimer                      = timer.delayed
-local match, sub, find                  = string.match, string.sub, string.find
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Viewer = Element:subclass("cp.apple.finalcutpro.main.Viewer")
+local Viewer = Group:subclass("cp.apple.finalcutpro.viewer.Viewer")
 
 -- PLAYER_QUALITY -> table
 -- Constant
@@ -72,7 +64,7 @@ local function findViewersUI(...)
         local window = select(i, ...)
         if window then
             local viewers = childrenMatching(window:viewerGroupUI(), Viewer.matches)
-            if viewers then
+            if viewers and #viewers > 0 then
                 return viewers
             end
         end
@@ -92,7 +84,7 @@ end
 local function findViewerUI(...)
     local viewers = findViewersUI(...)
     if viewers then
-        return childFromRight(viewers, 1)
+        return childFromRight(viewers, 1, Viewer.matches)
     end
     return nil
 end
@@ -112,12 +104,12 @@ local function findEventViewerUI(...)
         -----------------------------------------------------------------------
         -- The Event Viewer is always on the left, if present:
         -----------------------------------------------------------------------
-        return childFromLeft(viewers, 1)
+        return childFromLeft(viewers, 1, Viewer.matches)
     end
     return nil
 end
 
---- cp.apple.finalcutpro.main.Viewer.matches(element) -> boolean
+--- cp.apple.finalcutpro.viewer.Viewer.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -128,16 +120,16 @@ end
 ---  * `true` if matches otherwise `false`
 function Viewer.static.matches(element)
     -- Viewers have a single 'AXContents' element
-    if Element.matches(element) then
-        local contents = element:attributeValue("AXContents")
-        return contents and #contents == 1
-            and contents[1]:attributeValue("AXRole") == "AXSplitGroup"
-            and #(contents[1]) > 0
+    if Group.matches(element) then
+        local items = axutils.children(element, topToBottom)
+        return #items == 3
+            and InfoBar.matches(items[1])
+            and ControlBar.matches(items[3])
     end
     return false
 end
 
---- cp.apple.finalcutpro.main.Viewer(app, eventViewer) -> Viewer
+--- cp.apple.finalcutpro.viewer.Viewer(app, eventViewer) -> Viewer
 --- Constructor
 --- Creates a new `Viewer` instance.
 ---
@@ -160,7 +152,7 @@ function Viewer:initialize(app, eventViewer)
         Viewer.matches)
     end)
 
-    Element.initialize(self, app, UI)
+    Group.initialize(self, app, UI, SplitGroup)
 
     self._eventViewer = eventViewer
 
@@ -205,7 +197,7 @@ function Viewer:initialize(app, eventViewer)
 end
 
 
---- cp.apple.finalcutpro.main.Viewer:app() -> application
+--- cp.apple.finalcutpro.viewer.Viewer:app() -> application
 --- Method
 --- Returns the application.
 ---
@@ -218,7 +210,7 @@ function Viewer:app()
     return self:parent()
 end
 
---- cp.apple.finalcutpro.main.Viewer.isOnSecondary <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.isOnSecondary <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the Viewer is showing on the Secondary Window.
 function Viewer.lazy.prop:isOnSecondary()
@@ -228,7 +220,7 @@ function Viewer.lazy.prop:isOnSecondary()
     end)
 end
 
---- cp.apple.finalcutpro.main.Viewer.isOnPrimary <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.isOnPrimary <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the Viewer is showing on the Primary Window.
 function Viewer.lazy.prop:isOnPrimary()
@@ -238,7 +230,7 @@ function Viewer.lazy.prop:isOnPrimary()
     end)
 end
 
---- cp.apple.finalcutpro.main.Viewer.frame <cp.prop: table; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.frame <cp.prop: table; read-only>
 --- Field
 --- Returns the current frame for the viewer, or `nil` if it is not available.
 function Viewer.lazy.prop:frame()
@@ -248,19 +240,7 @@ function Viewer.lazy.prop:frame()
     end)
 end
 
---- cp.apple.finalcutpro.main.Viewer.topToolbarUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Provides the `axuielement` for the top toolbar of the Viewer, or `nil` if not available.
-function Viewer.lazy.prop:topToolbarUI()
-    return self.UI:mutate(function(original)
-        return cache(self, "_topToolbar", function()
-            local ui = original()
-            return ui and childFromTop(ui, 1)
-        end)
-    end)
-end
-
---- cp.apple.finalcutpro.main.Viewer.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.contentsUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Provides the `axuielement` for the media contents of the Viewer, or `nil` if not available.
 function Viewer.lazy.prop:contentsUI()
@@ -275,165 +255,60 @@ function Viewer.lazy.prop:contentsUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.Viewer.bottomToolbarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.infoBar <cp.apple.finalcutpro.viewer.InfoBar>
 --- Field
---- Provides the `axuielement` for the bottom toolbar of the Viewer, or `nil` if not available.
-function Viewer.lazy.prop:bottomToolbarUI()
-    return self.UI:mutate(function(original)
-        return cache(self, "_bottomToolbar", function()
-            local ui = original()
-            return ui and childFromBottom(ui, 1)
-        end)
-    end)
+--- Provides the [InfoBar](cp.apple.finalcutpro.viewer.InfoBar.md) for this `Viewer`.
+--- This contains the UI elemenst for the format, title, zoom and view menus.
+function Viewer.lazy.value:infoBar()
+    return InfoBar(self)
 end
 
------------------------------------------------------------------------
--- The StaticText that contains the timecode:
------------------------------------------------------------------------
-function Viewer.lazy.method:timecodeText()
-    return StaticText(self, self.bottomToolbarUI:mutate(function(original)
-        local ui = original()
-        return ui and childFromLeft(childrenWithRole(ui, "AXStaticText"), 1)
-    end))
+--- cp.apple.finalcutpro.viewer.Viewer.controlBar <cp.apple.finalcutpro.viewer.ControlBar>
+--- Field
+--- Provides the [ControlBar](cp.apple.finalcutpro.viewer.ControlBar.md) for this `Viewer`.
+--- This contains the UI elemenst for play button, timecode, audio levels and more.
+function Viewer.lazy.value:controlBar()
+    return ControlBar(self)
 end
 
-function Viewer.lazy.method:viewMenu()
-    return MenuButton(self, self.topToolbarUI:mutate(function(original)
-        local ui = original()
-        return ui and childFromRight(childrenWithRole(ui, "AXMenuButton"), 1)
-    end))
+--- cp.apple.finalcutpro.viewer.Viewer.timecodeField <cp.ui.StaticText>
+--- Field
+--- The [StaticText](cp.ui.StaticText.md) containing the timecode value.
+function Viewer.lazy.value:timecodeField()
+    return self.controlBar.timecodeField
 end
 
---- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string; live>
+--- cp.apple.finalcutpro.viewer.Viewer.timecode <cp.prop: string; live>
 --- Field
 --- The current timecode value, with the format "hh:mm:ss:ff". Setting also supports "hh:mm:ss;ff".
 --- The property can be watched to get notifications of changes.
 function Viewer.lazy.prop:timecode()
-    return self:timecodeText().value:mutate(
-        function(original)
-            return original()
-        end,
-        function(timecodeValue, original)
-            local tcField = self:timecodeText()
-            if not tcField:isShowing() then
-                log.ef("Timecode text not showing (cp.apple.finalcutpro.main.Viewer.timecode).")
-                return
-            end
-            if timecodeValue then
-                local frame = tcField:frame()
-                if not frame then
-                    log.ef("Failed to find timecode frame (cp.apple.finalcutpro.main.Viewer.timecode).")
-                    return
-                end
-                local center = geometry(frame).center
-                --------------------------------------------------------------------------------
-                -- Double click the timecode value in the Viewer:
-                --------------------------------------------------------------------------------
-                self:app():launch()
-                local result = just.doUntil(function()
-                    return self:app():isFrontmost()
-                end)
-                if not result then
-                    log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.main.Viewer.timecode).")
-                    return
-                end
-                tools.ninjaMouseClick(center)
-
-                --------------------------------------------------------------------------------
-                -- Wait until the click has been registered (give it 5 seconds):
-                --------------------------------------------------------------------------------
-                local toolbar = self:bottomToolbarUI()
-                local ready = just.doUntil(function()
-                    return #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
-                end, 5)
-                if ready then
-                    --------------------------------------------------------------------------------
-                    -- Get current Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    local originalPasteboard = pasteboard.getContents()
-
-                    --------------------------------------------------------------------------------
-                    -- Set Pasteboard Contents to timecode value we want to go to:
-                    --------------------------------------------------------------------------------
-                    pasteboard.setContents(timecodeValue)
-
-                    --------------------------------------------------------------------------------
-                    -- Wait until the timecode is on the pasteboard:
-                    --------------------------------------------------------------------------------
-                    local pasteboardReady = just.doUntil(function()
-                        return pasteboard.getContents() == timecodeValue
-                    end, 5)
-
-                    if not pasteboardReady then
-                        log.ef("Failed to add timecode to pasteboard (cp.apple.finalcutpro.main.Viewer.timecode).")
-                        return
-                    else
-                        --------------------------------------------------------------------------------
-                        -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
-                        -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
-                        --------------------------------------------------------------------------------
-                        eventtap.keyStroke({"cmd"}, "v")
-
-                        --------------------------------------------------------------------------------
-                        -- Wait until we see the timecode in the viewer:
-                        --------------------------------------------------------------------------------
-                        local pasteboardPasteResult = just.doUntil(function()
-                            local blank = "00:00:00:00"
-                            local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
-                            return tcField:value() == formattedTimecodeValue
-                        end, 5)
-
-                        --------------------------------------------------------------------------------
-                        -- Press return to complete the timecode entry:
-                        --------------------------------------------------------------------------------
-                        if not pasteboardPasteResult then
-                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
-                            return
-                        else
-                            eventtap.keyStroke({}, 'return')
-                        end
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- Restore Original Pasteboard Contents:
-                    --------------------------------------------------------------------------------
-                    if originalPasteboard then
-                        pasteboard.setContents(originalPasteboard)
-                    end
-
-                    return self
-                end
-            else
-                log.ef("Timecode value is invalid: %s (cp.apple.finalcutpro.main.Viewer.timecode).", timecodeValue)
-            end
-        end
-    )
+    return self.controlBar.timecode
 end
 
---- cp.apple.finalcutpro.main.Viewer.playerQuality <cp.prop: string>
+--- cp.apple.finalcutpro.viewer.Viewer.playerQuality <cp.prop: string>
 --- Field
---- The currentplayer quality value.
+--- The current player quality value.
 function Viewer.lazy.prop:playerQuality()
     return self:app().preferences:prop("FFPlayerQuality")
 end
 
---- cp.apple.finalcutpro.main.Viewer.hasPlayerControls <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.hasPlayerControls <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the viewer has Player Controls visible.
 function Viewer.lazy.prop:hasPlayerControls()
-    return self.bottomToolbarUI:mutate(function(original)
-        return original() ~= nil
-    end)
+    return self.controlBar.isShowing
 end
 
---- cp.apple.finalcutpro.main.Viewer.title <cp.prop: string; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.title <cp.ui.StaticText>
 --- Field
---- Provides the Title of the clip in the Viewer as a string, or `nil` if not available.
+--- Provides the Title of the clip in the Viewer as a [StaticText](cp.ui.StaticText.md)
 function Viewer.lazy.prop:title()
-    return self.topToolbarUI:mutate(function(original)
-        local titleText = childFromLeft(original(), id "Title")
-        return titleText and titleText:value()
-    end)
+    return self.infoBar.title
+end
+
+function Viewer.lazy.method:viewMenu()
+    return self.infoBar.viewMenu
 end
 
 --- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
@@ -441,62 +316,10 @@ end
 --- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
 --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
 function Viewer.lazy.prop:isPlaying()
-    return prop(
-        function()
-            local element = self:playButton():UI()
-            if element then
-                local window = element:attributeValue("AXWindow")
-                if window then
-                    local hsWindow = window:asHSWindow()
-                    local windowSnap = hsWindow:snapshot()
-                    local windowFrame = window:frame()
-                    local shotSize = windowSnap:size()
-
-                    local ratio = shotSize.h/windowFrame.h
-                    local elementFrame = element:frame()
-
-                    local imageFrame = {
-                        x = (windowFrame.x-elementFrame.x)*ratio,
-                        y = (windowFrame.y-elementFrame.y)*ratio,
-                        w = shotSize.w,
-                        h = shotSize.h,
-                    }
-
-                    --------------------------------------------------------------------------------
-                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                    --------------------------------------------------------------------------------
-
-                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-                    c[1] = {
-                        type = "image",
-                        image = windowSnap,
-                        imageScaling = "none",
-                        imageAlignment = "topLeft",
-                        frame = imageFrame,
-                    }
-
-                    local elementSnap = c:imageFromCanvas()
-                    c:delete()
-
-                    if elementSnap then
-                        elementSnap:size({h=60,w=60})
-                        local spot = elementSnap:colorAt({x=31,y=31})
-                        return spot and spot.blue < 0.5
-                    end
-                end
-            end
-            return false
-        end,
-        function(newValue, owner, thisProp)
-            local currentValue = thisProp:value()
-            if newValue ~= currentValue then
-                owner:playButton():press()
-            end
-        end
-    )
+    return self.controlBar.isPlaying
 end
 
---- cp.apple.finalcutpro.main.Viewer.usingProxies <cp.prop: boolean>
+--- cp.apple.finalcutpro.viewer.Viewer.usingProxies <cp.prop: boolean>
 --- Field
 --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).
 function Viewer.lazy.prop:usingProxies()
@@ -511,7 +334,7 @@ function Viewer.lazy.prop:usingProxies()
                     local itemKey = proxies and "CPViewerViewProxy" or "CPViewerViewOptimized"
                     local itemValue = self:app().strings:find(itemKey)
                     if itemValue then
-                        self:viewMenu():selectItemMatching(itemValue)
+                        self.viewMenu:selectItemMatching(itemValue)
                     else
                         log.ef("Unable to find the '%s' string in '%s'", itemKey, self:app():currentLocale())
                     end
@@ -524,7 +347,7 @@ function Viewer.lazy.prop:usingProxies()
     )
 end
 
---- cp.apple.finalcutpro.main.Viewer.betterQuality <cp.prop: boolean>
+--- cp.apple.finalcutpro.viewer.Viewer.betterQuality <cp.prop: boolean>
 --- Field
 --- Indicates if the viewer is using playing with better quality (`true`) or performance (`false).
 --- If we are `usingProxies` then it will always be `false`.
@@ -540,7 +363,7 @@ function Viewer.lazy.prop:betterQuality()
                     local itemKey = quality and "CPViewerViewBetterQuality" or "CPViewerViewBetterPerformance"
                     local itemValue = self:app().strings:find(itemKey)
                     if itemValue then
-                        self:viewMenu():selectItemMatching(itemValue)
+                        self.viewMenu:selectItemMatching(itemValue)
                     else
                         log.ef("Unable to find '%s' string in '%s'", itemValue, self:app():currentLocale())
                     end
@@ -553,37 +376,18 @@ function Viewer.lazy.prop:betterQuality()
     )
 end
 
---- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Provides the `axuielement` for the Format text.
-function Viewer.lazy.prop:formatUI()
-    return self.topToolbarUI:mutate(function(original)
-        return cache(self, "_format", function()
-            local ui = original()
-            return ui and childFromLeft(ui, id "Format")
-        end)
-    end)
-end
-
---- cp.apple.finalcutpro.main.Viewer.getFormat <cp.prop: string; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.getFormat <cp.prop: string; read-only>
 --- Field
 --- Provides the format text value, or `nil` if none is available.
 function Viewer.lazy.prop:format()
-    return self.formatUI:mutate(function(original)
-        local format = original()
-        return format and format:value()
-    end)
+    return self.infoBar.format
 end
 
---- cp.apple.finalcutpro.main.Viewer.framerate <cp.prop: number; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.framerate <cp.prop: number; read-only>
 --- Field
 --- Provides the framerate as a number, or nil if not available.
 function Viewer.lazy.prop:framerate()
-    return self.format:mutate(function(original)
-        local formatValue = original()
-        local framerate = formatValue and match(formatValue, ' %d%d%.?%d?%d?[pi]')
-        return framerate and tonumber(sub(framerate, 1,-2))
-    end)
+    return self.infoBar.framerate
 end
 
 -----------------------------------------------------------------------
@@ -592,14 +396,14 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Viewer.isMainViewer <cp.prop: boolean>
+--- cp.apple.finalcutpro.viewer.Viewer.isMainViewer <cp.prop: boolean>
 --- Field
 --- Returns `true` if this is the main Viewer.
 function Viewer.lazy.prop:isMainViewer()
     return self.isEventViewer:NOT()
 end
 
---- cp.apple.finalcutpro.main.Viewer.isEventViewer <cp.prop: boolean>
+--- cp.apple.finalcutpro.viewer.Viewer.isEventViewer <cp.prop: boolean>
 --- Field
 --- Returns `true` if this is the Event Viewer.
 function Viewer.lazy.prop:isEventViewer()
@@ -612,7 +416,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Viewer:currentWindow() -> PrimaryWindow | SecondaryWindow
+--- cp.apple.finalcutpro.viewer.Viewer:currentWindow() -> PrimaryWindow | SecondaryWindow
 --- Method
 --- Gets the current window object.
 ---
@@ -629,7 +433,7 @@ function Viewer:currentWindow()
     end
 end
 
---- cp.apple.finalcutpro.main.Viewer:showOnPrimary() -> self
+--- cp.apple.finalcutpro.viewer.Viewer:showOnPrimary() -> self
 --- Method
 --- Shows the Viewer on the Primary display.
 ---
@@ -659,7 +463,7 @@ function Viewer:showOnPrimary()
     return self
 end
 
---- cp.apple.finalcutpro.main.Viewer:doShowOnPrimary() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.viewer.Viewer:doShowOnPrimary() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that shows the Viewer on the Primary display.
 ---
@@ -685,7 +489,7 @@ function Viewer.lazy.method:doShowOnPrimary()
     ):Label("Viewer:doShowOnPrimary")
 end
 
---- cp.apple.finalcutpro.main.Viewer:showOnSecondary() -> self
+--- cp.apple.finalcutpro.viewer.Viewer:showOnSecondary() -> self
 --- Method
 --- Shows the Viewer on the Seconary display.
 ---
@@ -711,7 +515,7 @@ function Viewer:showOnSecondary()
     return self
 end
 
---- cp.apple.finalcutpro.main.Viewer:doShowOnSecondary() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.viewer.Viewer:doShowOnSecondary() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that shows the Viewer on the Secondary display.
 ---
@@ -737,7 +541,7 @@ function Viewer.lazy.method:doShowOnSecondary()
     )
 end
 
---- cp.apple.finalcutpro.main.Viewer:hide() -> self
+--- cp.apple.finalcutpro.viewer.Viewer:hide() -> self
 --- Method
 --- Hides the Viewer.
 ---
@@ -765,7 +569,7 @@ function Viewer:hide()
     return self
 end
 
---- cp.apple.finalcutpro.main.Viewer:doHide() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.viewer.Viewer:doHide() -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that hides the Viewer.
 ---
@@ -794,22 +598,20 @@ function Viewer.lazy.method:doHide()
     )
 end
 
---- cp.apple.finalcutpro.main.Viewer:playButton() -> Button
---- Method
---- Gets the Play Button object.
+--- cp.apple.finalcutpro.viewer.Viewer.playButton <cp.ui.Button>
+--- Field
+--- The Play [Button](cp.ui.Button.md) object.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * A Button
-function Viewer.lazy.method:playButton()
-    return Button(self, self.bottomToolbarUI:mutate(function(original)
-        return childFromLeft(childrenWithRole(original(), "AXButton"), 1)
-    end))
+function Viewer.lazy.value:playButton()
+    return self.controlBar.playButton
 end
 
---- cp.apple.finalcutpro.main.Viewer:notifier() -> cp.ui.notifier
+--- cp.apple.finalcutpro.viewer.Viewer:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
 ---

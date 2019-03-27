@@ -91,7 +91,7 @@ local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.timeline.Timeline")
-local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
+local Viewer									= require("cp.apple.finalcutpro.viewer.Viewer")
 
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
@@ -901,29 +901,29 @@ function fcp.lazy.method:timeline()
     return Timeline(self)
 end
 
---- cp.apple.finalcutpro:viewer() -> Viewer
---- Method
---- Returns the Viewer instance, whether it is in the primary or secondary window.
+--- cp.apple.finalcutpro.viewer <cp.apple.finalcutpro.viewer.Viewer>
+--- Field
+--- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * the Viewer
-function fcp.lazy.method:viewer()
+function fcp.lazy.value:viewer()
     return Viewer(self, false)
 end
 
---- cp.apple.finalcutpro:eventViewer() -> Event Viewer
---- Method
---- Returns the Event Viewer instance, whether it is in the primary or secondary window.
+--- cp.apple.finalcutpro.eventViewer <cp.apple.finalcutpro.viewer.Viewer>
+--- Field
+--- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * the Event Viewer
-function fcp.lazy.method:eventViewer()
+function fcp.lazy.value:eventViewer()
     return Viewer(self, true)
 end
 
