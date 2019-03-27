@@ -385,32 +385,32 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- Check UI elements
             ok(libraries:isShowing())
-            ok(libraries:toggleViewMode():isShowing())
-            ok(libraries:appearanceAndFiltering():isShowing())
+            ok(libraries.toggleViewMode.isShowing())
+            ok(libraries.appearanceAndFiltering:isShowing())
             ok(libraries:sidebar():isShowing())
 
             -- Check the search UI
-            ok(libraries:searchToggle():isShowing())
+            ok(libraries.searchToggle:isShowing())
             -- Show the search field if necessary
-            if not libraries:search():isShowing() or not libraries:filterToggle():isShowing() then
-                libraries:searchToggle():press()
+            if not libraries.search:isShowing() or not libraries.filterToggle:isShowing() then
+                libraries.searchToggle()
             end
 
-            ok(libraries:search():isShowing())
-            ok(libraries:filterToggle():isShowing())
+            ok(libraries.search:isShowing())
+            ok(libraries.filterToggle:isShowing())
             -- turn it back off
-            libraries:searchToggle():press()
-            ok(not libraries:search():isShowing())
-            ok(not libraries:filterToggle():isShowing())
+            libraries:searchToggle()
+            ok(not libraries.search:isShowing())
+            ok(not libraries.filterToggle:isShowing())
 
             -- Check that it hides
             libraries:hide()
             ok(not libraries:isShowing())
-            ok(not libraries:toggleViewMode():isShowing())
-            ok(not libraries:appearanceAndFiltering():isShowing())
-            ok(not libraries:searchToggle():isShowing())
-            ok(not libraries:search():isShowing())
-            ok(not libraries:filterToggle():isShowing())
+            ok(not libraries.toggleViewMode:isShowing())
+            ok(not libraries.appearanceAndFiltering:isShowing())
+            ok(not libraries.searchToggle:isShowing())
+            ok(not libraries.search:isShowing())
+            ok(not libraries.filterToggle:isShowing())
         end
     ),
     test(

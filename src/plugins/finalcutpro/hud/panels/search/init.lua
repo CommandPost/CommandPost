@@ -422,15 +422,15 @@ local function find(searchString, column, findNext, findPrevious)
         --------------------------------------------------------------------------------
         -- Ensure the Search Bar is visible
         --------------------------------------------------------------------------------
-        if not libraries:search():isShowing() then
-            libraries:searchToggle():press()
+        if not libraries.search:isShowing() then
+            libraries:searchToggle()
         end
 
         --------------------------------------------------------------------------------
         -- Search for the title
         --------------------------------------------------------------------------------
-        if libraries:search():value() ~= searchString then
-            libraries:search():setValue(searchString)
+        if libraries:search() ~= searchString then
+            libraries:search(searchString)
         end
     end
 

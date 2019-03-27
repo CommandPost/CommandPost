@@ -359,14 +359,14 @@ function mod.matchFrame(focus)
             --------------------------------------------------------------------------------
             -- Ensure the Search Bar is visible
             --------------------------------------------------------------------------------
-            if not libraries:search():isShowing() then
-                libraries:searchToggle():press()
+            if not libraries.search:isShowing() then
+                libraries:searchToggle()
             end
 
             --------------------------------------------------------------------------------
             -- Search for the title
             --------------------------------------------------------------------------------
-            libraries:search():setValue(clipName)
+            libraries:search(clipName)
         else
             log.ef("Unable to find the clip title.")
         end

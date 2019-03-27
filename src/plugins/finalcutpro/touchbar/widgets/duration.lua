@@ -97,9 +97,9 @@ function mod.widget()
             }
 
             if m == "mouseDown" or m == "mouseMove" then
-                fcp:libraries():appearanceAndFiltering():show():duration():setValue(x/(canvasWidth/11))
+                fcp.libraries.appearanceAndFiltering:show():duration():setValue(x/(canvasWidth/11))
             elseif m == "mouseUp" then
-                fcp:libraries():appearanceAndFiltering():hide()
+                fcp.libraries.appearanceAndFiltering:hide()
             end
     end)
 

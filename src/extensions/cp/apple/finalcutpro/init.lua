@@ -927,30 +927,24 @@ function fcp.lazy.value:eventViewer()
     return Viewer(self, true)
 end
 
---- cp.apple.finalcutpro:browser() -> Browser
---- Method
---- Returns the Browser instance, whether it is in the primary or secondary window.
+--- cp.apple.finalcutpro.browser <cp.apple.finalcutpro.main.Browser>
+--- Field
+--- The [Browser](cp.apple.finalcutpro.main.Browser.md) instance, whether it is in the primary or secondary window.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * the Browser
-function fcp.lazy.method:browser()
+function fcp.lazy.value:browser()
     return Browser(self)
 end
 
---- cp.apple.finalcutpro:libraries() -> LibrariesBrowser
---- Method
---- Returns the LibrariesBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the LibrariesBrowser
-function fcp.lazy.method:libraries()
-    return self:browser():libraries()
+--- cp.apple.finalcutpro.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
+--- Field
+--- Returns the [LibrariesBrowser](cp.apple.finalcut.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:libraries()
+    return self.browser.libraries
 end
 
 --- cp.apple.finalcutpro:media() -> MediaBrowser
@@ -963,7 +957,7 @@ end
 --- Returns:
 ---  * the MediaBrowser
 function fcp.lazy.method:media()
-    return self:browser():media()
+    return self.browser.media()
 end
 
 --- cp.apple.finalcutpro:generators() -> GeneratorsBrowser
@@ -976,7 +970,7 @@ end
 --- Returns:
 ---  * the GeneratorsBrowser
 function fcp.lazy.method:generators()
-    return self:browser():generators()
+    return self.browser.generators()
 end
 
 --- cp.apple.finalcutpro:effects() -> EffectsBrowser
@@ -1005,16 +999,10 @@ function fcp.lazy.method:transitions()
     return self:timeline():transitions()
 end
 
---- cp.apple.finalcutpro:inspector() -> Inspector
---- Method
---- Returns the Inspector instance from the primary window
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Inspector
-function fcp.lazy.method:inspector()
+--- cp.apple.finalcutpro.inspector <cp.apple.finalcutpro.inspector.Inspector>
+--- Field
+--- Returns the [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
+function fcp.lazy.value:inspector()
     return self:primaryWindow():inspector()
 end
 

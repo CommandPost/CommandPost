@@ -33,22 +33,23 @@ function plugin.init(deps)
     local id = 0x00140000
     local fcpGroup = deps.fcpGroup
     local group = fcpGroup:group(i18n("browser"))
+    local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
     -- Browser Duration:
     --------------------------------------------------------------------------------
     local hidePopup = delayed.new(0.5, function()
-        if fcp:libraries():appearanceAndFiltering():isShowing() then
-            fcp:libraries():appearanceAndFiltering():hide()
+        if appearanceAndFiltering:isShowing() then
+            appearanceAndFiltering:hide()
         end
     end)
 
-    local durations = fcp:libraries():appearanceAndFiltering().DURATION
+    local durations = appearanceAndFiltering.DURATION
     group:menu(id + 1)
         :name(i18n("duration"))
         :name9(i18n("duration"))
         :onGet(function()
-            local value = fcp:libraries():appearanceAndFiltering():duration():value()
+            local value = appearanceAndFiltering:duration():value()
             if value then
                 for t, n in pairs(durations) do
                     if value == n then
@@ -58,16 +59,16 @@ function plugin.init(deps)
             end
         end)
         :onNext(function()
-            fcp:libraries():appearanceAndFiltering():show():duration():increment()
+            appearanceAndFiltering:show():duration():increment()
             hidePopup:start()
         end)
         :onPrev(function()
-            fcp:libraries():appearanceAndFiltering():show():duration():decrement()
+            appearanceAndFiltering:show():duration():decrement()
             hidePopup:start()
         end)
         :onReset(function()
-            fcp:libraries():appearanceAndFiltering():show():duration():value(0)
-            fcp:libraries():appearanceAndFiltering():hide()
+            appearanceAndFiltering:show():duration():value(0)
+            appearanceAndFiltering:hide()
         end)
     id = id + 1
 
@@ -78,23 +79,23 @@ function plugin.init(deps)
         :name(i18n("height"))
         :name9(i18n("height"))
         :onGet(function()
-            local value = fcp:libraries():appearanceAndFiltering():clipHeight():value()
+            local value = appearanceAndFiltering:clipHeight():value()
             if value then
                 local rescaled = rescale(value, 32, 135, 1, 100)
                 return rescaled and tostring(rescaled) .. "%"
             end
         end)
         :onNext(function()
-            fcp:libraries():appearanceAndFiltering():show():clipHeight():increment()
+            appearanceAndFiltering:show():clipHeight():increment()
             hidePopup:start()
         end)
         :onPrev(function()
-            fcp:libraries():appearanceAndFiltering():show():clipHeight():decrement()
+            appearanceAndFiltering:show():clipHeight():decrement()
             hidePopup:start()
         end)
         :onReset(function()
-            fcp:libraries():appearanceAndFiltering():show():clipHeight():value(0)
-            fcp:libraries():appearanceAndFiltering():hide()
+            appearanceAndFiltering:show():clipHeight():value(0)
+            appearanceAndFiltering:hide()
         end)
 
 end
