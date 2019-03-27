@@ -97,18 +97,19 @@ function axutils.childInColumn(element, role, startIndex, childIndex)
     return axutils.childrenInColumn(element, role, startIndex, childIndex)
 end
 
---- cp.ui.axutils.children(element) -> table | nil
+--- cp.ui.axutils.children(element[, compareFn]) -> table | nil
 --- Function
 --- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
 --- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
 --- that will get called. Otherwise, the element is returned.
 ---
 --- Parameters:
----  * element   - The element to retrieve the children of.
+---  * element      - The element to retrieve the children of.
+---  * compareFn    - Optional function to use to sort the order of the returned children.
 ---
 --- Returns:
 ---  * the children table, or `nil`.
-function axutils.children(element)
+function axutils.children(element, compareFn)
     local children = element
     --------------------------------------------------------------------------------
     -- Try to get the children array directly, if present, to optimise the loop.
@@ -123,6 +124,10 @@ function axutils.children(element)
         children = element:attributeValue("AXChildren") or element
     elseif element and is.callable(element.children) then
         children = element:children()
+    end
+
+    if children and compareFn then
+        sort(children, compareFn)
     end
     return children
 end

@@ -12,10 +12,6 @@ return {
     LibrariesList = {
         Player								= 1,
     },
-    Viewer = {
-        Title								= 3,
-        Format								= 1,
-    },
     ImportPanel = {
         ID									= 4,
         CreateProxyMedia					= 5,

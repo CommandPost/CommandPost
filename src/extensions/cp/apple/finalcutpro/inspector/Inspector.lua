@@ -523,16 +523,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:video() -> VideoInspector
---- Method
---- Gets the VideoInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorInspector
-function Inspector.lazy.method:video()
+--- cp.apple.finalcutpro.inspector.Inspector.video <cp.apple.finalcutpro.inspector.VideoInspector>
+--- Field
+--- The [VideoInspector](cp.apple.finalcutpro.inspector.VideoInspector.md).
+function Inspector.lazy.value:video()
     return VideoInspector(self)
 end
 
@@ -542,16 +536,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:generator() -> GeneratorInspector
---- Method
---- Gets the GeneratorInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * GeneratorInspector
-function Inspector.lazy.method:generator()
+--- cp.apple.finalcutpro.inspector.Inspector.generator <cp.apple.finalcutpro.inspector.GeneratorInspector>
+--- Field
+--- The [GeneratorInspector](package.GeneratorInspector.md)
+function Inspector.lazy.value:generator()
     return GeneratorInspector(self)
 end
 
@@ -561,16 +549,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:info() -> InfoInspector
---- Method
---- Gets the InfoInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * InfoInspector
-function Inspector.lazy.method:info()
+--- cp.apple.finalcutpro.inspector.Inspector.info <cp.apple.finalcutpro.inspector.InfoInspector>
+--- Field
+--- The  [InfoInspector](cp.apple.finalcutpro.inspector.InfoInspector.md).
+function Inspector.lazy.value:info()
     return InfoInspector(self)
 end
 
@@ -580,16 +562,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:text() -> TextInspector
---- Method
---- Gets the TextInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * TextInspector
-function Inspector.lazy.method:text()
+--- cp.apple.finalcutpro.inspector.Inspector.text <cp.apple.finalcutpro.inspector.TextInspector
+--- Field
+--- The [TextzInspector](cp.apple.finalcutpro.inspector.TextzInspector.md).
+function Inspector.lazy.value:text()
     return TextInspector(self)
 end
 
@@ -599,16 +575,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:title() -> TitleInspector
---- Method
---- Gets the TitleInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * TitleInspector
-function Inspector.lazy.method:title()
+--- cp.apple.finalcutpro.inspector.Inspector.title <cp.apple.finalcutpro.inspector.TitleInspector>
+--- Field
+--- The [TitleInspector](cp.apple.finalcutpro.inspector.TitleInspector.md).
+function Inspector.lazy.value:title()
     return TitleInspector(self)
 end
 
@@ -618,16 +588,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:transition() -> TransitionInspector
---- Method
---- Gets the TransitionInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * TransitionInspector
-function Inspector.lazy.method:transition()
+--- cp.apple.finalcutpro.inspector.Inspector.transition <cp.apple.finalcutpro.inspector.TransitionInspector>
+--- Field
+--- The [TransitionInspector](cp.apple.finalcutpro.inspector.TransitionInspector.md).
+function Inspector.lazy.value:transition()
     return TransitionInspector(self)
 end
 
@@ -637,16 +601,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:audio() -> AudioInspector
---- Method
---- Gets the AudioInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * AudioInspector
-function Inspector.lazy.method:audio()
+--- cp.apple.finalcutpro.inspector.Inspector.audio <cp.apple.finalcutpro.inspector.AudioInspector>
+--- Field
+--- The [AudioInspector](cp.apple.finalcutpro.inspector.AudioInspector.md).
+function Inspector.lazy.value:audio()
     return AudioInspector(self)
 end
 
@@ -656,17 +614,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:share() -> ShareInspector
---- Method
---- Gets the ShareInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ShareInspector
-function Inspector.lazy.method:share()
-    return ShareInspector.new(self)
+--- cp.apple.finalcutpro.inspector.Inspector.share <cp.apple.finalcutpro.inspector.ShareInspector>
+--- Field
+--- The [ShareInspector](cp.apple.finalcutpro.inspector.ShareInspector.md).
+function Inspector.lazy.value:share()
+    return ShareInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -675,16 +627,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.Inspector:color() -> ColorInspector
---- Method
---- Gets the ColorInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorInspector
-function Inspector.lazy.method:color()
+--- cp.apple.finalcutpro.inspector.Inspector.color <cp.apple.finalcutpro.inspector.ColorInspector>
+--- Field
+--- The [ColorInspector](cp.apple.finalcutpro.inspector.ColorInspector.md).
+function Inspector.lazy.value:color()
     return ColorInspector(self)
 end
 

@@ -29,7 +29,7 @@ function plugin.init(deps)
     -- Setup Commands:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
-    local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
+    local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
     for id, value in pairs(appearanceAndFiltering.DURATION) do
         fcpxCmds
             :add("setDuration" .. id)

@@ -36,7 +36,7 @@ local function shiftClipHeight(direction)
     --------------------------------------------------------------------------------
     -- Find the Timeline Appearance Button:
     --------------------------------------------------------------------------------
-    local appearance = fcp:libraries():appearanceAndFiltering()
+    local appearance = fcp.libraries.appearanceAndFiltering
     if appearance then
         appearance:show()
         if direction == "up" then
@@ -61,7 +61,7 @@ end
 --  * None
 local function changeBrowserDurationRelease()
     mod.changeBrowserDurationAlreadyInProgress = false
-    fcp:libraries():appearanceAndFiltering():hide()
+    fcp.libraries.appearanceAndFiltering:hide()
 end
 
 --- plugins.finalcutpro.browser.duration.changeBrowserDuration(direction) -> none

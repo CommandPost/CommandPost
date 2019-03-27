@@ -158,7 +158,7 @@ end
 ---  * `LibrariesList` object
 function LibrariesList:show()
     if not self:isShowing() and self:parent():show():isShowing() then
-        self:parent():toggleViewMode():press()
+        self:parent():toggleViewMode()
     end
 end
 

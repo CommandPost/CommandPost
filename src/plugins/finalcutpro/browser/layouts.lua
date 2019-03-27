@@ -48,7 +48,6 @@ local i18n              = require("cp.i18n")
 local just              = require("cp.just")
 local tools	            = require("cp.tools")
 
-local tableContains     = tools.tableContains
 local tableCount        = tools.tableCount
 local tableMatch        = tools.tableMatch
 
@@ -190,7 +189,7 @@ end
 function mod.restoreLayoutFromTable(layout)
 
     local libraries = fcp:libraries()
-    local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
+    local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
     -- Show Libraries:
@@ -439,8 +438,8 @@ end
 ---  * A table containing the layout settings if successful otherwise `false`.
 function mod.saveLayoutToTable()
 
-    local libraries = fcp:libraries()
-    local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
+    local libraries = fcp.libraries
+    local appearanceAndFiltering = libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
     -- Show Libraries:

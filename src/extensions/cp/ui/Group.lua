@@ -2,9 +2,11 @@
 ---
 --- UI Group.
 
-local require = require
+local require   = require
 
-local Element = require("cp.ui.Element")
+-- local log       = require "hs.logger" .new "Group"
+
+local Element   = require "cp.ui.Element"
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,20 @@ function Group.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.ui.Group(parent, uiFinder) -> Alert
+--- cp.ui.Group.contents(element) -> axuielement
+--- Function
+--- Returns the `AXContents` of the element, if it is an `AXGroup`.
+---
+--- Parameters:
+---  * element  - The `axuielement` to check.
+---
+--- Returns:
+---  * The list of `axuielements` for the `AXContents` of the `AXGroup`, or `nil`.
+function Group.static.contents(element)
+    return Group.matches(element) and element:attributeValue("AXContents")
+end
+
+--- cp.ui.Group(parent, uiFinder[, contentsClass]) -> Alert
 --- Constructor
 --- Creates a new `Group` instance.
 ---
@@ -36,5 +51,8 @@ end
 ---
 --- Returns:
 ---  * A new `Group` object.
+function Group:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
 return Group
