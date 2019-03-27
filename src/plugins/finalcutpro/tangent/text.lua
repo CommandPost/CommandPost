@@ -467,23 +467,102 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Width:
             --------------------------------------------------------------------------------
-            sliderParameter(outlineGroup, outline:width(), id, 0, 15, 0.1, 1, "width")
+            id = sliderParameter(outlineGroup, outline:width(), id, 0, 15, 0.1, 1, "width")
 
         --------------------------------------------------------------------------------
         --
         -- GLOW:
         --
         --------------------------------------------------------------------------------
+        local glow                      = text:glow()
+        local glowGroup                 = textGroup:group(i18n("glow"))
 
-        -- TODO: Finish this.
+            --------------------------------------------------------------------------------
+            -- Enable/Disable:
+            --------------------------------------------------------------------------------
+            id = checkboxParameter(glowGroup, glow.enabled, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(glowGroup, glow.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
+            -- Color:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
+            --       let's reserve some IDs just in case.
+            id = id + 10
+
+            --------------------------------------------------------------------------------
+            -- Opacity:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(glowGroup, glow:opacity(), id, 0, 100, 0.1, 100, "opacity")
+
+            --------------------------------------------------------------------------------
+            -- Blur:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(glowGroup, glow:blur(), id, 0, 10, 0.1, 1, "blur")
+
+            --------------------------------------------------------------------------------
+            -- Radius:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(glowGroup, glow:radius(), id, 0, 100, 0.1, 0, "radius")
 
         --------------------------------------------------------------------------------
         --
         -- TEXT DROP SHADOW:
         --
         --------------------------------------------------------------------------------
+        local dropShadow                = text:dropShadow()
+        local dropShadowGroup           = textGroup:group(i18n("dropShadow"))
 
-        -- TODO: Finish this.
+            --------------------------------------------------------------------------------
+            -- Enable/Disable:
+            --------------------------------------------------------------------------------
+            id = checkboxParameter(dropShadowGroup, dropShadow.enabled, id, "toggle")
+
+            --------------------------------------------------------------------------------
+            -- Reset:
+            --------------------------------------------------------------------------------
+            id = ninjaButtonParameter(dropShadowGroup, dropShadow.reset, id, "reset")
+
+            --------------------------------------------------------------------------------
+            -- Fill with:
+            --------------------------------------------------------------------------------
+            id = dynamicPopupSliderParameter(dropShadowGroup, dropShadow:fillWith().value, id, "fillWith" , fcp:string("Text Color Source Enum"):split(";")[1])
+
+            local dropShadowFillWithGroup = dropShadowGroup:group(i18n("fillWith"))
+            id = popupParameter(dropShadowFillWithGroup, dropShadow:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[1], i18n("color"))
+            id = popupParameter(dropShadowFillWithGroup, dropShadow:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[2], i18n("gradient"))
+            id = popupParameter(dropShadowFillWithGroup, dropShadow:fillWith().value, id, fcp:string("Text Color Source Enum"):split(";")[3], i18n("texture"))
+
+            --------------------------------------------------------------------------------
+            -- Color:
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
+            --       let's reserve some IDs just in case.
+            id = id + 10
+
+            --------------------------------------------------------------------------------
+            -- Opacity:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(dropShadowGroup, dropShadow:opacity(), id, 0, 100, 0.1, 100, "opacity")
+
+            --------------------------------------------------------------------------------
+            -- Blur:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(dropShadowGroup, dropShadow:blur(), id, 0, 10, 0.1, 0, "blur")
+
+            --------------------------------------------------------------------------------
+            -- Distance:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(dropShadowGroup, dropShadow:distance(), id, 0, 100, 0.1, 5, "distance")
+
+            --------------------------------------------------------------------------------
+            -- Angle:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(dropShadowGroup, dropShadow:angle(), id, -5000, 5000, 0.1, 315, "angle")
 
 end
 

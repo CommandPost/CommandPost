@@ -165,7 +165,7 @@ function PopUpButton:doSelectValue(value)
     :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         for _,item in ipairs(menuUI) do
-            if item:title() == value then
+            if item:title() == value and item:enabled() then
                 item:doPress()
                 return true
             end

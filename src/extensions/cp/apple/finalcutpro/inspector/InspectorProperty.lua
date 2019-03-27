@@ -11,8 +11,13 @@ local require = require
 
 --local log                   = require("hs.logger").new("InspectorProperty")
 
+--local geometry              = require("hs.geometry")
+--local mouse                 = require("hs.mouse")
+
 local is                    = require("cp.is")
+local just                  = require("cp.just")
 local prop                  = require("cp.prop")
+local tools                 = require("cp.tools")
 
 local axutils               = require("cp.ui.axutils")
 local Button                = require("cp.ui.Button")
@@ -25,8 +30,13 @@ local TextField             = require("cp.ui.TextField")
 
 local Do                    = require("cp.rx.go.Do")
 
-local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
-local childrenMatching              = axutils.childrenMatching
+--local ax                    = require("hs._asm.axuielement")
+
+local childFromLeft         = axutils.childFromLeft
+local childFromRight        = axutils.childFromRight
+local childrenMatching      = axutils.childrenMatching
+--local ninjaMouseClick       = tools.ninjaMouseClick
+--local wait                  = just.wait
 
 --------------------------------------------------------------------------------
 --
@@ -93,7 +103,7 @@ local function propDoHide(self)
         self.section:expanded(false)
     end)
     :ThenYield()
-    :Label("ProeprtyRow:doHide")
+    :Label("PropertyRow:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.InspectorProperty.section(labelKey[, index]) -> function
@@ -155,11 +165,46 @@ function mod.section(labelKey, index)
             row.reset       = Button(row, function() return childFromRight(row:children(), 1, Button.matches) end)
             row.expanded    = prop(
                 function(theRow)
+
+                    --[[
+                    local result = false
+                    local resetButton = theRow.reset
+                    local resetButtonUI = resetButton and resetButton:UI()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+                    if resetButtonFrame then
+                        resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w
+                        local center = geometry(resetButtonFrame).center
+                        tools.ninjaMouseAction(center, function()
+                            wait(0.1)
+                            local element = ax.systemElementAtPosition(mouse.getAbsolutePosition())
+                            if element and element:attributeValue("AXRole") == "AXCheckBox" then
+                                local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
+                                result = element:title() == iHide
+                            end
+                        end)
+                    end
+                    return result
+                    --]]
+
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
                     return theRow.toggle:title() == iHide
                 end,
                 function(newValue, theRow, theProp)
+
                     local currentValue = theProp:get()
+
+                    --[[
+                    local resetButton = theRow.reset
+                    local resetButtonUI = resetButton and resetButton:UI()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+
+                    if resetButtonFrame and newValue ~= currentValue then
+                        resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w
+                        local center = geometry(resetButtonFrame).center
+                        ninjaMouseClick(center)
+                    end
+                    --]]
+
                     if newValue ~= currentValue then
                         theRow.toggle:press()
                     end

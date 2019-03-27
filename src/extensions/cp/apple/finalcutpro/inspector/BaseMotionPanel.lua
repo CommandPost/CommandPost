@@ -7,7 +7,7 @@
 
 local require = require
 
-local log								= require("hs.logger").new("bseMtnPnl")
+--local log								= require("hs.logger").new("bseMtnPnl")
 
 local axutils							= require("cp.ui.axutils")
 
@@ -80,7 +80,6 @@ function BaseMotionPanel.lazy.prop:contentUI()
         return cache(self, "_content",
             function()
                 local ui = findContentUI(original())
-                log.df("BaseMotionPanel:contentUI: %s", hs.inspect(ui))
                 return ui
             end,
             function(element) return withRole(element, "AXScrollArea") ~= nil end
