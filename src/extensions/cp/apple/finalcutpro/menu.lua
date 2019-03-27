@@ -45,6 +45,8 @@ local missingMenuMap = {
     { path = {"Clip"},                          child = "Open in Angle Editor",     key = "FFOpenInAngleEditor" },
     { path = {"Window", "Show in Workspace"},   child = "Sidebar",                  key = "PEEventsLibrary" },
     { path = {"Window", "Show in Workspace"},   child = "Timeline",                 key = "PETimeline" },
+    { path = {"Window", "Show in Workspace"},   child = "Event Viewer",             key = "PEEventViewer" },
+    { path = {"Window", "Show in Workspace"},   child = "Timeline Index",           key = "PEDataList" },
 }
 
 menu:addMenuFinder(function(parentItem, path, childName)
