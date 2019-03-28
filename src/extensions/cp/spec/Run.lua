@@ -7,7 +7,6 @@ local timer                     = require "hs.timer"
 local Handled                   = require "cp.spec.Handled"
 local Message                   = require "cp.spec.Message"
 local Report                    = require "cp.spec.Report"
-local interpolate               = require "i18n.interpolate"
 
 local format                    = string.format
 local insert                    = table.insert
