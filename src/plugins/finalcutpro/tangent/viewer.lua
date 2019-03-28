@@ -94,7 +94,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Event Viewer Zoom (Knob):
         --------------------------------------------------------------------------------
-        id = dynamicPopupSliderParameter(eventViewerGroup, eventViewerInfoBar.zoomMenu, id, "zoom", fcp:string("PEViewerZoomFit"))
+        dynamicPopupSliderParameter(eventViewerGroup, eventViewerInfoBar.zoomMenu, id, "zoom", fcp:string("PEViewerZoomFit"))
 
 end
 
