@@ -33,8 +33,10 @@ function plugin.init(deps)
     local common                        = deps.common
     local fcpGroup                      = deps.fcpGroup
 
+    local buttonParameter               = common.buttonParameter
     local checkboxParameter             = common.checkboxParameter
     local checkboxSliderParameter       = common.checkboxSliderParameter
+    local doShowParameter               = common.doShowParameter
     local dynamicPopupSliderParameter   = common.dynamicPopupSliderParameter
     local ninjaButtonParameter          = common.ninjaButtonParameter
     local popupParameter                = common.popupParameter
@@ -43,14 +45,51 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- TEXT INSPECTOR:
     --------------------------------------------------------------------------------
-    local text                          = fcp:inspector():text()
-    local textGroup                     = fcpGroup:group(i18n("text") .. " " .. i18n("inspector"))
+    local text = fcp:inspector():text()
+    local textGroup = fcpGroup:group(i18n("text") .. " " .. i18n("inspector"))
+
+        --------------------------------------------------------------------------------
+        -- Show Inspector:
+        --------------------------------------------------------------------------------
+        id = doShowParameter(textGroup, text, id, i18n("show") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
         --
-        -- FONT STYLES:
+        -- PRESETS:
         --
         --------------------------------------------------------------------------------
+        local presetsGroup = textGroup:group(i18n("presets"))
+
+            --------------------------------------------------------------------------------
+            -- Save Format Attributes:
+            --------------------------------------------------------------------------------
+            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save Format"), i18n("saveFormatAttributes"))
+
+            --------------------------------------------------------------------------------
+            -- Save Appearance Attributes:
+            --------------------------------------------------------------------------------
+            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save Style"), i18n("saveAppearanceAttributes"))
+
+            --------------------------------------------------------------------------------
+            -- Save All Format and Appearance Attributes:
+            --------------------------------------------------------------------------------
+            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save All"), i18n("saveAllFormatAndAppearanceAttributes"))
+
+            --------------------------------------------------------------------------------
+            -- 2D Styles:
+            --
+            -- Currently none of these menu items have AXTitles, so there's not much
+            -- we can do here. Reserving some IDs just in case.
+            --------------------------------------------------------------------------------
+            id = id + 10
+
+            --------------------------------------------------------------------------------
+            -- 3D Styles:
+            --
+            -- Currently none of these menu items have AXTitles, so there's not much
+            -- we can do here. Reserving some IDs just in case.
+            --------------------------------------------------------------------------------
+            id = id + 10
 
         --------------------------------------------------------------------------------
         --
@@ -215,9 +254,16 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Depth Direction:
             --------------------------------------------------------------------------------
-            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:depthDirection().value, id, "depthDirection" , fcp:string("Bevel Properties Extrude Direction Enum"):split(";")[3])
+            local depthDirections = fcp:string("Bevel Properties Extrude Direction Enum"):split(";")
+            local depthDirectionsGroup = threeDeeTextGroup:group(i18n("depthDirection"))
 
-            -- TODO: Add individual buttons for all parameters.
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:depthDirection().value, id, "depthDirection" , depthDirections[3])
+
+            for i, v in pairs(depthDirections) do
+                if v ~= "-" then
+                    id = popupParameter(depthDirectionsGroup, threeDeeText:depthDirection().value, id, v, v)
+                end
+            end
 
             --------------------------------------------------------------------------------
             -- Weight:
@@ -227,9 +273,16 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Front Edge:
             --------------------------------------------------------------------------------
-            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:frontEdge().value, id, "frontEdge" , fcp:string("Bevel Properties Front Profile Enum"):split(";")[3])
+            local frontEdges = fcp:string("Bevel Properties Front Profile Enum"):split(";")
+            local frontEdgesGroup = threeDeeTextGroup:group(i18n("frontEdge"))
 
-            -- TODO: Add individual buttons for all parameters.
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:frontEdge().value, id, "frontEdge" , frontEdges[3])
+
+            for i, v in pairs(frontEdges) do
+                if v ~= "-" then
+                    id = popupParameter(frontEdgesGroup, threeDeeText:frontEdge().value, id, v, v)
+                end
+            end
 
             --------------------------------------------------------------------------------
             -- Front Edge Size:
@@ -241,16 +294,37 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Back Edge:
             --------------------------------------------------------------------------------
-            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:backEdge().value, id, "backEdge" , fcp:string("Bevel Properties Back Profile Enum"):split(";")[1])
+            local backEdges = fcp:string("Bevel Properties Back Profile Enum"):split(";")
+            local backEdgesGroup = threeDeeTextGroup:group(i18n("backEdge"))
 
-            -- TODO: Add individual buttons for all parameters.
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:backEdge().value, id, "backEdge" , backEdges[1])
+
+            for i, v in pairs(backEdges) do
+                if v ~= "-" then
+                    id = popupParameter(backEdgesGroup, threeDeeText:backEdge().value, id, v, v)
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Back Edge Size:
+            --------------------------------------------------------------------------------
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:backEdgeSize().master, id, 0, 10, 0.1, 4, "backEdgeSize", threeDeeText:backEdgeSize().width, threeDeeText:backEdgeSize().depth)
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:backEdgeSize().width, id, 0, 10, 0.1, 4, "backEdgeSizeWidth")
+            id = sliderParameter(threeDeeTextGroup, threeDeeText:backEdgeSize().depth, id, 0, 10, 0.1, 4, "backEdgeSizeDepth")
 
             --------------------------------------------------------------------------------
             -- Inside Corners:
             --------------------------------------------------------------------------------
-            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:insideCorners().value, id, "insideCorners" , fcp:string("Bevel Properties Corner Style Enum"):split(";")[1])
+            local insideCorners = fcp:string("Bevel Properties Corner Style Enum"):split(";")
+            local insideCornersGroup = threeDeeTextGroup:group(i18n("insideCorners"))
 
-            -- TODO: Add individual buttons for all parameters.
+            id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:insideCorners().value, id, "insideCorners" , insideCorners[1])
+
+            for i, v in pairs(insideCorners) do
+                if v ~= "-" then
+                    id = popupParameter(insideCornersGroup, threeDeeText:insideCorners().value, id, v, v)
+                end
+            end
 
             --------------------------------------------------------------------------------
             -- LIGHTING:
@@ -266,9 +340,16 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 -- Lighting Style:
                 --------------------------------------------------------------------------------
-                id = dynamicPopupSliderParameter(lightingGroup, lighting:lightingStyle().value, id, "lightingStyle" , fcp:string("Bevel Properties Lighting Style Enum"):split(";")[2])
+                local lightingStyles = fcp:string("Bevel Properties Lighting Style Enum"):split(";")
+                local lightingStyleGroup = lightingGroup:group(i18n("lightingStyle"))
 
-                -- TODO: Add individual buttons for all parameters.
+                id = dynamicPopupSliderParameter(lightingGroup, lighting:lightingStyle().value, id, "lightingStyle" , lightingStyles[2])
+
+                for i, v in pairs(lightingStyles) do
+                    if v ~= "-" then
+                        id = popupParameter(lightingStyleGroup, lighting:lightingStyle().value, id, v, v)
+                    end
+                end
 
                 --------------------------------------------------------------------------------
                 -- Intensity:
@@ -310,9 +391,16 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Type:
                     --------------------------------------------------------------------------------
-                    id = dynamicPopupSliderParameter(environmentGroup, environment:type().value, id, "type" , fcp:string("Material Environment Map Selection Enum"):split(";")[4])
+                    local environmentTypes = fcp:string("Material Environment Map Selection Enum"):split(";")
+                    local environmentTypeGroup = environmentGroup:group(i18n("type"))
 
-                    -- TODO: Add individual buttons for all parameters.
+                    id = dynamicPopupSliderParameter(environmentGroup, environment:type().value, id, "type" , environmentTypes[4])
+
+                    for i, v in pairs(environmentTypes) do
+                        if v ~= "-" then
+                            id = popupParameter(environmentTypeGroup, environment:type().value, id, v, v)
+                        end
+                    end
 
                     --------------------------------------------------------------------------------
                     -- Intensity:
@@ -356,9 +444,11 @@ function plugin.init(deps)
         -- MATERIAL:
         --
         --------------------------------------------------------------------------------
-        -- TODO: Add Material section once added to the FCPX API.
-        -- Reserving 20 IDs just in case
-        id = id + 20
+
+            --------------------------------------------------------------------------------
+            -- TODO: Add Material section once it's added to the FCPX API.
+            --------------------------------------------------------------------------------
+            id = id + 20
 
         --------------------------------------------------------------------------------
         --
@@ -390,16 +480,18 @@ function plugin.init(deps)
 
             --------------------------------------------------------------------------------
             -- Color:
+            --
+            -- I'm not sure there's any use having a Tangent Control for colour,
+            -- but let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
-            --       let's reserve some IDs just in case.
             id = id + 10
 
             --------------------------------------------------------------------------------
             -- Gradient:
+            --
+            -- I'm not sure there's any use having a Tangent Controls for gradients,
+            -- but let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Controls for gradients, but
-            --       let's reserve some IDs just in case.
             id = id + 20
 
             --------------------------------------------------------------------------------
@@ -442,16 +534,18 @@ function plugin.init(deps)
 
             --------------------------------------------------------------------------------
             -- Color:
+            --
+            -- I'm not sure there's any use having a Tangent Control for colour,
+            -- but let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
-            --       let's reserve some IDs just in case.
             id = id + 10
 
             --------------------------------------------------------------------------------
             -- Gradient:
+            --
+            -- I'm not sure there's any use having a Tangent Controls for gradients,
+            -- but let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Controls for gradients, but
-            --       let's reserve some IDs just in case.
             id = id + 20
 
             --------------------------------------------------------------------------------
@@ -489,9 +583,10 @@ function plugin.init(deps)
 
             --------------------------------------------------------------------------------
             -- Color:
+            --
+            -- I'm not sure there's any use having a Tangent Control for colour,
+            -- but let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
-            --       let's reserve some IDs just in case.
             id = id + 10
 
             --------------------------------------------------------------------------------
@@ -539,9 +634,10 @@ function plugin.init(deps)
 
             --------------------------------------------------------------------------------
             -- Color:
+            --
+            -- I'm not sure there's any use having a Tangent Control for colour, but
+            -- let's reserve some IDs just in case.
             --------------------------------------------------------------------------------
-            -- TODO: I'm not sure there's any use having a Tangent Control for colour, but
-            --       let's reserve some IDs just in case.
             id = id + 10
 
             --------------------------------------------------------------------------------
@@ -562,7 +658,18 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Angle:
             --------------------------------------------------------------------------------
-            sliderParameter(dropShadowGroup, dropShadow:angle(), id, -5000, 5000, 0.1, 315, "angle")
+            id = sliderParameter(dropShadowGroup, dropShadow:angle(), id, -5000, 5000, 0.1, 315, "angle")
+
+        --------------------------------------------------------------------------------
+        --
+        -- TEXT LAYER BUTTONS:
+        --
+        --------------------------------------------------------------------------------
+        local textLayerGroup = textGroup:group(i18n("textLayer"))
+
+        id = buttonParameter(textLayerGroup, text:textLayerLeft(), id, "leftTextLayer")
+        id = buttonParameter(textLayerGroup, text:textLayerRight(), id, "rightTextLayer")
+        buttonParameter(textLayerGroup, text:deselectAll(), id, "deselectAll")
 
 end
 

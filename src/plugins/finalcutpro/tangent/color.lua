@@ -40,6 +40,7 @@ function plugin.init(deps)
     local common = deps.common
 
     local doShortcut = common.doShortcut
+    local doShowParameter = common.doShowParameter
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
@@ -513,6 +514,14 @@ function plugin.init(deps)
 
     cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
         :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
+
+    cbGroup:action(wheelsBaseID+0x0132, i18n("resetSelectedControl"))
+        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
+
+    --------------------------------------------------------------------------------
+    -- Show Inspector:
+    --------------------------------------------------------------------------------
+    doShowParameter(ciGroup, ci, wheelsBaseID+0x0132, i18n("show") .. " " .. i18n("inspector"))
 
 end
 

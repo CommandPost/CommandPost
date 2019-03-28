@@ -309,6 +309,21 @@ function axutils.withValue(element, value)
     return axutils.withAttributeValue(element, "AXValue", value)
 end
 
+--- cp.ui.axutils.withTitle(element, title) -> hs._asm.axuielement | nil
+--- Function
+--- Checks if the element has an "AXTitle" attribute with the specified `title`.
+--- If so, the element is returned, otherwise `nil`.
+---
+--- Parameters:
+---  * element       - The element to check
+---  * title         - The required title
+---
+--- Returns:
+---  * The `axuielement` if it matches, otherwise `nil`.
+function axutils.withTitle(element, title)
+    return axutils.withAttributeValue(element, "AXTitle", title)
+end
+
 --- cp.ui.axutils.childWith(element, name, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has an attribute with the matching name and value.
@@ -352,6 +367,20 @@ function axutils.childWithRole(element, value)
     return axutils.childWith(element, "AXRole", value)
 end
 
+--- cp.ui.axutils.childWithTitle(element, value) -> axuielement
+--- Function
+--- This searches for the first child of the specified element which has `AXTitle` with the specified value.
+---
+--- Parameters:
+---  * element	- the axuielement
+---  * value	- the value
+---
+--- Returns:
+---  * The first matching child, or `nil` if none was found
+function axutils.childWithTitle(element, value)
+    return axutils.childWith(element, "AXTitle", value)
+end
+
 --- cp.ui.axutils.childWithDescription(element, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has `AXDescription` with the specified value.
@@ -379,6 +408,7 @@ end
 --- Returns:
 ---  * The first matching child, or nil if none was found
 function axutils.childMatching(element, matcherFn, index)
+    assert(type(matcherFn) == "function", "The matcherFn must be a function.")
     index = index or 1
     if element then
         local children = axutils.children(element)

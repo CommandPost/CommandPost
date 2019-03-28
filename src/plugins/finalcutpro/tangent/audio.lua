@@ -36,6 +36,7 @@ function plugin.init(deps)
     local buttonParameter               = common.buttonParameter
     local checkboxParameter             = common.checkboxParameter
     local checkboxParameterByIndex      = common.checkboxParameterByIndex
+    local doShowParameter               = common.doShowParameter
     local ninjaButtonParameter          = common.ninjaButtonParameter
     local popupParameters               = common.popupParameters
     local popupSliderParameter          = common.popupSliderParameter
@@ -51,6 +52,11 @@ function plugin.init(deps)
 
     local PAN_MODES                     = audio.PAN_MODES
     local EQ_MODES                      = audio.EQ_MODES
+
+        --------------------------------------------------------------------------------
+        -- Show Inspector:
+        --------------------------------------------------------------------------------
+        id = doShowParameter(audioGroup, audio, id, i18n("show") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
         --

@@ -77,10 +77,7 @@ end
 ---  * id - The Tangent ID.
 ---  * label - The label to be used by the Tangent. This can either be an i18n ID or
 ---            a plain string.
----  * options - A table of options. The key for each option should be a number ID
----              (in the order it appears in the UI), and the value should be another
----              table with keys for `flexoID` and `i18n` values.
----  * resetIndex - An index of which item to use when "reset" is triggered.
+---  * defaultValue - The default value to use when the reset button is pressed.
 ---
 --- Returns:
 ---  * An updated ID
@@ -226,31 +223,38 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             end
         end)
         :onNext(function()
-            param:show()
+            param:show() -- NOTE: I tried using a `doShow()` here, but it was causing a timing issue.
             local currentValue = param:value()
             local currentValueID = popupSliderCache or (currentValue and loopupID(currentValue))
+            if type(currentValueID) ~= "number" then
+                return
+            end
             local newID = currentValueID and currentValueID + 1
-            if newID == maxValue then newID = 1 end
+            if newID > maxValue then newID = 1 end
 
             --------------------------------------------------------------------------------
             -- TODO: This is a horrible temporary workaround for menu non-enabled items.
             -- It should probably be some kind of loop.
             --------------------------------------------------------------------------------
-            if options[newID].flexoID == nil then
+            if options[newID] and options[newID].flexoID == nil then
                 newID = newID + 1
             end
-            if options[newID].flexoID == nil then
+            if options[newID] and options[newID].flexoID == nil then
                 newID = newID + 1
             end
+            if newID > maxValue then newID = 1 end
             --------------------------------------------------------------------------------
 
             popupSliderCache = newID
             updateUI:start()
         end)
         :onPrev(function()
-            param:show()
+            param:show() -- NOTE: I tried using a `doShow()` here, but it was causing a timing issue.
             local currentValue = param:value()
             local currentValueID = popupSliderCache or (currentValue and loopupID(currentValue))
+            if type(currentValueID) ~= "number" then
+                return
+            end
             local newID = currentValueID and currentValueID - 1
             if newID == 0 then newID = maxValue - 1 end
 
@@ -258,10 +262,10 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             -- TODO: This is a horrible temporary workaround for menu non-enabled items.
             -- It should probably be some kind of loop.
             --------------------------------------------------------------------------------
-            if options[newID].flexoID == nil then
+            if options[newID] and options[newID].flexoID == nil then
                 newID = newID - 1
             end
-            if options[newID].flexoID == nil then
+            if options[newID] and options[newID].flexoID == nil then
                 newID = newID - 1
             end
             if newID <= 0 then newID = maxValue - 1 end
@@ -483,6 +487,29 @@ function mod.buttonParameter(group, param, id, label)
             Do(param:doShow()):Then(
                 param:doPress()
             ):Label("plugins.finalcutpro.tangent.common.buttonParameter")
+        )
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.doShowParameter() -> none
+--- Function
+--- Sets up a new `DoShow` Parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * param - The Parameter
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---
+--- Returns:
+---  * An updated ID
+function mod.doShowParameter(group, param, id, label)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(
+            Do(param:doShow())
+            :Label("plugins.finalcutpro.tangent.common.buttonParameter")
         )
     return id + 1
 end

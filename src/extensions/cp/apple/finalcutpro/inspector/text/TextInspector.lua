@@ -43,12 +43,13 @@
 
 local require = require
 
---local log                             = require("hs.logger").new("textInspect")
+local log                             = require("hs.logger").new("textInspect")
 
 local axutils                           = require("cp.ui.axutils")
 local If                                = require("cp.rx.go.If")
 local tools                             = require("cp.tools")
 
+local Button                            = require("cp.ui.Button")
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
 local PopUpButton                       = require("cp.ui.PopUpButton")
@@ -62,11 +63,14 @@ local TextField                         = require("cp.ui.TextField")
 local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
-local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local childFromBottom                   = axutils.childFromBottom
+local childFromLeft                     = axutils.childFromLeft
+local childFromRight                    = axutils.childFromRight
 local childFromTop                      = axutils.childFromTop
 local childrenInLine                    = axutils.childrenInLine
 local childrenInNextLine                = axutils.childrenInNextLine
-local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
+local childWithRole                     = axutils.childWithRole
+local withRole                          = axutils.withRole
 
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local popUpButton, checkBox             = IP.popUpButton, IP.checkBox
@@ -276,6 +280,32 @@ function TextInspector:initialize(parent)
                                     end)
                                   end),
             backEdge            = popUpButton "Bevel Properties Back Edge Profile",
+            backEdgeSize       = simple("Bevel Properties Back Edge Size", function(row)
+                                    row.master = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInLine(rowUI)
+                                        return children and childFromLeft(children, 1, TextField.matches)
+                                    end)
+
+                                    row.width = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInNextLine(rowUI)
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Text Sequence Channel OutlineWidth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+
+                                    row.depth = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local widthChildren = rowUI and childrenInNextLine(rowUI)
+                                        local children = widthChildren and widthChildren[1] and childrenInNextLine(widthChildren[1])
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("3D Property Extrusion Depth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+                                  end),
             insideCorners       = popUpButton "Bevel Properties Corner Style",
         },
         lighting            = section "Extrusion Properties Lighting Folder" {
@@ -409,23 +439,64 @@ function TextInspector.lazy.prop:contentUI()
     end)
 end
 
--- The 'Shape Preset' popup
-function TextInspector.lazy.value:shapePreset()
+--- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` containing the properties rows, if available.
+function TextInspector.lazy.prop:bottomBarUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_bottomBarUI", function()
+            local ui = original()
+            local parent = ui and ui:attributeValue("AXParent")
+            return parent and childFromBottom(parent, 1, Group.matches)
+        end, Group.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerLeft <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:textLayerLeft()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
+        return group and childFromLeft(group, 1, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerRight <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:textLayerRight()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
+        return group and childFromLeft(group, 2, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.deselectAll <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:deselectAll()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        return bottomBarUI and childFromLeft(bottomBarUI, 1, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.preset <cp.ui.PopUpButton>
+--- Field
+--- The preset popup found at the top of the inspector.
+function TextInspector:preset()
     return PopUpButton(self, function()
         local ui = self.contentUI()
         return ui and PopUpButton.matches(ui[1]) and ui[1]
     end)
 end
 
---- cp.apple.finalcutpro.inspector.text.TextInspector:textArea() -> TextArea
---- Method
---- Gets the Text Inspector main Text Area.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `TextArea` object.
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textArea <cp.ui.TextArea>
+--- Field
+--- The Text Inspector main Text Area.
 function TextInspector:textArea()
     return TextArea(self, function()
         local contentUI = self.contentUI()

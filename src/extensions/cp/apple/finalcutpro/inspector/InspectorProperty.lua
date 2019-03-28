@@ -166,6 +166,10 @@ function mod.section(labelKey, index)
             row.expanded    = prop(
                 function(theRow)
 
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works, but is completely impractical.
+                    --------------------------------------------------------------------------------
+
                     --[[
                     local result = false
                     local resetButton = theRow.reset
@@ -186,12 +190,37 @@ function mod.section(labelKey, index)
                     return result
                     --]]
 
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works for main rows (i.e. "3D Text"),
+                    --       but not sub-rows (i.e. "Self Shadows").
+                    --------------------------------------------------------------------------------
+
+                    --[[
+                    local theRowUI = theRow and theRow:UI()
+                    local theRowFrame = theRowUI and theRowUI:frame()
+
+                    local nextRow = axutils.childrenInNextLine(theRowUI)
+                    local nextRowStaticText = nextRow and axutils.childFromLeft(nextRow, 1, StaticText.matches)
+                    local nextRowStaticTextFrame = nextRowStaticText and nextRowStaticText:frame()
+
+                    if theRowFrame and nextRowStaticTextFrame and (theRowFrame.y + theRowFrame.h) > (nextRowStaticTextFrame.y - 5) then
+                        return true
+                    else
+                        return false
+                    end
+                    --]]
+
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
                     return theRow.toggle:title() == iHide
                 end,
                 function(newValue, theRow, theProp)
 
                     local currentValue = theProp:get()
+
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works, but is completely impractical until we have a
+                    --       solution for "getting".
+                    --------------------------------------------------------------------------------
 
                     --[[
                     local resetButton = theRow.reset
