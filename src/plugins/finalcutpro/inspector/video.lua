@@ -247,64 +247,6 @@ local function doRollingShutterAmount(value)
     :Label("video.doRollingShutterAmount")
 end
 
-local function getLongBlendModei18n(name)
-    if name == "Normal" then
-        return i18n("normal")
-    elseif name == "Subtract" then
-        return i18n("subtract")
-    elseif name == "Darken" then
-        return i18n("darken")
-    elseif name == "Multiply" then
-        return i18n("multiply")
-    elseif name == "Color Burn" then
-        return i18n("colorBurn")
-    elseif name == "Linear Burn" then
-        return i18n("linearBurn")
-    elseif name == "Add" then
-        return i18n("add")
-    elseif name == "Lighten" then
-        return i18n("lighten")
-    elseif name == "Screen" then
-        return i18n("screen")
-    elseif name == "Color Dodge" then
-        return i18n("colorDodge")
-    elseif name == "Linear Dodge" then
-        return i18n("linearDodge")
-    elseif name == "Overlay" then
-        return i18n("overlay")
-    elseif name == "Soft Light" then
-        return i18n("softLight")
-    elseif name == "Hard Light" then
-        return i18n("hardLight")
-    elseif name == "Vivid Light" then
-        return i18n("vividLight")
-    elseif name == "Linear Light" then
-        return i18n("linearLight")
-    elseif name == "Pin Light" then
-        return i18n("pinLight")
-    elseif name == "Hard Mix" then
-        return i18n("hardMix")
-    elseif name == "Difference" then
-        return i18n("difference")
-    elseif name == "Exclusion" then
-        return i18n("exclusion")
-    elseif name == "Stencil Alpha" then
-        return i18n("stencilAlpha")
-    elseif name == "Stencil Luma" then
-        return i18n("stencilLuma")
-    elseif name == "Silhouette Alpha" then
-        return i18n("silhouetteAlpha")
-    elseif name == "Silhouette Luma" then
-        return i18n("silhouetteLuma")
-    elseif name == "Behind" then
-        return i18n("behind")
-    elseif name == "Alpha Add" then
-        return i18n("alphaAdd")
-    elseif name == "Premultiplied Mix" then
-        return i18n("premultipliedMix")
-    end
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -336,18 +278,18 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("stabilizationMethodAutomatic")
-        :whenActivated(doStabilizationMethod("Automatic"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationDynamic"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationDynamic")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("automatic"))
 
     fcpxCmds
         :add("stabilizationMethodInertiaCam")
-        :whenActivated(doStabilizationMethod("InertiaCam"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationUseInertiaCam"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseInertiaCam")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("inertiaCam"))
 
     fcpxCmds
         :add("stabilizationMethodSmoothCam")
-        :whenActivated(doStabilizationMethod("SmoothCam"))
-        :titled(i18n("stabilizationMethod") .. ": " .. fcp:string("FFStabilizationUseSmoothCam"))
+        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseSmoothCam")))
+        :titled(i18n("stabilizationMethod") .. ": " .. i18n("smoothCam"))
 
     --------------------------------------------------------------------------------
     -- Rolling Shutter:
@@ -363,21 +305,14 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rolling Shutter Amount:
     --------------------------------------------------------------------------------
-    local rollingShutterAmounts = {
-        ["FFRollingShutterAmountNone"] = "None",
-        ["FFRollingShutterAmountLow"] = "Low",
-        ["FFRollingShutterAmountMedium"] = "Medium",
-        ["FFRollingShutterAmountHigh"] = "High",
-        ["FFRollingShutterAmountExtraHigh"] = "Extra High",
-    }
-
-    local rollingShutterTitle = fcp:string("FFRollingShutterEffect")
-    local rollingShutterAmount = fcp:string("FFRollingShutterAmount")
-    for code, name in pairs(rollingShutterAmounts) do
+    local rollingShutterAmounts = fcp:inspector():video().ROLLING_SHUTTER_AMOUNTS
+    local rollingShutterTitle = i18n("rollingShutter")
+    local rollingShutterAmount = i18n("amount")
+    for _, v in pairs(rollingShutterAmounts) do
         fcpxCmds
-            :add(name)
-            :whenActivated(doRollingShutterAmount(name))
-            :titled(rollingShutterTitle .. " " .. rollingShutterAmount .. ": " .. fcp:string(code))
+            :add(v.flexoID)
+            :whenActivated(doRollingShutterAmount(fcp:string(v.flexoID)))
+            :titled(rollingShutterTitle .. " " .. rollingShutterAmount .. ": " .. i18n(v.i18n))
     end
 
     --------------------------------------------------------------------------------
@@ -398,12 +333,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Blend Modes:
     --------------------------------------------------------------------------------
-    local blendModes = fcp:inspector():video().blendModes
-    for code, name in pairs(blendModes) do
+    local blendModes = fcp:inspector():video().BLEND_MODES
+    for _, v in pairs(blendModes) do
         fcpxCmds
-            :add(name)
-            :whenActivated(doBlendMode(fcp:string(code)))
-            :titled(i18n("blendMode") .. ": " .. getLongBlendModei18n(name))
+            :add(v.flexoID)
+            :whenActivated(doBlendMode(fcp:string(v.flexoID)))
+            :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
     end
 end
 

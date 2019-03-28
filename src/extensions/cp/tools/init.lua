@@ -23,6 +23,7 @@ local config                                    = require("cp.config")
 local v                                         = require("semver")
 
 local insert                                    = table.insert
+local locale                                    = host.locale
 local usleep                                    = timer.usleep
 
 --------------------------------------------------------------------------------
@@ -88,6 +89,46 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.toRegionalNumber(value) -> number | nil
+--- Function
+--- Takes a string and converts it into a number, with the correct
+--- regional decimal separator.
+---
+--- Parameters:
+---  * value - The value you want to process as a string.
+---
+--- Returns:
+---  * The value as a number or `nil`.
+function tools.toRegionalNumber(value)
+    if type(value) == "string" then
+        if locale.details().decimalSeparator == "," then
+            value = value:gsub(",", ".")
+        end
+    end
+    value = tonumber(value)
+    return value
+end
+
+--- cp.tools.toRegionalNumberString(value) -> string | nil
+--- Function
+--- Takes a number and converts it into a string, with the correct
+--- regional decimal separator.
+---
+--- Parameters:
+---  * value - The value you want to process as a number.
+---
+--- Returns:
+---  * The value as a number or `nil`.
+function tools.toRegionalNumberString(value)
+    if type(value) == "number" then
+        value = tostring(value)
+        if locale.details().decimalSeparator == "," then
+            value = value:gsub("%.", ",")
+        end
+    end
+    return tostring(value)
 end
 
 --- cp.tools.rescale(value, inMin, inMax, outMin, outMax) -> number | nil

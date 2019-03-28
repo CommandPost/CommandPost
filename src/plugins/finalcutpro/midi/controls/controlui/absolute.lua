@@ -6,9 +6,9 @@ local require = require
 
 local log               = require("hs.logger").new("midiCtrlSlider")
 
-local ax 			          = require("hs._asm.axuielement")
+local ax                = require("hs._asm.axuielement")
 local eventtap          = require("hs.eventtap")
-local mouse			        = require("hs.mouse")
+local mouse             = require("hs.mouse")
 
 local deferred          = require("cp.deferred")
 local dialog            = require("cp.dialog")

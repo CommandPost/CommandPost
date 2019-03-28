@@ -66,6 +66,7 @@ function mod.characterStringToKeyCode(input)
     if string.find(input, "NSEndFunctionKey")           then result = "end"         end
     if string.find(input, "NSPageUpFunctionKey")        then result = "pageup"      end
     if string.find(input, "NSPageDownFunctionKey")      then result = "pagedown"    end
+    if string.find(input, "NSDeleteCharacter")          then result = "delete"      end
 
     --------------------------------------------------------------------------------
     -- Convert to lowercase:

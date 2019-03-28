@@ -17,6 +17,7 @@ local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
 
 local Button							= require("cp.ui.Button")
+local PopUpButton                       = require("cp.ui.PopUpButton")
 local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
@@ -245,12 +246,12 @@ function LibrariesBrowser.lazy.value:search()
     end))
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.filterToggle <cp.ui.Button>
+--- cp.apple.finalcutpro.main.LibrariesBrowser.clipFiltering <cp.ui.PopUpButton>
 --- Field
---- The Filter Toggle [Button](cp.ui.Button.md).
-function LibrariesBrowser.lazy.value:filterToggle()
-    return Button(self, self.mainGroupUI:mutate(function(original)
-        return childMatching(original(), Button.matches)
+--- The Clip Filtering [PopUpButton](cp.ui.PopUpButton.md).
+function LibrariesBrowser.lazy.value:clipFiltering()
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childMatching(original(), PopUpButton.matches)
     end))
 end
 
@@ -259,64 +260,6 @@ end
 --- The Clip [AppearanceAndFiltering](cp.apple.finalcutpro.main.AppearanceAndFiltering.md) Menu Popover
 function LibrariesBrowser.lazy.value:appearanceAndFiltering()
     return AppearanceAndFiltering(self)
-end
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
---- Constant
---- All Clips ID.
-LibrariesBrowser.static.ALL_CLIPS = 1
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.HIDE_REJECTED -> number
---- Constant
---- Hide Rejected ID.
-LibrariesBrowser.static.HIDE_REJECTED = 2
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.NO_RATINGS_OR_KEYWORDS -> number
---- Constant
---- No Rating or Keywords ID.
-LibrariesBrowser.static.NO_RATINGS_OR_KEYWORDS = 3
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.FAVORITES -> number
---- Constant
---- Favourites ID.
-LibrariesBrowser.static.FAVORITES = 4
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.REJECTED -> number
---- Constant
---- Rejected ID.
-LibrariesBrowser.static.REJECTED = 5
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.UNUSED -> number
---- Constant
---- Unused ID.
-LibrariesBrowser.static.UNUSED = 6
-
---- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipFiltering(filterType) -> LibrariesBrowser
---- Method
---- Select Clip Filtering based on Filter Type.
----
---- Parameters:
----  * filterType - The filter type.
----
---- Returns:
----  * The `LibrariesBrowser` object.
-function LibrariesBrowser:selectClipFiltering(filterType)
-    local ui = self:UI()
-    if ui then
-        local button = childWithRole(ui, "AXButton")
-        if button then
-            local menu = button[1]
-            if not menu then
-                button:doPress()
-                menu = button[1]
-            end
-            local menuItem = menu[filterType]
-            if menuItem then
-                menuItem:doPress()
-            end
-        end
-    end
-    return self
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesFilmstrip

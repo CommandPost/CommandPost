@@ -8,20 +8,25 @@ local require = require
 
 -- local log                               = require("hs.logger").new("colorWheels")
 
-local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local MenuButton						= require("cp.ui.MenuButton")
+local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
-local PropertyRow						= require("cp.ui.PropertyRow")
-local RadioGroup						= require("cp.ui.RadioGroup")
-local Slider							= require("cp.ui.Slider")
+local tools                             = require("cp.tools")
+
+local Element                           = require("cp.ui.Element")
+local MenuButton                        = require("cp.ui.MenuButton")
+local PropertyRow                       = require("cp.ui.PropertyRow")
+local RadioGroup                        = require("cp.ui.RadioGroup")
+local Slider                            = require("cp.ui.Slider")
 local TextField                         = require("cp.ui.TextField")
 
-local ColorWheel						= require("cp.apple.finalcutpro.inspector.color.ColorWheel")
+local ColorWheel                        = require("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
 local If                                = require("cp.rx.go.If")
 
-local childMatching, cache             = axutils.childMatching, axutils.cache
+local childMatching, cache              = axutils.childMatching, axutils.cache
+
+local toRegionalNumber                  = tools.toRegionalNumber
+local toRegionalNumberString            = tools.toRegionalNumberString
 
 --------------------------------------------------------------------------------
 --
@@ -51,7 +56,7 @@ end
 --- Checks if the specified element is the Color Wheels element.
 ---
 --- Parameters:
---- * element	- The element to check
+--- * element   - The element to check
 ---
 --- Returns:
 --- * `true` if the element is the Color Wheels.
@@ -338,7 +343,7 @@ function ColorWheels.lazy.method:mixTextField()
             local ui = self:mixRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 
@@ -379,7 +384,7 @@ function ColorWheels.lazy.method:temperatureTextField()
             local ui = self:temperatureRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 
@@ -421,7 +426,7 @@ function ColorWheels.lazy.method:tintTextField()
             local ui = self:tintRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 
@@ -454,7 +459,7 @@ function ColorWheels.lazy.method:hueTextField()
             local ui = self:hueRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 

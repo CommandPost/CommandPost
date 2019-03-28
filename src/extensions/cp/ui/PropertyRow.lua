@@ -4,15 +4,15 @@
 
 local require = require
 
-local log						    = require("hs.logger").new("PropertyRow")
+local log               = require("hs.logger").new("PropertyRow")
 
 local inspect           = require("hs.inspect")
-local geometry					= require("hs.geometry")
+local geometry          = require("hs.geometry")
 
-local axutils					  = require("cp.ui.axutils")
-local Button					  = require("cp.ui.Button")
+local axutils           = require("cp.ui.axutils")
+local Button            = require("cp.ui.Button")
 local is                = require("cp.is")
-local prop						  = require("cp.prop")
+local prop              = require("cp.prop")
 
 local Element           = require("cp.ui.Element")
 
@@ -36,6 +36,11 @@ local UI_FINDER = {}
 -- Constant
 -- UI Finder Label.
 local UI_FINDER_LABEL = "PropertyRow UI Finder"
+
+--- cp.ui.PropertyRow.intersectBuffer
+--- Constant
+--- Defines the buffer for intersections with the `labelUI`.
+PropertyRow.static.intersectBuffer = 2
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function
@@ -163,6 +168,22 @@ function PropertyRow:initialize(parent, labelKey, index)
 
     self._labelKeys = is.string(labelKey) and {labelKey} or labelKey
     self._index = index or 1
+end
+
+--- cp.ui.PropertyRow:extend(extendFn) -> cp.ui.PropertyRow
+--- Method
+--- This method will call the provided function, passing it the current `PropertyRow`.
+--- This can be used to add addtional tweaks to the row, such as adding custom Elements.
+---
+--- Parameters:
+---  * extendFn     - A `function` that will be passed the current row.
+---
+--- Returns:
+---  * The same `PropertyRow` instance.
+function PropertyRow:extend(extendFn)
+    assert(type(extendFn) == "function", "Please provide a function.")
+    extendFn(self)
+    return self
 end
 
 --- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
@@ -325,7 +346,7 @@ function PropertyRow:children()
             children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
                 local childFrame = child and child:attributeValue("AXFrame")
-                return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
+                return childFrame ~= nil and labelFrame:intersect(childFrame).h > PropertyRow.intersectBuffer and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then
                 table.sort(children, axutils.compareLeftToRight)

@@ -4,13 +4,12 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("fcp_tangent")
+--local log                                       = require("hs.logger").new("fcp_tangent")
 
 local tangent                                   = require("hs.tangent")
 
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 local deferred                                  = require("cp.deferred")
-local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local go                                        = require("cp.rx.go")
 local i18n                                      = require("cp.i18n")
@@ -23,43 +22,25 @@ local round                                     = tools.round
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
-local mod = {}
+local plugin = {
+    id = "finalcutpro.tangent.color",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.tangent.group"]  = "fcpGroup",
+        ["finalcutpro.tangent.common"]  = "common",
+    }
+}
 
--- doShortcut(id) -> none
--- Function
--- Triggers a shortcut via Rx.
---
--- Parameters:
---  * id - The ID of the shortcut.
---
--- Returns:
---  * None
-local function doShortcut(id)
-    return fcp:doShortcut(id):Catch(function(message)
-        log.wf("Unable to perform %q shortcut: %s", id, message)
-        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-    end)
-end
+function plugin.init(deps)
 
---- plugins.finalcutpro.tangent.manager.init() -> none
---- Function
---- Initialises the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init(tangentManager, fcpGroup)
-    --------------------------------------------------------------------------------
-    -- Add Final Cut Pro Modes:
-    --------------------------------------------------------------------------------
-    tangentManager.addMode(0x00010003, "FCP: Board")
+    local fcpGroup = deps.fcpGroup
+    local common = deps.common
 
-    tangentManager.addMode(0x00010004, "FCP: Wheels")
+    local doShortcut = common.doShortcut
+    local doShowParameter = common.doShowParameter
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
@@ -491,6 +472,7 @@ function mod.init(tangentManager, fcpGroup)
 
     colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
         :onPress(doShortcut("ColorBoard-ToggleInsideColorMask"))
+
     --------------------------------------------------------------------------------
     --
     -- COLOR BOARD ACTIONS:
@@ -532,30 +514,15 @@ function mod.init(tangentManager, fcpGroup)
 
     cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
         :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
-end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
-local plugin = {
-    id = "finalcutpro.tangent.color",
-    group = "finalcutpro",
-    dependencies = {
-        ["core.tangent.manager"]       = "manager",
-        ["finalcutpro.tangent.group"]  = "fcpGroup",
-    }
-}
-
-function plugin.init(deps)
+    cbGroup:action(wheelsBaseID+0x0132, i18n("resetSelectedControl"))
+        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
 
     --------------------------------------------------------------------------------
-    -- Initalise the Module:
+    -- Show Inspector:
     --------------------------------------------------------------------------------
-    mod.init(deps.manager, deps.fcpGroup)
+    doShowParameter(ciGroup, ci, wheelsBaseID+0x0132, i18n("show") .. " " .. i18n("inspector"))
 
-    return mod
 end
 
 return plugin

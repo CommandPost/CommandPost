@@ -9,10 +9,15 @@
 
 local require = require
 
--- local log                   = require("hs.logger").new("InspectorProperty")
+--local log                   = require("hs.logger").new("InspectorProperty")
+
+--local geometry              = require("hs.geometry")
+--local mouse                 = require("hs.mouse")
 
 local is                    = require("cp.is")
+--local just                  = require("cp.just")
 local prop                  = require("cp.prop")
+--local tools                 = require("cp.tools")
 
 local axutils               = require("cp.ui.axutils")
 local Button                = require("cp.ui.Button")
@@ -25,8 +30,13 @@ local TextField             = require("cp.ui.TextField")
 
 local Do                    = require("cp.rx.go.Do")
 
-local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
-local childrenMatching              = axutils.childrenMatching
+--local ax                    = require("hs._asm.axuielement")
+
+local childFromLeft         = axutils.childFromLeft
+local childFromRight        = axutils.childFromRight
+local childrenMatching      = axutils.childrenMatching
+--local ninjaMouseClick       = tools.ninjaMouseClick
+--local wait                  = just.wait
 
 --------------------------------------------------------------------------------
 --
@@ -55,8 +65,8 @@ local mod = {}
 --- ```
 ---
 --- Parameters:
---- * parent    - The parent table.
---- * uiFinder  - The function or cp.prop which will be called to find the parent UI element. Functions will be passed the `parent` when being executed.
+---  * parent    - The parent table.
+---  * uiFinder  - The function or cp.prop which will be called to find the parent UI element. Functions will be passed the `parent` when being executed.
 ---
 --- Returns:
 ---
@@ -93,7 +103,7 @@ local function propDoHide(self)
         self.section:expanded(false)
     end)
     :ThenYield()
-    :Label("ProeprtyRow:doHide")
+    :Label("PropertyRow:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.InspectorProperty.section(labelKey[, index]) -> function
@@ -119,21 +129,22 @@ end
 ---
 --- The `o.sectionOne` property will be a `cp.prop` with the following built-in additional properties:
 ---
---- * `enabled`     - a `cp.ui.CheckBox` which reports if the section row is enabled.
---- * `toggle`      - a `cp.ui.Button` which will toggle the show/hide button (if present)
---- * `reset`       - a `cp.ui.Button` which will reset the sub-property values, if present in the UI.
---- * `expanded`    - a `cp.prop` which reports if the section is currently expanded.
+---  * `enabled`     - a `cp.ui.CheckBox` which reports if the section row is enabled.
+---  * `toggle`      - a `cp.ui.Button` which will toggle the show/hide button (if present)
+---  * `reset`       - a `cp.ui.Button` which will reset the sub-property values, if present in the UI.
+---  * `expanded`    - a `cp.prop` which reports if the section is currently expanded.
 ---
 --- Parameters:
---- * labelKey      - The I18N lookup key to find the row with.
---- * index         - (optional) The occurrence of the key value in the parent. Sometimes multiple rows have the same title. Defaults to `1`.
+---  * labelKey      - The I18N lookup key to find the row with.
+---  * index         - (optional) The occurrence of the key value in the parent. Sometimes multiple rows have the same title. Defaults to `1`.
 ---
 --- Returns:
---- * A function which will create the section row when called.
+---  * A function which will create the section row when called.
 function mod.section(labelKey, index)
     return function(subProps)
-        local section = prop(function(self)
-            local row = PropertyRow(self, labelKey, index)
+        local extendFn = nil
+        local result = prop(function(owner)
+            local row = PropertyRow(owner, labelKey, index)
             -- sections are also parents of other PropertyRows.
             PropertyRow.prepareParent(row, row.propertiesUI:mutate(function(original)
                 local propsUI = original()
@@ -143,22 +154,86 @@ function mod.section(labelKey, index)
                     local rowPos = frame.y + frame.h
                     return childrenMatching(propsUI, function(child)
                         local childFrame = child:attributeValue("AXFrame")
-                        return childFrame ~= nil and childFrame.y >= rowPos
+                        return childFrame ~= nil and childFrame.y >= rowPos - PropertyRow.intersectBuffer
                     end)
                 end
                 return nil
             end))
 
-            row.enabled     = CheckBox(row, function() return childFromLeft(row:children(), 1) end)
-            row.toggle      = CheckBox(row, function() return childFromRight(row:children(), 2) end)
-            row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
+            row.enabled     = CheckBox(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)
+            row.toggle      = CheckBox(row, function() return childFromLeft(row:children(), 3, CheckBox.matches) end)
+            row.reset       = Button(row, function() return childFromRight(row:children(), 1, Button.matches) end)
             row.expanded    = prop(
                 function(theRow)
+
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works, but is completely impractical.
+                    --------------------------------------------------------------------------------
+
+                    --[[
+                    local result = false
+                    local resetButton = theRow.reset
+                    local resetButtonUI = resetButton and resetButton:UI()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+                    if resetButtonFrame then
+                        resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w
+                        local center = geometry(resetButtonFrame).center
+                        tools.ninjaMouseAction(center, function()
+                            wait(0.1)
+                            local element = ax.systemElementAtPosition(mouse.getAbsolutePosition())
+                            if element and element:attributeValue("AXRole") == "AXCheckBox" then
+                                local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
+                                result = element:title() == iHide
+                            end
+                        end)
+                    end
+                    return result
+                    --]]
+
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works for main rows (i.e. "3D Text"),
+                    --       but not sub-rows (i.e. "Self Shadows").
+                    --------------------------------------------------------------------------------
+
+                    --[[
+                    local theRowUI = theRow and theRow:UI()
+                    local theRowFrame = theRowUI and theRowUI:frame()
+
+                    local nextRow = axutils.childrenInNextLine(theRowUI)
+                    local nextRowStaticText = nextRow and axutils.childFromLeft(nextRow, 1, StaticText.matches)
+                    local nextRowStaticTextFrame = nextRowStaticText and nextRowStaticText:frame()
+
+                    if theRowFrame and nextRowStaticTextFrame and (theRowFrame.y + theRowFrame.h) > (nextRowStaticTextFrame.y - 5) then
+                        return true
+                    else
+                        return false
+                    end
+                    --]]
+
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
                     return theRow.toggle:title() == iHide
                 end,
                 function(newValue, theRow, theProp)
+
                     local currentValue = theProp:get()
+
+                    --------------------------------------------------------------------------------
+                    -- NOTE: The below works, but is completely impractical until we have a
+                    --       solution for "getting".
+                    --------------------------------------------------------------------------------
+
+                    --[[
+                    local resetButton = theRow.reset
+                    local resetButtonUI = resetButton and resetButton:UI()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+
+                    if resetButtonFrame and newValue ~= currentValue then
+                        resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w
+                        local center = geometry(resetButtonFrame).center
+                        ninjaMouseClick(center)
+                    end
+                    --]]
+
                     if newValue ~= currentValue then
                         theRow.toggle:press()
                     end
@@ -178,10 +253,23 @@ function mod.section(labelKey, index)
                 end
             end
 
+            if extendFn then
+                row:extend(extendFn)
+            end
+
             return row
         end):cached()
 
-        return section
+        -- add access to the `PropertyRow:extend()` function
+        function result:extend(fn)
+            extendFn = fn
+            if self:owner() then -- already bound...
+                self:get():extend(extendFn)
+            end
+            return self
+        end
+
+        return result
     end
 end
 
@@ -193,28 +281,45 @@ end
 --- called after the `PropertyRow` is created, and passed the new `PropertyRow` as the first argument.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * prepareFn     - The function to call to perform additional preparations on the row.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * prepareFn     - The function to call to perform additional preparations on the row.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 local function simple(labelKey, prepareFn, index)
     if is.number(prepareFn) then
         index = prepareFn
         prepareFn = nil
     end
 
-    return prop(function(self)
-        local row = PropertyRow(self, labelKey, index)
+    local extendFn = nil
+    local result = prop(function(owner)
+        local row = PropertyRow(owner, labelKey, index)
+
         row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
 
         if prepareFn then
             prepareFn(row)
         end
 
+        if extendFn then
+            row:extend(extendFn)
+        end
+
         return row
     end):cached()
+
+    -- add access to the `PropertyRow:extend()` function
+    function result:extend(fn)
+        extendFn = fn
+        if self:owner() then -- already bound...
+            self:get():extend(extendFn)
+        end
+        return self
+    end
+
+    return result
 end
 
 mod.simple = simple
@@ -224,14 +329,14 @@ mod.simple = simple
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.TextField` which contains the text value.
+---  * `value`   - A `cp.ui.TextField` which contains the text value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.textField(labelKey, index)
     return simple(labelKey, function(row)
         row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end)
@@ -243,14 +348,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.TextField` which contains the number value.
+---  * `value`   - A `cp.ui.TextField` which contains the number value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.numberField(labelKey, index)
     return simple(labelKey, function(row)
         row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
@@ -262,14 +367,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.StaticText` which contains the text value.
+---  * `value`   - A `cp.ui.StaticText` which contains the text value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.staticText(labelKey, index)
     return simple(labelKey, function(row)
         row.value = StaticText(row, function() return childFromRight(row:children(), 1, StaticText.matches) end)
@@ -281,15 +386,15 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has two additional properties:
---- * `x`   - A `cp.ui.TextField` containing the 'X' value.
---- * `y`   - A `cp.ui.TextField` containing the `Y` value.
+---  * `x`   - A `cp.ui.TextField` containing the 'X' value.
+---  * `y`   - A `cp.ui.TextField` containing the `Y` value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.xy(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.x = TextField(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, tonumber)
@@ -303,14 +408,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.TextField` which contains the value of the slider.
+---  * `value`   - A `cp.ui.TextField` which contains the value of the slider.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.slider(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
@@ -322,14 +427,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.MenuButton` which contains the text value.
+---  * `value`   - A `cp.ui.MenuButton` which contains the text value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.menuButton(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = MenuButton(row, function() return childFromRight(row:children(), 1, MenuButton.matches) end)
@@ -341,14 +446,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.PopUpButton` which contains the text value.
+---  * `value`   - A `cp.ui.PopUpButton` which contains the text value.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = PopUpButton(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
@@ -369,14 +474,14 @@ end
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
 --- It has one additional property:
---- * `value`   - A `cp.ui.CheckBox` which contains the boolean value for the row.
+---  * `value`   - A `cp.ui.CheckBox` which contains the boolean value for the row.
 ---
 --- Parameters:
---- * labelKey      - The I18N key that the row lable matches.
---- * index         - The instance number of that label (defaults to `1`).
+---  * labelKey      - The I18N key that the row lable matches.
+---  * index         - The instance number of that label (defaults to `1`).
 ---
 --- Returns:
---- * The `cp.prop` that returns the `PropertyRow`.
+---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.checkBox(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = CheckBox(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)

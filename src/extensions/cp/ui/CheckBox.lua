@@ -80,7 +80,7 @@ function CheckBox.lazy.prop:checked()
         end,
         function(value, original) -- set
             local ui = original()
-            if ui and value ~= (ui:value() == 1) then
+            if ui and value ~= (ui:value() == 1) and ui:attributeValue("AXEnabled") == true then
                 ui:doPress()
             end
         end

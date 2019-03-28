@@ -280,7 +280,6 @@ function KeywordEditor:removeKeyword(keyword)
                 return false
             end
             local resultString = table.concat(result, ", ")
-            log.df("resultString: %s", resultString)
             if resultString and textbox:setAttributeValue("AXValue", resultString) then
                 if textbox:performAction("AXConfirm") then
                     return true

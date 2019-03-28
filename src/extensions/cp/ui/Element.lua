@@ -7,14 +7,16 @@
 --- * [CheckBox](cp.rx.CheckBox.md)
 --- * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
+
 -- local log               = require("hs.logger").new("Element")
 
 local axutils           = require("cp.ui.axutils")
-local prop              = require("cp.prop")
 local go	            = require("cp.rx.go")
+local If                = require("cp.rx.go.If")
+local lazy              = require("cp.lazy")
+local prop              = require("cp.prop")
 
 local class             = require("middleclass")
-local lazy              = require("cp.lazy")
 
 local cache             = axutils.cache
 local Do, Given         = go.Do, go.Given
@@ -69,6 +71,8 @@ function Element:initialize(parent, uiFinder)
             end,
             self.class.matches)
         end)
+    else
+        error "Expected either a cp.prop or function for uiFinder."
     end
 
     prop.bind(self) {
@@ -78,6 +82,43 @@ function Element:initialize(parent, uiFinder)
     if prop.is(parent.UI) then
         UI:monitor(parent.UI)
     end
+end
+
+--- cp.ui.Element.value <cp.prop: anything; live?>
+--- Field
+--- The 'AXValue' of the element.
+function Element.lazy.prop:value()
+    return axutils.prop(self.UI, "AXValue", true)
+end
+
+--- cp.ui.Element.textValue <cp.prop: string; read-only; live?>
+--- Field
+--- The 'AXValue' of the element, if it is a `string`.
+function Element.lazy.prop:textValue()
+    return self.value:mutate(function(original)
+        local value = original()
+        return type(value) == "string" and value or nil
+    end)
+end
+
+--- cp.ui.Element.valueIs(value) -> boolean
+--- Method
+--- Checks if the current value of this element is the provided value.
+---
+--- Parameters:
+--- * value - The value to compare to.
+---
+--- Returns:
+--- * `true` if the current [#value] is equal to the provided `value`.
+function Element:valueIs(value)
+    return self:value() == value
+end
+
+--- cp.ui.Element.title <cp.prop: string; read-only, live?>
+--- Field
+--- The 'AXTitle' of the element.
+function Element.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
 end
 
 --- cp.ui.Element.isShowing <cp.prop: boolean; read-only; live?>
@@ -90,6 +131,29 @@ function Element.lazy.prop:isShowing()
         isShowing:monitor(parent.isShowing)
     end
     return isShowing
+end
+
+--- cp.ui.Element:doShow() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the Element is showing.
+function Element.lazy.method:doShow()
+    return If(function() return self:parent() end)
+    :Then(function(parent) return parent.doShow and parent:doShow() end)
+    :Otherwise(false)
+end
+
+--- cp.ui.Element:show() -> self
+--- Method
+--- Shows the Element.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function Element:show()
+    self:parent():show()
+    return self
 end
 
 --- cp.ui.Element.role <cp.prop: string; read-only>

@@ -133,6 +133,9 @@ function VideoInspector:initialize(parent)
             method          = popUpButton "FFStabilizationAlgorithmRequested",
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
             tripodMode      = checkBox "FFStabilizationUseTripodMode",
+          translationSmooth = slider "FFStabilizationTranslationSmooth",
+            rotationSmoooth = slider "FFStabilizationRotationSmooth",
+            scaleSmooth     = slider "FFStabilizationScaleSmooth",
         },
         rollingShutter      = section "FFRollingShutterEffect" {
             amount          = popUpButton "FFRollingShutterAmount",
@@ -154,46 +157,75 @@ function VideoInspector.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector.blendModes() -> table
---- Function
---- Returns a table of Blend Modes where the key is the string ID, and the value
---- is the name of the blend mode in English.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table of blend modes
-function VideoInspector.lazy.value.blendModes()
-    return {
-        ["FFHeliumBlendModeNormal"] = "Normal",
-        ["FFHeliumBlendModeSubtract"] = "Subtract",
-        ["FFHeliumBlendModeDarken"] = "Darken",
-        ["FFHeliumBlendModeMultiply"] = "Multiply",
-        ["FFHeliumBlendModeColorBurn"] = "Color Burn",
-        ["FFHeliumBlendModeLinearBurn"] = "Linear Burn",
-        ["FFHeliumBlendModeAdd"] = "Add",
-        ["FFHeliumBlendModeLighten"] = "Lighten",
-        ["FFHeliumBlendModeScreen"] = "Screen",
-        ["FFHeliumBlendModeColorDodge"] = "Color Dodge",
-        ["FFHeliumBlendModeLinearDodge"] = "Linear Dodge",
-        ["FFHeliumBlendModeOverlay"] = "Overlay",
-        ["FFHeliumBlendModeSoftLight"] = "Soft Light",
-        ["FFHeliumBlendModeHardLight"] = "Hard Light",
-        ["FFHeliumBlendModeVividLight"] = "Vivid Light",
-        ["FFHeliumBlendModeLinearLight"] = "Linear Light",
-        ["FFHeliumBlendModePinLight"] = "Pin Light",
-        ["FFHeliumBlendModeHardMix"] = "Hard Mix",
-        ["FFHeliumBlendModeDifference"] = "Difference",
-        ["FFHeliumBlendModeExclusion"] = "Exclusion",
-        ["FFHeliumBlendModeStencilAlpha"] = "Stencil Alpha",
-        ["FFHeliumBlendModeStencilLuma"] = "Stencil Luma",
-        ["FFHeliumBlendModeSilhouetteAlpha"] = "Silhouette Alpha",
-        ["FFHeliumBlendModeSilhouetteLuma"] = "Silhouette Luma",
-        ["FFHeliumBlendModeBehind"] = "Behind",
-        ["FFHeliumBlendModeAlphaAdd"] = "Alpha Add",
-        ["FFHeliumBlendModePremultipliedMix"] = "Premultiplied Mix",
-    }
-end
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.BLEND_MODES -> table
+--- Constant
+--- Blend Modes
+VideoInspector.BLEND_MODES = {
+    [1]     = {flexoID = "FFHeliumBlendModeNormal", i18n="normal"},
+    [2]     = {flexoID = "FFHeliumBlendModeSubtract", i18n="subtract"},
+    [3]     = {flexoID = "FFHeliumBlendModeDarken", i18n="darken"},
+    [4]     = {flexoID = "FFHeliumBlendModeMultiply", i18n="multiply"},
+    [5]     = {flexoID = "FFHeliumBlendModeColorBurn", i18n="colorBurn"},
+    [6]     = {flexoID = "FFHeliumBlendModeLinearBurn", i18n="linearBurn"},
+    [7]     = {flexoID = "FFHeliumBlendModeAdd", i18n="add"},
+    [8]     = {flexoID = "FFHeliumBlendModeLighten", i18n="lighten"},
+    [9]     = {flexoID = "FFHeliumBlendModeScreen", i18n="screen"},
+    [10]    = {flexoID = "FFHeliumBlendModeColorDodge", i18n="colorDodge"},
+    [11]    = {flexoID = "FFHeliumBlendModeLinearDodge", i18n="linearDodge"},
+    [12]    = {flexoID = "FFHeliumBlendModeOverlay", i18n="overlay"},
+    [13]    = {flexoID = "FFHeliumBlendModeSoftLight", i18n="softLight"},
+    [14]    = {flexoID = "FFHeliumBlendModeHardLight", i18n="hardLight"},
+    [15]    = {flexoID = "FFHeliumBlendModeVividLight", i18n="vividLight"},
+    [16]    = {flexoID = "FFHeliumBlendModeLinearLight", i18n="linearLight"},
+    [17]    = {flexoID = "FFHeliumBlendModePinLight", i18n="pinLight"},
+    [18]    = {flexoID = "FFHeliumBlendModeHardMix", i18n="hardMix"},
+    [19]    = {flexoID = "FFHeliumBlendModeDifference", i18n="difference"},
+    [20]    = {flexoID = "FFHeliumBlendModeExclusion", i18n="exclusion"},
+    [21]    = {flexoID = "FFHeliumBlendModeStencilAlpha", i18n="stencilAlpha"},
+    [22]    = {flexoID = "FFHeliumBlendModeStencilLuma", i18n="stencilLuma"},
+    [23]    = {flexoID = "FFHeliumBlendModeSilhouetteAlpha", i18n="silhouetteAlpha"},
+    [24]    = {flexoID = "FFHeliumBlendModeSilhouetteLuma", i18n="silhouetteLuma"},
+    [25]    = {flexoID = "FFHeliumBlendModeBehind", i18n="behind"},
+    [26]    = {flexoID = "FFHeliumBlendModeAlphaAdd", i18n="alphaAdd"},
+    [27]    = {flexoID = "FFHeliumBlendModePremultipliedMix", i18n="premultipliedMix"},
+}
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.CROP_TYPES -> table
+--- Constant
+--- Crop Types
+VideoInspector.CROP_TYPES = {
+    [1]     = {flexoID = "FFTrim", i18n = "trim"},
+    [2]     = {flexoID = "FFCrop", i18n = "crop"},
+    [3]     = {flexoID = "FFKenBurns", i18n = "kenBurns"},
+}
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.STABILIZATION_METHODS -> table
+--- Constant
+--- Stabilisation Methods
+VideoInspector.STABILIZATION_METHODS = {
+    [1]     = {flexoID = "FFStabilizationDynamic", i18n="automatic"},
+    [2]     = {flexoID = "FFStabilizationUseInertiaCam", i18n="inertiaCam"},
+    [3]     = {flexoID = "FFStabilizationUseSmoothCam", i18n="smoothCam"},
+}
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.ROLLING_SHUTTER_AMOUNTS -> table
+--- Constant
+--- Rolling Shutter Amounts
+VideoInspector.ROLLING_SHUTTER_AMOUNTS = {
+    [1]     = {flexoID = "FFRollingShutterAmountNone", i18n="none"},
+    [2]     = {flexoID = "FFRollingShutterAmountLow", i18n="low"},
+    [3]     = {flexoID = "FFRollingShutterAmountMedium", i18n="medium"},
+    [4]     = {flexoID = "FFRollingShutterAmountHigh", i18n="high"},
+    [5]     = {flexoID = "FFRollingShutterAmountExtraHigh", i18n="extraHigh"},
+}
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.SPATIAL_CONFORM_TYPES -> table
+--- Constant
+--- Spatial Conform Types
+VideoInspector.SPATIAL_CONFORM_TYPES = {
+    [1]     = {flexoID = "FFConformTypeFit", i18n="fit"},
+    [2]     = {flexoID = "FFConformTypeFill", i18n="fill"},
+    [3]     = {flexoID = "FFConformTypeNone", i18n="none"},
+}
 
 return VideoInspector
