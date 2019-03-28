@@ -98,8 +98,10 @@ end
 --- Method
 --- Prints a "[WAIT]" message with the timeout value..
 function DefaultHandler:waiting(run, timeout)
-    local seconds = timeout == 1 and "second" or "seconds"
-    self:printf("  [WAIT] %s: Waiting asynchronously for %d %s.", run, timeout, seconds)
+    if self:checkVerbose(run) then
+        local seconds = timeout == 1 and "second" or "seconds"
+        self:printf("  [WAIT] %s: Waiting asynchronously for %d %s.", run, timeout, seconds)
+    end
 end
 
 --- cp.spec.DefaultHandler:filter(run, msg)

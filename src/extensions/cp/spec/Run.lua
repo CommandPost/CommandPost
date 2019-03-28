@@ -285,7 +285,7 @@ function Run:initialize(name)
     self.report = Report(self)
 
     self._name = name
-    log.df("Run:initialize: self.realName = %s", type(self.realName))
+    -- log.df("Run:initialize: self.realName = %s", type(self.realName))
 
     self.phaseActions = {}
 
@@ -541,8 +541,8 @@ end
 function Run:fullName()
     local parent = self:parent()
     local parentName = parent and parent:fullName() .. " > " or ""
-    log.df("Run:fullName: realName = %s", hs.inspect(self.realName))
-    log.df("Run:fullName: _name = %s", hs.inspect(self._name))
+    -- log.df("Run:fullName: realName = %s", hs.inspect(self.realName))
+    -- log.df("Run:fullName: _name = %s", hs.inspect(self._name))
     return parentName .. self:realName()
 end
 
