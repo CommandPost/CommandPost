@@ -25,10 +25,16 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.tangent.group"]   = "fcpGroup",
+        ["finalcutpro.tangent.common"]  = "common",
     }
 }
 
 function plugin.init(deps)
+
+    local common                        = deps.common
+
+    local dynamicPopupSliderParameter   = common.dynamicPopupSliderParameter
+    local shortcutParameter             = common.shortcutParameter
 
     local id = 0x00140000
     local fcpGroup = deps.fcpGroup
@@ -97,6 +103,22 @@ function plugin.init(deps)
             appearanceAndFiltering:show():clipHeight():value(0)
             appearanceAndFiltering:hide()
         end)
+    id = id + 1
+
+    --------------------------------------------------------------------------------
+    -- Browser Clip Filtering:
+    --------------------------------------------------------------------------------
+    local clipFilteringGroup = group:group(i18n("clipFiltering"))
+
+    id = shortcutParameter(clipFilteringGroup, id, "allClips", "AllClips")
+    id = shortcutParameter(clipFilteringGroup, id, "hideRejected", "HideRejected")
+    id = shortcutParameter(clipFilteringGroup, id, "noRatingsOrKeywords", "NoRatingsOrKeywords")
+    id = shortcutParameter(clipFilteringGroup, id, "favorites", "ShowFavorites")
+    id = shortcutParameter(clipFilteringGroup, id, "rejected", "ShowRejected")
+    id = shortcutParameter(clipFilteringGroup, id, "unused", "FilterUnusedMedia")
+
+    local libraries = fcp:libraries()
+    dynamicPopupSliderParameter(group, libraries.clipFiltering, id, "clipFiltering", 2)
 
 end
 

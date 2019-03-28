@@ -16,26 +16,25 @@ local delayed               = timer.delayed
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
-local mod = {}
+local plugin = {
+    id = "finalcutpro.tangent.timeline",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.tangent.group"]   = "fcpGroup",
+        ["finalcutpro.tangent.common"]  = "common",
+    }
+}
 
---- plugins.finalcutpro.tangent.timeline.group
---- Constant
---- The `core.tangent.manager.group` that collects Final Cut Pro Timeline actions/parameters/etc.
-mod.group = nil
+function plugin.init(deps)
 
---- plugins.finalcutpro.tangent.manager.init() -> none
---- Function
---- Initialises the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init(fcpGroup)
+    local common = deps.common
+    local fcpGroup = deps.fcpGroup
+
+    local shortcutParameter = common.shortcutParameter
+
     --------------------------------------------------------------------------------
     -- Base ID:
     --------------------------------------------------------------------------------
@@ -44,21 +43,21 @@ function mod.init(fcpGroup)
     --------------------------------------------------------------------------------
     -- Create Timeline Group:
     --------------------------------------------------------------------------------
-    mod.group = fcpGroup:group(i18n("timeline"))
+    local timelineGroup = fcpGroup:group(i18n("timeline"))
 
     --------------------------------------------------------------------------------
     -- Timeline Zoom:
     --------------------------------------------------------------------------------
-    mod._updateZoomUI = deferred.new(0.0000001)
+    local updateZoomUI = deferred.new(0.0000001)
 
-    mod._appearancePopUpCloser = delayed.new(1, function()
+    local appearancePopUpCloser = delayed.new(1, function()
         local appearance = fcp:timeline():toolbar():appearance()
         if appearance then
             appearance:hide()
         end
     end)
 
-    mod.group:parameter(id)
+    timelineGroup:parameter(id)
         :name(i18n("zoom"))
         :name9(i18n("zoom"))
         :minValue(0)
@@ -73,12 +72,12 @@ function mod.init(fcpGroup)
             end
         end)
         :onChange(function(change)
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
             if type(mod._zoomChange) ~= "number" then
                 mod._zoomChange = 0
             end
             mod._zoomChange = mod._zoomChange + change
-            mod._updateZoomUI()
+            updateZoomUI()
         end)
         :onReset(function()
             local appearance = fcp:timeline():toolbar():appearance()
@@ -87,7 +86,7 @@ function mod.init(fcpGroup)
             end
         end)
 
-    mod._updateZoomUI:action(function()
+    updateZoomUI:action(function()
         if mod._zoomChange ~= 0 then
             local appearance = fcp:timeline():toolbar():appearance()
             if appearance then
@@ -104,8 +103,8 @@ function mod.init(fcpGroup)
     -- Timeline Clip Height:
     --------------------------------------------------------------------------------
     id = id + 1
-    mod._updateClipHeightUI = deferred.new(0.0000001)
-    mod.group:parameter(id)
+    local updateClipHeightUI = deferred.new(0.0000001)
+    timelineGroup:parameter(id)
         :name(i18n("clipHeight"))
         :name9(i18n("clipHeight"))
         :minValue(35)
@@ -120,12 +119,12 @@ function mod.init(fcpGroup)
             end
         end)
         :onChange(function(change)
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
             if type(mod._clipHeightChange) ~= "number" then
                 mod._clipHeightChange = 0
             end
             mod._clipHeightChange = mod._clipHeightChange + change
-            mod._updateClipHeightUI()
+            updateClipHeightUI()
         end)
         :onReset(function()
             local appearance = fcp:timeline():toolbar():appearance()
@@ -134,7 +133,7 @@ function mod.init(fcpGroup)
             end
         end)
 
-        mod._updateClipHeightUI:action(function()
+        updateClipHeightUI:action(function()
             if mod._clipHeightChange ~= 0 then
                 local appearance = fcp:timeline():toolbar():appearance()
                 if appearance then
@@ -151,13 +150,13 @@ function mod.init(fcpGroup)
     -- Timeline Clip Waveform Height Knob:
     --------------------------------------------------------------------------------
     id = id + 1
-    mod._cachedClipWaveformHeight = nil
-    mod.group:menu(id)
+    local cachedClipWaveformHeight = nil
+    timelineGroup:menu(id)
         :name(i18n("clipWaveformHeight"))
         :name9(i18n("clipWaveformHeight9"))
         :onGet(function()
-            if mod._cachedClipWaveformHeight then
-                return i18n("mode") .. " " .. mod._cachedClipWaveformHeight
+            if cachedClipWaveformHeight then
+                return i18n("mode") .. " " .. cachedClipWaveformHeight
             else
                 local selectedOption = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
                 if selectedOption then
@@ -167,93 +166,79 @@ function mod.init(fcpGroup)
         end)
         :onNext(function()
             fcp:timeline():toolbar():appearance():show():clipWaveformHeight():nextOption()
-            mod._cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
-            mod._appearancePopUpCloser:start()
+            cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
+            appearancePopUpCloser:start()
         end)
         :onPrev(function()
             fcp:timeline():toolbar():appearance():show():clipWaveformHeight():previousOption()
-            mod._cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
-            mod._appearancePopUpCloser:start()
+            cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
+            appearancePopUpCloser:start()
         end)
         :onReset(function()
             fcp:timeline():toolbar():appearance():show():clipWaveformHeight():selectedOption(1)
-            mod._cachedClipWaveformHeight = 1
-            mod._appearancePopUpCloser:start()
+            cachedClipWaveformHeight = 1
+            appearancePopUpCloser:start()
         end)
 
     --------------------------------------------------------------------------------
     -- Timeline Clip Waveform Height Buttons:
     --------------------------------------------------------------------------------
-    mod.clipWaveformHeightGroup = mod.group:group(i18n("clipWaveformHeight"))
+    local clipWaveformHeightGroup = timelineGroup:group(i18n("clipWaveformHeight"))
     for i=1, 6 do
         id = id + 1
-        mod.clipWaveformHeightGroup
+        clipWaveformHeightGroup
             :action(id, i18n("mode") .. " " .. i)
             :onPress(function()
                 fcp:timeline():toolbar():appearance():show():clipWaveformHeight():selectedOption(1)
-                mod._appearancePopUpCloser:start()
+                appearancePopUpCloser:start()
             end)
     end
 
     --------------------------------------------------------------------------------
     -- Timeline Display Options:
     --------------------------------------------------------------------------------
-    mod.viewOptions = mod.group:group(i18n("viewOptions"))
+    local viewOptions = timelineGroup:group(i18n("viewOptions"))
 
     id = id + 1
-    mod.viewOptions
+    viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("clipNames"))
         :onPress(function()
             fcp:timeline():toolbar():appearance():show():clipNames():toggle()
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
         end)
 
     id = id + 1
-    mod.viewOptions
+    viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("angles"))
         :onPress(function()
             fcp:timeline():toolbar():appearance():show():angles():toggle()
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
         end)
 
     id = id + 1
-    mod.viewOptions
+    viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("clipRoles"))
         :onPress(function()
             fcp:timeline():toolbar():appearance():show():clipRoles():toggle()
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
         end)
 
     id = id + 1
-    mod.viewOptions
+    viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("laneHeaders"))
         :onPress(function()
             fcp:timeline():toolbar():appearance():show():laneHeaders():toggle()
-            mod._appearancePopUpCloser:start()
+            appearancePopUpCloser:start()
         end)
 
-end
-
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
-local plugin = {
-    id = "finalcutpro.tangent.timeline",
-    group = "finalcutpro",
-    dependencies = {
-        ["finalcutpro.tangent.group"]   = "fcpGroup",
-    }
-}
-
-function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Initalise the Module:
+    -- Increase / Decrease Clip Height:
     --------------------------------------------------------------------------------
-    mod.init(deps.fcpGroup)
+    local clipHeightGroup = timelineGroup:group(i18n("clipHeight"))
 
-    return mod
+    id = shortcutParameter(clipHeightGroup, id, "increaseClipHeight", "IncreaseThumbnailSize")
+    id = shortcutParameter(clipHeightGroup, id, "decreaseClipHeight", "DecreaseThumbnailSize")
+
 end
 
 return plugin

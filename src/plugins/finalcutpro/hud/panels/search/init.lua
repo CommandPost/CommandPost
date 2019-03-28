@@ -676,6 +676,7 @@ local plugin = {
     dependencies    = {
         ["finalcutpro.hud.manager"]     = "manager",
         ["core.action.manager"]         = "actionManager",
+        ["finalcutpro.commands"]        = "fcpxCmds",
     }
 }
 
@@ -685,9 +686,10 @@ function plugin.init(deps, env)
         mod._manager = deps.manager
         mod._actionManager = deps.actionManager
 
+        local id = "search"
         local panel = deps.manager.addPanel({
             priority    = 2.1,
-            id          = "search",
+            id          = id,
             label       = i18n("search"),
             tooltip     = i18n("search"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/search.png"))),
@@ -745,6 +747,24 @@ function plugin.init(deps, env)
             end
         end
         deps.manager.addHandler("hudSearch", controllerCallback)
+
+        --------------------------------------------------------------------------------
+        -- Setup Command:
+        --------------------------------------------------------------------------------
+        deps.fcpxCmds
+            :add("cpHUDSearch")
+            :whenActivated(function()
+                if mod._manager.enabled() then
+                    if mod._manager.lastTab() == id then
+                        mod._manager.enabled(false)
+                    else
+                        mod._manager.refresh(id)
+                    end
+                else
+                    mod._manager.lastTab(id)
+                    mod._manager.enabled(true)
+                end
+            end)
     end
 end
 

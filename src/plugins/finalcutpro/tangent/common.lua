@@ -9,9 +9,10 @@ local log                   = require("hs.logger").new("tangentVideo")
 local geometry              = require("hs.geometry")
 local timer                 = require("hs.timer")
 
-local dialog                = require("cp.dialog")
 local axutils               = require("cp.ui.axutils")
+local commands              = require("cp.commands")
 local deferred              = require("cp.deferred")
+local dialog                = require("cp.dialog")
 local Do                    = require("cp.rx.go.Do")
 local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
@@ -42,7 +43,7 @@ local DEFER = 0.01
 -- The amount of time to delay UI updates
 local DELAY = 0.5
 
---- plugins.finalcutpro.tangent.common.popupParameter() -> none
+--- plugins.finalcutpro.tangent.common.popupParameter(group, param, id, value, label) -> number
 --- Function
 --- Sets up a new Popup Parameter for the Tangent
 ---
@@ -67,7 +68,7 @@ function mod.popupParameter(group, param, id, value, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter() -> none
+--- plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter(group, param, id, label, defaultValue) -> number
 --- Function
 --- Sets up a new Popup Slider parameter for the Tangent
 ---
@@ -97,17 +98,11 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
     local popupSliderCache = nil
 
     local updateUI = delayed.new(DELAY, function()
-        Do(param:doShow())
-            :Then(
-                If(function() return param:menuUI() ~= nil end)
-                    :Then(
-                        param:doSelectValue(param:menuUI():attributeValue("AXChildren")[popupSliderCache]:attributeValue("AXTitle"))
-                    )
-            )
+        Do(param:doSelectItem(popupSliderCache))
             :Then(function()
                 popupSliderCache = nil
             end)
-            :Label("plugins.finalcutpro.tangent.common.popupSliderParameter.updateUI")
+            :Label("plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter.updateUI")
             :Now()
     end)
 
@@ -153,18 +148,23 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
             Do(function()
                 popupSliderCache = 1
             end)
-                :Then(param:doShow())
-                :Then(param:doSelectValue(defaultValue))
-                :Then(function()
-                    popupSliderCache = nil
-                end)
-                :Label("plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter.reset")
+                :Then(
+                    If(function()
+                        return type(defaultValue) == "string"
+                    end)
+                    :Then(param:doSelectValue(defaultValue))
+                    :Otherwise(param:doSelectItem(defaultValue))
+                )
+            :Then(function()
+                popupSliderCache = nil
+            end)
+            :Label("plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter.reset")
         )
     return id + 1
 
 end
 
---- plugins.finalcutpro.tangent.common.popupSliderParameter() -> none
+--- plugins.finalcutpro.tangent.common.popupSliderParameter(group, param, id, label, options, resetIndex) -> number
 --- Function
 --- Sets up a new Popup Slider parameter for the Tangent
 ---
@@ -198,8 +198,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
     end
 
     local updateUI = delayed.new(DELAY, function()
-        Do(param:doShow())
-            :Then(param:doSelectValue(fcp:string(options[popupSliderCache].flexoID)))
+        Do(param:doSelectItem(popupSliderCache))
             :Then(function()
                 popupSliderCache = nil
             end)
@@ -289,7 +288,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
 
 end
 
---- plugins.finalcutpro.tangent.common.popupParameters() -> none
+--- plugins.finalcutpro.tangent.common.popupParameters(group, param, id, options) -> number
 --- Function
 --- Sets up a new Popup Parameter for the Tangent
 ---
@@ -313,7 +312,7 @@ function mod.popupParameters(group, param, id, options)
     return id
 end
 
---- plugins.finalcutpro.tangent.common.checkboxParameter() -> none
+--- plugins.finalcutpro.tangent.common.checkboxParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Checkbox Parameter for the Tangent
 ---
@@ -339,7 +338,7 @@ function mod.checkboxParameter(group, param, id, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.checkboxSliderParameter() -> none
+--- plugins.finalcutpro.tangent.common.checkboxSliderParameter(group, id, label, options, resetIndex) -> number
 --- Function
 --- Sets up a new Popup Slider parameter for the Tangent
 ---
@@ -443,7 +442,7 @@ function mod.doShortcut(id)
     end)
 end
 
---- plugins.finalcutpro.tangent.common.radioButtonParameter() -> none
+--- plugins.finalcutpro.tangent.common.radioButtonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Checkbox Parameter for the Tangent
 ---
@@ -467,7 +466,7 @@ function mod.radioButtonParameter(group, param, id, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.buttonParameter() -> none
+--- plugins.finalcutpro.tangent.common.buttonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Button Parameter for the Tangent
 ---
@@ -491,7 +490,7 @@ function mod.buttonParameter(group, param, id, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.doShowParameter() -> none
+--- plugins.finalcutpro.tangent.common.doShowParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new `DoShow` Parameter for the Tangent
 ---
@@ -514,7 +513,68 @@ function mod.doShowParameter(group, param, id, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.buttonParameter() -> none
+--- plugins.finalcutpro.tangent.common.commandParameter(group, id, commandID) -> number
+--- Function
+--- Sets up a new Command Parameter for the Tangent
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * commandID - The command ID.
+---
+--- Returns:
+---  * An updated ID
+function mod.commandParameter(group, id, groupID, commandID)
+    local cmd = commands.group(groupID):get(commandID)
+    group
+        :action(id + 1, cmd:getTitle())
+        :onPress(function()
+            cmd:pressed()
+        end)
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.shortcutParameter(group, id, label, shortcutID) -> number
+--- Function
+--- Sets up a new Final Cut Pro Shortcut Parameter for the Tangent.
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * shortcutID - The shortcut ID.
+---
+--- Returns:
+---  * An updated ID
+function mod.shortcutParameter(group, id, label, shortcut)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(fcp:doShortcut(shortcut))
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.menuParameter(group, id, label, path) -> number
+--- Function
+--- Sets up a new Final Cut Pro Menu Parameter for the Tangent.
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * path - The list of menu items you'd like to activate as a table.
+---
+--- Returns:
+---  * An updated ID
+function mod.menuParameter(group, id, label, path)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(fcp:doSelectMenu(path))
+    return id + 1
+end
+
+--- plugins.finalcutpro.tangent.common.buttonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Button Parameter for the Tangent
 ---
@@ -545,7 +605,7 @@ function mod.ninjaButtonParameter(group, param, id, label)
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.checkboxParameterByIndex() -> none
+--- plugins.finalcutpro.tangent.common.checkboxParameterByIndex(group, section, nextSection, id, label, index) -> number
 --- Function
 --- Sets up a new AXCheckBox object for the Tangent.
 ---
@@ -591,7 +651,7 @@ function mod.checkboxParameterByIndex(group, section, nextSection, id, label, in
     return id + 1
 end
 
---- plugins.finalcutpro.tangent.common.xyParameter() -> none
+--- plugins.finalcutpro.tangent.common.xyParameter(group, param, id, minValue, maxValue, stepSize) -> number
 --- Function
 --- Sets up a new XY Parameter
 ---
@@ -669,7 +729,7 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
     return id + 2, xParam, yParam, xyBinding
 end
 
---- plugins.finalcutpro.tangent.common.sliderParameter() -> none
+--- plugins.finalcutpro.tangent.common.sliderParameter(group, param, id, minValue, maxValue, stepSize, default, label, optionalParamA, optionalParamB) -> number, parameter
 --- Function
 --- Sets up a new Slider Parameter
 ---
@@ -739,7 +799,7 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
     return id + 1, valueParam
 end
 
---- plugins.finalcutpro.tangent.common.volumeSliderParameter() -> none
+--- plugins.finalcutpro.tangent.common.volumeSliderParameter(group, param, id, minValue, maxValue, stepSize, default, label) -> number, parameter
 --- Function
 --- Sets up a new Volume Slider Parameter
 ---

@@ -16,11 +16,11 @@ local ElementCache = class("cp.ui.ElementCache")
 --- and should take the parent provided here and the `axuielement` and return a new `Element` subclass.
 ---
 --- Parameters:
---- * parent - the parent [Element](cp.ui.Element.md) that contains the cached items.
---- * createFn - a function that will create new `Element` subclasses based on cached `axuielement` values.
+---  * parent - the parent [Element](cp.ui.Element.md) that contains the cached items.
+---  * createFn - a function that will create new `Element` subclasses based on cached `axuielement` values.
 ---
 --- Returns:
---- * The new `ElementCache`.
+---  * The new `ElementCache`.
 function ElementCache:initialize(parent, createFn)
     self.items = {}
     self.parent = parent
@@ -30,6 +30,12 @@ end
 --- cp.ui.ElementCache:clean()
 --- Method
 --- Clears the cache of any invalid (aka dead) items.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function ElementCache:clean()
     local cache = self.items
     if cache then
@@ -41,16 +47,28 @@ function ElementCache:clean()
     end
 end
 
---- cp.ui.ElementCache:reset()
+--- cp.ui.ElementCache:reset() -> none
 --- Method
 --- Removes all cached items from the cache.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function ElementCache:reset()
     self.items = {}
 end
 
---- ElementCache:cachedElement(cache, ui) -> cp.ui.Element or nil
+--- cp.ui.ElementCache:cachedElement(cache, ui) -> cp.ui.Element or nil
 --- Method
 --- Returns the cached [Element](cp.ui.Element.md), if it is present.
+---
+--- Parameters:
+---  * ui - The `axuielement` it is linked to. If not provided, it will be fetched by calling `Element:UI()`.
+---
+--- Returns:
+---  * `cp.ui.Element` or `nil`
 function ElementCache:cachedElement(ui)
     local cache = self.items
     if cache then
@@ -62,13 +80,16 @@ function ElementCache:cachedElement(ui)
     end
 end
 
---- ElementCache:cacheElement(element[, ui])
+--- cp.ui.ElementCache:cacheElement(element[, ui]) -> none
 --- Method
 --- Caches the provided [Element](cp.ui.Element.md).
 ---
 --- Parameters:
---- * element - The [Element](cp.ui.Element.md)
---- * ui - The `axuielement` it is linked to. If not provided, it will be fetched by calling `Element:UI()`.
+---  * element - The [Element](cp.ui.Element.md)
+---  * ui - The `axuielement` it is linked to. If not provided, it will be fetched by calling `Element:UI()`.
+---
+--- Returns:
+---  * None
 function ElementCache:cacheElement(element, ui)
     local cache = self.items
     ui = ui or element:UI()
@@ -77,14 +98,17 @@ function ElementCache:cacheElement(element, ui)
     end
 end
 
---- ElementCache:fetchElement(ui) -> cp.ui.Element or nil
+--- cp.ui.ElementCache:fetchElement(ui) -> cp.ui.Element or nil
 --- Method
 --- Retrieves the matching [Element](cp.ui.Element.md) instance from the cache.
 --- If none exists and the `createFn` was provided in the constructor,
 --- it will be used to create a new one, which is automatically cached for future reference.
 ---
 --- Parameters:
---- * ui - The `axuielement` being fetched for.
+---  * ui - The `axuielement` being fetched for.
+---
+--- Returns:
+---  * `cp.ui.Element` or `nil`
 function ElementCache:fetchElement(ui)
     if ui:attributeValue("AXParent") ~= self.parent:UI() then
         return nil
@@ -108,13 +132,13 @@ end
 --- Fetches a list of [Element](cp.ui.Element.md) instances linked to the provided `axuielement` list.
 ---
 --- Parameters:
---- * uis	- A `table` of `axuielement` values.
+---  * uis	- A `table` of `axuielement` values.
 ---
 --- Returns:
---- * A `table` of [Element](cp.ui.Element.md) values.
+---  * A `table` of [Element](cp.ui.Element.md) values.
 ---
 --- Notes:
---- * If any of the provided `axuielement` values are either not from the parent, or no longer valid, a `nil` value will be stored in the matching index. Note that in that case, this will break useage of `ipairs` due to leaving holes in the list.
+---  * If any of the provided `axuielement` values are either not from the parent, or no longer valid, a `nil` value will be stored in the matching index. Note that in that case, this will break useage of `ipairs` due to leaving holes in the list.
 function ElementCache:fetchElements(uis)
     if uis then
         self:clean()
