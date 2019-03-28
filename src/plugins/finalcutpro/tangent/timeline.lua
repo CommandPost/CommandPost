@@ -105,6 +105,7 @@ function plugin.init(deps)
     -- Timeline Clip Height:
     --------------------------------------------------------------------------------
     id = id + 1
+    local clipHeightChange = 0
     local updateClipHeightUI = deferred.new(0.0000001)
     timelineGroup:parameter(id)
         :name(i18n("clipHeight"))
@@ -122,10 +123,10 @@ function plugin.init(deps)
         end)
         :onChange(function(change)
             appearancePopUpCloser:start()
-            if type(mod._clipHeightChange) ~= "number" then
-                mod._clipHeightChange = 0
+            if type(clipHeightChange) ~= "number" then
+                clipHeightChange = 0
             end
-            mod._clipHeightChange = mod._clipHeightChange + change
+            clipHeightChange = clipHeightChange + change
             updateClipHeightUI()
         end)
         :onReset(function()
@@ -136,15 +137,15 @@ function plugin.init(deps)
         end)
 
         updateClipHeightUI:action(function()
-            if mod._clipHeightChange ~= 0 then
+            if clipHeightChange ~= 0 then
                 local appearance = fcp:timeline():toolbar():appearance()
                 if appearance then
                     local currentValue = appearance:show():clipHeight():getValue()
                     if currentValue then
-                        appearance:show():clipHeight():setValue(currentValue + mod._clipHeightChange)
+                        appearance:show():clipHeight():setValue(currentValue + clipHeightChange)
                     end
                 end
-                mod._clipHeightChange = 0
+                clipHeightChange = 0
             end
         end)
 
