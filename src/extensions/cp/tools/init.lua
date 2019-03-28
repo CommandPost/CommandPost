@@ -23,6 +23,7 @@ local config                                    = require("cp.config")
 local v                                         = require("semver")
 
 local insert                                    = table.insert
+local usleep                                    = timer.usleep
 
 --------------------------------------------------------------------------------
 --
@@ -87,6 +88,28 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.rescale(value, inMin, inMax, outMin, outMax) -> number | nil
+--- Function
+--- Takes an input, rescales it, and provides a new output.
+---
+--- Parameters:
+---  * value - The value you want to process as a number
+---  * inMin - The minimum value of the input as a number
+---  * inMax - The maximum value of the input as a number
+---  * outMin - The minimum value of the output as a number
+---  * outMax - The maximum value of the output as a number
+---
+--- Returns:
+---  * The rescaled value as a number or `nil`.
+function tools.rescale(value, inMin, inMax, outMin, outMax)
+    if value and inMin and inMax and outMin and outMax and
+    type(value) == "number" and type(inMin) == "number" and type(inMax) == "number" and type(outMin) == "number" and type(outMax) == "number" and
+    value >= inMin and
+    value <= inMax then
+        return ((value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin)
+    end
 end
 
 --- cp.tools.getKeysSortedByValue(tbl, sortFunction) -> table
@@ -926,7 +949,7 @@ function tools.leftClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
     eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
@@ -945,7 +968,7 @@ function tools.rightClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
     eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
@@ -979,7 +1002,7 @@ function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 
@@ -997,7 +1020,7 @@ function tools.ninjaRightMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.rightClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 
@@ -1015,7 +1038,7 @@ function tools.ninjaDoubleClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.doubleLeftClick(point, delay)
-    if delay > 0 then timer.usleep(delay) end
+    if delay > 0 then usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
 

@@ -137,7 +137,7 @@ end
 ---  * `LibrariesFilmstrip` object
 function LibrariesFilmstrip:show()
     if not self:isShowing() and self:parent():show():isShowing() then
-        self:parent():toggleViewMode():press()
+        self:parent():toggleViewMode()
     end
     return self
 end

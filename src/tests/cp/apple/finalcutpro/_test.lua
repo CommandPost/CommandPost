@@ -41,7 +41,9 @@ local tools         = require("cp.tools")
 
 local v             = require("semver")
 
-local format = string.format
+local doAfter       = timer.doAfter
+local format        = string.format
+
 local rmdir, mkdir, attributes = tools.rmdir, fs.mkdir, fs.attributes
 
 local TEST_LIBRARY = "Test Library"
@@ -83,9 +85,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             local viewer = fcp:viewer()
 
             ok(viewer:isShowing())
-            ok(viewer:topToolbarUI() ~= nil)
+            ok(viewer:infoBar():UI() ~= nil)
             ok(viewer:bottomToolbarUI() ~= nil)
-            ok(viewer:formatUI() ~= nil)
+            ok(viewer.format() ~= nil)
             ok(viewer:framerate() ~= nil)
             ok(viewer:title() ~= nil)
 
@@ -383,32 +385,32 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- Check UI elements
             ok(libraries:isShowing())
-            ok(libraries:toggleViewMode():isShowing())
-            ok(libraries:appearanceAndFiltering():isShowing())
+            ok(libraries.toggleViewMode.isShowing())
+            ok(libraries.appearanceAndFiltering:isShowing())
             ok(libraries:sidebar():isShowing())
 
             -- Check the search UI
-            ok(libraries:searchToggle():isShowing())
+            ok(libraries.searchToggle:isShowing())
             -- Show the search field if necessary
-            if not libraries:search():isShowing() or not libraries:filterToggle():isShowing() then
-                libraries:searchToggle():press()
+            if not libraries.search:isShowing() or not libraries.filterToggle:isShowing() then
+                libraries.searchToggle()
             end
 
-            ok(libraries:search():isShowing())
-            ok(libraries:filterToggle():isShowing())
+            ok(libraries.search:isShowing())
+            ok(libraries.filterToggle:isShowing())
             -- turn it back off
-            libraries:searchToggle():press()
-            ok(not libraries:search():isShowing())
-            ok(not libraries:filterToggle():isShowing())
+            libraries:searchToggle()
+            ok(not libraries.search:isShowing())
+            ok(not libraries.filterToggle:isShowing())
 
             -- Check that it hides
             libraries:hide()
             ok(not libraries:isShowing())
-            ok(not libraries:toggleViewMode():isShowing())
-            ok(not libraries:appearanceAndFiltering():isShowing())
-            ok(not libraries:searchToggle():isShowing())
-            ok(not libraries:search():isShowing())
-            ok(not libraries:filterToggle():isShowing())
+            ok(not libraries.toggleViewMode:isShowing())
+            ok(not libraries.appearanceAndFiltering:isShowing())
+            ok(not libraries.searchToggle:isShowing())
+            ok(not libraries.search:isShowing())
+            ok(not libraries.filterToggle:isShowing())
         end
     ),
     test(
@@ -715,7 +717,7 @@ onRun(
             -- wait until the library actually closes...
             just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 10, 0.1)
 
-            timer.doAfter(1, function()
+            doAfter(1, function()
                 -- delete the temporary library copy.
                 local ok, err = rmdir(targetLibraryPath, true)
                 if not ok then

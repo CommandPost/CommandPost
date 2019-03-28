@@ -7,8 +7,10 @@ local require = require
 local timer         = require("hs.timer")
 
 local config        = require("cp.config")
-local fcp			      = require("cp.apple.finalcutpro")
+local fcp			= require("cp.apple.finalcutpro")
 local i18n          = require("cp.i18n")
+
+local doAfter       = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -54,7 +56,7 @@ function mod.init(deps)
                                 getElementByXpath("/html/body/div/div[2]").style.display = "none";
                                 getElementByXpath("/html/body/div/div[1]/p").innerHTML = "<h1>]] .. i18n("scanningInProgress") .. [[...</h1><h2>]] .. i18n("thisCanTakeSeveralMinutes") .. [[.</h2>"
                             ]])
-                            timer.doAfter(0.1, function()
+                            doAfter(0.1, function()
                                 fcp:scanPlugins()
                                 setup.nextPanel()
                             end)

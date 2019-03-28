@@ -15,6 +15,8 @@ local i18n                          = require("cp.i18n")
 local tools                         = require("cp.tools")
 local ui                            = require("cp.web.ui")
 
+local doAfter                       = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -239,7 +241,7 @@ function mod.highlightFrame(frame)
     --------------------------------------------------------------------------------
     -- Set a timer to delete the circle after the configured time:
     --------------------------------------------------------------------------------
-    mod.browserHighlightTimer = timer.doAfter(mod.getHighlightTime(), mod.deleteHighlight)
+    mod.browserHighlightTimer = doAfter(mod.getHighlightTime(), mod.deleteHighlight)
 
 end
 

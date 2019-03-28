@@ -52,9 +52,9 @@ function mod.init(fcpGroup)
     --------------------------------------------------------------------------------
     -- Timeline Zoom:
     --------------------------------------------------------------------------------
-    mod._updateZoomUI = deferred.new(0.01)
+    mod._updateZoomUI = deferred.new(0.0000001)
 
-    mod._zoomDelayedCloser = delayed.new(0.5, function()
+    mod._zoomDelayedCloser = delayed.new(1, function()
         local appearance = fcp:timeline():toolbar():appearance()
         if appearance then
             appearance:hide()

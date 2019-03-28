@@ -15,6 +15,7 @@ local fcp				= require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local plist				= require("cp.plist")
 
+local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
 --------------------------------------------------------------------------------
@@ -96,7 +97,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     fcp.currentLocale:watch(function()
         mod._handler:reset()
-        timer.doAfter(0.01, function() mod._handler.choices:update() end)
+        doAfter(0.01, function() mod._handler.choices:update() end)
     end)
 
     return mod

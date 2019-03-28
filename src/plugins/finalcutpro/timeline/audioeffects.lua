@@ -4,13 +4,15 @@
 
 local require = require
 
-local log				   = require("hs.logger").new("audiofx")
+local log				= require("hs.logger").new("audiofx")
 
-local timer				 = require("hs.timer")
+local timer				= require("hs.timer")
 
-local dialog			 = require("cp.dialog")
-local fcp				   = require("cp.apple.finalcutpro")
-local i18n         = require("cp.i18n")
+local dialog            = require("cp.dialog")
+local fcp				= require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
+
+local doAfter           = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -130,7 +132,7 @@ function mod.apply(action)
     -- TODO: HACK: This timer exists to  work around a mouse bug in
     --       Hammerspoon Sierra
     --------------------------------------------------------------------------------
-    timer.doAfter(0.1, function()
+    doAfter(0.1, function()
         effects:loadLayout(effectsLayout)
         if transitionsLayout then transitions:loadLayout(transitionsLayout) end
         if not effectsShowing then effects:hide() end

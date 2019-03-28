@@ -1054,7 +1054,7 @@ end
 --- Notes:
 ---  * Full documentation for the Tangent API can be downloaded [here](http://www.tangentwave.co.uk/download/developer-support-pack/).
 ---  * The callback function should expect 1 argument and should not return anything.
---   * The 1 argument will be a table, which can contain one or many commands. Each command is it's own table with the following contents:
+---  * The 1 argument will be a table, which can contain one or many commands. Each command is it's own table with the following contents:
 ---    * id - the message ID of the incoming message
 ---    * metadata - A table of data for the Tangent command (see below).
 ---  * The metadata table will return the following, depending on the `id` for the callback:
@@ -1217,7 +1217,7 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
     return mod.send(byteString)
 end
 
---- hs.tangent.setParameterValue(paramID, value[, atDefault]) -> boolean, string
+--- hs.tangent.sendParameterValue(paramID, value[, atDefault]) -> boolean, string
 --- Function
 --- Updates the Hub with a parameter value.
 --- The Hub then updates the displays of any panels which are currently
@@ -1258,7 +1258,7 @@ end
 --- Function
 --- Updates the Hub with a menu value.
 --- The Hub then updates the displays of any panels which are currently
---    showing the menu.
+--- showing the menu.
 --- If a value of `nil` is sent then the Hub will not attempt to display a
 --- value for the menu. However the `atDefault` flag will still be recognised.
 ---

@@ -4,10 +4,10 @@
 
 local require = require
 
-local axutils						            = require("cp.ui.axutils")
+local axutils                       = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-
 local go                            = require("cp.rx.go")
+
 local If, WaitUntil                 = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
@@ -16,6 +16,11 @@ local If, WaitUntil                 = go.If, go.WaitUntil
 --
 --------------------------------------------------------------------------------
 local PopUpButton = Element:subclass("cp.ui.PopUpButton")
+
+-- TIMEOUT_AFTER -> number
+-- Constant
+-- The common timeout amount in milliseconds.
+local TIMEOUT_AFTER = 3000
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function
@@ -35,7 +40,7 @@ end
 --- Creates a new PopUpButton.
 ---
 --- Parameters:
----  * parent		- The parent table. Should have a `isShowing` property.
+---  * parent       - The parent table. Should have a `isShowing` property.
 ---  * uiFinder      - The `function` or `cp.prop` that provides the current `hs._asm.axuielement`.
 ---
 --- Returns:
@@ -128,8 +133,8 @@ end
 ---  * the `Statement`.
 function PopUpButton:doSelectItem(index)
     return If(self.UI)
-    :Then(self:doPress())
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         local item = menuUI[index]
         if item then
@@ -140,7 +145,7 @@ function PopUpButton:doSelectItem(index)
             return false
         end
     end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
     :Label("PopUpMenu:doSelectItem")
 end
@@ -156,8 +161,8 @@ end
 ---  * the `Statement`.
 function PopUpButton:doSelectValue(value)
     return If(self.UI)
-    :Then(self:doPress())
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         for _,item in ipairs(menuUI) do
             if item:title() == value then
@@ -168,7 +173,7 @@ function PopUpButton:doSelectValue(value)
         menuUI:doCancel()
         return false
     end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
     :Label("PopUpButton:doSelectValue")
 end

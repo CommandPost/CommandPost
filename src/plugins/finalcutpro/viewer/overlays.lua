@@ -26,8 +26,9 @@ local tools             = require("cp.tools")
 
 local Do                = require("cp.rx.go.Do")
 
-local events            = eventtap.event.types
 local capslock          = hid.capslock
+local doAfter           = timer.doAfter
+local events            = eventtap.event.types
 
 --------------------------------------------------------------------------------
 --
@@ -483,7 +484,7 @@ function mod.show()
                                     mod._draggableGuideDoubleClick = false
                                 else
                                     mod._draggableGuideDoubleClick = true
-                                    timer.doAfter(eventtap.doubleClickInterval(), function()
+                                    doAfter(eventtap.doubleClickInterval(), function()
                                         mod._draggableGuideDoubleClick = false
                                     end)
                                 end

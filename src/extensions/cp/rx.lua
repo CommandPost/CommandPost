@@ -9,12 +9,13 @@
 
 local require = require
 
-local timer            = require("hs.timer")
-local List             = require("cp.collect.List")
-local Queue            = require("cp.collect.Queue")
+local timer             = require("hs.timer")
+local List              = require("cp.collect.List")
+local Queue             = require("cp.collect.Queue")
 
-local format           = string.format
-local insert, remove   = table.insert, table.remove
+local doAfter           = timer.doAfter
+local format            = string.format
+local insert, remove    = table.insert, table.remove
 
 --------------------------------------------------------------------------------
 --
@@ -3435,7 +3436,7 @@ end
 --- * The [Reference](cp.rx.Reference.md).
 function TimeoutScheduler:schedule(action, delay)
   delay = delay or 0
-  local t = timer.doAfter(delay/1000.0, action)
+  local t = doAfter(delay/1000.0, action)
   self._timers[t] = true
 
   return Reference.create(function()

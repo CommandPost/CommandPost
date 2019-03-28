@@ -22,6 +22,8 @@ local _           = require("moses")
 
 local panel       = require("panel")
 
+local waitUntil   = timer.waitUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -330,14 +332,15 @@ function mod.new()
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
     if not mod._toolbar then
+        mod._changeInProgress = false
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
-                mod.selectPanel(id)
-                mod.refresh()
+                waitUntil(function() return not mod._webview:loading() end, function()
+                        mod.refresh(id)
+                end, 0.01)
             end)
-
         local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
@@ -440,10 +443,12 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.refresh()
+function mod.refresh(id)
     if mod._webview then
-        mod.selectPanel(mod.currentPanelID())
-        mod._webview:html(generateHTML())
+        if mod.currentPanelID() ~= id then
+            mod.selectPanel(id)
+            mod._webview:html(generateHTML())
+        end
     end
 end
 
@@ -461,7 +466,7 @@ function mod.injectScript(script)
         --------------------------------------------------------------------------------
         -- Wait until the Webview has loaded before executing JavaScript:
         --------------------------------------------------------------------------------
-        timer.waitUntil(function() return not mod._webview:loading() end, function()
+        waitUntil(function() return not mod._webview:loading() end, function()
             mod._webview:evaluateJavaScript(script,
                 function(_, theerror)
                     if theerror and theerror.code ~= 0 then

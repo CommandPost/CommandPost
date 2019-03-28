@@ -359,16 +359,16 @@ function Browser.lazy.method:showGenerators()
     end)
 end
 
---- cp.apple.finalcutpro.main.Browser:libraries() -> LibrariesBrowser
---- Method
---- Get Libraries Browser object.
+--- cp.apple.finalcutpro.main.Browser.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
+--- Field
+--- The [module](package.module.md) object.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A `LibrariesBrowser` object.
-function Browser.lazy.method:libraries()
+function Browser.lazy.value:libraries()
     return LibrariesBrowser(self)
 end
 

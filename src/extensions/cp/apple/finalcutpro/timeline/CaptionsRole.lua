@@ -43,7 +43,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.CaptionsRole:visibleInViewer() -> cp.ui.CheckBox
 --- Method
---- A [CheckBox](cp.ui.CheckBox.md) that toggles whether captions are visible in the [Viewer](cp.apple.finalcutpro.main.Viewer.md).
+--- A [CheckBox](cp.ui.CheckBox.md) that toggles whether captions are visible in the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md).
 function CaptionsRole.lazy.method:visibleInViewer()
     return CheckBox(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, CheckBox.matches)

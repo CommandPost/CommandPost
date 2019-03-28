@@ -51,14 +51,14 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Ensure the Search Bar is visible
             --------------------------------------------------------------------------------
-            if not libraries:search():isShowing() then
-                libraries:searchToggle():press()
+            if not libraries.search:isShowing() then
+                libraries:searchToggle()
             end
 
             --------------------------------------------------------------------------------
             -- Search for the title
             --------------------------------------------------------------------------------
-            libraries:search():setValue(clipName)
+            libraries.search(clipName)
         else
             tools.playErrorSound()
             log.ef("Unable to find the clip title.")

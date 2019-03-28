@@ -73,7 +73,7 @@ function mod.addNoteToSelectedClip()
     local filmstripView = false
     if libraries:isFilmstripView() then
         filmstripView = true
-        libraries:toggleViewMode():press()
+        libraries:toggleViewMode()
         if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end
     end
 
@@ -166,7 +166,7 @@ function mod.addNoteToSelectedClip()
         end
 
         if filmstripView then
-            libraries:toggleViewMode():press()
+            libraries:toggleViewMode()
         end
 
         if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end

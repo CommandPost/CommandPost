@@ -27,6 +27,8 @@ local just                              = require("cp.just")
 local tools                             = require("cp.tools")
 local i18n                              = require("cp.i18n")
 
+local doAfter                           = timer.doAfter
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -504,7 +506,7 @@ function mod._completeProcess()
         local filmstripView = false
         if libraries:isFilmstripView() then
             filmstripView = true
-            libraries:toggleViewMode():press()
+            libraries:toggleViewMode()
         end
 
         --------------------------------------------------------------------------------
@@ -573,7 +575,7 @@ function mod._completeProcess()
         -- Restore Filmstrip View:
         --------------------------------------------------------------------------------
         if filmstripView then
-            libraries:toggleViewMode():press()
+            libraries:toggleViewMode()
         end
 
         --------------------------------------------------------------------------------
@@ -615,7 +617,7 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Restore original Pasteboard Content:
     --------------------------------------------------------------------------------
-    timer.doAfter(2, function()
+    doAfter(2, function()
         pasteboard.writeAllData(originalPasteboard)
         if mod.pasteboardManager then
             mod.pasteboardManager.startWatching()
@@ -626,7 +628,7 @@ function mod._completeProcess()
     -- Delete File After Import:
     --------------------------------------------------------------------------------
     if copyToMediaFolder and mod.deleteFileAfterImport() then
-        timer.doAfter(mod.DELETE_DELAY, function()
+        doAfter(mod.DELETE_DELAY, function()
             os.remove(savePath)
         end)
     end

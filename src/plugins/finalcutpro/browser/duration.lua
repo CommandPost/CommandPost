@@ -9,6 +9,8 @@ local eventtap                          = require("hs.eventtap")
 
 local fcp                               = require("cp.apple.finalcutpro")
 
+local doUntil                           = timer.doUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -34,7 +36,7 @@ local function shiftClipHeight(direction)
     --------------------------------------------------------------------------------
     -- Find the Timeline Appearance Button:
     --------------------------------------------------------------------------------
-    local appearance = fcp:libraries():appearanceAndFiltering()
+    local appearance = fcp.libraries.appearanceAndFiltering
     if appearance then
         appearance:show()
         if direction == "up" then
@@ -59,7 +61,7 @@ end
 --  * None
 local function changeBrowserDurationRelease()
     mod.changeBrowserDurationAlreadyInProgress = false
-    fcp:libraries():appearanceAndFiltering():hide()
+    fcp.libraries.appearanceAndFiltering:hide()
 end
 
 --- plugins.finalcutpro.browser.duration.changeBrowserDuration(direction) -> none
@@ -88,7 +90,7 @@ function mod.changeBrowserDuration(direction)
     -- Keep looping it until the key is released.
     --------------------------------------------------------------------------------
     if result then
-        timer.doUntil(function() return not mod.changeBrowserDurationAlreadyInProgress end, function()
+        doUntil(function() return not mod.changeBrowserDurationAlreadyInProgress end, function()
             shiftClipHeight(direction)
         end, eventtap.keyRepeatInterval())
     end

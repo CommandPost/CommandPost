@@ -276,11 +276,17 @@
                                 <Key>0x00310105</Key> <!-- Apply Color Correction from Previous Clip -->
                                 <CustomName>1 Back</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730019</Key> <!-- Normal -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310107</Key> <!-- Apply Color Correction from Two Clips Back -->
                                 <CustomName>2 Back</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730023</Key> <!-- Subtract -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
@@ -288,11 +294,17 @@
                                 <Key>0x00310106</Key> <!-- Apply Color Correction from Three Clips Back -->
                                 <CustomName>3 Back</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73000F</Key> <!-- Darken -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310108</Key> <!-- Enable/Disable Balance Color -->
                                 <CustomName>Balance</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730018</Key> <!-- Multiply -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="4"> <!-- Element-Bt Button 5 -->
@@ -300,11 +312,19 @@
                                 <Key>0x00310110</Key> <!-- Match Color -->
                                 <CustomName>Match</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73000D</Key> <!-- Color Burn -->
+                                <CustomName>ColorBurn</CustomName>
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="5"> <!-- Element-Bt Button 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310113</Key> <!-- Toggle Effects -->
                                 <CustomName>T/Effects</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730015</Key> <!-- Linear Burn -->
+                                <CustomName>LinBurn</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Bt Button 7 -->
@@ -312,11 +332,17 @@
                                 <Key>0x00310112</Key> <!-- Toggle Color Correction Effects -->
                                 <CustomName>T/Color</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73000A</Key> <!-- Add -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Bt Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00310118</Key> <!-- View All Color Channels -->
                                 <CustomName>T/All</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730014</Key> <!-- Lighten -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Bt Button 9 -->
@@ -324,11 +350,18 @@
                                 <Key>0x00310114</Key> <!-- View Alpha Color Channel -->
                                 <CustomName>T/Alpha</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73001D</Key> <!-- Screen -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Bt Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00310115</Key> <!-- View Red Color Channel -->
                                 <CustomName>T/Red</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73000E</Key> <!-- Color Dodge -->
+                                <CustomName>ColorDodg</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Bt Button 11 -->
@@ -336,11 +369,18 @@
                                 <Key>0x00310116</Key> <!-- View Green Color Channel -->
                                 <CustomName>T/Green</CustomName>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730016</Key> <!-- Linear Dodge -->
+                                <CustomName>LinDodg</CustomName>
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Bt Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00310117</Key> <!-- View Blue Color Channel -->
                                 <CustomName>T/Blue</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F73001A</Key> <!-- Overlay -->
                             </Mapping>
                         </Control>
                     </Bank>

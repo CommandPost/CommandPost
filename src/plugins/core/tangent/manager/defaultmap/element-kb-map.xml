@@ -256,6 +256,37 @@
                         </Control>
                     </Bank>
                 </ControlBank>
+                <ControlBank id="Encoder">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
+                                <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00140001</Key> <!-- Duration -->
+                                <CustomName>Duration</CustomName>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00140002</Key> <!-- Height -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730009</Key> <!-- Blend Mode -->
+                                <Display>Bar</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
             </Mode>
         </Panel>
     </Panels>

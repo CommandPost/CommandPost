@@ -48,7 +48,6 @@ local i18n              = require("cp.i18n")
 local just              = require("cp.just")
 local tools	            = require("cp.tools")
 
-local tableContains     = tools.tableContains
 local tableCount        = tools.tableCount
 local tableMatch        = tools.tableMatch
 
@@ -56,6 +55,8 @@ local playErrorSound    = tools.playErrorSound
 
 local childrenWithRole  = axutils.childrenWithRole
 local childWithRole     = axutils.childWithRole
+
+local doAfter           = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
@@ -110,7 +111,7 @@ function mod.setupWatcher()
                             --------------------------------------------------------------------------------
                             -- We need to add in a delay to give the UI time to update:
                             --------------------------------------------------------------------------------
-                            timer.doAfter(0.1, function()
+                            doAfter(0.1, function()
                                 mod.restoreBrowserLayoutForSelectedCollection()
                             end)
                         end
@@ -188,7 +189,7 @@ end
 function mod.restoreLayoutFromTable(layout)
 
     local libraries = fcp:libraries()
-    local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
+    local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
     -- Show Libraries:
@@ -437,8 +438,8 @@ end
 ---  * A table containing the layout settings if successful otherwise `false`.
 function mod.saveLayoutToTable()
 
-    local libraries = fcp:libraries()
-    local appearanceAndFiltering = fcp:libraries():appearanceAndFiltering()
+    local libraries = fcp.libraries
+    local appearanceAndFiltering = libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
     -- Show Libraries:

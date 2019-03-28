@@ -55,6 +55,16 @@ function plugin.init(deps)
 
             :addParagraph(2201, html.span { class="tbTip" } ( i18n("advancedFeaturesWarning") .. "<br /><br />", false ).. "\n\n")
 
+            :addContent(8998, "<br />", false)
+            :addButton(8999,
+                {
+                    label = i18n("moveableMarkers") .. "?",
+                    width = 200,
+                    onclick = function()
+                        os.execute('open "https://help.commandpost.io/getting-started/faq#why-did-you-remove-moveable-markers"')
+                    end,
+                })
+
             :addContent(9000, [[
                     </div>
                 </div>

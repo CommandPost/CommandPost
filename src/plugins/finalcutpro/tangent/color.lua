@@ -6,18 +6,20 @@ local require = require
 
 local log                                       = require("hs.logger").new("fcp_tangent")
 
-local deferred                                  = require("cp.deferred")
-local prop                                      = require("cp.prop")
+local tangent                                   = require("hs.tangent")
 
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local deferred                                  = require("cp.deferred")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
-local i18n                                      = require("cp.i18n")
-
 local go                                        = require("cp.rx.go")
-local If, Do                                    = go.If, go.Do
+local i18n                                      = require("cp.i18n")
+local prop                                      = require("cp.prop")
+local tools                                     = require("cp.tools")
 
 local format                                    = string.format
+local If, Do                                    = go.If, go.Do
+local round                                     = tools.round
 
 --------------------------------------------------------------------------------
 --
@@ -26,7 +28,15 @@ local format                                    = string.format
 --------------------------------------------------------------------------------
 local mod = {}
 
--- TODO: Add Documentation
+-- doShortcut(id) -> none
+-- Function
+-- Triggers a shortcut via Rx.
+--
+-- Parameters:
+--  * id - The ID of the shortcut.
+--
+-- Returns:
+--  * None
 local function doShortcut(id)
     return fcp:doShortcut(id):Catch(function(message)
         log.wf("Unable to perform %q shortcut: %s", id, message)
@@ -244,6 +254,19 @@ function mod.init(tangentManager, fcpGroup)
 
         local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
 
+        --------------------------------------------------------------------------------
+        -- Update all three displays on the Tangent Element when you move a wheel:
+        --------------------------------------------------------------------------------
+        local updateWheelScreen = function(w)
+            local colorValue = w:colorValue()
+            if colorValue then
+                local offset = 255
+                tangent.sendParameterValue(id + 3, round(colorValue.red * offset))
+                tangent.sendParameterValue(id + 1, round(colorValue.green * offset))
+                tangent.sendParameterValue(id + 2, round(colorValue.blue * offset))
+            end
+        end
+
         local horiz = cwGroup:parameter(id + 1)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iHorizontal))
             :name9(format("%s %s", iWheel4, iHorizontal4))
@@ -251,8 +274,7 @@ function mod.init(tangentManager, fcpGroup)
             :maxValue(1)
             :stepSize(ColorWell.KEY_PRESS)
             :onGet(function()
-                local orientation = wheel:colorOrientation()
-                return orientation and orientation.right
+                updateWheelScreen(wheel)
             end)
             :onChange(function(value)
                 rightChange = rightChange + value
@@ -267,8 +289,7 @@ function mod.init(tangentManager, fcpGroup)
             :maxValue(1)
             :stepSize(ColorWell.KEY_PRESS)
             :onGet(function()
-                local orientation = wheel:colorOrientation()
-                return orientation and orientation.up
+                updateWheelScreen(wheel)
             end)
             :onChange(function(value)
                 upChange = upChange + value
@@ -282,7 +303,10 @@ function mod.init(tangentManager, fcpGroup)
             :minValue(0)
             :maxValue(2)
             :stepSize(0.001)
-            :onGet(function() wheel:saturation():value() end)
+            :onGet(function()
+                local value = wheel:saturation():value()
+                return value and round(value, 2)
+            end)
             :onChange(function(value)
                 satChange = satChange + value
                 updateUI()
@@ -295,7 +319,10 @@ function mod.init(tangentManager, fcpGroup)
             :minValue(-1)
             :maxValue(1)
             :stepSize(0.001)
-            :onGet(function() wheel:brightness():value() end)
+            :onGet(function()
+                local value = wheel:brightness():value()
+                return value and round(value, 2)
+            end)
             :onChange(function(value)
                 brightChange = brightChange + value
                 updateUI()

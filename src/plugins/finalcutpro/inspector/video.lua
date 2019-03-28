@@ -58,8 +58,7 @@ end
 -- Changes the Blend Mode.
 --
 -- Parameters:
---  * value - The blend mode you wish to change the clip(s) too as a string
---            (as it appears in the Inspector in English).
+--  * value - The blend mode you wish to change the clip(s) too as a string.
 --
 -- Returns:
 --  * None
@@ -248,6 +247,64 @@ local function doRollingShutterAmount(value)
     :Label("video.doRollingShutterAmount")
 end
 
+local function getLongBlendModei18n(name)
+    if name == "Normal" then
+        return i18n("normal")
+    elseif name == "Subtract" then
+        return i18n("subtract")
+    elseif name == "Darken" then
+        return i18n("darken")
+    elseif name == "Multiply" then
+        return i18n("multiply")
+    elseif name == "Color Burn" then
+        return i18n("colorBurn")
+    elseif name == "Linear Burn" then
+        return i18n("linearBurn")
+    elseif name == "Add" then
+        return i18n("add")
+    elseif name == "Lighten" then
+        return i18n("lighten")
+    elseif name == "Screen" then
+        return i18n("screen")
+    elseif name == "Color Dodge" then
+        return i18n("colorDodge")
+    elseif name == "Linear Dodge" then
+        return i18n("linearDodge")
+    elseif name == "Overlay" then
+        return i18n("overlay")
+    elseif name == "Soft Light" then
+        return i18n("softLight")
+    elseif name == "Hard Light" then
+        return i18n("hardLight")
+    elseif name == "Vivid Light" then
+        return i18n("vividLight")
+    elseif name == "Linear Light" then
+        return i18n("linearLight")
+    elseif name == "Pin Light" then
+        return i18n("pinLight")
+    elseif name == "Hard Mix" then
+        return i18n("hardMix")
+    elseif name == "Difference" then
+        return i18n("difference")
+    elseif name == "Exclusion" then
+        return i18n("exclusion")
+    elseif name == "Stencil Alpha" then
+        return i18n("stencilAlpha")
+    elseif name == "Stencil Luma" then
+        return i18n("stencilLuma")
+    elseif name == "Silhouette Alpha" then
+        return i18n("silhouetteAlpha")
+    elseif name == "Silhouette Luma" then
+        return i18n("silhouetteLuma")
+    elseif name == "Behind" then
+        return i18n("behind")
+    elseif name == "Alpha Add" then
+        return i18n("alphaAdd")
+    elseif name == "Premultiplied Mix" then
+        return i18n("premultipliedMix")
+    end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -341,41 +398,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Blend Modes:
     --------------------------------------------------------------------------------
-    local blendModes = {
-        ["FFHeliumBlendModeNormal"] = "Normal",
-        ["FFHeliumBlendModeSubtract"] = "Subtract",
-        ["FFHeliumBlendModeDarken"] = "Darken",
-        ["FFHeliumBlendModeMultiply"] = "Multiply",
-        ["FFHeliumBlendModeColorBurn"] = "Color Burn",
-        ["FFHeliumBlendModeLinearBurn"] = "Linear Burn",
-        ["FFHeliumBlendModeAdd"] = "Add",
-        ["FFHeliumBlendModeLighten"] = "Lighten",
-        ["FFHeliumBlendModeScreen"] = "Screen",
-        ["FFHeliumBlendModeColorDodge"] = "Color Dodge",
-        ["FFHeliumBlendModeLinearDodge"] = "Linear Dodge",
-        ["FFHeliumBlendModeOverlay"] = "Overlay",
-        ["FFHeliumBlendModeSoftLight"] = "Soft Light",
-        ["FFHeliumBlendModeHardLight"] = "Hard Light",
-        ["FFHeliumBlendModeVividLight"] = "Vivid Light",
-        ["FFHeliumBlendModeLinearLight"] = "Linear Light",
-        ["FFHeliumBlendModePinLight"] = "Pin Light",
-        ["FFHeliumBlendModeHardMix"] = "Hard Mix",
-        ["FFHeliumBlendModeDifference"] = "Difference",
-        ["FFHeliumBlendModeExclusion"] = "Exclusion",
-        ["FFHeliumBlendModeStencilAlpha"] = "Stencil Alpha",
-        ["FFHeliumBlendModeStencilLuma"] = "Stencil Luma",
-        ["FFHeliumBlendModeSilhouetteAlpha"] = "Silhouette Alpha",
-        ["FFHeliumBlendModeSilhouetteLuma"] = "Silhouette Luma",
-        ["FFHeliumBlendModeBehind"] = "Behind",
-        ["FFHeliumBlendModeAlphaAdd"] = "Alpha Add",
-        ["FFHeliumBlendModePremultipliedMix"] = "Premultiplied Mix",
-    }
-    local title = fcp:string("FFHeliumBlendMode")
+    local blendModes = fcp:inspector():video().blendModes
     for code, name in pairs(blendModes) do
         fcpxCmds
             :add(name)
-            :whenActivated(doBlendMode(name))
-            :titled(title .. ": " .. fcp:string(code))
+            :whenActivated(doBlendMode(fcp:string(code)))
+            :titled(i18n("blendMode") .. ": " .. getLongBlendModei18n(name))
     end
 end
 
