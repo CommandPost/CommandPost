@@ -57,6 +57,8 @@ function plugin.init(deps)
         end
     end)
 
+    local zoomChange = 0
+
     timelineGroup:parameter(id)
         :name(i18n("zoom"))
         :name9(i18n("zoom"))
@@ -73,10 +75,10 @@ function plugin.init(deps)
         end)
         :onChange(function(change)
             appearancePopUpCloser:start()
-            if type(mod._zoomChange) ~= "number" then
-                mod._zoomChange = 0
+            if type(zoomChange) ~= "number" then
+                zoomChange = 0
             end
-            mod._zoomChange = mod._zoomChange + change
+            zoomChange = zoomChange + change
             updateZoomUI()
         end)
         :onReset(function()
@@ -87,15 +89,15 @@ function plugin.init(deps)
         end)
 
     updateZoomUI:action(function()
-        if mod._zoomChange ~= 0 then
+        if zoomChange ~= 0 then
             local appearance = fcp:timeline():toolbar():appearance()
             if appearance then
                 local currentValue = appearance:show():zoomAmount():getValue()
                 if currentValue then
-                    appearance:show():zoomAmount():setValue(currentValue + mod._zoomChange)
+                    appearance:show():zoomAmount():setValue(currentValue + zoomChange)
                 end
             end
-            mod._zoomChange = 0
+            zoomChange = 0
         end
     end)
 
@@ -237,7 +239,7 @@ function plugin.init(deps)
     local clipHeightGroup = timelineGroup:group(i18n("clipHeight"))
 
     id = shortcutParameter(clipHeightGroup, id, "increaseClipHeight", "IncreaseThumbnailSize")
-    id = shortcutParameter(clipHeightGroup, id, "decreaseClipHeight", "DecreaseThumbnailSize")
+    shortcutParameter(clipHeightGroup, id, "decreaseClipHeight", "DecreaseThumbnailSize")
 
 end
 
