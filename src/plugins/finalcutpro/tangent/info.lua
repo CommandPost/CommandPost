@@ -44,7 +44,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Show Inspector:
         --------------------------------------------------------------------------------
-        id = doShowParameter(infoGroup, info, id, i18n("show") .. " " .. i18n("inspector"))
+        doShowParameter(infoGroup, info, id, i18n("show") .. " " .. i18n("inspector"))
 
 end
 

@@ -127,13 +127,13 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Fade Out Type (Buttons):
             --------------------------------------------------------------------------------
-            local fadeInTypeGroup = audioCrossfadeGroup:group(i18n("fadeOutType"))
-            id = popupParameters(fadeInTypeGroup, audioCrossfade:fadeOutType(), id, FADE_TYPES)
+            local fadeOutTypeGroup = audioCrossfadeGroup:group(i18n("fadeOutType"))
+            id = popupParameters(fadeOutTypeGroup, audioCrossfade:fadeOutType(), id, FADE_TYPES)
 
             --------------------------------------------------------------------------------
             -- Fade Out Type (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(audioCrossfadeGroup, audioCrossfade:fadeOutType().value, id, "fadeOutType", FADE_TYPES, 4)
+            popupSliderParameter(audioCrossfadeGroup, audioCrossfade:fadeOutType().value, id, "fadeOutType", FADE_TYPES, 4)
 
 end
 

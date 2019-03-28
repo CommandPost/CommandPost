@@ -44,7 +44,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Show Inspector:
         --------------------------------------------------------------------------------
-        id = doShowParameter(shareGroup, share, id, i18n("show") .. " " .. i18n("inspector"))
+        doShowParameter(shareGroup, share, id, i18n("show") .. " " .. i18n("inspector"))
 
 end
 

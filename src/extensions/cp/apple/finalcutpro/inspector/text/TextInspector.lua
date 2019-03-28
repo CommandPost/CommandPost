@@ -43,7 +43,7 @@
 
 local require = require
 
-local log                             = require("hs.logger").new("textInspect")
+--local log                             = require("hs.logger").new("textInspect")
 
 local axutils                           = require("cp.ui.axutils")
 local If                                = require("cp.rx.go.If")

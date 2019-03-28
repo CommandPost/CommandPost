@@ -259,7 +259,7 @@ function plugin.init(deps)
 
             id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:depthDirection().value, id, "depthDirection" , depthDirections[3])
 
-            for i, v in pairs(depthDirections) do
+            for _, v in pairs(depthDirections) do
                 if v ~= "-" then
                     id = popupParameter(depthDirectionsGroup, threeDeeText:depthDirection().value, id, v, v)
                 end
@@ -278,7 +278,7 @@ function plugin.init(deps)
 
             id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:frontEdge().value, id, "frontEdge" , frontEdges[3])
 
-            for i, v in pairs(frontEdges) do
+            for _, v in pairs(frontEdges) do
                 if v ~= "-" then
                     id = popupParameter(frontEdgesGroup, threeDeeText:frontEdge().value, id, v, v)
                 end
@@ -299,7 +299,7 @@ function plugin.init(deps)
 
             id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:backEdge().value, id, "backEdge" , backEdges[1])
 
-            for i, v in pairs(backEdges) do
+            for _, v in pairs(backEdges) do
                 if v ~= "-" then
                     id = popupParameter(backEdgesGroup, threeDeeText:backEdge().value, id, v, v)
                 end
@@ -320,7 +320,7 @@ function plugin.init(deps)
 
             id = dynamicPopupSliderParameter(threeDeeTextGroup, threeDeeText:insideCorners().value, id, "insideCorners" , insideCorners[1])
 
-            for i, v in pairs(insideCorners) do
+            for _, v in pairs(insideCorners) do
                 if v ~= "-" then
                     id = popupParameter(insideCornersGroup, threeDeeText:insideCorners().value, id, v, v)
                 end
@@ -345,7 +345,7 @@ function plugin.init(deps)
 
                 id = dynamicPopupSliderParameter(lightingGroup, lighting:lightingStyle().value, id, "lightingStyle" , lightingStyles[2])
 
-                for i, v in pairs(lightingStyles) do
+                for _, v in pairs(lightingStyles) do
                     if v ~= "-" then
                         id = popupParameter(lightingStyleGroup, lighting:lightingStyle().value, id, v, v)
                     end
@@ -396,7 +396,7 @@ function plugin.init(deps)
 
                     id = dynamicPopupSliderParameter(environmentGroup, environment:type().value, id, "type" , environmentTypes[4])
 
-                    for i, v in pairs(environmentTypes) do
+                    for _, v in pairs(environmentTypes) do
                         if v ~= "-" then
                             id = popupParameter(environmentTypeGroup, environment:type().value, id, v, v)
                         end
