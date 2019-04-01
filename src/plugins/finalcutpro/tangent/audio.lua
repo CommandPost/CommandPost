@@ -224,7 +224,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Type (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(panGroup, panMode, id, "pan", PAN_MODES, 1)
+            id = popupSliderParameter(panGroup, panMode.value, id, "pan", PAN_MODES, 1)
 
         --------------------------------------------------------------------------------
         --

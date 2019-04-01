@@ -335,10 +335,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local blendModes = fcp:inspector():video().BLEND_MODES
     for _, v in pairs(blendModes) do
-        fcpxCmds
-            :add(v.flexoID)
-            :whenActivated(doBlendMode(fcp:string(v.flexoID)))
-            :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
+        if v.flexoID ~= nil then
+            fcpxCmds
+                :add(v.flexoID)
+                :whenActivated(doBlendMode(fcp:string(v.flexoID)))
+                :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
+        end
     end
 end
 

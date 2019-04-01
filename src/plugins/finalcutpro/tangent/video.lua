@@ -38,6 +38,7 @@ function plugin.init(deps)
     local buttonParameter               = common.buttonParameter
     local checkboxParameter             = common.checkboxParameter
     local checkboxParameterByIndex      = common.checkboxParameterByIndex
+    local doShowParameter               = common.doShowParameter
     local ninjaButtonParameter          = common.ninjaButtonParameter
     local popupParameter                = common.popupParameter
     local popupParameters               = common.popupParameters
@@ -56,6 +57,11 @@ function plugin.init(deps)
     local STABILIZATION_METHODS         = video.STABILIZATION_METHODS
     local ROLLING_SHUTTER_AMOUNTS       = video.ROLLING_SHUTTER_AMOUNTS
     local SPATIAL_CONFORM_TYPES         = video.SPATIAL_CONFORM_TYPES
+
+        --------------------------------------------------------------------------------
+        -- Show Inspector:
+        --------------------------------------------------------------------------------
+        id = doShowParameter(videoGroup, video, id, i18n("show") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
         --
@@ -98,13 +104,15 @@ function plugin.init(deps)
             local blendModesGroup = compositingGroup:group(i18n("blendModes"))
             for i=1, tableCount(BLEND_MODES) do
                 local v = BLEND_MODES[i]
-                id = popupParameter(blendModesGroup, blendMode, id, fcp:string(v.flexoID), v.i18n)
+                if v.flexoID ~= nil then
+                    id = popupParameter(blendModesGroup, blendMode, id, fcp:string(v.flexoID), v.i18n)
+                end
             end
 
             --------------------------------------------------------------------------------
             -- Blend Mode (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(blendModesGroup, blendMode, id, "blendModes", BLEND_MODES, 1)
+            id = popupSliderParameter(blendModesGroup, blendMode.value, id, "blendModes", BLEND_MODES, 1)
 
             --------------------------------------------------------------------------------
             -- Opacity:
@@ -192,7 +200,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Type (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(cropGroup, cropType, id, "cropTypes", CROP_TYPES, 1)
+            id = popupSliderParameter(cropGroup, cropType.value, id, "cropTypes", CROP_TYPES, 1)
 
             --------------------------------------------------------------------------------
             -- Left / Right / Top / Bottom:
@@ -261,7 +269,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Method (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(stabilizationGroup, stabilization:method(), id, "method", STABILIZATION_METHODS, 1)
+            id = popupSliderParameter(stabilizationGroup, stabilization:method().value, id, "method", STABILIZATION_METHODS, 1)
 
             --------------------------------------------------------------------------------
             -- Translation Smooth / Rotation Smooth / Scale Smooth / Smoothing:
@@ -299,7 +307,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Amount (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(rollingShutterGroup, rollingShutterAmount, id, "amount", ROLLING_SHUTTER_AMOUNTS, 1)
+            id = popupSliderParameter(rollingShutterGroup, rollingShutterAmount.value, id, "amount", ROLLING_SHUTTER_AMOUNTS, 1)
 
         --------------------------------------------------------------------------------
         --
@@ -324,7 +332,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Type (Knob):
             --------------------------------------------------------------------------------
-            popupSliderParameter(spatialConformGroup, spatialConformType, id, "type", SPATIAL_CONFORM_TYPES, 1)
+            popupSliderParameter(spatialConformGroup, spatialConformType.value, id, "type", SPATIAL_CONFORM_TYPES, 1)
 
 end
 
