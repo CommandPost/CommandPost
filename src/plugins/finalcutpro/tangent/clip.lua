@@ -29,7 +29,7 @@ function plugin.init(deps)
 
     local baseID = 0x00100000
 
-    group = fcpGroup:group(i18n("clip"))
+    local group = fcpGroup:group(i18n("clip"))
 
     group:action(baseID+1, i18n("breakApartClipItems"))
         :onPress(fcp:doSelectMenu({"Clip", "Break Apart Clip Items"}))
