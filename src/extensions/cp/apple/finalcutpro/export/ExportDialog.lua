@@ -4,6 +4,8 @@
 
 local require                       = require
 
+--local log                           = require("hs.logger").new("ExportDialog")
+
 local axutils                       = require("cp.ui.axutils")
 local dialog                        = require("cp.dialog")
 local i18n                          = require("cp.i18n")
@@ -12,6 +14,9 @@ local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
 
 local v                             = require("semver")
+
+local displayMessage                = dialog.displayMessage
+local wait                          = just.wait
 
 --------------------------------------------------------------------------------
 --
@@ -137,13 +142,25 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                 return type(dest) == "function" and dest(title) or title == tostring(dest)
             end
         end
+
         --------------------------------------------------------------------------------
         -- Open the window:
         --------------------------------------------------------------------------------
         local fcp = self:app()
         local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
+
+        --------------------------------------------------------------------------------
+        -- Wait for Final Cut Pro to catch up:
+        --------------------------------------------------------------------------------
+        wait(0.1)
+
         if not menuItem then
-            return self, i18n("batchExportNoDestination")
+            --------------------------------------------------------------------------------
+            -- No destination selected:
+            --------------------------------------------------------------------------------
+            local msg = i18n("batchExportNoDestination")
+            if not quiet then displayMessage(msg) end
+            return self, msg
         elseif menuItem:attributeValue("AXEnabled") then
             menuItem:doPress()
 
@@ -178,7 +195,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                         else
                             alert:pressCancel()
                             local msg = i18n("batchExportProxyFilesDetected")
-                            if not quiet then dialog.displayMessage(msg) end
+                            if not quiet then displayMessage(msg) end
                             return self, msg
                         end
                     elseif missingMedia and alert:containsText(missingMedia) then
@@ -190,7 +207,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                         else
                             alert:pressCancel()
                             local msg = i18n("batchExportMissingFilesDetected")
-                            if not quiet then dialog.displayMessage(msg) end
+                            if not quiet then displayMessage(msg) end
                             return self, msg
                         end
                     elseif missingMediaAndInvalidCaptions and alert:containsText(missingMediaAndInvalidCaptions) then
@@ -202,7 +219,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                         else
                             alert:pressCancel()
                             local msg = i18n("batchExportMissingFilesAndBadCaptionsDetected")
-                            if not quiet then dialog.displayMessage(msg) end
+                            if not quiet then displayMessage(msg) end
                             return self, msg
                         end
                     elseif invalidCaptions and alert:containsText(invalidCaptions) then
@@ -214,7 +231,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                         else
                             alert:pressCancel()
                             local msg = i18n("batchExportInvalidCaptionsDetected")
-                            if not quiet then dialog.displayMessage(msg) end
+                            if not quiet then displayMessage(msg) end
                             return self, msg
                         end
                     else
@@ -222,18 +239,29 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                         -- Unknown Error Message:
                         --------------------------------------------------------------------------------
                         local msg = i18n("batchExportUnexpectedAlert")
+                        if not quiet then displayMessage(msg) end
                         return self, msg
                     end
                 else
-                    just.wait(0.1)
+                    wait(0.1)
                 end
                 counter = counter + 1
             end
             if not self:isShowing() then
-                return self, i18n("batchExportNotShowing")
+                --------------------------------------------------------------------------------
+                -- Batch Export is not showing:
+                --------------------------------------------------------------------------------
+                local msg = i18n("batchExportNotShowing")
+                if not quiet then displayMessage(msg) end
+                return self, msg
             end
         else
-            return self, i18n("batchExportDestinationDisabled")
+            --------------------------------------------------------------------------------
+            -- Batch Export Destination is disabled:
+            --------------------------------------------------------------------------------
+            local msg = i18n("batchExportDestinationDisabled")
+            if not quiet then displayMessage(msg) end
+            return self, msg
         end
     end
     return self

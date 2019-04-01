@@ -547,7 +547,7 @@ function Contents:doFocus(show)
     local menu = self:app():menu()
 
     return If(self.isFocused):Is(false):Then(
-        menu:doSelectMenu({"Window", "Go To", "Timeline"}):Debug("Go To Timeline")
+        menu:doSelectMenu({"Window", "Go To", "Timeline"}) --:Debug("Go To Timeline")
     )
     :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
     :Otherwise(true)

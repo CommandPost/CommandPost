@@ -59,12 +59,13 @@ CorrectionsBar.static.CORRECTION_TYPES = {
 function CorrectionsBar.static.matches(element)
     if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup" then
         local children = element:children()
-        -- sort them left-to-right
-        sort(children, axutils.compareLeftToRight)
-        -- log.df("matches: children left to right: \n%s", _inspect(children))
-        return #children >= 2
-           and CheckBox.matches(children[1])
-           and MenuButton.matches(children[2])
+        if children and #children >= 2 then
+            -- sort them left-to-right
+            sort(children, axutils.compareLeftToRight)
+            -- log.df("matches: children left to right: \n%s", _inspect(children))
+            return CheckBox.matches(children[1])
+                and MenuButton.matches(children[2])
+        end
     end
     return false
 end
