@@ -138,8 +138,9 @@ function ControlBar.lazy.prop:timecode()
                 --------------------------------------------------------------------------------
                 -- Wait until the click has been registered (give it 5 seconds):
                 --------------------------------------------------------------------------------
+                local toolbar = self:UI()
                 local ready = just.doUntil(function()
-                    return find(original(), "00:00:00[:;]00") ~= nil
+                    return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
                 end, 5)
                 if ready then
                     --------------------------------------------------------------------------------
