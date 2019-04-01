@@ -322,7 +322,7 @@ local function touchBarPanelCallback(id, params)
                         a[1] = {
                           type="image",
                           image = icon,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
                         }
                         local newImage = a:imageFromCanvas()
 
