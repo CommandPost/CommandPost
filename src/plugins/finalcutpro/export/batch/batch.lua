@@ -22,8 +22,10 @@ local i18n              = require "cp.i18n"
 local just              = require "cp.just"
 local tools             = require "cp.tools"
 
+local doUntil           = just.doUntil
 local insert            = table.insert
 local ninjaMouseClick   = tools.ninjaMouseClick
+local wait              = just.wait
 
 --------------------------------------------------------------------------------
 --
@@ -51,6 +53,11 @@ mod._clips = {}
 -- Variable
 -- Next available ID for building the UI.
 mod._nextID = 0
+
+--- plugins.finalcutpro.export.batch.destinationPreset <cp.prop: boolean>
+--- Field
+--- Destination Preset.
+mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
 --- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
 --- Field
@@ -98,7 +105,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     local result
     if not compressor:isRunning() then
-        result = just.doUntil(function()
+        result = doUntil(function()
             compressor:launch()
             return compressor:isFrontmost()
         end, 5, 0.1)
@@ -111,7 +118,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
+    result = doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
     end, 5, 0.1)
@@ -123,7 +130,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Make sure the Timeline is focussed:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
+    result = doUntil(function()
         fcp:timeline():doFocus(true):Now()
         return fcp:timeline():isFocused()
     end, 5, 0.1)
@@ -142,7 +149,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
         end, 5, 0.1)
@@ -154,7 +161,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
         end, 5, 0.1)
@@ -166,7 +173,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Get Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
@@ -188,7 +195,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
@@ -210,7 +217,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
@@ -225,7 +232,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
@@ -240,7 +247,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
         end, 5, 0.1)
@@ -250,9 +257,24 @@ function mod.sendTimelineClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
+        -- Click on the Playhead. This seems to be the only way to ensure the timeline
+        -- has focus when the Timeline is on a secondary screen:
+        --------------------------------------------------------------------------------
+        if fcp:timeline():isOnSecondary() then
+            local playhead = fcp:timeline():playhead()
+            local playheadUI = playhead and playhead:UI()
+            local playheadFrame = playheadUI and playheadUI:frame()
+            local center = playheadFrame and geometry(playheadFrame).center
+            if center then
+                tools.ninjaMouseClick(center)
+                wait(1)
+            end
+        end
+
+        --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             return fcp:selectMenu({"File", "Send to Compressor"}) == true
         end, 5, 0.1)
         if not result then
@@ -303,7 +325,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
         end, 5, 0.1)
@@ -315,7 +337,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Select clip:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
@@ -354,7 +376,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
@@ -376,7 +398,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
@@ -391,7 +413,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
@@ -406,7 +428,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focused:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        result = doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
         end, 5, 0.1)
@@ -419,12 +441,15 @@ function mod.batchExportTimelineClips(clips)
         -- Click on the Playhead. This seems to be the only way to ensure the timeline
         -- has focus when the Timeline is on a secondary screen:
         --------------------------------------------------------------------------------
-        local playhead = fcp:timeline():playhead()
-        local playheadUI = playhead and playhead:UI()
-        local playheadFrame = playheadUI and playheadUI:frame()
-        local center = playheadFrame and geometry(playheadFrame).center
-        if center then
-            tools.ninjaMouseClick(center, 1000000)
+        if fcp:timeline():isOnSecondary() then
+            local playhead = fcp:timeline():playhead()
+            local playheadUI = playhead and playhead:UI()
+            local playheadFrame = playheadUI and playheadUI:frame()
+            local center = playheadFrame and geometry(playheadFrame).center
+            if center then
+                tools.ninjaMouseClick(center)
+                wait(1)
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -451,7 +476,7 @@ function mod.batchExportTimelineClips(clips)
             --------------------------------------------------------------------------------
             -- Click 'Save' on the save sheet:
             --------------------------------------------------------------------------------
-            if not just.doUntil(function() return saveSheet:isShowing() end) then
+            if not doUntil(function() return saveSheet:isShowing() end) then
                 dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                 return false
             end
@@ -524,8 +549,6 @@ function mod.batchExportTimelineClips(clips)
     timelineContents:selectClips(clips)
     return true
 end
-
-mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
 --- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> none
 --- Function
@@ -733,7 +756,7 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    local result = just.doUntil(function()
+    local result = doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
     end, 5, 0.1)
