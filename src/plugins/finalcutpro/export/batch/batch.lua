@@ -261,12 +261,11 @@ function mod.sendTimelineClipsToCompressor(clips)
         -- has focus when the Timeline is on a secondary screen:
         --------------------------------------------------------------------------------
         if fcp:timeline():isOnSecondary() then
-            local playhead = fcp:timeline():playhead()
             local playheadUI = playhead and playhead:UI()
             local playheadFrame = playheadUI and playheadUI:frame()
             local center = playheadFrame and geometry(playheadFrame).center
             if center then
-                tools.ninjaMouseClick(center)
+                      ninjaMouseClick(center)
                 wait(1)
             end
         end
@@ -442,12 +441,11 @@ function mod.batchExportTimelineClips(clips)
         -- has focus when the Timeline is on a secondary screen:
         --------------------------------------------------------------------------------
         if fcp:timeline():isOnSecondary() then
-            local playhead = fcp:timeline():playhead()
             local playheadUI = playhead and playhead:UI()
             local playheadFrame = playheadUI and playheadUI:frame()
             local center = playheadFrame and geometry(playheadFrame).center
             if center then
-                tools.ninjaMouseClick(center)
+                ninjaMouseClick(center)
                 wait(1)
             end
         end
