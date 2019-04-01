@@ -41,7 +41,7 @@ local DEFER = 0.01
 -- DELAY -> number
 -- Constant
 -- The amount of time to delay UI updates
-local DELAY = 0.5
+local DELAY = 0.2
 
 --- plugins.finalcutpro.tangent.common.popupParameter(group, param, id, value, label) -> number
 --- Function

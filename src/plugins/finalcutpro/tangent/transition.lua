@@ -75,7 +75,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Look (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(crossDissolveGroup, crossDissolve:look(), id, "look", LOOKS, 12)
+            id = popupSliderParameter(crossDissolveGroup, crossDissolve:look().value, id, "look", LOOKS, 12)
 
             --------------------------------------------------------------------------------
             -- Amount:
@@ -91,7 +91,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Ease (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(crossDissolveGroup, crossDissolve:ease(), id, "ease", EASE_TYPES, 3)
+            id = popupSliderParameter(crossDissolveGroup, crossDissolve:ease().value, id, "ease", EASE_TYPES, 3)
 
             --------------------------------------------------------------------------------
             -- Ease Amount:
@@ -122,7 +122,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Fade In Type (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(audioCrossfadeGroup, audioCrossfade:fadeInType(), id, "fadeInType", FADE_TYPES, 4)
+            id = popupSliderParameter(audioCrossfadeGroup, audioCrossfade:fadeInType().value, id, "fadeInType", FADE_TYPES, 4)
 
             --------------------------------------------------------------------------------
             -- Fade Out Type (Buttons):

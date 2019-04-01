@@ -118,7 +118,7 @@ function plugin.init(deps)
     id = shortcutParameter(clipFilteringGroup, id, "unused", "FilterUnusedMedia")
 
     local libraries = fcp:libraries()
-    dynamicPopupSliderParameter(group, libraries.clipFiltering, id, "clipFiltering", 2)
+    dynamicPopupSliderParameter(group, libraries.clipFiltering, id, "clipFiltering", 1)
 
 end
 
