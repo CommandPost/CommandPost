@@ -2,26 +2,28 @@
 ---
 --- Batch Export Plugin
 
-local require = require
+local require           = require
 
-local log           = require("hs.logger").new("batch")
+local log               = require "hs.logger".new("batch")
 
-local fnutils       = require("hs.fnutils")
-local fs            = require("hs.fs")
-local image         = require("hs.image")
+local fnutils           = require "hs.fnutils"
+local fs                = require "hs.fs"
+local geometry          = require "hs.geometry"
+local image             = require "hs.image"
 
-local compressor    = require("cp.apple.compressor")
-local config        = require("cp.config")
-local destinations  = require("cp.apple.finalcutpro.export.destinations")
-local dialog        = require("cp.dialog")
-local Do            = require("cp.rx.go.Do")
-local fcp           = require("cp.apple.finalcutpro")
-local html          = require("cp.web.html")
-local i18n          = require("cp.i18n")
-local just          = require("cp.just")
-local tools         = require("cp.tools")
+local compressor        = require "cp.apple.compressor"
+local config            = require "cp.config"
+local destinations      = require "cp.apple.finalcutpro.export.destinations"
+local dialog            = require "cp.dialog"
+local Do                = require "cp.rx.go.Do"
+local fcp               = require "cp.apple.finalcutpro"
+local html              = require "cp.web.html"
+local i18n              = require "cp.i18n"
+local just              = require "cp.just"
+local tools             = require "cp.tools"
 
-local insert        = table.insert
+local insert            = table.insert
+local ninjaMouseClick   = tools.ninjaMouseClick
 
 --------------------------------------------------------------------------------
 --
@@ -99,7 +101,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         result = just.doUntil(function()
             compressor:launch()
             return compressor:isFrontmost()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to Launch Compressor.")
             return false
@@ -112,7 +114,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     result = just.doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
-    end, 10, 0.1)
+    end, 5, 0.1)
     if not result then
         dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
         return false
@@ -124,7 +126,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     result = just.doUntil(function()
         fcp:timeline():doFocus(true):Now()
         return fcp:timeline():isFocused()
-    end, 10, 0.1)
+    end, 5, 0.1)
     if not result then
         dialog.displayErrorMessage("Failed to focus on timeline.")
         return false
@@ -143,7 +145,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         result = just.doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
             return false
@@ -155,7 +157,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         result = just.doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -241,7 +243,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         result = just.doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -304,7 +306,7 @@ function mod.batchExportTimelineClips(clips)
         result = just.doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -402,15 +404,27 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is focussed:
+        -- Make sure the Timeline is focused:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
             fcp:timeline():doFocus(true):Now()
             return fcp:timeline():isFocused()
-        end, 10, 0.1)
+        end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Click on the Playhead. This seems to be the only way to ensure the timeline
+        -- has focus when the Timeline is on a secondary screen:
+        --------------------------------------------------------------------------------
+        local playhead = fcp:timeline():playhead()
+        local playheadUI = playhead and playhead:UI()
+        local playheadFrame = playheadUI and playheadUI:frame()
+        local center = playheadFrame and geometry(playheadFrame).center
+        if center then
+            tools.ninjaMouseClick(center, 1000000)
         end
 
         --------------------------------------------------------------------------------
@@ -722,7 +736,7 @@ function mod.batchExport()
     local result = just.doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
-    end, 10, 0.1)
+    end, 5, 0.1)
     if not result then
         dialog.displayErrorMessage("Failed to activate Final Cut Pro. Batch Export aborted.")
         return false
