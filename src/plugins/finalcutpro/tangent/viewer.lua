@@ -94,7 +94,16 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Event Viewer Zoom (Knob):
         --------------------------------------------------------------------------------
-        dynamicPopupSliderParameter(eventViewerGroup, eventViewerInfoBar.zoomMenu, id, "zoom", fcp:string("PEViewerZoomFit"))
+        id = dynamicPopupSliderParameter(eventViewerGroup, eventViewerInfoBar.zoomMenu, id, "zoom", fcp:string("PEViewerZoomFit"))
+
+    --------------------------------------------------------------------------------
+    -- Show Horizon:
+    --------------------------------------------------------------------------------
+    local viewerViewGroup = viewerGroup:group(i18n("view"))
+    local eventViewerViewGroup = eventViewerGroup:group(i18n("view"))
+
+    id = popupParameter(viewerViewGroup, infoBar.viewMenu, id, fcp:string("CPShowHorizon"), "showHorizon")
+    id = popupParameter(eventViewerViewGroup, eventViewerInfoBar.viewMenu, id, fcp:string("CPShowHorizon"), "showHorizon")
 
 end
 

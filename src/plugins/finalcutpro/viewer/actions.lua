@@ -22,9 +22,10 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Commands:
+    -- Show Horizon (Viewer):
     --------------------------------------------------------------------------------
-    deps.fcpxCmds
+    local cmds = deps.fcpxCmds
+    cmds
         :add("showHorizon")
         :whenActivated(function()
             --------------------------------------------------------------------------------
@@ -33,9 +34,18 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             fcp.viewer.infoBar.viewMenu:doSelectValue(fcp:string("CPShowHorizon")):Now()
         end)
-        :titled(i18n("showHorizon"))
+        :titled(i18n("showHorizon") .. " (" .. i18n("viewer") .. ")")
 
-    return mod
+    --------------------------------------------------------------------------------
+    -- Show Horizon (Event Viewer):
+    --------------------------------------------------------------------------------
+    cmds
+        :add("showHorizonEventViewer")
+        :whenActivated(function()
+            fcp.eventViewer.infoBar.viewMenu:doSelectValue(fcp:string("CPShowHorizon")):Now()
+        end)
+        :titled(i18n("showHorizon") .. " (" .. i18n("eventViewer") .. ")")
+
 end
 
 return plugin
