@@ -77,13 +77,14 @@ local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
 local Set                                       = require("cp.collect.Set")
+local tools                                     = require("cp.tools")
 
 local commandeditor								= require("cp.apple.commandeditor")
 
 local app                                       = require("cp.apple.finalcutpro.app")
-local strings                                   = require("cp.apple.finalcutpro.strings")
 local menu                                      = require("cp.apple.finalcutpro.menu")
 local plugins									= require("cp.apple.finalcutpro.plugins")
+local strings                                   = require("cp.apple.finalcutpro.strings")
 
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
@@ -107,6 +108,10 @@ local format, gsub 						        = string.format, string.gsub
 local Do, Throw                                 = go.Do, go.Throw
 
 local childMatching                             = axutils.childMatching
+
+local dirFiles                                  = tools.dirFiles
+local insert                                    = table.insert
+local pathToAbsolute                            = fs.pathToAbsolute
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -148,6 +153,13 @@ function fcp:initialize()
         end):start()
     end
 
+    --------------------------------------------------------------------------------
+    -- Refresh Custom Workspaces Folders:
+    --------------------------------------------------------------------------------
+    self.customWorkspacesWatcher = pathwatcher.new(fcp.WORKSPACES_PATH .. "/", function()
+        self.customWorkspaces:update()
+    end):start()
+
 end
 
 -- cleanup
@@ -155,6 +167,10 @@ function fcp:__gc()
     if self.userCommandSetWatcher then
         self.userCommandSetWatcher:stop()
         self.userCommandSetWatcher = nil
+    end
+    if self.customWorkspacesWatcher then
+        self.customWorkspacesWatcher:stop()
+        self.customWorkspacesWatcher = nil
     end
 end
 
@@ -175,6 +191,11 @@ fcp.EARLIEST_SUPPORTED_VERSION = v("10.4.4")
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
 fcp.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
+
+--- cp.apple.finalcutpro.WORKSPACES_PATH -> string
+--- Constant
+--- The path to the custom workspaces folder.
+fcp.WORKSPACES_PATH = os.getenv("HOME") .. "/Library/Application Support/Final Cut Pro/Workspaces"
 
 --- cp.apple.finalcutpro.EVENT_DESCRIPTION_PATH -> string
 --- Constant
@@ -744,6 +765,44 @@ function fcp.lazy.prop:selectedWorkspace()
     end)
     :cached()
     :monitor(self.app.windowsUI)
+end
+
+-- WORKSPACE_FILE_EXTENSION -> string
+-- Constant
+-- The file extension of a custom workspace extension file.
+local WORKSPACE_FILE_EXTENSION = "fcpworkspace"
+
+-- SAVED_WORKSPACE -> string
+-- Constant
+-- The file name of the internally saved Final Cut Pro workspace.
+local SAVED_WORKSPACE = "Final Cut Pro.saved.fcpworkspace"
+
+-- DISPLAY_NAME -> string
+-- Constant
+-- The Property List key that holds the Display Name.
+local DISPLAY_NAME = "Display Name"
+
+--- cp.apple.finalcutpro:customWorkspaces <cp.prop: table; live>
+--- Variable
+--- A table containing the display names of all the user created custom workspaces.
+function fcp.lazy.prop:customWorkspaces()
+    return prop(function()
+        local result = {}
+        local path = fcp.WORKSPACES_PATH
+        local files = dirFiles(path)
+        if files then
+            for _, file in pairs(files) do
+                if file ~= SAVED_WORKSPACE and file:sub((WORKSPACE_FILE_EXTENSION:len() + 1) * -1) == "." .. WORKSPACE_FILE_EXTENSION then
+                    local data =  hsplist.read(path .. "/" .. file)
+                    if data and data[DISPLAY_NAME] then
+                        insert(result, data[DISPLAY_NAME])
+                    end
+                end
+            end
+        end
+        return result
+    end)
+    :cached()
 end
 
 ----------------------------------------------------------------------------------------
