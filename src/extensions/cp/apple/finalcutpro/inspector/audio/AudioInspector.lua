@@ -184,6 +184,15 @@ function AudioInspector.lazy.method:mainProperties()
 
         pan                     = section "FFAudioIntrinsicChannels_Pan" {
             mode                = popUpButton "FFAudioIntrinsicChannels_PanMode",
+            amount              = slider "FFAudioIntrinsicChannels_PanAmount",
+            surroundPanner      = section "FFAudioIntrinsicChannels_PanSettings" {
+                --------------------------------------------------------------------------------
+                -- TODO: Add Surround Panner.
+                --
+                --/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFAudioSurroundPannerHUD.nib
+                --------------------------------------------------------------------------------
+            }
+
         },
 
         effects                 = section "FFInspectorBrickEffects" {},
