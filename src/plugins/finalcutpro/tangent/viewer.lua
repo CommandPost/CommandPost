@@ -103,7 +103,7 @@ function plugin.init(deps)
     local eventViewerViewGroup = eventViewerGroup:group(i18n("view"))
 
     id = popupParameter(viewerViewGroup, infoBar.viewMenu, id, fcp:string("CPShowHorizon"), "showHorizon")
-    id = popupParameter(eventViewerViewGroup, eventViewerInfoBar.viewMenu, id, fcp:string("CPShowHorizon"), "showHorizon")
+    popupParameter(eventViewerViewGroup, eventViewerInfoBar.viewMenu, id, fcp:string("CPShowHorizon"), "showHorizon")
 
 end
 
