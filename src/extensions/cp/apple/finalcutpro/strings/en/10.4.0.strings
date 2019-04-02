@@ -13,5 +13,7 @@
     <string>Better Performance</string>
     <key>CPCodecs</key>
     <string>Codecs</string>
+    <key>CPShowHorizon</key>
+    <string>Show Horizon</string>
 </dict>
 </plist>

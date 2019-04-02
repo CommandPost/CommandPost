@@ -13,5 +13,7 @@
     <string>Rendimiento óptimo</string>
     <key>CPCodecs</key>
     <string>Códecs</string>
+    <key>CPShowHorizon</key>
+    <string>Mostrar horizonte</string>
 </dict>
 </plist>
