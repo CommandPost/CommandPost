@@ -146,7 +146,7 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
         end)
         :onReset(
             Do(function()
-                popupSliderCache = 1
+                popupSliderCache = type(defaultValue) == "number" and defaultValue or 1
             end)
                 :Then(
                     If(function()
@@ -275,7 +275,7 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
         end)
         :onReset(
             Do(function()
-                popupSliderCache = 1
+                popupSliderCache = resetIndex
             end)
                 :Then(param:doShow())
                 :Then(param:doSelectValue(fcp:string(options[resetIndex].flexoID)))

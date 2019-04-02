@@ -2,50 +2,12 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Kb">
-            <Mode id="0x0000000A"> <!-- Global -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Encoder">
-                    <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x0AD00001</Key> <!-- Brightness -->
-                                <Display>Percentage</Display>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x0AA00001</Key> <!-- Volume -->
-                                <Display>Percentage</Display>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
@@ -53,7 +15,7 @@
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
                             <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x8000000A</Key> <!-- Previous Mode -->
@@ -65,153 +27,164 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00310014</Key> <!-- Color Wheel - Master - Brightness -->
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
-                            <Mapping mode="Alt">
-                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                            <Mapping mode="Std">
+                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
                             <Mapping mode="Std">
-                                <Key>0x00310101</Key> <!-- Color Wheel - Temperature -->
+                                <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
+                                <Key>0x00310014</Key> <!-- Color Wheel - Master - Brightness -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
-                            <Mapping mode="Alt">
-                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
+                            <Mapping mode="Std">
+                                <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
                             <Mapping mode="Std">
-                                <Key>0x00310102</Key> <!-- Color Wheel - Tint -->
+                                <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
                             <Mapping mode="Std">
-                                <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
-                            <Mapping mode="Alt">
-                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
+                            <Mapping mode="Std">
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="8"> <!-- Element-Kb Knob 9 -->
                             <Mapping mode="Std">
-                                <Key>0x00310103</Key> <!-- Color Wheel - Hue -->
+                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
                             <Mapping mode="Std">
-                                <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
-                            <Mapping mode="Alt">
-                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
+                            <Mapping mode="Std">
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="11"> <!-- Element-Kb Knob 12 -->
                             <Mapping mode="Std">
-                                <Key>0x00310104</Key> <!-- Color Wheel - Mix -->
+                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
                                 <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                     </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010003"> <!-- FCP: Board -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Encoder">
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310103</Key> <!-- Color Wheel - Hue -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310104</Key> <!-- Color Wheel - Mix -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Element-Kb Knob 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310101</Key> <!-- Color Wheel - Temperature -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="11"> <!-- Element-Kb Knob 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310102</Key> <!-- Color Wheel - Tint -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
+                                <CustomName>Cb Ms Ang</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <CustomName>Cb Ms Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00303102</Key> <!-- Color Board - Exposure - Master - Percentage -->
                                 <CustomName>Cb Ms Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x00302102</Key> <!-- Color Board - Saturation - Master - Percentage -->
-                                <CustomName>Cb Ms Pct</CustomName>
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <CustomName>Cb Sd Ang</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
-                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                        <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <CustomName>Cb Sd Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
                                 <CustomName>Cb Sd Pct</CustomName>
@@ -220,6 +193,20 @@
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
                             <Mapping mode="Std">
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <CustomName>Cb Mt Ang</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <CustomName>Cb Mt Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Element-Kb Knob 9 -->
+                            <Mapping mode="Std">
                                 <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
                                 <CustomName>Cb Mt Pct</CustomName>
                                 <Display>Number</Display>
@@ -227,62 +214,127 @@
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
                             <Mapping mode="Std">
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <CustomName>Cb Hl Ang</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <CustomName>Cb Hl Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="11"> <!-- Element-Kb Knob 12 -->
+                            <Mapping mode="Std">
                                 <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
                                 <CustomName>Cb Hl Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                     </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010010"> <!-- FCP: Video -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Encoder">
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
-                                <Display>Percentage</Display>
-                                <Sensitivity>5</Sensitivity>
+                                <Key>0x00302102</Key> <!-- Color Board - Saturation - Master - Percentage -->
+                                <CustomName>Cb Ms Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730030</Key> <!-- Scale (All) -->
+                                <CustomName>Scale</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730028</Key> <!-- Blend Modes -->
+                                <CustomName>BlendMode</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302202</Key> <!-- Color Board - Saturation - Shadows - Percentage -->
+                                <CustomName>Cb Sd Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730031</Key> <!-- Scale X -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730029</Key> <!-- Opacity -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302302</Key> <!-- Color Board - Saturation - Midtones - Percentage -->
+                                <CustomName>Cb Mt Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730032</Key> <!-- Scale Y -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Element-Kb Knob 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F73002D</Key> <!-- Position X -->
+                                <CustomName>Pos X</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302402</Key> <!-- Color Board - Saturation - Highlights - Percentage -->
+                                <CustomName>Cb Hl Pct</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F73002F</Key> <!-- Rotation -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="11"> <!-- Element-Kb Knob 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F73002E</Key> <!-- Position Y -->
+                                <CustomName>Pos Y</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00140009</Key> <!-- Clip Filtering -->
+                                <CustomName>ClipFilt</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00140001</Key> <!-- Duration -->
-                                <CustomName>Duration</CustomName>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00140002</Key> <!-- Height -->
-                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x0F730009</Key> <!-- Blend Mode -->
-                                <Display>Bar</Display>
-                                <Sensitivity>5</Sensitivity>
+                                <Key>0x0F82000A</Key> <!-- Zoom -->
                             </Mapping>
                         </Control>
                     </Bank>
