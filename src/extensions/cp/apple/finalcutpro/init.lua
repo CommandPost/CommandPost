@@ -111,7 +111,6 @@ local childMatching                             = axutils.childMatching
 
 local dirFiles                                  = tools.dirFiles
 local insert                                    = table.insert
-local pathToAbsolute                            = fs.pathToAbsolute
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -785,7 +784,7 @@ local DISPLAY_NAME = "Display Name"
 --- cp.apple.finalcutpro:customWorkspaces <cp.prop: table; live>
 --- Variable
 --- A table containing the display names of all the user created custom workspaces.
-function fcp.lazy.prop:customWorkspaces()
+function fcp.lazy.prop.customWorkspaces()
     return prop(function()
         local result = {}
         local path = fcp.WORKSPACES_PATH
