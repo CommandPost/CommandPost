@@ -54,6 +54,28 @@ function plugin.init(deps)
     group:action(baseID+9, i18n("select") .. " " .. i18n("below"))
         :onPress(fcp:doSelectMenu({"Edit", "Select", "Select Below"}))
 
+    group:menu(baseID + 10)
+        :name(i18n("select") .. " " .. i18n("next") .. "/" .. i18n("previous"))
+        :onGet(function() end)
+        :onNext(function()
+            fcp:doSelectMenu({"Edit", "Select", "Select Next"}):Now()
+         end)
+        :onPrev(function()
+            fcp:doSelectMenu({"Edit", "Select", "Select Previous"}):Now()
+        end)
+        :onReset(function() end)
+
+    group:menu(baseID + 11)
+        :name(i18n("select") .. " " .. i18n("above") .. "/" .. i18n("below"))
+        :onGet(function() end)
+        :onNext(function()
+            fcp:doSelectMenu({"Edit", "Select", "Select Above"}):Now()
+         end)
+        :onPrev(function()
+            fcp:doSelectMenu({"Edit", "Select", "Select Below"}):Now()
+        end)
+        :onReset(function() end)
+
 end
 
 return plugin
