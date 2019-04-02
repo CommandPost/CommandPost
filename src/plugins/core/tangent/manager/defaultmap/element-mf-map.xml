@@ -2,272 +2,10 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Mf">
-            <Mode id="0x0000000A"> <!-- Global -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Mf Play Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="14"> <!-- Element-Mf Stop -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="15"> <!-- Element-Mf Play Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="16"> <!-- Element-Mf Inch Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060010</Key> <!-- Go to Previous Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="17"> <!-- Element-Mf Inch Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000F</Key> <!-- Go to Next Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Button">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Video</CustomName>
-                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
-                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
-                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010003"> <!-- FCP: Board -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Mf Play Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="14"> <!-- Element-Mf Stop -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="15"> <!-- Element-Mf Play Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="16"> <!-- Element-Mf Inch Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060010</Key> <!-- Go to Previous Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="17"> <!-- Element-Mf Inch Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000F</Key> <!-- Go to Next Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Button">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Video</CustomName>
-                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
-                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
-                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>Load B1</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>Save B1</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>Load B2</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>Save B2</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>Load B3</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>Save B3</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
-                                <CustomName>View M1</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120005</Key> <!-- Save Current Frame to Stills Memory 1 -->
-                                <CustomName>Save M1</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120006</Key> <!-- View Stills Memory 2 -->
-                                <CustomName>View M2</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120007</Key> <!-- Save Current Frame to Stills Memory 2 -->
-                                <CustomName>Save M2</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120008</Key> <!-- View Stills Memory 3 -->
-                                <CustomName>View M3</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120009</Key> <!-- Save Current Frame to Stills Memory 3 -->
-                                <CustomName>Save M3</CustomName>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
@@ -314,7 +52,7 @@
                         </Control>
                         <Control type="Button" number="18"> <!-- Element-Mf Button B -->
                             <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x8000000A</Key> <!-- Previous Mode -->
@@ -326,29 +64,36 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Video</CustomName>
-                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
+                                <Key>0x00050000</Key> <!-- Launch Final Cut Pro -->
+                                <CustomName>FCPX</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
-                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
+                                <Key>0x0F810001</Key> <!-- Activate Console -->
+                                <CustomName>Console</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
-                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                                <Key>0x0F810009</Key> <!-- Toggle HUD -->
+                                <CustomName>HUD</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
                             <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
+                                <Key>0x0F810006</Key> <!-- Toggle Scrolling Timeline -->
+                                <CustomName>Scroll</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="4"> <!-- Element-Mf Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x00090001</Key> <!-- Undo -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="5"> <!-- Element-Mf Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x00090002</Key> <!-- Redo -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
@@ -451,168 +196,6 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010010"> <!-- FCP: Video -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Mf Play Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000E</Key> <!-- Play Reverse -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="14"> <!-- Element-Mf Stop -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="15"> <!-- Element-Mf Play Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060001</Key> <!-- Play/Pause -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="16"> <!-- Element-Mf Inch Reverse -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00060010</Key> <!-- Go to Previous Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="17"> <!-- Element-Mf Inch Forward -->
-                            <Mapping mode="Std">
-                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x0006000F</Key> <!-- Go to Next Edit -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Button">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Video</CustomName>
-                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
-                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
-                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>Load B1</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>Save B1</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130003</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>Load B2</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>Save B2</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
-                            <Mapping mode="Std">
-                                <Key>0x00130005</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>Load B3</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>Save B3</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
-                                <CustomName>View M1</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120005</Key> <!-- Save Current Frame to Stills Memory 1 -->
-                                <CustomName>Save M1</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120006</Key> <!-- View Stills Memory 2 -->
-                                <CustomName>View M2</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120007</Key> <!-- Save Current Frame to Stills Memory 2 -->
-                                <CustomName>Save M2</CustomName>
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
-                            <Mapping mode="Std">
-                                <Key>0x00120008</Key> <!-- View Stills Memory 3 -->
-                                <CustomName>View M3</CustomName>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00120009</Key> <!-- Save Current Frame to Stills Memory 3 -->
-                                <CustomName>Save M3</CustomName>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
                     </Bank>

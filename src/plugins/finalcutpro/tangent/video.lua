@@ -112,7 +112,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Blend Mode (Knob):
             --------------------------------------------------------------------------------
-            id = popupSliderParameter(blendModesGroup, blendMode.value, id, "blendModes", BLEND_MODES, 1)
+            id = popupSliderParameter(compositingGroup, blendMode.value, id, "blendModes", BLEND_MODES, 1)
 
             --------------------------------------------------------------------------------
             -- Opacity:

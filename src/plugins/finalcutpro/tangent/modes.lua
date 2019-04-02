@@ -21,8 +21,6 @@ local plugin = {
 
 function plugin.init(deps)
     local tangentManager = deps.tangentManager
-    tangentManager.addMode(0x00010010, "FCP: " .. i18n("video"))
-    tangentManager.addMode(0x00010003, "FCP: " .. i18n("board"))
     tangentManager.addMode(0x00010004, "FCP: " .. i18n("wheels"))
 end
 

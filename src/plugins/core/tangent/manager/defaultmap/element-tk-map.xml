@@ -2,166 +2,12 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Tk">
-            <Mode id="0x0000000A"> <!-- Global -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="2"> <!-- Element-Tk Ring 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x0AA00001</Key> <!-- Volume -->
-                                <Display>Percentage</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="5"> <!-- Element-Tk Ring 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x0AD00001</Key> <!-- Brightness -->
-                                <Display>Percentage</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010003"> <!-- FCP: Board -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
-                                <CustomName>Cb Sd Ang</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
-                                <CustomName>Cb Ms Ang</CustomName>
-                                <Display>Number</Display>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
-                                <CustomName>Cb Sd Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
-                                <CustomName>Cb Ms Pct</CustomName>
-                                <Display>Number</Display>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="2"> <!-- Element-Tk Ring 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
-                                <CustomName>Cb Sd Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00303102</Key> <!-- Color Board - Exposure - Master - Percentage -->
-                                <CustomName>Cb Ms Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="3"> <!-- Element-Tk Trackerball 2 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
-                                <CustomName>Cb Mt Ang</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
-                                <CustomName>Cb Mt Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="5"> <!-- Element-Tk Ring 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
-                                <CustomName>Cb Mt Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="6"> <!-- Element-Tk Trackerball 3 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
-                                <CustomName>Cb Hl Ang</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
-                                <CustomName>Cb Hl Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>4</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="8"> <!-- Element-Tk Ring 3 -->
-                            <Mapping mode="Std">
-                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
-                                <CustomName>Cb Hl Pct</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                                <Key>0x80000007</Key> <!-- Previous Trackerball Bank -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
@@ -169,7 +15,7 @@
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
+                                <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x8000000A</Key> <!-- Previous Mode -->
@@ -290,86 +136,6 @@
                                 <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010010"> <!-- FCP: Video -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730001</Key> <!-- Position X -->
-                                <CustomName>Pos X</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730002</Key> <!-- Position Y -->
-                                <CustomName>Pos Y</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="3"> <!-- Element-Tk Trackerball 2 X -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730005</Key> <!-- Scale X -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730006</Key> <!-- Scale Y -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="5"> <!-- Element-Tk Ring 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730004</Key> <!-- Scale (All) -->
-                                <CustomName>Scale All</CustomName>
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="6"> <!-- Element-Tk Trackerball 3 X -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730007</Key> <!-- Anchor X -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x0F730008</Key> <!-- Anchor Y -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
