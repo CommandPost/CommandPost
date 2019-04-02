@@ -15,5 +15,7 @@
     <string>中間色調</string>
     <key>CPCodecs</key>
     <string>コーデック</string>
+    <key>CPShowHorizon</key>
+    <string>水平線を表示</string>
 </dict>
 </plist>

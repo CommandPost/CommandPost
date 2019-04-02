@@ -17,5 +17,7 @@
     <string>Tons clairs</string>
     <key>CPCodecs</key>
     <string>Codecs</string>
+    <key>CPShowHorizon</key>
+    <string>Afficher l’horizon</string>
 </dict>
 </plist>
