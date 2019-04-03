@@ -2,10 +2,20 @@
 ---
 --- Represents an AXTable in the Apple Accessibility UX API.
 
-local require = require
+local require           = require
 
-local axutils						= require("cp.ui.axutils")
-local Element           = require("cp.ui.Element")
+local log				= require "hs.logger".new "table"
+
+local axutils           = require "cp.ui.axutils"
+
+local Button            = require "cp.ui.Button"
+local Element           = require "cp.ui.Element"
+local Group             = require "cp.ui.Group"
+local MenuButton        = require "cp.ui.MenuButton"
+local StaticText        = require "cp.ui.StaticText"
+local TextField         = require "cp.ui.TextField"
+
+local childMatching     = axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
@@ -19,7 +29,7 @@ local Table = Element:subclass("cp.ui.Table")
 --- Checks if the `thing` is a `Table`.
 ---
 --- Parameters:
----  * `thing`		- The thing to check
+---  * `thing`      - The thing to check
 ---
 --- Returns:
 ---  * `true` if the thing is a `Table` instance.
@@ -32,7 +42,7 @@ end
 --- Returns the cell's text value.
 ---
 --- Parameters:
----  * `cell`	- The cell to check
+---  * `cell`   - The cell to check
 ---
 --- Returns:
 ---  * The combined text value of the cell.
@@ -59,8 +69,8 @@ end
 --- Checks if the cell's text value equals `value`.
 ---
 --- Parameters:
----  * `cell`	- The cell to check
----  * `value`	- The text value to compare.
+---  * `cell`   - The cell to check
+---  * `value`  - The text value to compare.
 ---
 --- Returns:
 ---  * `true` if the cell text value equals the provided `value`.
@@ -73,7 +83,7 @@ end
 --- Discloses the row, if possible.
 ---
 --- Parameters:
----  * `row`		- The row to disclose
+---  * `row`        - The row to disclose
 ---
 --- Returns:
 ---  * `true` if the row is disclosable and is now expanded.
@@ -92,8 +102,8 @@ end
 --- Finds the row at the sub-level named in the `names` table and returns it.
 ---
 --- Parameters:
----  * `rows`		- The array of rows to process.
----  * `names`		- The array of names to navigate down
+---  * `rows`       - The array of rows to process.
+---  * `names`      - The array of names to navigate down
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
@@ -120,9 +130,9 @@ end
 --- Visits the row at the sub-level named in the `names` table, and executes the `actionFn`.
 ---
 --- Parameters:
----  * `rows`		- The array of rows to process.
----  * `names`		- The array of names to navigate down
----  * `actionFn`	- A function to execute when the target row is found.
+---  * `rows`       - The array of rows to process.
+---  * `names`      - The array of names to navigate down
+---  * `actionFn`   - A function to execute when the target row is found.
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
@@ -137,8 +147,8 @@ end
 --- Selects the row at the sub-level named in the `names` table.
 ---
 --- Parameters:
----  * `rows`		- The array of rows to process.
----  * `names`		- The array of names to navigate down
+---  * `rows`       - The array of rows to process.
+---  * `names`      - The array of names to navigate down
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
@@ -151,7 +161,7 @@ end
 --- Checks if the element is a valid table.
 ---
 --- Parameters:
----  * `element`	- The element to check.
+---  * `element`    - The element to check.
 ---
 --- Returns:
 ---  * `true` if it matches.
@@ -177,7 +187,7 @@ function Table.lazy.prop:contentUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_content", function()
             local ui = original()
-            return ui and axutils.childMatching(ui, Table.matchesContent)
+            return ui and (Table.matchesContent(ui) and ui) or childMatching(ui, Table.matchesContent)
         end,
         Table.matchesContent)
     end)
@@ -225,7 +235,7 @@ end
 --- Checks if the `element` is a valid table content element.
 ---
 --- Parameters:
----  * `element`	- The element to check
+---  * `element`    - The element to check
 ---
 --- Returns:
 ---  * `true` if the element is a valid content element.
@@ -243,7 +253,7 @@ end
 --- It will be passed a single `AXRow` element and should return `true` if the row should be included.
 ---
 --- Parameters:
----  * `filterFn`	- An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
+---  * `filterFn`   - An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
 ---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
@@ -269,7 +279,7 @@ end
 --- It will be passed a single `AXRow` element and should return `true` if the row should be included.
 ---
 --- Parameters:
----  * `filterFn`	- An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
+---  * `filterFn`   - An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
 ---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
@@ -565,6 +575,57 @@ function Table:deselectAll(rowsUI)
         return true
     end
     return false
+end
+
+--- cp.ui.Table:toCSV() -> string | nil
+--- Method
+--- Gets the contents of the table and formats it as a CSV string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string or `nil` if an error occurs.
+function Table:toCSV()
+    if self:isShowing() then
+        local result = ""
+        local ui = self:contentUI()
+        local group = ui and childMatching(ui, Group.matches)
+        local buttons = group and axutils.childrenMatching(group, Button.matches)
+        if buttons and next(buttons) ~= nil then
+            for i=1, #buttons do
+                result = result .. [["]] .. buttons[i]:attributeValue("AXTitle") .. [["]]
+                if i ~= #buttons then
+                    result = result .. ","
+                else
+                    result = result .. "\n"
+                end
+            end
+            local rows = self:rowsUI()
+            for r=1, #rows do
+                local row = rows[r]
+                local cells = row:attributeValue("AXChildren")
+                if cells then
+                    for c=1, #cells do
+                        local cell = cells[c]
+                        if cell then
+                            local field = childMatching(cell, StaticText.matches) or childMatching(cell, TextField.matches) or childMatching(cell, MenuButton.matches)
+                            local item = (field and field:attributeValue("AXValue")) or (field and field:attributeValue("AXTitle")) or ""
+                            result = result .. [["]] .. item .. [["]]
+                            if c ~= #cells then
+                                result = result .. ","
+                            else
+                                if r ~= #rows then
+                                    result = result .. "\n"
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return result
+    end
 end
 
 --- cp.ui.Table:saveLayout() -> table
