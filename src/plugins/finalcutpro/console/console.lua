@@ -2,9 +2,10 @@
 ---
 --- Final Cut Pro Console
 
-local require = require
+local require   = require
 
-local tools = require("cp.tools")
+local config    = require "cp.config"
+local tools     = require "cp.tools"
 
 --------------------------------------------------------------------------------
 --
@@ -39,6 +40,23 @@ function mod.show()
             end
         end
         mod.activator:allowHandlers(table.unpack(allowedHandlers))
+
+        --------------------------------------------------------------------------------
+        -- Allow specific toolbar icons in the Console:
+        --------------------------------------------------------------------------------
+        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+        local toolbarIcons = {
+            ["fcpx_audioEffect"]    = iconPath .. "audioEffect.png",
+            ["fcpx_generator"]      = iconPath .. "generator.png",
+            ["fcpx_title"]          = iconPath .. "title.png",
+            ["fcpx_transition"]     = iconPath .. "transition.png",
+            ["fcpx_videoEffect"]    = iconPath .. "videoEffect.png",
+            ["fcpx_menu"]           = iconPath .. "menu.png",
+            ["fcpx_font"]           = iconPath .. "font.png",
+            ["fcpx_shortcuts"]      = iconPath .. "shortcut.png",
+        }
+        mod.activator:toolbarIcons(toolbarIcons)
+
     end
     mod.activator:show()
 end
