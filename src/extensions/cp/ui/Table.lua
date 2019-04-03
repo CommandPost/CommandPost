@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log				= require "hs.logger".new "table"
+--local log				= require "hs.logger".new "table"
 
 local axutils           = require "cp.ui.axutils"
 
