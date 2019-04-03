@@ -393,6 +393,7 @@ function mod.show()
         mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
         mod._webview:show()
+        hs.focus() -- This will force a spaces change if needed.
         mod.focus()
     end
 

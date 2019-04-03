@@ -24,11 +24,13 @@ local log                       = require("hs.logger").new("activator")
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
+local image                     = require("hs.image")
 local inspect                   = require("hs.inspect")
 local menubar                   = require("hs.menubar")
 local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
 local timer                     = require("hs.timer")
+local toolbar                   = require("hs.webview.toolbar")
 
 local config                    = require("cp.config")
 local i18n                      = require("cp.i18n")
@@ -42,6 +44,7 @@ local _                         = require("moses")
 local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
 local format                    = string.format
+local imageFromPath             = image.imageFromPath
 local sort, insert, pack        = table.sort, table.insert, table.pack
 
 --------------------------------------------------------------------------------
@@ -246,7 +249,7 @@ function activator.mt:getActiveHandler(id)
     return self:activeHandlers()[id]
 end
 
---- plugins.core.action.activator:allowHandlers(...) -> boolean
+--- plugins.core.action.activator:allowHandlers(...) -> self
 --- Method
 --- Specifies that only the handlers with the specified IDs will be active in
 --- this activator. By default all handlers are allowed.
@@ -255,7 +258,7 @@ end
 ---  * `...`     - The list of Handler ID strings to allow.
 ---
 --- Returns:
----  * `true` if the handlers were found.
+---  * Self
 function activator.mt:allowHandlers(...)
     local allowed = {}
     for _,id in ipairs(pack(...)) do
@@ -266,6 +269,21 @@ function activator.mt:allowHandlers(...)
         end
     end
     self._allowedHandlers(allowed)
+    return self
+end
+
+--- plugins.core.action.activator:toolbarIcons(table) -> self
+--- Method
+--- Sets which sections have an icon on the toolbar.
+---
+--- Parameters:
+---  * table - A table containing paths to all the toolbar icons. The key should be
+---            the handler ID, and the value should be the path to the icon.
+---
+--- Returns:
+---  * Self
+function activator.mt:toolbarIcons(toolbarIcons)
+    self._toolbarIcons = toolbarIcons
     return self
 end
 
@@ -718,37 +736,6 @@ activator.reducedTransparency = prop.new(function()
     return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
--- initChooser(executeFn, rightClickFn, choicesFn, searchSubText) -> `hs.chooser` object
--- Method
--- Gets a hs.chooser
---
--- Parameters:
---  * executeFn - A function that will be called when the chooser is dismissed. It should accept one parameter, which will be nil if the user dismissed the chooser window, otherwise it will be a table containing whatever information you supplied for the item the user chose.
---  * rightClickFn - A function that will be called whenever the user right clicks on a choice. If this parameter is omitted, the existing callback will be removed.
---  * choicesFn - A function to call when the list of choices is needed.
---
--- Returns:
---  * A `hs.chooser` object
-local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
-
-    local c = chooser.new(executeFn)
-        :bgDark(true)
-        :rightClickCallback(rightClickFn)
-        :choices(choicesFn)
-        :searchSubText(searchSubText)
-        :refreshChoicesCallback()
-
-    if activator.reducedTransparency() then
-        c:fgColor(nil)
-         :subTextColor(nil)
-    else
-        c:fgColor(drawing.color.x11.snow)
-         :subTextColor(drawing.color.x11.snow)
-    end
-
-    return c
-end
-
 --- plugins.core.action.activator:refreshChooser() -> `hs.chooser` object
 --- Method
 --- Gets a hs.chooser
@@ -773,12 +760,78 @@ function activator.mt:chooser()
     -- Create new Chooser if needed:
     --------------------------------------------------------------------------------
     if not self._chooser then
-        self._chooser = initChooser(
-            function(result) self:activate(result) end,
-            function(index) self:rightClickMain(index) end,
-            function() return self:activeChoices() end,
-            self:searchSubText()
-        )
+
+        local toolbarItems = {}
+
+        local toolbarIcons = self._toolbarIcons
+        if toolbarIcons then
+            local allowedHandlers = self:allowedHandlers()
+            table.sort(allowedHandlers)
+            local priority = 1
+            for id,_ in pairs(allowedHandlers) do
+                if toolbarIcons[id] then
+                    table.insert(toolbarItems, {
+                        id = id,
+                        label = id,
+                        image = imageFromPath(toolbarIcons[id]),
+                        priority = priority,
+                        fn = function()
+                            local soloed = true
+                            for i,_ in pairs(self:allowedHandlers()) do
+                                if i ~= id and not self:isDisabledHandler(i) then
+                                    soloed = false
+                                    break
+                                end
+                            end
+                            if soloed then
+                                self:enableAllHandlers()
+                            else
+                                self:disableAllHandlers()
+                                self:enableHandler(id)
+                            end
+                        end,
+                    })
+                    priority = priority + 1
+                end
+            end
+        end
+
+        local t
+        if next(toolbarItems) ~= nil then
+            t = toolbar.new(self._id)
+                :canCustomize(true)
+                :autosaves(true)
+                :sizeMode("small")
+                :addItems(toolbarItems)
+        end
+
+        local executeFn = function(result) self:activate(result) end
+        local rightClickFn = function(index) self:rightClickMain(index) end
+        local choicesFn = function() return self:activeChoices() end
+        local searchSubText = self:searchSubText()
+
+        local c = chooser.new(executeFn)
+            :bgDark(true)
+            :rightClickCallback(rightClickFn)
+            :choices(choicesFn)
+            :searchSubText(searchSubText)
+            :refreshChoicesCallback()
+
+        if t then
+            c:attachedToolbar(t)
+            t:inTitleBar(true)
+        end
+
+        if activator.reducedTransparency() then
+            c:fgColor(nil)
+             :subTextColor(nil)
+        else
+            c:fgColor(drawing.color.x11.snow)
+             :subTextColor(drawing.color.x11.snow)
+        end
+
+        self._chooser = c
+
     end
     return self._chooser
 end
