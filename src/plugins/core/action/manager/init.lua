@@ -44,7 +44,6 @@ local ARRAY_DELIM = "||"
 -- Undefined String.
 local UNDEFINED = "_undefined"
 
-
 -- freezeParams(params) -> string
 -- Function
 -- Freezes a table of `params` into a string
