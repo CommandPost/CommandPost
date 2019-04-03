@@ -91,6 +91,22 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.writeToFile(path, data) -> none
+--- Function
+--- Write data to a file at a given path.
+---
+--- Parameters:
+---  * path - The path to the file you want to write to.
+---  * data - The data to write to the file.
+---
+--- Returns:
+---  * None
+function tools.writeToFile(path, data)
+    local file = io.open(path, "w")
+    file:write(data)
+    file:close()
+end
+
 --- cp.tools.toRegionalNumber(value) -> number | nil
 --- Function
 --- Takes a string and converts it into a number, with the correct
