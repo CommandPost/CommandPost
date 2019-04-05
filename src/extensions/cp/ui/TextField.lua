@@ -86,12 +86,11 @@ function TextField.lazy.prop:value()
                 local focused
                 if self._forceFocus then
                     focused = self:focused()
-                    self:focused(true)
+                    if not focused then
+                        self:focused(true)
+                    end
                 end
                 ui:setAttributeValue("AXValue", value)
-                if self._forceFocus then
-                    self:focused(focused)
-                end
                 ui:performAction("AXConfirm")
             end
         end
