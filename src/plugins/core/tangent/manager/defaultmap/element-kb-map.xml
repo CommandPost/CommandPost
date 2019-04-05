@@ -29,36 +29,42 @@
                             <Mapping mode="Std">
                                 <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310014</Key> <!-- Color Wheel - Master - Brightness -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
                             <Mapping mode="Std">
                                 <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
@@ -103,6 +109,7 @@
                             <Mapping mode="Std">
                                 <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
@@ -115,12 +122,15 @@
                             <Mapping mode="Std">
                                 <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
                             <Mapping mode="Std">
                                 <Key>0x00310104</Key> <!-- Color Wheel - Mix -->
                                 <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
@@ -133,6 +143,8 @@
                             <Mapping mode="Std">
                                 <Key>0x00310101</Key> <!-- Color Wheel - Temperature -->
                                 <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
@@ -145,6 +157,7 @@
                             <Mapping mode="Std">
                                 <Key>0x00310102</Key> <!-- Color Wheel - Tint -->
                                 <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>

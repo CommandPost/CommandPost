@@ -574,6 +574,26 @@ function mod.menuParameter(group, id, label, path)
     return id + 1
 end
 
+--- plugins.finalcutpro.tangent.common.functionParameter(group, id, label, fn) -> number
+--- Function
+--- Sets up a new Function Parameter for the Tangent.
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * path - The list of menu items you'd like to activate as a table.
+---
+--- Returns:
+---  * An updated ID
+function mod.functionParameter(group, id, label, fn)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(fn)
+    return id + 1
+end
+
 --- plugins.finalcutpro.tangent.common.buttonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Button Parameter for the Tangent
