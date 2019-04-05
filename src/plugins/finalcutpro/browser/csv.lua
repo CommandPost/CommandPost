@@ -23,6 +23,7 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.commands"]    = "fcpxCmds",
+        ["finalcutpro.menu.manager"] = "menuManager",
     }
 }
 
@@ -31,23 +32,41 @@ function plugin.init(deps)
 
     local list = fcp:libraries():list()
 
-
-    cmds:add("saveBrowserContentsToCSV")
-        :whenActivated(function()
-            list:show()
-            if list:isShowing() then
-                local result = list:contents():toCSV()
-                if result then
-                    local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
-                    if path then
-                        tools.writeToFile(path .. "/Browser Contents.csv", result)
-                    end
-                    return
+    local saveBrowserContentsToCSV = function()
+        fcp:launch(5)
+        list:show()
+        if list:isShowing() then
+            local result = list:contents():toCSV()
+            if result then
+                local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
+                if path then
+                    tools.writeToFile(path .. "/Browser Contents.csv", result)
                 end
+                return
             end
-            playErrorSound()
-        end)
+        end
+        playErrorSound()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Command:
+    --------------------------------------------------------------------------------
+    cmds:add("saveBrowserContentsToCSV")
+        :whenActivated(saveBrowserContentsToCSV)
         :titled(i18n("saveBrowserContentsToCSV"))
+
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    local menu = deps.menuManager.browser
+    menu
+        :addItems(1001, function()
+            return {
+                {   title = i18n("saveBrowserContentsToCSV"),
+                    fn = saveBrowserContentsToCSV,
+                },
+            }
+        end)
 end
 
 return plugin

@@ -1463,8 +1463,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup the system menu:
     --------------------------------------------------------------------------------
-    deps.menu.tools
-        :addMenu(10001, function() return i18n("viewerOverlay") end)
+    deps.menu.viewer
+        :addMenu(10001, function() return i18n("overlay") end)
         :addItems(1000, generateMenu)
 
     --------------------------------------------------------------------------------

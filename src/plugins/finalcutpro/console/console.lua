@@ -9,60 +9,6 @@ local tools     = require "cp.tools"
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
-
---- plugins.finalcutpro.console.show() -> none
---- Function
---- Shows the Final Cut Pro Console.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.show()
-    if not mod.activator then
-        mod.activator = mod.actionmanager.getActivator("finalcutpro.console")
-            :preloadChoices()
-
-        --------------------------------------------------------------------------------
-        -- Don't show widgets in the console:
-        --------------------------------------------------------------------------------
-        local allowedHandlers = {}
-        local handlerIds = mod.actionmanager.handlerIds()
-        for _,id in pairs(handlerIds) do
-            local handlerTable = tools.split(id, "_")
-            if handlerTable[2]~= "widgets" then
-                table.insert(allowedHandlers, id)
-            end
-        end
-        mod.activator:allowHandlers(table.unpack(allowedHandlers))
-
-        --------------------------------------------------------------------------------
-        -- Allow specific toolbar icons in the Console:
-        --------------------------------------------------------------------------------
-        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
-        local toolbarIcons = {
-            ["fcpx_audioEffect"]    = iconPath .. "audioEffect.png",
-            ["fcpx_generator"]      = iconPath .. "generator.png",
-            ["fcpx_title"]          = iconPath .. "title.png",
-            ["fcpx_transition"]     = iconPath .. "transition.png",
-            ["fcpx_videoEffect"]    = iconPath .. "videoEffect.png",
-            ["fcpx_menu"]           = iconPath .. "menu.png",
-            ["fcpx_font"]           = iconPath .. "font.png",
-            ["fcpx_shortcuts"]      = iconPath .. "shortcut.png",
-        }
-        mod.activator:toolbarIcons(toolbarIcons)
-
-    end
-    mod.activator:show()
-end
-
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -79,14 +25,54 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
-    mod.actionmanager = deps.actionmanager
+    local activator
+    local cmds = deps.fcpxCmds
+    local actionmanager = deps.actionmanager
 
     --------------------------------------------------------------------------------
     -- Add the command trigger:
     --------------------------------------------------------------------------------
-    deps.fcpxCmds:add("cpConsole")
+    cmds:add("cpConsole")
         :groupedBy("commandPost")
-        :whenActivated(function() mod.show() end)
+        :whenActivated(function()
+            if not activator then
+                activator = actionmanager.getActivator("finalcutpro.console")
+                    :preloadChoices()
+
+                --------------------------------------------------------------------------------
+                -- Don't show widgets in the console:
+                --------------------------------------------------------------------------------
+                local allowedHandlers = {}
+                local handlerIds = actionmanager.handlerIds()
+                for _,id in pairs(handlerIds) do
+                    local handlerTable = tools.split(id, "_")
+                    if handlerTable[2]~= "widgets" then
+                        table.insert(allowedHandlers, id)
+                    end
+                end
+                activator:allowHandlers(table.unpack(allowedHandlers))
+
+                --------------------------------------------------------------------------------
+                -- Allow specific toolbar icons in the Console:
+                --------------------------------------------------------------------------------
+                local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+                local toolbarIcons = {
+                    fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 1},
+                    fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 2},
+                    fcpx_generator      = { path = iconPath .. "generator.png",     priority = 3},
+                    fcpx_title          = { path = iconPath .. "title.png",         priority = 4},
+                    fcpx_transition     = { path = iconPath .. "transition.png",    priority = 5},
+                    fcpx_fonts          = { path = iconPath .. "font.png",          priority = 6},
+                    fcpx_shortcuts      = { path = iconPath .. "shortcut.png",      priority = 7},
+                    fcpx_menu           = { path = iconPath .. "menu.png",          priority = 8},
+                }
+                activator:toolbarIcons(toolbarIcons)
+
+            end
+
+            activator:toggle()
+
+        end)
         :activatedBy():ctrl("space")
 
     return mod

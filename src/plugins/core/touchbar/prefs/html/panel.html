@@ -9,6 +9,10 @@
 		document.getElementById("touchbar_" + groupID + "_button" + buttonID + "_action").value = actionTitle;
 	}
 
+	function setTouchBarLabel(groupID, buttonID, label) {
+		document.getElementById("touchbar_" + groupID + "_button" + buttonID + "_label").value = label;
+	}
+
 	function shiftTouchBarButtons(groupID, buttonID, shiftButton) {
 		var originalPreview = document.getElementById("touchbar_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML;
 		var originalIconClass = document.getElementById("touchbar_" + groupID + "_dropzone" + buttonID).className;

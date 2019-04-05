@@ -62,6 +62,13 @@
 	width: 27%;
 }
 
+.tbResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 200px;
+}
+
 .tbRowOrder {
 	width: 8%;
 }
@@ -102,6 +109,7 @@
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
+	width: 200px;
 }
 
 .buttonDisabled {

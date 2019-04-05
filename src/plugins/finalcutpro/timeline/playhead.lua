@@ -110,7 +110,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.menu.manager"]                = "menuManager",
         ["finalcutpro.commands"]                    = "fcpxCmds",
-        ["finalcutpro.preferences.manager"]             = "prefs",
+        ["finalcutpro.preferences.manager"]         = "prefs",
     }
 }
 

@@ -603,30 +603,48 @@ local function midiPanelCallback(id, params)
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
                 for _,groupID in ipairs(commands.groupIds()) do
-                    for subGroupID=1, mod._midi.numberOfSubGroups do
-                        --------------------------------------------------------------------------------
-                        -- Create new Activator:
-                        --------------------------------------------------------------------------------
-                        mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID .. subGroupID)
+                    --------------------------------------------------------------------------------
+                    -- Create new Activator:
+                    --------------------------------------------------------------------------------
+                    mod.activator[groupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID)
 
-                        --------------------------------------------------------------------------------
-                        -- Restrict Allowed Handlers for Activator to current group (and global):
-                        --------------------------------------------------------------------------------
-                        local allowedHandlers = {}
-                        for _,v in pairs(handlerIds) do
-                            local handlerTable = tools.split(v, "_")
-                            if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                                --------------------------------------------------------------------------------
-                                -- Don't include "widgets" (that are used for the Touch Bar):
-                                --------------------------------------------------------------------------------
-                                if handlerTable[2] ~= "widgets" then
-                                    table.insert(allowedHandlers, v)
-                                end
+                    --------------------------------------------------------------------------------
+                    -- Restrict Allowed Handlers for Activator to current group (and global):
+                    --------------------------------------------------------------------------------
+                    local allowedHandlers = {}
+                    for _,v in pairs(handlerIds) do
+                        local handlerTable = tools.split(v, "_")
+                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                            --------------------------------------------------------------------------------
+                            -- Don't include "widgets" (that are used for the Touch Bar):
+                            --------------------------------------------------------------------------------
+                            if handlerTable[2] ~= "widgets" then
+                                table.insert(allowedHandlers, v)
                             end
                         end
-                        local unpack = table.unpack
-                        mod.activator[groupID .. subGroupID]:allowHandlers(unpack(allowedHandlers))
-                        mod.activator[groupID .. subGroupID]:preloadChoices()
+                    end
+                    local unpack = table.unpack
+                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
+                    mod.activator[groupID]:preloadChoices()
+
+                    --------------------------------------------------------------------------------
+                    -- Allow specific toolbar icons in the Console:
+                    --------------------------------------------------------------------------------
+                    if groupID == "fcpx" then
+                        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+                        local toolbarIcons = {
+                            fcpx_midicontrols   = { path = iconPath .. "midi.png",          priority = 1},
+                            global_midibanks    = { path = iconPath .. "midiBank.png",      priority = 2},
+                            fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
+                            fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 4},
+                            fcpx_generator      = { path = iconPath .. "generator.png",     priority = 5},
+                            fcpx_title          = { path = iconPath .. "title.png",         priority = 6},
+                            fcpx_transition     = { path = iconPath .. "transition.png",    priority = 7},
+                            fcpx_fonts          = { path = iconPath .. "font.png",          priority = 8},
+                            fcpx_shortcuts      = { path = iconPath .. "shortcut.png",      priority = 9},
+                            fcpx_menu           = { path = iconPath .. "menu.png",          priority = 10},
+                        }
+                        mod.activator[groupID]:toolbarIcons(toolbarIcons)
                     end
                 end
             end
@@ -635,7 +653,9 @@ local function midiPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
-            mod.activator[groupID]:onActivate(function(handler, action, text)
+            local activatorID = groupID:sub(1, -2)
+
+            mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
                 --------------------------------------------------------------------------------
@@ -651,7 +671,7 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Show Activator:
             --------------------------------------------------------------------------------
-            mod.activator[groupID]:show()
+            mod.activator[activatorID]:show()
         elseif callbackType == "clear" then
             --------------------------------------------------------------------------------
             -- Clear:
