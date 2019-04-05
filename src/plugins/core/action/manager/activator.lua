@@ -746,7 +746,6 @@ function activator.mt:updateSelectedToolbarIcon()
     local toolbarIcons = self._toolbarIcons
     local t = self._toolbar
     if t and toolbarIcons then
-        t:selectedItem(nil)
         for id,_ in pairs(toolbarIcons) do
             local soloed = true
             for i,_ in pairs(self:allowedHandlers()) do
@@ -760,10 +759,13 @@ function activator.mt:updateSelectedToolbarIcon()
             end
             if soloed and not self:isDisabledHandler(id) then
                 t:selectedItem(id)
+                return
             end
         end
         if allHandlersActive then
             t:selectedItem("showAll")
+        else
+            t:selectedItem(nil)
         end
     end
 end
@@ -849,12 +851,6 @@ function activator.mt:chooser()
                     })
                 end
             end
-
-            --------------------------------------------------------------------------------
-            -- Make sure the correct button is selected on launch:
-            --------------------------------------------------------------------------------
-            self:updateSelectedToolbarIcon()
-
         end
 
         local executeFn = function(result) self:activate(result) end
@@ -963,6 +959,11 @@ function activator.mt:show()
     -- Set Placeholder Text:
     --------------------------------------------------------------------------------
     theChooser:placeholderText(i18n("appName"))
+
+    --------------------------------------------------------------------------------
+    -- Update Selected Toolbar Icon:
+    --------------------------------------------------------------------------------
+    self:updateSelectedToolbarIcon()
 
     --------------------------------------------------------------------------------
     -- Show Console:
