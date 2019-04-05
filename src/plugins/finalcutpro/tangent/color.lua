@@ -337,7 +337,10 @@ function plugin.init(deps)
         If(function() return tintChange ~= 0 end)
         :Then(cw:doShow())
         :Then(function()
-            cw:show():tintSlider():shiftValue(tintChange)
+            local currentValue = cw:show():tint()
+            if currentValue then
+                cw:tint(currentValue+tintChange)
+            end
             tintChange = 0
             return true
         end)
@@ -346,9 +349,18 @@ function plugin.init(deps)
         :Then(cw:doShow())
         :Then(function()
             local currentValue = cw:show():hue()
-            if currentValue then
-                cw:hue(currentValue+hueChange)
+
+            local newValue = currentValue + hueChange
+            if newValue > 361 then
+                newValue = 0
+            elseif newValue < 0 then
+                newValue = 360
             end
+
+            if currentValue then
+                cw:hue(newValue)
+            end
+
             hueChange = 0
             return true
         end)

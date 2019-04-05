@@ -97,7 +97,6 @@ function ColorWheels:initialize(parent)
     -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
     -- link these fields so they mirror each other.
     self:temperatureSlider().value:mirror(self:temperatureTextField().value)
-    self:tintSlider().value:mirror(self:tintTextField().value)
     self:mixSlider().value:mirror(self:mixTextField().value)
 end
 
@@ -159,7 +158,7 @@ end
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 function ColorWheels.lazy.prop:tint()
-    return self:tintSlider().value
+    return self:tintTextField().value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
@@ -427,7 +426,7 @@ function ColorWheels.lazy.method:tintTextField()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
-    )
+    ):forceFocus()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:hueRow() -> cp.ui.PropertyRow
