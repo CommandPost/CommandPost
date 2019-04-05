@@ -31,13 +31,15 @@ local plugin = {
     dependencies = {
         ["finalcutpro.tangent.group"]  = "fcpGroup",
         ["finalcutpro.tangent.common"]  = "common",
+        ["core.tangent.manager"] = "manager",
     }
 }
 
 function plugin.init(deps)
 
-    local fcpGroup = deps.fcpGroup
     local common = deps.common
+    local fcpGroup = deps.fcpGroup
+    local manager = deps.manager
 
     local doShortcut = common.doShortcut
     local doShowParameter = common.doShowParameter
@@ -209,6 +211,7 @@ function plugin.init(deps)
             :Then(function()
                 wheel:nudgeColor(rightChange, upChange)
                 rightChange, upChange = 0, 0
+                manager.controls:findByID(id):update() -- Force the Tangent display to update.
                 return true
             end)
         ):Then(
@@ -217,6 +220,7 @@ function plugin.init(deps)
             :Then(function()
                 wheel:saturation():shiftValue(satChange)
                 satChange = 0
+                manager.controls:findByID(id):update() -- Force the Tangent display to update.
                 return true
             end)
         ):Then(
@@ -225,6 +229,7 @@ function plugin.init(deps)
             :Then(function()
                 wheel:brightness():shiftValue(brightChange)
                 brightChange = 0
+                manager.controls:findByID(id):update() -- Force the Tangent display to update.
                 return true
             end)
         ):Finally(function()
@@ -331,6 +336,7 @@ function plugin.init(deps)
         :Then(function()
             cw:temperatureSlider():shiftValue(tempChange)
             tempChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0101):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
@@ -342,6 +348,7 @@ function plugin.init(deps)
                 cw:tint(currentValue+tintChange)
             end
             tintChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0102):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
@@ -362,6 +369,7 @@ function plugin.init(deps)
             end
 
             hueChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0103):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
@@ -370,13 +378,16 @@ function plugin.init(deps)
         :Then(function()
             cw:show():mixSlider():shiftValue(mixChange)
             mixChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0104):update() -- Force the Tangent display to update.
             return true
         end)
     )
 
     updateUI:action(update)
 
-    -- Color Wheel Temperature
+    --------------------------------------------------------------------------------
+    -- Color Wheel Temperature:
+    --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0101)
         :name(format("%s - %s", iColorWheel, i18n("temperature")))
         :name9(format("%s %s", iColorWheel4, i18n("temperature4")))

@@ -389,9 +389,9 @@ local fromHub = {
         -- TODO: FCPX specific code should not be in `core`.
         if fcp:isFrontmost() then
             if metadata.jogValue == 1 then
-                fcp:menu():selectMenu({"Mark", "Next", "Frame"})
+                fcp:menu():doSelectMenu({"Mark", "Next", "Frame"}):Now()
             elseif metadata.jogValue == -1 then
-                fcp:menu():selectMenu({"Mark", "Previous", "Frame"})
+                fcp:menu():doSelectMenu({"Mark", "Previous", "Frame"}):Now()
             end
         end
     end,

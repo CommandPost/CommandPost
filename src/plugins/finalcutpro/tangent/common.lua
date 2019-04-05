@@ -574,6 +574,26 @@ function mod.menuParameter(group, id, label, path)
     return id + 1
 end
 
+--- plugins.finalcutpro.tangent.common.functionParameter(group, id, label, fn) -> number
+--- Function
+--- Sets up a new Function Parameter for the Tangent.
+---
+--- Parameters:
+---  * group - The Tangent Group.
+---  * id - The Tangent ID.
+---  * label - The label to be used by the Tangent. This can either be an i18n ID or
+---            a plain string.
+---  * path - The list of menu items you'd like to activate as a table.
+---
+--- Returns:
+---  * An updated ID
+function mod.functionParameter(group, id, label, fn)
+    group
+        :action(id + 1, i18n(label, {default=label}))
+        :onPress(fn)
+    return id + 1
+end
+
 --- plugins.finalcutpro.tangent.common.buttonParameter(group, param, id, label) -> number
 --- Function
 --- Sets up a new Button Parameter for the Tangent
@@ -694,6 +714,7 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
                     end
                     y = 0
                 end
+                mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
         ):Label("plugins.finalcutpro.tangent.common.xyParameter.updateUI")
@@ -773,6 +794,7 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
                     end
                     value = 0
                 end
+                mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
         ):Label("plugins.finalcutpro.tangent.common.sliderParameter.updateUI")
@@ -888,9 +910,13 @@ end
 local plugin = {
     id = "finalcutpro.tangent.common",
     group = "finalcutpro",
+    dependencies = {
+        ["core.tangent.manager"] = "manager",
+    },
 }
 
-function plugin.init()
+function plugin.init(deps)
+    mod._manager = deps.manager
     return mod
 end
 
