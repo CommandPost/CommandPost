@@ -714,6 +714,7 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
                     end
                     y = 0
                 end
+                mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
         ):Label("plugins.finalcutpro.tangent.common.xyParameter.updateUI")
@@ -793,6 +794,7 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
                     end
                     value = 0
                 end
+                mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
         ):Label("plugins.finalcutpro.tangent.common.sliderParameter.updateUI")
@@ -908,9 +910,13 @@ end
 local plugin = {
     id = "finalcutpro.tangent.common",
     group = "finalcutpro",
+    dependencies = {
+        ["core.tangent.manager"] = "manager",
+    },
 }
 
-function plugin.init()
+function plugin.init(deps)
+    mod._manager = deps.manager
     return mod
 end
 
