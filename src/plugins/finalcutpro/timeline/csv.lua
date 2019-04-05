@@ -23,6 +23,7 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.commands"]    = "fcpxCmds",
+        ["finalcutpro.menu.manager"] = "menuManager",
     }
 }
 
@@ -32,28 +33,50 @@ function plugin.init(deps)
     local timeline = fcp:timeline()
     local index = timeline:index()
 
-    cmds:add("saveTimelineIndexToCSV")
-        :whenActivated(function()
-            if not timeline:toolbar():index():checked() then
-                timeline:toolbar():index():press()
-            end
-            if index:isShowing() then
-                local activeTab = index:activeTab()
-                local list = activeTab and activeTab:list()
-                if list and not index:roles():isShowing() then
-                    local result = list:toCSV()
-                    if result then
-                        local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
-                        if path then
-                            tools.writeToFile(path .. "/Timeline Index.csv", result)
-                        end
-                        return
+    local saveTimelineIndexToCSV = function()
+        fcp:launch(5)
+        timeline:show()
+        if not timeline:toolbar():index():checked() then
+            timeline:toolbar():index():press()
+        end
+        if index:isShowing() then
+            local activeTab = index:activeTab()
+            local list = activeTab and activeTab:list()
+            if list and not index:roles():isShowing() then
+                local result = list:toCSV()
+                if result then
+                    local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
+                    if path then
+                        tools.writeToFile(path .. "/Timeline Index.csv", result)
                     end
+                    return
                 end
             end
-            playErrorSound()
-        end)
+        end
+        playErrorSound()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Command:
+    --------------------------------------------------------------------------------
+    cmds:add("saveTimelineIndexToCSV")
+        :whenActivated(saveTimelineIndexToCSV)
         :titled(i18n("saveTimelineIndexToCSV"))
+
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    local menu = deps.menuManager.timeline
+    menu
+        :addItems(1001, function()
+            return {
+                {   title = i18n("saveTimelineIndexToCSV"),
+                    fn = saveTimelineIndexToCSV,
+                },
+            }
+        end)
+
+
 end
 
 return plugin

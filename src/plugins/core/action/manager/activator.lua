@@ -36,6 +36,7 @@ local config                    = require("cp.config")
 local i18n                      = require("cp.i18n")
 local idle                      = require("cp.idle")
 local prop                      = require("cp.prop")
+local tools                     = require("cp.tools")
 
 local Do                        = require("cp.rx.go.Do")
 
@@ -736,6 +737,37 @@ activator.reducedTransparency = prop.new(function()
     return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
+function activator.mt:updateSelectedToolbarIcon()
+    --------------------------------------------------------------------------------
+    -- Update toolbar icons:
+    --------------------------------------------------------------------------------
+    local allHandlersActive = true
+    local allHandlersDeactive = false
+    local toolbarIcons = self._toolbarIcons
+    local t = self._toolbar
+    if t and toolbarIcons then
+        t:selectedItem(nil)
+        for id,_ in pairs(toolbarIcons) do
+            local soloed = true
+            for i,_ in pairs(self:allowedHandlers()) do
+                if self:isDisabledHandler(i) then
+                    allHandlersActive = false
+                end
+                if i ~= id and not self:isDisabledHandler(i) then
+                    soloed = false
+                    break
+                end
+            end
+            if soloed and not self:isDisabledHandler(id) then
+                t:selectedItem(id)
+            end
+        end
+        if allHandlersActive then
+            t:selectedItem("showAll")
+        end
+    end
+end
+
 --- plugins.core.action.activator:refreshChooser() -> `hs.chooser` object
 --- Method
 --- Gets a hs.chooser
@@ -761,21 +793,44 @@ function activator.mt:chooser()
     --------------------------------------------------------------------------------
     if not self._chooser then
 
-        local toolbarItems = {}
-
+        local t
         local toolbarIcons = self._toolbarIcons
-        if toolbarIcons then
-            local allowedHandlers = self:allowedHandlers()
-            table.sort(allowedHandlers)
-            local priority = 1
-            for id,_ in pairs(allowedHandlers) do
-                if toolbarIcons[id] then
-                    table.insert(toolbarItems, {
+        if toolbarIcons and next(toolbarIcons) ~= nil then
+            --------------------------------------------------------------------------------
+            -- Create new toolbar:
+            --------------------------------------------------------------------------------
+            t = toolbar.new(self._id)
+                :canCustomize(true)
+                :autosaves(true)
+                :sizeMode("small")
+
+            if toolbarIcons then
+                --------------------------------------------------------------------------------
+                -- Add "Show All" button:
+                --------------------------------------------------------------------------------
+                t:addItems({
+                    id = "showAll",
+                    label = i18n("showAll"),
+                    priority = 1,
+                    image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
+                    selectable = true,
+                    fn = function(tb)
+                        self:enableAllHandlers()
+                    end,
+                })
+
+                --------------------------------------------------------------------------------
+                -- Add buttons for each section that has an icon:
+                --------------------------------------------------------------------------------
+                for id, item in tools.spairs(toolbarIcons, function(t,a,b) return t[b].priority > t[a].priority end) do
+                    t:addItems({
                         id = id,
-                        label = id,
-                        image = imageFromPath(toolbarIcons[id]),
-                        priority = priority,
-                        fn = function()
+                        label = i18n(id .. "_action"),
+                        tooltip = i18n(id .. "_action"),
+                        image = imageFromPath(item.path),
+                        priority = item.priority + 1,
+                        selectable = true,
+                        fn = function(tb)
                             local soloed = true
                             for i,_ in pairs(self:allowedHandlers()) do
                                 if i ~= id and not self:isDisabledHandler(i) then
@@ -785,24 +840,21 @@ function activator.mt:chooser()
                             end
                             if soloed then
                                 self:enableAllHandlers()
+                                t:selectedItem("showAll")
                             else
                                 self:disableAllHandlers()
                                 self:enableHandler(id)
                             end
                         end,
                     })
-                    priority = priority + 1
                 end
             end
-        end
 
-        local t
-        if next(toolbarItems) ~= nil then
-            t = toolbar.new(self._id)
-                :canCustomize(true)
-                :autosaves(true)
-                :sizeMode("small")
-                :addItems(toolbarItems)
+            --------------------------------------------------------------------------------
+            -- Make sure the correct button is selected on launch:
+            --------------------------------------------------------------------------------
+            self:updateSelectedToolbarIcon()
+
         end
 
         local executeFn = function(result) self:activate(result) end
@@ -831,6 +883,7 @@ function activator.mt:chooser()
         end
 
         self._chooser = c
+        self._toolbar = t
 
     end
     return self._chooser
@@ -850,6 +903,20 @@ function activator.mt:refreshChooser()
     if theChooser then
         theChooser:refreshChoicesCallback()
     end
+end
+
+--- plugins.core.action.activator:isVisible() -> boolean
+--- Method
+--- Checks if the chooser is currently displayed.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A boolean, `true` if the chooser is displayed on screen, `false` if not.
+function activator.mt:isVisible()
+    local theChooser = self:chooser()
+    return theChooser and theChooser:isVisible()
 end
 
 --- plugins.core.action.activator:show() -> boolean
@@ -930,6 +997,25 @@ function activator.mt:hide()
         --------------------------------------------------------------------------------
         theChooser:hide()
 
+    end
+end
+
+
+--- plugins.core.action.activator:toggle() -> none
+--- Method
+--- Shows or hides the chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function activator.mt:toggle()
+    local theChooser = self:chooser()
+    if self:isVisible() then
+        self:hide()
+    else
+        self:show()
     end
 end
 
@@ -1113,6 +1199,7 @@ function activator.mt:rightClickAction(index)
                     else
                         self:enableHandler(id)
                     end
+                    self:updateSelectedToolbarIcon()
                 end,
                 checked = enabled,
             }
@@ -1123,9 +1210,11 @@ function activator.mt:rightClickAction(index)
         local allItems = {
             { title = i18n("consoleSectionsShowAll"), fn = function()
                 self:enableAllHandlers()
+                self:updateSelectedToolbarIcon()
             end, disabled = allEnabled },
             { title = i18n("consoleSectionsHideAll"), fn = function()
                 self:disableAllHandlers()
+                self:updateSelectedToolbarIcon()
             end, disabled = allDisabled },
             { title = "-" }
         }

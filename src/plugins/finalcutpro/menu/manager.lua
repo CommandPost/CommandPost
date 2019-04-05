@@ -74,16 +74,34 @@ function plugin.init(deps)
     )
 
     --------------------------------------------------------------------------------
+    -- Add "Viewer" section to the menubar:
+    --------------------------------------------------------------------------------
+    local viewer = menuManager.addSection(2000)
+    viewer:setDisabledFn(disabledFn)
+    viewer:setDisabledPreferenceKey("viewer")
+    viewer:addHeading(i18n("viewer"))
+    mod.viewer = viewer
+
+    local viewerDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "viewer", false)
+    prefs:addCheckbox(402,
+        {
+            label = i18n("show") .. " " .. i18n("viewer"),
+            onchange = function(_, params) viewerDisabled(not params.checked) end,
+            checked = function() return not viewerDisabled() end,
+        }
+    )
+
+    --------------------------------------------------------------------------------
     -- Add "Timeline" section to the menubar:
     --------------------------------------------------------------------------------
-    local timeline = menuManager.addSection(2000)
+    local timeline = menuManager.addSection(3000)
     timeline:setDisabledFn(disabledFn)
     timeline:setDisabledPreferenceKey("timeline")
     timeline:addHeading(i18n("timeline"))
     mod.timeline = timeline
 
     local timelineDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "timeline", false)
-    prefs:addCheckbox(402,
+    prefs:addCheckbox(403,
         {
             label = i18n("show") .. " " .. i18n("timeline"),
             onchange = function(_, params) timelineDisabled(not params.checked) end,
@@ -92,16 +110,34 @@ function plugin.init(deps)
     )
 
     --------------------------------------------------------------------------------
+    -- Add "Browser" section to the menubar:
+    --------------------------------------------------------------------------------
+    local browser = menuManager.addSection(4000)
+    browser:setDisabledFn(disabledFn)
+    browser:setDisabledPreferenceKey("browser")
+    browser:addHeading(i18n("browser"))
+    mod.browser = browser
+
+    local browserDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "browser", false)
+    prefs:addCheckbox(404,
+        {
+            label = i18n("show") .. " " .. i18n("browser"),
+            onchange = function(_, params) browserDisabled(not params.checked) end,
+            checked = function() return not browserDisabled() end,
+        }
+    )
+
+    --------------------------------------------------------------------------------
     -- Add "Pasteboard" section to the menubar:
     --------------------------------------------------------------------------------
-    local pasteboard = menuManager.addSection(4000)
+    local pasteboard = menuManager.addSection(5000)
     pasteboard:setDisabledFn(disabledFn)
     pasteboard:setDisabledPreferenceKey("pasteboard")
     pasteboard:addHeading(i18n("pasteboard"))
     mod.pasteboard = pasteboard
 
     local pasteboardDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "pasteboard", false)
-    prefs:addCheckbox(403,
+    prefs:addCheckbox(405,
         {
             label = i18n("show") .. " " .. i18n("pasteboard"),
             onchange = function(_, params) pasteboardDisabled(not params.checked) end,
@@ -112,14 +148,14 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add "Tools" section to the menubar:
     --------------------------------------------------------------------------------
-    local tools = menuManager.addSection(5000)
+    local tools = menuManager.addSection(6000)
     tools:setDisabledFn(disabledFn)
     tools:setDisabledPreferenceKey("tools")
     tools:addHeading(i18n("tools"))
     mod.tools = tools
 
     local toolsDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "tools", false)
-    prefs:addCheckbox(404,
+    prefs:addCheckbox(406,
         {
             label = i18n("show") .. " " .. i18n("tools"),
             onchange = function(_, params) toolsDisabled(not params.checked) end,
