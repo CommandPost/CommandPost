@@ -742,7 +742,6 @@ function activator.mt:updateSelectedToolbarIcon()
     -- Update toolbar icons:
     --------------------------------------------------------------------------------
     local allHandlersActive = true
-    local allHandlersDeactive = false
     local toolbarIcons = self._toolbarIcons
     local t = self._toolbar
     if t and toolbarIcons then
@@ -816,7 +815,7 @@ function activator.mt:chooser()
                     priority = 1,
                     image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
                     selectable = true,
-                    fn = function(tb)
+                    fn = function()
                         self:enableAllHandlers()
                     end,
                 })
@@ -824,7 +823,7 @@ function activator.mt:chooser()
                 --------------------------------------------------------------------------------
                 -- Add buttons for each section that has an icon:
                 --------------------------------------------------------------------------------
-                for id, item in tools.spairs(toolbarIcons, function(t,a,b) return t[b].priority > t[a].priority end) do
+                for id, item in tools.spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
                     t:addItems({
                         id = id,
                         label = i18n(id .. "_action"),
@@ -832,7 +831,7 @@ function activator.mt:chooser()
                         image = imageFromPath(item.path),
                         priority = item.priority + 1,
                         selectable = true,
-                        fn = function(tb)
+                        fn = function()
                             local soloed = true
                             for i,_ in pairs(self:allowedHandlers()) do
                                 if i ~= id and not self:isDisabledHandler(i) then
@@ -1001,7 +1000,6 @@ function activator.mt:hide()
     end
 end
 
-
 --- plugins.core.action.activator:toggle() -> none
 --- Method
 --- Shows or hides the chooser.
@@ -1012,7 +1010,6 @@ end
 --- Returns:
 ---  * None
 function activator.mt:toggle()
-    local theChooser = self:chooser()
     if self:isVisible() then
         self:hide()
     else
