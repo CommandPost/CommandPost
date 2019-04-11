@@ -2,11 +2,11 @@
 ---
 --- Scroll Area Module.
 
-local require = require
+local require       = require
 
-local axutils						            = require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
-local ScrollBar                     = require("cp.ui.ScrollBar")
+local axutils       = require("cp.ui.axutils")
+local Element       = require("cp.ui.Element")
+local ScrollBar     = require("cp.ui.ScrollBar")
 
 --------------------------------------------------------------------------------
 --
@@ -33,8 +33,8 @@ end
 --- Creates a new `ScrollArea`.
 ---
 --- Parameters:
----  * parent		- The parent object.
----  * uiFinder		- A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
+---  * parent       - The parent object.
+---  * uiFinder     - A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `ScrollArea`.

@@ -4,7 +4,7 @@
 
 local require = require
 
--- local log                    = require("hs.logger").new("guiscan")
+local log                   = require("hs.logger").new("guiscan")
 
 local dialog                = require("cp.dialog")
 local fcp                   = require("cp.apple.finalcutpro")
@@ -422,6 +422,7 @@ function mod.check(locale)
     -- Debug Message:
     --------------------------------------------------------------------------------
     ln("\n---------------------------------------------------------")
+    ln(" CHECKING LANGUAGE: %s", locale.code)
     ln(" COMPARING PLUGIN FILE SCAN RESULTS TO GUI SCAN RESULTS:")
     ln("---------------------------------------------------------\n")
 
@@ -439,23 +440,13 @@ function mod.check(locale)
     --------------------------------------------------------------------------------
     -- Begin Scan:
     --------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------
-    -- Debug Message:
-    --------------------------------------------------------------------------------
-    ln("---------------------------------------------------------")
-    ln(" CHECKING LANGUAGE: %s", locale.code)
-    ln("---------------------------------------------------------")
-
     local failed = false
-
     for newType,scanner in pairs(pluginScanners) do
         --------------------------------------------------------------------------------
         -- Get settings from GUI Scripting Results:
         --------------------------------------------------------------------------------
         local oldPlugins = scanner()
-
         if oldPlugins then
-
             --------------------------------------------------------------------------------
             -- Debug Message:
             --------------------------------------------------------------------------------
@@ -470,18 +461,13 @@ function mod.check(locale)
                     if not pluginNames then
                         pluginNames = {
                             matched = {},
-                            unmatched = {},
+                            unmatched = {plugin},
                             partials = {},
                         }
                         newPluginNames[name] = pluginNames
                     end
-                    --------------------------------------------------------------------------------
-                    -- TODO: David - I'm not exactly sure what this line of code was designed to do?
-                    --------------------------------------------------------------------------------
-                    --insert(plugins.unmatched, plugin)
                 end
             end
-
             --------------------------------------------------------------------------------
             -- Compare Results:
             --------------------------------------------------------------------------------
@@ -512,7 +498,6 @@ function mod.check(locale)
                     end
                 end
             end
-
             for _, np in pairs(newPluginNames) do
                 if #np.partials ~= #np.unmatched then
                     for _,oldFullName in ipairs(np.partials) do
@@ -530,7 +515,6 @@ function mod.check(locale)
                     end
                 end
             end
-
             --------------------------------------------------------------------------------
             -- If all results matched:
             --------------------------------------------------------------------------------
@@ -550,7 +534,7 @@ end
 
 function mod.checkAll()
     local failed, value = false, ""
-    for _,locale in ipairs(fcp.app:getSupportedLocales()) do
+    for _,locale in ipairs(fcp.app:supportedLocales()) do
         local ok, result = mod.check(locale)
         failed = failed or not ok
         value = value .. result .. "\n"

@@ -251,7 +251,7 @@ local function getFolderSize(path, size)
     if type(path) ~= "string" then
         return
     end
-    local size = 0
+    size = size or 0
     local iterFn, dirObj = fs.dir(path)
     if iterFn then
         for file in iterFn, dirObj do
@@ -386,7 +386,7 @@ function mod.mt:scanSystemAudioUnits(locale)
             log.ef("Failed to cache Audio Units.")
         end
     else
-        log.ef("Failed to scan for Audio Units (Status: %s, Output: %s)", status, output)
+        log.ef("Failed to scan for Audio Units.")
     end
 
 end
