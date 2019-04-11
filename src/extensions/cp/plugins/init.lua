@@ -169,10 +169,10 @@ local doAfter                       = timer.doAfter
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.plugins.SLOW_PLUGIN_WARNING_THRESHOLD -> number
---- Constant
---- Slow Plugin Warning Threshold
-mod.SLOW_PLUGIN_WARNING_THRESHOLD = 0.5
+-- SLOW_PLUGIN_WARNING_THRESHOLD -> number
+-- Constant
+-- Slow Plugin Warning Threshold
+local SLOW_PLUGIN_WARNING_THRESHOLD = 1
 
 --- cp.plugins.CACHE -> table
 --- Constant
@@ -198,7 +198,7 @@ mod.status = {
 --- cp.plugins.SETTINGS_DISABLED -> string
 --- Constant
 --- Plugin Disabled Code
-mod.SETTINGS_DISABLED   = "plugins.disabled"
+mod.SETTINGS_DISABLED = "plugins.disabled"
 
 -- cachePlugin(id, pluginTable, status, scriptFile) -> plugin | nil
 -- Function
@@ -218,8 +218,6 @@ local function cachePlugin(id, pluginTable, status, scriptFile)
         local thePlugin = plugin.init(pluginTable, status, scriptFile)
         mod.CACHE[id] = thePlugin
         mod.IDS[#mod.IDS + 1] = id
-
-        -- log.df("Loaded plugin: %s", thePlugin.id)
         return thePlugin
     else
         log.df([[Duplicate plugin with ID of '%s':
@@ -302,7 +300,7 @@ function mod.initPlugins()
         mod.initPlugin(id)
         local finishTime = os.clock()
         local loadingTime = finishTime-startTime
-        if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+        if loadingTime > SLOW_PLUGIN_WARNING_THRESHOLD then
             log.wf("Slow Plugin: %s (%s)", id, finishTime-startTime)
         end
     end
@@ -587,7 +585,7 @@ function mod.postInitPlugins()
         mod.postInitPlugin(id)
         local finishTime = os.clock()
         local loadingTime = finishTime-startTime
-        if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+        if loadingTime > SLOW_PLUGIN_WARNING_THRESHOLD then
             log.wf("Slow Plugin (Post): %s (%s)", id, finishTime-startTime)
         end
     end

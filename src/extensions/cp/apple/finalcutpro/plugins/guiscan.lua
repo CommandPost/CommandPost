@@ -4,16 +4,16 @@
 
 local require = require
 
--- local log					= require("hs.logger").new("guiscan")
+-- local log                    = require("hs.logger").new("guiscan")
 
-local dialog				= require("cp.dialog")
-local fcp					  = require("cp.apple.finalcutpro")
-local plugins				= require("cp.apple.finalcutpro.plugins")
-local just					= require("cp.just")
-local i18n          = require("cp.i18n")
+local dialog                = require("cp.dialog")
+local fcp                   = require("cp.apple.finalcutpro")
+local i18n                  = require("cp.i18n")
+local just                  = require("cp.just")
+local plugins               = require("cp.apple.finalcutpro.plugins")
 
-local insert, remove		= table.insert, table.remove
-local format				    = string.format
+local insert, remove        = table.insert, table.remove
+local format                = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -275,7 +275,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Return results:
     --------------------------------------------------------------------------------
-    return  allTransitions
+    return allTransitions
 end
 
 --------------------------------------------------------------------------------
@@ -402,7 +402,7 @@ end
 -- A detailed report is output in the Error Log.
 --
 -- Parameters:
---  * `language`	- The language to scan in. Defaults the the current FCPX language.
+--  * `language`    - The language to scan in. Defaults the the current FCPX language.
 --
 -- Returns:
 --  * `true` if all plugins match.
@@ -431,9 +431,9 @@ function mod.check(locale)
     local pluginScanners = {
         [plugins.types.audioEffect] = scanAudioEffects,
         [plugins.types.videoEffect] = scanVideoEffects,
-        [plugins.types.transition]	= scanTransitions,
-        [plugins.types.generator]	= scanGenerators,
-        [plugins.types.title]		= scanTitles,
+        [plugins.types.transition]  = scanTransitions,
+        [plugins.types.generator]   = scanGenerators,
+        [plugins.types.title]       = scanTitles,
     }
 
     --------------------------------------------------------------------------------
