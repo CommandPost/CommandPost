@@ -32,8 +32,6 @@ local id                        = require("cp.apple.finalcutpro.ids") "LogicPlug
 
 local v                         = require("semver")
 
-local xml                       = require("hs._asm.xml")
-
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist

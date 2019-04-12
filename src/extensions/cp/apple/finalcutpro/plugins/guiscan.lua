@@ -10,16 +10,12 @@
 
 local require = require
 
-local log                   = require("hs.logger").new("guiscan")
+--local log                   = require("hs.logger").new("guiscan")
 
 local dialog                = require("cp.dialog")
 local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
-local just                  = require("cp.just")
 local plugins               = require("cp.apple.finalcutpro.plugins")
-
-local insert, remove        = table.insert, table.remove
-local format                = string.format
 
 --------------------------------------------------------------------------------
 --
