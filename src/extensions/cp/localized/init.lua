@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "localized"
+--local log               = require "hs.logger".new "localized"
 
 local fs                = require "hs.fs"
 
