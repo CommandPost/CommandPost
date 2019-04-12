@@ -599,25 +599,6 @@ function mod.show()
     return true
 end
 
---- plugins.finalcutpro.hud.manager.focus() -> boolean
---- Function
---- Puts focus on the HUD.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful or otherwise `false`.
-function mod.focus()
-    just.doUntil(function()
-        if mod._webview and mod._webview:hswindow() and mod._webview:hswindow():raise():focus() then
-            return true
-        else
-            return false
-        end
-    end)
-end
-
 --- plugins.finalcutpro.hud.manager.hide() -> none
 --- Function
 --- Hides the HUD.
