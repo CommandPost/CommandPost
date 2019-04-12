@@ -222,7 +222,7 @@ end
 ---  * Self
 function ScrollArea:selectChild(childUI)
     if childUI then
-        local parent = childUI:parent()
+        local parent = childUI.parent and childUI:parent()
         if parent then
             parent:setAttributeValue("AXSelectedChildren", { childUI } )
         end

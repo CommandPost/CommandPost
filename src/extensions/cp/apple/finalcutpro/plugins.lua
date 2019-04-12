@@ -17,6 +17,7 @@ local fs                        = require("hs.fs")
 
 local archiver                  = require("cp.plist.archiver")
 local config                    = require("cp.config")
+local fcpStrings                = require("cp.apple.finalcutpro.strings")
 local json                      = require("cp.json")
 local localeID                  = require("cp.i18n.localeID")
 local localized                 = require("cp.localized")
@@ -30,6 +31,8 @@ local fcpApp                    = require("cp.apple.finalcutpro.app")
 local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
 
 local v                         = require("semver")
+
+local xml                       = require("hs._asm.xml")
 
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
@@ -86,6 +89,16 @@ local AUDIO_UNITS_CACHE_PATH = "~/Library/Preferences/com.apple.audio.InfoHelper
 -- Effects Preset Path
 local EFFECTS_PRESET_PATH = "~/Library/Application Support/ProApps/Effects Presets"
 
+-- USER_COLOR_PRESETS_PATH -> string
+-- Constant
+-- User Color Presets Path
+local USER_COLOR_PRESETS_PATH = "~/Library/Application Support/ProApps/Color Presets"
+
+-- APP_EFFECTS_PRESETS_STRINGS_PATH -> string
+-- Constant
+-- App Effects Preset Path
+local APP_EFFECTS_PRESETS_STRINGS_PATH = "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFColorPresetsLocalizable.strings"
+
 -- MOTION_TEMPLATE_PATH -> string
 -- Constant
 -- Motion Template Path
@@ -102,6 +115,13 @@ local PLUGIN_TYPES = {
     transition  = "transition",
 }
 
+--------------------------------------------------------------------------------
+-- REMINDER:
+-- Use this to find strings easily:
+--
+-- hs.inspect(require("cp.apple.finalcutpro.strings"):findKeys("360° Noise Reduction"))
+--------------------------------------------------------------------------------
+
 --- BUILT_IN_PLUGINS -> table
 --- Constant
 --- Table of built-in plugins
@@ -110,11 +130,12 @@ local BUILT_IN_PLUGINS = {
     -- Built-in Effects:
     --------------------------------------------------------------------------------
     [PLUGIN_TYPES.videoEffect] = {
-        ["FFEffectCategoryColor"]   = { "FFCorrectorColorBoard", "PAEColorCurvesEffectDisplayName", "PAECorrectorEffectDisplayName", "PAELUTEffectDisplayName", "HDRTools::Filter Name", "PAEHSCurvesEffectDisplayName" },
-        ["FFMaskEffect"]            = { "FFSplineMaskEffect", "FFShapeMaskEffect" },
+        ["FFEffectCategoryColor"]   = { "FFCorrectorColorBoard", "PAEColorCurvesEffectDisplayName", "PAECorrectorEffectDisplayName", "PAELUTEffectDisplayName", "HDRTools::Filter Name", "PAEHSCurvesEffectDisplayName", "HSVAdjust::Filter Name" },
+        ["FFMaskEffect"]            = { "FFSplineMaskEffect", "FFShapeMaskEffect", "FFSimpleMask" },
         ["Stylize"]                 = { "DropShadow::Filter Name" },
         ["FFEffectCategoryKeying"]  = { "Keyer::Filter Name", "LumaKeyer::Filter Name" },
-        ["FFEffectCategoryBasics"]  = { "FFNoiseReduction" }
+        ["FFEffectCategoryBasics"]  = { "FFNoiseReduction" },
+        ["FFEffectCategory360"]     = { "360 Noise Reduction::Filter Name" },
     },
 
     --------------------------------------------------------------------------------
@@ -391,6 +412,26 @@ function mod.mt:scanSystemAudioUnits(locale)
 
 end
 
+--- cp.apple.finalcutpro.plugins:scanAppEffectsPresets(locale) -> none
+--- Function
+--- Scans Final Cut Pro Built-in Effects Presets
+---
+--- Parameters:
+---  * `locale`    - The locale to scan for.
+---
+--- Returns:
+---  * None
+function mod.mt:scanAppEffectsPresets(locale)
+    local data = plist.fileToTable(fcpApp:path() .. APP_EFFECTS_PRESETS_STRINGS_PATH)
+    if data then
+        local videoEffect = PLUGIN_TYPES.videoEffect
+        local category = fcpStrings:find("FFColorPresetsCategory", locale)
+        for _, name in pairs(data) do
+            self:registerPlugin(nil, videoEffect, category, nil, name, locale.code)
+        end
+    end
+end
+
 --- cp.apple.finalcutpro.plugins:scanUserEffectsPresets(locale) -> none
 --- Function
 --- Scans Final Cut Pro Effects Presets
@@ -482,6 +523,101 @@ function mod.mt:scanUserEffectsPresets(locale)
     end
 end
 
+--- cp.apple.finalcutpro.plugins:scanUserColorPresets(locale) -> none
+--- Function
+--- Scans Final Cut Pro User Color Presets
+---
+--- Parameters:
+---  * `locale` - The locale to scan for.
+---
+--- Returns:
+---  * None
+function mod.mt:scanUserColorPresets(locale)
+    locale = localeID(locale)
+
+    --------------------------------------------------------------------------------
+    -- User Presets Path:
+    --------------------------------------------------------------------------------
+    local path = pathToAbsolute(USER_COLOR_PRESETS_PATH)
+
+    --------------------------------------------------------------------------------
+    -- Restore from cache:
+    --------------------------------------------------------------------------------
+    local cache = {}
+
+    local CACHE_ID = "userColorPresetsCacheChecksum"
+    local CACHE_FILENAME = "User Color Presets.cpCache"
+
+    local currentSize = getFolderSize(path)
+    local lastSize = config.get(CACHE_ID, nil)
+    local userEffectsPresetsCache = json.read(CP_FCP_CACHE_PATH .. "/" .. CACHE_FILENAME)
+
+    if currentSize and lastSize and userEffectsPresetsCache and currentSize == lastSize then
+        for _, data in pairs(userEffectsPresetsCache) do
+            local effectPath = data.effectPath or nil
+            local effectType = data.effectType or nil
+            local category = data.category or nil
+            local plugin = data.plugin or nil
+            local lan = data.locale or nil
+            self:registerPlugin(effectPath, effectType, category, nil, plugin, lan)
+        end
+        return
+    end
+
+    local category = fcpStrings:find("FFColorPresetsCategory", locale)
+    local videoEffect = PLUGIN_TYPES.videoEffect
+    if doesDirectoryExist(path) then
+        local iterFn, dirObj = fs.dir(path)
+        if not iterFn then
+            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanUserEffectsPresets: %s", dirObj)
+        else
+            for file in iterFn, dirObj do
+                local plugin = string.match(file, "(.+)%.cboard")
+                if plugin then
+                    local effectPath = path .. "/" .. file
+                    local preset = archiver.unarchiveFile(effectPath)
+                    if preset then
+                        local root = preset.root
+                        if root then
+                            local name = root.name
+                            if category then
+                                self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
+                                --------------------------------------------------------------------------------
+                                -- Cache Plugin:
+                                --------------------------------------------------------------------------------
+                                table.insert(cache, {
+                                    effectPath = effectPath,
+                                    effectType = videoEffect,
+                                    category = category,
+                                    plugin = name,
+                                    locale = locale.code,
+                                })
+
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Save Cache:
+        --------------------------------------------------------------------------------
+        if currentSize and #cache ~= 0 then
+            if doesCacheDirectoryExist() then
+                if json.write(CP_FCP_CACHE_PATH .. "/" .. CACHE_FILENAME, cache) then
+                    config.set(CACHE_ID, currentSize)
+                else
+                    log.ef("Failed to cache User Color Presets.")
+                end
+            end
+        else
+            log.ef("Failed to cache User Color Presets.")
+        end
+
+    end
+end
+
 -- getMotionTheme(filename) -> string | nil
 -- Function
 -- Process a plugin so that it's added to the current scan
@@ -537,13 +673,14 @@ local function getMotionTheme(filename)
 end
 mod._getMotionTheme = getMotionTheme
 
--- getPluginName(path, pluginExt) -> boolean
+-- getPluginName(path, pluginExt, locale) -> boolean
 -- Function
 -- Checks if the specified path is a plugin directory, and returns the plugin name.
 --
 -- Parameters:
 --  * `path`        - The path to the directory to check
 --  * `pluginExt`   - The plugin extensions to check for.
+--  * `locale`      - The locale.
 --
 -- Returns:
 --  * The plugin name.
@@ -566,7 +703,8 @@ local function getPluginName(path, pluginExt, locale)
                         if name == realName then
                             name = localName
                         end
-                        return name, getMotionTheme(pluginPath)
+                        local theme, isObsolete = getMotionTheme(pluginPath)
+                        return name, theme, isObsolete
                     end
                 end
             end
@@ -640,7 +778,6 @@ function mod.mt:scanPluginsDirectory(locale, path, checkFn)
             end
         end
     end
-
     return not failure
 end
 
@@ -659,7 +796,7 @@ function mod.mt:handlePluginDirectory(locale, path, plugin)
     local pluginName, themeName, obsolete = getPluginName(path, plugin.extension, locale)
     if pluginName then
         plugin.name = pluginName
-        plugin.themeLocal = plugin.themeLocal or themeName
+        plugin.themeLocal = themeName or plugin.themeLocal -- NOTE: Chris switched this around, as themeName should take priority.
         --------------------------------------------------------------------------------
         -- Only register it if not obsolete and if the check function
         -- passes (if present):
@@ -780,7 +917,28 @@ function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
                 local pluginPath = path .. "/" .. file
                 local attrs = fs.attributes(pluginPath)
                 if attrs and attrs.mode == "directory" then
-                    self:handlePluginDirectory(locale, pluginPath, p)
+                    --------------------------------------------------------------------------------
+                    -- Maybe there's a subdirectory?
+                    --------------------------------------------------------------------------------
+                    local iterFnTwo, dirObjTwo = fs.dir(pluginPath)
+                    if iterFnTwo then
+                        local hasTemplate = false
+                        local ext = plugin.extension
+                        local extLen = (ext:len() + 1) * -1
+                        for fileTwo in iterFnTwo, dirObjTwo do
+                            if fileTwo:sub(extLen) == "." .. ext then
+                                hasTemplate = true
+                            end
+                        end
+                        if hasTemplate then
+                            self:handlePluginDirectory(locale, pluginPath, p)
+                        else
+                            --------------------------------------------------------------------------------
+                            -- Try going down another level:
+                            --------------------------------------------------------------------------------
+                            self:scanPluginCategoryDirectory(locale, pluginPath, p)
+                        end
+                    end
                 end
             end
         end
@@ -802,9 +960,11 @@ end
 ---
 --- Returns:
 ---  * The plugin object.
-function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, locale)
+---
+--- Notes:
+---  * `locale` defaults to the current Final Cut Pro locale if nothing is supplied.
+function mod.mt:registerPlugin(path, theType, categoryName, themeName, pluginName, locale)
 
-    -- TODO: Chris added `fcpApp:currentLocale()` because for some reason `locale` was coming in as `nil`?
     locale = localeID(locale) or fcpApp:currentLocale()
 
     local plugins = self._plugins
@@ -819,15 +979,15 @@ function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, 
         plugins[locale.code] = lang
     end
 
-    local types = lang[type]
+    local types = lang[theType]
     if not types then
         types = {}
-        lang[type] = types
+        lang[theType] = types
     end
 
     local plugin = {
         path = path,
-        type = type,
+        type = theType,
         category = categoryName,
         theme = themeName,
         name = pluginName,
@@ -1427,6 +1587,11 @@ function mod.mt:scanAppPlugins(locale)
         self:scanAppMotionTemplates(locale)
 
         --------------------------------------------------------------------------------
+        -- Scan Built-in Effects Presets:
+        --------------------------------------------------------------------------------
+        self:scanAppEffectsPresets(locale)
+
+        --------------------------------------------------------------------------------
         -- Save all of the above to the cache:
         --------------------------------------------------------------------------------
         self:_saveAppPluginCache(locale)
@@ -1471,6 +1636,11 @@ function mod.mt:scanUserPlugins(locale)
     -- Scan User Effect Presets:
     --------------------------------------------------------------------------------
     self:scanUserEffectsPresets(locale)
+
+    --------------------------------------------------------------------------------
+    -- Scan Legacy User Color Presets:
+    --------------------------------------------------------------------------------
+    self:scanUserColorPresets(locale)
 
     --------------------------------------------------------------------------------
     -- Scan User Motion Templates:

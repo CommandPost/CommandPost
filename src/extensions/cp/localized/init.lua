@@ -2,20 +2,24 @@
 ---
 --- Helps look up localized names for folders.
 
-local require = require
+local require           = require
 
-local fs 										  = require("hs.fs")
+local log               = require("hs.logger").new("localized")
 
-local localeID                = require("cp.i18n.localeID")
-local matcher									= require("cp.text.matcher")
-local plist										= require("cp.plist")
-local text										= require("cp.text")
-local wtext										= require("cp.web.text")
+local fs                = require("hs.fs")
 
-local pathToAbsolute							          = fs.pathToAbsolute
-local escapeXML, unescapeXML					      = wtext.escapeXML, wtext.unescapeXML
-local isBinaryPlist, binaryFileToTable			= plist.isBinaryPlist, plist.binaryFileToTable
-local match										              = string.match
+local localeID          = require("cp.i18n.localeID")
+local matcher           = require("cp.text.matcher")
+local plist             = require("cp.plist")
+local text              = require("cp.text")
+local wtext             = require("cp.web.text")
+
+local binaryFileToTable = plist.binaryFileToTable
+local escapeXML         = wtext.escapeXML
+local isBinaryPlist     = plist.isBinaryPlist
+local match             = string.match
+local pathToAbsolute    = fs.pathToAbsolute
+local unescapeXML       = wtext.unescapeXML
 
 --------------------------------------------------------------------------------
 --
@@ -42,8 +46,8 @@ end
 -- Returns the localized string value contained in the strings file for the specified `name`.
 --
 -- Parameters:
---  * `stringsFile`	- Path to the .localized strings file.
---  * `name`			- The name to match. If not present in the file, `nil` is returned.
+--  * `stringsFile` - Path to the .localized strings file.
+--  * `name`            - The name to match. If not present in the file, `nil` is returned.
 --
 -- Returns:
 --  * The matching key value, or `nil` if not available.
@@ -98,9 +102,9 @@ end
 -- original `name` is returned.
 --
 -- Parameters:
---  * `path`			- The full path to the folder
---  * `name`			- The name to match. If not present in the file, `nil` is returned.
---  * `locale`		    - The locale to retrieve the name for.
+--  * `path`            - The full path to the folder
+--  * `name`            - The name to match. If not present in the file, `nil` is returned.
+--  * `locale`          - The locale to retrieve the name for.
 --
 -- Returns:
 --  * The localized name, or `name` if not available.
@@ -124,16 +128,23 @@ end
 --- original folder name is returned. The 'unlocalized' folder name is returned as the second value, without `.localized` at the end, if it was present.
 ---
 --- Parameters:
----  * `path`			- The full path to the folder
----  * `locale`		    - The locale to retrieve the name for.
+---  * `path`           - The full path to the folder
+---  * `locale`         - The locale to retrieve the name for.
 ---
 --- Returns:
 ---  * The localized name, or `name` if not available.
 ---  * The original name, minus `.localized`
+---
+--- Notes:
+---  * This function will automatically convert a colon to a dash when localising.
 local function getLocalizedName(path, locale)
     local file = match(path, "^.-([^/]+)%.localized$")
     if file then -- it's localized
-        return readLocalizedName(path, file, locale), file
+        local result = readLocalizedName(path, file, locale)
+        if result then
+            result = result:gsub(":", "/") -- Replace colon with slash
+        end
+        return result, file
     else
         file = match(path, "^.-([^/%.]+)$")
         return file, file
@@ -141,7 +152,7 @@ local function getLocalizedName(path, locale)
 end
 
 return {
-    readLocalizedStrings 	= readLocalizedStrings,
-    readLocalizedName		= readLocalizedName,
-    getLocalizedName		= getLocalizedName,
+    readLocalizedStrings    = readLocalizedStrings,
+    readLocalizedName       = readLocalizedName,
+    getLocalizedName        = getLocalizedName,
 }
