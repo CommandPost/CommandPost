@@ -1814,7 +1814,7 @@ function mod.new(fcp)
     --------------------------------------------------------------------------------
     -- Setup Path Watches:
     --------------------------------------------------------------------------------
-    local notifier = notify.new(function(obj)
+    local notifier = notify.new(function()
         mod.mt.clearCaches()
         hs.reload()
     end, {

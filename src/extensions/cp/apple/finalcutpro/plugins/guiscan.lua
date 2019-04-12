@@ -10,7 +10,7 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("guiscan")
+local log                   = require("hs.logger").new("guiscan")
 
 local dialog                = require("cp.dialog")
 local fcp                   = require("cp.apple.finalcutpro")

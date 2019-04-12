@@ -4,15 +4,15 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("localized")
+local log               = require "hs.logger".new "localized"
 
-local fs                = require("hs.fs")
+local fs                = require "hs.fs"
 
-local localeID          = require("cp.i18n.localeID")
-local matcher           = require("cp.text.matcher")
-local plist             = require("cp.plist")
-local text              = require("cp.text")
-local wtext             = require("cp.web.text")
+local localeID          = require "cp.i18n.localeID"
+local matcher           = require "cp.text.matcher"
+local plist             = require "cp.plist"
+local text              = require "cp.text"
+local wtext             = require "cp.web.text"
 
 local binaryFileToTable = plist.binaryFileToTable
 local escapeXML         = wtext.escapeXML
@@ -27,16 +27,30 @@ local unescapeXML       = wtext.unescapeXML
 --
 --------------------------------------------------------------------------------
 
--- TODO: Add Documentation
+-- KEY_VALUE -> string
+-- Constant
+-- Key Value
 local KEY_VALUE = matcher('^%"(.+)%"%s*%=%s*%"(.+)%";.*$')
 
--- TODO: Add Documentation
+-- UNICODE_ESCAPE -> string
+-- Constant
+-- Unicode Escape Character
 local UNICODE_ESCAPE = matcher('%\\[Uu]%d%d%d%d')
 
--- TODO: Add Documentation
+-- CHAR_ESCAPE -> string
+-- Constant
+-- Char Escape Character
 local CHAR_ESCAPE = matcher('%\\(.)')
 
--- TODO: Add Documentation
+-- uParser(value) -> string
+-- Function
+-- Unicode Parser
+--
+-- Parameters:
+--  * value - The string to process
+--
+-- Returns
+--  * A string
 local function uParser(s)
     return utf8.char(tonumber(s:sub(3):encode(), 16))
 end

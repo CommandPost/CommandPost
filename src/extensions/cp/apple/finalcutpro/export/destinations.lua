@@ -36,11 +36,6 @@ local DESTINATIONS_FILE = "com.apple.FinalCut.UserDestinations"
 -- Destinations File Pattern.
 local DESTINATIONS_PATTERN = ".*" .. DESTINATIONS_FILE .. "[1-9]%.plist"
 
--- DESTINATIONS_PATH -> string
--- Constant
--- The Destinations Path.
-local DESTINATIONS_PATH = PREFERENCES_PATH .. "/" .. DESTINATIONS_FILE .. ".plist"
-
 -- findDestinationsPath() -> string | nil
 -- Function
 -- Gets the Final Cut Pro Destination Property List Path.
