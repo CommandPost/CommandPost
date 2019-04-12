@@ -2,25 +2,26 @@
 ---
 --- Manager for the Batch Export Window.
 
-local require = require
+local require       = require
 
-local log                                       = require("hs.logger").new("batchExportManager")
+local log           = require "hs.logger".new "batchExportManager"
 
-local fnutils                                   = require("hs.fnutils")
-local inspect                                   = require("hs.inspect")
-local screen                                    = require("hs.screen")
-local toolbar                                   = require("hs.webview.toolbar")
-local webview                                   = require("hs.webview")
+local drawing       = require "hs.drawing"
+local fnutils       = require "hs.fnutils"
+local inspect       = require "hs.inspect"
+local screen        = require "hs.screen"
+local toolbar       = require "hs.webview.toolbar"
+local webview       = require "hs.webview"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local just                                      = require("cp.just")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local config        = require "cp.config"
+local dialog        = require "cp.dialog"
+local i18n          = require "cp.i18n"
+local just          = require "cp.just"
+local tools         = require "cp.tools"
 
-local moses                                     = require("moses")
+local moses         = require "moses"
 
-local panel                                     = require("panel")
+local panel         = require "panel"
 
 --------------------------------------------------------------------------------
 --
@@ -349,12 +350,13 @@ function mod.new()
         local prefs = {}
         prefs.developerExtrasEnabled = config.developerMode()
         mod._webview = webview.new(defaultRect, prefs, mod._controller)
-            :windowStyle({"titled", "closable", "nonactivating"})
+            :windowStyle({"titled", "nonactivating", "closable", "HUD", "utility"})
+            :level(drawing.windowLevels.floating)
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
             :windowTitle(i18n("batchExport"))
-            --:attachedToolbar(mod._toolbar)
+            :attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
             :darkMode(true)
@@ -373,7 +375,6 @@ end
 --- Returns:
 ---  * True if successful or nil if an error occurred
 function mod.show()
-
     if mod._webview == nil then
         mod.new()
     end
@@ -385,29 +386,9 @@ function mod.show()
         mod.selectPanel(currentPanelID())
         mod._webview:html(generateHTML())
         mod._webview:show()
-        mod.focus()
     end
 
     return true
-end
-
---- plugins.finalcutpro.export.batch.manager.focus() -> boolean
---- Function
---- Puts focus on the Batch Export Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful or otherwise `false`.
-function mod.focus()
-    just.doUntil(function()
-        if mod._webview and mod._webview:hswindow() and mod._webview:hswindow():raise():focus() then
-            return true
-        else
-            return false
-        end
-    end)
 end
 
 --- plugins.finalcutpro.export.batch.manager.hide() -> none
@@ -513,7 +494,7 @@ function mod.selectPanel(id)
     end
 
     mod._webview:evaluateJavaScript(js)
-    mod._toolbar:selectedItem(id)
+    --mod._toolbar:selectedItem(id)
 
     --------------------------------------------------------------------------------
     -- Save Last Tab in Settings:

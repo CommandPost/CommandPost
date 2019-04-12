@@ -7,30 +7,35 @@
 ---     require("cp.apple.finalcutpro"):plugins():scan()
 --- ```
 
-local require = require
+local require                   = require
 
-local log                       = require("hs.logger").new("scan")
+local hs                        = hs
 
-local audiounit                 = require("hs.audiounit")
-local fnutils                   = require("hs.fnutils")
-local fs                        = require("hs.fs")
+local log                       = require "hs.logger".new "scan"
 
-local archiver                  = require("cp.plist.archiver")
-local config                    = require("cp.config")
-local fcpStrings                = require("cp.apple.finalcutpro.strings")
-local json                      = require("cp.json")
-local localeID                  = require("cp.i18n.localeID")
-local localized                 = require("cp.localized")
-local plist                     = require("cp.plist")
-local strings                   = require("cp.strings")
-local text                      = require("cp.web.text")
-local tools                     = require("cp.tools")
-local watcher                   = require("cp.watcher")
+local audiounit                 = require "hs.audiounit"
+local fnutils                   = require "hs.fnutils"
+local fs                        = require "hs.fs"
+local notify                    = require "hs.notify"
+local pathwatcher               = require "hs.pathwatcher"
 
-local fcpApp                    = require("cp.apple.finalcutpro.app")
-local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
+local archiver                  = require "cp.plist.archiver"
+local config                    = require "cp.config"
+local fcpStrings                = require "cp.apple.finalcutpro.strings"
+local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
+local localeID                  = require "cp.i18n.localeID"
+local localized                 = require "cp.localized"
+local plist                     = require "cp.plist"
+local strings                   = require "cp.strings"
+local text                      = require "cp.web.text"
+local tools                     = require "cp.tools"
+local watcher                   = require "cp.watcher"
 
-local v                         = require("semver")
+local fcpApp                    = require "cp.apple.finalcutpro.app"
+local id                        = require "cp.apple.finalcutpro.ids" "LogicPlugins"
+
+local v                         = require "semver"
 
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
@@ -91,6 +96,11 @@ local EFFECTS_PRESET_PATH = "~/Library/Application Support/ProApps/Effects Prese
 -- Constant
 -- User Color Presets Path
 local USER_COLOR_PRESETS_PATH = "~/Library/Application Support/ProApps/Color Presets"
+
+-- USER_MOTION_TEMPLATES_PATH -> string
+-- Constant
+-- User Motion Templates Path
+local USER_MOTION_TEMPLATES_PATH = "~/Movies/Motion Templates.localized"
 
 -- APP_EFFECTS_PRESETS_STRINGS_PATH -> string
 -- Constant
@@ -1123,7 +1133,7 @@ function mod.mt:scanUserMotionTemplates(locale)
     --------------------------------------------------------------------------------
     -- User Motion Templates Path:
     --------------------------------------------------------------------------------
-    local path = pathToAbsolute("~/Movies/Motion Templates.localized")
+    local path = pathToAbsolute(USER_MOTION_TEMPLATES_PATH)
     if not path then
         return nil
     end
@@ -1749,6 +1759,41 @@ function mod.mt:unwatch(a)
     return self._watcher:unwatch(a)
 end
 
+-- doesPathContainPlugins(path) -> boolean
+-- Function
+-- Does a path contain Final Cut Pro plugins?
+--
+-- Parameters:
+--  * path - The path to check
+--
+-- Returns:
+--  * `true` if found, otherwise `false`
+local function doesPathContainPlugins(path)
+    local attr = fs.attributes(path)
+    if attr and attr.mode == "directory" then
+        local iterFn, dirObj = fs.dir(path)
+        if iterFn then
+            for file in iterFn, dirObj do
+                if file:sub(1,1) ~= "." then
+                    if doesPathContainPlugins(path .. "/" .. file) then
+                        return true
+                    end
+                end
+            end
+        end
+    elseif attr and attr.mode == "file" then
+        if path:sub(-5) == ".moef" or
+        path:sub(-5) == ".motr" or
+        path:sub(-5) == ".motn" or
+        path:sub(-5) == ".moti" or
+        path:sub(-14) == ".effectsPreset" or
+        path:sub(-7) == ".cboard" then
+            return true
+        end
+    end
+    return false
+end
+
 --- cp.apple.finalcutpro.plugins.new(fcp) -> plugins object
 --- Function
 --- Creates a new Plugins Object.
@@ -1763,7 +1808,43 @@ function mod.new(fcp)
         _app = fcp,
         _plugins = {},
         _watcher = watcher.new("videoEffects", "audioEffects", "transitions", "titles", "generators"),
+        _pathwatchers = {},
     }
+
+    --------------------------------------------------------------------------------
+    -- Setup Path Watches:
+    --------------------------------------------------------------------------------
+    local notifier = notify.new(function(obj)
+        mod.mt.clearCaches()
+        hs.reload()
+    end, {
+        title = i18n("newPluginDetected"),
+        subTitle = i18n("needsToRestartToUpdateConsole"),
+        informativeText = i18n("restartCommandPostNow"),
+        actionButtonTitle = i18n("restart"),
+        otherButtonTitle = i18n("ignore"),
+        alwaysPresent = true,
+        hasActionButton = true,
+        withdrawAfter = 15,
+    })
+    local paths = {
+        USER_MOTION_TEMPLATES_PATH .. "/",  -- "~/Movies/Motion Templates.localized"
+        EFFECTS_PRESET_PATH .. "/",         -- "~/Library/Application Support/ProApps/Effects Presets"
+        USER_COLOR_PRESETS_PATH .. "/",     -- "~/Library/Application Support/ProApps/Color Presets"
+        MOTION_TEMPLATE_PATH .. "/",        -- "/Library/Application Support/Final Cut Pro/Templates.localized"
+    }
+    for _, path in pairs(paths) do
+        local pw = pathwatcher.new(path, function(files)
+            for _, file in pairs(files) do
+                if doesPathContainPlugins(file) then
+                    notifier:send()
+                    return
+                end
+            end
+        end):start()
+        table.insert(o._pathwatchers, pw)
+    end
+
     return setmetatable(o, mod.mt)
 end
 

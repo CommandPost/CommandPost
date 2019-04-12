@@ -2,17 +2,17 @@
 ---
 --- Provides access to the list of Share Destinations configured for the user.
 
-local require                   = require
+local require       = require
 
-local log                       = require("hs.logger").new("destinations")
+local log           = require "hs.logger".new "destinations"
 
-local fs                        = require("hs.fs")
-local pathwatcher               = require("hs.pathwatcher")
+local fs            = require "hs.fs"
+local pathwatcher   = require "hs.pathwatcher"
 
-local plist                     = require("cp.plist")
-local archiver                  = require("cp.plist.archiver")
+local plist         = require "cp.plist"
+local archiver      = require "cp.plist.archiver"
 
-local _                         = require("moses")
+local moses         = require "moses"
 
 --------------------------------------------------------------------------------
 --
@@ -21,25 +21,25 @@ local _                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.apple.finalcutpro.export.destinations.PREFERENCES_PATH -> string
---- Constant
---- The Preferences Path
-mod.PREFERENCES_PATH    = "~/Library/Preferences"
+-- PREFERENCES_PATH -> string
+-- Constant
+-- The Preferences Path
+local PREFERENCES_PATH = "~/Library/Preferences"
 
---- cp.apple.finalcutpro.export.destinations.DESTINATIONS_FILE -> string
---- Constant
---- The Destinations File.
-mod.DESTINATIONS_FILE   = "com.apple.FinalCut.UserDestinations"
+-- DESTINATIONS_FILE -> string
+-- Constant
+-- The Destinations File.
+local DESTINATIONS_FILE = "com.apple.FinalCut.UserDestinations"
 
---- cp.apple.finalcutpro.export.destinations.DESTINATIONS_PATTERN -> string
---- Constant
---- Destinations File Pattern.
-mod.DESTINATIONS_PATTERN = ".*" .. mod.DESTINATIONS_FILE .. "[1-9]%.plist"
+-- DESTINATIONS_PATTERN -> string
+-- Constant
+-- Destinations File Pattern.
+local DESTINATIONS_PATTERN = ".*" .. DESTINATIONS_FILE .. "[1-9]%.plist"
 
---- cp.apple.finalcutpro.export.destinations.DESTINATIONS_PATH -> string
---- Constant
---- The Destinations Path.
-mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. ".plist"
+-- DESTINATIONS_PATH -> string
+-- Constant
+-- The Destinations Path.
+local DESTINATIONS_PATH = PREFERENCES_PATH .. "/" .. DESTINATIONS_FILE .. ".plist"
 
 -- findDestinationsPath() -> string | nil
 -- Function
@@ -51,19 +51,34 @@ mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .
 -- Returns:
 --  * The Final Cut Pro Destination Property List Path as a string or `nil` if the file cannot be found.
 local function findDestinationsPath()
-    --------------------------------------------------------------------------------
-    -- For some strange reason Final Cut Pro creates a file called
-    -- `com.apple.FinalCut.UserDestinations2.plist` on most/all machines which is
-    -- where the actual User Destinations are stored.
-    --------------------------------------------------------------------------------
-    local path = fs.pathToAbsolute(mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. "2.plist")
-    if not path then
-        path = fs.pathToAbsolute(mod.DESTINATIONS_PATH)
+    local path = PREFERENCES_PATH .. "/"
+    local iterFn, dirObj = fs.dir(path)
+    local files = {}
+    if iterFn then
+        for file in iterFn, dirObj do
+            if file:sub(1, DESTINATIONS_FILE:len()) == DESTINATIONS_FILE and file:sub(-6) == ".plist" then
+                table.insert(files, file)
+            end
+        end
     end
-    return path
+    local selectedFile
+    local selectedFileModification
+    for _, file in pairs(files) do
+        local attr = fs.attributes(path .. file)
+        if not selectedFile then
+            selectedFile = path .. file
+            selectedFileModification = attr.modification
+        else
+            if attr.modification > selectedFileModification then
+                selectedFile = path .. file
+                selectedFileModification = attr.modification
+            end
+        end
+    end
+    return selectedFile
 end
 
--- load() -> table | nil, string
+-- loadDestination() -> table | nil, string
 -- Function
 -- Loads the Destinations Property List.
 --
@@ -71,8 +86,9 @@ end
 --  * None
 --
 -- Returns:
---  * None
-local function load()
+--  * A table
+--  * If an error occurs an error string will also be returned.
+local function loadDestination()
     local destinationsPlist, err = plist.fileToTable(findDestinationsPath())
     if destinationsPlist then
         return archiver.unarchiveBase64(destinationsPlist.FFShareDestinationsKey).root
@@ -92,11 +108,11 @@ end
 --  * None
 local function watch()
     if not mod._watcher then
-        mod._watcher = pathwatcher.new(mod.PREFERENCES_PATH, function(files)
+        mod._watcher = pathwatcher.new(PREFERENCES_PATH, function(files)
             for _,file in pairs(files) do
-                if file:match(mod.DESTINATIONS_PATTERN) ~= nil then
+                if file:match(DESTINATIONS_PATTERN) ~= nil then
                     local err
-                    mod._details, err = load()
+                    mod._details, err = loadDestination()
                     if err then
                         log.wf("Unable to load FCPX User Destinations")
                     end
@@ -118,7 +134,7 @@ end
 ---  * The table of Share Destinations.
 function mod.details()
     if not mod._details then
-        local list, err = load()
+        local list, err = loadDestination()
         if list then
             mod._details = list
             watch()
@@ -166,7 +182,7 @@ end
 function mod.indexOf(name)
     local list = mod.details()
     if list then
-        return _.detect(list, function(e) return e.name == name end)
+        return moses.detect(list, function(e) return e.name == name end)
     else
         return nil
     end

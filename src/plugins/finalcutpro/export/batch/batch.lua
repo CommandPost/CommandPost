@@ -130,11 +130,10 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Make sure the Timeline is focussed:
     --------------------------------------------------------------------------------
-    result = doUntil(function()
-        fcp:timeline():doFocus(true):Now()
-        return fcp:timeline():isFocused()
-    end, 5, 0.1)
-    if not result then
+    if not doUntil(function()
+        fcp:selectMenu({"Window", "Go To", "Timeline"})
+        return fcp:timeline():contents():isFocused()
+    end, 5, 0.1) then
         dialog.displayErrorMessage("Failed to focus on timeline.")
         return false
     end
@@ -161,11 +160,10 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 5, 0.1)
-        if not result then
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
@@ -173,12 +171,11 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Get Start Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to select clip during start timecode phase.")
             return false
         end
@@ -195,12 +192,11 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to select clip during end timecode phase.")
             return false
         end
@@ -217,10 +213,9 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
@@ -232,10 +227,9 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
@@ -247,11 +241,10 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 5, 0.1)
-        if not result then
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
@@ -273,10 +266,9 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             return fcp:selectMenu({"File", "Send to Compressor"}) == true
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Could not trigger 'Send to Compressor'.")
             return false
         end
@@ -324,11 +316,10 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 5, 0.1)
-        if not result then
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
@@ -336,12 +327,11 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Select clip:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to select clip during start timecode phase." .. errorFunction)
             return false
         end
@@ -375,12 +365,11 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to select clip during end timecode phase." .. errorFunction)
             return false
         end
@@ -397,10 +386,9 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
@@ -412,10 +400,9 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
-        end, 5, 0.1)
-        if not result then
+        end, 5, 0.1) then
             dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
@@ -427,11 +414,10 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focused:
         --------------------------------------------------------------------------------
-        result = doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 5, 0.1)
-        if not result then
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
             dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
@@ -889,7 +875,7 @@ function plugin.init(deps)
         label       = i18n("timeline"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 620,
+        height      = 680,
     })
         :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
@@ -959,10 +945,13 @@ function plugin.init(deps)
         :addParagraph(nextID(), i18n("usingTheFollowingNamingConvention") .. ":")
         :addParagraph(nextID(), html.br())
         :addContent(nextID(), function()
+                local destinationPreset = mod.getDestinationPreset()
                 local useCustomFilename = mod.useCustomFilename()
-                if useCustomFilename then
+                if useCustomFilename and destinationPreset ~= i18n("sendToCompressor") then
                     local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
                     return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                elseif useCustomFilename and destinationPreset == i18n("sendToCompressor") then
+                    return html.p {class="uiItem", style="color:#3f9253; font-weight:bold;"} (i18n("changeFilenamesInCompressor"))
                 else
                     return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
                 end
