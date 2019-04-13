@@ -634,7 +634,7 @@ local function midiPanelCallback(id, params)
                         local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
                         local toolbarIcons = {
                             fcpx_midicontrols   = { path = iconPath .. "midi.png",          priority = 1},
-                            global_midibanks    = { path = iconPath .. "midiBank.png",      priority = 2},
+                            global_midibanks    = { path = iconPath .. "bank.png",          priority = 2},
                             fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
                             fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 4},
                             fcpx_generator      = { path = iconPath .. "generator.png",     priority = 5},
