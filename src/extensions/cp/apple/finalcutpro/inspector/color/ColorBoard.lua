@@ -8,7 +8,6 @@ local require               = require
 
 local Aspect                = require "cp.apple.finalcutpro.inspector.color.ColorBoardAspect"
 local axutils               = require "cp.ui.axutils"
-local Button                = require "cp.ui.Button"
 local Element               = require "cp.ui.Element"
 local go                    = require "cp.rx.go"
 local RadioGroup            = require "cp.ui.RadioGroup"
