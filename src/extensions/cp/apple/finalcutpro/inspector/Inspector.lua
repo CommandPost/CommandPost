@@ -69,7 +69,6 @@ function Inspector.static.matches(element)
     local groups = axutils.childrenWith(element, "AXRole", "AXGroup")
     return (children and #children == 3 and groups and #groups == 3) -- is inspecting
         or axutils.childWith(element, "AXValue", strings:find("Nothing to Inspect")) ~= nil -- nothing to inspect
-        or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector(parent) -> Inspector
@@ -163,7 +162,6 @@ function Inspector.lazy.prop:propertiesUI()
             if ui then
                 return (
                     axutils.childWithRole(ui, "AXScrollArea") -- 10.4+ Inspector
-                    or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
                     or nil -- not found
                 )
             end
