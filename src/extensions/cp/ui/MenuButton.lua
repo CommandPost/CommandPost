@@ -248,7 +248,7 @@ end
 
 function MenuButton:doSelectItemMatching(pattern)
     return If(self.UI)
-    :Then(self:doPress())
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
     :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         for _,item in ipairs(menuUI) do

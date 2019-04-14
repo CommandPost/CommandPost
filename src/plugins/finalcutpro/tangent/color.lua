@@ -18,6 +18,7 @@ local tools                                     = require("cp.tools")
 
 local format                                    = string.format
 local If, Do                                    = go.If, go.Do
+local Done                                      = go.Done
 local round                                     = tools.round
 
 --------------------------------------------------------------------------------
@@ -97,7 +98,9 @@ function plugin.init(deps)
                     end)
                     :Then(
                         If(function() return percentChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:percent()
                             if value then
@@ -111,7 +114,9 @@ function plugin.init(deps)
                         :Otherwise(false)
                     ):Then(
                         If(function() return angleChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:angle()
                             if value then
@@ -207,31 +212,40 @@ function plugin.init(deps)
         end)
         :Then(
             If(function() return rightChange ~= 0 or upChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:nudgeColor(rightChange, upChange)
-                rightChange, upChange = 0, 0
-                manager.controls:findByID(id):update() -- Force the Tangent display to update.
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:nudgeColor(rightChange, upChange)
+                    rightChange, upChange = 0, 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Then(
             If(function() return satChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:saturation():shiftValue(satChange)
-                satChange = 0
-                manager.controls:findByID(id):update() -- Force the Tangent display to update.
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:saturation():shiftValue(satChange)
+                    satChange = 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Then(
             If(function() return brightChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:brightness():shiftValue(brightChange)
-                brightChange = 0
-                manager.controls:findByID(id):update() -- Force the Tangent display to update.
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:brightness():shiftValue(brightChange)
+                    brightChange = 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Finally(function()
             updating(false)
         end)

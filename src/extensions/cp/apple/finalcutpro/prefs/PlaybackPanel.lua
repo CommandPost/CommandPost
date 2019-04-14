@@ -2,18 +2,17 @@
 ---
 --- Playback Panel Module.
 
+--local log             = require "hs.logger".new "playbackPanel"
 
--- local log								= require("hs.logger").new("playbackPanel")
+--local inspect         = require "hs.inspect"
 
--- local inspect							= require("hs.inspect")
+local require           = require
 
-local require = require
-local axutils							= require("cp.ui.axutils")
-local just								= require("cp.just")
-local CheckBox							= require("cp.ui.CheckBox")
+local axutils           = require "cp.ui.axutils"
+local just              = require "cp.just"
+local CheckBox          = require "cp.ui.CheckBox"
 
-local id								= require("cp.apple.finalcutpro.ids") "PlaybackPanel"
-local Panel                             = require("cp.apple.finalcutpro.prefs.Panel")
+local Panel             = require "cp.apple.finalcutpro.prefs.Panel"
 
 --------------------------------------------------------------------------------
 --
@@ -60,7 +59,7 @@ end
 function PlaybackPanel.mt:createMulticamOptimizedMedia()
     if not self._createOptimizedMedia then
         self._createOptimizedMedia = CheckBox(self, function()
-            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateMulticamOptimizedMedia")
+            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), 2)
         end)
     end
     return self._createOptimizedMedia
@@ -69,7 +68,7 @@ end
 function PlaybackPanel.mt:backgroundRender()
     if not self._backgroundRender then
         self._backgroundRender = CheckBox(self, function()
-            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "BackgroundRender")
+            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), 1)
         end)
     end
     return self._backgroundRender
