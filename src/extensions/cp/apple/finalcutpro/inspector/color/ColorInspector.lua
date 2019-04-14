@@ -1,30 +1,27 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorInspector ===
 ---
 --- Color Inspector Module.
----
---- Extends [Element](cp.ui.Element.md).
 
-local require = require
+local require               = require
 
--- local log                                = require("hs.logger").new("colorInspect")
+local log                   = require "hs.logger".new "colorInspect"
 
-local axutils                           = require("cp.ui.axutils")
+local axutils               = require "cp.ui.axutils"
 
-local idBoard                           = require("cp.apple.finalcutpro.ids") "ColorBoard"
+local BasePanel             = require "cp.apple.finalcutpro.inspector.BasePanel"
 
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
+local ColorBoard            = require "cp.apple.finalcutpro.inspector.color.ColorBoard"
+local ColorCurves           = require "cp.apple.finalcutpro.inspector.color.ColorCurves"
+local ColorWheels           = require "cp.apple.finalcutpro.inspector.color.ColorWheels"
+local CorrectionsBar        = require "cp.apple.finalcutpro.inspector.color.CorrectionsBar"
+local HueSaturationCurves   = require "cp.apple.finalcutpro.inspector.color.HueSaturationCurves"
 
-local CorrectionsBar                    = require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
-local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
-local ColorWheels                       = require("cp.apple.finalcutpro.inspector.color.ColorWheels")
-local ColorCurves                       = require("cp.apple.finalcutpro.inspector.color.ColorCurves")
-local HueSaturationCurves               = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
+local If                    = require "cp.rx.go.If"
+local WaitUntil             = require "cp.rx.go.WaitUntil"
 
-local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx.go.WaitUntil")
-
-local withRole, childWithRole, childFromTop = axutils.withRole, axutils.childWithRole, axutils.childFromTop
-
-local v                                 = require("semver")
+local childFromTop          = axutils.childFromTop
+local childWithRole         = axutils.childWithRole
+local withRole              = axutils.withRole
 
 --------------------------------------------------------------------------------
 --
@@ -32,8 +29,6 @@ local v                                 = require("semver")
 --
 --------------------------------------------------------------------------------
 local ColorInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.color.ColorInspector")
-
-local ADVANCED_VERSION = v("10.4")
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.matches(element)
 --- Function
@@ -47,12 +42,10 @@ local ADVANCED_VERSION = v("10.4")
 function ColorInspector.static.matches(element)
     if BasePanel.matches(element) then
         local root = #element == 1 and withRole(element, "AXGroup")
-        if root then -- 10.4+
+        if root then
             local split = childWithRole(root, "AXSplitGroup")
             local top = split and withRole(childFromTop(split, 1), "AXGroup")
             return top and #top == 1 and CorrectionsBar.matches(top[1]) or false
-        else -- 10.3 Color Board
-            return ColorBoard.matchesOriginal(element)
         end
     end
     return false
@@ -98,27 +91,13 @@ function ColorInspector.lazy.prop:correctorUI()
         return axutils.cache(self, "_corrector",
             function()
                 local ui = original()
-                if ui then
-                    if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
-                        return ui
-                    elseif ColorInspector.matches(ui) then -- 10.4+ Color Inspector
-                        local split = ui[1]
-                        return axutils.childFromTop(split, 2)
-                    end
+                if ui and ColorInspector.matches(ui)then
+                    local split = ui[1]
+                    return axutils.childFromTop(split, 2)
                 end
                 return nil
             end, function(element) return original() ~= nil and element ~= nil end
         )
-    end)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector.isAdvanced <cp.prop: boolean; read-only>
---- Field
---- Is the Color Inspector the advanced version that was added in 10.4?
-function ColorInspector.lazy.prop:isAdvanced()
-    return self:app().app.version:mutate(function(original)
-        local version = original()
-        return version and version >= ADVANCED_VERSION
     end)
 end
 
@@ -159,7 +138,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:show()
     if not self:isShowing() then
-        self:app():menu():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
+        self:app():menu():selectMenu({"Window", "Go To", "Color Inspector"})
     end
     return self
 end
@@ -176,9 +155,9 @@ end
 function ColorInspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(
-        self:app():menu():doSelectMenu({"Window", "Go To", idBoard "ColorBoard"})
+        self:app():menu():doSelectMenu({"Window", "Go To", "Color Inspector"})
     )
-    :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the " .. idBoard("ColorBoard")))
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the Color Inspector"))
     :Otherwise(true)
     :Label("ColorInspector:doShow")
 end

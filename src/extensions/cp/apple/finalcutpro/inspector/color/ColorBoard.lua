@@ -2,19 +2,20 @@
 ---
 --- Color Board Module.
 
-local require = require
+local require               = require
 
--- local log                                = require("hs.logger").new("colorBoard")
+local log                   = require "hs.logger".new "colorBoard"
 
-local Aspect                            = require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local Button                            = require("cp.ui.Button")
-local id                                = require("cp.apple.finalcutpro.ids") "ColorBoard"
-local RadioGroup                        = require("cp.ui.RadioGroup")
+local Aspect                = require "cp.apple.finalcutpro.inspector.color.ColorBoardAspect"
+local axutils               = require "cp.ui.axutils"
+local Button                = require "cp.ui.Button"
+local Element               = require "cp.ui.Element"
+local go                    = require "cp.rx.go"
+local RadioGroup            = require "cp.ui.RadioGroup"
 
-local go                                = require("cp.rx.go")
-local If, Do, Throw                     = go.If, go.Do, go.Throw
+local Do                    = go.Do
+local If                    = go.If
+local Throw                 = go.Throw
 
 --------------------------------------------------------------------------------
 --
@@ -23,12 +24,15 @@ local If, Do, Throw                     = go.If, go.Do, go.Throw
 --------------------------------------------------------------------------------
 local ColorBoard = Element:subclass("ColorBoard")
 
+-- CORRECTION_TYPE -> string
+-- Constant
+-- Correction Type ID
 local CORRECTION_TYPE = "Color Board"
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect -> table
 --- Constant
 --- A table containing tables of all the aspect panel settings
-ColorBoard.static.aspect                       = {"color", "saturation", "exposure"}
+ColorBoard.static.aspect = {"color", "saturation", "exposure"}
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.currentAspect -> string
 --- Variable
@@ -45,36 +49,19 @@ ColorBoard.static.currentAspect = "*"
 --- Returns:
 ---  * `true` if the `element` is a Color Board otherwise `false`
 function ColorBoard.static.matches(element)
-    return ColorBoard.matchesCurrent(element) or ColorBoard.matchesOriginal(element)
+    return ColorBoard.matches(element)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard.matchesOriginal(element) -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
 --- Function
---- Checks to see if a GUI element is the 'original' (pre-10.4) Color Board.
+--- Checks to see if a GUI element is the Color Board.
 ---
 --- Parameters:
 ---  * `element`    - The element you want to check
 ---
 --- Returns:
----  * `true` if the `element` is a pre-10.4 Color Board otherwise `false`
-function ColorBoard.static.matchesOriginal(element)
-    if Element.matches(element) then
-        local group = axutils.childWithRole(element, "AXGroup")
-        return group and axutils.childWithID(group, id "BackButton")
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.matchesCurrent(element) -> boolean
---- Function
---- Checks to see if a GUI element is the 'current' (10.4+) Color Board.
----
---- Parameters:
----  * `element`    - The element you want to check
----
---- Returns:
----  * `true` if the `element` is a 10.4+ Color Board otherwise `false`
-function ColorBoard.matchesCurrent(element)
+---  * `true` if the `element` is a Color Board otherwise `false`
+function ColorBoard.matches(element)
     if Element.matches(element) and #element == 1 then
         local scroll = element[1]
         if scroll:attributeValue("AXRole") == "AXScrollArea" then
@@ -141,35 +128,6 @@ end
 --- Returns whether or not the Color Board is active
 function ColorBoard.lazy.prop:isActive()
     return self:aspectGroup().isShowing
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.topToolbarUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- Gets the `hs._asm.axuielement` object for the top toolbar (i.e. where the Back Button is located in Final Cut Pro 10.3)
----
---- Notes:
----  * This object doesn't exist in Final Cut Pro 10.4 as the Color Board is now contained within the Color Inspector
-function ColorBoard.lazy.prop:topToolbarUI()
-    return self.UI:mutate(function(original)
-        return axutils.cache(self, "_topToolbar", function()
-            local ui = original()
-            if ui then
-                for _,child in ipairs(ui) do
-                    if axutils.childWith(child, "AXIdentifier", id "BackButton") then
-                        return child
-                    end
-                end
-            end
-            return nil
-        end)
-    end)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.isAdvanced <cp.prop: boolean; read-only>
---- Field
---- Checks if the advanced Color Inspector (from 10.4) is supported.
-function ColorBoard.lazy.prop:isAdvanced()
-    return self:parent().isAdvanced
 end
 
 -----------------------------------------------------------------------
@@ -248,30 +206,6 @@ function ColorBoard.lazy.method:doHide()
         self:parent():doHide()
     )
     :Label("ColorBoard:doHide")
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:backButton() -> Button
---- Method
---- Returns a `Button` to access the 'Back' button, if present.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Button` for 'back'.
----
---- Notes:
----  * This no longer exists in FCP 10.4+, so will always be non-functional.
-function ColorBoard:backButton()
-    if not self._backButton then
-        self._backButton = Button(self, function()
-            local group = axutils.childFromTop(self:contentUI(), 1)
-            if group and group:attributeValue("AXRole") == "AXGroup" then
-                return axutils.childWithID(group, id "BackButton")
-            end
-        end)
-    end
-    return self._backButton
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:childUI(id) -> hs._asm.axuielement object

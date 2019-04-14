@@ -18,6 +18,7 @@ local tools                                     = require("cp.tools")
 
 local format                                    = string.format
 local If, Do                                    = go.If, go.Do
+local Done                                      = go.Done
 local round                                     = tools.round
 
 --------------------------------------------------------------------------------
@@ -97,7 +98,9 @@ function plugin.init(deps)
                     end)
                     :Then(
                         If(function() return percentChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:percent()
                             if value then
@@ -111,7 +114,9 @@ function plugin.init(deps)
                         :Otherwise(false)
                     ):Then(
                         If(function() return angleChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:angle()
                             if value then

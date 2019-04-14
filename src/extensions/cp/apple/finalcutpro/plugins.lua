@@ -33,7 +33,6 @@ local tools                     = require "cp.tools"
 local watcher                   = require "cp.watcher"
 
 local fcpApp                    = require "cp.apple.finalcutpro.app"
-local id                        = require "cp.apple.finalcutpro.ids" "LogicPlugins"
 
 local v                         = require "semver"
 
@@ -221,7 +220,7 @@ local BUILT_IN_EDEL_EFFECTS = {
     ["Voice"] = {
         "DeEsser",
         "Pitch Correction",
-        id "PitchShifter",
+        "Pitch Shifter",
         "Vocal Transformer",
     },
 }

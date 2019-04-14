@@ -2,23 +2,22 @@
 ---
 --- Libraries List Module.
 
-local require = require
+local require               = require
 
-local axutils							= require("cp.ui.axutils")
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
-local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
-local Columns                           = require("cp.apple.finalcutpro.browser.Columns")
-local prop								= require("cp.prop")
-local Table								= require("cp.ui.Table")
+local axutils               = require "cp.ui.axutils"
+local Clip                  = require "cp.apple.finalcutpro.content.Clip"
+local Playhead              = require "cp.apple.finalcutpro.main.Playhead"
+local Columns               = require "cp.apple.finalcutpro.browser.Columns"
+local prop                  = require "cp.prop"
+local Table                 = require "cp.ui.Table"
 
-local _									= require("moses")
+local _                     = require "moses"
 
-local cache                             = axutils.cache
-local childFromTop                      = axutils.childFromTop
-local childrenMatching                  = axutils.childrenMatching
-local childWithRole                     = axutils.childWithRole
-local isValid                           = axutils.isValid
+local cache                 = axutils.cache
+local childFromTop          = axutils.childFromTop
+local childrenMatching      = axutils.childrenMatching
+local childWithRole         = axutils.childWithRole
+local isValid               = axutils.isValid
 
 --------------------------------------------------------------------------------
 --
@@ -70,7 +69,7 @@ function LibrariesList.new(parent)
 
     local playerUI = UI:mutate(function(original, self)
         return cache(self, "_player", function()
-            return childFromTop(original(), id "Player")
+            return childFromTop(original(), 1)
         end)
     end)
 
