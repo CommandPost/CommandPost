@@ -51,7 +51,7 @@ function plugin.init(deps)
                     <div class="fcpPrefsColumn">
             ]], false)
 
-            :addHeading(2200, i18n("advancedFeatures"))
+            :addHeading(2200, i18n("hiddenFinalCutProPreferences"))
 
             :addParagraph(2201, html.span { class="tbTip" } ( i18n("advancedFeaturesWarning") .. "<br /><br />", false ).. "\n\n")
 
