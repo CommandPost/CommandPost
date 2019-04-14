@@ -41,19 +41,6 @@ ColorBoard.static.currentAspect = "*"
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
 --- Function
---- Checks to see if a GUI element is the Color Board or not
----
---- Parameters:
----  * `element`    - The element you want to check
----
---- Returns:
----  * `true` if the `element` is a Color Board otherwise `false`
-function ColorBoard.static.matches(element)
-    return ColorBoard.matches(element)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
---- Function
 --- Checks to see if a GUI element is the Color Board.
 ---
 --- Parameters:
