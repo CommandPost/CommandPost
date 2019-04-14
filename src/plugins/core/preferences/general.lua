@@ -43,7 +43,7 @@ end)
 --- plugins.core.preferences.general.openErrorLogOnDockClick <cp.prop: boolean>
 --- Variable
 --- Open Error Log on Dock Icon Click.
-mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
 
 --------------------------------------------------------------------------------
 --
