@@ -4,7 +4,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "colorBoard"
+--local log                   = require "hs.logger".new "colorBoard"
 
 local Aspect                = require "cp.apple.finalcutpro.inspector.color.ColorBoardAspect"
 local axutils               = require "cp.ui.axutils"
@@ -167,9 +167,7 @@ end
 --- Returns:
 ---  * ColorBoard object
 function ColorBoard:hide()
-    if self:backButton():isShowing() then
-        self:backButton():press()
-    elseif self:isShowing() then
+    if self:isShowing() then
         self:parent():hide()
     end
     return self
@@ -185,13 +183,7 @@ end
 --- Returns:
 ---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
 function ColorBoard.lazy.method:doHide()
-    return If(self:backButton().isShowing)
-    :Then(
-        self:backButton():doPress()
-    )
-    :Otherwise(
-        self:parent():doHide()
-    )
+    return Do(self:parent():doHide())
     :Label("ColorBoard:doHide")
 end
 
