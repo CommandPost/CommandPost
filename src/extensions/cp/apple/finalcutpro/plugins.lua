@@ -1815,6 +1815,7 @@ function mod.new(fcp)
     --------------------------------------------------------------------------------
     local notifier = notify.new(function()
         mod.mt.clearCaches()
+        mod.scanned(false)
         hs.reload()
     end, {
         title = i18n("newPluginDetected"),

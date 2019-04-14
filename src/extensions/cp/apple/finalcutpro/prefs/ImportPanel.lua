@@ -13,8 +13,6 @@ local axutils							= require("cp.ui.axutils")
 local CheckBox							= require("cp.ui.CheckBox")
 local RadioButton						= require("cp.ui.RadioButton")
 
-local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"
-
 local Panel                             = require("cp.apple.finalcutpro.prefs.Panel")
 local Do, If                            = go.Do, go.If
 
