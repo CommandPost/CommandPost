@@ -16,11 +16,13 @@ local webview       = require "hs.webview"
 local config        = require "cp.config"
 local dialog        = require "cp.dialog"
 local i18n          = require "cp.i18n"
+local just          = require "cp.just"
 local tools         = require "cp.tools"
 
 local moses         = require "moses"
-
 local panel         = require "panel"
+
+local doUntil       = just.doUntil
 
 --------------------------------------------------------------------------------
 --
@@ -401,6 +403,10 @@ end
 ---  * None
 function mod.hide()
     if mod._webview then
+        mod._webview:hide()
+        doUntil(function()
+            return mod._webview:hswindow() == nil
+        end)
         mod._webview:delete()
         mod._webview = nil
     end
