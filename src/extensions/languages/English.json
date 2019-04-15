@@ -1363,6 +1363,38 @@
         "shareSuccessful": "Share Successful\n%{info}",
         "shareUnknown": "Type: %{type}",
         "sharp": "Sharp",
+        "shiftRotationLeft": {
+            "one": "Shift Rotation Left by %{amount} Degree",
+            "other": "Shift Rotation Left by %{amount} Degrees"
+        },
+        "shiftRotationRight": {
+            "one": "Shift Rotation Right by %{amount} Degree",
+            "other": "Shift Rotation Right by %{amount} Degrees"
+        },
+        "shiftScaleLeft": {
+            "one": "Shift Scale Up by %{amount} Pixel",
+            "other": "Shift Scale Up by %{amount} Pixels"
+        },
+        "shiftScaleRight": {
+            "one": "Shift Scale Down by %{amount} Pixel",
+            "other": "Shift Scale Down by %{amount} Pixels"
+        },
+        "shiftXPositionLeftPixels": {
+            "one": "Shift X Position Left %{amount} Pixel",
+            "other": "Shift X Position Left %{amount} Pixels"
+        },
+        "shiftXPositionRightPixels": {
+            "one": "Shift X Position Right %{amount} Pixel",
+            "other": "Shift X Position Right %{amount} Pixels"
+        },
+        "shiftYPositionDownPixels": {
+            "one": "Shift Y Position Down %{amount} Pixel",
+            "other": "Shift Y Position Down %{amount} Pixels"
+        },
+        "shiftYPositionUpPixels": {
+            "one": "Shift Y Position Up %{amount} Pixel",
+            "other": "Shift Y Position Up %{amount} Pixels"
+        },
         "shortcut_group_fcpx": "Final Cut Pro",
         "shortcut_group_global": "All Applications",
         "shortcutAlreadyInUse": "This shortcut is already in use.",

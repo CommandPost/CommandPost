@@ -342,6 +342,99 @@ function plugin.init(deps)
                 :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
         end
     end
+
+    --------------------------------------------------------------------------------
+    -- Position:
+    --------------------------------------------------------------------------------
+    local shiftAmounts = {1, 5, 10}
+    local shiftXPosition = function(value)
+        local position = fcp:inspector():video():transform():position()
+        position:show()
+        local xPos = position:x()
+        position:x(xPos + value)
+    end
+
+    local shiftYPosition = function(value)
+        local position = fcp:inspector():video():transform():position()
+        position:show()
+        local yPos = position:y()
+        position:y(yPos + value)
+    end
+
+    for _, shiftAmount in pairs(shiftAmounts) do
+        fcpxCmds:add("xPositionLeft" .. shiftAmount)
+            :titled(i18n("shiftXPositionLeftPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftXPosition(shiftAmount * -1) end)
+            :whenRepeated(function() shiftXPosition(shiftAmount * -1) end)
+
+        fcpxCmds:add("xPositionRight" .. shiftAmount)
+            :titled(i18n("shiftXPositionRightPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftXPosition(shiftAmount) end)
+            :whenRepeated(function() shiftXPosition(shiftAmount) end)
+
+        fcpxCmds:add("yPositionUp" .. shiftAmount)
+            :titled(i18n("shiftYPositionUpPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftYPosition(shiftAmount) end)
+            :whenRepeated(function() shiftYPosition(shiftAmount) end)
+
+        fcpxCmds:add("yPositionDown" .. shiftAmount)
+            :titled(i18n("shiftYPositionDownPixels", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftYPosition(shiftAmount * -1) end)
+            :whenRepeated(function() shiftYPosition(shiftAmount * -1) end)
+   end
+
+
+    --------------------------------------------------------------------------------
+    -- Scale:
+    --------------------------------------------------------------------------------
+    local shiftScale = function(value)
+        local scaleAll = fcp:inspector():video():transform():scaleAll()
+        scaleAll:show()
+        local original = scaleAll:value()
+        scaleAll:value(original + value)
+    end
+    for _, shiftAmount in pairs(shiftAmounts) do
+        fcpxCmds:add("shiftRotationUp" .. shiftAmount)
+            :titled(i18n("shiftRotationUp", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount) end)
+            :whenRepeated(function() shiftScale(shiftAmount) end)
+
+        fcpxCmds:add("shiftRotationDown" .. shiftAmount)
+            :titled(i18n("shiftRotationDown", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftScale(shiftAmount * -1) end)
+            :whenRepeated(function() shiftScale(shiftAmount * -1) end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Rotation:
+    --------------------------------------------------------------------------------
+    local shiftRotation = function(value)
+        local rotation = fcp:inspector():video():transform():rotation()
+        rotation:show()
+        local original = rotation:value()
+        rotation:value(original + value)
+    end
+    for _, shiftAmount in pairs(shiftAmounts) do
+        fcpxCmds:add("shiftRotationLeft" .. shiftAmount)
+            :titled(i18n("shiftRotationLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRotation(shiftAmount) end)
+            :whenRepeated(function() shiftRotation(shiftAmount) end)
+
+        fcpxCmds:add("shiftRotationRight" .. shiftAmount)
+            :titled(i18n("shiftRotationRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftRotation(shiftAmount * -1) end)
+            :whenRepeated(function() shiftRotation(shiftAmount * -1) end)
+    end
+
+
 end
 
 return plugin
