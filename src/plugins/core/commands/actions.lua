@@ -5,14 +5,13 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "actions"
+--local log               = require "hs.logger".new "actions"
 
 local dialog            = require "cp.dialog"
 local i18n              = require "cp.i18n"
 
 local displayMessage    = dialog.displayMessage
 local format            = string.format
-
 
 local mod = {}
 
@@ -149,7 +148,6 @@ end
 function mod.reset()
     mod._handler:reset()
 end
-
 
 local plugin = {
     id              = "core.commands.actions",
