@@ -50,7 +50,7 @@ local imageFromPath             = image.imageFromPath
 local insert                    = table.insert
 local pack                      = table.pack
 local sort                      = table.sort
-local tableCount                = tools.tableCount
+local spairs                    = tools.spairs
 
 --------------------------------------------------------------------------------
 --
@@ -827,7 +827,7 @@ function activator.mt:chooser()
                 --------------------------------------------------------------------------------
                 -- Add buttons for each section that has an icon:
                 --------------------------------------------------------------------------------
-                for id, item in tools.spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
+                for id, item in spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
                     t:addItems({
                         id = id,
                         label = i18n(id .. "_action"),
