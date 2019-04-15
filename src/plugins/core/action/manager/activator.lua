@@ -891,7 +891,7 @@ function activator.mt:chooser()
         local setupEventtap = function()
             if not self._eventtap then
                 self._eventtap = eventtap.new({eventtap.event.types.keyDown}, function(event)
-                    if event:getFlags():containExactly({"fn", "ctrl"}) then
+                    if event:getFlags():containExactly({"fn", "alt"}) then
                         if event:getKeyCode() == 123 then
                             if self._toolbar then
                                 local visibleItems = self._toolbar:visibleItems()
