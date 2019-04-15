@@ -19,34 +19,38 @@
 
 local require                   = require
 
-local log                       = require("hs.logger").new("activator")
+local log                       = require "hs.logger".new "activator"
 
-local chooser                   = require("hs.chooser")
-local drawing                   = require("hs.drawing")
-local fnutils                   = require("hs.fnutils")
-local image                     = require("hs.image")
-local inspect                   = require("hs.inspect")
-local menubar                   = require("hs.menubar")
-local mouse                     = require("hs.mouse")
-local screen                    = require("hs.screen")
-local timer                     = require("hs.timer")
-local toolbar                   = require("hs.webview.toolbar")
+local chooser                   = require "hs.chooser"
+local drawing                   = require "hs.drawing"
+local eventtap                  = require "hs.eventtap"
+local fnutils                   = require "hs.fnutils"
+local image                     = require "hs.image"
+local inspect                   = require "hs.inspect"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
+local screen                    = require "hs.screen"
+local timer                     = require "hs.timer"
+local toolbar                   = require "hs.webview.toolbar"
 
-local config                    = require("cp.config")
-local i18n                      = require("cp.i18n")
-local idle                      = require("cp.idle")
-local prop                      = require("cp.prop")
-local tools                     = require("cp.tools")
+local config                    = require "cp.config"
+local i18n                      = require "cp.i18n"
+local idle                      = require "cp.idle"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
-local Do                        = require("cp.rx.go.Do")
+local Do                        = require "cp.rx.go.Do"
 
-local _                         = require("moses")
+local _                         = require "moses"
 
 local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local imageFromPath             = image.imageFromPath
-local sort, insert, pack        = table.sort, table.insert, table.pack
+local insert                    = table.insert
+local pack                      = table.pack
+local sort                      = table.sort
+local spairs                    = tools.spairs
 
 --------------------------------------------------------------------------------
 --
@@ -823,7 +827,7 @@ function activator.mt:chooser()
                 --------------------------------------------------------------------------------
                 -- Add buttons for each section that has an icon:
                 --------------------------------------------------------------------------------
-                for id, item in tools.spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
+                for id, item in spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
                     t:addItems({
                         id = id,
                         label = i18n(id .. "_action"),
@@ -852,16 +856,105 @@ function activator.mt:chooser()
             end
         end
 
-        local executeFn = function(result) self:activate(result) end
+        local executeFn = function(result)
+            self:activate(result)
+            if self._eventtap then
+                self._eventtap:stop()
+                self._eventtap = nil
+            end
+        end
         local rightClickFn = function(index) self:rightClickMain(index) end
         local choicesFn = function() return self:activeChoices() end
         local searchSubText = self:searchSubText()
+
+        local updateConsole = function(id)
+            if id == "showAll" then
+                self:enableAllHandlers()
+            else
+                local soloed = true
+                for i,_ in pairs(self:allowedHandlers()) do
+                    if i ~= id and not self:isDisabledHandler(i) then
+                        soloed = false
+                        break
+                    end
+                end
+                if soloed then
+                    self:enableAllHandlers()
+                    self._toolbar:selectedItem("showAll")
+                else
+                    self:disableAllHandlers()
+                    self:enableHandler(id)
+                end
+            end
+        end
+
+        local setupEventtap = function()
+            if not self._eventtap then
+                self._eventtap = eventtap.new({eventtap.event.types.keyDown}, function(event)
+                    if event:getFlags():containExactly({"fn", "ctrl"}) then
+                        if event:getKeyCode() == 123 then
+                            if self._toolbar then
+                                local visibleItems = self._toolbar:visibleItems()
+                                local selectedItem = self._toolbar:selectedItem()
+                                if not selectedItem then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                elseif selectedItem == visibleItems[1] then
+                                    self._toolbar:selectedItem(visibleItems[#visibleItems])
+                                    updateConsole(visibleItems[#visibleItems])
+                                else
+                                    local current
+                                    for i=1, #visibleItems do
+                                        if visibleItems[i] == selectedItem then
+                                            current = i
+                                            break
+                                        end
+                                    end
+                                    if current then
+                                        self._toolbar:selectedItem(visibleItems[current - 1])
+                                        updateConsole(visibleItems[current - 1])
+                                    end
+                                end
+                            end
+                        elseif event:getKeyCode() == 124 then
+                            if self._toolbar then
+                                local visibleItems = self._toolbar:visibleItems()
+                                local selectedItem = self._toolbar:selectedItem()
+                                if not selectedItem then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                elseif selectedItem == visibleItems[#visibleItems] then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                else
+                                    local current
+                                    for i=1, #visibleItems do
+                                        if visibleItems[i] == selectedItem then
+                                            current = i
+                                            break
+                                        end
+                                    end
+                                    if current then
+                                        self._toolbar:selectedItem(visibleItems[current + 1])
+                                        updateConsole(visibleItems[current + 1])
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+            if self._eventtap then
+                self._eventtap:start()
+            end
+        end
 
         local c = chooser.new(executeFn)
             :bgDark(true)
             :rightClickCallback(rightClickFn)
             :choices(choicesFn)
             :searchSubText(searchSubText)
+            :showCallback(setupEventtap)
             :refreshChoicesCallback()
 
         if t then
