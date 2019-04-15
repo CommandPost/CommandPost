@@ -1380,20 +1380,20 @@
             "other": "Shift Scale Down by %{amount} Pixels"
         },
         "shiftXPositionLeftPixels": {
-            "one": "Shift X Position Left %{amount} Pixel",
-            "other": "Shift X Position Left %{amount} Pixels"
+            "one": "Shift Position Left %{amount} Pixel",
+            "other": "Shift Position Left %{amount} Pixels"
         },
         "shiftXPositionRightPixels": {
-            "one": "Shift X Position Right %{amount} Pixel",
-            "other": "Shift X Position Right %{amount} Pixels"
+            "one": "Shift Position Right %{amount} Pixel",
+            "other": "Shift Position Right %{amount} Pixels"
         },
         "shiftYPositionDownPixels": {
-            "one": "Shift Y Position Down %{amount} Pixel",
-            "other": "Shift Y Position Down %{amount} Pixels"
+            "one": "Shift Position Down %{amount} Pixel",
+            "other": "Shift Position Down %{amount} Pixels"
         },
         "shiftYPositionUpPixels": {
-            "one": "Shift Y Position Up %{amount} Pixel",
-            "other": "Shift Y Position Up %{amount} Pixels"
+            "one": "Shift Position Up %{amount} Pixel",
+            "other": "Shift Position Up %{amount} Pixels"
         },
         "shortcut_group_fcpx": "Final Cut Pro",
         "shortcut_group_global": "All Applications",
