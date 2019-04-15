@@ -642,7 +642,7 @@ function mod.init(deps)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 1",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
-        item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():global() end) end,
+        item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():master() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck1", params)
 
