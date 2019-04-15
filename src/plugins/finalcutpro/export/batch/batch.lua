@@ -986,13 +986,15 @@ function plugin.init(deps)
         :addContent(nextID(), function()
                 local destinationPreset = mod.getDestinationPreset()
                 local useCustomFilename = mod.useCustomFilename()
-                if useCustomFilename and destinationPreset ~= i18n("sendToCompressor") then
-                    local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
-                elseif useCustomFilename and destinationPreset == i18n("sendToCompressor") then
+                if destinationPreset == i18n("sendToCompressor") then
                     return html.p {class="uiItem", style="color:#3f9253; font-weight:bold;"} (i18n("changeFilenamesInCompressor"))
                 else
-                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
+                    if useCustomFilename then
+                        local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
+                        return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                    else
+                        return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
+                    end
                 end
             end, false)
         :addParagraph(nextID(), html.br())
@@ -1000,7 +1002,13 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeCustomFilename"),
-                onclick = mod.changeCustomFilename,
+                onclick = function()
+                    if mod.getDestinationPreset() == i18n("sendToCompressor") then
+                        compressor:launch()
+                    else
+                        mod.changeCustomFilename()
+                    end
+                end
             })
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
