@@ -21,11 +21,7 @@ local section                           = IP.section
 local withRole, childWithRole, withValue    = axutils.withRole, axutils.childWithRole, axutils.withValue
 local cache                             = axutils.cache
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local BaseMotionPanel = BasePanel:subclass("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 
 local function findContentUI(element)

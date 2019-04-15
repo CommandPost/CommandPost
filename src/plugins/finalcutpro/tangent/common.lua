@@ -26,11 +26,7 @@ local ninjaMouseClick       = tools.ninjaMouseClick
 local playErrorSound        = tools.playErrorSound
 local tableCount            = tools.tableCount
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- DEFER -> number
@@ -902,11 +898,7 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
     return id + 1, valueParam
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.common",
     group = "finalcutpro",

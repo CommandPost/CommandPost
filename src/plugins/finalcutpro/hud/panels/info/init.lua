@@ -12,11 +12,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- getEnv() -> table
@@ -119,11 +115,7 @@ function mod.updateWatchers(enabled)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.info",
     group           = "finalcutpro",

@@ -20,11 +20,7 @@ local childFromTop          = axutils.childFromTop
 local childMatching         = axutils.childMatching
 local childrenWithRole      = axutils.childrenWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local AppearanceAndFiltering = Popover:subclass("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
 
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering.matches(element) -> boolean

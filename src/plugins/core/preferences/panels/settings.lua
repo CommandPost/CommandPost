@@ -13,11 +13,7 @@ local i18n          = require("cp.i18n")
 local execute       = hs.execute
 local imageFromName = image.imageFromName
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.settings",
     group           = "core",

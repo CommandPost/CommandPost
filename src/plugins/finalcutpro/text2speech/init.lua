@@ -29,11 +29,7 @@ local i18n                              = require("cp.i18n")
 
 local doAfter                           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.text2speech.DELETE_DELAY
@@ -945,11 +941,7 @@ function mod.insertFromPasteboard()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.text2speech",
     group           = "finalcutpro",

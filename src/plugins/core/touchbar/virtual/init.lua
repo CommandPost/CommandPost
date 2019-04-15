@@ -17,11 +17,7 @@ local touchbar                                  = require("hs._asm.undocumented.
 
 local location                                  = require("location")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.touchbar.virtual.LOCATION_DRAGGABLE -> string
@@ -296,11 +292,7 @@ function mod.init()
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id          = "core.touchbar.virtual",
     group       = "core",

@@ -22,11 +22,7 @@ local ImportPanel					= require("cp.apple.finalcutpro.prefs.ImportPanel")
 
 local If, WaitUntil                 = go.If, go.WaitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PreferencesWindow = {}
 
 function PreferencesWindow.matches(element)

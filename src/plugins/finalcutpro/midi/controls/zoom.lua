@@ -9,11 +9,7 @@ local log               = require("hs.logger").new("zoomMIDI")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.midi.controls.zoom.control() -> nil
@@ -68,11 +64,7 @@ function mod.init()
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.midi.controls.zoom",
     group           = "finalcutpro",

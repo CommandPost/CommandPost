@@ -21,11 +21,7 @@ local match             = string.match
 local pathToAbsolute    = fs.pathToAbsolute
 local unescapeXML       = wtext.unescapeXML
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 
 -- KEY_VALUE -> string
 -- Constant

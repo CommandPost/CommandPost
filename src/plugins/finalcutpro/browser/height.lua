@@ -11,11 +11,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 
 local doUntil                           = timer.doUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.browser.height.changeBrowserClipHeightAlreadyInProgress -> boolean
@@ -97,11 +93,7 @@ function mod.changeBrowserClipHeight(direction)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.browser.height",
     group = "finalcutpro",

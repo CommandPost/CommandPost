@@ -8,11 +8,7 @@ local i18n          = require("cp.i18n")
 local prop			= require("cp.prop")
 local shortcut		= require("cp.commands.shortcut")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local command = {}
 command.mt = {}
 command.mt.__index = command.mt

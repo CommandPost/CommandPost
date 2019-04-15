@@ -7,11 +7,7 @@ local require = require
 local dialog      = require("cp.dialog")
 local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.touchbar.banks.init() -> nil
@@ -68,11 +64,7 @@ function mod.init()
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.touchbar.banks",
     group           = "core",

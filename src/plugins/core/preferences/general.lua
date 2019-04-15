@@ -10,11 +10,7 @@ local config			= require("cp.config")
 local i18n        = require("cp.i18n")
 local prop				= require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.general.autoLaunch <cp.prop: boolean>
@@ -45,11 +41,7 @@ end)
 --- Open Error Log on Dock Icon Click.
 mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "core.preferences.general",
     group			= "core",

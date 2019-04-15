@@ -16,11 +16,7 @@ local just              = require("cp.just")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- FEEDBACK_TYPE -> string
@@ -375,11 +371,7 @@ function mod.open(bugReport)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "motion.feedback.bugreport",
     group           = "motion",

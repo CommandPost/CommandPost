@@ -7,11 +7,7 @@ local require = require
 local feedback  = require("cp.feedback")
 local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.helpandsupport.feedback.show() -> nil
@@ -27,11 +23,7 @@ function mod.show()
     feedback.showFeedback()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.helpandsupport.feedback",
     group           = "core",

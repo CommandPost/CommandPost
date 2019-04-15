@@ -33,11 +33,7 @@ local processInfo   = hs.processInfo
 local sortedIndex   = moses.sortedIndex
 local waitUntil     = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- SNAPPING_RANGE -> number
@@ -958,11 +954,7 @@ function mod.update()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.manager",
     group           = "finalcutpro",

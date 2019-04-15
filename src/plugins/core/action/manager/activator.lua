@@ -52,11 +52,7 @@ local pack                      = table.pack
 local sort                      = table.sort
 local spairs                    = tools.spairs
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt

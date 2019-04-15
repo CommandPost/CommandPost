@@ -35,11 +35,7 @@ local doAfter                                   = timer.doAfter
 local format                                    = string.format
 local insert, sort                              = table.insert, table.sort
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.tangent.manager.TANGENT_MAPPER_BUNDLE_ID -> string
@@ -683,11 +679,7 @@ function mod._test(...)
     return require("all_tests")(...)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id          = "core.tangent.manager",
     group       = "core",

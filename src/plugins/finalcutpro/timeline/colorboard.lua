@@ -17,11 +17,7 @@ local tools                 = require("cp.tools")
 local doWhile               = timer.doWhile
 local format                = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.colorboard.startShiftingPuck(puck, percentShift, angleShift) -> none
@@ -127,11 +123,7 @@ function mod.nextAspect()
     colorBoard:nextAspect()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.colorboard",
     group = "finalcutpro",

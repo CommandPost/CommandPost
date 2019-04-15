@@ -19,11 +19,7 @@ local tools             = require("cp.tools")
 local encode            = base64.encode
 local webviewAlert      = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.hud.panels.fcpxml.lastValue <cp.prop: table>
@@ -63,11 +59,7 @@ local function updateInfo()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.fcpxml",
     group           = "finalcutpro",

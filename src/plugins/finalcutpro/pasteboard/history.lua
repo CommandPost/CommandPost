@@ -20,11 +20,7 @@ local Do                = require("cp.rx.go.Do")
 
 local doAfter           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.pasteboard.history.FILE_NAME -> string
@@ -207,11 +203,7 @@ function mod.init(manager)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.pasteboard.history",
     group           = "finalcutpro",

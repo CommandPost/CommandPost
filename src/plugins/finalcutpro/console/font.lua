@@ -21,11 +21,7 @@ local tools             = require("cp.tools")
 local execute           = hs.execute
 local imageFromPath     = image.imageFromPath
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- FONT_ICON -> hs.image object
@@ -389,11 +385,7 @@ function mod.onExecute(action)
     mod.onActivate(nil, action)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.console.font",
     group           = "finalcutpro",

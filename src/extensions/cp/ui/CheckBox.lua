@@ -27,11 +27,7 @@ local Element			= require("cp.ui.Element")
 local If                = require("cp.rx.go.If")
 local Do                = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local CheckBox = Element:subclass("cp.ui.CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean

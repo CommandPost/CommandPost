@@ -31,11 +31,7 @@ local tableContains             = tools.tableContains
 local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- MAXIMUM_HISTORY -> number
@@ -665,11 +661,7 @@ local function showHistoryPopup()
     popup:popupMenu(mouse.getAbsolutePosition(), true)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.search",
     group           = "finalcutpro",

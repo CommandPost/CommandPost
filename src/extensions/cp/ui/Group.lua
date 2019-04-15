@@ -8,11 +8,7 @@ local require   = require
 
 local Element   = require "cp.ui.Element"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Group = Element:subclass("cp.ui.Group")
 
 --- cp.ui.Group.matches(element) -> boolean

@@ -20,11 +20,7 @@ local doAfter           = timer.doAfter
 local format            = string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.touchbar.widgets.colorboard.updateInterval -> number
@@ -690,11 +686,7 @@ mod.active = mod.hasWidgets:AND(fcp.app.frontmost:OR(fcp.app.showing)):watch(fun
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.touchbar.widgets.colorboard",
     group           = "finalcutpro",

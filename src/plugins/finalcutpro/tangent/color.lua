@@ -21,11 +21,7 @@ local If, Do                                    = go.If, go.Do
 local Done                                      = go.Done
 local round                                     = tools.round
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.color",
     group = "finalcutpro",

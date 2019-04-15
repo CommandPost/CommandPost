@@ -10,11 +10,7 @@ local fcp               = require("cp.apple.finalcutpro")
 
 local Do                = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.movetoplayhead",
     group = "finalcutpro",

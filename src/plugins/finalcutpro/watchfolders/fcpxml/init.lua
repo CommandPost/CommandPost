@@ -24,11 +24,7 @@ local ui                = require("cp.web.ui")
 local doAfter           = timer.doAfter
 local uuid              = host.uuid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.watchfolders.fcpxml.SECONDS_UNTIL_DELETE -> number
@@ -760,11 +756,7 @@ function mod.init(deps)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.watchfolders.fcpxml",
     group = "finalcutpro",

@@ -11,11 +11,7 @@ local image             = require("hs.image")
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.minimise",
     group           = "finalcutpro",

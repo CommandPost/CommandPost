@@ -10,11 +10,7 @@ local axutils                       = require("cp.ui.axutils")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local GoToPrompt = {}
 
 --- cp.apple.finalcutpro.export.GoToPrompt.matches(element) -> boolean

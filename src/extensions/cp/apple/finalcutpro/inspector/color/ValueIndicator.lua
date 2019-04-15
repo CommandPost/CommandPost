@@ -9,11 +9,7 @@ local log                           = require("hs.logger").new("valueIndicator")
 local Element                       = require("cp.ui.Element")
 local prop                          = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ValueIndicator = Element:subclass("ValueIndicator")
 
 --- cp.apple.finalcutpro.inspector.color.ValueIndicator.matches(element) -> boolean

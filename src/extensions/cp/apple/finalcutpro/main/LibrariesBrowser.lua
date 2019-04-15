@@ -33,11 +33,7 @@ local childFromRight                    = axutils.childFromRight
 local childMatching                     = axutils.childMatching
 local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local LibrariesBrowser = Group:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
 function LibrariesBrowser.static.matches(element)

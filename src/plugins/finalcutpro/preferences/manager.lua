@@ -10,11 +10,7 @@ local fcp                                       = require("cp.apple.finalcutpro"
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.preferences.manager",
     group           = "finalcutpro",

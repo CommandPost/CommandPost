@@ -16,11 +16,7 @@ local Do                    = go.Do
 local If                    = go.If
 local Throw                 = go.Throw
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorBoard = Element:subclass("ColorBoard")
 
 -- CORRECTION_TYPE -> string

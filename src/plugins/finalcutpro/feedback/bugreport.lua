@@ -16,11 +16,7 @@ local just              = require("cp.just")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- FEEDBACK_TYPE -> string
@@ -398,11 +394,7 @@ local function appleBugReporter()
     os.execute('open "https://bugreport.apple.com/"')
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.feedback.bugreport",
     group           = "finalcutpro",

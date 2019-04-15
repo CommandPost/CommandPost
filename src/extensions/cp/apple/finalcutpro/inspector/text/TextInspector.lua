@@ -79,11 +79,7 @@ local section, slider                   = IP.section, IP.slider
 local toRegionalNumber                  = tools.toRegionalNumber
 local toRegionalNumberString            = tools.toRegionalNumberString
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TextInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.text.TextInspector")
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector.matches(element)

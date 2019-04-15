@@ -19,11 +19,7 @@ local moses                     = require("moses")
 
 local waitUntil                 = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local commands = {}
 commands.mt = {}
 commands.mt.__index = commands.mt

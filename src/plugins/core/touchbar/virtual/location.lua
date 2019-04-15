@@ -2,11 +2,7 @@
 ---
 --- Virtual Touch Bar Update Location Callback
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- plugins.core.touchbar.location._items -> table

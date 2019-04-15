@@ -9,11 +9,7 @@ local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.touchbar.virtual.VISIBILITY_ALWAYS -> string
@@ -185,11 +181,7 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.touchbar.virtual",
     group = "finalcutpro",

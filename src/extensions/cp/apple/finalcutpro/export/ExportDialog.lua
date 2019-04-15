@@ -18,11 +18,7 @@ local v                             = require("semver")
 local displayMessage                = dialog.displayMessage
 local wait                          = just.wait
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ExportDialog = {}
 
 --- cp.apple.finalcutpro.export.ExportDialog.matches(element) -> boolean

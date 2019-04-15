@@ -6,11 +6,7 @@ local require = require
 
 local commands = require("cp.commands")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.commands.global",
     group           = "core",

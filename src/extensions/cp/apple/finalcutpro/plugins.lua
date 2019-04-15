@@ -45,11 +45,6 @@ local insert, remove            = table.insert, table.remove
 local pathToAbsolute            = fs.pathToAbsolute
 local unescapeXML               = text.unescapeXML
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
 
 -- THEME_PATTERN -> string
 -- Constant
@@ -247,11 +242,7 @@ local MOTION_TEMPLATE_TYPES = {
     }
 }
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

@@ -11,11 +11,7 @@ local i18n      = require("cp.i18n")
 local just      = require("cp.just")
 local tools	    = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.appearanceandfiltering",
     group           = "finalcutpro",

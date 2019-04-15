@@ -23,11 +23,7 @@ local encode            = base64.encode
 local execute           = hs.execute
 local webviewAlert      = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- PASTEBOARD_UTI -> string
@@ -131,11 +127,7 @@ local function convertXMLtoBinary(xml)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.pasteboard",
     group           = "finalcutpro",

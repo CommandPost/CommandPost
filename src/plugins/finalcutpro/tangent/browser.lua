@@ -15,11 +15,7 @@ local tools                 = require("cp.tools")
 local rescale               = tools.rescale
 local delayed               = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.browser",
     group = "finalcutpro",

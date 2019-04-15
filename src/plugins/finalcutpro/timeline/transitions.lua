@@ -12,11 +12,7 @@ local i18n              = require("cp.i18n")
 
 local doAfter           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.transitions(action) -> boolean
@@ -131,11 +127,7 @@ function mod.apply(action)
     return true
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.transitions",
     group = "finalcutpro",

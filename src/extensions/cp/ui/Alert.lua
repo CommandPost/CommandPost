@@ -11,11 +11,7 @@ local Button                        = require("cp.ui.Button")
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Alert = Element:subclass("cp.ui.Alert")
 
 --- cp.ui.Alert.matches(element) -> boolean

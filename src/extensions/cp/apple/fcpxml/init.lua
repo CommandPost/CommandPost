@@ -227,11 +227,7 @@ local resource              = require("cp.apple.fcpxml.resource")
 local secondaryStoryline    = require("cp.apple.fcpxml.secondaryStoryline")
 local title                 = require("cp.apple.fcpxml.title")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

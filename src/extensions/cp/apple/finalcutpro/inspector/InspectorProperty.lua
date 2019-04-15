@@ -38,11 +38,7 @@ local childrenMatching      = axutils.childrenMatching
 --local ninjaMouseClick       = tools.ninjaMouseClick
 --local wait                  = just.wait
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.apple.finalcutpro.inspector.InspectorProperty.hasProperties(parent, uiFinder) -> boolean

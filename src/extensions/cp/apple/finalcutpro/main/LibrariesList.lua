@@ -19,11 +19,7 @@ local childrenMatching      = axutils.childrenMatching
 local childWithRole         = axutils.childWithRole
 local isValid               = axutils.isValid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local LibrariesList = {}
 
 --- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean

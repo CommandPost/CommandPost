@@ -11,11 +11,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 
 local doUntil                           = timer.doUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.height.changeTimelineClipHeightAlreadyInProgress -> boolean
@@ -97,11 +93,7 @@ function mod.changeTimelineClipHeight(direction)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.height",
     group = "finalcutpro",

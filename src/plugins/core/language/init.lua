@@ -12,11 +12,7 @@ local json          = require("hs.json")
 local config        = require("cp.config")
 local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- LANGUAGE_PATH -> string
@@ -171,11 +167,7 @@ local function getLanguageOptions()
     return options
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.language",
     group           = "core",

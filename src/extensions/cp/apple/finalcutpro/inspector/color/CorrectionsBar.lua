@@ -21,11 +21,7 @@ local Require                           = require("cp.rx.go.Require")
 
 local sort = table.sort
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local CorrectionsBar = Element:subclass("CorrectionsBar")
 
 function CorrectionsBar.__tostring()

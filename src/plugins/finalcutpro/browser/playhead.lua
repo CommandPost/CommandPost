@@ -17,11 +17,7 @@ local ui                            = require("cp.web.ui")
 
 local doAfter                       = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 local DEFAULT_TIME                  = 3
@@ -285,11 +281,7 @@ local function timeOptions()
     return timeOptionsTable
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.playhead",
     group           = "finalcutpro",

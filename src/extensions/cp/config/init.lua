@@ -14,11 +14,7 @@ local prop				  = require("cp.prop")
 local sourcewatcher		  = require("cp.sourcewatcher")
 local watcher			  = require("cp.watcher")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.config.appName -> string

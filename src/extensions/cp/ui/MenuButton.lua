@@ -13,11 +13,7 @@ local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
 
 local find                          = string.find
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local MenuButton = Element:subclass("cp.ui.MenuButton")
 
 -- TIMEOUT_AFTER -> number

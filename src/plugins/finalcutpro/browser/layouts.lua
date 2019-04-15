@@ -58,11 +58,7 @@ local childWithRole     = axutils.childWithRole
 
 local doAfter           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- NUMBER_OF_LAYOUTS -> number
@@ -678,11 +674,7 @@ end
 --- The last collection registered.
 mod.lastCollection = mod.getSingleSelectedCollection()
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.layouts",
     group           = "finalcutpro",

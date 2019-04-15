@@ -10,11 +10,7 @@ local timer                 = require("hs.timer")
 local secondsSinceEpoch     = timer.secondsSinceEpoch
 local usleep                = timer.usleep
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local just = {}
 
 --- cp.just.doWhile(actionFn[, timeout[, frequency]]) -> value

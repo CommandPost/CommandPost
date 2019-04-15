@@ -44,11 +44,6 @@ local block				= require "cp.web.block"
 
 local gsub        = string.gsub
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
 
 -- XML_ENTITIES -> table
 -- Constant
@@ -71,11 +66,7 @@ local DEFAULT_ENCODING = "UTF-8"
 -- Default Standalone.
 local DEFAULT_STANDALONE = "yes"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local xml = {}
 
 local function xmlEscape(s)

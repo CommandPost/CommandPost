@@ -16,11 +16,7 @@ local valueOf                 = axutils.valueOf
 local insert	                = table.insert
 local ifilter	                = funtils.ifilter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Outline = Element:subclass("cp.ui.Outline")
 
 -- _cleanCache()

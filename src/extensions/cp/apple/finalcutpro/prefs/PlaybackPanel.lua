@@ -14,11 +14,7 @@ local CheckBox          = require "cp.ui.CheckBox"
 
 local Panel             = require "cp.apple.finalcutpro.prefs.Panel"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PlaybackPanel = {}
 PlaybackPanel.mt = setmetatable({}, Panel.mt)
 PlaybackPanel.mt.__index = PlaybackPanel.mt

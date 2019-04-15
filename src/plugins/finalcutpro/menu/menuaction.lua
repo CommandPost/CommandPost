@@ -18,11 +18,7 @@ local idle              = require("cp.idle")
 local imageFromPath     = image.imageFromPath
 local insert, concat    = table.insert, table.concat
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- ID -> string
@@ -197,11 +193,7 @@ function mod.init(actionmanager)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.menu.menuaction",
     group           = "finalcutpro",

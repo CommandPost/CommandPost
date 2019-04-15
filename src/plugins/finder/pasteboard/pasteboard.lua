@@ -11,11 +11,7 @@ local pasteboard            = require("hs.pasteboard")
 
 local tools                 = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finder.pasteboard.processText(value, copyAndPaste) -> none
@@ -51,11 +47,7 @@ function mod.processText(value, copyAndPaste)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finder.pasteboard",
     group           = "finder",

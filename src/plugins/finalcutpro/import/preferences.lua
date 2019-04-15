@@ -8,11 +8,7 @@ local fcp           = require("cp.apple.finalcutpro")
 local dialog        = require("cp.dialog")
 local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.import.preferences.createOptimizedMedia <cp.prop: boolean>
@@ -184,11 +180,7 @@ mod.leaveInPlace = fcp.preferences:prop("FFImportCopyToMediaFolder", true):mutat
     end
 )
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.import.preferences",
     group           = "finalcutpro",

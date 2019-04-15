@@ -17,11 +17,7 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 local go                                = require("cp.rx.go")
 local If, WaitUntil                     = go.If, go.WaitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Contents = {}
 
 -- TODO: Add documentation

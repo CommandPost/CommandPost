@@ -19,11 +19,7 @@ local semver                            = require("semver")
 
 local touchdevice
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> boolean
@@ -530,11 +526,7 @@ function mod.start()
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.mousezoom",
     group = "finalcutpro",

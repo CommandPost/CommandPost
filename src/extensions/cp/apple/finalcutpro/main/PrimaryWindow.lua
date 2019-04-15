@@ -19,11 +19,7 @@ local If                            = require("cp.rx.go.If")
 local class                         = require("middleclass")
 local lazy                          = require("cp.lazy")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PrimaryWindow = class("PrimaryWindow"):include(lazy)
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.matches(w) -> boolean

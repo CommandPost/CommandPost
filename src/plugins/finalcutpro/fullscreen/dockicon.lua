@@ -18,11 +18,7 @@ local prop                              = require("cp.prop")
 
 local doAfter                           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.fullscreen.dockicon.dockIconEnabled <cp.prop: boolean; read-only; live>
@@ -71,11 +67,7 @@ mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:
     mod.dockIconEnabled(not fullScreen)
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.fullscreen.dockicon",
     group           = "finalcutpro",

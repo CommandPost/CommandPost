@@ -24,11 +24,7 @@ local imageFromPath             = image.imageFromPath
 local stringMaxLength           = tools.stringMaxLength
 local webviewAlert              = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.hud.panels.twelvebuttons.buttons <cp.prop: table>
@@ -260,11 +256,7 @@ local function rightClickButton(id)
     popup:popupMenu(position, true)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.twelvebuttons",
     group           = "finalcutpro",

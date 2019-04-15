@@ -18,11 +18,7 @@ local binding           = require("binding")
 local insert            = table.insert
 local format            = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local group = {}
 group.mt = {}
 

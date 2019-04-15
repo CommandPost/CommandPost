@@ -8,11 +8,7 @@ local image     = require("hs.image")
 
 local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.general",
     group           = "core",

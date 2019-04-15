@@ -23,11 +23,7 @@ local childrenInLine                    = axutils.childrenInLine
 local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local AudioComponent = Element:subclass("cp.apple.finalcutpro.inspector.audio.AudioComponent")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioComponent.matches(element) -> boolean

@@ -13,11 +13,7 @@ local ScrollArea                        = require("cp.ui.ScrollArea")
 
 local AudioComponent                    = require("cp.apple.finalcutpro.inspector.audio.AudioComponent")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local AudioConfiguration = ScrollArea:subclass("cp.apple.finalcutpro.inspector.audio.AudioConfiguration")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioConfiguration.matches(element) -> boolean

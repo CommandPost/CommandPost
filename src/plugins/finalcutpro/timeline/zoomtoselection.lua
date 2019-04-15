@@ -6,11 +6,7 @@ local require = require
 
 local fcp                               = require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.zoomtoselection.SELECTION_BUFFER -> number
@@ -145,11 +141,7 @@ function mod.zoomToSelection()
     return true
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.zoomtoselection",
     group = "finalcutpro",

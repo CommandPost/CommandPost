@@ -16,11 +16,7 @@ local RadioButton						= require("cp.ui.RadioButton")
 local Panel                             = require("cp.apple.finalcutpro.prefs.Panel")
 local Do, If                            = go.Do, go.If
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ImportPanel = {}
 ImportPanel.mt = setmetatable({}, Panel.mt)
 ImportPanel.mt.__index = ImportPanel.mt

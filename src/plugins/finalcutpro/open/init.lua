@@ -7,11 +7,7 @@ local require = require
 local fcp           = require("cp.apple.finalcutpro")
 local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.open.app() -> none
@@ -41,11 +37,7 @@ function mod.commandEditor()
     fcp:commandEditor():show()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.open",
     group = "finalcutpro",

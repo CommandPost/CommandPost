@@ -11,11 +11,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 
 local doUntil                           = timer.doUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.browser.duration.changeBrowserDurationAlreadyInProgress -> boolean
@@ -97,11 +93,7 @@ function mod.changeBrowserDuration(direction)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.browser.duration",
     group = "finalcutpro",

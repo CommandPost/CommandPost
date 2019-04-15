@@ -18,11 +18,7 @@ local moses         = require "moses"
 local fileToTable   = plist.fileToTable
 local mergeTable    = tools.mergeTable
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- PREFERENCES_PATH -> string

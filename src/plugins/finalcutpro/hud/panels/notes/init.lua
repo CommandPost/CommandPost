@@ -14,11 +14,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- FILENAME -> string
@@ -158,11 +154,7 @@ local function updateWatchers(enabled)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.notes",
     group           = "finalcutpro",

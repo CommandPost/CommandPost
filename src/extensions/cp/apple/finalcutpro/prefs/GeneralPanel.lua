@@ -12,11 +12,7 @@ local just					= require("cp.just")
 
 local Panel                 = require("cp.apple.finalcutpro.prefs.Panel")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local GeneralPanel = {}
 GeneralPanel.mt = setmetatable({}, Panel.mt)
 GeneralPanel.mt.__index = GeneralPanel.mt

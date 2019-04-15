@@ -17,11 +17,7 @@ local i18n                      = require("cp.i18n")
 local doEvery                   = timer.doEvery
 local volume                    = fs.volume
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.import.ignorecard.start() -> none
@@ -116,11 +112,7 @@ end
 --- Toggles the Ignore Card Plugin
 mod.enabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.import.ignorecard",
     group           = "finalcutpro",

@@ -16,11 +16,7 @@ local just              = require("cp.just")
 
 local doAfter           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- plugins.finalcutpro.timeline.generators._cache <cp.prop: table>
@@ -345,11 +341,7 @@ function mod.apply(action)
     return true
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.generators",
     group = "finalcutpro",

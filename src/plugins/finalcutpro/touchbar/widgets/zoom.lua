@@ -11,11 +11,7 @@ local i18n              = require("cp.i18n")
 
 local touchbar          = require("hs._asm.undocumented.touchbar")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.touchbar.widgets.zoom.widget() -> `hs._asm.undocumented.touchbar.item`
@@ -137,11 +133,7 @@ function mod.init(deps)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.touchbar.widgets.zoom",
     group           = "finalcutpro",

@@ -7,11 +7,7 @@ local hs = hs
 
 local i18n = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.updates.toggleCheckForUpdates() -> nil
@@ -46,11 +42,7 @@ function mod.checkForUpdates()
     hs.checkForUpdates()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.updates",
     group           = "core",

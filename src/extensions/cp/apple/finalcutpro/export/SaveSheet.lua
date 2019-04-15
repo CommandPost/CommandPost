@@ -10,11 +10,7 @@ local prop                          = require("cp.prop")
 local ReplaceAlert                  = require("cp.apple.finalcutpro.export.ReplaceAlert")
 local TextField                     = require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local SaveSheet = {}
 
 --- cp.apple.finalcutpro.export.SaveSheet.matches(element) -> boolean

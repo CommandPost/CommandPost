@@ -3,18 +3,14 @@
 --- An `action` which will execute a command with matching group/id values.
 --- Registers itself with the `core.action.manager`.
 
-local require = require
+local require           = require
 
-local dialog            = require("cp.dialog")
-local i18n              = require("cp.i18n")
+local dialog            = require "cp.dialog"
+local i18n              = require "cp.i18n"
 
+local displayMessage    = dialog.displayMessage
 local format            = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- ID -> string
@@ -115,7 +111,7 @@ function mod.onExecute(action)
             --------------------------------------------------------------------------------
             -- No command ID provided:
             --------------------------------------------------------------------------------
-            dialog.displayMessage(i18n("cmdIdMissingError"))
+            displayMessage(i18n("cmdIdMissingError"))
             return false
         end
         local cmd = group:get(cmdId)
@@ -123,16 +119,15 @@ function mod.onExecute(action)
             --------------------------------------------------------------------------------
             -- No matching command:
             --------------------------------------------------------------------------------
-            dialog.displayMessage(i18n("cmdDoesNotExistError"), {id = cmdId})
+            displayMessage(i18n("cmdDoesNotExistError", {id = cmdId}))
             return false
         end
-
         --------------------------------------------------------------------------------
         -- Ensure the command group is active:
         --------------------------------------------------------------------------------
         group:activate(
-            function() cmd:activated() end,
-            function() dialog.displayMessage(i18n("cmdGroupNotActivated"), {id = group.id}) end
+            function() cmd:pressed() end,
+            function() displayMessage(i18n("cmdGroupNotActivated", {id = group.id})) end
         )
         return true
     end
@@ -152,11 +147,7 @@ function mod.reset()
     mod._handler:reset()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.commands.actions",
     group           = "finalcutpro",

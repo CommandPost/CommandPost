@@ -17,11 +17,7 @@ local TextField         = require "cp.ui.TextField"
 
 local childMatching     = axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Table = Element:subclass("cp.ui.Table")
 
 --- cp.ui.Table.is(thing) -> boolean

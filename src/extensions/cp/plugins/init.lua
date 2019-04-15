@@ -162,11 +162,7 @@ local tools                         = require("cp.tools")
 
 local doAfter                       = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- SLOW_PLUGIN_WARNING_THRESHOLD -> number

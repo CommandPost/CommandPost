@@ -13,11 +13,7 @@ local Window                        = require("cp.ui.Window")
 local cache                         = axutils.cache
 local childWith                     = axutils.childWith
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local MediaImport = {}
 
 -- _findWindowUI(windows) -> hs._asm.axuielementObject | nil

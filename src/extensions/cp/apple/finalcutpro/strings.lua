@@ -20,11 +20,7 @@ local v                     = require("semver")
 
 local insert, sort          = table.insert, table.sort
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 local extraPath = config.scriptPath .. "/cp/apple/finalcutpro/strings/"

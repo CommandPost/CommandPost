@@ -58,11 +58,7 @@ local hasAttributeValue                 = axutils.hasAttributeValue
 local hasProperties                     = IP.hasProperties
 local section                           = IP.section
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ShareInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.ShareInspector")
 
 --- cp.apple.finalcutpro.inspector.share.ShareInspector.matches(element)

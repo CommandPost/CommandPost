@@ -15,11 +15,7 @@ local setmetatable	 	     = setmetatable
 
 local isFunction, isList	 = is.fn, is.list
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local block = {}
 block.__index = block
 

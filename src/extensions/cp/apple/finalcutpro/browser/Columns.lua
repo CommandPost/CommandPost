@@ -19,11 +19,7 @@ local Menu                      = require("cp.ui.Menu")
 local systemElementAtPosition   = ax.systemElementAtPosition
 local childWithRole             = axutils.childWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Columns = Element:subclass("cp.apple.finalcutpro.browser.Columns")
 
 --- cp.apple.finalcutpro.browser.Columns(parent) -> Columns

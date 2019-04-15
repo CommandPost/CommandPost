@@ -24,11 +24,7 @@ local _             = require("moses")
 local doAfter       = timer.doAfter
 local waitUntil     = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.watchfolders.manager.WEBVIEW_LABEL -> string
@@ -532,11 +528,7 @@ function mod.init(env)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.watchfolders.manager",
     group           = "core",

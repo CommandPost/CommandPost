@@ -46,11 +46,7 @@ local printf                    = hs.printf
 local processInfo               = hs.processInfo
 local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local app = class("app"):include(lazy)
 
 -- COMMANDPOST_BUNDLE_ID -> string

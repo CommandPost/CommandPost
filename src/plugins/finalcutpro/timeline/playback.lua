@@ -6,11 +6,7 @@ local require = require
 
 local fcp	= require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.playback.play() -> none
@@ -43,11 +39,7 @@ function mod.pause()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.playback",
     group = "finalcutpro",

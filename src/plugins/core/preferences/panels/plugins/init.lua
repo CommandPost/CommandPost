@@ -16,11 +16,7 @@ local plugins   = require("cp.plugins")
 local tools     = require("cp.tools")
 local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.panels.plugins.SETTINGS_DISABLED
@@ -273,11 +269,7 @@ function mod.init(deps, env)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.plugins",
     group           = "core",

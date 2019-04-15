@@ -23,11 +23,7 @@ local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 local childrenWithRole                  = axutils.childrenWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 
 --- cp.apple.finalcutpro.timeline.Timeline.matches(element) -> boolean
