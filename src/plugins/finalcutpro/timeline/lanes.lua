@@ -10,11 +10,7 @@ local fcp								= require("cp.apple.finalcutpro")
 local tools							= require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- MAX_LANES -> number
@@ -59,11 +55,7 @@ function mod.selectClipAtLane(whichLane)
     return true
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.lanes",
     group = "finalcutpro",

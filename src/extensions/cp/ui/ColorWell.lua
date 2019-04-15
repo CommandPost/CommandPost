@@ -6,11 +6,7 @@ local require = require
 
 local Element = require("cp.ui.Element")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 
 --- cp.ui.ColorWell(parent, uiFinder) -> Image
 --- Constructor

@@ -20,11 +20,7 @@ local CheckBox							= require("cp.ui.CheckBox")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local EffectsBrowser = {}
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.EFFECTS -> string

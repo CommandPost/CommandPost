@@ -16,11 +16,7 @@ local Button							= require("cp.ui.Button")
 local Do                                = require("cp.rx.go.Do")
 local If                                = require("cp.rx.go.If")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorWheel = Element:subclass("ColorWheel")
 
 function ColorWheel.__tostring()

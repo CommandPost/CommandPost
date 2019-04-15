@@ -9,11 +9,7 @@ local log       = require("hs.logger").new("soloclip")
 local fcp       = require("cp.apple.finalcutpro")
 local tools     = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.soloclip",
     group           = "finalcutpro",

@@ -16,11 +16,7 @@ local tools         = require("cp.tools")
 local execute       = hs.execute
 local trim          = tools.trim
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finder.preferences.powerchime",
     group           = "finder",

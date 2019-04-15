@@ -11,11 +11,7 @@ local i18n          = require("cp.i18n")
 
 local insert        = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.language.change(locale) -> none
@@ -79,11 +75,7 @@ local function getFinalCutProLanguagesMenu()
     return result
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.language",
     group = "finalcutpro",

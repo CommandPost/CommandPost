@@ -115,11 +115,7 @@ local insert                                    = table.insert
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local fcp = class("finalcutpro"):include(lazy)
 
 function fcp:initialize()

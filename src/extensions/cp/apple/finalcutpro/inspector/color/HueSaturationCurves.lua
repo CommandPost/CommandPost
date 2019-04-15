@@ -31,19 +31,10 @@ local HueSaturationCurve                = require("cp.apple.finalcutpro.inspecto
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
 
 local CORRECTION_TYPE                   = "Hue/Saturation Curves"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local HueSaturationCurves = Element:subclass("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.matches(element)

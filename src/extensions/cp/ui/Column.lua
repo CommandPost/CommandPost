@@ -5,11 +5,7 @@
 local axutils	                = require "cp.ui.axutils"
 local Element	                = require "cp.ui.Element"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Column = Element:subclass("cp.ui.Column")
 
 --- cp.ui.Column.matches(element) -> boolean

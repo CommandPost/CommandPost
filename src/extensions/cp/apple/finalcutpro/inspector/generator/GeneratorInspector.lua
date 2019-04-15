@@ -8,11 +8,7 @@ local require = require
 
 local BaseMotionPanel                       = require("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local GeneratorInspector = BaseMotionPanel:subclass("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
 
 --- cp.apple.finalcutpro.inspector.generator.GeneratorInspector(parent) -> GeneratorInspector object

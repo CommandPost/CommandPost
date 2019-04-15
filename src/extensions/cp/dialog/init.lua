@@ -21,11 +21,7 @@ local config                                    = require("cp.config")
 local Do                                        = require("cp.rx.go.Do")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local dialog = {}
 
 -- as(appleScript) -> object

@@ -16,11 +16,7 @@ local event                             = eventtap.event
 local Given, Require, Retry             = go.Given, go.Require, go.Retry
 local map                               = keycodes.map
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.timeline.captions.doPasteTextAsCaption() -> cp.rx.go.Statement
@@ -69,11 +65,7 @@ function mod.doPasteTextAsCaption()
     end)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.captions",
     group = "finalcutpro",

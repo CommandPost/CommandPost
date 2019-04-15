@@ -15,11 +15,7 @@ local If, Do, Throw, WaitUntil  = go.If, go.Do, go.Throw, go.WaitUntil
 
 local format = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorBoardAspect = Element:subclass("ColorBoardAspect")
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.ids -> table

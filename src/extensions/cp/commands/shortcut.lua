@@ -13,11 +13,7 @@ local englishKeyCodes				 = require("cp.commands.englishKeyCodes")
 
 local prop									 = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 
 -- The shortcut class
 local shortcut = {}

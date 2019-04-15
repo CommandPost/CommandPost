@@ -21,11 +21,7 @@ local textField, staticText, menuButton = IP.textField, IP.staticText, IP.menuBu
 local childrenWithRole, childWithRole   = axutils.childrenWithRole, axutils.childWithRole
 local withRole, withAttributeValue      = axutils.withRole, axutils.withAttributeValue
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local InfoInspector = BasePanel:subclass("InfoInspector")
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector.metadataViews -> table

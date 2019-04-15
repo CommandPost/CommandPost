@@ -17,11 +17,7 @@ local childFromRight                    = axutils.childFromRight
 local childFromTop                      = axutils.childFromTop
 local childMatching                     = axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Appearance = {}
 
 --- cp.apple.finalcutpro.timeline.Appearance.matches(element) -> boolean

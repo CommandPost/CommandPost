@@ -33,11 +33,7 @@ local just                      = require("cp.just")
 local tools                     = require("cp.tools")
 local i18n                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.browser.pasteboardtomarkers.process() -> nil
@@ -316,11 +312,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id                = "finalcutpro.browser.pasteboardtomarkers",
     group            = "finalcutpro",

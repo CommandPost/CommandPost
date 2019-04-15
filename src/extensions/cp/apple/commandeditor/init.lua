@@ -11,11 +11,7 @@ local fnutils               = require("hs.fnutils")
 local shortcut						  = require("cp.commands.shortcut")
 local tools									= require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.apple.commandeditor.padKeys -> table

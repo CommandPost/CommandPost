@@ -9,11 +9,7 @@ local tools                                     = require("cp.tools")
 local insert                                    = table.insert
 local tableContains                             = tools.tableContains
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- plugins.core.touchbar.manager.widgets._items -> table

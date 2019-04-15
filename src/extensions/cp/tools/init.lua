@@ -26,11 +26,7 @@ local insert                                    = table.insert
 local locale                                    = host.locale
 local usleep                                    = timer.usleep
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local tools = {}
 
 -- LEFT_MOUSE_DOWN -> number

@@ -10,11 +10,7 @@ local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.tangent.view.group
@@ -73,11 +69,7 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"View", "Show in Event Viewer", "Video Scopes"}))
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.view",
     group = "finalcutpro",

@@ -12,11 +12,7 @@ local i18n      = require("cp.i18n")
 
 local section		= require("section")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local manager = {}
 
 --- plugins.core.menu.manager.rootSection() -> section
@@ -183,11 +179,7 @@ function manager.generateMenuTable()
     return manager.rootSection:generateMenuTable()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id			= "core.menu.manager",
     group		= "core",

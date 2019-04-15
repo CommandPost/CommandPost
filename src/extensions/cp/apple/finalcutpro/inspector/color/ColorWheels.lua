@@ -28,19 +28,10 @@ local childMatching, cache              = axutils.childMatching, axutils.cache
 local toRegionalNumber                  = tools.toRegionalNumber
 local toRegionalNumberString            = tools.toRegionalNumberString
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
 
 local CORRECTION_TYPE                   = "Color Wheels"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorWheels = Element:subclass("ColorWheels")
 
 function ColorWheels.__tostring()

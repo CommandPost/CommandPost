@@ -27,11 +27,7 @@ local go                                = require("cp.rx.go")
 local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
 local Given, Done                       = go.Given, go.Done
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Inspector = Element:subclass("Inspector")
 
 function Inspector.__tostring()

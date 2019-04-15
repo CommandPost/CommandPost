@@ -2,11 +2,7 @@
 ---
 --- Utility function for protecting a table from being modified.
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local function protect(tbl)
     return setmetatable({}, {
         __index			= tbl,

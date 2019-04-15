@@ -11,11 +11,7 @@ local hints                 = require("hs.hints")
 local mouse                 = require("hs.mouse")
 local window                = require("hs.window")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finder.window.grid() -> nil
@@ -266,11 +262,7 @@ function mod.moveCurrentWindowToScreen(value)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finder.window",
     group           = "finder",

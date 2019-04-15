@@ -29,11 +29,7 @@ local insert            = table.insert
 -- the FCP copy/leave in place preference
 local copyMedia = fcp.app.preferences:prop("FFImportCopyToMediaFolder", true)
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local MediaFolder = {}
 MediaFolder.mt = {}
 MediaFolder.mt.__index = MediaFolder.mt

@@ -33,11 +33,7 @@ local childWithRole                     = axutils.childWithRole
 local topToBottom                       = axutils.compareTopToBottom
 local delayedTimer                      = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Viewer = Group:subclass("cp.apple.finalcutpro.viewer.Viewer")
 
 -- PLAYER_QUALITY -> table

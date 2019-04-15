@@ -12,11 +12,7 @@ local panel             = require("panel")
 
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- The storage for the media folders.
@@ -146,11 +142,7 @@ function mod.init(deps)
     mod.pasteboardManager = deps.pasteboardManager
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.watchfolders.media",
     group = "finalcutpro",

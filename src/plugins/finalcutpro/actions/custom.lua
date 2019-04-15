@@ -13,11 +13,7 @@ local prop          = require("cp.prop")
 local tools         = require("cp.tools")
 local i18n          = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- MAXIMUM -> number
@@ -129,11 +125,7 @@ function mod.assign(id, completionFn)
     activator:show()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.actions.custom",
     group = "finalcutpro",

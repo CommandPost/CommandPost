@@ -10,11 +10,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- shiftPressed() -> boolean
@@ -373,11 +369,7 @@ function mod.init(deps)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.midi.controls.video",
     group           = "finalcutpro",

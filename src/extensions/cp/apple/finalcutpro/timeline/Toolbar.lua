@@ -18,11 +18,7 @@ local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childMatching                     = axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Toolbar = Group:subclass("cp.apple.finalcutpro.timeline.Toolbar")
 
 --- cp.apple.finalcutpro.timeline.Toolbar.matches(element) -> boolean

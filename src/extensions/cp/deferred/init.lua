@@ -24,11 +24,7 @@ local is                = require("cp.is")
 local isntCallable      = is.nt.callable
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

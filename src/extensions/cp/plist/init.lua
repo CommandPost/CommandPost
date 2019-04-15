@@ -11,11 +11,7 @@ local fs            = require("hs.fs")
 local plistParse    = require("cp.plist.plistParse")
 local tools         = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local plist = {}
 
 plist.log = log

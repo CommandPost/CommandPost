@@ -10,11 +10,7 @@ local Element                   = require "cp.ui.Element"
 
 local If                        = go.If
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TextField = Element:subclass("cp.ui.TextField")
 
 --- cp.ui.TextField.matches(element[, subrole]) -> boolean

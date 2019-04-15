@@ -7,11 +7,7 @@ local require = require
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.midi.manager.ID -> string
@@ -43,11 +39,7 @@ mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.midi.manager",
     group = "finalcutpro",

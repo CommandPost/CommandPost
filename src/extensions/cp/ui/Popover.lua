@@ -6,11 +6,7 @@ local require = require
 
 local Element = require("cp.ui.Element")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Popover = Element:subclass("cp.ui.Popover")
 
 --- cp.ui.Popover.matches(element) -> boolean

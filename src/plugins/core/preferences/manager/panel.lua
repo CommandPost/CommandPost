@@ -11,11 +11,7 @@ local ui      = require("cp.web.ui")
 
 local uuid    = host.uuid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local panel = {}
 
 --- plugins.core.preferences.manager.panel.new(priority, id) -> cp.core.preferences.manager.panel

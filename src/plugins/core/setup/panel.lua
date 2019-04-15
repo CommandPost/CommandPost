@@ -11,11 +11,7 @@ local ui      = require("cp.web.ui")
 
 local uuid    = host.uuid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local panel = {}
 
 --- plugins.core.setup.panel.WEBVIEW_LABEL -> string

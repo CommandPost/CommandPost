@@ -34,11 +34,7 @@ local execute               = hs.execute
 local plist                 = require("cp.plist")
 local isBlank               = require("cp.is").blank
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- EXCLUDED_CONTENT -> table

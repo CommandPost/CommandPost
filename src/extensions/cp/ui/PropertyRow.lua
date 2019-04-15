@@ -20,11 +20,7 @@ local format            = string.format
 local childMatching     = axutils.childMatching
 local childrenMatching  = axutils.childrenMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PropertyRow = Element:subclass("PropertyRow")
 
 -- UI_FINDER -> table

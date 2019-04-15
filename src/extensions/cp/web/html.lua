@@ -46,11 +46,7 @@ local template 			  = require "resty.template"
 
 local htmlEscape			= template.escape
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local html = {}
 
 --- cp.web.html.is(value) -> boolean

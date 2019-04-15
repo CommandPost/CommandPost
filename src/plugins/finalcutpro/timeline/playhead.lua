@@ -11,11 +11,7 @@ local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 local viewer = fcp:viewer()
@@ -99,11 +95,7 @@ mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):AND(contents.isShowin
     end
 end, true)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.playhead",
     group = "finalcutpro",

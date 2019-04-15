@@ -7,11 +7,7 @@ local require = require
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- updateStatus(enabled) -> none
@@ -46,11 +42,7 @@ mod.enabled = config.prop("enableTouchBar", false):watch(function(enabled)
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.touchbar.manager",
     group = "finalcutpro",

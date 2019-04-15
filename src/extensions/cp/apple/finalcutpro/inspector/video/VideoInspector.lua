@@ -57,11 +57,7 @@ local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy,
 local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
 local withValue, childMatching          = axutils.withValue, axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local VideoInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
 local function findContentUI(rootUI)

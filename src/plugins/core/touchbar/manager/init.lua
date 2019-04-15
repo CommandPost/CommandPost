@@ -24,11 +24,7 @@ local touchbar                                  = require("hs._asm.undocumented.
 local widgets                                   = require("widgets")
 local copy                                      = fnutils.copy
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.touchbar.manager.DEFAULT_GROUP -> string
@@ -858,11 +854,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id          = "core.touchbar.manager",
     group       = "core",

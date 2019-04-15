@@ -14,11 +14,7 @@ local i18n                  = require("cp.i18n")
 
 local delayed               = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.timeline",
     group = "finalcutpro",

@@ -12,11 +12,7 @@ local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.notifications.imessage.update() -> none
@@ -84,11 +80,7 @@ function mod.init(notifications)
     mod.update()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.notifications.imessage",
     group = "finalcutpro",

@@ -6,11 +6,7 @@ local require = require
 
 local tools = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- plugins.core.midi.manager.controls._items -> table

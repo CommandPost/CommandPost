@@ -12,11 +12,7 @@ local prop								= require("cp.prop")
 local Button							= require("cp.ui.Button")
 local CheckBox							= require("cp.ui.CheckBox")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PrimaryToolbar = {}
 
 --- cp.apple.finalcutpro.main.PrimaryToolbar.matches(element) -> boolean

@@ -8,11 +8,7 @@ local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.menu.proxyicon.usingProxies -> <cp.prop: boolean>
@@ -70,11 +66,7 @@ function mod.init(menuManager)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.menu.proxyicon",
     group           = "finalcutpro",

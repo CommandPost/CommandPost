@@ -10,11 +10,7 @@ local i18n                              = require("cp.i18n")
 local Do                                = require("cp.rx.go.Do")
 local Throw                             = require("cp.rx.go.Throw")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- MAX_ANGLES -> number
@@ -60,11 +56,7 @@ function mod.doCutAndSwitchMulticam(whichMode, whichAngle)
     return Do(fcp:doLaunch()):Then(cut):Then(switch)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.multicam",
     group = "finalcutpro",

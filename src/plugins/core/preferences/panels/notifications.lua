@@ -9,11 +9,7 @@ local image     = require("hs.image")
 local tools     = require("cp.tools")
 local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.notifications",
     group           = "core",

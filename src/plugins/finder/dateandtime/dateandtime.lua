@@ -6,11 +6,7 @@ local require = require
 
 local eventtap = require("hs.eventtap")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finder.dateandtime",
     group           = "finder",

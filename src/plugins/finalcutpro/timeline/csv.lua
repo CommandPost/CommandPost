@@ -13,11 +13,7 @@ local dialog            = require "cp.dialog"
 
 local playErrorSound    = tools.playErrorSound
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.csv",
     group = "finalcutpro",

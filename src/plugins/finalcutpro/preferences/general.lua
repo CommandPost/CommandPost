@@ -7,11 +7,7 @@ local require = require
 local html                      = require("cp.web.html")
 local i18n                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.preferences.general",
     group           = "finalcutpro",

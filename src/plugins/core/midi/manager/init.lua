@@ -21,11 +21,7 @@ local default     = require("default")
 
 local doAfter     = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.midi.manager.DEFAULT_GROUP -> string
@@ -684,11 +680,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id          = "core.midi.manager",
     group       = "core",

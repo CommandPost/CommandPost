@@ -35,19 +35,10 @@ local ColorCurve                        = require("cp.apple.finalcutpro.inspecto
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
 
 local CORRECTION_TYPE                   = "Color Curves"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorCurves = Element:subclass("ColorCurves")
 
 function ColorCurves.__tostring()

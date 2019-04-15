@@ -22,11 +22,7 @@ local cfprefs               = require("hs._asm.cfpreferences")
 local pathwatcher			      = require("hs.pathwatcher")
 local prop                  = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 

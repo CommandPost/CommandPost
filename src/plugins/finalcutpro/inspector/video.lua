@@ -247,11 +247,7 @@ local function doRollingShutterAmount(value)
     :Label("video.doRollingShutterAmount")
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.inspector.video",
     group           = "finalcutpro",
@@ -346,7 +342,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position:
     --------------------------------------------------------------------------------
-    local shiftAmounts = {1, 5, 10}
+    local shiftAmounts = {0.1, 1, 5, 10}
     local shiftXPosition = function(value)
         local position = fcp:inspector():video():transform():position()
         position:show()
@@ -362,26 +358,26 @@ function plugin.init(deps)
     end
 
     for _, shiftAmount in pairs(shiftAmounts) do
-        fcpxCmds:add("xPositionLeft" .. shiftAmount)
-            :titled(i18n("shiftXPositionLeftPixels", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftPositionLeftPixels" .. shiftAmount  .. "Pixels")
+            :titled(i18n("shiftPositionLeftPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftXPosition(shiftAmount * -1) end)
             :whenRepeated(function() shiftXPosition(shiftAmount * -1) end)
 
-        fcpxCmds:add("xPositionRight" .. shiftAmount)
-            :titled(i18n("shiftXPositionRightPixels", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftPositionRightPixels" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftPositionRightPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftXPosition(shiftAmount) end)
             :whenRepeated(function() shiftXPosition(shiftAmount) end)
 
-        fcpxCmds:add("yPositionUp" .. shiftAmount)
-            :titled(i18n("shiftYPositionUpPixels", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftPositionUp" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftPositionUpPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftYPosition(shiftAmount) end)
             :whenRepeated(function() shiftYPosition(shiftAmount) end)
 
-        fcpxCmds:add("yPositionDown" .. shiftAmount)
-            :titled(i18n("shiftYPositionDownPixels", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftPositionDown" .. shiftAmount .. "Pixels")
+            :titled(i18n("shiftPositionDownPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftYPosition(shiftAmount * -1) end)
             :whenRepeated(function() shiftYPosition(shiftAmount * -1) end)
@@ -398,14 +394,14 @@ function plugin.init(deps)
         scaleAll:value(original + value)
     end
     for _, shiftAmount in pairs(shiftAmounts) do
-        fcpxCmds:add("shiftRotationUp" .. shiftAmount)
-            :titled(i18n("shiftRotationUp", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftScaleUp" .. shiftAmount)
+            :titled(i18n("shiftScaleUp", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftScale(shiftAmount) end)
             :whenRepeated(function() shiftScale(shiftAmount) end)
 
-        fcpxCmds:add("shiftRotationDown" .. shiftAmount)
-            :titled(i18n("shiftRotationDown", {amount=shiftAmount, count=shiftAmount}))
+        fcpxCmds:add("shiftScaleDown" .. shiftAmount)
+            :titled(i18n("shiftScaleDown", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftScale(shiftAmount * -1) end)
             :whenRepeated(function() shiftScale(shiftAmount * -1) end)

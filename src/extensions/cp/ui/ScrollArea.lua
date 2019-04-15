@@ -8,11 +8,7 @@ local axutils       = require("cp.ui.axutils")
 local Element       = require("cp.ui.Element")
 local ScrollBar     = require("cp.ui.ScrollBar")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ScrollArea = Element:subclass("cp.ui.ScrollArea")
 
 --- cp.ui.ScrollArea.matches(element) -> boolean

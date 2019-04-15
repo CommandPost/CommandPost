@@ -24,11 +24,7 @@ local panel         = require "panel"
 
 local doUntil       = just.doUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.export.batch.manager.WEBVIEW_LABEL -> string
@@ -550,11 +546,7 @@ function mod.addPanel(params)
     return newPanel
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.export.batch.manager",
     group           = "finalcutpro",

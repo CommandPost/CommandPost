@@ -15,11 +15,7 @@ local i18n              = require("cp.i18n")
 local execute           = hs.execute
 local allowAppleScript  = hs.allowAppleScript
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- updatePreferences() -> none
@@ -73,11 +69,7 @@ local function toggleCommandLineTool()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "core.preferences.advanced",
     group			= "core",

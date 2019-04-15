@@ -21,11 +21,7 @@ local copy		        = fnutils.copy
 local format	        = string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {
     _actions	= {},
     _actionIds	= {},
@@ -223,11 +219,7 @@ function mod.getActivator(activatorId)
     return a
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "core.action.manager",
     group			= "core",

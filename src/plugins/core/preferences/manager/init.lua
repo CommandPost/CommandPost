@@ -24,11 +24,7 @@ local panel       = require("panel")
 
 local waitUntil   = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.manager.WEBVIEW_LABEL -> string
@@ -560,11 +556,7 @@ function mod.addPanel(params)
     return newPanel
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.manager",
     group           = "core",

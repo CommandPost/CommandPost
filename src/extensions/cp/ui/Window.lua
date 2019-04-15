@@ -21,11 +21,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
 local format                        = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Window = class("cp.ui.Window"):include(lazy)
 
 --- cp.ui.Window.matches(element) -> boolean

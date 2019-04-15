@@ -8,11 +8,7 @@ local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 local Window						= require("cp.ui.Window")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local FullScreenWindow = {}
 
 -- _findWindowUI(windows) -> window | nil

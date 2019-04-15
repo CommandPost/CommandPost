@@ -42,11 +42,7 @@ local wait                  = just.wait
 local imageFromPath         = image.imageFromPath
 local insert                = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.export.batch.DEFAULT_CUSTOM_FILENAME -> string
@@ -881,11 +877,7 @@ local function nextID()
     return mod._nextID
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.export.batch",
     group           = "finalcutpro",

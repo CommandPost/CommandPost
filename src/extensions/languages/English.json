@@ -1371,27 +1371,27 @@
             "one": "Shift Rotation Right by %{amount} Degree",
             "other": "Shift Rotation Right by %{amount} Degrees"
         },
-        "shiftScaleLeft": {
+        "shiftScaleUp": {
             "one": "Shift Scale Up by %{amount} Pixel",
             "other": "Shift Scale Up by %{amount} Pixels"
         },
-        "shiftScaleRight": {
+        "shiftScaleDown": {
             "one": "Shift Scale Down by %{amount} Pixel",
             "other": "Shift Scale Down by %{amount} Pixels"
         },
-        "shiftXPositionLeftPixels": {
+        "shiftPositionLeftPixels": {
             "one": "Shift Position Left %{amount} Pixel",
             "other": "Shift Position Left %{amount} Pixels"
         },
-        "shiftXPositionRightPixels": {
+        "shiftPositionRightPixels": {
             "one": "Shift Position Right %{amount} Pixel",
             "other": "Shift Position Right %{amount} Pixels"
         },
-        "shiftYPositionDownPixels": {
+        "shiftPositionDownPixels": {
             "one": "Shift Position Down %{amount} Pixel",
             "other": "Shift Position Down %{amount} Pixels"
         },
-        "shiftYPositionUpPixels": {
+        "shiftPositionUpPixels": {
             "one": "Shift Position Up %{amount} Pixel",
             "other": "Shift Position Up %{amount} Pixels"
         },

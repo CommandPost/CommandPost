@@ -19,11 +19,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 local dialog                            = require("cp.dialog")
 local i18n                              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.browser.addnote.recentNotes <cp.prop: table>
@@ -231,11 +227,7 @@ function mod.addNoteToSelectedClip()
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.addnote",
     group           = "finalcutpro",

@@ -14,11 +14,7 @@ local i18n                                      = require("cp.i18n")
 local config                                    = require("cp.config")
 local ui                                        = require("cp.web.ui")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.notifications.pushover.userAPIKey <cp.prop: string>
@@ -167,11 +163,7 @@ function mod.sendNotification(message, optionalTitle)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.notifications.pushover",
     group = "finalcutpro",

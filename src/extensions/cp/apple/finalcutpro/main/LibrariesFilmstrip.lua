@@ -15,11 +15,7 @@ local cache                             = axutils.cache
 local isValid                           = axutils.isValid
 local childrenMatching                  = axutils.childrenMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local LibrariesFilmstrip = {}
 
 --- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean

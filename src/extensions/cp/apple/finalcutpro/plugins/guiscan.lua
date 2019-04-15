@@ -17,11 +17,7 @@ local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
 local plugins               = require("cp.apple.finalcutpro.plugins")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- scanVideoEffects() -> table

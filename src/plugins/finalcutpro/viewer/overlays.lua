@@ -30,11 +30,7 @@ local capslock          = hid.capslock
 local doAfter           = timer.doAfter
 local events            = eventtap.event.types
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- STILLS_FOLDER -> string
@@ -1439,11 +1435,7 @@ local function contextualMenu(event)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.viewer.overlays",
     group           = "finalcutpro",

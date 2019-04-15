@@ -20,11 +20,7 @@ local i18n        = require("cp.i18n")
 
 local _           = require("moses")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.panels.shortcuts.DEFAULT_SHORTCUTS -> string
@@ -682,11 +678,7 @@ function mod.getGroupEditor(groupId)
     return mod._groupEditors and mod._groupEditors[groupId]
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.shortcuts",
     group           = "core",

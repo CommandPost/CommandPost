@@ -6,11 +6,7 @@ local require = require
 
 local fcp                               = require("cp.apple.finalcutpro")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.colorwheels",
     group = "finalcutpro",

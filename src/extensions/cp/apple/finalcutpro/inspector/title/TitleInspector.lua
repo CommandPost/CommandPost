@@ -10,11 +10,7 @@ local require = require
 
 local BaseMotionPanel                   = require("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TitleInspector = BaseMotionPanel:subclass("cp.apple.finalcutpro.inspector.title.TitleInspector")
 
 --- cp.apple.finalcutpro.inspector.title.TitleInspector(parent) -> cp.apple.finalcutpro.inspector.title.TitleInspector

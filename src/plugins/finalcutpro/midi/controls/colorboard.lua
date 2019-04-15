@@ -15,11 +15,7 @@ local i18n              = require("cp.i18n")
 
 local upper, format     = string.upper, string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- shiftPressed() -> boolean
@@ -203,11 +199,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.midi.controls.color",
     group           = "finalcutpro",

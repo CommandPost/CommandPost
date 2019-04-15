@@ -12,11 +12,7 @@ local config						  = require("cp.config")
 
 local template						= require("resty.template")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local env = {}
 
 -- Disable template caching

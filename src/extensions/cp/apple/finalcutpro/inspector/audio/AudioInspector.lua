@@ -63,11 +63,7 @@ local withRole, childWithRole                       = axutils.withRole, axutils.
 local hasProperties, simple                         = IP.hasProperties, IP.simple
 local section, slider, numberField, popUpButton     = IP.section, IP.slider, IP.numberField, IP.popUpButton
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local AudioInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector.matches(element)

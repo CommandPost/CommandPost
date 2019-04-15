@@ -22,11 +22,7 @@ local popUpButton                       = IP.popUpButton
 local section                           = IP.section
 local slider                            = IP.slider
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TransitionInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 
 local function findContentUI(element)

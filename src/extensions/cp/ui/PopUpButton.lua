@@ -10,11 +10,7 @@ local go                            = require("cp.rx.go")
 
 local If, WaitUntil                 = go.If, go.WaitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PopUpButton = Element:subclass("cp.ui.PopUpButton")
 
 -- TIMEOUT_AFTER -> number

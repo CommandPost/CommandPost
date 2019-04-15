@@ -24,11 +24,7 @@ local Do, Throw                             = go.Do, go.Throw
 
 local doAfter                               = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ColorPuck = Element:subclass("ColorPuck")
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.RANGE -> table

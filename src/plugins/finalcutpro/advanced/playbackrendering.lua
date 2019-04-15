@@ -7,11 +7,7 @@ local require = require
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.advanced.playbackrendering.enabled <cp.prop: boolean>
@@ -19,11 +15,7 @@ local mod = {}
 --- Gets whether or not Playback Rendering is enabled.
 mod.enabled = fcp.preferences:prop("FFSuspendBGOpsDuringPlay", true)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.advanced.playbackrendering",
     group           = "finalcutpro",

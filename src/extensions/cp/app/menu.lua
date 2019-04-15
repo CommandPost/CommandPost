@@ -21,11 +21,7 @@ local insert, remove, concat    = table.insert, table.remove, table.concat
 local Observable                = rx.Observable
 local Do, If, Throw, Last       = go.Do, go.If, go.Throw, go.Last
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local menu = {}
 menu.mt = {}
 

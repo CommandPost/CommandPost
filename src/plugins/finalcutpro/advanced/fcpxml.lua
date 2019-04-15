@@ -8,11 +8,7 @@ local fcp           = require("cp.apple.finalcutpro")
 local i18n          = require("cp.i18n")
 local prop          = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.advanced.fcpxml.importEnabled <cp.prop: boolean>
@@ -53,11 +49,7 @@ end, function(value)
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.advanced.fcpxml",
     group           = "finalcutpro",

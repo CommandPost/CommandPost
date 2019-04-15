@@ -18,11 +18,7 @@ local plist				= require("cp.plist")
 local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- GROUP -> string
@@ -103,11 +99,7 @@ function mod.init()
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.commandsetactions",
     group = "finalcutpro",
