@@ -37,7 +37,7 @@ Run.This.static.state = {
     done = "done",
 }
 
-local asyncTimeout = 60
+local asyncTimeout = 10
 
 --- cp.spec.Run.This.defaultTimeout([timeout]) -> number
 --- Function
@@ -66,13 +66,14 @@ end
 ---
 --- Returns:
 --- * The new `Run.This`.
-function Run.This:initialize(run, index)
+function Run.This:initialize(run, actionFn, index)
     assert(run ~= nil, "The Run must be provided.")
     assert(type(run) == "table", "The Run must be a Run instance.")
-    self.run = run
+    self._run = run
+    self._actionFn = actionFn
+    self._index = index
+    self._phase = run.phase
     self.shared = run.shared
-    self.index = index
-    self.currentPhase = run.phase
     self.state = Run.This.state.running
 end
 
@@ -98,15 +99,14 @@ end
 --- * If not provided, [Run.This.defaultTimeout()](cp.spec.Run.This.md#defaultTimeout) is used.
 function Run.This:wait(timeout)
     self.state = Run.This.state.waiting
-    self.timeout = timeout or Run.This.defaultTimeout()
+    timeout = timeout or Run.This.defaultTimeout()
 
-    if self.timeout then
-        self.timeoutTimer = timer.doAfter(self.timeout, function()
-            self.timeoutTimer = nil
-            local seconds = self.timeout == 1 and "second" or "seconds"
-            self:abort(format("Timed out after %d %s.", self.timeout, seconds))
+    if timeout then
+        self._run:timeoutAfter(timeout, function()
+            local seconds = timeout == 1 and "second" or "seconds"
+            self:abort(format("Timed out after %d %s.", timeout, seconds))
         end)
-        self.run.report:waiting(self.timeout)
+        self._run.report:waiting(timeout)
     end
 end
 
@@ -129,7 +129,7 @@ end
 --- * message   - the text message to output.
 --- * ...       - optional parameters, to be injected into the message, ala `string.format`.
 function Run.This:log(message, ...)
-    self.run:log(message, ...)
+    self._run:log(message, ...)
 end
 
 --- cp.spec.Run.This:done()
@@ -137,17 +137,20 @@ end
 --- Indicates that the test is completed.
 function Run.This:done()
     self:log("This: done")
-    self:_complete()
+    self.state = Run.This.state.done
+    self._run:_doPhaseAction(self._index + 1)
 end
 
 -- cp.spec.Run.This:_complete()
 -- Method
 -- Completes this run.
 function Run.This:_complete()
+    log.df("Run.This:_complete: index = %d", self.index)
     self:cleanup()
     if self:isActive() then
+        log.df("Run.This:_complete: is active...")
         self.state = Run.This.state.done
-        self.run:_doNextAction(self.index + 1)
+        self._run:_doPhaseAction(self.index + 1)
     end
 end
 
@@ -166,9 +169,7 @@ end
 --- * message   - The optional message to output.
 function Run.This:abort(message)
     self:log("This: abort: %s", message)
-    self.run.report:aborted(message)
-    self.run.result = Run.result.aborted
-    self:_complete()
+    self._run:_doAbort(message)
 end
 
 --- cp.spec.Run.This:fail([message])
@@ -179,9 +180,31 @@ end
 --- * message   - The optional message to output.
 function Run.This:fail(message)
     self:log("This: fail: %s", message)
-    self.run.report:failed(message)
-    self.run.result = Run.result.failed
-    self:_complete()
+    self._run:_doFail(message)
+end
+
+function Run.This:__call()
+    local ok, err = xpcall(function() self._actionFn(self) end, function(err)
+        -- if there's an error, make sure it's a Message.
+        if not Message.is(err) then
+            err = Message(err)
+        end
+        -- Then dump the traceback.
+        err:traceback()
+        -- then return it.
+        return err
+    end)
+
+    if ok ~= true and not Handled.is(err) then
+        -- there was an error, and is has not been handled already
+        self:log("Action #%d failed. Aborting...", index)
+        self:_doAbort(err)
+    elseif not this:isWaiting() then
+        self:log("Action #%d completed.", index)
+        self:_doPhaseAction(index + 1)
+    else
+        self:log("Action #%d is waiting...", index)
+    end
 end
 
 --- cp.spec.Run.This:prepare()
@@ -194,18 +217,16 @@ end
 --- Method
 --- Cleans up This after a step.
 function Run.This:cleanup()
-    if self.timeoutTimer then
-        self.timeoutTimer:stop()
-        self.timeoutTimer = nil
-    end
+    self._run:timeoutCancelled()
 end
 
+-- looks up the value from the shared data.
 function Run.This:__index(key)
     return self.shared[key]
 end
 
 function Run.This:__tostring()
-    return "This: " .. self.run
+    return format("This: %s: %s #%d", self._run, self._phase, self._index)
 end
 
 Run.Phase = class("cp.spec.Run.Phase")
@@ -311,12 +332,44 @@ function Run:initialize(name)
     self.result = nil
 
     -- set a timer to automatically start the run
-    self._currentTimer = timer.doAfter(0, function()
-        self._currentTimer = nil
+    self:_do(function()
         self.report:start()
         self.result = Run.result.running
         self:_doPhase(Run.phase.start)
     end)
+end
+
+function Run:_do(runFn)
+    self:_doCancelled()
+    self._runTimer = timer.doAfter(0, function()
+        self._runTimer = nil
+        runFn()
+    end)
+end
+
+function Run:_doCancelled()
+    if self._runTimer then
+        self._runTimer:stop()
+        self._runTimer = nil
+    end
+end
+
+function Run:timeoutAfter(seconds, thenFn)
+    log.df("Run:timeoutAfter: seconds = %s", seconds)
+    self:timeoutCancelled()
+    self._timeoutTimer = timer.doAfter(seconds, function()
+        self:timeoutCancelled()
+        thenFn()
+    end)
+end
+
+function Run:timeoutCancelled()
+    log.df("Run:timeoutCancelled: called...")
+    if self._timeoutTimer then
+        log.df("Run:timeoutCancelled: got timer to cancel.")
+        self._timeoutTimer:stop()
+        self._timeoutTimer = nil
+    end
 end
 
 --- cp.spec.Run:debug() -> cp.spec.Run
@@ -360,14 +413,79 @@ end
 -- is an abort (error), it will move on to the `abort` phase.
 function Run:_doPhase(nextPhase)
     self:log("Starting phase: %s", nextPhase)
-    if type(nextPhase) == "string" then
+    if type(nextPhase) == "string" then -- find the next phase.
         nextPhase = Run.phase[nextPhase]
     end
-    if nextPhase then
+
+    if nextPhase then -- we found it...
         self.phase = nextPhase
-        self:_doNextAction(1)
-    else
+        self:_doPhaseAction(1)
+    else -- no more phases. Do the report.
         self:_doReport()
+    end
+end
+
+-- cp.spec.Run._doPhaseAction(index)
+-- Method
+-- Performs the next action in the current phase at the specifed index.
+-- If none is available, it moves onto the next phase. If the action
+-- triggers an error, it is logged in the `report` and we move to the `abort`
+-- phase for the current phase.
+function Run:_doPhaseAction(index)
+    self:log("_doPhaseAction: %d", index)
+    local currentPhase = self.phase
+    local currentActions = self.phaseActions[currentPhase]
+    local actionFn = currentActions and currentActions[index]
+    if actionFn then
+        self:log("Running action #%d in %s phase...", index, currentPhase)
+        self:_do(function()
+            -- self:log("_doPhaseAction: running timer...")
+            self._this = Run.This(self, actionFn, index)
+            self._this()
+        end)
+    else
+        self:_doNext()
+    end
+end
+
+-- cp.spec.Run:_doNext(index)
+-- Method
+-- Moves on the next phase for the run.
+function Run:_doNext()
+    self:timeoutCancelled()
+    local currentPhase = self.phase
+    if currentPhase then
+        self:_doPhase(currentPhase.next)
+    end
+end
+
+-- cp.spec.Run:_doAbort(err)
+-- Method
+-- Logs the error with the current report's `aborted` log and begins processing the
+-- `abort` phase for the current phase.
+function Run:_doAbort(err)
+    self:timeoutCancelled()
+    self.report:aborted(err)
+    self.result = Run.result.aborted
+
+    local currentPhase = self.phase
+    if currentPhase then
+        self:_doPhase(currentPhase.abort)
+    end
+end
+
+-- cp.spec.Run:_doFail(err)
+-- Method
+-- Logs the error with the current report's `fail` log and begins processing the
+-- `abort` phase for the current phase.
+function Run:_doFail(err)
+    self:timeoutCancelled()
+    self.report:failed(err)
+    self.result = Run.result.failed
+
+    local currentPhase = self.phase
+    if currentPhase then
+        self:_doPhase(currentPhase.abort)
     end
 end
 
@@ -378,60 +496,6 @@ function Run:_doReport()
     self.report:stop()
     if self:parent() == nil or self:verbose() then
         self.report:summary()
-    end
-end
-
--- cp.spec.Run._doNextAction(index)
--- Method
--- Performs the next action in the current phase at the specifed index.
--- If none is available, it moves onto the next phase. If the action
--- triggers an error, it is logged in the `report` and we move to the `abort`
--- phase for the current phase.
-function Run:_doNextAction(index)
-    -- self:log("_doNextAction: %d", index)
-    local currentPhase = self.phase
-    local currentActions = self.phaseActions[currentPhase]
-    local actionFn = currentActions and currentActions[index]
-    if actionFn then
-        self:log("Running action #%d in %s phase...", index, currentPhase)
-        self._currentTimer = timer.doAfter(0, function()
-            -- self:log("_doNextAction: running timer...")
-            self._currentTimer = nil
-            local this = Run.This(self, index)
-            this:prepare()
-            local ok, err = xpcall(function() actionFn(this) end, function(err)
-                if not Message.is(err) then
-                    err = Message(err)
-                end
-                err:traceback()
-                return err
-            end)
-
-            if ok ~= true and not Handled.is(err) then
-                this:cleanup()
-                self:log("Action #%d failed. Aborting...", index)
-                self:_doAbort(err)
-            elseif not this:isWaiting() then
-                self:log("Action #%d completed.", index)
-                this:done()
-            else
-                self:log("Action #%d is waiting...", index)
-            end
-        end)
-    else
-        self:_doPhase(currentPhase.next)
-    end
-end
-
--- cp.spec.Run:_doAbort(err)
--- Method
--- Logs the error with the current report's `aborted` log and begins processing the
--- `abort` phase for the current phase.
-function Run:_doAbort(err)
-    self.report:aborted(err)
-    local currentPhase = self.phase
-    if currentPhase then
-        self:_doPhase(currentPhase.abort)
     end
 end
 
@@ -532,7 +596,7 @@ function Run:onComplete(actionFn)
 end
 
 function Run:realName()
-    self:log("Retrieving name: %s", self._name)
+    -- self:log("Retrieving name: %s", self._name)
     -- return interpolate(self._name, self.shared)
     return self._name
 end

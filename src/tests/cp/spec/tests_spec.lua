@@ -41,7 +41,7 @@ return describe "cp.spec.tests" {
 
     it "will send an error in an async before being done."
     :doing(function(this)
-        this:wait(2)
+        this:wait(5)
         timer.doAfter(0.5, function()
             error("This should be an abort.")
             this:done()
@@ -54,4 +54,8 @@ return describe "cp.spec.tests" {
             assert(true, "this passes")
         end),
     },
+
+    context "requiring another spec" {
+        require "cp.spec.simple_spec"
+    }
 }

@@ -32,6 +32,14 @@ return describe "cp.is" {
             { false,    false       },
             { "",       false       },
         },
+
+        it "only returns `true` for `nil` values"
+        :doing(function()
+            expect(is.nothing(nil)):is(true)
+            expect(is.nothing(0)):is(false)
+            expect(is.nothing(false):is(false))
+            expect(is.nothing(""):is(false))
+        end),
     },
 
     context "calling `string`" {
