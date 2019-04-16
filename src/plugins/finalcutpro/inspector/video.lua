@@ -4,13 +4,12 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "videoInspector"
+--local log                   = require "hs.logger".new "videoInspector"
 
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local go                    = require "cp.rx.go"
 local i18n                  = require "cp.i18n"
-local tools                 = require "cp.tools"
 
 local If                    = go.If
 local Do                    = go.Do
@@ -160,16 +159,19 @@ local function doStabilizationMethod(value)
             return true
         end
     end):Is(true):Then(
-        If(stabilization:doShow()):Is(true)
+        If(stabilization:doShow())
         :Then(
-            If(function() return stabilization:isShowing() end):Is(true)
+            If(stabilization.isShowing)
             :Then(
-                If(function() return stabilization.enabled:checked() end):Is(false)
+                If(stabilization.enabled.checked):Is(false)
                 :Then(stabilization.enabled:doCheck())
-                :Then(WaitUntil(stabilization):Is(true):TimeoutAfter(2000))
+                :Then(WaitUntil(stabilization.enabled):Is(true):TimeoutAfter(2000))
             )
-            :Then(method:doSelectValue(value))
-            :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
+            :Then(
+                If(function() return method():UI():enabled() end) -- Only try and "tick" it if it's enabled. The stabilisation might still be processing.
+                :Then(method:doSelectValue(value))
+                :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
+            )
             :Then(true)
             :Otherwise(function()
                 displayMessage(i18n("noSelectedClipsInTimeline"))
