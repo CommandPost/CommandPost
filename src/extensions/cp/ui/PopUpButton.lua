@@ -10,7 +10,6 @@ local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
 local go                = require "cp.rx.go"
 
-local Done              = go.Done
 local If                = go.If
 local WaitUntil         = go.WaitUntil
 
