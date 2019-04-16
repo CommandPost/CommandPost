@@ -164,12 +164,13 @@ local function doStabilizationMethod(value)
         :Then(
             If(function() return stabilization:isShowing() end):Is(true)
             :Then(
-                Do(
-                    If(function() return stabilization.enabled:value() end):Is(false)
-                    :Then(stabilization.enabled:doCheck())
-                )
-                :Then(method:doSelectValue(value))
+                If(function() return stabilization.enabled:checked() end):Is(false)
+                :Then(stabilization.enabled:doCheck())
+                :Then(WaitUntil(stabilization):Is(true):TimeoutAfter(2000))
             )
+            :Then(method:doSelectValue(value))
+            :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
+            :Then(true)
             :Otherwise(function()
                 displayMessage(i18n("noSelectedClipsInTimeline"))
                 return false
