@@ -4,16 +4,20 @@
 
 local require = require
 
-local log               = require("hs.logger").new("videoInspector")
+local log                   = require "hs.logger".new "videoInspector"
 
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local go                = require("cp.rx.go")
-local i18n              = require("cp.i18n")
-local tools             = require("cp.tools")
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local go                    = require "cp.rx.go"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
 
-local Do                = go.Do
-local WaitUntil         = go.WaitUntil
+local If                    = go.If
+local Do                    = go.Do
+local WaitUntil             = go.WaitUntil
+
+local displayErrorMessage   = dialog.displayErrorMessage
+local displayMessage        = dialog.displayMessage
 
 -- doSpatialConformType(value) -> none
 -- Function
@@ -36,8 +40,7 @@ local function doSpatialConformType(value)
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Spatial Conform Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
         end
 
@@ -46,7 +49,7 @@ local function doSpatialConformType(value)
         :Then(true)
     end)
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doSpatialConformType")
@@ -73,8 +76,7 @@ local function doBlendMode(value)
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Blend Mode Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
         end
 
@@ -83,7 +85,7 @@ local function doBlendMode(value)
         :Then(true)
     end)
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doBlendMode")
@@ -109,8 +111,7 @@ local function doStabilization(value)
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Blend Mode Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
         end
 
@@ -125,7 +126,7 @@ local function doStabilization(value)
         end
     end)
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doStabilization")
@@ -144,25 +145,43 @@ end
 local function doStabilizationMethod(value)
     local timeline = fcp:timeline()
     local timelineContents = timeline:contents()
+    local stabilization = fcp:inspector():video():stabilization()
     local method = fcp:inspector():video():stabilization():method()
 
-    return Do(function()
+    return If(function()
         --------------------------------------------------------------------------------
         -- Make sure at least one clip is selected:
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Blend Mode Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
+        else
+            return true
         end
-
-        return Do(method:doSelectValue(value))
-        :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
-        :Then(true)
-    end)
+    end):Is(true):Then(
+        If(stabilization:doShow()):Is(true)
+        :Then(
+            If(function() return stabilization:isShowing() end):Is(true)
+            :Then(
+                Do(
+                    If(function() return stabilization.enabled:value() end):Is(false)
+                    :Then(stabilization.enabled:doCheck())
+                )
+                :Then(method:doSelectValue(value))
+            )
+            :Otherwise(function()
+                displayMessage(i18n("noSelectedClipsInTimeline"))
+                return false
+            end)
+        )
+        :Otherwise(function()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
+            return false
+        end)
+    )
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doStabilizationMethod")
@@ -188,8 +207,7 @@ local function doRollingShutter(value)
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Rolling Shutter Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
         end
 
@@ -204,7 +222,7 @@ local function doRollingShutter(value)
         end
     end)
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doRollingShutter")
@@ -231,8 +249,7 @@ local function doRollingShutterAmount(value)
         --------------------------------------------------------------------------------
         local clips = timelineContents:selectedClipsUI()
         if clips and #clips == 0 then
-            log.ef("Set Blend Mode Failed: No clips selected.")
-            tools.playErrorSound()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
         end
 
@@ -241,7 +258,7 @@ local function doRollingShutterAmount(value)
         :Then(true)
     end)
     :Catch(function(message)
-        dialog.displayErrorMessage(message)
+        displayErrorMessage(message)
         return false
     end)
     :Label("video.doRollingShutterAmount")
@@ -429,7 +446,6 @@ function plugin.init(deps)
             :whenPressed(function() shiftRotation(shiftAmount * -1) end)
             :whenRepeated(function() shiftRotation(shiftAmount * -1) end)
     end
-
 
 end
 
