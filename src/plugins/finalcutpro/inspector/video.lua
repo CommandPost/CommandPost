@@ -168,7 +168,7 @@ local function doStabilizationMethod(value)
                 :Then(WaitUntil(stabilization.enabled):Is(true):TimeoutAfter(2000))
             )
             :Then(
-                If(method.isEnabled)) -- Only try and "tick" it if it's enabled. The stabilisation might still be processing.
+                If(method.isEnabled) -- Only try and "tick" it if it's enabled. The stabilisation might still be processing.
                 :Then(method:doSelectValue(value))
                 :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
             )
