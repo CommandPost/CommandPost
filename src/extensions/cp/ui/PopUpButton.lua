@@ -160,7 +160,7 @@ end
 function PopUpButton:doSelectValue(value)
     return If(self.UI)
     :Then(
-        If(function() return self.value and self:value() == value end):Then(true)
+        If(self.value):Is(value):Then(true)
         :Otherwise(
             If(self.menuUI):Is(nil):Then(self:doPress())
             :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
