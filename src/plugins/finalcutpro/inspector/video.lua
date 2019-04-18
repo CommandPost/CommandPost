@@ -244,9 +244,10 @@ end
 local function doRollingShutterAmount(value)
     local timeline = fcp:timeline()
     local timelineContents = timeline:contents()
-    local method = fcp:inspector():video():rollingShutter():amount()
+    local rollingShutter = fcp:inspector():video():rollingShutter()
+    local amount = rollingShutter:amount()
 
-    return Do(function()
+    return If(function()
         --------------------------------------------------------------------------------
         -- Make sure at least one clip is selected:
         --------------------------------------------------------------------------------
@@ -254,19 +255,40 @@ local function doRollingShutterAmount(value)
         if clips and #clips == 0 then
             displayMessage(i18n("noSelectedClipsInTimeline"))
             return false
+        else
+            return true
         end
-
-        return Do(method:doSelectValue(value))
-        :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
-        :Then(true)
-    end)
+    end):Is(true):Then(
+        If(rollingShutter:doShow())
+        :Then(
+            If(rollingShutter.isShowing)
+            :Then(
+                If(rollingShutter.enabled.checked):Is(false)
+                :Then(rollingShutter.enabled:doCheck())
+                :Then(WaitUntil(rollingShutter.enabled):Is(true):TimeoutAfter(2000))
+            )
+            :Then(
+                If(amount.isEnabled) -- Only try and "tick" it if it's enabled. It might still be processing.
+                :Then(amount:doSelectValue(value))
+                :Then(WaitUntil(amount):Is(value):TimeoutAfter(2000))
+            )
+            :Then(true)
+            :Otherwise(function()
+                displayMessage(i18n("noSelectedClipsInTimeline"))
+                return false
+            end)
+        )
+        :Otherwise(function()
+            displayMessage(i18n("noSelectedClipsInTimeline"))
+            return false
+        end)
+    )
     :Catch(function(message)
         displayErrorMessage(message)
         return false
     end)
     :Label("video.doRollingShutterAmount")
 end
-
 
 local plugin = {
     id              = "finalcutpro.inspector.video",
