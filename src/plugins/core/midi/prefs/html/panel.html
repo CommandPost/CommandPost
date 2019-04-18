@@ -85,6 +85,22 @@
 		}
 	}
 
+	function pressMidiAllButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "applyToAll",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function pressMidiActionButton(groupID, buttonID) {
 		try {
 			var result = {
