@@ -84,6 +84,27 @@ function mod._resetMIDIGroup()
     end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
+-- plugins.core.midi.prefs._resetMIDISubGroup() -> none
+-- Function
+-- Prompts to reset shortcuts to default for the selected sub-group.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._resetMIDISubGroup()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local items = mod._midi._items()
+            local groupID = mod.lastGroup()
+            items[groupID] = mod._midi.DEFAULT_MIDI_CONTROLS[groupID]
+            mod._midi._items(items)
+            mod._manager.refresh()
+        end
+    end, i18n("midiResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -217,6 +238,7 @@ local function generateContent()
         i18nProgramChange           = i18n("programChange"),
         i18nChannelPressure         = i18n("channelPressure"),
         i18nPitchWheelChange        = i18n("pitchWheelChange"),
+        i18nAll                     = i18n("all"),
     }
 
     return renderPanel(context)
@@ -691,6 +713,26 @@ local function midiPanelCallback(id, params)
             -- Remove the red highlight if it's still there:
             --------------------------------------------------------------------------------
             injectScript("unhighlightRowRed('" .. params["groupID"] .. "', " .. params["buttonID"] .. ")")
+        elseif callbackType == "applyToAll" then
+            --------------------------------------------------------------------------------
+            -- Apply the selected item to all banks:
+            --------------------------------------------------------------------------------
+            local getItem = mod._midi.getItem
+            local device = getItem("device", params["buttonID"], params["groupID"])
+            local channel = getItem("channel", params["buttonID"], params["groupID"])
+            local commandType = getItem("commandType", params["buttonID"], params["groupID"])
+            local number = getItem("number", params["buttonID"], params["groupID"])
+            local value = getItem("value", params["buttonID"], params["groupID"])
+            local currentGroup = params["groupID"]:sub(1, -2)
+            local setItem = mod._midi.setItem
+            for i = 1, mod._midi.numberOfSubGroups do
+                local groupID = currentGroup .. tostring(i)
+                setItem("device", params["buttonID"], groupID, device)
+                setItem("channel", params["buttonID"], groupID, channel)
+                setItem("commandType", params["buttonID"], groupID, commandType)
+                setItem("number", params["buttonID"], groupID, number)
+                setItem("value", params["buttonID"], groupID, value)
+            end
         elseif callbackType == "updateNumber" then
             --------------------------------------------------------------------------------
             -- Update Number:
@@ -898,15 +940,22 @@ function mod.init(deps, env)
         )
         :addButton(13,
             {
-                label       = i18n("midiResetGroup"),
-                onclick     = mod._resetMIDIGroup,
+                label       = i18n("resetEverything"),
+                onclick     = mod._resetMIDI,
                 class       = "midiResetGroup",
             }
         )
         :addButton(14,
             {
-                label       = i18n("midiResetAll"),
-                onclick     = mod._resetMIDI,
+                label       = i18n("resetApplication"),
+                onclick     = mod._resetMIDIGroup,
+                class       = "midiResetGroup",
+            }
+        )
+        :addButton(15,
+            {
+                label       = i18n("resetBank"),
+                onclick     = mod._resetMIDISubGroup,
                 class       = "midiResetGroup",
             }
         )

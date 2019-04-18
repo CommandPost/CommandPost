@@ -126,6 +126,7 @@
 					<input style="width: 40px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}" onchange="changeMidiValue('{{ groupID }}', '{{ buttonID }}', this.value)">
 				</td>
 				<td class="midiRowLearn">
+					<a id="midi{{ groupID }}_button{{ buttonID }}_allButton" href="#" class="button midiActionButton midiClearButton" onclick="pressMidiAllButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nAll }}</a>
 					<a id="midi{{ groupID }}_button{{ buttonID }}_clearButton" href="#" class="button midiActionButton midiClearButton" onclick="pressMidiClearButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nClear }}</a>
 					<a id="midi{{ groupID }}_button{{ buttonID }}_learnButton" href="#" class="button midiActionButton midiLearnButton" onclick="pressMidiLearnButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nLearn }}</a>
 				</td>
