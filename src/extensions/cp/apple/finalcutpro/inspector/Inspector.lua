@@ -309,7 +309,7 @@ function Inspector.lazy.method:doHide()
     :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
     :Otherwise(true)
-    :Label("Inspector:doShow")
+    :Label("Inspector:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean

@@ -787,7 +787,7 @@ function mod.batchExport()
     local selectedClips = timelineContents:selectedClipsUI()
 
     if not selectedClips or #selectedClips == 0 then
-        displayMessage(i18n("batchExportNoClipsInTimeline"))
+        displayMessage(i18n("noSelectedClipsInTimeline"))
         return
     end
 

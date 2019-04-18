@@ -112,7 +112,6 @@
         "batchExportInvalidCaptionsDetected": "Captions or subtitles with unresolved validation errors were detected, which has aborted the Batch Export.\n\nInvalid Captions can be ignored via the Batch Export Preferences if required.",
         "batchExportMissingFilesAndBadCaptionsDetected": "Missing or offline titles, effects or generators as well as captions or subtitles with unresolved validation errors were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects and Invalid Captions can be ignored via the Batch Export Preferences if required.",
         "batchExportMissingFilesDetected": "Missing or offline titles, effects or generators were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects can be ignored via the Batch Export Preferences if required.",
-        "batchExportNoClipsInTimeline": "No clips selected in the timeline.\n\nPlease select at least one clip and try again.",
         "batchExportNoDestination": "It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
         "batchExportNotShowing": "Unable to show the Export Dialog, which has aborted the Batch Export.\n\nPlease try again.",
         "batchExportProxyFilesDetected": "Proxy files were detected, which has aborted the Batch Export.\n\nProxy files can be ignored via the Batch Export Preferences if required.",
@@ -1085,6 +1084,7 @@
         "noRatingsOrKeywords": "No Ratings or Keywords",
         "normal": "Normal",
         "normal9": "Normal",
+        "noSelectedClipsInTimeline": "No clips selected in the timeline.\n\nPlease select at least one clip and try again.",
         "noteCC": "Note/CC",
         "noteOff": "Note Off",
         "noteOn": "Note On",
@@ -1363,21 +1363,9 @@
         "shareSuccessful": "Share Successful\n%{info}",
         "shareUnknown": "Type: %{type}",
         "sharp": "Sharp",
-        "shiftRotationLeft": {
-            "one": "Shift Rotation Left by %{amount} Degree",
-            "other": "Shift Rotation Left by %{amount} Degrees"
-        },
-        "shiftRotationRight": {
-            "one": "Shift Rotation Right by %{amount} Degree",
-            "other": "Shift Rotation Right by %{amount} Degrees"
-        },
-        "shiftScaleUp": {
-            "one": "Shift Scale Up by %{amount} Pixel",
-            "other": "Shift Scale Up by %{amount} Pixels"
-        },
-        "shiftScaleDown": {
-            "one": "Shift Scale Down by %{amount} Pixel",
-            "other": "Shift Scale Down by %{amount} Pixels"
+        "shiftPositionDownPixels": {
+            "one": "Shift Position Down %{amount} Pixel",
+            "other": "Shift Position Down %{amount} Pixels"
         },
         "shiftPositionLeftPixels": {
             "one": "Shift Position Left %{amount} Pixel",
@@ -1387,13 +1375,25 @@
             "one": "Shift Position Right %{amount} Pixel",
             "other": "Shift Position Right %{amount} Pixels"
         },
-        "shiftPositionDownPixels": {
-            "one": "Shift Position Down %{amount} Pixel",
-            "other": "Shift Position Down %{amount} Pixels"
-        },
         "shiftPositionUpPixels": {
             "one": "Shift Position Up %{amount} Pixel",
             "other": "Shift Position Up %{amount} Pixels"
+        },
+        "shiftRotationLeft": {
+            "one": "Shift Rotation Left by %{amount} Degree",
+            "other": "Shift Rotation Left by %{amount} Degrees"
+        },
+        "shiftRotationRight": {
+            "one": "Shift Rotation Right by %{amount} Degree",
+            "other": "Shift Rotation Right by %{amount} Degrees"
+        },
+        "shiftScaleDown": {
+            "one": "Shift Scale Down by %{amount} Pixel",
+            "other": "Shift Scale Down by %{amount} Pixels"
+        },
+        "shiftScaleUp": {
+            "one": "Shift Scale Up by %{amount} Pixel",
+            "other": "Shift Scale Up by %{amount} Pixels"
         },
         "shortcut_group_fcpx": "Final Cut Pro",
         "shortcut_group_global": "All Applications",
