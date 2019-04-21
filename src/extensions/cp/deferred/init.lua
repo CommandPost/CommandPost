@@ -16,14 +16,15 @@
 --- -- one second after the inital call to `update()`, one "Updated!" is printed.
 --- ```
 
-local require = require
-local delayed           = require("hs.timer").delayed
+local require           = require
 
-local is                = require("cp.is")
+local timer             = require "hs.timer"
+
+local is                = require "cp.is"
 
 local isntCallable      = is.nt.callable
 local insert            = table.insert
-
+local delayed           = timer.delayed
 
 local mod = {}
 mod.mt = {}

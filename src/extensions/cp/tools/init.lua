@@ -103,6 +103,24 @@ function tools.writeToFile(path, data)
     file:close()
 end
 
+--- cp.tools.readFromFile(path) -> string
+--- Function
+--- Read data from file.
+---
+--- Parameters:
+---  * path - The path of where you want to load the file.
+---
+--- Returns:
+---  * None
+function tools.readFromFile(path)
+    local file = io.open(path, "r")
+    if file then
+        local data = file:read("*a")
+        file:close()
+        return data
+    end
+end
+
 --- cp.tools.toRegionalNumber(value) -> number | nil
 --- Function
 --- Takes a string and converts it into a number, with the correct
