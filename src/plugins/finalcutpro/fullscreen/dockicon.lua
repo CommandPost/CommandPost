@@ -6,18 +6,19 @@
 --- CP 'dockless' when an app we are working with goes full-screen. Otherwise
 --- our drawing/canvas images will not display correctly.
 
-local require = require
+local require       = require
 
-local timer                             = require("hs.timer")
-local window                            = require("hs.window")
+--local log           = require "hs.logger".new "dockicon"
 
-local app                               = require("cp.app")
-local config			                = require("cp.config")
-local fcp                               = require("cp.apple.finalcutpro")
-local prop                              = require("cp.prop")
+local timer         = require "hs.timer"
+local window        = require "hs.window"
 
-local doAfter                           = timer.doAfter
+local app           = require "cp.app"
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local prop          = require "cp.prop"
 
+local doAfter       = timer.doAfter
 
 local mod = {}
 
@@ -66,7 +67,6 @@ mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:
 :watch(function(fullScreen)
     mod.dockIconEnabled(not fullScreen)
 end)
-
 
 local plugin = {
     id              = "finalcutpro.fullscreen.dockicon",
