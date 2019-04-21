@@ -1,13 +1,17 @@
 --- === cp.apple.finalcutpro.main.FullScreenWindow ===
 ---
---- Full Screen Window
+--- Full Screen Window Player.
+---
+--- Triggered by the "View > Playback > Play Full Screen" menubar item.
 
+-- TODO: This needs to be updated to use middleclass.
+--       Maybe also rename this to FullScreenPlayer?
 
-local require = require
-local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
-local Window						= require("cp.ui.Window")
+local require       = require
 
+local axutils       = require "cp.ui.axutils"
+local prop          = require "cp.prop"
+local Window        = require "cp.ui.Window"
 
 local FullScreenWindow = {}
 

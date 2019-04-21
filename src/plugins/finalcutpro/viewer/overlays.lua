@@ -2,34 +2,34 @@
 ---
 --- Final Cut Pro Viewer Overlays.
 
-local require = require
+local require           = require
 
-local log               = require("hs.logger").new("overlays")
+local log               = require "hs.logger".new "overlays"
 
-local canvas            = require("hs.canvas")
-local dialog            = require("hs.dialog")
-local eventtap          = require("hs.eventtap")
-local fs                = require("hs.fs")
-local geometry          = require("hs.geometry")
-local hid               = require("hs.hid")
-local image             = require("hs.image")
-local menubar           = require("hs.menubar")
-local mouse             = require("hs.mouse")
-local timer             = require("hs.timer")
+local canvas            = require "hs.canvas"
+local dialog            = require "hs.dialog"
+local eventtap          = require "hs.eventtap"
+local fs                = require "hs.fs"
+local geometry          = require "hs.geometry"
+local hid               = require "hs.hid"
+local image             = require "hs.image"
+local menubar           = require "hs.menubar"
+local mouse             = require "hs.mouse"
+local timer             = require "hs.timer"
 
-local axutils           = require("cp.ui.axutils")
-local config            = require("cp.config")
-local cpDialog          = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local tools             = require("cp.tools")
+local axutils           = require "cp.ui.axutils"
+local config            = require "cp.config"
+local cpDialog          = require "cp.dialog"
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
-local Do                = require("cp.rx.go.Do")
+local Do                = require "cp.rx.go.Do"
 
 local capslock          = hid.capslock
 local doAfter           = timer.doAfter
 local events            = eventtap.event.types
-
 
 local mod = {}
 
@@ -1435,6 +1435,23 @@ local function contextualMenu(event)
     end
 end
 
+-- updater -> cp.deferred
+-- Variable
+-- A deferred timer that triggers the update function.
+local updater = deferred.new(0.1):action(mod.update)
+
+-- deferredUpdate -> none
+-- Function
+-- Triggers the update function.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function deferredUpdate()
+    updater()
+end
 
 local plugin = {
     id              = "finalcutpro.viewer.overlays",
@@ -1446,7 +1463,6 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Event Tap:
     --------------------------------------------------------------------------------
@@ -1462,11 +1478,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
     --------------------------------------------------------------------------------
-    fcp.isFrontmost:watch(mod.update)
-    fcp.isModalDialogOpen:watch(mod.update)
-    fcp:fullScreenWindow().isShowing:watch(mod.update)
-    fcp:commandEditor().isShowing:watch(mod.update)
-    fcp:preferencesWindow().isShowing:watch(mod.update)
+    fcp.isFrontmost:watch(deferredUpdate)
+    fcp.isModalDialogOpen:watch(deferredUpdate)
+    fcp:fullScreenWindow().isShowing:watch(deferredUpdate)
+    fcp:commandEditor().isShowing:watch(deferredUpdate)
+    fcp:preferencesWindow().isShowing:watch(deferredUpdate)
+
+    --------------------------------------------------------------------------------
+    -- Update Canvas one second after going full-screen:
+    --------------------------------------------------------------------------------
+    fcp:primaryWindow().isFullScreen:watch(function() doAfter(1, mod.update) end)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro's Viewer is resized or moved:
