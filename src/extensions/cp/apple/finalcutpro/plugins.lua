@@ -16,11 +16,13 @@ local log                       = require "hs.logger".new "scan"
 local audiounit                 = require "hs.audiounit"
 local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
+local hsplist                   = require "hs.plist"
 local notify                    = require "hs.notify"
 local pathwatcher               = require "hs.pathwatcher"
 
 local archiver                  = require "cp.plist.archiver"
 local config                    = require "cp.config"
+local fcpApp                    = require "cp.apple.finalcutpro.app"
 local fcpStrings                = require "cp.apple.finalcutpro.strings"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
@@ -32,7 +34,7 @@ local text                      = require "cp.web.text"
 local tools                     = require "cp.tools"
 local watcher                   = require "cp.watcher"
 
-local fcpApp                    = require "cp.apple.finalcutpro.app"
+local xml                       = require "hs._asm.xml"
 
 local v                         = require "semver"
 
@@ -40,11 +42,12 @@ local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local getFilenameFromPath       = tools.getFilenameFromPath
 local getLocalizedName          = localized.getLocalizedName
-local insert, remove            = table.insert, table.remove
+local insert                    = table.insert
 local pathToAbsolute            = fs.pathToAbsolute
+local remove                    = table.remove
 local unescapeXML               = text.unescapeXML
-
 
 -- THEME_PATTERN -> string
 -- Constant
@@ -573,24 +576,57 @@ function mod.mt:scanUserColorPresets(locale)
                 local plugin = string.match(file, "(.+)%.cboard")
                 if plugin then
                     local effectPath = path .. "/" .. file
-                    local preset = archiver.unarchiveFile(effectPath)
-                    if preset then
-                        local root = preset.root
-                        if root then
-                            local name = root.name
-                            if category then
-                                self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
-                                --------------------------------------------------------------------------------
-                                -- Cache Plugin:
-                                --------------------------------------------------------------------------------
-                                table.insert(cache, {
-                                    effectPath = effectPath,
-                                    effectType = videoEffect,
-                                    category = category,
-                                    plugin = name,
-                                    locale = locale.code,
-                                })
+                    if hsplist.read(effectPath) then
+                        --------------------------------------------------------------------------------
+                        -- Is a valid property list:
+                        --------------------------------------------------------------------------------
+                        local preset = archiver.unarchiveFile(effectPath)
+                        if preset then
+                            local root = preset.root
+                            if root then
+                                local name = root.name
+                                if category then
+                                    self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
+                                    --------------------------------------------------------------------------------
+                                    -- Cache Plugin:
+                                    --------------------------------------------------------------------------------
+                                    table.insert(cache, {
+                                        effectPath = effectPath,
+                                        effectType = videoEffect,
+                                        category = category,
+                                        plugin = name,
+                                        locale = locale.code,
+                                    })
 
+                                end
+                            end
+                        end
+                    else
+                        --------------------------------------------------------------------------------
+                        -- Most likely in the older Axel format.
+                        --
+                        -- Interestingly, despite the fact that the Axel XML format has a "name" field,
+                        -- FCPX seems to ignore that, and uses the filename instead.
+                        --------------------------------------------------------------------------------
+                        local data = xml.open(effectPath)
+                        if data then
+                            local children = data:children()
+                            local childone = children and children[1]
+                            if childone and childone:localName() == "axel" then
+                                local name = getFilenameFromPath(effectPath, true)
+                                if name and category then
+                                    self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
+                                    --------------------------------------------------------------------------------
+                                    -- Cache Plugin:
+                                    --------------------------------------------------------------------------------
+                                    table.insert(cache, {
+                                        effectPath = effectPath,
+                                        effectType = videoEffect,
+                                        category = category,
+                                        plugin = name,
+                                        locale = locale.code,
+                                    })
+                                end
                             end
                         end
                     end
