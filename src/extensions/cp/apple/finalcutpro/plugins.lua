@@ -46,7 +46,6 @@ local getFilenameFromPath       = tools.getFilenameFromPath
 local getLocalizedName          = localized.getLocalizedName
 local insert                    = table.insert
 local pathToAbsolute            = fs.pathToAbsolute
-local remove                    = table.remove
 local unescapeXML               = text.unescapeXML
 
 -- THEME_PATTERN -> string
