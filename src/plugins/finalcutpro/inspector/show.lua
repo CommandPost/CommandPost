@@ -2,11 +2,16 @@
 ---
 --- Final Cut Pro Inspector Additions.
 
-local require = require
+local require       = require
 
-local fcp         = require("cp.apple.finalcutpro")
-local i18n        = require("cp.i18n")
+local log           = require "hs.logger".new "inspShow"
 
+local fcp           = require "cp.apple.finalcutpro"
+local go            = require "cp.rx.go"
+local i18n          = require "cp.i18n"
+
+local Do            = go.Do
+local WaitUntil     = go.WaitUntil
 
 local plugin = {
     id              = "finalcutpro.inspector.show",
@@ -59,6 +64,16 @@ function plugin.init(deps)
         :add("goToTransitionInspector")
         :whenActivated(function() fcp:inspector():transition():show() end)
         :titled(i18n("goTo") .. " " .. i18n("transition") .. " " .. i18n("inspector"))
+
+    deps.fcpxCmds
+        :add("modifyProject")
+        :whenActivated(function()
+            Do(fcp:inspector():projectInfo():doShow())
+            :Then(fcp:inspector():projectInfo():modify():doPress())
+            :Label("plugins.finalcutpro.inspector.show.modifyProject")
+            :Now()
+        end)
+        :titled(i18n("modifyProject"))
 
 end
 

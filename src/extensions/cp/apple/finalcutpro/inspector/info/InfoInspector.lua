@@ -2,25 +2,27 @@
 ---
 --- Video Inspector Module.
 
-local require = require
+local require               = require
 
---local log                               = require("hs.logger").new("infoInspect")
+--local log                   = require "hs.logger".new "infoInspect"
 
-local axutils                           = require("cp.ui.axutils")
-local MenuButton                        = require("cp.ui.MenuButton")
-local prop                              = require("cp.prop")
+local axutils               = require "cp.ui.axutils"
+local BasePanel             = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                    = require "cp.apple.finalcutpro.inspector.InspectorProperty"
+local MenuButton            = require "cp.ui.MenuButton"
+local prop                  = require "cp.prop"
+local strings               = require "cp.apple.finalcutpro.strings"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
+local hasProperties         = IP.hasProperties
+local menuButton            = IP.menuButton
+local staticText            = IP.staticText
+local textField             = IP.textField
 
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
-
-local hasProperties                     = IP.hasProperties
-local textField, staticText, menuButton = IP.textField, IP.staticText, IP.menuButton
-
-local childrenWithRole, childWithRole   = axutils.childrenWithRole, axutils.childWithRole
-local withRole, withAttributeValue      = axutils.withRole, axutils.withAttributeValue
-
+local childFromLeft         = axutils.childFromLeft
+local childrenWithRole      = axutils.childrenWithRole
+local childWithRole         = axutils.childWithRole
+local withAttributeValue    = axutils.withAttributeValue
+local withRole              = axutils.withRole
 
 local InfoInspector = BasePanel:subclass("InfoInspector")
 
@@ -159,7 +161,7 @@ end
 function InfoInspector.lazy.method:metadataViewButton()
     return MenuButton(self, function()
         local ui = self:parent():bottomBarUI()
-        local menu = axutils.childFromLeft(ui, 1)
+        local menu = childFromLeft(ui, 1)
         if menu:attributeValue("AXRole") == "AXGroup" then
             menu = menu[1]
         end
