@@ -4,14 +4,13 @@
 
 local require       = require
 
-local log           = require "hs.logger".new "inspShow"
+--local log           = require "hs.logger".new "inspShow"
 
 local fcp           = require "cp.apple.finalcutpro"
 local go            = require "cp.rx.go"
 local i18n          = require "cp.i18n"
 
 local Do            = go.Do
-local WaitUntil     = go.WaitUntil
 
 local plugin = {
     id              = "finalcutpro.inspector.show",
