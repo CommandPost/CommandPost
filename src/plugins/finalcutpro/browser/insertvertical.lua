@@ -11,6 +11,8 @@ local dialog            = require "cp.dialog"
 local i18n              = require "cp.i18n"
 local go                = require "cp.rx.go"
 
+local displayMessage    = dialog.displayMessage
+
 local Do                = go.Do
 local If                = go.If
 local Throw             = go.Throw
@@ -41,37 +43,21 @@ function plugin.init(deps)
                 end):Then(
                     Given(List(function() return libraries:selectedClips() end))
                         :Then(function(child)
-                            log.df("Selecting clip: %s", child)
-                            libraries:selectClip(child)
-                            return true
-                        end)
-                        :Then(function()
-                            log.df("Connecting to primary storyline")
-                            return true
-                        end)
-                        :Then(fcp:doSelectMenu({"Edit", "Connect to Primary Storyline"}))
-                        :Then(function()
-                            log.df("Focussing on timeline.")
-                            return true
-                        end)
-                        :Then(timeline:doFocus())
-                        :Then(
-                            Retry(function()
-                                if timeline.isFocused() then
-                                    return true
-                                else
-                                    return Throw("Failed to make the timeline focused.")
+                            return Do(function()
+                                if not libraries:selectClip(child) then
+                                    return Throw("Failed to select clip.")
                                 end
-                            end):UpTo(10):DelayedBy(100)
-                        )
-                        :Then(function()
-                            log.df("Go to previous edit.")
-                            return true
-                        end)
-                        :Then(fcp:doSelectMenu({"Mark", "Previous", "Edit"}))
-                        :Then(function()
-                            log.df("End of block")
-                            return true
+                                if not fcp:selectMenu({"Edit", "Connect to Primary Storyline"}) then
+                                    return Throw("Failed to Connect to Primary Storyline.")
+                                end
+                                if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
+                                    return Throw("Failed to go to timeline.")
+                                end
+                                if not fcp:selectMenu({"Mark", "Previous", "Edit"}) then
+                                    return Throw("Failed to go to previous edit.")
+                                end
+                                return true
+                            end)
                         end)
                 ):Otherwise(
                     Throw("No clips selected in the Browser.")
@@ -79,7 +65,7 @@ function plugin.init(deps)
             )
             :Catch(function(message)
                 log.ef("Error in insertClipsVerticallyFromBrowserToTimeline: %s", message)
-                dialog.displayMessage(message)
+                displayMessage(message)
             end)
         )
         :titled(i18n("insertClipsVerticallyFromBrowserToTimeline"))
