@@ -41,6 +41,9 @@ function plugin.init(deps)
                 end):Then(
                     Given(List(function() return libraries:selectedClips() end))
                         :Then(function(child)
+                            -----------------------------------------------------------------------
+                            -- TODO: This works in Filmstrip mode, but weirdly fails in List mode.
+                            -----------------------------------------------------------------------
                             if not libraries:selectClip(child) then
                                 return Throw("Failed to select clip.")
                             end
