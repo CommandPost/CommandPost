@@ -5,7 +5,7 @@
 
 local require = require
 
-local log				= require "hs.logger".new "menuaction"
+--local log				= require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
