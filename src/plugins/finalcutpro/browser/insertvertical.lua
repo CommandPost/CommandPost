@@ -6,19 +6,18 @@ local require = require
 
 local log               = require "hs.logger".new "addnote"
 
-local fcp               = require "cp.apple.finalcutpro"
 local dialog            = require "cp.dialog"
-local i18n              = require "cp.i18n"
+local fcp               = require "cp.apple.finalcutpro"
 local go                = require "cp.rx.go"
+local i18n              = require "cp.i18n"
 
 local displayMessage    = dialog.displayMessage
 
 local Do                = go.Do
-local If                = go.If
-local Throw             = go.Throw
 local Given             = go.Given
+local If                = go.If
 local List              = go.List
-local Retry             = go.Retry
+local Throw             = go.Throw
 
 local plugin = {
     id              = "finalcutpro.browser.insertvertical",
@@ -30,7 +29,6 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local timeline = fcp:timeline()
     local libraries = fcp:browser():libraries()
     deps.fcpxCmds
         :add("insertClipsVerticallyFromBrowserToTimeline")
