@@ -3,24 +3,29 @@
 --- Represents an app's menu bar, providing multi-lingual access to find and
 --- trigger menu items.
 
-local require                   = require
-local log                       = require("hs.logger").new("menu")
+local require           = require
+local log               = require "hs.logger".new "menu"
 
-local fs                        = require("hs.fs")
+local fs                = require "hs.fs"
 
-local archiver                  = require("cp.plist.archiver")
-local axutils                   = require("cp.ui.axutils")
-local localeID                  = require("cp.i18n.localeID")
-local plist                     = require("cp.plist")
-local prop                      = require("cp.prop")
-local rx                        = require("cp.rx")
-local go                        = require("cp.rx.go")
+local archiver          = require "cp.plist.archiver"
+local axutils           = require "cp.ui.axutils"
+local localeID          = require "cp.i18n.localeID"
+local plist             = require "cp.plist"
+local prop              = require "cp.prop"
+local rx                = require "cp.rx"
+local go                = require "cp.rx.go"
 
-local format                    = string.format
-local insert, remove, concat    = table.insert, table.remove, table.concat
-local Observable                = rx.Observable
-local Do, If, Throw, Last       = go.Do, go.If, go.Throw, go.Last
+local format            = string.format
+local insert            = table.insert
+local remove            = table.remove
+local concat            = table.concat
+local Observable        = rx.Observable
 
+local Do                = go.Do
+local If                = go.If
+local Throw             = go.Throw
+local Last              = go.Last
 
 local menu = {}
 menu.mt = {}
@@ -335,6 +340,7 @@ end
 --- * The `options` may include:
 ---   * locale - The `localeID` or `string` for the locale that the path values are in.
 ---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Examples:
 ---   * `previewApp:menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()`
 function menu.mt:doSelectMenu(path, options)
@@ -377,6 +383,7 @@ end
 --- * The `options` may include:
 ---   * locale - The `localeID` or `string` for the locale that the path values are in.
 ---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Example usage:
 ---   * `require("cp.app").forBundleID("com.apple.FinalCut"):menu():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function menu.mt:selectMenu(path, options)
@@ -519,9 +526,9 @@ local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
     return title
 end
 
-local function exactMatch(value, pattern)
+local function exactMatch(value, pattern, plain)
     if value and pattern then
-        local s,e = value:find(pattern)
+        local s,e = value:find(pattern, nil, plain)
         return s == 1 and e == value:len()
     end
     return false
@@ -545,6 +552,7 @@ end
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
 --- * The `options` may contain:
 ---   * locale   - The locale that any strings in the path are in. Defaults to "en".
+---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Examples:
 ---   * `myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)`
 function menu.mt:doFindMenuUI(path, options)
@@ -595,7 +603,7 @@ function menu.mt:doFindMenuUI(path, options)
                         --------------------------------------------------------------------------------
                         for _, item in ipairs(menuTitles) do
                             local pathItemTitle = item[pathLocale.code]
-                            if exactMatch(pathItemTitle, step) then
+                            if exactMatch(pathItemTitle, step, options.plain) then
                                 menuItemUI = item.ui
                                 if not axutils.isValid(menuItemUI) then
                                     local currentTitle = item[appLocale.code]
@@ -606,7 +614,7 @@ function menu.mt:doFindMenuUI(path, options)
                                             if title == nil then
                                                 error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
                                             end
-                                            return exactMatch(title, currentTitle)
+                                            return exactMatch(title, currentTitle, options.plain)
                                         end)
                                         --------------------------------------------------------------------------------
                                         -- Cache the menu item, since getting children can be expensive:
@@ -629,7 +637,7 @@ function menu.mt:doFindMenuUI(path, options)
                         menuUI = menuItemUI[1]
                         for _, item in ipairs(menuTitles) do
                             local mapTitle = item[appLocale.code]
-                            if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*")) then
+                            if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*"), options.plain) then
                                 menuTitles = item
                                 break
                             end
@@ -676,6 +684,7 @@ end
 ---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
 --- * The `options` can contain:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
+---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 function menu.mt:findMenuUI(path, options)
     assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
 
@@ -742,7 +751,7 @@ function menu.mt:findMenuUI(path, options)
                 --------------------------------------------------------------------------------
                 for _, item in ipairs(menuTitles) do
                     local pathItemTitle = item[locale.code]
-                    if exactMatch(pathItemTitle, step) then
+                    if exactMatch(pathItemTitle, step, options.plain) then
                         menuItemUI = item.ui
                         if not axutils.isValid(menuItemUI) then
                             local currentTitle = item[appLocale.code]
@@ -754,7 +763,7 @@ function menu.mt:findMenuUI(path, options)
                                         error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
                                     end
                                     --log.df("checking menu item: %s", title)
-                                    return exactMatch(title, currentTitle)
+                                    return exactMatch(title, currentTitle, options.plain)
                                 end)
                                 --------------------------------------------------------------------------------
                                 -- Cache the menu item, since getting children can be expensive:

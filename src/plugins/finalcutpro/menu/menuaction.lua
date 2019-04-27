@@ -5,19 +5,19 @@
 
 local require = require
 
---local log				= require("hs.logger").new("menuaction")
+--local log				= require "hs.logger".new "menuaction"
 
-local fnutils           = require("hs.fnutils")
-local image             = require("hs.image")
+local fnutils           = require "hs.fnutils"
+local image             = require "hs.image"
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local idle              = require("cp.idle")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local idle              = require "cp.idle"
 
+local concat            = table.concat
 local imageFromPath     = image.imageFromPath
-local insert, concat    = table.insert, table.concat
-
+local insert            = table.insert
 
 local mod = {}
 
@@ -143,7 +143,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=true}):Now()
         return true
     end
     return false
@@ -192,7 +192,6 @@ function mod.init(actionmanager)
     end
 
 end
-
 
 local plugin = {
     id              = "finalcutpro.menu.menuaction",

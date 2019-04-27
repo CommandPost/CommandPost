@@ -16,12 +16,11 @@
 --- end
 --- ```
 
-local require               = require
+local require       = require
 
-local cfprefs               = require("hs._asm.cfpreferences")
-local pathwatcher			      = require("hs.pathwatcher")
-local prop                  = require("cp.prop")
-
+local cfprefs       = require "hs._asm.cfpreferences"
+local pathwatcher   = require "hs.pathwatcher"
+local prop          = require "cp.prop"
 
 local mod = {}
 mod.mt = {}
