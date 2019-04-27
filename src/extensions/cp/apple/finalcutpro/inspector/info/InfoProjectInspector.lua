@@ -14,9 +14,7 @@ local IP                    = require "cp.apple.finalcutpro.inspector.InspectorP
 local strings               = require "cp.apple.finalcutpro.strings"
 
 local Do                    = go.Do
-local WaitUntil             = go.WaitUntil
 local Retry                 = go.Retry
-local If                    = go.If
 local Throw                 = go.Throw
 
 local hasProperties         = IP.hasProperties
