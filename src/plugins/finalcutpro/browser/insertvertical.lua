@@ -43,21 +43,24 @@ function plugin.init(deps)
                 end):Then(
                     Given(List(function() return libraries:selectedClips() end))
                         :Then(function(child)
-                            return Do(function()
-                                if not libraries:selectClip(child) then
-                                    return Throw("Failed to select clip.")
-                                end
-                                if not fcp:selectMenu({"Edit", "Connect to Primary Storyline"}) then
-                                    return Throw("Failed to Connect to Primary Storyline.")
-                                end
-                                if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-                                    return Throw("Failed to go to timeline.")
-                                end
-                                if not fcp:selectMenu({"Mark", "Previous", "Edit"}) then
-                                    return Throw("Failed to go to previous edit.")
-                                end
-                                return true
-                            end)
+                            if not libraries:selectClip(child) then
+                                return Throw("Failed to select clip.")
+                            end
+                            -----------------------------------------------------------------------
+                            -- TODO: These selectMenu's should be replaced with doSelectMenu's.
+                            --       Chris tried everything he could think of to keep everything
+                            --       Rx-ified, but failed to get the timing/order to work properly.
+                            -----------------------------------------------------------------------
+                            if not fcp:selectMenu({"Edit", "Connect to Primary Storyline"}) then
+                                return Throw("Failed to Connect to Primary Storyline.")
+                            end
+                            if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
+                                return Throw("Failed to go to timeline.")
+                            end
+                            if not fcp:selectMenu({"Mark", "Previous", "Edit"}) then
+                                return Throw("Failed to go to previous edit.")
+                            end
+                            return true
                         end)
                 ):Otherwise(
                     Throw("No clips selected in the Browser.")
