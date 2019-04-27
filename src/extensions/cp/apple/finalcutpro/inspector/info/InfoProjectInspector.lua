@@ -15,6 +15,9 @@ local strings               = require "cp.apple.finalcutpro.strings"
 
 local Do                    = go.Do
 local WaitUntil             = go.WaitUntil
+local Retry                 = go.Retry
+local If                    = go.If
+local Throw                 = go.Throw
 
 local hasProperties         = IP.hasProperties
 local staticText            = IP.staticText
@@ -25,7 +28,7 @@ local childWithRole         = axutils.childWithRole
 local withAttributeValue    = axutils.withAttributeValue
 local withRole              = axutils.withRole
 
-local InfoProjectInspector = BasePanel:subclass("InfoProjectInspector")
+local InfoProjectInspector  = BasePanel:subclass("InfoProjectInspector")
 
 --- cp.apple.finalcutpro.inspector.info.InfoProjectInspector.matches(element) -> boolean
 --- Function
@@ -99,13 +102,6 @@ function InfoProjectInspector.lazy.method:modify()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoProjectInspector.isShowing <cp.prop: boolean; read-only; live?>
---- Field
---- If `true`, the Project Info Inspector is showing on screen.
-function InfoProjectInspector.lazy.prop:isShowing()
-    return self.UI:ISNOT(nil)
-end
-
 --- cp.apple.finalcutpro.inspector.info.InfoProjectInspector:doShow() -> cp.rx.go.Statment
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that shows the panel.
@@ -118,8 +114,13 @@ end
 function InfoProjectInspector.lazy.method:doShow()
     return Do(self:app():doSelectMenu({"Window", "Project Properties…"}))
     :Then(
-        WaitUntil(self.isShowing)
-        :TimeoutAfter(3000, "The info panel didn't show.")
+        Retry(function()
+            if self.isShowing() then
+                return true
+            else
+                return Throw("Project Properties failed to show after a second.")
+            end
+        end):UpTo(10):DelayedBy(100)
     )
     :Label(self:panelType() .. ":doShow")
 end
