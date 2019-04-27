@@ -14,7 +14,6 @@ local go                = require "cp.rx.go"
 local Do                = go.Do
 local If                = go.If
 local Throw             = go.Throw
-local WaitUntil         = go.WaitUntil
 local Given             = go.Given
 local List              = go.List
 local Retry             = go.Retry
@@ -85,7 +84,6 @@ function plugin.init(deps)
         )
         :titled(i18n("insertClipsVerticallyFromBrowserToTimeline"))
 
-    return mod
 end
 
 return plugin
