@@ -2,21 +2,20 @@
 ---
 --- Libraries Filmstrip Module.
 
-local require = require
+local require               = require
 
-local axutils							= require("cp.ui.axutils")
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")
-local prop								= require("cp.prop")
+local axutils               = require "cp.ui.axutils"
+local Clip                  = require "cp.apple.finalcutpro.content.Clip"
+local Playhead              = require "cp.apple.finalcutpro.main.Playhead"
+local prop                  = require "cp.prop"
 
-local _									= require("moses")
+local moses                 = require "moses"
 
-local cache                             = axutils.cache
-local isValid                           = axutils.isValid
-local childrenMatching                  = axutils.childrenMatching
+local cache                 = axutils.cache
+local isValid               = axutils.isValid
+local childrenMatching      = axutils.childrenMatching
 
-
-local LibrariesFilmstrip = {}
+local LibrariesFilmstrip    = {}
 
 --- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean
 --- Function
@@ -218,7 +217,7 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 local function _uiToClips(clipsUI)
-    return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+    return moses.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
 end
 
 -- _clipsToUI(clips) -> none
@@ -231,7 +230,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return _.map(clips, function(_,clip) return clip:UI() end)
+    return moses.map(clips, function(_,clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:clipsUI(filterFn) -> table | nil
@@ -272,7 +271,7 @@ function LibrariesFilmstrip:clips(filterFn)
     if clipsUI then
         local clips = _uiToClips(clipsUI)
         if filterFn then
-            clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+            clips = moses.filter(clips, function(_,clip) return filterFn(clip) end)
         end
         return clips
     end

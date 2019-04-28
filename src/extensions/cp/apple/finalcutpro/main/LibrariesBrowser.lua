@@ -4,35 +4,35 @@
 
 local require = require
 
-local log								= require("hs.logger").new("librariesBrowser")
+local log						= require "hs.logger".new "librariesBrowser"
 
-local i18n                              = require("cp.i18n")
-local just								= require("cp.just")
-local axutils							= require("cp.ui.axutils")
-local Group                             = require("cp.ui.Group")
+local axutils					= require "cp.ui.axutils"
+local go                        = require "cp.rx.go"
+local Group                     = require "cp.ui.Group"
+local i18n                      = require "cp.i18n"
+local just						= require "cp.just"
 
-local AppearanceAndFiltering            = require("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
+local AppearanceAndFiltering    = require "cp.apple.finalcutpro.browser.AppearanceAndFiltering"
+local LibrariesFilmstrip		= require "cp.apple.finalcutpro.main.LibrariesFilmstrip"
+local LibrariesList				= require "cp.apple.finalcutpro.main.LibrariesList"
 
-local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
-local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
+local Button					= require "cp.ui.Button"
+local PopUpButton               = require "cp.ui.PopUpButton"
+local Table						= require "cp.ui.Table"
+local TextField					= require "cp.ui.TextField"
 
-local Button							= require("cp.ui.Button")
-local PopUpButton                       = require("cp.ui.PopUpButton")
-local Table								= require("cp.ui.Table")
-local TextField							= require("cp.ui.TextField")
+local Do                        = go.Do
+local First                     = go.First
+local Given                     = go.Given
+local If                        = go.If
+local Observable                = go.Observable
+local Throw                     = go.Throw
 
-local Observable                        = require("cp.rx").Observable
-local Do                                = require("cp.rx.go.Do")
-local Given                             = require("cp.rx.go.Given")
-local First                             = require("cp.rx.go.First")
-local If                                = require("cp.rx.go.If")
-local Throw                             = require("cp.rx.go.Throw")
-
-local cache                             = axutils.cache
-local childFromRight                    = axutils.childFromRight
-local childMatching                     = axutils.childMatching
-local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
-
+local cache                     = axutils.cache
+local childFromRight            = axutils.childFromRight
+local childMatching             = axutils.childMatching
+local childWith                 = axutils.childWith
+local childWithRole             = axutils.childWithRole
 
 local LibrariesBrowser = Group:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
