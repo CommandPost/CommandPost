@@ -4,7 +4,7 @@
 
 local require = require
 
-local log               = require "hs.logger".new "clipnavigation"
+--local log               = require "hs.logger".new "clipnavigation"
 
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
@@ -141,8 +141,6 @@ function plugin.init(deps)
             end
         end)
         :titled(i18n("selectMiddleOfPreviousClipInSameStoryline"))
-
-    return mod
 end
 
 return plugin
