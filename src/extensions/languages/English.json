@@ -1088,6 +1088,7 @@
         "noRatingsOrKeywords": "No Ratings or Keywords",
         "normal": "Normal",
         "normal9": "Normal",
+        "noSelectedClipsInBrowser": "No clips selected in the browser.\n\nPlease select at least one clip and try again.",
         "noSelectedClipsInTimeline": "No clips selected in the timeline.\n\nPlease select at least one clip and try again.",
         "noteCC": "Note/CC",
         "noteOff": "Note Off",

@@ -37,15 +37,29 @@ function plugin.init(deps)
             :Then(
                 If(function()
                     local clips = libraries:selectedClips()
-                    return clips and #clips >= 2
+                    return clips and #clips >= 1
                 end):Then(
-                    Given(List(function() return libraries:selectedClips() end))
-                        :Then(function(child)
-                            -----------------------------------------------------------------------
-                            -- TODO: This works in Filmstrip mode, but weirdly fails in List mode.
-                            -----------------------------------------------------------------------
-                            if not libraries:selectClip(child) then
-                                return Throw("Failed to select clip.")
+                    Given(List(function()
+                        if libraries():isListView() then
+                            local indexes = {}
+                            local selectedClips = libraries:selectedClipsUI()
+                            for i, v in pairs(selectedClips) do
+                                indexes[i] = v:attributeValue("AXIndex") + 1
+                            end
+                            return indexes
+                        else
+                            return libraries:selectedClips()
+                        end
+                    end))
+                        :Then(function(clip)
+                            if libraries():isListView() then
+                                if not libraries:selectClipAt(clip) then
+                                    return Throw("Failed to select clip at index %s.", clip)
+                                end
+                            else
+                                if not libraries:selectClip(clip) then
+                                    return Throw("Failed to select clip.")
+                                end
                             end
                             -----------------------------------------------------------------------
                             -- TODO: These selectMenu's should be replaced with doSelectMenu's.
@@ -64,7 +78,7 @@ function plugin.init(deps)
                             return true
                         end)
                 ):Otherwise(
-                    Throw("No clips selected in the Browser.")
+                    Throw(i18n("noSelectedClipsInBrowser"))
                 )
             )
             :Catch(function(message)
