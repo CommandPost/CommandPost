@@ -3,18 +3,17 @@
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
 
-local require = require
+local require       = require
 
-local log           = require("hs.logger").new("customAction")
+local log           = require "hs.logger".new "customAction"
 
-local fcp           = require("cp.apple.finalcutpro")
-local config        = require("cp.config")
-local prop          = require("cp.prop")
-local tools         = require("cp.tools")
-local i18n          = require("cp.i18n")
+local fcp           = require "cp.apple.finalcutpro"
+local config        = require "cp.config"
+local prop          = require "cp.prop"
+local tools         = require "cp.tools"
+local i18n          = require "cp.i18n"
 
-
-local mod = {}
+local mod           = {}
 
 -- MAXIMUM -> number
 -- Constant
@@ -125,7 +124,6 @@ function mod.assign(id, completionFn)
     activator:show()
 end
 
-
 local plugin = {
     id = "finalcutpro.actions.custom",
     group = "finalcutpro",
@@ -136,7 +134,6 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Action Manager:
     --------------------------------------------------------------------------------
@@ -184,7 +181,6 @@ function plugin.init(deps)
                     end
                 end)
     end
-
     return mod
 end
 

@@ -687,6 +687,7 @@ end
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 function menu.mt:findMenuUI(path, options)
     assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
+    options = options or {}
 
     --------------------------------------------------------------------------------
     -- Start at the top of the menu bar list:
