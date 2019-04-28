@@ -500,6 +500,23 @@ function LibrariesBrowser:selectClipAt(index)
     end
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:indexOfClip(clip) -> number | nil
+--- Function
+--- Gets the index of a specific clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to get the index of.
+---
+--- Returns:
+---  * The index or `nil` if an error occurs.
+function LibrariesBrowser:indexOfClip(clip)
+    if self:isListView() then
+        return self:list():indexOfClip(clip)
+    else
+        return self:filmstrip():indexOfClip(clip)
+    end
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipTitled(title) -> boolean
 --- Method
 --- Select clip with a specific title.

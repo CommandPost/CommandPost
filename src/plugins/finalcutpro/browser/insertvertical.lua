@@ -42,9 +42,9 @@ function plugin.init(deps)
                     Given(List(function()
                         if libraries():isListView() then
                             local indexes = {}
-                            local selectedClips = libraries:selectedClipsUI()
-                            for i, v in pairs(selectedClips) do
-                                indexes[i] = v:attributeValue("AXIndex") + 1
+                            local selectedClips = libraries:selectedClips()
+                            for i, clip in pairs(selectedClips) do
+                                indexes[i] = libraries:indexOfClip(clip)
                             end
                             return indexes
                         else

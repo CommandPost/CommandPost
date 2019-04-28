@@ -378,6 +378,27 @@ function LibrariesList:selectClipAt(index)
     return false
 end
 
+--- cp.apple.finalcutpro.main.LibrariesList:indexOfClip(clip) -> number | nil
+--- Function
+--- Gets the index of a specific clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to get the index of.
+---
+--- Returns:
+---  * The index or `nil` if an error occurs.
+function LibrariesList:indexOfClip(clip)
+    local clips = self:clipsUI()
+    local ui = clip and clip:UI()
+    if clips and ui then
+        for i, v in pairs(clips) do
+            if ui == v then
+                return i
+            end
+        end
+    end
+end
+
 --- cp.apple.finalcutpro.main.LibrariesList:selectClipTitled(title) -> boolean
 --- Function
 --- Select clip with a specific title.
