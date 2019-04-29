@@ -4,18 +4,19 @@
 
 local require = require
 
-local base64            = require("hs.base64")
-local timer             = require("hs.timer")
+local log				= require "hs.logger".new "timeline"
 
-local config            = require("cp.config")
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local json              = require("cp.json")
-local just              = require("cp.just")
+local base64            = require "hs.base64"
+local timer             = require "hs.timer"
+
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local just              = require "cp.just"
 
 local doAfter           = timer.doAfter
-
 
 local mod = {}
 
@@ -203,7 +204,11 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     local currentItemsUI = generators:currentItemsUI()
     local whichItem = nil
+    local altWhichItem = nil
     for _, v in ipairs(currentItemsUI) do
+        --------------------------------------------------------------------------------
+        -- First we try "Theme - Name", if that fails, we just try "Name":
+        --------------------------------------------------------------------------------
         local title = name
         if theme then
             title = theme .. " - " .. name
@@ -211,14 +216,24 @@ function mod.apply(action)
         if v:attributeValue("AXTitle") == title then
             whichItem = v
         end
+        if v:attributeValue("AXTitle") == name then
+            altWhichItem = v
+        end
     end
     if whichItem == nil then
-        dialog.displayErrorMessage("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
+        whichItem = altWhichItem
+    end
+    if whichItem == nil then
+        log.ef("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
+        log.ef("action: %s", hs.inspect(action))
+        dialog.displayErrorMessage("Something went wrong when trying to select the requested Title.")
         return false
     end
     local grid = currentItemsUI[1]:attributeValue("AXParent")
     if not grid then
-        dialog.displayErrorMessage("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
+        log.ef("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
+        log.ef("action: %s", hs.inspect(action))
+        dialog.displayErrorMessage("Something went wrong when trying to select the requested Title.")
         return false
     end
 
@@ -341,7 +356,6 @@ function mod.apply(action)
     return true
 
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.titles",
