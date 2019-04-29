@@ -2,21 +2,21 @@
 ---
 --- Controls Final Cut Pro's Titles.
 
-local require = require
+local require   = require
 
-local log				= require "hs.logger".new "timeline"
+local log       = require "hs.logger".new "titles"
 
-local base64            = require "hs.base64"
-local timer             = require "hs.timer"
+local base64    = require "hs.base64"
+local timer     = require "hs.timer"
 
-local config            = require "cp.config"
-local dialog            = require "cp.dialog"
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
-local json              = require "cp.json"
-local just              = require "cp.just"
+local config    = require "cp.config"
+local dialog    = require "cp.dialog"
+local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
+local json      = require "cp.json"
+local just      = require "cp.just"
 
-local doAfter           = timer.doAfter
+local doAfter   = timer.doAfter
 
 local mod = {}
 
