@@ -340,7 +340,10 @@ function mod.onChoices(choices)
             -- Add choice to Activator:
             --------------------------------------------------------------------------------
             if choices then
-                local name = new(fontName, {font = { name = fontName, size = 18 } })
+                local name = new(fontName, {
+                    font = { name = fontName, size = 18 },
+                    color = { white = 1, alpha = 1 },
+                })
                 choices
                     :add(name)
                     :id(fontName)
