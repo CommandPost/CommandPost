@@ -17,7 +17,6 @@ local TextField         = require "cp.ui.TextField"
 
 local childMatching     = axutils.childMatching
 
-
 local Table = Element:subclass("cp.ui.Table")
 
 --- cp.ui.Table.is(thing) -> boolean
@@ -605,14 +604,28 @@ function Table:toCSV()
                     for c=1, #cells do
                         local cell = cells[c]
                         if cell then
-                            local field = childMatching(cell, StaticText.matches) or childMatching(cell, TextField.matches) or childMatching(cell, MenuButton.matches)
-                            local item = (field and field:attributeValue("AXValue")) or (field and field:attributeValue("AXTitle")) or ""
-                            result = result .. [["]] .. item .. [["]]
-                            if c ~= #cells then
-                                result = result .. ","
+                            if cell:attributeValue("AXRole") == "AXTextField" then
+                                -- If there's only an AXTable > AXRow:
+                                local item = cell:attributeValue("AXValue")
+                                result = result .. [["]] .. item .. [["]]
+                                if c ~= #cells then
+                                    result = result .. ","
+                                else
+                                    if r ~= #rows then
+                                        result = result .. "\n"
+                                    end
+                                end
                             else
-                                if r ~= #rows then
-                                    result = result .. "\n"
+                                -- If there's an AXTable > AXRow > AXCell:
+                                local field = childMatching(cell, StaticText.matches) or childMatching(cell, TextField.matches) or childMatching(cell, MenuButton.matches)
+                                local item = (field and field:attributeValue("AXValue")) or (field and field:attributeValue("AXTitle")) or ""
+                                result = result .. [["]] .. item .. [["]]
+                                if c ~= #cells then
+                                    result = result .. ","
+                                else
+                                    if r ~= #rows then
+                                        result = result .. "\n"
+                                    end
                                 end
                             end
                         end
