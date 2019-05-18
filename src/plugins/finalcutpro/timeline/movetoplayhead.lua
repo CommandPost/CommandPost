@@ -6,10 +6,8 @@ local require = require
 
 local log               = require("hs.logger").new("selectalltimelineclips")
 
-local fcp               = require("cp.apple.finalcutpro")
-
 local Do                = require("cp.rx.go.Do")
-
+local fcp               = require("cp.apple.finalcutpro")
 
 local plugin = {
     id = "finalcutpro.timeline.movetoplayhead",

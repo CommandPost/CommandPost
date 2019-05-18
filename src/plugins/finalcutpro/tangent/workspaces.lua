@@ -12,7 +12,6 @@ local tools                 = require "cp.tools"
 
 local playErrorSound        = tools.playErrorSound
 
-
 local plugin = {
     id = "finalcutpro.tangent.workspaces",
     group = "finalcutpro",

@@ -6,7 +6,6 @@ local require = require
 
 local i18n        = require("cp.i18n")
 
-
 local mod = {}
 
 --- plugins.finalcutpro.tangent.overlay.group

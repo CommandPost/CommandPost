@@ -17,7 +17,6 @@ local tools                 = require("cp.tools")
 local doWhile               = timer.doWhile
 local format                = string.format
 
-
 local mod = {}
 
 --- plugins.finalcutpro.timeline.colorboard.startShiftingPuck(puck, percentShift, angleShift) -> none

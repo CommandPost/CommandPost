@@ -4,8 +4,7 @@
 
 local require = require
 
-local fcp                               = require("cp.apple.finalcutpro")
-
+local fcp = require("cp.apple.finalcutpro")
 
 local mod = {}
 
@@ -140,7 +139,6 @@ function mod.zoomToSelection()
 
     return true
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.zoomtoselection",

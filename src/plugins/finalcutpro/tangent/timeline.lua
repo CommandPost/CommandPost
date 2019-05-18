@@ -14,13 +14,18 @@ local i18n                  = require("cp.i18n")
 
 local delayed               = timer.delayed
 
-
 local plugin = {
     id = "finalcutpro.tangent.timeline",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.tangent.group"]   = "fcpGroup",
-        ["finalcutpro.tangent.common"]  = "common",
+        ["finalcutpro.tangent.group"] = "fcpGroup",
+        ["finalcutpro.tangent.common"] = "common",
+
+        --------------------------------------------------------------------------------
+        -- NOTE: These plugins aren't actually referred here in this plugin, but we
+        --       need to include them here so that they load before this plugin loads.
+        --------------------------------------------------------------------------------
+        ["finalcutpro.timeline.zoomtoselection"] = "zoomtoselection",
     }
 }
 
@@ -29,6 +34,7 @@ function plugin.init(deps)
     local common = deps.common
     local fcpGroup = deps.fcpGroup
 
+    local commandParameter = common.commandParameter
     local shortcutParameter = common.shortcutParameter
 
     --------------------------------------------------------------------------------
@@ -236,7 +242,12 @@ function plugin.init(deps)
     local clipHeightGroup = timelineGroup:group(i18n("clipHeight"))
 
     id = shortcutParameter(clipHeightGroup, id, "increaseClipHeight", "IncreaseThumbnailSize")
-    shortcutParameter(clipHeightGroup, id, "decreaseClipHeight", "DecreaseThumbnailSize")
+    id = shortcutParameter(clipHeightGroup, id, "decreaseClipHeight", "DecreaseThumbnailSize")
+
+    --------------------------------------------------------------------------------
+    -- Zoom to Selection:
+    --------------------------------------------------------------------------------
+    commandParameter(timelineGroup, id, "fcpx", "cpZoomToSelection")
 
 end
 

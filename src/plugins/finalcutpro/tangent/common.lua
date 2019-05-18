@@ -26,7 +26,6 @@ local ninjaMouseClick       = tools.ninjaMouseClick
 local playErrorSound        = tools.playErrorSound
 local tableCount            = tools.tableCount
 
-
 local mod = {}
 
 -- DEFER -> number

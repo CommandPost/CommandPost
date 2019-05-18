@@ -17,7 +17,6 @@ local plugins           = require("cp.apple.finalcutpro.plugins")
 local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
-
 local mod = {}
 
 -- GROUP -> string

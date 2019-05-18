@@ -12,7 +12,6 @@ local tools                 = require("cp.tools")
 
 local tableCount            = tools.tableCount
 
-
 local plugin = {
     id = "finalcutpro.tangent.video",
     group = "finalcutpro",

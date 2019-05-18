@@ -8,7 +8,6 @@ local require = require
 
 local i18n                  = require("cp.i18n")
 
-
 local plugin = {
     id = "finalcutpro.tangent.commandpost",
     group = "finalcutpro",

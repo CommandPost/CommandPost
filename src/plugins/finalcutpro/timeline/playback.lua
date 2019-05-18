@@ -4,8 +4,7 @@
 
 local require = require
 
-local fcp	= require("cp.apple.finalcutpro")
-
+local fcp = require "cp.apple.finalcutpro"
 
 local mod = {}
 
