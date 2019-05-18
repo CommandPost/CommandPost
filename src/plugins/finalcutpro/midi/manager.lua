@@ -4,9 +4,12 @@
 
 local require = require
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
+--local log             = require "hs.logger".new "fcpMIDIman"
 
+local application       = require "hs.application"
+
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
 
 local mod = {}
 
@@ -17,6 +20,16 @@ mod.ID = "fcpx"
 
 -- used to update the group status
 local function updateGroupStatus(enabled)
+    --------------------------------------------------------------------------------
+    -- Workaround for AudioSwift Support:
+    --------------------------------------------------------------------------------
+    if fcp:isRunning() then
+        local fcpApp = fcp.app.hsApplication()
+        local frontmostApplication = application.frontmostApplication()
+        if #fcpApp:visibleWindows() >= 1 and frontmostApplication:bundleID() == "com.nigelrios.AudioSwift" then
+            enabled = true
+        end
+    end
     mod._manager.groupStatus(mod.ID, enabled)
 end
 
@@ -38,7 +51,6 @@ mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
         fcp.app.showing:unwatch(updateGroupStatus)
     end
 end)
-
 
 local plugin = {
     id = "finalcutpro.midi.manager",
