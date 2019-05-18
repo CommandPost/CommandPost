@@ -4,26 +4,26 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("tbManager")
+local log               = require "hs.logger".new "tbManager"
 
-local canvas                                    = require("hs.canvas")
-local fnutils                                   = require("hs.fnutils")
-local host                                      = require("hs.host")
-local image                                     = require("hs.image")
-local styledtext                                = require("hs.styledtext")
+local canvas            = require "hs.canvas"
+local fnutils           = require "hs.fnutils"
+local host              = require "hs.host"
+local image             = require "hs.image"
+local styledtext        = require "hs.styledtext"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local i18n                                      = require("cp.i18n")
-local json                                      = require("cp.json")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
 
-local touchbar                                  = require("hs._asm.undocumented.touchbar")
+local touchbar          = require "hs._asm.undocumented.touchbar"
 
-local widgets                                   = require("widgets")
-local copy                                      = fnutils.copy
+local widgets           = require "widgets"
 
+local copy              = fnutils.copy
 
 local mod = {}
 
@@ -66,13 +66,6 @@ mod._groupStatus = {}
 -- Variable
 -- Current Touch Bar Sub Group Statuses.
 mod._currentSubGroup = config.prop("touchBarCurrentSubGroup", {})
-
---- plugins.core.touchbar.manager.closeBox -> boolean
---- Variable
---- An optional boolean, specifying whether or not the system
---- escape (or its current replacement) button should be replaced by a button
---- to remove the modal bar from the touch bar display when pressed.
-mod.dismissButton = true
 
 --- plugins.core.touchbar.manager.maxItems -> number
 --- Variable
@@ -853,7 +846,6 @@ function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod
 end
-
 
 local plugin = {
     id          = "core.touchbar.manager",
