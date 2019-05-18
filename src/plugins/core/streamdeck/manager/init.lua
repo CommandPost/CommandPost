@@ -14,8 +14,6 @@ local streamdeck        = require "hs.streamdeck"
 
 local dialog            = require "cp.dialog"
 local i18n              = require "cp.i18n"
-local prop              = require "cp.prop"
-local tools             = require "cp.tools"
 
 local config            = require "cp.config"
 local json              = require "cp.json"
@@ -799,7 +797,7 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
     local global = deps.global
     global:add("cpStreamDeck")
         :whenActivated(mod.toggle)
