@@ -205,11 +205,11 @@ local function streamDeckPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Allow specific toolbar icons in the Console:
                     --------------------------------------------------------------------------------
+                    local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
                     if groupID == "fcpx" then
-                        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
                         local toolbarIcons = {
                             fcpx_widgets            = { path = iconPath .. "touchbar.png",      priority = 1},
-                            global_touchbarbanks    = { path = iconPath .. "bank.png",          priority = 2},
+                            global_streamDeckbanks  = { path = iconPath .. "bank.png",          priority = 2},
                             fcpx_videoEffect        = { path = iconPath .. "videoEffect.png",   priority = 3},
                             fcpx_audioEffect        = { path = iconPath .. "audioEffect.png",   priority = 4},
                             fcpx_generator          = { path = iconPath .. "generator.png",     priority = 5},
@@ -218,6 +218,11 @@ local function streamDeckPanelCallback(id, params)
                             fcpx_fonts              = { path = iconPath .. "font.png",          priority = 8},
                             fcpx_shortcuts          = { path = iconPath .. "shortcut.png",      priority = 9},
                             fcpx_menu               = { path = iconPath .. "menu.png",          priority = 10},
+                        }
+                        mod.activator[groupID]:toolbarIcons(toolbarIcons)
+                    else
+                        local toolbarIcons = {
+                            global_streamDeckbanks  = { path = iconPath .. "bank.png",          priority = 1},
                         }
                         mod.activator[groupID]:toolbarIcons(toolbarIcons)
                     end
