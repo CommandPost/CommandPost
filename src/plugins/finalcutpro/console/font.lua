@@ -6,21 +6,22 @@ local require = require
 
 local hs = hs
 
-local log				= require("hs.logger").new("fontConsole")
+local log				= require "hs.logger".new "fontConsole"
 
-local image             = require("hs.image")
-local styledtext        = require("hs.styledtext")
+local image             = require "hs.image"
+local styledtext        = require "hs.styledtext"
+local timer             = require "hs.timer"
 
-local config            = require("cp.config")
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local just              = require("cp.just")
-local tools             = require("cp.tools")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local just              = require "cp.just"
+local tools             = require "cp.tools"
 
+local doAfter           = timer.doAfter
 local execute           = hs.execute
 local imageFromPath     = image.imageFromPath
-
 
 local mod = {}
 
@@ -417,7 +418,14 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcp.isRunning:watch(function(running)
         if running then
-            mod._handler:reset(true)
+            --------------------------------------------------------------------------------
+            -- Give ourselves a 5 second buffer, just incase Final Cut Pro is restarting:
+            --------------------------------------------------------------------------------
+            doAfter(5, function()
+                if fcp:isRunning() then
+                    mod._handler:reset(true)
+                end
+            end)
         end
     end)
 
