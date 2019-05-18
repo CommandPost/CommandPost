@@ -723,6 +723,10 @@ local function midiPanelCallback(id, params)
             local commandType = getItem("commandType", params["buttonID"], params["groupID"])
             local number = getItem("number", params["buttonID"], params["groupID"])
             local value = getItem("value", params["buttonID"], params["groupID"])
+            local action = getItem("action", params["buttonID"], params["groupID"])
+            local actionTitle = getItem("actionTitle", params["buttonID"], params["groupID"])
+            local handlerID = getItem("handlerID", params["buttonID"], params["groupID"])
+
             local currentGroup = params["groupID"]:sub(1, -2)
             local setItem = mod._midi.setItem
             for i = 1, mod._midi.numberOfSubGroups do
@@ -732,6 +736,9 @@ local function midiPanelCallback(id, params)
                 setItem("commandType", params["buttonID"], groupID, commandType)
                 setItem("number", params["buttonID"], groupID, number)
                 setItem("value", params["buttonID"], groupID, value)
+                setItem("action", params["buttonID"], groupID, action)
+                setItem("actionTitle", params["buttonID"], groupID, actionTitle)
+                setItem("handlerID", params["buttonID"], groupID, handlerID)
             end
         elseif callbackType == "updateNumber" then
             --------------------------------------------------------------------------------
