@@ -41,10 +41,13 @@ local class                     = require "middleclass"
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
+local If                        = go.If
 local insert                    = table.insert
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
-local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
+local tableContains             = tools.tableContains
+local Throw                     = go.Throw
+local WaitUntil                 = go.WaitUntil
 
 local app = class("app"):include(lazy)
 
@@ -496,15 +499,16 @@ function app.lazy.prop:currentLocale()
         function()
             --------------------------------------------------------------------------------
             -- If the app is not running, we next try to determine the language using
-            -- the 'AppleLanguages' preference...
+            -- the 'AppleLanguages' preference:
             --------------------------------------------------------------------------------
             local appLanguages = self.preferences.AppleLanguages
             if appLanguages then
                 for _,lang in ipairs(appLanguages) do
                     if self:isSupportedLocale(lang) then
                         local currentLocale = localeID.forCode(lang)
-                        if currentLocale then
-                            return currentLocale
+                        local bestLocale = currentLocale and self:bestSupportedLocale(currentLocale)
+                        if bestLocale then
+                            return bestLocale
                         end
                     end
                 end
@@ -539,7 +543,6 @@ function app.lazy.prop:currentLocale()
             -- If that also fails, we use the base locale, or failing that, English:
             --------------------------------------------------------------------------------
             local locale = self:baseLocale() or localeID.forCode("en")
-
             return locale
         end,
         function(value, _, theProp)
