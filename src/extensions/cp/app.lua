@@ -45,7 +45,6 @@ local If                        = go.If
 local insert                    = table.insert
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
-local tableContains             = tools.tableContains
 local Throw                     = go.Throw
 local WaitUntil                 = go.WaitUntil
 
