@@ -2,14 +2,13 @@
 ---
 --- Controls Final Cut Pro's Lanes.
 
-local require = require
+local require   = require
 
-local log								= require("hs.logger").new("lanes")
+local log       = require("hs.logger").new("lanes")
 
-local fcp								= require("cp.apple.finalcutpro")
-local tools							= require("cp.tools")
-local i18n              = require("cp.i18n")
-
+local fcp       = require("cp.apple.finalcutpro")
+local tools     = require("cp.tools")
+local i18n      = require("cp.i18n")
 
 local mod = {}
 
@@ -55,12 +54,11 @@ function mod.selectClipAtLane(whichLane)
     return true
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.lanes",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.commands"]	= "fcpxCmds",
+        ["finalcutpro.commands"]    = "fcpxCmds",
     }
 }
 

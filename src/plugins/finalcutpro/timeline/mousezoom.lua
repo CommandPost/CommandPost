@@ -19,7 +19,6 @@ local semver                            = require("semver")
 
 local touchdevice
 
-
 local mod = {}
 
 --- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> boolean

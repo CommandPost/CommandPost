@@ -10,7 +10,6 @@ local tools         = require("cp.tools")
 
 local geometry      = require("hs.geometry")
 
-
 local plugin = {
     id = "finalcutpro.timeline.renameclip",
     group = "finalcutpro",

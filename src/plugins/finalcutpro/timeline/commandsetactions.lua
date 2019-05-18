@@ -18,7 +18,6 @@ local plist				= require("cp.plist")
 local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
-
 local mod = {}
 
 -- GROUP -> string

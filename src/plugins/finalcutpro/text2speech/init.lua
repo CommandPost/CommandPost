@@ -29,7 +29,6 @@ local i18n                              = require("cp.i18n")
 
 local doAfter                           = timer.doAfter
 
-
 local mod = {}
 
 --- plugins.finalcutpro.text2speech.DELETE_DELAY

@@ -11,7 +11,6 @@ local fcp                               = require("cp.apple.finalcutpro")
 
 local doUntil                           = timer.doUntil
 
-
 local mod = {}
 
 --- plugins.finalcutpro.timeline.height.changeTimelineClipHeightAlreadyInProgress -> boolean

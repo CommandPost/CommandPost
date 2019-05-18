@@ -8,7 +8,6 @@ local log                               = require("hs.logger").new("selectalltim
 
 local fcp                               = require("cp.apple.finalcutpro")
 
-
 local mod = {}
 
 --- plugins.finalcutpro.timeline.selectalltimelineclips(forwards) -> boolean

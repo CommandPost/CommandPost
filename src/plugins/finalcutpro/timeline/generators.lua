@@ -16,7 +16,6 @@ local just              = require("cp.just")
 
 local doAfter           = timer.doAfter
 
-
 local mod = {}
 
 -- plugins.finalcutpro.timeline.generators._cache <cp.prop: table>
