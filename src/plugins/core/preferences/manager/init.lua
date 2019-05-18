@@ -443,7 +443,11 @@ end
 function mod.refresh(id)
     if mod._webview then
         if mod.currentPanelID() ~= id then
-            mod.selectPanel(id)
+            if id then
+                mod.selectPanel(id)
+            else
+                mod.selectPanel(mod.currentPanelID())
+            end
             mod._webview:html(generateHTML())
         end
     end

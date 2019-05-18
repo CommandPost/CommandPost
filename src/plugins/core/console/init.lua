@@ -4,8 +4,7 @@
 
 local require = require
 
-local tools = require("cp.tools")
-
+local tools = require "cp.tools"
 
 local mod = {}
 
@@ -51,7 +50,6 @@ function mod.show()
     mod.activator:show()
 
 end
-
 
 local plugin = {
     id              = "core.console",

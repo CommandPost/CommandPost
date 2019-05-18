@@ -1,0 +1,227 @@
+<style>{(css/streamdeck.css)}</style>
+<script>
+	function setStreamDeckIcon(groupID, buttonID, encodedIcon) {
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = "<img src='" + encodedIcon + "'>";
+    	document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = "dropzone dropped";
+	}
+
+	function setStreamDeckActionTitle(groupID, buttonID, actionTitle) {
+		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value = actionTitle;
+	}
+
+	function setStreamDeckLabel(groupID, buttonID, label) {
+		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value = label;
+	}
+
+	function shiftStreamDeckButtons(groupID, buttonID, shiftButton) {
+		var originalPreview = document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML;
+		var originalIconClass = document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className;
+		var originalAction = document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value;
+		var originalLabel = document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value;
+
+		var newPreview = document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton + "_preview").innerHTML;
+		var newIconClass = document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton).className;
+		var newAction = document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_action").value;
+		var newLabel = document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_label").value;
+
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = newPreview;
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = newIconClass;
+		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value = newAction;
+		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value = newLabel;
+
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton + "_preview").innerHTML = originalPreview;
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton).className = originalIconClass;
+		document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_action").value = originalAction;
+		document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_label").value = originalLabel;
+	}
+
+	function clearStreamDeckIcon(groupID, buttonID) {
+		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = "icon";
+        document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = "dropzone";
+    }
+
+	function pressStreamDeckDropZone(groupID, buttonID) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "iconClicked",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeStreamDeckDropZone(groupID, buttonID, element) {
+		var file = element.files[0];
+
+		element.classList.remove("hover");
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "streamDeckPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		element.classList.add("dropped");
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+			document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = '<img src="' + data + '" />';
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "streamDeckPanelCallback",
+					params: {
+						type: "updateIcon",
+						groupID: groupID,
+						buttonID: buttonID,
+						icon: data,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
+
+	function pressStreamDeckActionButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "updateAction",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressStreamDeckClearButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "clearAction",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressStreamDeckUpButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "upButtonPressed",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressStreamDeckDownButton(groupID, buttonID) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "downButtonPressed",
+					groupID: groupID,
+					buttonID: buttonID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeStreamDeckLabel(groupID, buttonID, label) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "updateLabel",
+					groupID: groupID,
+					buttonID: buttonID,
+					label: label,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeStreamDeckBankLabel(groupID, label) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "updateBankLabel",
+					groupID: groupID,
+					label: label,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function saveScrollbarPosition(groupID, element) {
+		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
+			try {
+				var result = {
+					id: "streamDeckPanelCallback",
+					params: {
+						type: "scrollBarPosition",
+						groupID: groupID,
+						value: element.scrollTop,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+</script>
+<h3 class="uiItem"><span class="streamDeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>{* streamDeckGroupSelect *}</span>{{ i18n("layoutEditor") }}</h3>
+{(html/controls.html, context)}
