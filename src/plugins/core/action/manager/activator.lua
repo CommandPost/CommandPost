@@ -794,61 +794,58 @@ function activator.mt:chooser()
     --------------------------------------------------------------------------------
     if not self._chooser then
 
-        local t
+        --------------------------------------------------------------------------------
+        -- Create new toolbar:
+        --------------------------------------------------------------------------------
+        local t = toolbar.new(self._id)
+            :canCustomize(true)
+            :autosaves(true)
+            :sizeMode("small")
+
+        --------------------------------------------------------------------------------
+        -- Add "Show All" button:
+        --------------------------------------------------------------------------------
+        t:addItems({
+            id = "showAll",
+            label = i18n("showAll"),
+            priority = 1,
+            image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
+            selectable = true,
+            fn = function()
+                self:enableAllHandlers()
+            end,
+        })
+
         local toolbarIcons = self._toolbarIcons
         if toolbarIcons and next(toolbarIcons) ~= nil then
             --------------------------------------------------------------------------------
-            -- Create new toolbar:
+            -- Add buttons for each section that has an icon:
             --------------------------------------------------------------------------------
-            t = toolbar.new(self._id)
-                :canCustomize(true)
-                :autosaves(true)
-                :sizeMode("small")
-
-            if toolbarIcons then
-                --------------------------------------------------------------------------------
-                -- Add "Show All" button:
-                --------------------------------------------------------------------------------
+            for id, item in spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
                 t:addItems({
-                    id = "showAll",
-                    label = i18n("showAll"),
-                    priority = 1,
-                    image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
+                    id = id,
+                    label = i18n(id .. "_action"),
+                    tooltip = i18n(id .. "_action"),
+                    image = imageFromPath(item.path),
+                    priority = item.priority + 1,
                     selectable = true,
                     fn = function()
-                        self:enableAllHandlers()
+                        local soloed = true
+                        for i,_ in pairs(self:allowedHandlers()) do
+                            if i ~= id and not self:isDisabledHandler(i) then
+                                soloed = false
+                                break
+                            end
+                        end
+                        if soloed then
+                            self:enableAllHandlers()
+                            t:selectedItem("showAll")
+                        else
+                            self:disableAllHandlers()
+                            self:enableHandler(id)
+                        end
                     end,
                 })
-
-                --------------------------------------------------------------------------------
-                -- Add buttons for each section that has an icon:
-                --------------------------------------------------------------------------------
-                for id, item in spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
-                    t:addItems({
-                        id = id,
-                        label = i18n(id .. "_action"),
-                        tooltip = i18n(id .. "_action"),
-                        image = imageFromPath(item.path),
-                        priority = item.priority + 1,
-                        selectable = true,
-                        fn = function()
-                            local soloed = true
-                            for i,_ in pairs(self:allowedHandlers()) do
-                                if i ~= id and not self:isDisabledHandler(i) then
-                                    soloed = false
-                                    break
-                                end
-                            end
-                            if soloed then
-                                self:enableAllHandlers()
-                                t:selectedItem("showAll")
-                            else
-                                self:disableAllHandlers()
-                                self:enableHandler(id)
-                            end
-                        end,
-                    })
-                end
             end
         end
 
