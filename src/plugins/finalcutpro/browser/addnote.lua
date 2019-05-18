@@ -4,21 +4,20 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("addnote")
+local log           = require "hs.logger".new "addnote"
 
-local chooser                           = require("hs.chooser")
-local drawing                           = require("hs.drawing")
-local eventtap                          = require("hs.eventtap")
-local menubar                           = require("hs.menubar")
-local mouse                             = require("hs.mouse")
-local screen                            = require("hs.screen")
+local chooser       = require "hs.chooser"
+local drawing       = require "hs.drawing"
+local eventtap      = require "hs.eventtap"
+local menubar       = require "hs.menubar"
+local mouse         = require "hs.mouse"
+local screen        = require "hs.screen"
 
-local axutils                           = require("cp.ui.axutils")
-local config                            = require("cp.config")
-local fcp                               = require("cp.apple.finalcutpro")
-local dialog                            = require("cp.dialog")
-local i18n                              = require("cp.i18n")
-
+local axutils       = require "cp.ui.axutils"
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local dialog        = require "cp.dialog"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -226,7 +225,6 @@ function mod.addNoteToSelectedClip()
     mod.noteChooser:show()
 
 end
-
 
 local plugin = {
     id              = "finalcutpro.browser.addnote",
