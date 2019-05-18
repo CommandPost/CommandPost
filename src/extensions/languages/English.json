@@ -1476,6 +1476,7 @@
         "streamDeckAppRunning": "Stream Deck App is running.",
         "streamDeckAppRunningMessage": "This must be closed to activate Stream Deck support in CommandPost.",
         "streamDeckAppTip": "The official Stream Deck application is not compatible with CommandPost and can't be used at the same time.",
+        "streamDeckBankDescription": "Changes the Stream Deck Bank",
         "streamdeckPanelLabel": "Stream Deck",
         "streamdeckPanelTooltip": "Stream Deck Preferences",
         "streamDeckReset": "Reset All Stream Deck Items",
