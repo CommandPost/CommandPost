@@ -23,8 +23,7 @@ local displayMessage        = dialog.displayMessage
 -- Sets the Spatial Conform Type.
 --
 -- Parameters:
---  * value - The conform type you wish to change the clip(s) too as a string
---            (as it appears in the Inspector in English).
+--  * value - The conform type you wish to change the clip(s) to as a Final Cut Pro string ID.
 --
 -- Returns:
 --  * None
@@ -43,8 +42,8 @@ local function doSpatialConformType(value)
             return false
         end
 
-        return Do(spatialConformType:doSelectValue(value))
-        :Then(WaitUntil(spatialConformType):Is(value):TimeoutAfter(2000))
+        return Do(spatialConformType:doSelectValue(fcp:string(value)))
+        :Then(WaitUntil(spatialConformType):Is(fcp:string(value)):TimeoutAfter(2000))
         :Then(true)
     end)
     :Catch(function(message)
@@ -52,7 +51,6 @@ local function doSpatialConformType(value)
         return false
     end)
     :Label("video.doSpatialConformType")
-
 end
 
 -- doBlendMode(value) -> none
@@ -60,7 +58,7 @@ end
 -- Changes the Blend Mode.
 --
 -- Parameters:
---  * value - The blend mode you wish to change the clip(s) too as a string.
+--  * value - The blend mode you wish to change the clip(s) to as a Final Cut Pro string ID.
 --
 -- Returns:
 --  * None
@@ -79,8 +77,8 @@ local function doBlendMode(value)
             return false
         end
 
-        return Do(blendMode:doSelectValue(value))
-        :Then(WaitUntil(blendMode):Is(value):TimeoutAfter(2000))
+        return Do(blendMode:doSelectValue(fcp:string(value)))
+        :Then(WaitUntil(blendMode):Is(fcp:string(value)):TimeoutAfter(2000))
         :Then(true)
     end)
     :Catch(function(message)
@@ -136,8 +134,7 @@ end
 -- Enables or disables Stabilisation.
 --
 -- Parameters:
---  * value - The stabilisation mode you wish to change the clip(s) too as a string
---            (as it appears in the Inspector in English).
+--  * value - Thestabilisation mode you wish to change the clip(s) to as a Final Cut Pro string ID.
 --
 -- Returns:
 --  * None
@@ -169,8 +166,8 @@ local function doStabilizationMethod(value)
             )
             :Then(
                 If(method.isEnabled) -- Only try and "tick" it if it's enabled. The stabilisation might still be processing.
-                :Then(method:doSelectValue(value))
-                :Then(WaitUntil(method):Is(value):TimeoutAfter(2000))
+                :Then(method:doSelectValue(fcp:string(value)))
+                :Then(WaitUntil(method):Is(fcp:string(value)):TimeoutAfter(2000))
             )
             :Then(true)
             :Otherwise(function()
@@ -236,8 +233,7 @@ end
 -- Sets the Rolling Shutter Amount.
 --
 -- Parameters:
---  * value - The rolling shutter amount you wish to change the clip(s) too as a string
---            (as it appears in the Inspector in English).
+--  * value - The rolling shutter amount you wish to change the clip(s) to as a Final Cut Pro string ID.
 --
 -- Returns:
 --  * None
@@ -269,8 +265,8 @@ local function doRollingShutterAmount(value)
             )
             :Then(
                 If(amount.isEnabled) -- Only try and "tick" it if it's enabled. It might still be processing.
-                :Then(amount:doSelectValue(value))
-                :Then(WaitUntil(amount):Is(value):TimeoutAfter(2000))
+                :Then(amount:doSelectValue(fcp:string(value)))
+                :Then(WaitUntil(amount):Is(fcp:string(value)):TimeoutAfter(2000))
             )
             :Then(true)
             :Otherwise(function()
@@ -316,17 +312,17 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("stabilizationMethodAutomatic")
-        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationDynamic")))
+        :whenActivated(doStabilizationMethod("FFStabilizationDynamic"))
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("automatic"))
 
     fcpxCmds
         :add("stabilizationMethodInertiaCam")
-        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseInertiaCam")))
+        :whenActivated(doStabilizationMethod("FFStabilizationUseInertiaCam"))
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("inertiaCam"))
 
     fcpxCmds
         :add("stabilizationMethodSmoothCam")
-        :whenActivated(doStabilizationMethod(fcp:string("FFStabilizationUseSmoothCam")))
+        :whenActivated(doStabilizationMethod("FFStabilizationUseSmoothCam"))
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("smoothCam"))
 
     --------------------------------------------------------------------------------
@@ -349,7 +345,7 @@ function plugin.init(deps)
     for _, v in pairs(rollingShutterAmounts) do
         fcpxCmds
             :add(v.flexoID)
-            :whenActivated(doRollingShutterAmount(fcp:string(v.flexoID)))
+            :whenActivated(doRollingShutterAmount(v.flexoID))
             :titled(rollingShutterTitle .. " " .. rollingShutterAmount .. ": " .. i18n(v.i18n))
     end
 
@@ -358,15 +354,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpSetSpatialConformTypeToFit")
-        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeFit")))
+        :whenActivated(doSpatialConformType("FFConformTypeFit"))
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToFill")
-        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeFill")))
+        :whenActivated(doSpatialConformType("FFConformTypeFill"))
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToNone")
-        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeNone")))
+        :whenActivated(doSpatialConformType("FFConformTypeNone"))
 
     --------------------------------------------------------------------------------
     -- Blend Modes:
@@ -376,7 +372,7 @@ function plugin.init(deps)
         if v.flexoID ~= nil then
             fcpxCmds
                 :add(v.flexoID)
-                :whenActivated(doBlendMode(fcp:string(v.flexoID)))
+                :whenActivated(doBlendMode(v.flexoID))
                 :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
         end
     end
