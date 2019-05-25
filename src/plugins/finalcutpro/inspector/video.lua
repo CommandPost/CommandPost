@@ -358,15 +358,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpSetSpatialConformTypeToFit")
-        :whenActivated(doSpatialConformType("Fit"))
+        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeFit")))
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToFill")
-        :whenActivated(doSpatialConformType("Fill"))
+        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeFill")))
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToNone")
-        :whenActivated(doSpatialConformType("None"))
+        :whenActivated(doSpatialConformType(fcp:string("FFConformTypeNone")))
 
     --------------------------------------------------------------------------------
     -- Blend Modes:
