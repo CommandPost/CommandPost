@@ -25,6 +25,7 @@ local chooser                   = require "hs.chooser"
 local drawing                   = require "hs.drawing"
 local eventtap                  = require "hs.eventtap"
 local fnutils                   = require "hs.fnutils"
+local host                      = require "hs.host"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 local menubar                   = require "hs.menubar"
@@ -34,12 +35,11 @@ local timer                     = require "hs.timer"
 local toolbar                   = require "hs.webview.toolbar"
 
 local config                    = require "cp.config"
+local Do                        = require "cp.rx.go.Do"
 local i18n                      = require "cp.i18n"
 local idle                      = require "cp.idle"
 local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
-
-local Do                        = require "cp.rx.go.Do"
 
 local _                         = require "moses"
 
@@ -51,6 +51,7 @@ local insert                    = table.insert
 local pack                      = table.pack
 local sort                      = table.sort
 local spairs                    = tools.spairs
+local uuid                      = host.uuid
 
 local activator = {}
 activator.mt = {}
@@ -796,7 +797,7 @@ function activator.mt:chooser()
         --------------------------------------------------------------------------------
         -- Create new toolbar:
         --------------------------------------------------------------------------------
-        local t = toolbar.new(self._id)
+        local t = toolbar.new(uuid())
             :canCustomize(true)
             :autosaves(true)
             :sizeMode("small")
