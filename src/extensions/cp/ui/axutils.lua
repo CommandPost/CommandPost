@@ -15,7 +15,6 @@ local prop          = require("cp.prop")
 
 local sort          = table.sort
 
-
 local axutils = {}
 
 --- cp.ui.axutils.valueOf(element, name[, default]) -> anything
