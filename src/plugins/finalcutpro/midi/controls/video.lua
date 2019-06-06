@@ -4,14 +4,12 @@
 
 local require = require
 
-local eventtap          = require("hs.eventtap")
+local eventtap          = require "hs.eventtap"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
-
-
-local mod = {}
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
 -- shiftPressed() -> boolean
 -- Function
@@ -34,16 +32,15 @@ local function shiftPressed()
     return result
 end
 
---- plugins.finalcutpro.midi.controls.video.init() -> nil
---- Function
---- Initialise the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init(deps)
+local plugin = {
+    id              = "finalcutpro.midi.controls.video",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.midi.manager"] = "manager",
+    }
+}
+
+function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Scale X (0 to 400):
@@ -128,6 +125,10 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Scale All (0 to 400):
     --------------------------------------------------------------------------------
+    local cachedScaleUI
+    local updateScaleAllUI = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():scaleAll():value(cachedScaleUI)
+    end)
     deps.manager.controls:new("transformScaleAll", {
         group = "fcpx",
         text = "MIDI: Transform - Scale All",
@@ -143,10 +144,8 @@ function mod.init(deps)
                 else
                     midiValue = metadata.fourteenBitValue
                 end
-                if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():scaleAll():value(value)
-                end
+                cachedScaleUI = tools.round(midiValue / 16383 * 400)
+                updateScaleAllUI()
             else
                 --------------------------------------------------------------------------------
                 -- 7bit:
@@ -159,7 +158,8 @@ function mod.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():scaleAll():value(value)
+                    cachedScaleUI = value
+                    updateScaleAllUI()
                 end
             end
         end,
@@ -365,21 +365,6 @@ function mod.init(deps)
         end,
     })
 
-    return mod
-
-end
-
-
-local plugin = {
-    id              = "finalcutpro.midi.controls.video",
-    group           = "finalcutpro",
-    dependencies    = {
-        ["core.midi.manager"] = "manager",
-    }
-}
-
-function plugin.init(deps)
-    return mod.init(deps)
 end
 
 return plugin

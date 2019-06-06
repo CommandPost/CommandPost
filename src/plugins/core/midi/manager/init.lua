@@ -447,22 +447,24 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(_, deviceName, commandType, _, metadata)
+    if mod.learningMode then
+        return
+    end
+
     local group = cachedActiveGroupAndSubgroup
+    local channel = metadata.channel
+    local controllerNumber = metadata.controllerNumber or metadata.note
+    local controllerValue = metadata.controllerValue
+
+    if metadata.fourteenBitCommand then
+        controllerValue = metadata.fourteenBitValue
+    end
 
     if metadata.isVirtual then
         deviceName = "virtual_" .. deviceName
     end
 
-    local channel = metadata.channel
-
-    local controllerNumber = metadata.controllerNumber or metadata.note
-
-    local controllerValue = metadata.controllerValue
-    if metadata.fourteenBitCommand then
-        controllerValue = metadata.fourteenBitValue
-    end
-
-    if not mod.learningMode and midiActions and midiActions[group] and midiActions[group][deviceName] and midiActions[group][deviceName][channel] and midiActions[group][deviceName][channel][commandType] then
+    if midiActions and midiActions[group] and midiActions[group][deviceName] and midiActions[group][deviceName][channel] and midiActions[group][deviceName][channel][commandType] then
         if midiActions[group][deviceName][channel][commandType][controllerNumber] and midiActions[group][deviceName][channel][commandType][controllerNumber] then
             local v
             if midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue] and midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]["action"] then
