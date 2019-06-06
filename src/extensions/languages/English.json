@@ -1,6 +1,7 @@
 {
     "en": {
         "above": "Above",
+        "absolute": "Absolute",
         "accessibilityNote": "CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
         "action": "Action",
         "actionHiddenText": "%{text} [Hidden]",
@@ -1254,6 +1255,7 @@
         "redo": "Redo",
         "refreshMidi": "Refresh MIDI Devices",
         "rejected": "Rejected",
+        "relative": "Relative",
         "reload": "Reload",
         "rememberLastQuery": "Remember Last Query",
         "removeFromList": "Remove from List",
