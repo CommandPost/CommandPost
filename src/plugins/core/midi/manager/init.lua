@@ -91,7 +91,7 @@ mod.numberOfSubGroups = 9
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of MIDI items per group.
-mod.maxItems = 50
+mod.maxItems = 100
 
 -- plugins.core.midi.manager._items <cp.prop: table>
 -- Field
