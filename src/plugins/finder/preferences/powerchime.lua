@@ -8,14 +8,13 @@ local hs            = hs
 
 --local log		    = require("hs.logger").new("powerchime")
 
-local battery       = require("hs.battery")
+local battery       = require "hs.battery"
 
-local i18n          = require("cp.i18n")
-local tools         = require("cp.tools")
+local i18n          = require "cp.i18n"
+
+local cfpreferences = require "hs._asm.cfpreferences"
 
 local execute       = hs.execute
-local trim          = tools.trim
-
 
 local plugin = {
     id              = "finder.preferences.powerchime",
@@ -35,13 +34,7 @@ local plugin = {
 -- Returns:
 --  * `true` if disabled otherwise `false`
 local function powerChimeDisabled()
-    local o, s, t, r = execute("defaults read com.apple.PowerChime ChimeOnNoHardware")
-    if o and s and t == "exit" and r == 0 then
-        if trim(o) == "1" then
-            return true
-        end
-    end
-    return false
+    return cfpreferences.getBoolean("ChimeOnNoHardware", "com.apple.PowerChime")
 end
 
 -- setPowerChime(disabled) -> none
@@ -54,12 +47,11 @@ end
 -- Returns:
 --  * None
 local function setPowerChime(disabled)
-    execute("defaults write com.apple.PowerChime ChimeOnNoHardware -bool " .. tostring(disabled))
+    cfpreferences.setValue("ChimeOnNoHardware", disabled, "com.apple.PowerChime")
     execute("killall PowerChime")
 end
 
 function plugin.init(deps)
-
     deps.panel
         :addHeading(100, i18n("advanced"))
         :addCheckbox(101,
@@ -71,10 +63,8 @@ function plugin.init(deps)
                                 local value = powerChimeDisabled()
                                 setPowerChime(not value)
                               end,
-
           }
       )
-
 end
 
 return plugin
