@@ -4,25 +4,24 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("prefsMIDI")
+local log           = require "hs.logger".new "prefsMIDI"
 
-local dialog                                    = require("hs.dialog")
-local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
-local midi                                      = require("hs.midi")
-local timer                                     = require("hs.timer")
+local dialog        = require "hs.dialog"
+local image         = require "hs.image"
+local inspect       = require "hs.inspect"
+local midi          = require "hs.midi"
+local timer         = require "hs.timer"
 
-local commands                                  = require("cp.commands")
-local config                                    = require("cp.config")
-local tools                                     = require("cp.tools")
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local commands      = require "cp.commands"
+local config        = require "cp.config"
+local tools         = require "cp.tools"
+local html          = require "cp.web.html"
+local ui            = require "cp.web.ui"
+local i18n          = require "cp.i18n"
 
-local _                                         = require("moses")
+local _             = require "moses"
 
-local delayed                                   = timer.delayed
-
+local delayed       = timer.delayed
 
 local mod = {}
 
@@ -154,58 +153,28 @@ local function generateContent()
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local groupOptions = {}
-    local defaultGroup = nil
+    local defaultGroup
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
         for subGroupID=1, mod._midi.numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bank " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
 
-    local midiGroupSelect = ui.select({
-        id          = "midiGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var midiGroupSelect = document.getElementById("midiGroupSelect")
-        midiGroupSelect.onchange = function(e) {
-            try {
-                var result = {
-                    id: "midiPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.{{ label }}.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            console.log("midiGroupSelect changed");
-            var groupControls = document.getElementById("midiGroupControls");
-            var value = midiGroupSelect.options[midiGroupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "midiGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]], {label = mod._manager.getLabel()})
+    local groupLabels = {}
+    for _,id in ipairs(commands.groupIds()) do
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
+    end
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
         _                           = _,
-        midiGroupSelect             = midiGroupSelect,
+        numberOfSubGroups           = mod._midi.numberOfSubGroups,
+        groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
         webviewLabel                = mod._manager.getLabel(),
@@ -975,7 +944,6 @@ function mod.init(deps, env)
     return mod
 
 end
-
 
 local plugin = {
     id              = "core.midi.prefs",
