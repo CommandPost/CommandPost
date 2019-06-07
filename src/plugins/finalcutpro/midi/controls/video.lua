@@ -11,6 +11,8 @@ local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
+local rescale           = tools.rescale
+
 -- shiftPressed() -> boolean
 -- Function
 -- Is the Shift Key being pressed?
@@ -32,6 +34,18 @@ local function shiftPressed()
     return result
 end
 
+local function createAbsoluteMIDISlider(param, min, max)
+    local value
+    local updateUI = deferred.new(0.01):action(function()
+        param:value(value)
+    end)
+    return function(metadata)
+        value = metadata.pitchChange or metadata.fourteenBitValue
+        value = rescale(value, 0, 16383, min, max) + 1
+        updateUI()
+    end
+end
+
 local plugin = {
     id              = "finalcutpro.midi.controls.video",
     group           = "finalcutpro",
@@ -42,12 +56,28 @@ local plugin = {
 
 function plugin.init(deps)
 
+    local manager = deps.manager
+
+    --------------------------------------------------------------------------------
+    -- Opacity:
+    --------------------------------------------------------------------------------
+    manager.controls:new("opacity", {
+        group = "fcpx",
+        text = "Opacity (Absolute)",
+        subText = "Controls the opacity.",
+        fn = createAbsoluteMIDISlider(fcp:inspector():video():compositing():opacity(), 0, 100),
+    })
+
     --------------------------------------------------------------------------------
     -- Scale X (0 to 400):
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformScaleX", {
+    local cachedTransformScaleX
+    local updateTransformScaleX = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():scaleX():value(cachedTransformScaleX)
+    end)
+    manager.controls:new("transformScaleX", {
         group = "fcpx",
-        text = "MIDI: Transform - Scale X",
+        text = "Transform - Scale X (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -62,7 +92,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():scaleX():value(value)
+                    cachedTransformScaleX = value
+                    updateTransformScaleX()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -76,7 +107,8 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():scaleX():value(value)
+                    cachedTransformScaleX = value
+                    updateTransformScaleX()
                 end
             end
         end,
@@ -85,9 +117,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Scale Y (0 to 400):
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformScaleY", {
+    local cachedTransformScaleY
+    local updateTransformScaleY = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():scaleY():value(cachedTransformScaleY)
+    end)
+    manager.controls:new("transformScaleY", {
         group = "fcpx",
-        text = "MIDI: Transform - Scale Y",
+        text = "Transform - Scale Y (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -103,6 +139,8 @@ function plugin.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
                     fcp:inspector():video():show():transform():scaleY():value(value)
+                    cachedTransformScaleY = value
+                    updateTransformScaleY()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -116,7 +154,10 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():scaleY():value(value)
+                    cachedTransformScaleY = value
+                    updateTransformScaleY()
+
+
                 end
             end
         end,
@@ -129,9 +170,9 @@ function plugin.init(deps)
     local updateScaleAllUI = deferred.new(0.01):action(function()
         fcp:inspector():video():show():transform():scaleAll():value(cachedScaleUI)
     end)
-    deps.manager.controls:new("transformScaleAll", {
+    manager.controls:new("transformScaleAll", {
         group = "fcpx",
-        text = "MIDI: Transform - Scale All",
+        text = "Transform - Scale All (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -168,9 +209,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position X:
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformPositionX", {
+    local cachedTransformPositionX
+    local updateTransformPositionX = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():position().x:value(cachedTransformPositionX)
+    end)
+    manager.controls:new("transformPositionX", {
         group = "fcpx",
-        text = "MIDI: Transform - Position X",
+        text = "Transform - Position X (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -185,7 +230,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():position().x:value(value)
+                    cachedTransformPositionX = value
+                    updateTransformPositionX()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -199,7 +245,8 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():position().x:value(value)
+                    cachedTransformPositionX = value
+                    updateTransformPositionX()
                 end
             end
         end,
@@ -208,9 +255,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position Y:
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformPositionY", {
+    local cachedTransformPositionY
+    local updateTransformPositionY = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():position().y:value(cachedTransformPositionY)
+    end)
+    manager.controls:new("transformPositionY", {
         group = "fcpx",
-        text = "MIDI: Transform - Position Y",
+        text = "Transform - Position Y (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -225,7 +276,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():position().y:value(value)
+                    cachedTransformPositionY = value
+                    updateTransformPositionY()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -239,7 +291,8 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():position().y:value(value)
+                    cachedTransformPositionY = value
+                    updateTransformPositionY()
                 end
             end
         end,
@@ -248,9 +301,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformRotation", {
+    local cachedTransformRotation
+    local updateTransformRotation = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():rotation():value(cachedTransformRotation)
+    end)
+    manager.controls:new("transformRotation", {
         group = "fcpx",
-        text = "MIDI: Transform - Rotation",
+        text = "Transform - Rotation (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -265,7 +322,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():rotation():value(value)
+                    cachedTransformRotation = value
+                    updateTransformRotation()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -279,7 +337,8 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():rotation():value(value)
+                    cachedTransformRotation = value
+                    updateTransformRotation()
                 end
             end
         end,
@@ -288,9 +347,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Anchor Y:
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformAnchorX", {
+    local cachedTransformAnchorX
+    local updateTransformAnchorX = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():anchor().x:value(cachedTransformAnchorX)
+    end)
+    manager.controls:new("transformAnchorX", {
         group = "fcpx",
-        text = "MIDI: Transform - Anchor X",
+        text = "Transform - Anchor X (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -305,7 +368,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():anchor().x:value(value)
+                    cachedTransformAnchorX = value
+                    updateTransformAnchorX()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -319,18 +383,23 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():anchor().x:value(value)
+                    cachedTransformAnchorX = value
+                    updateTransformAnchorX()
                 end
             end
         end,
     })
 
     --------------------------------------------------------------------------------
-    -- Anchor X:
+    -- Anchor Y:
     --------------------------------------------------------------------------------
-    deps.manager.controls:new("transformAnchorY", {
+    local cachedTransformAnchorY
+    local updateTransformAnchorY = deferred.new(0.01):action(function()
+        fcp:inspector():video():show():transform():anchor().y:value(cachedTransformAnchorY)
+    end)
+    manager.controls:new("transformAnchorY", {
         group = "fcpx",
-        text = "MIDI: Transform - Anchor Y",
+        text = "Transform - Anchor Y (Absolute)",
         subText = i18n("midiVideoInspector"),
         fn = function(metadata)
             local midiValue
@@ -345,7 +414,8 @@ function plugin.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 400)
-                    fcp:inspector():video():show():transform():anchor().y:value(value)
+                    cachedTransformAnchorY = value
+                    updateTransformAnchorY()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -359,7 +429,8 @@ function plugin.init(deps)
                     else
                         value = midiValue
                     end
-                    fcp:inspector():video():show():transform():anchor().y:value(value)
+                    cachedTransformAnchorY = value
+                    updateTransformAnchorY()
                 end
             end
         end,

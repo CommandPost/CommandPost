@@ -4,19 +4,17 @@
 
 local require = require
 
-local log               = require("hs.logger").new("cbMIDI")
+local log               = require "hs.logger".new "cbMIDI"
 
-local eventtap          = require("hs.eventtap")
-local inspect           = require("hs.inspect")
+local eventtap          = require "hs.eventtap"
+local inspect           = require "hs.inspect"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
+local deferred          = require "cp.deferred"
 
 local upper, format     = string.upper, string.format
-
-
-local mod = {}
 
 -- shiftPressed() -> boolean
 -- Function
@@ -57,9 +55,13 @@ end
 -- Returns:
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makePercentHandler(puckFinderFn)
+    local puck = puckFinderFn()
+    local value
+    local updateUI = deferred.new(0.01):action(function()
+        puck:show():percent(value)
+    end)
     return function(metadata)
-        local midiValue, value
-        local puck = puckFinderFn()
+        local midiValue
         if metadata and puck then
             if metadata.fourteenBitCommand or metadata.pitchChange then
                 --------------------------------------------------------------------------------
@@ -88,7 +90,7 @@ local function makePercentHandler(puckFinderFn)
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
                 return
             end
-            puck:show():percent(value)
+            updateUI()
         end
     end
 end
@@ -103,45 +105,44 @@ end
 -- Returns:
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeAngleHandler(puckFinderFn)
+    local puck = puckFinderFn()
+    local value
+    local updateUI = deferred.new(0.01):action(function()
+        puck:show():angle(value)
+    end)
     return function(metadata)
-        local midiValue, value
-        local puck = puckFinderFn()
-        if metadata and puck then
-            --------------------------------------------------------------------------------
-            -- 7bit & 14bit:
-            --------------------------------------------------------------------------------
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
-            end
-            if type(midiValue) == "number" then
-                if metadata.fourteenBitCommand then
-                    value = midiValue / 16383*359
-                else
-                    value = midiValue / 16383*362
-                end
-                if midiValue == 16383/2 then value = 0 end
-            end
-            if value == nil then
-                log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
-                return
-            end
-            puck:show():angle(value)
+        local midiValue
+        --------------------------------------------------------------------------------
+        -- 7bit & 14bit:
+        --------------------------------------------------------------------------------
+        if metadata.pitchChange then
+            midiValue = metadata.pitchChange
+        else
+            midiValue = metadata.fourteenBitValue
         end
+        if metadata.fourteenBitCommand then
+            value = midiValue / 16383*359
+        else
+            value = midiValue / 16383*362
+        end
+        if midiValue == 16383/2 then value = 0 end
+        if value == nil then
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+            return
+        end
+        updateUI()
     end
 end
 
---- plugins.finalcutpro.midi.controls.colorboard.init() -> nil
---- Function
---- Initialise the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init(deps)
+local plugin = {
+    id              = "finalcutpro.midi.controls.color",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.midi.manager"] = "manager",
+    }
+}
+
+function plugin.init(deps)
 
     local colorBoard = fcp:colorBoard()
 
@@ -158,7 +159,7 @@ function mod.init(deps)
         { title = "Highlights",         id = "highlights"    },
     }
 
-    local midiText, colorBoardText, puckText, descriptionText = upper(i18n("midi")), i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
+    local colorBoardText, puckText, descriptionText = i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
     local angleText, percentageText, colorText = i18n("angle"), i18n("percentage"), i18n("color")
 
     for i,puck in ipairs(pucks) do
@@ -168,7 +169,7 @@ function mod.init(deps)
         --------------------------------------------------------------------------------
         deps.manager.controls:new("puck" .. puckNumber, {
             group = "fcpx",
-            text = format("%s: %s %s %s", midiText, colorBoardText, puckText, i),
+            text = format("%s %s %s", colorBoardText, puckText, i),
             subText = descriptionText,
             fn = makePercentHandler(function() return colorBoard:current()[puck.id]() end),
         })
@@ -178,7 +179,7 @@ function mod.init(deps)
         --------------------------------------------------------------------------------
         deps.manager.controls:new("colorAnglePuck" .. puckNumber, {
             group = "fcpx",
-            text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, colorText, puckText, i, angleText),
+            text = format("%s %s %s %s (%s)", colorBoardText, colorText, puckText, i, angleText),
             subText = descriptionText,
             fn = makeAngleHandler(function() return colorBoard:color()[puck.id]() end),
         })
@@ -190,26 +191,13 @@ function mod.init(deps)
             local colorPanel = aspect.control:id()
             deps.manager.controls:new(colorPanel .. "PercentagePuck" .. puckNumber, {
                 group = "fcpx",
-                text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, aspect.title, puckText, i, percentageText ),
+                text = format("%s %s %s %s (%s)", colorBoardText, aspect.title, puckText, i, percentageText ),
                 subText = descriptionText,
                 fn = makePercentHandler(function() return aspect.control[puck.id]() end),
             })
         end
     end
-    return mod
-end
 
-
-local plugin = {
-    id              = "finalcutpro.midi.controls.color",
-    group           = "finalcutpro",
-    dependencies    = {
-        ["core.midi.manager"] = "manager",
-    }
-}
-
-function plugin.init(deps)
-    return mod.init(deps)
 end
 
 return plugin

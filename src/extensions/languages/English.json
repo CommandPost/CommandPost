@@ -1034,7 +1034,7 @@
         "midi": "MIDI",
         "midiBankDescription": "Changes the MIDI Control Bank",
         "midiColorBoardDescription": "Controls the Color Board via MIDI Controls",
-        "midiControlColorWheel": "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        "midiControlColorWheel": "Hold down SHIFT to change value at extended range.",
         "midiControls": "MIDI Controls",
         "midiEditor": "MIDI Editor",
         "midiMachineControl": "MIDI Machine Control (MMC)",

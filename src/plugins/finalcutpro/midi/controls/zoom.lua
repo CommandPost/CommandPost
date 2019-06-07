@@ -42,7 +42,7 @@ function plugin.init(deps)
 
     local params = {
         group = "fcpx",
-        text = string.upper(i18n("midi")) .. ": " .. i18n("timelineZoom") .. " (" .. i18n("absolute") .. ")",
+        text = i18n("timelineZoom") .. " (" .. i18n("absolute") .. ")",
         subText = i18n("midiTimelineZoomDescription"),
         fn = control,
     }
