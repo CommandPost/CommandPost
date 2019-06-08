@@ -284,7 +284,7 @@ function mod.init(deps)
                         value = midiValue / 128 * 2
                     end
                     if midiValue == 128/2 then value = 1 end
-                    value = cachedColorWheelShadowsSaturation
+                    cachedColorWheelShadowsSaturation = value
                     updateColorWheelShadowsSaturation()
                 end
             end
