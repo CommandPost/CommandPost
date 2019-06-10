@@ -47,7 +47,6 @@ local missingMenuMap = {
     { path = {"Window", "Show in Workspace"},   child = "Timeline Index",           key = "PEDataList" },
     { path = {"Window"},                        child = "Extensions",               key = "FFExternalProviderMenuItemTitle" },
 }
-
 menu:addMenuFinder(function(parentItem, path, childName)
     for _,item in ipairs(missingMenuMap) do
         if isEqual(path, item.path) and childName == item.child then
@@ -63,6 +62,16 @@ end)
 ----------------------------------------------------------------------------------------
 menu:addMenuFinder(function(parentItem, path, childName)
     if isEqual(path, {"Window", "Workspaces"}) then
+        return childWith(parentItem, "AXTitle", childName)
+    end
+    return nil
+end)
+
+----------------------------------------------------------------------------------------
+-- Add a finder for Commands:
+----------------------------------------------------------------------------------------
+menu:addMenuFinder(function(parentItem, path, childName)
+    if isEqual(path, {"Final Cut Pro", "Commands"}) then
         return childWith(parentItem, "AXTitle", childName)
     end
     return nil
