@@ -68,6 +68,7 @@ function mod.reload()
             if path[1] ~= "Apple" then
                 local params = {}
                 params.path = fnutils.concat(fnutils.copy(path), { title })
+                params.locale = fcp:currentLocale()
 
                 insert(choices, {
                     text = title,
@@ -143,7 +144,8 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path, {plain=true}):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=action.locale}):Now()
+        --fcp.app:hsApplication():selectMenuItem(action.path)
         return true
     end
     return false

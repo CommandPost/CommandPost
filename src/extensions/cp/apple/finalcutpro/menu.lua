@@ -4,18 +4,17 @@
 
 local require = require
 
--- local log                       = require("hs.logger").new("fcp_menu")
+--local log               = require "hs.logger".new "fcpMenu"
 
-local fcpApp                    = require("cp.apple.finalcutpro.app")
-local strings                   = require("cp.apple.finalcutpro.strings")
-local destinations              = require("cp.apple.finalcutpro.export.destinations")
+local axutils       = require "cp.ui.axutils"
+local destinations  = require "cp.apple.finalcutpro.export.destinations"
+local fcpApp        = require "cp.apple.finalcutpro.app"
+local strings       = require "cp.apple.finalcutpro.strings"
 
-local axutils                   = require("cp.ui.axutils")
+local moses         = require "moses"
 
-local isEqual                   = require("moses").isEqual
-
-local childWith                 = axutils.childWith
-
+local childWith     = axutils.childWith
+local isEqual       = moses.isEqual
 
 local menu = fcpApp:menu()
 
