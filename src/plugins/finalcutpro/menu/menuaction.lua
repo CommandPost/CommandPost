@@ -144,7 +144,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=action.locale}):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=fcp:currentLocale()}):Now()
         --fcp.app:hsApplication():selectMenuItem(action.path)
         return true
     end
