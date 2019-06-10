@@ -22,15 +22,42 @@ local plugin = {
     }
 }
 
-local function createAbsoluteMIDISlider(param, min, max)
+local function createAbsoluteMIDIVolumeSlider()
     local value
     local updateUI = deferred.new(0.01):action(function()
-        param:value(value)
+        fcp:inspector():audio():volume():show():value(value)
     end)
     return function(metadata)
-        value = metadata.pitchChange or metadata.fourteenBitValue
-        value = rescale(value, 0, 16383, min, max)
-        updateUI()
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            local midiValue
+            if metadata.pitchChange then
+                midiValue = metadata.pitchChange
+            else
+                midiValue = metadata.fourteenBitValue
+            end
+            value = rescale(midiValue, 0, 16383, -96, 12)
+            updateUI()
+        else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            local controllerValue = metadata.controllerValue
+            if controllerValue == 64 then
+                value = 0
+            elseif controllerValue > 64 then
+                value = rescale(controllerValue, 65, 127, 0.1, 12)
+            elseif controllerValue < 64 then
+                if controllerValue > 32 then
+                    value = rescale(controllerValue, 32, 63, -12, -0.1)
+                else
+                    value = rescale(controllerValue, 0, 31, -96, -12.1)
+                end
+            end
+            updateUI()
+        end
     end
 end
 
@@ -40,7 +67,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = "Volume (Absolute)",
         subText = "Controls the volume.",
-        fn = createAbsoluteMIDISlider(fcp:inspector():audio():volume(), -95, 12),
+        fn = createAbsoluteMIDIVolumeSlider(),
     }
     manager.controls:new("volume", params)
 end

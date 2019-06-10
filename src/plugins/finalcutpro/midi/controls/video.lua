@@ -37,6 +37,7 @@ end
 local function createAbsoluteMIDISlider(param, min, max)
     local value
     local updateUI = deferred.new(0.01):action(function()
+        param:show()
         param:value(value)
     end)
     return function(metadata)
