@@ -563,17 +563,20 @@ function menu.mt:doFindMenuUI(path, options)
 
     -- make sure the app is active.
     return If(self.UI):Then(function(ui)
-        local pathLocale = localeID(options.locale) or localeID("en")
+        local en = localeID("en")
+        local pathLocale = localeID(options.locale) or en
         local appLocale = self:app():currentLocale()
 
-        local menuTitles = self:getMenuTitles({pathLocale, appLocale})
+        local menuTitles = self:getMenuTitles({pathLocale, appLocale, en})
         local currentPath = {}
+
         local menuItemName
         local menuUI = ui
 
         return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
                 local menuItemUI
+                local currentMenuTitles = menuTitles
                 if type(step) == "number" then
                     menuItemUI = menuUI[step]
                     menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
@@ -591,7 +594,7 @@ function menu.mt:doFindMenuUI(path, options)
                     -- Check with the finder functions:
                     --------------------------------------------------------------------------------
                     for _, finder in ipairs(self._itemFinders) do
-                        menuItemUI = finder(menuUI, currentPath, step, pathLocale)
+                        menuItemUI = finder(menuUI, currentPath, step, en)
                         if menuItemUI then
                             break
                         end
@@ -632,6 +635,7 @@ function menu.mt:doFindMenuUI(path, options)
                 end
 
                 if menuItemUI then
+
                     if #menuItemUI == 1 then
                         -- the item is a sub-menu. Find the next values.
                         menuUI = menuItemUI[1]
@@ -644,7 +648,9 @@ function menu.mt:doFindMenuUI(path, options)
                         end
                     end
 
-                    insert(currentPath, menuItemName)
+                    -- translate the item name to English for use in finders.
+                    local menuItemNameEn = _translateTitle(currentMenuTitles, menuItemName, pathLocale, en)
+                    insert(currentPath, menuItemNameEn)
 
                     return menuItemUI
                 else

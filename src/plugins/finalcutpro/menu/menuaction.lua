@@ -14,6 +14,7 @@ local config            = require "cp.config"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local idle              = require "cp.idle"
+local localeID          = require "cp.i18n.localeID"
 
 local concat            = table.concat
 local imageFromPath     = image.imageFromPath
@@ -68,7 +69,7 @@ function mod.reload()
             if path[1] ~= "Apple" then
                 local params = {}
                 params.path = fnutils.concat(fnutils.copy(path), { title })
-
+                params.locale = fcp:currentLocale().code
                 insert(choices, {
                     text = title,
                     subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -143,7 +144,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path, {plain=true}):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=localeID(action.locale)}):Now()
         return true
     end
     return false
