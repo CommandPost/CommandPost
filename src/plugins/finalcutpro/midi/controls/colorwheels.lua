@@ -73,17 +73,16 @@ local UNSHIFTED_SCALE = 20/100
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
 
-    local wheel = wheelFinderFn()
-
     local result
     local updateUI = deferred.new(0.01):action(function()
+        local wheel = wheelFinderFn()
         wheel:colorOrientation(result)
     end)
 
     return function(metadata)
 
         local midiValue, value
-
+        local wheel = wheelFinderFn()
 
         if metadata.fourteenBitCommand or metadata.pitchChange then
             --------------------------------------------------------------------------------
