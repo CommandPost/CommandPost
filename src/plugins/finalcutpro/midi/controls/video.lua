@@ -4,8 +4,6 @@
 
 local require = require
 
-local eventtap          = require "hs.eventtap"
-
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
