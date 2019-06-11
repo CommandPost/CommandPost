@@ -21,12 +21,15 @@
 
 local require = require
 
-local axutils           = require("cp.ui.axutils")
-local Element			= require("cp.ui.Element")
+local axutils           = require "cp.ui.axutils"
+local Element			= require "cp.ui.Element"
+local tools             = require "cp.tools"
 
-local If                = require("cp.rx.go.If")
-local Do                = require("cp.rx.go.Do")
+local If                = require "cp.rx.go.If"
+local Do                = require "cp.rx.go.Do"
 
+local centre            = tools.centre
+local ninjaMouseClick	= tools.ninjaMouseClick
 
 local CheckBox = Element:subclass("cp.ui.CheckBox")
 
@@ -81,6 +84,26 @@ function CheckBox.lazy.prop:checked()
             end
         end
     )
+end
+
+--- cp.ui.CheckBox:click() -> self
+--- Method
+--- Performs a single mouse click on the checkbox.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `CheckBox` instance.
+function CheckBox:click()
+    local ui = self:UI()
+    if ui then
+        local frame = ui:attributeValue("AXFrame")
+        if frame then
+            ninjaMouseClick(centre(frame))
+        end
+    end
+    return self
 end
 
 --- cp.ui.CheckBox:toggle() -> self
