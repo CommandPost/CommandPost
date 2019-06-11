@@ -126,9 +126,9 @@ local PLUGIN_TYPES = {
 -- hs.inspect(require("cp.apple.finalcutpro.strings"):findKeys("360° Noise Reduction"))
 --------------------------------------------------------------------------------
 
---- BUILT_IN_PLUGINS -> table
---- Constant
---- Table of built-in plugins
+-- BUILT_IN_PLUGINS -> table
+-- Constant
+-- Table of built-in plugins
 local BUILT_IN_PLUGINS = {
     --------------------------------------------------------------------------------
     -- Built-in Effects:
