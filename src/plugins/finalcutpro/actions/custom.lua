@@ -30,7 +30,7 @@ mod.customActions = prop(
     function(value)
         config.set(fcp:currentLocale().code .. ".actions.custom", value)
     end
-)
+):cached()
 
 --- plugins.finalcutpro.actions.custom.apply(id) -> none
 --- Function

@@ -19,7 +19,7 @@ local html          = require "cp.web.html"
 local ui            = require "cp.web.ui"
 local i18n          = require "cp.i18n"
 
-local _             = require "moses"
+local moses         = require "moses"
 
 local delayed       = timer.delayed
 
@@ -153,27 +153,25 @@ local function generateContent()
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local defaultGroup
-    if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
-    for _,id in ipairs(commands.groupIds()) do
-        for subGroupID=1, mod._midi.numberOfSubGroups do
-            defaultGroup = defaultGroup or id .. subGroupID
-            groups[#groups + 1] = id .. subGroupID
-        end
-    end
-
     local groupLabels = {}
+    local defaultGroup
+    local numberOfSubGroups = mod._midi.numberOfSubGroups
+    if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
         table.insert(groupLabels, {
             value = id,
             label = i18n("shortcut_group_" .. id, {default = id}),
         })
+        for subGroupID=1, numberOfSubGroups do
+            defaultGroup = defaultGroup or id .. subGroupID
+            groups[#groups + 1] = id .. subGroupID
+        end
     end
     table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                           = _,
-        numberOfSubGroups           = mod._midi.numberOfSubGroups,
+        _                           = moses,
+        numberOfSubGroups           = numberOfSubGroups,
         groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
@@ -208,6 +206,7 @@ local function generateContent()
         i18nChannelPressure         = i18n("channelPressure"),
         i18nPitchWheelChange        = i18n("pitchWheelChange"),
         i18nAll                     = i18n("all"),
+        i18nBank                    = i18n("bank"),
     }
 
     return renderPanel(context)

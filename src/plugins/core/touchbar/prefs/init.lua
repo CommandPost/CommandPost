@@ -4,22 +4,21 @@
 
 local require = require
 
-local log             = require("hs.logger").new("prefsTouchBar")
+local log             = require "hs.logger".new "prefsTouchBar"
 
-local canvas          = require("hs.canvas")
-local dialog          = require("hs.dialog")
-local image           = require("hs.image")
+local canvas          = require "hs.canvas"
+local dialog          = require "hs.dialog"
+local image           = require "hs.image"
 
-local commands        = require("cp.commands")
-local config          = require("cp.config")
-local fcp             = require("cp.apple.finalcutpro")
-local tools           = require("cp.tools")
-local html            = require("cp.web.html")
-local ui              = require("cp.web.ui")
-local i18n            = require("cp.i18n")
+local commands        = require "cp.commands"
+local config          = require "cp.config"
+local fcp             = require "cp.apple.finalcutpro"
+local tools           = require "cp.tools"
+local html            = require "cp.web.html"
+local ui              = require "cp.web.ui"
+local i18n            = require "cp.i18n"
 
-local _               = require("moses")
-
+local moses           = require "moses"
 
 local mod = {}
 
@@ -84,66 +83,30 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
-
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local groupOptions = {}
-    local defaultGroup = nil
+    local groupLabels = {}
+    local defaultGroup
+    local numberOfSubGroups = mod._tb.numberOfSubGroups
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
-        for subGroupID=1, mod._tb.numberOfSubGroups do
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
+        for subGroupID=1, numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (" .. i18n("bank") .. " " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
-
-    local touchBarGroupSelect = ui.select({
-        id          = "touchBarGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
-        touchBarGroupSelect.onchange = function(e) {
-
-            //
-            // Change Group Callback:
-            //
-            try {
-                var result = {
-                    id: "touchBarPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            var groupControls = document.getElementById("touchbarGroupControls");
-            var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "touchbarGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]])
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                       = _,
-        touchBarGroupSelect     = touchBarGroupSelect,
+        _                       = moses,
+        numberOfSubGroups       = numberOfSubGroups,
+        groupLabels             = groupLabels,
         groups                  = groups,
         defaultGroup            = defaultGroup,
         scrollBarPosition       = mod.scrollBarPosition(),
@@ -154,7 +117,6 @@ local function generateContent()
     }
 
     return renderPanel(context)
-
 end
 
 -- touchBarPanelCallback() -> none
@@ -718,7 +680,6 @@ function mod.init(deps, env)
     return mod
 
 end
-
 
 local plugin = {
     id              = "core.touchbar.prefs",

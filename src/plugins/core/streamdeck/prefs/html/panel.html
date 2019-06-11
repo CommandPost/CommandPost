@@ -222,6 +222,50 @@
 		}
 	}
 
+	function updateStreamDeckGroup() {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "updateGroup",
+					groupID: document.getElementById("streamDeckGroupSelect").value + document.getElementById("streamDeckSubGroupSelect").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 </script>
-<h3 class="uiItem"><span class="streamDeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>{* streamDeckGroupSelect *}</span>{{ i18n("layoutEditor") }}</h3>
+<table style="width: 100%; text-align: left; vertical-align: text-bottom; padding-top: 10px;">
+	<tr>
+		<th style="width: 40%;"><span style="font-weight:bold; font-size:1.17em; padding-left: 20px;">{{ i18n("layoutEditor") }}</span></th>
+		<th style="width: 30%; text-align: right;"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+			<select id="streamDeckGroupSelect" style="width: 150px;" onchange="updateStreamDeckGroup()">
+				{%
+				for _, v in pairs(groupLabels) do
+					local selected = ""
+					local selectedGroup = defaultGroup:sub(1, -2)
+					if v.value == selectedGroup then selected = [[selected=""]] end
+				%}
+				<option {{selected}} value="{{v.value}}">{{v.label}}</option>
+				{% end %}
+			</select>
+		</span></th>
+		<th style="width: 8%;"><span class="touchBarGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+			<select id="streamDeckSubGroupSelect" style="width: 50px;" onchange="updateStreamDeckGroup()">
+				{%
+				for i=1, numberOfSubGroups do
+					local selected = ""
+					local selectedSubGroup = defaultGroup:sub(-1)
+					if tostring(i) == selectedSubGroup then selected = [[selected=""]] end
+				%}
+				<option {{selected}} value="{{i}}">{{i}}</option>
+				{% end %}
+			</select>
+		</span></th>
+		<th style="width: 1.2%;"></th>
+	</tr>
+</table>
 {(html/controls.html, context)}
