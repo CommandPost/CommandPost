@@ -4,7 +4,7 @@
 
 local require = require
 
-local log               = require "hs.logger".new "audio"
+--local log               = require "hs.logger".new "audio"
 
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
@@ -65,8 +65,8 @@ function plugin.init(deps)
     local manager = deps.manager
     local params = {
         group = "fcpx",
-        text = "Volume (Absolute)",
-        subText = "Controls the volume.",
+        text = i18n("volume") .. "(" .. i18n("absolute") .. ")",
+        subText = i18n("midiVolumeDescription"),
         fn = createAbsoluteMIDIVolumeSlider(),
     }
     manager.controls:new("volume", params)
