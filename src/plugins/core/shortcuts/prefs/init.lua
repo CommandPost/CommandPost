@@ -1,34 +1,33 @@
---- === plugins.core.preferences.panels.shortcuts ===
+--- === plugins.core.shortcuts.prefs ===
 ---
 --- Shortcuts Preferences Panel
 
 local require = require
 
-local log         = require("hs.logger").new("prefsShortcuts")
+local log         = require "hs.logger".new "prefsShortcuts"
 
-local dialog      = require("hs.dialog")
-local fnutils     = require("hs.fnutils")
-local hotkey      = require("hs.hotkey")
-local image       = require("hs.image")
-local keycodes    = require("hs.keycodes")
+local dialog      = require "hs.dialog"
+local fnutils     = require "hs.fnutils"
+local hotkey      = require "hs.hotkey"
+local image       = require "hs.image"
+local keycodes    = require "hs.keycodes"
 
-local commands    = require("cp.commands")
-local config      = require("cp.config")
-local tools       = require("cp.tools")
-local ui          = require("cp.web.ui")
-local i18n        = require("cp.i18n")
+local commands    = require "cp.commands"
+local config      = require "cp.config"
+local tools       = require "cp.tools"
+local ui          = require "cp.web.ui"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
-
+local _           = require "moses"
 
 local mod = {}
 
---- plugins.core.preferences.panels.shortcuts.DEFAULT_SHORTCUTS -> string
+--- plugins.core.shortcuts.prefs.DEFAULT_SHORTCUTS -> string
 --- Constant
 --- Default Shortcuts File Name
 mod.DEFAULT_SHORTCUTS = "Default"
 
---- plugins.core.preferences.panels.shortcuts.lastGroup <cp.prop: string>
+--- plugins.core.shortcuts.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
@@ -515,70 +514,26 @@ local function generateContent()
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
-    local groupOptions = {}
+    local groupLabels = {}
     local defaultGroup = nil
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
         defaultGroup = defaultGroup or id
-        groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
-
-    local groupSelect = ui.select({
-        id          = "shortcutsGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var groupSelect = document.getElementById("shortcutsGroupSelect")
-        groupSelect.onchange = function() {
-
-            //
-            // Change Group Callback:
-            //
-            try {
-                var result = {
-                    id: "shortcutsPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            console.log("shortcutsGroupSelect changed");
-            var groupControls = document.getElementById("shortcutsGroupControls");
-            var value = groupSelect.options[groupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "shortcutsGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]])
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
         _                       = _,
-        groupSelect             = groupSelect,
+        groupLabels             = groupLabels,
         groups                  = commands.groups(),
         defaultGroup            = defaultGroup,
-
         groupEditor             = mod.getGroupEditor,
         modifierOptions         = modifierOptions,
         keyCodeOptions          = keyCodeOptions,
-
-        --------------------------------------------------------------------------------
-        -- i18n Labels (it seems to use up less memory if we only pass along the
-        -- individual items we need):
-        --------------------------------------------------------------------------------
         i18nLabel               = i18n("label"),
         i18nAction              = i18n("action"),
         i18nModifier            = i18n("modifier"),
@@ -588,7 +543,7 @@ local function generateContent()
         i18nNone                = i18n("none"),
         i18nSelect              = i18n("select"),
         i18nClear               = i18n("clear"),
-
+        i18nFilterShortcuts     = i18n("filterShortcuts"),
         webviewLabel            = mod._manager.getLabel(),
     }
 
@@ -596,7 +551,7 @@ local function generateContent()
 
 end
 
---- plugins.core.preferences.panels.shortcuts.init(deps, env) -> module
+--- plugins.core.shortcuts.prefs.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
 ---
@@ -648,7 +603,7 @@ function mod.init(deps, env)
 
 end
 
---- plugins.core.preferences.panels.shortcuts.setGroupEditor(groupId, editorFn) -> none
+--- plugins.core.shortcuts.prefs.setGroupEditor(groupId, editorFn) -> none
 --- Function
 --- Sets the Group Editor
 ---
@@ -665,7 +620,7 @@ function mod.setGroupEditor(groupId, editorFn)
     mod._groupEditors[groupId] = editorFn
 end
 
---- plugins.core.preferences.panels.shortcuts.getGroupEditor(groupId) -> none
+--- plugins.core.shortcuts.prefs.getGroupEditor(groupId) -> none
 --- Function
 --- Gets the Group Editor
 ---
@@ -678,9 +633,8 @@ function mod.getGroupEditor(groupId)
     return mod._groupEditors and mod._groupEditors[groupId]
 end
 
-
 local plugin = {
-    id              = "core.preferences.panels.shortcuts",
+    id              = "core.shortcuts.prefs",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]        = "manager",

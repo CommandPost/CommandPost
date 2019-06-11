@@ -4,18 +4,17 @@
 
 local require = require
 
--- local log                       = require("hs.logger").new("fcp_menu")
+--local log               = require "hs.logger".new "fcpMenu"
 
-local fcpApp                    = require("cp.apple.finalcutpro.app")
-local strings                   = require("cp.apple.finalcutpro.strings")
-local destinations              = require("cp.apple.finalcutpro.export.destinations")
+local axutils       = require "cp.ui.axutils"
+local destinations  = require "cp.apple.finalcutpro.export.destinations"
+local fcpApp        = require "cp.apple.finalcutpro.app"
+local strings       = require "cp.apple.finalcutpro.strings"
 
-local axutils                   = require("cp.ui.axutils")
+local moses         = require "moses"
 
-local isEqual                   = require("moses").isEqual
-
-local childWith                 = axutils.childWith
-
+local childWith     = axutils.childWith
+local isEqual       = moses.isEqual
 
 local menu = fcpApp:menu()
 
@@ -48,7 +47,6 @@ local missingMenuMap = {
     { path = {"Window", "Show in Workspace"},   child = "Timeline Index",           key = "PEDataList" },
     { path = {"Window"},                        child = "Extensions",               key = "FFExternalProviderMenuItemTitle" },
 }
-
 menu:addMenuFinder(function(parentItem, path, childName)
     for _,item in ipairs(missingMenuMap) do
         if isEqual(path, item.path) and childName == item.child then
@@ -64,6 +62,16 @@ end)
 ----------------------------------------------------------------------------------------
 menu:addMenuFinder(function(parentItem, path, childName)
     if isEqual(path, {"Window", "Workspaces"}) then
+        return childWith(parentItem, "AXTitle", childName)
+    end
+    return nil
+end)
+
+----------------------------------------------------------------------------------------
+-- Add a finder for Commands:
+----------------------------------------------------------------------------------------
+menu:addMenuFinder(function(parentItem, path, childName)
+    if isEqual(path, {"Final Cut Pro", "Commands"}) then
         return childWith(parentItem, "AXTitle", childName)
     end
     return nil

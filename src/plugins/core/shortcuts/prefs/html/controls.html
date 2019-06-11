@@ -3,7 +3,7 @@
 		if id == defaultGroup then
 %}
 	<div id="shortcutsGroup_{{ id }}" class="shortcutsGroup{{ id == defaultGroup and ' selected' or '' }}">
-		<input class="search" placeholder="Filter Shortcuts" />
+		<input class="search" placeholder="{{ i18nFilterShortcuts }}" />
 		<table class="shortcuts">
 			<thead>
 				<tr>

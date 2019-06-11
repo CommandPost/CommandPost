@@ -3,17 +3,15 @@
 --- Shortcut Commands
 
 local require = require
-local log										 = require("hs.logger").new("shortcut")
+local log                   = require "hs.logger".new"shortcut"
 
-local eventtap							 = require("hs.eventtap")
-local hotkey								 = require("hs.hotkey")
-local keycodes							 = require("hs.keycodes")
+local eventtap              = require "hs.eventtap"
+local hotkey                = require "hs.hotkey"
+local keycodes              = require "hs.keycodes"
 
-local englishKeyCodes				 = require("cp.commands.englishKeyCodes")
+local englishKeyCodes       = require "cp.commands.englishKeyCodes"
 
-local prop									 = require("cp.prop")
-
-
+local prop                  = require "cp.prop"
 
 -- The shortcut class
 local shortcut = {}
@@ -53,15 +51,15 @@ end
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
 --- Parameters:
----  * `modifiers` 	- The modifiers.
----  * `keyCode`	- The key code.
+---  * `modifiers`  - The modifiers.
+---  * `keyCode`    - The key code.
 ---
 --- Returns:
 ---  * shortcut - The shortcut that was created.
 function shortcut.new(modifiers, keyCode)
     local o = {
-        _modifiers	= modifiers or {},
-        _keyCode	= keyCode,
+        _modifiers  = modifiers or {},
+        _keyCode    = keyCode,
     }
     return prop.extend(o, shortcut.mt)
 end
@@ -71,7 +69,7 @@ end
 --- Creates a new shortcut builder.
 ---
 --- Parameters:
----  * `receiverFn`		- (optional) a function which will get passed the shortcut when the build is complete.
+---  * `receiverFn`     - (optional) a function which will get passed the shortcut when the build is complete.
 ---
 --- Returns:
 ---  * `shortcut.builder` which can be used to create the shortcut.
@@ -171,9 +169,9 @@ end
 --- This function binds the shortcut to a hotkey, with the specified callback functions for `pressedFn`, `releasedFn` and `repeatedFn`.
 ---
 --- Parameters:
----  * `pressedFn`	- (optional) If present, this is called when the shortcut combo is pressed.
----  * `releasedFn`	- (optional) If present, this is called when the shortcut combo is released.
----  * `repeatedFn`	- (optional) If present, this is called when the shortcut combo is repeated.
+---  * `pressedFn`  - (optional) If present, this is called when the shortcut combo is pressed.
+---  * `releasedFn` - (optional) If present, this is called when the shortcut combo is released.
+---  * `repeatedFn` - (optional) If present, this is called when the shortcut combo is repeated.
 ---
 --- Returns:
 ---  * `self`
@@ -252,7 +250,7 @@ end
 ---  * `self`
 function shortcut.mt:trigger()
     local keyCode = shortcut.textToKeyCode(self:getKeyCode())
-    eventtap.keyStroke(self._modifiers, keyCode)
+    eventtap.keyStroke(self._modifiers, keyCode, 0)
     return self
 end
 
@@ -273,14 +271,14 @@ end
 --- If no `receiverFn` is provided, the shortcut will be returned directly.
 ---
 --- Parameters:
----  * `receiverFn`	- The function which will be called with the new shortcut, when built.
+---  * `receiverFn` - The function which will be called with the new shortcut, when built.
 ---
 --- Returns:
 ---  * The builder instance
 function builder.new(receiverFn)
     local o = {
-        _receiver	= receiverFn,
-        _modifiers 	= {},
+        _receiver   = receiverFn,
+        _modifiers  = {},
     }
     setmetatable(o, builder.mt)
     return o
@@ -294,7 +292,7 @@ end
 ---
 --- Parameters:
 ---  * modifier - (optional) The modifier that was added.
----  * keyCode	- (optional) The key code being modified.
+---  * keyCode  - (optional) The key code being modified.
 ---
 --- Returns:
 ---  * `self` if no `keyCode` is provided, or the original `command`.
