@@ -4,16 +4,15 @@
 
 local require = require
 
-local log               = require("hs.logger").new("midiCtrlSlider")
+local log               = require "hs.logger".new "midiCtrlSlider"
 
-local ax 			          = require("hs._asm.axuielement")
-local eventtap          = require("hs.eventtap")
-local mouse			        = require("hs.mouse")
+local ax 			    = require "hs._asm.axuielement"
+local eventtap          = require "hs.eventtap"
+local mouse			    = require "hs.mouse"
 
-local deferred          = require("cp.deferred")
-local dialog            = require("cp.dialog")
-local i18n              = require("cp.i18n")
-
+local deferred          = require "cp.deferred"
+local dialog            = require "cp.dialog"
+local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -243,14 +242,13 @@ function mod.init()
 
     local params = {
         group = "fcpx",
-        text = string.upper(i18n("midi")) .. ": " .. i18n("controlFCPUIElementRelative"),
+        text = i18n("controlFCPUIElementRelative"),
         subText = i18n("controlFCPUIElementRelativeNote"),
         fn = mod.control,
     }
     mod._manager.controls:new("controlFCPUIElementRelative", params)
     return mod
 end
-
 
 local plugin = {
     id              = "finalcutpro.midi.controls.controlui.relative",

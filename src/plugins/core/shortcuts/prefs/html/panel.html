@@ -52,6 +52,31 @@
 			alertErrorMessage(err);
 		}
 	}
+
+	function updateShortcutsGroup() {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "updateGroup",
+					groupID: document.getElementById("shortcutsGroupSelect").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 </script>
-<h3 class="uiItem"><span class="groupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>{* groupSelect *}</span>{{ i18nCustomiseShortcuts }}</h3>
+<h3 class="uiItem"><span class="groupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>
+<select id="shortcutsGroupSelect" style="width: 150px;" onchange="updateShortcutsGroup()">
+	{%
+	for _, v in pairs(groupLabels) do
+		local selected = ""
+		if v.value == defaultGroup then selected = [[selected=""]] end
+	%}
+	<option {{selected}} value="{{v.value}}">{{v.label}}</option>
+	{% end %}
+</select>
+</span>{{ i18nCustomiseShortcuts }}</h3>
 {(html/controls.html, context)}

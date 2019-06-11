@@ -18,7 +18,7 @@ local html              = require "cp.web.html"
 local ui                = require "cp.web.ui"
 local i18n              = require "cp.i18n"
 
-local _                 = require "moses"
+local moses             = require "moses"
 
 local mod = {}
 
@@ -78,66 +78,30 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
-
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local groupOptions = {}
-    local defaultGroup = nil
+    local groupLabels = {}
+    local defaultGroup
+    local numberOfSubGroups = mod._sd.numberOfSubGroups
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
-        for subGroupID=1, mod._sd.numberOfSubGroups do
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
+        for subGroupID=1, numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (" .. i18n("bank") .. " " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
-
-    local streamDeckGroupSelect = ui.select({
-        id          = "streamDeckGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var streamDeckGroupSelect = document.getElementById("streamDeckGroupSelect")
-        streamDeckGroupSelect.onchange = function(e) {
-
-            //
-            // Change Group Callback:
-            //
-            try {
-                var result = {
-                    id: "streamDeckPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            var groupControls = document.getElementById("streamDeckGroupControls");
-            var value = streamDeckGroupSelect.options[streamDeckGroupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "streamDeckGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]])
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                       = _,
-        streamDeckGroupSelect   = streamDeckGroupSelect,
+        _                       = moses,
+        numberOfSubGroups       = numberOfSubGroups,
+        groupLabels             = groupLabels,
         groups                  = groups,
         defaultGroup            = defaultGroup,
         scrollBarPosition       = mod.scrollBarPosition(),
@@ -148,7 +112,6 @@ local function generateContent()
     }
 
     return renderPanel(context)
-
 end
 
 -- streamDeckPanelCallback() -> none

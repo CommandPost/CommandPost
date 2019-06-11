@@ -4,23 +4,22 @@
 
 local require = require
 
-local log         = require("hs.logger").new("midiManager")
+local log         = require "hs.logger".new "midiManager"
 
-local fnutils     = require("hs.fnutils")
-local midi        = require("hs.midi")
-local timer       = require("hs.timer")
+local fnutils     = require "hs.fnutils"
+local midi        = require "hs.midi"
+local timer       = require "hs.timer"
 
-local config      = require("cp.config")
-local dialog      = require("cp.dialog")
-local i18n        = require("cp.i18n")
-local json        = require("cp.json")
-local prop        = require("cp.prop")
+local config      = require "cp.config"
+local dialog      = require "cp.dialog"
+local i18n        = require "cp.i18n"
+local json        = require "cp.json"
+local prop        = require "cp.prop"
 
-local controls    = require("controls")
-local default     = require("default")
+local controls    = require "controls"
+local default     = require "default"
 
 local doAfter     = timer.doAfter
-
 
 local mod = {}
 
@@ -44,6 +43,16 @@ mod.FOLDER_NAME = "MIDI Controls"
 --- The default MIDI controls, so that the user has a starting point.
 mod.DEFAULT_MIDI_CONTROLS = default
 
+-- midiActions -> table
+-- Variable
+-- A table of all the MIDI actions.
+local midiActions = {}
+
+-- cachedActiveGroupAndSubgroup -> string
+-- Variable
+-- The current active group and subgroup (i.e. "fcpx1").
+local cachedActiveGroupAndSubgroup
+
 --- plugins.core.midi.manager.learningMode -> boolean
 --- Variable
 --- Whether or not the MIDI Manager is in learning mode.
@@ -55,12 +64,12 @@ mod.learningMode = false
 mod.controls = controls
 
 -- plugins.core.midi.manager._deviceNames -> table
--- Constant
+-- Variable
 -- MIDI Device Names.
 mod._deviceNames = {}
 
 -- plugins.core.midi.manager._virtualDevices -> table
--- Constant
+-- Variable
 -- MIDI Virtual Devices.
 mod._virtualDevices = {}
 
@@ -79,25 +88,95 @@ mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
 --- The number of Sub Groups per Touch Bar Group.
 mod.numberOfSubGroups = 9
 
---
--- Used to prevent callback delays (sorry David, I know this is the worst possible way to do things):
---
-mod._alreadyProcessingCallback  = false
-mod._lastControllerNumber       = nil
-mod._lastControllerValue        = nil
-mod._lastControllerChannel      = nil
-mod._lastTimestamp              = nil
-mod._lastPitchChange            = nil
-
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of MIDI items per group.
-mod.maxItems = 50
+mod.maxItems = 100
 
---- plugins.core.midi.manager.buttons <cp.prop: table>
---- Field
---- Contains all the saved MIDI items
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, mod.DEFAULT_MIDI_CONTROLS)
+-- plugins.core.midi.manager._items <cp.prop: table>
+-- Field
+-- Contains all the saved MIDI items
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, mod.DEFAULT_MIDI_CONTROLS):watch(function()
+    --------------------------------------------------------------------------------
+    --
+    -- When the items table is updated, we also update the midiActions table for
+    -- faster processing in the MIDI callback.
+    --
+    -- midiActions[group][deviceName][channel][commandType][controllerNumber] -> OPTIONAL: [controllerValue]
+    --
+    --------------------------------------------------------------------------------
+    midiActions = nil
+    midiActions = {}
+    local items = mod._items()
+    for groupID, group in pairs(items) do
+        for _, button in pairs(group) do
+            if button.device and button.channel and button.commandType and button.number and button.action then
+                if type(button.number) == "string" then
+                    button.number = tonumber(button.number)
+                end
+                if not midiActions[groupID] then
+                    midiActions[groupID] = {}
+                end
+                if not midiActions[groupID][button.device] then
+                    midiActions[groupID][button.device] = {}
+                end
+                if not midiActions[groupID][button.device][button.channel] then
+                    midiActions[groupID][button.device][button.channel] = {}
+                end
+                if not midiActions[groupID][button.device][button.channel][button.commandType] then
+                    midiActions[groupID][button.device][button.channel][button.commandType] = {}
+                end
+                if not midiActions[groupID][button.device][button.channel][button.commandType][button.number] then
+                    midiActions[groupID][button.device][button.channel][button.commandType][button.number] = {}
+                end
+                if button.value and button.value ~= i18n("none") and button.handlerID and string.sub(button.handlerID, -13) ~= "_midicontrols" then
+                    if button.action then
+                        if not midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value] then
+                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value] = {}
+                        end
+                        if type(button.action) == "table" then
+                            if not midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] then
+                                midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = {}
+                            end
+                            for id, value in pairs(button.action) do
+                                midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"][id] = value
+                            end
+                        elseif type(button.action) == "string" then
+                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = button.action
+                        end
+
+                        if button.handlerID then
+                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["handlerID"] = button.handlerID
+                        end
+                    end
+                else
+                    if button.action then
+                        if type(button.action) == "table" then
+                            if not midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] then
+                                midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] = {}
+                            end
+                            for id, value in pairs(button.action) do
+                                midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"][id] = value
+                            end
+                        elseif type(button.action) == "string" then
+                            midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] = button.action
+                        end
+                        if button.handlerID then
+                            midiActions[groupID][button.device][button.channel][button.commandType][button.number]["handlerID"] = button.handlerID
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- updateCachedActiveGroupAndSubgroup() -> none
+-- Function
+-- Updates the cachedActiveGroupAndSubgroup variable.
+local function updateCachedActiveGroupAndSubgroup()
+    cachedActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeSubGroup()
+end
 
 --- plugins.core.midi.manager.clear() -> none
 --- Function
@@ -273,6 +352,7 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
         if notify then
             dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
         end
+        updateCachedActiveGroupAndSubgroup()
     end
 end
 
@@ -290,6 +370,7 @@ function mod.gotoSubGroup(id)
     local currentSubGroup = mod._currentSubGroup()
     currentSubGroup[activeGroup] = id
     mod._currentSubGroup(currentSubGroup)
+    updateCachedActiveGroupAndSubgroup()
 end
 
 --- plugins.core.midi.manager.nextSubGroup() -> none
@@ -311,6 +392,7 @@ function mod.nextSubGroup()
         currentSubGroup[activeGroup] = 1
     end
     mod._currentSubGroup(currentSubGroup)
+    updateCachedActiveGroupAndSubgroup()
 end
 
 --- plugins.core.midi.manager.previousSubGroup() -> none
@@ -332,6 +414,7 @@ function mod.previousSubGroup()
         currentSubGroup[activeGroup] = currentSubGroupValue - 1
     end
     mod._currentSubGroup(currentSubGroup)
+    updateCachedActiveGroupAndSubgroup()
 end
 
 --- plugins.core.midi.manager.groupStatus(groupID, status) -> none
@@ -347,6 +430,7 @@ end
 function mod.groupStatus(groupID, status)
     mod._groupStatus[groupID] = status
     mod.update()
+    updateCachedActiveGroupAndSubgroup()
 end
 
 --- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
@@ -363,154 +447,53 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(_, deviceName, commandType, _, metadata)
-    --------------------------------------------------------------------------------
-    -- Ignore callbacks when in learning mode:
-    --------------------------------------------------------------------------------
     if mod.learningMode then
-        return false
+        return
     end
 
-    --------------------------------------------------------------------------------
-    -- Get Active Group:
-    --------------------------------------------------------------------------------
-    local activeGroup = mod.activeGroup() .. mod.activeSubGroup()
-
-    --------------------------------------------------------------------------------
-    -- Get Items:
-    --------------------------------------------------------------------------------
-    local items = mod._items()
-
-    --------------------------------------------------------------------------------
-    -- Prefix Virtual Devices:
-    --------------------------------------------------------------------------------
-    if metadata.isVirtual == true then
-        deviceName = "virtual_" .. deviceName
-    end
-
-    --------------------------------------------------------------------------------
-    -- Support 14bit Control Change Messages:
-    --------------------------------------------------------------------------------
+    local group = cachedActiveGroupAndSubgroup
+    local channel = metadata.channel
+    local controllerNumber = metadata.controllerNumber or metadata.note
     local controllerValue = metadata.controllerValue
+
     if metadata.fourteenBitCommand then
         controllerValue = metadata.fourteenBitValue
     end
 
-    --------------------------------------------------------------------------------
-    -- The loop of doom. Sorry David. I know you'll eventually want to completely
-    -- re-write this. Apologies!!
-    --------------------------------------------------------------------------------
-    if items[activeGroup] then
-        for _, item in pairs(items[activeGroup]) do
-            if deviceName == item.device and item.channel == metadata.channel and item.commandType == commandType then
-                --------------------------------------------------------------------------------
-                -- Note On:
-                --------------------------------------------------------------------------------
-                if commandType == "noteOn" and metadata.velocity ~= 0 then
-                    if tostring(item.number) == tostring(metadata.note) then
-                        if item.handlerID and item.action then
-                            local handler = mod._actionmanager.getHandler(item.handlerID)
-                            handler:execute(item.action)
-                        end
-                        return
-                    end
-                --------------------------------------------------------------------------------
-                -- Control Change:
-                --------------------------------------------------------------------------------
-                elseif commandType == "controlChange" then
-                    if tostring(item.number) == tostring(metadata.controllerNumber) then
-                        if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
-                            --------------------------------------------------------------------------------
-                            -- MIDI Controls:
-                            --------------------------------------------------------------------------------
-                            local id = item.action.id
-                            local control = controls:get(id)
-                            local params = control:params()
-                            if mod._alreadyProcessingCallback then
-                                if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
-                                    if mod._lastControllerValue == controllerValue then
-                                        return
-                                    else
-                                        doAfter(0, function()
-                                            if metadata.timestamp == mod._lastTimestamp then
-                                                local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
-                                                if not ok then
-                                                    log.ef("Error while processing MIDI Callback: %s", result)
-                                                end
-                                                mod._alreadyProcessingCallback = false
-                                            end
-                                        end)
-                                    end
-                                end
-                                mod._lastTimestamp = metadata and metadata.timestamp
-                            else
-                                mod._alreadyProcessingCallback = true
-                                doAfter(0, function()
-                                    local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
-                                    if not ok then
-                                        log.ef("Error while processing MIDI Callback: %s", result)
-                                    end
-                                    mod._alreadyProcessingCallback = false
-                                end)
-                                mod._lastControllerNumber = metadata and metadata.controllerNumber
-                                mod._lastControllerValue = metadata and controllerValue
-                                mod._lastControllerChannel = metadata and metadata.channel
-                            end
-                        elseif tostring(item.value) == tostring(controllerValue) then
-                            if item.handlerID and item.action then
-                                local handler = mod._actionmanager.getHandler(item.handlerID)
-                                handler:execute(item.action)
-                            end
-                            return
-                        end
-                    end
-                --------------------------------------------------------------------------------
-                -- Pitch Wheel Change:
-                --------------------------------------------------------------------------------
-                elseif commandType == "pitchWheelChange" then
-                    if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
-                        --------------------------------------------------------------------------------
-                        -- MIDI Controls for Pitch Wheel:
-                        --------------------------------------------------------------------------------
-                        local id = item.action.id
+    if metadata.isVirtual then
+        deviceName = "virtual_" .. deviceName
+    end
+
+    if midiActions and midiActions[group] and midiActions[group][deviceName] and midiActions[group][deviceName][channel] and midiActions[group][deviceName][channel][commandType] then
+        if midiActions[group][deviceName][channel][commandType][controllerNumber] and midiActions[group][deviceName][channel][commandType][controllerNumber] then
+            local v
+            if midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue] and midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]["action"] then
+                v = midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]
+            elseif midiActions[group][deviceName][channel][commandType][controllerNumber] and midiActions[group][deviceName][channel][commandType][controllerNumber]["action"] then
+                v = midiActions[group][deviceName][channel][commandType][controllerNumber]
+            end
+            if v then
+                if v.handlerID and string.sub(v.handlerID, -13) == "_midicontrols" then
+                    doAfter(0, function()
+                        local id = v.action.id
                         local control = controls:get(id)
-                        local params = control:params()
-                        if mod._alreadyProcessingCallback then
-                            if mod._lastControllerChannel == metadata.channel then
-                                if mod._lastPitchChange == metadata.pitchChange then
-                                    return
-                                else
-                                    doAfter(0, function()
-                                        if metadata.timestamp == mod._lastTimestamp then
-                                            local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
-                                            if not ok then
-                                                log.ef("Error while processing MIDI Callback: %s", result)
-                                            end
-                                            mod._alreadyProcessingCallback = false
-                                        end
-                                    end)
-                                end
-                            end
-                            mod._lastTimestamp = metadata and metadata.timestamp
-                        else
-                            mod._alreadyProcessingCallback = true
-                            doAfter(0, function()
+                        if control then
+                            local params = control:params()
+                            if params then
                                 local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
                                 if not ok then
                                     log.ef("Error while processing MIDI Callback: %s", result)
                                 end
-                                mod._alreadyProcessingCallback = false
-                            end)
-                            mod._lastPitchChange = metadata and metadata.pitchChange
-                            mod._lastControllerChannel = metadata and metadata.channel
+                            end
                         end
-                    elseif item.handlerID and item.action then
-                        --------------------------------------------------------------------------------
-                        -- Just trigger the handler if Pitch Wheel value changes at all:
-                        --------------------------------------------------------------------------------
-                        local handler = mod._actionmanager.getHandler(item.handlerID)
-                        handler:execute(item.action)
-                        return
-                    end
+                    end)
+                elseif commandType == "pitchWheelChange" or commandType == "controlChange" or (commandType == "noteOn" and metadata.velocity ~= 0) then
+                    doAfter(0, function()
+                        local handler = mod._actionmanager.getHandler(v.handlerID)
+                        if handler then
+                            handler:execute(v.action)
+                        end
+                    end)
                 end
             end
         end
@@ -680,7 +663,6 @@ function mod.init(deps)
     return mod
 end
 
-
 local plugin = {
     id          = "core.midi.manager",
     group       = "core",
@@ -776,6 +758,9 @@ function plugin.postInit(deps)
     -- Start Plugin:
     --------------------------------------------------------------------------------
     mod.enabled:update()
+    mod._items:update()
+
+    updateCachedActiveGroupAndSubgroup()
 
 end
 

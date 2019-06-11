@@ -88,6 +88,24 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.shiftPressed() -> boolean
+--- Function
+--- Is the Shift Key being pressed?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the shift key is being pressed, otherwise `false`.
+function tools.shiftPressed()
+    local mods = eventtap.checkKeyboardModifiers()
+    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        return true
+    else
+        return false
+    end
+end
+
 --- cp.tools.writeToFile(path, data) -> none
 --- Function
 --- Write data to a file at a given path.
