@@ -4,37 +4,57 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("feedback")
+local log               = require "hs.logger".new "feedback"
 
-local application                               = require("hs.application")
-local base64                                    = require("hs.base64")
-local console                                   = require("hs.console")
-local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
-local urlevent                                  = require("hs.urlevent")
-local webview                                   = require("hs.webview")
+local application       = require "hs.application"
+local base64            = require "hs.base64"
+local console           = require "hs.console"
+local screen            = require "hs.screen"
+local timer             = require "hs.timer"
+local urlevent          = require "hs.urlevent"
+local webview           = require "hs.webview"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local i18n                                      = require("cp.i18n")
-local tools                                     = require("cp.tools")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
-local template                                  = require("resty.template")
+local template          = require "resty.template"
 
-local doAfter                                   = timer.doAfter
-
+local displayMessage    = dialog.displayMessage
+local doAfter           = timer.doAfter
 
 local mod = {}
 
---------------------------------------------------------------------------------
--- SETTINGS:
---------------------------------------------------------------------------------
-mod.defaultWidth        = 365
-mod.defaultHeight       = 500
-mod.defaultTitle        = config.appName .. " " .. i18n("feedback")
-mod.quitOnComplete      = false
-mod.position            = config.prop("feedbackPosition", nil)
-mod.isOpen              = false
+--- cp.feedback.defaultWidth -> number
+--- Variable
+--- Default webview width.
+mod.defaultWidth = 365
+
+--- cp.feedback.defaultHeight -> number
+--- Variable
+--- Default webview height.
+mod.defaultHeight = 500
+
+--- cp.feedback.defaultTitle -> number
+--- Variable
+--- Default webview title.
+mod.defaultTitle = config.appName .. " " .. i18n("feedback")
+
+--- cp.feedback.quitOnComplete -> boolean
+--- Variable
+--- Quit on complete?
+mod.quitOnComplete = false
+
+--- cp.feedback.position -> prop
+--- Variable
+--- Webview Position.
+mod.position = config.prop("feedbackPosition", nil)
+
+--- cp.feedback.quitOnComplete -> boolean
+--- Variable
+--- Is the Feedback Form already open?
+mod.isOpen = false
 
 -- generateHTML() -> string
 -- Function
@@ -110,17 +130,31 @@ local function generateHTML()
 
 end
 
---------------------------------------------------------------------------------
--- CENTRED POSITION:
---------------------------------------------------------------------------------
+-- centredPosition() - table
+-- Function
+-- Gets the centre position.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
 local function centredPosition()
     local sf = screen.mainScreen():frame()
     return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
 end
 
---------------------------------------------------------------------------------
--- WEBVIEW WINDOW CALLBACK:
---------------------------------------------------------------------------------
+-- windowCallback() - none
+-- Function
+-- Window callback.
+--
+-- Parameters:
+--  * action - The action
+--  * unused
+--  * frame - The frame
+--
+-- Returns:
+--  * None
 local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
@@ -186,7 +220,8 @@ function mod.showFeedback(quitOnComplete)
                         mod.feedbackWebView = nil
                     end
                 elseif message["body"] == "hide" then
-                    mod.feedbackWebView:hide()
+                    mod.feedbackWebView:delete()
+                    mod.feedbackWebView = nil
                 elseif type(message["body"]) == "table" then
                     config.set("userFullName", message["body"][1])
                     config.set("userEmail", message["body"][2])
@@ -215,7 +250,7 @@ function mod.showFeedback(quitOnComplete)
                     if statusCode == 403 or statusCode == 404 then
                         mod.feedbackWebView:delete()
                         mod.feedbackWebView = nil
-                        dialog.displayMessage(i18n("feedbackError"))
+                        displayMessage(i18n("feedbackError"), {message="The server responded with a " .. statusCode .. " status code."})
                         return false
                     end
                 end
@@ -232,7 +267,7 @@ function mod.showFeedback(quitOnComplete)
             if params["action"] == "done" then
                 mod.feedbackWebView:delete()
                 mod.feedbackWebView = nil
-                dialog.displayMessage(i18n("feedbackSuccess"))
+                displayMessage(i18n("feedbackSuccess"))
                 if mod.quitOnComplete then
                     application.applicationForPID(hs.processInfo["processID"]):kill()
                 end
@@ -246,7 +281,7 @@ function mod.showFeedback(quitOnComplete)
                 local errorMessage = "Unknown"
                 if params["message"] then errorMessage = params["message"] end
 
-                dialog.displayMessage(i18n("feedbackError", {message=tools.urlQueryStringDecode(errorMessage)}))
+                displayMessage(i18n("feedbackError", {message=tools.urlQueryStringDecode(errorMessage)}))
             end
         end)
 
@@ -259,7 +294,4 @@ function mod.showFeedback(quitOnComplete)
     end)
 end
 
---------------------------------------------------------------------------------
--- END OF MODULE:
---------------------------------------------------------------------------------
 return mod
