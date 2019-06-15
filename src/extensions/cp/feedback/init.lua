@@ -51,11 +51,6 @@ mod.quitOnComplete = false
 --- Webview Position.
 mod.position = config.prop("feedbackPosition", nil)
 
---- cp.feedback.quitOnComplete -> boolean
---- Variable
---- Is the Feedback Form already open?
-mod.isOpen = false
-
 -- generateHTML() -> string
 -- Function
 -- Generates the HTML for the Feedback Plugin
@@ -159,7 +154,6 @@ local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod.webview = nil
-            mod.isOpen = false
         end
     -- elseif action == "focusChange" then
     elseif action == "frameChange" then
@@ -183,7 +177,7 @@ function mod.showFeedback(quitOnComplete)
         --------------------------------------------------------------------------------
         -- Feedback window already open:
         --------------------------------------------------------------------------------
-        if mod.isOpen then
+        if mod.feedbackWebView and mod.feedbackWebView:hswindow() then
             mod.feedbackWebView:show()
             return
         end
@@ -220,8 +214,7 @@ function mod.showFeedback(quitOnComplete)
                         mod.feedbackWebView = nil
                     end
                 elseif message["body"] == "hide" then
-                    mod.feedbackWebView:delete()
-                    mod.feedbackWebView = nil
+                    mod.feedbackWebView:hide()
                 elseif type(message["body"]) == "table" then
                     config.set("userFullName", message["body"][1])
                     config.set("userEmail", message["body"][2])
@@ -289,7 +282,6 @@ function mod.showFeedback(quitOnComplete)
         -- Show Welcome Screen:
         --------------------------------------------------------------------------------
         mod.feedbackWebView:show()
-        mod.isOpen = true
         doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
     end)
 end
