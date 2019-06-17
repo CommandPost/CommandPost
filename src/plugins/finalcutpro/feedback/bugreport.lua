@@ -4,18 +4,17 @@
 
 local require = require
 
-local log               = require("hs.logger").new("fcpBug")
+local log           = require "hs.logger".new "fcpBug"
 
-local inspect           = require("hs.inspect")
-local screen            = require("hs.screen")
-local webview           = require("hs.webview")
+local inspect       = require "hs.inspect"
+local screen        = require "hs.screen"
+local webview       = require "hs.webview"
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local just              = require("cp.just")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
-
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local just          = require "cp.just"
+local tools         = require "cp.tools"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -381,7 +380,7 @@ function mod.open(bugReport)
 
 end
 
--- appleBugReporter() -> none
+-- appleFeedbackAssistant() -> none
 -- Function
 -- Opens the Apple Bug Reporter
 --
@@ -390,10 +389,9 @@ end
 --
 -- Returns:
 --  * None
-local function appleBugReporter()
-    os.execute('open "https://bugreport.apple.com/"')
+local function appleFeedbackAssistant()
+    os.execute('open "https://feedbackassistant.apple.com"')
 end
-
 
 local plugin = {
     id              = "finalcutpro.feedback.bugreport",
@@ -419,7 +417,7 @@ function plugin.init(deps)
         :addSeparator(1.4)
         :addSeparator(10000.1)
         :addItem(10000, function()
-            return { title = i18n("appleBugReporter"), fn = appleBugReporter }
+            return { title = i18n("appleFeedbackAssistant"), fn = appleFeedbackAssistant }
         end)
 
     --------------------------------------------------------------------------------
@@ -439,10 +437,10 @@ function plugin.init(deps)
         :titled(i18n("suggestFinalCutProFeatureToApple"))
 
     global
-        :add("cpAppleBugReporter")
-        :whenActivated(appleBugReporter)
+        :add("cpAppleFeedbackAssistant")
+        :whenActivated(appleFeedbackAssistant)
         :groupedBy("helpandsupport")
-        :titled(i18n("appleBugReporter"))
+        :titled(i18n("appleFeedbackAssistant"))
 
     return mod
 end
