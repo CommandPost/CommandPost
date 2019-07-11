@@ -40,11 +40,6 @@ local BASE_LOCALE = "Base"
 -- Strings File Extension.
 local STRINGS_EXT = "strings"
 
--- LOCALE_PATH -> string
--- Constant
--- The path pattern for locale-specific resources.
-local LOCALE_PATH = "%s/Contents/Resources/%s.lproj"
-
 --- cp.app.menu.ROLE -> string
 --- Constant
 --- The menu role
@@ -70,65 +65,60 @@ local STORYBOARD_EXT = "storyboardc"
 --- Main Storyboard name.
 menu.STORYBOARD_FILE = "NSMainStoryboardFile"
 
-local function findBaseLocalePath(app)
-    return fs.pathToAbsolute(format(LOCALE_PATH, app:path(), BASE_LOCALE)), BASE_LOCALE
-end
-
--- findLocalePath(app, locale) -> string, string
--- Function
--- Attempts to find the path for the specified locale folder.
--- If it can't be found for the locale, it will attempt to find the `Base` locale instead.
---
--- Parameters:
--- * app            - The `cp.app` being searched.
--- * locale         - The `localeID` to search for.
---
--- Returns:
--- * path           - In the form `"<app path>/Contents/Resources/<locale>.lproj"`
--- * code           - the code for the locale where the file was found, which may be `Base`, or `nil` if not found.
-local function findLocalePath(app, locale)
-    local appPath = app:path()
-    for _, alias in pairs(locale.aliases) do
-        local path = fs.pathToAbsolute(format(LOCALE_PATH, appPath, alias))
-        if path then
-            return path, locale.code
-        end
+local function isLocalizableString(value)
+    if type(value) == "table" then
+        local classname = value["$class"] and value["$class"]["$classname"] or nil
+        return classname == "NSLocalizableString"
     end
-    return findBaseLocalePath(app)
+    return false
 end
 
--- findLocaleFilePath(app, locale, fileName) -> string, string
+local function stringValue(value)
+    if type(value) == "string" then
+        return value
+    elseif isLocalizableString(value) then
+        return value["NS.string"]
+    end
+end
+
+local function stringKey(value)
+    return isLocalizableString(value) and value.NSKey or nil
+end
+
+-- findLocaleFilePath(app, fileName) -> string
 -- Function
 -- Attempts to find the specified file name under the locale path for the provided app.
 -- If the file cannot be found for the specific locale, it will try the `Base` locale instead.
 --
 -- Parameters:
 -- * app        - The `cp.app` being searched for.
--- * locale     - The locale to search in.
 -- * fileName   - The specific file under the local folder to look for. E.g. "MainMenu.nib"
 --
 -- Returns:
 -- * path       - The absolute path to the file name, or `nil` if not found.
--- * code       - The language code for the locale where it was found (eg. 'en' or 'Base', depending on the app layout)
 local function findLocaleFilePath(app, locale, fileName)
-    local localePath, code = findLocalePath(app, locale)
+    local resourcePath = app:resourcesPath()
 
-    if localePath then
-        local filePath = fs.pathToAbsolute(localePath .. "/" .. fileName)
-        if not filePath and code ~= BASE_LOCALE then
-            -- double-check in the Base locale - it may look there if not found in the specific locale.
-            filePath = fs.pathToAbsolute(findBaseLocalePath(app) .. "/" .. fileName)
-            if filePath then
-                return filePath, BASE_LOCALE
-            end
+    for _, alias in ipairs(locale.aliases) do
+        local filePath = fs.pathToAbsolute(format("%s/%s.lproj/%s", resourcePath, alias, fileName))
+        if filePath then
+            return filePath
         end
-        return filePath, code
     end
+
     return nil
+end
+
+local function findBaseFilePath(app, fileName)
+    return app:baseResourcesPath() .. "/" .. fileName
 end
 
 local function findMenuNibPath(app, locale, nibName)
     return findLocaleFilePath(app, locale, nibName .. "." .. NIB_EXT)
+end
+
+local function findBaseMenuNibPath(app, nibName)
+    return findBaseFilePath(app, nibName .. "." .. NIB_EXT)
 end
 
 -- findStoryboardPath(app, locale, storyboardName) -> string, string
@@ -142,10 +132,10 @@ end
 -- * storyboardName - The name of the storyboard path to find.
 --
 -- Returns:
--- * path   - in the form `"<app path>/Contents/Resources/<locale>.lproj/<Storyboard>.storyboardc"`
--- * code   - the locale code where the storyboard was found, which may be `Base` if the specified locale was not found.
+-- * path   - in the form `"<app path>/Contents/Resources/<locale>.lproj/<storyboardName>.storyboardc"`
 local function findStoryboardPath(app, locale, storyboardName)
-    return findLocaleFilePath(app, locale, storyboardName .. "." .. STORYBOARD_EXT)
+    local fileName = storyboardName .. "." .. STORYBOARD_EXT
+    return findLocaleFilePath(app, locale, fileName) or findBaseFilePath(app, fileName)
 end
 
 local function findMenuStringsPath(app, locale, stringsFileName)
@@ -175,13 +165,14 @@ local function processMenu(menuData, localeCode, menuCache)
         for i, itemData in ipairs(menuData.NSMenuItems) do
             local item = menuCache[i] or {}
             local value = itemData.NSTitle
-            if type(value) == "table" then
-                local classname = value["$class"] and value["$class"]["$classname"] or nil
-                if classname == "NSLocalizableString" then
-                    value = value["NS.string"]
-                end
+            local key = nil
+
+            if isLocalizableString(value) then
+                key = stringKey(value)
+                value = stringValue(value)
             end
             item[localeCode] = value
+            item.key = key
             item.separator = itemData.NSIsSeparator
             --------------------------------------------------------------------------------
             -- Check if there is a submenu:
@@ -208,6 +199,7 @@ local function processNib(menuNib, localeCode, menuCache)
     end
     if menuTitles then
         menuCache[localeCode] = true
+        log.df("processNib: menuCache: %s", menuCache)
         return processMenu(menuTitles, localeCode, menuCache)
     else
         log.ef("Unable to locate Main .nib file for %s.", localeCode)
@@ -227,12 +219,11 @@ end
 --
 -- Returns:
 -- * `true` if the `.nib` could be read and was processed, otherwise `false`.
-local function readMenuNib(path, locale, menuCache)
+local function readMenuNib(path, localeCode, menuCache)
     if path then
-        locale = localeID(locale)
         local menuNib = archiver.unarchiveFile(path)
         if menuNib then
-            processNib(menuNib, locale.code, menuCache)
+            processNib(menuNib, localeCode, menuCache)
             return true
         else
             log.ef("Unable to process the menu .nib file in: %s", path)
@@ -242,15 +233,17 @@ local function readMenuNib(path, locale, menuCache)
     return false
 end
 
-local function processStrings(menuStrings, localeCode, theMenu)
+local function processStrings(app, menuStrings, localeCode, theMenu)
     if not theMenu[localeCode] then
+        local baseLocale = app:baseLocale()
         for _, item in ipairs(theMenu) do
-            local base = item[BASE_LOCALE]
-            if base and base.NSKey then
-                item[localeCode] = menuStrings and menuStrings[base.NSKey] or base["NS.string"]
-            end
+            local baseValue = item[baseLocale.code]
+            local key = item.key
+            -- try looking it up based on the key
+            item[localeCode] = menuStrings and key and menuStrings[key] or baseValue
+
             if item.submenu then
-                processStrings(menuStrings, localeCode, item.submenu)
+                processStrings(app, menuStrings, localeCode, item.submenu)
             end
         end
     end
@@ -269,28 +262,24 @@ local function loadMenuTitlesFromNib(app, locale, menuCache)
         return false
     end
 
-    local nibPath, code = findMenuNibPath(app, locale, nibName)
-    if not nibPath then
-        log.ef("Unable to find %s.nib file for %s in either the %s or Base locales.", nibName, app, locale)
-        return false
-    end
-
-    if not readMenuNib(nibPath, locale, menuCache) then
-        log.ef("Unable to process the %s.nib file in: %s", nibName, nibPath)
-        return false
-    end
-
-    if code == BASE_LOCALE then
-        -- 1. If currently in the app's `baseLocale` then apply the strings from the NSLocalizedStrings
-        if locale == app:baseLocale() then
-            processStrings(nil, locale.code, menuCache)
+    local nibPath = findMenuNibPath(app, locale, nibName)
+    if not nibPath or not readMenuNib(nibPath, locale.code, menuCache) then
+        local baseLocale = app:baseLocale()
+        if not menuCache[BASE_LOCALE] then
+            local baseNibPath = findBaseMenuNibPath(app, nibName)
+            readMenuNib(baseNibPath, baseLocale.code, menuCache)
         end
 
-        -- 2. could be a 'strings' file
-        local menuStrings = readStringsFile(app, locale.aliases, nibName)
+        -- 1. If currently in the app's `baseLocale` then apply the strings from the NSLocalizableStrings
+        if locale == baseLocale then
+            processStrings(app, nil, locale.code, menuCache)
+        end
+
+        -- 2. could be a 'strings' file for the individual locale
+        local menuStrings = readStringsFile(app, locale, nibName)
         if menuStrings then
             -- Process the locale's .strings
-            processStrings(menuStrings, locale.code, menuCache)
+            processStrings(app, menuStrings, locale.code, menuCache)
         end
     end
 
@@ -318,13 +307,13 @@ local function loadMenuTitlesFromStoryboard(app, locale, menuCache)
     end
 
     -- then find the actual Storyboard path for the current locale...
-    local storyboardPath, code = findStoryboardPath(app, locale, storyboardName)
+    local storyboardPath = findStoryboardPath(app, locale, storyboardName)
     if not storyboardPath then
         log.ef("Unable to find main storyboard for %s in either the %s or `Base` locales.", app, locale)
         return false
     end
 
-    if menuCache[code] then
+    if menuCache[locale.code] then
         -- already loaded
         return true
     end
@@ -463,9 +452,11 @@ function menu.mt:getMenuTitles(locales)
     end
 
     local menuCache = self._menuTitles
+    log.df("getMenuTitles: before: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
     for _, locale in ipairs(locales) do
         loadMenuTitlesLocale(app, locale, menuCache)
     end
+    log.df("getMenuTitles: after: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
 
     return menuCache
 end

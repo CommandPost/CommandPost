@@ -48,7 +48,7 @@ local processInfo               = hs.processInfo
 local Throw                     = go.Throw
 local WaitUntil                 = go.WaitUntil
 
-local app = class("app"):include(lazy)
+local app = class("cp.app"):include(lazy)
 
 -- COMMANDPOST_BUNDLE_ID -> string
 -- Constant
@@ -570,6 +570,47 @@ function app.lazy.prop:currentLocale()
             end
         end
     ):monitor(self.running)
+end
+
+--- cp.app.resourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the `Contents/Resources` folder inside the app.
+function app.lazy.prop:resourcesPath()
+    return self.path:mutate(function(original)
+        local path = original()
+        return path and fs.pathToAbsolute(path .. "/Contents/Resources") or nil
+    end)
+end
+
+--- cp.app.baseResourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the `Content/Resources/Base.lproj` folder
+--- for the application, or `nil` if not present.
+function app.lazy.prop:baseResourcesPath()
+    return self.resourcesPath:mutate(function(original)
+        local path = original()
+        return path and fs.pathToAbsolute(path .. "/Base.lproj") or nil
+    end)
+end
+
+--- cp.app.localeResourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the locale-specific resources
+--- for the current locale. If no resources for the locale are available, `nil` is returned.
+function app.lazy.prop:localeResourcesPath()
+    return self.resourcesPath:mutate(function(original)
+        local resourcesPath = original()
+        if resourcesPath then
+            local locale = self:bestSupportedLocale(self:currentLocale())
+            for _, alias in pairs(locale.aliases) do
+                local path = fs.pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
+                if path then
+                    return path
+                end
+            end
+        end
+    end)
+    :monitor(self.currentLocale)
 end
 
 --- cp.app:menu() -> cp.app.menu
