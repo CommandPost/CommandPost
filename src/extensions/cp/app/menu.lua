@@ -199,7 +199,7 @@ local function processNib(menuNib, localeCode, menuCache)
     end
     if menuTitles then
         menuCache[localeCode] = true
-        log.df("processNib: menuCache: %s", menuCache)
+        --log.df("processNib: menuCache: %s", menuCache)
         return processMenu(menuTitles, localeCode, menuCache)
     else
         log.ef("Unable to locate Main .nib file for %s.", localeCode)
@@ -354,7 +354,7 @@ local function loadMenuTitlesLocale(app, locale, menuCache)
     locale = localeID(locale)
     if not locale then
         -- it's not a real locale (according to our records...)
-        log.wf("Unable to find requested main menu locale: %s", locale)
+        log.ef("Unable to find requested main menu locale: %s", locale)
         return false
     end
 
@@ -452,11 +452,11 @@ function menu.mt:getMenuTitles(locales)
     end
 
     local menuCache = self._menuTitles
-    log.df("getMenuTitles: before: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
+    --log.df("getMenuTitles: before: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
     for _, locale in ipairs(locales) do
         loadMenuTitlesLocale(app, locale, menuCache)
     end
-    log.df("getMenuTitles: after: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
+    --log.df("getMenuTitles: after: menuCache: %s; _menuTitles: %s", menuCache, self._menuTitles)
 
     return menuCache
 end
