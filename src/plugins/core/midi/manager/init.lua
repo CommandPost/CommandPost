@@ -110,7 +110,35 @@ mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME
     local items = mod._items()
     for groupID, group in pairs(items) do
         for _, button in pairs(group) do
-            if button.device and button.channel and button.commandType and button.number and button.action then
+            if button.device and button.channel and button.commandType and button.commandType == "pitchWheelChange" then
+                if not midiActions[groupID] then
+                    midiActions[groupID] = {}
+                end
+                if not midiActions[groupID][button.device] then
+                    midiActions[groupID][button.device] = {}
+                end
+                if not midiActions[groupID][button.device][button.channel] then
+                    midiActions[groupID][button.device][button.channel] = {}
+                end
+                if not midiActions[groupID][button.device][button.channel][button.commandType] then
+                    midiActions[groupID][button.device][button.channel][button.commandType] = {}
+                end
+                if button.action and button.handlerID and string.sub(button.handlerID, -13) == "_midicontrols" then
+                    if type(button.action) == "table" then
+                        if not midiActions[groupID][button.device][button.channel][button.commandType]["action"] then
+                            midiActions[groupID][button.device][button.channel][button.commandType]["action"] = {}
+                        end
+                        for id, value in pairs(button.action) do
+                            midiActions[groupID][button.device][button.channel][button.commandType]["action"][id] = value
+                        end
+                    elseif type(button.action) == "string" then
+                        midiActions[groupID][button.device][button.channel][button.commandType]["action"] = button.action
+                    end
+                    if button.handlerID then
+                        midiActions[groupID][button.device][button.channel][button.commandType]["handlerID"] = button.handlerID
+                    end
+                end
+            elseif button.device and button.channel and button.commandType and button.number and button.action then
                 if type(button.number) == "string" then
                     button.number = tonumber(button.number)
                 end
@@ -464,8 +492,34 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
         deviceName = "virtual_" .. deviceName
     end
 
-    if midiActions and midiActions[group] and midiActions[group][deviceName] and midiActions[group][deviceName][channel] and midiActions[group][deviceName][channel][commandType] then
-        if midiActions[group][deviceName][channel][commandType][controllerNumber] and midiActions[group][deviceName][channel][commandType][controllerNumber] then
+    if midiActions
+    and midiActions[group]
+    and midiActions[group][deviceName]
+    and midiActions[group][deviceName][channel]
+    and midiActions[group][deviceName][channel][commandType] then
+        if commandType == "pitchWheelChange" then
+            --------------------------------------------------------------------------------
+            -- Pitch Wheel Change doesn't have a controllerNumber:
+            --------------------------------------------------------------------------------
+            local v = midiActions[group][deviceName][channel][commandType]
+            if v.handlerID and string.sub(v.handlerID, -13) == "_midicontrols" then
+                doAfter(0, function()
+                    local id = v.action.id
+                    local control = controls:get(id)
+                    if control then
+                        local params = control:params()
+                        if params then
+                            local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
+                            if not ok then
+                                log.ef("Error while processing MIDI Callback: %s", result)
+                            end
+                        end
+                    end
+                end)
+            end
+        elseif midiActions[group][deviceName][channel][commandType][controllerNumber] then
+            --------------------------------------------------------------------------------
+            --------------------------------------------------------------------------------
             local v
             if midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue] and midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]["action"] then
                 v = midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]
