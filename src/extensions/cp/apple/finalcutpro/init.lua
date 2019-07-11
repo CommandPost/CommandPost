@@ -116,7 +116,7 @@ local insert                                    = table.insert
 local NBSP = " "
 
 
-local fcp = class("finalcutpro"):include(lazy)
+local fcp = class("cp.apple.finalcutpro"):include(lazy)
 
 function fcp:initialize()
 --- cp.apple.finalcutpro.app <cp.app>
@@ -168,14 +168,6 @@ function fcp:__gc()
         self.customWorkspacesWatcher = nil
     end
 end
-
--- tostring
-function fcp.__tostring() return "cp.apple.finalcutpro" end
-
---- cp.apple.finalcutpro.BUNDLE_ID -> string
---- Constant
---- Final Cut Pro's Bundle ID as a `semver`.
-fcp.BUNDLE_ID = "com.apple.FinalCut"
 
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION -> string
 --- Constant
@@ -546,9 +538,9 @@ end
 ---
 --- Returns:
 --- * A table containing any active library paths.
-function fcp.activeLibraryPaths()
+function fcp:activeLibraryPaths()
     local paths = {}
-    local fcpPlist = hsplist.read("~/Library/Preferences/" .. fcp.BUNDLE_ID .. ".plist")
+    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
     local FFActiveLibraries = fcpPlist and fcpPlist.FFActiveLibraries
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do

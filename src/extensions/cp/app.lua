@@ -23,21 +23,25 @@ local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
 
-local axutils                   = require "cp.ui.axutils"
 local go                        = require "cp.rx.go"
 local just                      = require "cp.just"
 local languageID                = require "cp.i18n.languageID"
 local lazy                      = require "cp.lazy"
 local localeID                  = require "cp.i18n.localeID"
 local menu                      = require "cp.app.menu"
-local notifier                  = require "cp.ui.notifier"
 local prefs                     = require "cp.app.prefs"
 local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
 
+local axutils                   = require "cp.ui.axutils"
+local notifier                  = require "cp.ui.notifier"
+local Dialog                    = require "cp.ui.Dialog"
+local Window                    = require "cp.ui.Window"
+
 local v                         = require "semver"
 local class                     = require "middleclass"
 
+local childMatching             = axutils.childMatching
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
@@ -45,10 +49,11 @@ local If                        = go.If
 local insert                    = table.insert
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
+local tableFilter               = tools.tableFilter
 local Throw                     = go.Throw
 local WaitUntil                 = go.WaitUntil
 
-local app = class("app"):include(lazy)
+local app = class("cp.app"):include(lazy)
 
 -- COMMANDPOST_BUNDLE_ID -> string
 -- Constant
@@ -179,6 +184,12 @@ end
 -- * The new `cp.app`.
 function app:initialize(bundleID)
     self._bundleID = bundleID
+    self._windowClasses = {}
+    self._windowCache = {}
+
+    self:registerWindowType(Window)
+    self:registerWindowType(Dialog)
+
     app._initWatchers()
 end
 
@@ -282,17 +293,166 @@ function app.lazy.prop:frontmost()
     )
 end
 
+--- cp.app:registerWindowType(windowClass[, options]) -> cp.app
+--- Method
+--- Registers the specified class as one which will be used when accessing a specific `AXWindow` instance.
+---
+--- By default, it will use the `matches` function on the class itself to check. An alternate function can be
+--- provided by putting it in the `{matches = <function>}` property of the `options` table.
+---
+--- By default, Windows instances are assumed to be short-lived, and will not persist beyond the window opening or closing.
+--- To indicate that it should stick around, add `persistent = true` to the `options` table.
+---
+--- If the new `AXWindow` matches, this class will be used when requesting the set of windows via
+--- the [#windows] method or the [#focusedWindow] or [#mainWindow] props.
+---
+--- Classes registered later will supersede those registered earlier, so ensure that matchers are specific enough to
+--- not recognise more window UIs than they should.
+---
+--- Parameters:
+--- * windowClass       - The class that will be used to create the window. It should be a subclass of [Window](cp.ui.Window.md)
+--- * options           - (optional) if provided, it will be passed the `hs.asm.axuielement` being wrapped, and should return `true` or `false`.
+---
+--- Returns:
+--- * the same instance of the `cp.app` for further configuration.
+---
+--- Notes:
+--- * Options:
+---     * `matches`: a `function` that will receive the AXWindow instance and should return `true` or `false`.
+---     * `persistent`: if set to `true`, the Window instance will be cached and checked when windows appear and disappear.
+function app:registerWindowType(windowClass, options)
+    local matchesFn = options and  options.matches or windowClass.matches
+    if type(matchesFn) ~= "function" then
+        error("Unable to find a `matches` function from either the `matchesFn` parameter or the class `matches` static function.")
+    end
+
+    insert(self._windowClasses, {class = windowClass, matches = matchesFn, persistent = options and options.persistent or nil})
+    -- reset the cache.
+    self._windowCache = {}
+
+    return self
+end
+
+-- cp.app:_createWindow(windowUI)
+-- Function
+-- Creates a new Window instance for the provided `windowUI`.
+function app:_createWindow(windowUI)
+    local windowClasses = self._windowClasses
+    local count = #windowClasses
+    for i = count,1,-1 do
+        local factory = windowClasses[i]
+        if factory.matches(windowUI) then
+            local uiFinder
+            if factory.persistent then
+                uiFinder = prop(function()
+                    return childMatching(self:windowsUI(), factory.matches)
+                end)
+            else
+                uiFinder = prop.THIS(windowUI)
+            end
+            return factory.class(self, uiFinder), factory.persistent
+        end
+    end
+    return nil
+end
+
+-- cp.app:_findWindow(windowUI) -> cp.ui.Window
+-- Method
+-- Finds the matching [Window](cp.ui.Window.md) for the `hs._asm.axuielement`.
+-- If it is cached, return the cached instance, otherwise, create a new one.
+function app:_findWindow(windowUI)
+    -- first, check the cache
+    local window
+
+    -- both filters out old windows from the cache and checks for an existing window.
+    tableFilter(self._windowCache, function(t, i)
+        local item = t[i]
+        local w = item.window
+        local ui = w:UI()
+        if ui == windowUI then
+            window = w
+        end
+        return item.persistent or ui ~= nil
+    end)
+
+    if window then
+        return window
+    end
+
+    local persistent
+    -- otherwise, create a new window if appropriate
+    window, persistent = self:_createWindow(windowUI)
+    if window then
+        insert(self._windowCache, {
+            window = window,
+            persistent = persistent
+        })
+    end
+
+    return window
+end
+
+--- cp.app.windows <cp.prop: table of cp.ui.Window; read-only; live>
+--- Field
+--- Returns a list containing the [Window](cp.ui.Window.md) instances currently available.
+function app.lazy.prop:windows()
+    return self.windowsUI:mutate(function(original)
+        local uis = original()
+        local windows = {}
+        for _,ui in ipairs(uis) do
+            insert(windows, self:_findWindow(ui))
+        end
+        return windows
+    end)
+end
+
+--- cp.app.windowsUI <cp.prop: table of hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI containing the list of windows in the app.
+function app.lazy.prop:windowsUI()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            local windows = ui and ui:attributeValue("AXWindows")
+            if windows ~= nil and #windows == 0 then
+                local mainWindow = ui:attributeValue("AXMainWindow")
+                if mainWindow then
+                    insert(windows, mainWindow)
+                end
+            end
+            return windows
+        end),
+        {"AXWindowCreated", "AXDrawerCreated", "AXSheetCreated", "AXUIElementDestroyed"}
+    )
+end
+
+--- cp.app.focusedWindow <cp.prop: cp.ui.Window; read-only; live>
+--- Field
+--- The currently-focused [Window](cp.ui.Window.md). This may be a subclass of `Window` if
+--- additional types of `Window` have been registered via [#registerWindowType].
+function app.lazy.prop:focusedWindow()
+    return self.focusedWindowUI:mutate(function(original)
+        return self:_findWindow(original())
+    end)
+end
+
 --- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:focusedWindowUI()
     return notifyWatch(
-        self.UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXFocusedWindow")
-        end),
+        axutils.prop(self.UI, "AXFocusedWindow"),
         {"AXFocusedWindowChanged"}
     )
+end
+
+--- cp.prop.mainWindow <cp.prop: cp.ui.Window; read-only; live>
+--- Field
+--- The main [Window](cp.ui.Window.md), or `nil` if none is available.
+function app.lazy.prop:mainWindow()
+    return self.mainWindowUI:mutate(function(original)
+        return self:_findWindow(original())
+    end)
 end
 
 --- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
@@ -300,10 +460,7 @@ end
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:mainWindowUI()
     return notifyWatch(
-        self.UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXMainWindow")
-        end),
+        axutils.prop(self.UI, "AXMainWindow"),
         {"AXMainWindowChanged"}
     )
 end
@@ -418,26 +575,6 @@ end
 --- Checks if the application currently installed.
 function app.lazy.prop:installed()
     return self.info:mutate(function(original) return original() ~= nil end)
-end
-
---- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- Returns the UI containing the list of windows in the app.
-function app.lazy.prop:windowsUI()
-    return notifyWatch(
-        self.UI:mutate(function(original)
-            local ui = original()
-            local windows = ui and ui:attributeValue("AXWindows")
-            if windows ~= nil and #windows == 0 then
-                local mainWindow = ui:attributeValue("AXMainWindow")
-                if mainWindow then
-                    insert(windows, mainWindow)
-                end
-            end
-            return windows
-        end),
-        {"AXWindowCreated", "AXDrawerCreated", "AXSheetCreated", "AXUIElementDestroyed"}
-    )
 end
 
 --- cp.app.baseLocale <cp.prop: cp.i18n.localeID; read-only>
@@ -570,6 +707,47 @@ function app.lazy.prop:currentLocale()
             end
         end
     ):monitor(self.running)
+end
+
+--- cp.app.resourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the `Contents/Resources` folder inside the app.
+function app.lazy.prop:resourcesPath()
+    return self.path:mutate(function(original)
+        local path = original()
+        return path and fs.pathToAbsolute(path .. "/Contents/Resources") or nil
+    end)
+end
+
+--- cp.app.baseResourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the `Content/Resources/Base.lproj` folder
+--- for the application, or `nil` if not present.
+function app.lazy.prop:baseResourcesPath()
+    return self.resourcesPath:mutate(function(original)
+        local path = original()
+        return path and fs.pathToAbsolute(path .. "/Base.lproj") or nil
+    end)
+end
+
+--- cp.app.localeResourcesPath <cp.prop: string; read-only; live>
+--- Field
+--- A [prop](cp.prop.md) for the file path to the locale-specific resources
+--- for the current locale. If no resources for the locale are available, `nil` is returned.
+function app.lazy.prop:localeResourcesPath()
+    return self.resourcesPath:mutate(function(original)
+        local resourcesPath = original()
+        if resourcesPath then
+            local locale = self:bestSupportedLocale(self:currentLocale())
+            for _, alias in pairs(locale.aliases) do
+                local path = fs.pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
+                if path then
+                    return path
+                end
+            end
+        end
+    end)
+    :monitor(self.currentLocale)
 end
 
 --- cp.app:menu() -> cp.app.menu
@@ -843,7 +1021,7 @@ end
 --- Field
 --- Returns the short description of the class as "cp.app: <bundleID>"
 function app.lazy.value:description()
-    return format("cp.app: %s", self:bundleID())
+    return format("%s: %s (%s)", self.class.name, self:displayName(), self:bundleID())
 end
 
 function app:__tostring()
