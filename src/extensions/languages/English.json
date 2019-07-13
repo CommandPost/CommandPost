@@ -866,6 +866,7 @@
         "global": "Global",
         "global_cmds_action": "Global Commands",
         "global_command_group": "All Applications",
+        "global_loupedeckbanks_action": "Loupedeck+ Banks",
         "global_midibanks_action": "MIDI Banks",
         "global_streamDeckbanks_action": "Stream Deck Banks",
         "global_touchbarbanks_action": "Touch Bar Banks",
