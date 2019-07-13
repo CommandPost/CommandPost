@@ -28,19 +28,13 @@ local childMatching, cache              = axutils.childMatching, axutils.cache
 local toRegionalNumber                  = tools.toRegionalNumber
 local toRegionalNumberString            = tools.toRegionalNumberString
 
-
 local CORRECTION_TYPE                   = "Color Wheels"
-
 
 local ColorWheels = Element:subclass("ColorWheels")
 
 function ColorWheels.__tostring()
     return "cp.apple.finalcutpro.inspector.color.ColorWheels"
 end
-
---------------------------------------------------------------------------------
--- PUBLIC FUNCTIONS & METHODS:
---------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
@@ -89,6 +83,7 @@ function ColorWheels:initialize(parent)
     -- link these fields so they mirror each other.
     self:temperatureSlider().value:mirror(self:temperatureTextField().value)
     self:mixSlider().value:mirror(self:mixTextField().value)
+    self:tintSlider().value:mirror(self:tintTextField().value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs._asm.axuielement; read-only>

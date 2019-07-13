@@ -858,7 +858,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
@@ -871,17 +870,6 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps)
-
-    --------------------------------------------------------------------------------
-    -- Copy Legacy Property List Touch Bar Buttons to JSON:
-    --------------------------------------------------------------------------------
-    local legacyControls = config.get("touchBarButtons", nil)
-    if legacyControls and not config.get("touchBarButtonsCopied") then
-        mod._items(legacyControls)
-        config.set("touchBarButtonsCopied", true)
-        log.df("Copied Touch Bar Buttons from Plist to JSON.")
-    end
-
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
@@ -924,7 +912,6 @@ function plugin.postInit(deps)
         mod.start()
         mod.update()
     end
-
 end
 
 return plugin

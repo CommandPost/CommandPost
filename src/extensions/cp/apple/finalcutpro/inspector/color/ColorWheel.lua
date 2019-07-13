@@ -16,7 +16,6 @@ local Button							= require("cp.ui.Button")
 local Do                                = require("cp.rx.go.Do")
 local If                                = require("cp.rx.go.If")
 
-
 local ColorWheel = Element:subclass("ColorWheel")
 
 function ColorWheel.__tostring()
@@ -311,7 +310,7 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true` if successful.
 function ColorWheel:doNudgeColor(right, up)
-    return self:colorWheel():doNudge(right, up):Label("ColorWheel:doNudgeColor")
+    return self:colorWell():doNudge(right, up):Label("ColorWheel:doNudgeColor")
 end
 
 return ColorWheel

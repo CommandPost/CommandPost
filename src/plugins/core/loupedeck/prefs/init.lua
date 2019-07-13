@@ -9,19 +9,16 @@ local log           = require "hs.logger".new "prefsLoupedeck"
 local dialog        = require "hs.dialog"
 local image         = require "hs.image"
 local inspect       = require "hs.inspect"
-local midi          = require "hs.midi"
-local timer         = require "hs.timer"
 
 local commands      = require "cp.commands"
 local config        = require "cp.config"
-local html          = require "cp.web.html"
 local i18n          = require "cp.i18n"
-local json          = require "cp.json"
 local tools         = require "cp.tools"
 
 local moses         = require "moses"
+local default       = require "default"
 
-local delayed       = timer.delayed
+local webviewAlert  = dialog.webviewAlert
 
 local mod = {}
 
@@ -30,30 +27,25 @@ local mod = {}
 --- The default MIDI controls, so that the user has a starting point.
 mod.DEFAULT_CONTROLS = default
 
---- plugins.core.loupedeck.prefs.enabled <cp.prop: boolean>
---- Field
---- Enable or disable MIDI Support.
-mod.enabled = config.prop("enableLoupedeck", false)
-
---- plugins.core.loupedeck.prefs.FILE_NAME -> string
---- Constant
---- File name of settings file.
-mod.FILE_NAME = "Default.cpLoupedeck"
-
---- plugins.core.loupedeck.prefs.FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
-mod.FOLDER_NAME = "Loupedeck"
-
--- plugins.core.loupedeck.prefs._items <cp.prop: table>
--- Field
--- Contains all the saved MIDI items
-mod.items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
-
 --- plugins.core.loupedeck.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
-mod.lastGroup = config.prop("loupedeckPreferencesLastGroup", nil)
+mod.lastGroup = config.prop("loupedeck.preferences.lastGroup", nil)
+
+--- plugins.core.loupedeck.prefs.lastNote <cp.prop: string>
+--- Field
+--- Last note used in the Preferences panel.
+mod.lastNote = config.prop("loupedeck.preferences.lastNote", "95")
+
+--- plugins.core.loupedeck.prefs.lastIsButton <cp.prop: boolean>
+--- Field
+--- Whether or not the last selected item in the Preferences was a button.
+mod.lastIsButton = config.prop("loupedeck.preferences.lastIsButton", true)
+
+--- plugins.core.loupedeck.prefs.lastLabel <cp.prop: string>
+--- Field
+--- Last label used in the Preferences panel.
+mod.lastLabel = config.prop("loupedeck.preferences.lastLabel", "Undo")
 
 --- plugins.core.loupedeck.prefs.updateAction(button, group, actionTitle, handlerID, action) -> none
 --- Function
@@ -93,7 +85,7 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
     mod.items(items)
 end
 
--- plugins.core.loupedeck.prefs._resetMIDI() -> none
+-- resetEverything() -> none
 -- Function
 -- Prompts to reset shortcuts to default for all groups.
 --
@@ -102,16 +94,16 @@ end
 --
 -- Returns:
 --  * None
-function mod._resetEverything()
-    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+local function resetEverything()
+    webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
-            mod._midi.clear()
+            mod.items(mod.DEFAULT_CONTROLS)
             mod._manager.refresh()
         end
     end, i18n("midiResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- plugins.core.loupedeck.prefs._resetMIDIGroup() -> none
+-- resetEverythingGroup() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
 --
@@ -120,8 +112,8 @@ end
 --
 -- Returns:
 --  * None
-function mod._resetEverythingGroup()
-    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+local function resetEverythingGroup()
+    webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
             local currentGroup = string.sub(mod.lastGroup(), 1, -2)
@@ -136,7 +128,7 @@ function mod._resetEverythingGroup()
     end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- plugins.core.loupedeck.prefs._resetMIDISubGroup() -> none
+-- resetEverythingSubGroup() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected sub-group.
 --
@@ -145,8 +137,8 @@ end
 --
 -- Returns:
 --  * None
-function mod._resetEverythingSubGroup()
-    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+local function resetEverythingSubGroup()
+    webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
             local groupID = mod.lastGroup()
@@ -187,7 +179,6 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
-
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
@@ -208,60 +199,56 @@ local function generateContent()
     end
     table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
+    --------------------------------------------------------------------------------
+    -- Get last values to populate the UI when it first loads:
+    --------------------------------------------------------------------------------
+    local groupID = defaultGroup
+    local note = mod.lastNote()
+    local items = mod.items()
+
+    local pressValue = i18n("none")
+    local leftValue = i18n("none")
+    local rightValue = i18n("none")
+
+    if items[groupID] then
+        if items[groupID][note .. "Press"] then
+            if items[groupID][note .. "Press"]["actionTitle"] then
+                pressValue = items[groupID][note .. "Press"]["actionTitle"]
+            end
+        end
+        if items[groupID][note .. "Left"] then
+            if items[groupID][note .. "Left"]["actionTitle"] then
+                leftValue = items[groupID][note .. "Left"]["actionTitle"]
+            end
+        end
+        if items[groupID][note .. "Right"] then
+            if items[groupID][note .. "Right"]["actionTitle"] then
+                rightValue = items[groupID][note .. "Right"]["actionTitle"]
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Setup the context:
+    --------------------------------------------------------------------------------
     local context = {
         _                           = moses,
         numberOfSubGroups           = numberOfSubGroups,
         groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
+        i18n                        = i18n,
 
-        i18nSelect 	                = i18n("select"),
-        i18nClear 	                = i18n("clear"),
-        i18nNone 		            = i18n("none"),
-        i18nLearn 	                = i18n("learn"),
-        i18nPhysical	            = i18n("physical"),
-        i18nVirtual	                = i18n("virtual"),
-        i18nOffline	                = i18n("offline"),
-        i18nApplication             = i18n("application"),
-        i18nMidiEditor              = i18n("midiEditor"),
-        i18nAction                  = i18n("action"),
-        i18nDevice                  = i18n("device"),
-        i18nNoteCC                  = i18n("noteCC"),
-        i18nChannel                 = i18n("channel"),
-        i18nValue                   = i18n("value"),
-        i18nAll                     = i18n("all"),
-        i18nNoDevicesDetected       = i18n("noDevicesDetected"),
-        i18nCommmandType            = i18n("commandType"),
-        i18nNoteOff                 = i18n("noteOff"),
-        i18nNoteOn                  = i18n("noteOn"),
-        i18nPolyphonicKeyPressure   = i18n("polyphonicKeyPressure"),
-        i18nControlChange           = i18n("controlChange"),
-        i18nProgramChange           = i18n("programChange"),
-        i18nChannelPressure         = i18n("channelPressure"),
-        i18nPitchWheelChange        = i18n("pitchWheelChange"),
-        i18nAll                     = i18n("all"),
-        i18nBank                    = i18n("bank"),
+        lastNote                    = mod.lastNote(),
+        lastIsButton                = mod.lastIsButton(),
+        lastLabel                   = mod.lastLabel(),
+
+        lastPressValue              = pressValue,
+        lastLeftValue               = leftValue,
+        lastRightValue              = rightValue,
     }
 
     return renderPanel(context)
-
-end
-
-
--- setValue(groupID, buttonID, field, value) -> string
--- Function
--- Sets the value of a HTML field.
---
--- Parameters:
---  * groupID - the group ID
---  * buttonID - the button ID
---  * field - the field
---  * value - the value you want to set the field to
---
--- Returns:
---  * None
-local function setValue(groupID, buttonID, field, value)
-    mod._manager.injectScript("setMidiValue('" .. groupID .. "', '" .. buttonID .. "', '" .. field .. "', '" .. value .. "');")
 end
 
 -- loupedeckPanelCallback() -> none
@@ -301,7 +288,7 @@ local function loupedeckPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" then
+                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" then
                                 table.insert(allowedHandlers, v)
                             end
                         end
@@ -316,8 +303,6 @@ local function loupedeckPanelCallback(id, params)
                     if groupID == "fcpx" then
                         local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
                         local toolbarIcons = {
-                            fcpx_midicontrols   = { path = iconPath .. "midi.png",          priority = 1},
-                            global_midibanks    = { path = iconPath .. "bank.png",          priority = 2},
                             fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
                             fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 4},
                             fcpx_generator      = { path = iconPath .. "generator.png",     priority = 5},
@@ -347,120 +332,93 @@ local function loupedeckPanelCallback(id, params)
                 end
                 local actionTitle = text
                 local handlerID = handler:id()
+
+                --------------------------------------------------------------------------------
+                -- Update the preferences file:
+                --------------------------------------------------------------------------------
                 mod.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
-                --setValue(params["groupID"], params["buttonID"], "action", actionTitle)
 
-                mod._manager.injectScript("setButtonPressActionValue('" .. actionTitle .. "');")
-
+                --------------------------------------------------------------------------------
+                -- Update the webview:
+                --------------------------------------------------------------------------------
+                if params["buttonType"] == "Press" then
+                    injectScript("changeValueByID('press_action', '" .. actionTitle .. "');")
+                elseif params["buttonType"] == "Left" then
+                    injectScript("changeValueByID('left_action', '" .. actionTitle .. "');")
+                elseif params["buttonType"] == "Right" then
+                    injectScript("changeValueByID('right_action', '" .. actionTitle .. "');")
+                end
             end)
 
             --------------------------------------------------------------------------------
             -- Show Activator:
             --------------------------------------------------------------------------------
             mod.activator[activatorID]:show()
-        elseif callbackType == "clear" then
+        elseif callbackType == "clearAction" then
             --------------------------------------------------------------------------------
-            -- Clear:
+            -- Clear an action:
             --------------------------------------------------------------------------------
-            setValue(params["groupID"], params["buttonID"], "device", "")
-            mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+            mod.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
 
-            setValue(params["groupID"], params["buttonID"], "channel", "")
-            mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
-
-            setValue(params["groupID"], params["buttonID"], "commandType", "")
-            mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
-
-            setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
-            mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
-
-            setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
-            mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
-
-            --------------------------------------------------------------------------------
-            -- Remove the red highlight if it's still there:
-            --------------------------------------------------------------------------------
-            injectScript("unhighlightRowRed('" .. params["groupID"] .. "', " .. params["buttonID"] .. ")")
-        elseif callbackType == "applyToAll" then
-            --------------------------------------------------------------------------------
-            -- Apply the selected item to all banks:
-            --------------------------------------------------------------------------------
-            local getItem = mod._midi.getItem
-            local device = getItem("device", params["buttonID"], params["groupID"])
-            local channel = getItem("channel", params["buttonID"], params["groupID"])
-            local commandType = getItem("commandType", params["buttonID"], params["groupID"])
-            local number = getItem("number", params["buttonID"], params["groupID"])
-            local value = getItem("value", params["buttonID"], params["groupID"])
-            local action = getItem("action", params["buttonID"], params["groupID"])
-            local actionTitle = getItem("actionTitle", params["buttonID"], params["groupID"])
-            local handlerID = getItem("handlerID", params["buttonID"], params["groupID"])
-
-            local currentGroup = params["groupID"]:sub(1, -2)
-            local setItem = mod._midi.setItem
-            for i = 1, mod._midi.numberOfSubGroups do
-                local groupID = currentGroup .. tostring(i)
-                setItem("device", params["buttonID"], groupID, device)
-                setItem("channel", params["buttonID"], groupID, channel)
-                setItem("commandType", params["buttonID"], groupID, commandType)
-                setItem("number", params["buttonID"], groupID, number)
-                setItem("value", params["buttonID"], groupID, value)
-                setItem("action", params["buttonID"], groupID, action)
-                setItem("actionTitle", params["buttonID"], groupID, actionTitle)
-                setItem("handlerID", params["buttonID"], groupID, handlerID)
+            if params["buttonType"] == "Press" then
+                injectScript("changeValueByID('press_action', '" .. i18n("none") .. "');")
+            elseif params["buttonType"] == "Left" then
+                injectScript("changeValueByID('left_action', '" .. i18n("none") .. "');")
+            elseif params["buttonType"] == "Right" then
+                injectScript("changeValueByID('right_action', '" .. i18n("none") .. "');")
             end
-        elseif callbackType == "updateNumber" then
+        elseif callbackType == "updateUI" then
             --------------------------------------------------------------------------------
-            -- Update Number:
+            -- Update the webview UI:
             --------------------------------------------------------------------------------
-            --log.df("Updating Device: %s", params["number"])
-            mod._midi.setItem("number", params["buttonID"], params["groupID"], params["number"])
-        elseif callbackType == "updateDevice" then
-            --------------------------------------------------------------------------------
-            -- Update Device:
-            --------------------------------------------------------------------------------
-            --log.df("Updating Device: %s", params["device"])
-            mod._midi.setItem("device", params["buttonID"], params["groupID"], params["device"])
-        elseif callbackType == "updateCommandType" then
-            --------------------------------------------------------------------------------
-            -- Update Command Type:
-            --------------------------------------------------------------------------------
-            --log.df("Updating Command Type: %s", params["commandType"])
-            mod._midi.setItem("commandType", params["buttonID"], params["groupID"], params["commandType"])
-        elseif callbackType == "updateChannel" then
-            --------------------------------------------------------------------------------
-            -- Update Channel:
-            --------------------------------------------------------------------------------
-            --log.df("Updating Channel: %s", params["channel"])
-            mod._midi.setItem("channel", params["buttonID"], params["groupID"], params["channel"])
-        elseif callbackType == "updateValue" then
-            --------------------------------------------------------------------------------
-            -- Update Value:
-            --------------------------------------------------------------------------------
-            --log.df("Updating Value: %s", params["value"])
-            mod._midi.setItem("value", params["buttonID"], params["groupID"], params["value"])
+            local groupID = params["groupID"]
+            local note = params["note"]
+            local items = mod.items()
+
+            local pressValue = i18n("none")
+            local leftValue = i18n("none")
+            local rightValue = i18n("none")
+
+            if items[groupID] then
+                if items[groupID][note .. "Press"] then
+                    if items[groupID][note .. "Press"]["actionTitle"] then
+                        pressValue = items[groupID][note .. "Press"]["actionTitle"]
+                    end
+                end
+                if items[groupID][note .. "Left"] then
+                    if items[groupID][note .. "Left"]["actionTitle"] then
+                        leftValue = items[groupID][note .. "Left"]["actionTitle"]
+                    end
+                end
+                if items[groupID][note .. "Right"] then
+                    if items[groupID][note .. "Right"]["actionTitle"] then
+                        rightValue = items[groupID][note .. "Right"]["actionTitle"]
+                    end
+                end
+            end
+
+            mod.lastNote(note)
+            mod.lastIsButton(params["isButton"])
+            mod.lastLabel(params["label"])
+
+            injectScript([[
+                changeValueByID('press_action', ']] .. pressValue .. [[');
+                changeValueByID('left_action', ']] .. leftValue .. [[');
+                changeValueByID('right_action', ']] .. rightValue .. [[');
+            ]])
         elseif callbackType == "updateGroup" then
             --------------------------------------------------------------------------------
             -- Update Group:
-            -- Change the MIDI Bank as you change the group drop down:
+            -- Change the Loupedeck+ Bank as you change the group drop down:
             --------------------------------------------------------------------------------
-            mod._midi.forceGroupChange(params["groupID"], mod._midi.enabled())
-            mod._stopLearning(id, params)
+            mod._midi.forceLoupedeckGroupChange(params["groupID"], mod.enabled())
             mod.lastGroup(params["groupID"])
             mod._manager.refresh()
-        elseif callbackType == "learnButton" then
-            --------------------------------------------------------------------------------
-            -- Learn Button:
-            --------------------------------------------------------------------------------
-            if mod._currentlyLearning then
-                mod._stopLearning(id, params, true)
-            else
-                mod._startLearning(id, params)
-            end
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in MIDI Preferences Panel:")
+            log.df("Unknown Callback in Loupedeck+ Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
@@ -510,6 +468,9 @@ function mod.init(deps, env)
     mod._actionmanager  = deps.actionmanager
     mod._env            = env
 
+    mod.items           = mod._midi._loupedeckItems
+    mod.enabled         = mod._midi.enabledLoupedeck
+
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
@@ -524,7 +485,7 @@ function mod.init(deps, env)
         :addHeading(6, "Loupedeck+")
         :addCheckbox(7,
             {
-                label       = "Enable Loupedeck+ Support",
+                label       = i18n("enableLoupdeckSupport"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
@@ -536,21 +497,21 @@ function mod.init(deps, env)
         :addButton(13,
             {
                 label       = i18n("resetEverything"),
-                onclick     = mod._resetEverything,
+                onclick     = resetEverything,
                 class       = "applyTopDeviceToAll",
             }
         )
         :addButton(14,
             {
                 label       = i18n("resetApplication"),
-                onclick     = mod._resetEverythingGroup,
+                onclick     = resetEverythingGroup,
                 class       = "loupedeckResetGroup",
             }
         )
         :addButton(15,
             {
                 label       = i18n("resetBank"),
-                onclick     = mod._resetEverythingSubGroup,
+                onclick     = resetEverythingSubGroup,
                 class       = "loupedeckResetGroup",
             }
         )

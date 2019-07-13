@@ -28,16 +28,6 @@ local mod = {}
 --- The default group.
 mod.DEFAULT_GROUP = "global"
 
---- plugins.core.midi.manager.FILE_NAME -> string
---- Constant
---- File name of settings file.
-mod.FILE_NAME = "Default.cpMIDI"
-
---- plugins.core.midi.manager.FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
-mod.FOLDER_NAME = "MIDI Controls"
-
 --- plugins.core.midi.manager.DEFAULT_MIDI_CONTROLS -> table
 --- Constant
 --- The default MIDI controls, so that the user has a starting point.
@@ -52,6 +42,11 @@ local midiActions = {}
 -- Variable
 -- The current active group and subgroup (i.e. "fcpx1").
 local cachedActiveGroupAndSubgroup
+
+-- cachedLoupedeckActiveGroupAndSubgroup -> string
+-- Variable
+-- The current active group and subgroup (i.e. "fcpx1").
+local cachedLoupedeckActiveGroupAndSubgroup
 
 --- plugins.core.midi.manager.learningMode -> boolean
 --- Variable
@@ -80,8 +75,13 @@ mod._groupStatus = {}
 
 -- plugins.core.midi.manager._currentSubGroup -> table
 -- Variable
--- Current Touch Bar Sub Group Statuses.
+-- Current MIDI Sub Group Statuses.
 mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
+
+-- plugins.core.midi.manager._currentSubGroup -> table
+-- Variable
+-- Current Loupedeck+ Sub Group Statuses.
+mod._currentLoupedeckSubGroup = config.prop("loupedeck.currentSubGroup", {})
 
 --- plugins.core.midi.manager.numberOfSubGroups -> number
 --- Variable
@@ -93,10 +93,17 @@ mod.numberOfSubGroups = 9
 --- The maximum number of MIDI items per group.
 mod.maxItems = 100
 
--- plugins.core.midi.manager._items <cp.prop: table>
--- Field
--- Contains all the saved MIDI items
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, mod.DEFAULT_MIDI_CONTROLS):watch(function()
+-- convertPreferencesToMIDIActions() -> none
+-- Function
+-- Reads the MIDI & Loupedeck Preferences files and converts them into a MIDI Actions
+-- table which is easier to process in our MIDI callback code.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function convertPreferencesToMIDIActions()
     --------------------------------------------------------------------------------
     --
     -- When the items table is updated, we also update the midiActions table for
@@ -197,13 +204,152 @@ mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME
             end
         end
     end
-end)
+
+    --------------------------------------------------------------------------------
+    -- Loupedeck+ Support:
+    --------------------------------------------------------------------------------
+    local loupedeckItems = mod._loupedeckItems()
+    for groupID, group in pairs(loupedeckItems) do
+        for buttonID, button in pairs(group) do
+            if button.action then
+                --------------------------------------------------------------------------------
+                -- Press Button:
+                --------------------------------------------------------------------------------
+                if string.sub(buttonID, -5) == "Press" then
+                    local number = tonumber(string.sub(buttonID, 0, -6))
+                    if not midiActions[groupID] then
+                        midiActions[groupID] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"] then
+                        midiActions[groupID]["Loupedeck+"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0] then
+                        midiActions[groupID]["Loupedeck+"][0] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["noteOn"] then
+                        midiActions[groupID]["Loupedeck+"][0]["noteOn"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] then
+                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] = {}
+                    end
+                    if type(button.action) == "table" then
+                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] then
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = {}
+                        end
+                        for id, value in pairs(button.action) do
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"][id] = value
+                        end
+                    elseif type(button.action) == "string" then
+                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = button.action
+                    end
+                    if button.handlerID then
+                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["handlerID"] = button.handlerID
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Left Knob Turn:
+                --------------------------------------------------------------------------------
+                if string.sub(buttonID, -4) == "Left" then
+                    local number = tonumber(string.sub(buttonID, 0, -5))
+                    if not midiActions[groupID] then
+                        midiActions[groupID] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"] then
+                        midiActions[groupID]["Loupedeck+"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0] then
+                        midiActions[groupID]["Loupedeck+"][0] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] = {}
+                    end
+                    if type(button.action) == "table" then
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = {}
+                        end
+                        for id, value in pairs(button.action) do
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"][id] = value
+                        end
+                    elseif type(button.action) == "string" then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = button.action
+                    end
+                    if button.handlerID then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Right Knob Turn:
+                --------------------------------------------------------------------------------
+                if string.sub(buttonID, -5) == "Right" then
+                    local number = tonumber(string.sub(buttonID, 0, -6))
+                    if not midiActions[groupID] then
+                        midiActions[groupID] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"] then
+                        midiActions[groupID]["Loupedeck+"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0] then
+                        midiActions[groupID]["Loupedeck+"][0] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
+                    end
+                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] = {}
+                    end
+                    if type(button.action) == "table" then
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = {}
+                        end
+                        for id, value in pairs(button.action) do
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"][id] = value
+                        end
+                    elseif type(button.action) == "string" then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = button.action
+                    end
+                    if button.handlerID then
+                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                    end
+                end
+            end
+        end
+    end
+
+end
+
+-- plugins.core.midi.manager._loupedeckItems <cp.prop: table>
+-- Field
+-- Contains all the saved MIDI Loupedeck+ items
+mod._loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck", "Default.cpLoupedeck", {}):watch(convertPreferencesToMIDIActions)
+
+-- plugins.core.midi.manager._items <cp.prop: table>
+-- Field
+-- Contains all the saved MIDI items
+mod._items = json.prop(config.userConfigRootPath, "MIDI Controls", "Default.cpMIDI", mod.DEFAULT_MIDI_CONTROLS):watch(convertPreferencesToMIDIActions)
 
 -- updateCachedActiveGroupAndSubgroup() -> none
 -- Function
 -- Updates the cachedActiveGroupAndSubgroup variable.
 local function updateCachedActiveGroupAndSubgroup()
     cachedActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeSubGroup()
+end
+
+-- updateLoupedeckCachedActiveGroupAndSubgroup() -> none
+-- Function
+-- Updates the cachedLoupedeckActiveGroupAndSubgroup variable.
+local function updateLoupedeckCachedActiveGroupAndSubgroup()
+    cachedLoupedeckActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeLoupdeckSubGroup()
 end
 
 --- plugins.core.midi.manager.clear() -> none
@@ -359,6 +505,25 @@ function mod.activeSubGroup()
     return tostring(result)
 end
 
+--- plugins.core.midi.manager.activeSubGroup() -> string
+--- Function
+--- Returns the active sub-group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Returns the active sub group as string
+function mod.activeLoupdeckSubGroup()
+    local currentSubGroup = mod._currentLoupedeckSubGroup()
+    local result = 1
+    local activeGroup = mod.activeGroup()
+    if currentSubGroup[activeGroup] then
+        result = currentSubGroup[activeGroup]
+    end
+    return tostring(result)
+end
+
 --- plugins.core.midi.manager.forceGroupChange(combinedGroupAndSubGroupID) -> none
 --- Function
 --- Loads a specific sub-group.
@@ -381,6 +546,31 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
         end
         updateCachedActiveGroupAndSubgroup()
+    end
+end
+
+--- plugins.core.midi.manager.forceLoupedeckGroupChange(combinedGroupAndSubGroupID) -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
+---
+--- Returns:
+---  * None
+function mod.forceLoupedeckGroupChange(combinedGroupAndSubGroupID, notify)
+    if combinedGroupAndSubGroupID then
+        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
+        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
+        if group and subGroup then
+            local currentSubGroup = mod._currentLoupedeckSubGroup()
+            currentSubGroup[group] = tonumber(subGroup)
+            mod._currentLoupedeckSubGroup(currentSubGroup)
+        end
+        if notify then
+            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+        end
+        updateLoupedeckCachedActiveGroupAndSubgroup()
     end
 end
 
@@ -445,6 +635,67 @@ function mod.previousSubGroup()
     updateCachedActiveGroupAndSubgroup()
 end
 
+--- plugins.core.midi.manager.gotoLoupedeckSubGroup() -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * id - The ID of the sub-group.
+---
+--- Returns:
+---  * None
+function mod.gotoLoupedeckSubGroup(id)
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentLoupedeckSubGroup()
+    currentSubGroup[activeGroup] = id
+    mod._currentLoupedeckSubGroup(currentSubGroup)
+    updateLoupedeckCachedActiveGroupAndSubgroup()
+end
+
+--- plugins.core.midi.manager.nextLoupedeckSubGroup() -> none
+--- Function
+--- Goes to the next sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.nextLoupedeckSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentLoupedeckSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue < mod.numberOfSubGroups then
+        currentSubGroup[activeGroup] = currentSubGroupValue + 1
+    else
+        currentSubGroup[activeGroup] = 1
+    end
+    mod._currentLoupedeckSubGroup(currentSubGroup)
+    updateLoupedeckCachedActiveGroupAndSubgroup()
+end
+
+--- plugins.core.midi.manager.previousLoupedeckSubGroup() -> none
+--- Function
+--- Goes to the previous sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.previousLoupedeckSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentLoupedeckSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue == 1 then
+        currentSubGroup[activeGroup] = mod.numberOfSubGroups
+    else
+        currentSubGroup[activeGroup] = currentSubGroupValue - 1
+    end
+    mod._currentLoupedeckSubGroup(currentSubGroup)
+    updateLoupedeckCachedActiveGroupAndSubgroup()
+end
+
 --- plugins.core.midi.manager.groupStatus(groupID, status) -> none
 --- Function
 --- Updates a group's visibility status.
@@ -459,6 +710,7 @@ function mod.groupStatus(groupID, status)
     mod._groupStatus[groupID] = status
     mod.update()
     updateCachedActiveGroupAndSubgroup()
+    updateLoupedeckCachedActiveGroupAndSubgroup()
 end
 
 --- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
@@ -475,11 +727,20 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(_, deviceName, commandType, _, metadata)
+
+    log.df("commandType: %s", commandType)
+    log.df("metadata: %s", hs.inspect(metadata))
+
     if mod.learningMode then
         return
     end
 
     local group = cachedActiveGroupAndSubgroup
+
+    if deviceName == "Loupedeck+" then
+        group = cachedLoupedeckActiveGroupAndSubgroup
+    end
+
     local channel = metadata.channel
     local controllerNumber = metadata.controllerNumber or metadata.note
     local controllerValue = metadata.controllerValue
@@ -518,8 +779,6 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
                 end)
             end
         elseif midiActions[group][deviceName][channel][commandType][controllerNumber] then
-            --------------------------------------------------------------------------------
-            --------------------------------------------------------------------------------
             local v
             if midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue] and midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]["action"] then
                 v = midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]
@@ -623,6 +882,13 @@ function mod.start()
     end
 
     --------------------------------------------------------------------------------
+    -- Watch for Loupedeck+ is enabled:
+    --------------------------------------------------------------------------------
+    if mod.enabledLoupedeck() then
+        table.insert(usedDevices, "Loupedeck+")
+    end
+
+    --------------------------------------------------------------------------------
     -- Create a table of both Physical & Virtual MIDI Devices:
     --------------------------------------------------------------------------------
     local devices = {}
@@ -657,7 +923,7 @@ function mod.start()
     end
 end
 
---- plugins.core.midi.manager.start() -> boolean
+--- plugins.core.midi.manager.stop() -> boolean
 --- Function
 --- Stops the MIDI Plugin
 ---
@@ -685,7 +951,7 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-    if mod.enabled() then
+    if mod.enabled() or mod.enabledLoupedeck() then
         mod.start()
     else
         mod.stop()
@@ -701,6 +967,11 @@ mod.numberOfMidiDevices = prop.THIS(0)
 --- Field
 --- Enable or disable MIDI Support.
 mod.enabled = config.prop("enableMIDI", false):watch(function() mod.update() end)
+
+--- plugins.core.midi.manager.enabledLoupedeck <cp.prop: boolean>
+--- Field
+--- Enable or disable MIDI Loupedeck Support.
+mod.enabledLoupedeck = config.prop("enableLoupedeck", false):watch(function() mod.update() end)
 
 --- plugins.core.midi.manager.init(deps, env) -> none
 --- Function
@@ -752,27 +1023,13 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local global = deps.global
     global:add("cpMIDI")
-        :whenActivated(mod.toggle)
+        :whenActivated(mod.enabled:toggle())
         :groupedBy("commandPost")
 
     return mod.init(deps, env)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.postInit(deps)
-
-    --------------------------------------------------------------------------------
-    -- Copy Legacy Property List MIDI Controls to JSON:
-    --------------------------------------------------------------------------------
-    local legacyControls = config.get("midiControls", nil)
-    if legacyControls and not config.get("midiControlsCopied") then
-        mod._items(legacyControls)
-        log.df("Copied Legacy MIDI Controls from Plist to JSON.")
-        config.set("midiControlsCopied", true)
-    end
-
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
@@ -814,8 +1071,11 @@ function plugin.postInit(deps)
     mod.enabled:update()
     mod._items:update()
 
+    --------------------------------------------------------------------------------
+    -- Update "Bank" caches:
+    --------------------------------------------------------------------------------
     updateCachedActiveGroupAndSubgroup()
-
+    updateLoupedeckCachedActiveGroupAndSubgroup()
 end
 
 return plugin

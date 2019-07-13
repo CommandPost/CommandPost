@@ -33,11 +33,8 @@ local function updateGroupStatus(enabled)
     mod._manager.groupStatus(mod.ID, enabled)
 end
 
---- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
---- Field
---- Enable or disable MIDI Support.
-mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
-    if enabled then
+local function update()
+    if mod._manager.enabled() or mod._manager.enabledLoupedeck() then
         --------------------------------------------------------------------------------
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
         --------------------------------------------------------------------------------
@@ -50,7 +47,7 @@ mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
         fcp.app.frontmost:unwatch(updateGroupStatus)
         fcp.app.showing:unwatch(updateGroupStatus)
     end
-end)
+end
 
 local plugin = {
     id = "finalcutpro.midi.manager",
@@ -62,6 +59,10 @@ local plugin = {
 
 function plugin.init(deps)
     mod._manager = deps.manager
+
+    mod._manager.enabled:watch(update)
+    mod._manager.enabledLoupedeck:watch(update)
+
     return mod
 end
 
@@ -69,7 +70,7 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update Watchers:
     --------------------------------------------------------------------------------
-    mod.enableMIDI:update()
+    update()
 end
 
 return plugin
