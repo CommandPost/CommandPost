@@ -1,3 +1,7 @@
+--- === cp.highland2 ===
+---
+--- Highland 2
+
 local require                                   = require
 
 local class                                     = require "middleclass"

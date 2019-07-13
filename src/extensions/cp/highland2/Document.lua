@@ -1,3 +1,7 @@
+--- === cp.highland2.Document ===
+---
+--- Highland 2 Document.
+
 local axutils                                   = require "cp.ui.axutils"
 local Group                                     = require "cp.ui.Group"
 local ScrollArea                                = require "cp.ui.ScrollArea"
