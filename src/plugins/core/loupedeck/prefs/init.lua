@@ -100,7 +100,7 @@ local function resetEverything()
             mod.items(mod.DEFAULT_CONTROLS)
             mod._manager.refresh()
         end
-    end, i18n("midiResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    end, i18n("loupedeckResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 -- resetEverythingGroup() -> none
@@ -125,7 +125,7 @@ local function resetEverythingGroup()
             mod.items(items)
             mod._manager.refresh()
         end
-    end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    end, i18n("loupedeckResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 -- resetEverythingSubGroup() -> none
@@ -146,7 +146,7 @@ local function resetEverythingSubGroup()
             mod.items(items)
             mod._manager.refresh()
         end
-    end, i18n("midiResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    end, i18n("loupedeckResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 -- renderPanel(context) -> none

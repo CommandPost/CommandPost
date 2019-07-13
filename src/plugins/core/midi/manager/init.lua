@@ -207,6 +207,12 @@ local function convertPreferencesToMIDIActions()
 
     --------------------------------------------------------------------------------
     -- Loupedeck+ Support:
+    --
+    -- The P1-P8 knobs on the Loupedeck+ have different MIDI values depending on
+    -- whether the 'Hue', 'Sat' or 'Lum' lights are activate and lit up. As
+    -- CommandPost uses banks, as opposed to these Loupedeck+ modes, we basically
+    -- just ignore whatever the lights say, and the knobs do the same thing in
+    -- CommandPost regardless of what "mode" the Loupedeck+ is in.
     --------------------------------------------------------------------------------
     local loupedeckItems = mod._loupedeckItems()
     for groupID, group in pairs(loupedeckItems) do
@@ -216,34 +222,40 @@ local function convertPreferencesToMIDIActions()
                 -- Press Button:
                 --------------------------------------------------------------------------------
                 if string.sub(buttonID, -5) == "Press" then
-                    local number = tonumber(string.sub(buttonID, 0, -6))
-                    if not midiActions[groupID] then
-                        midiActions[groupID] = {}
+                    local original = tonumber(string.sub(buttonID, 0, -6))
+                    local numbers = {original}
+                    if original >= 1 and original <= 8 then
+                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                     end
-                    if not midiActions[groupID]["Loupedeck+"] then
-                        midiActions[groupID]["Loupedeck+"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0] then
-                        midiActions[groupID]["Loupedeck+"][0] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["noteOn"] then
-                        midiActions[groupID]["Loupedeck+"][0]["noteOn"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] then
-                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] = {}
-                    end
-                    if type(button.action) == "table" then
-                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] then
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = {}
+                    for _, number in pairs(numbers) do
+                        if not midiActions[groupID] then
+                            midiActions[groupID] = {}
                         end
-                        for id, value in pairs(button.action) do
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"][id] = value
+                        if not midiActions[groupID]["Loupedeck+"] then
+                            midiActions[groupID]["Loupedeck+"] = {}
                         end
-                    elseif type(button.action) == "string" then
-                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = button.action
-                    end
-                    if button.handlerID then
-                        midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["handlerID"] = button.handlerID
+                        if not midiActions[groupID]["Loupedeck+"][0] then
+                            midiActions[groupID]["Loupedeck+"][0] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"] then
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] then
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] = {}
+                        end
+                        if type(button.action) == "table" then
+                            if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] then
+                                midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = {}
+                            end
+                            for id, value in pairs(button.action) do
+                                midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"][id] = value
+                            end
+                        elseif type(button.action) == "string" then
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = button.action
+                        end
+                        if button.handlerID then
+                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["handlerID"] = button.handlerID
+                        end
                     end
                 end
 
@@ -251,37 +263,43 @@ local function convertPreferencesToMIDIActions()
                 -- Left Knob Turn:
                 --------------------------------------------------------------------------------
                 if string.sub(buttonID, -4) == "Left" then
-                    local number = tonumber(string.sub(buttonID, 0, -5))
-                    if not midiActions[groupID] then
-                        midiActions[groupID] = {}
+                    local original = tonumber(string.sub(buttonID, 0, -5))
+                    local numbers = {original}
+                    if original >= 1 and original <= 8 then
+                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                     end
-                    if not midiActions[groupID]["Loupedeck+"] then
-                        midiActions[groupID]["Loupedeck+"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0] then
-                        midiActions[groupID]["Loupedeck+"][0] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] = {}
-                    end
-                    if type(button.action) == "table" then
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = {}
+                    for _, number in pairs(numbers) do
+                        if not midiActions[groupID] then
+                            midiActions[groupID] = {}
                         end
-                        for id, value in pairs(button.action) do
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"][id] = value
+                        if not midiActions[groupID]["Loupedeck+"] then
+                            midiActions[groupID]["Loupedeck+"] = {}
                         end
-                    elseif type(button.action) == "string" then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = button.action
-                    end
-                    if button.handlerID then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                        if not midiActions[groupID]["Loupedeck+"][0] then
+                            midiActions[groupID]["Loupedeck+"][0] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] = {}
+                        end
+                        if type(button.action) == "table" then
+                            if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] then
+                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = {}
+                            end
+                            for id, value in pairs(button.action) do
+                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"][id] = value
+                            end
+                        elseif type(button.action) == "string" then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = button.action
+                        end
+                        if button.handlerID then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                        end
                     end
                 end
 
@@ -289,43 +307,48 @@ local function convertPreferencesToMIDIActions()
                 -- Right Knob Turn:
                 --------------------------------------------------------------------------------
                 if string.sub(buttonID, -5) == "Right" then
-                    local number = tonumber(string.sub(buttonID, 0, -6))
-                    if not midiActions[groupID] then
-                        midiActions[groupID] = {}
+                    local original = tonumber(string.sub(buttonID, 0, -6))
+                    local numbers = {original}
+                    if original >= 1 and original <= 8 then
+                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                     end
-                    if not midiActions[groupID]["Loupedeck+"] then
-                        midiActions[groupID]["Loupedeck+"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0] then
-                        midiActions[groupID]["Loupedeck+"][0] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
-                    end
-                    if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] = {}
-                    end
-                    if type(button.action) == "table" then
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = {}
+                    for _, number in pairs(numbers) do
+                        if not midiActions[groupID] then
+                            midiActions[groupID] = {}
                         end
-                        for id, value in pairs(button.action) do
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"][id] = value
+                        if not midiActions[groupID]["Loupedeck+"] then
+                            midiActions[groupID]["Loupedeck+"] = {}
                         end
-                    elseif type(button.action) == "string" then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = button.action
-                    end
-                    if button.handlerID then
-                        midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                        if not midiActions[groupID]["Loupedeck+"][0] then
+                            midiActions[groupID]["Loupedeck+"][0] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
+                        end
+                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] = {}
+                        end
+                        if type(button.action) == "table" then
+                            if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] then
+                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = {}
+                            end
+                            for id, value in pairs(button.action) do
+                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"][id] = value
+                            end
+                        elseif type(button.action) == "string" then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = button.action
+                        end
+                        if button.handlerID then
+                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                        end
                     end
                 end
             end
         end
     end
-
 end
 
 -- plugins.core.midi.manager._loupedeckItems <cp.prop: table>
@@ -727,9 +750,6 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(_, deviceName, commandType, _, metadata)
-
-    log.df("commandType: %s", commandType)
-    log.df("metadata: %s", hs.inspect(metadata))
 
     if mod.learningMode then
         return
