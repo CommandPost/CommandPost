@@ -43,7 +43,7 @@ end
 local function createAbsoluteMIDIScaleSlider(paramFn)
     local value
     local updateUI = deferred.new(0.01):action(function()
-        param = paramFn()
+        local param = paramFn()
         param:show():value(value)
     end)
     return function(metadata)
