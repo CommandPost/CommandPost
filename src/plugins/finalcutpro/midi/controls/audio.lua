@@ -32,13 +32,18 @@ local function createAbsoluteMIDIVolumeSlider()
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if midiValue == 8192 then
+                value = 0
+            elseif controllerValue > 8192 then
+                value = rescale(controllerValue, 8193, 16383, 0.1, 12)
+            elseif controllerValue < 8192 then
+                if controllerValue > 4096 then
+                    value = rescale(controllerValue, 4096, 63, -12, -0.1)
+                else
+                    value = rescale(controllerValue, 0, 4095, -96, -12.1)
+                end
             end
-            value = rescale(midiValue, 0, 16383, -96, 12)
             updateUI()
         else
             --------------------------------------------------------------------------------
