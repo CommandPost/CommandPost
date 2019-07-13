@@ -196,7 +196,6 @@ local function generateContent()
         i18nNoteCC                  = i18n("noteCC"),
         i18nChannel                 = i18n("channel"),
         i18nValue                   = i18n("value"),
-        i18nAll                     = i18n("all"),
         i18nNoDevicesDetected       = i18n("noDevicesDetected"),
         i18nCommmandType            = i18n("commandType"),
         i18nNoteOff                 = i18n("noteOff"),
@@ -270,7 +269,7 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(_, params, cancel, skipUpdateUI)
+function mod._stopLearning(_, params, cancel)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
@@ -501,7 +500,7 @@ function mod._startLearning(id, params)
                                         --------------------------------------------------------------------------------
                                         -- Exit the callback:
                                         --------------------------------------------------------------------------------
-                                        mod._stopLearning(id, params, code, true)
+                                        mod._stopLearning(id, params)
 
                                         --------------------------------------------------------------------------------
                                         -- Highlight the row red in JavaScript Land:

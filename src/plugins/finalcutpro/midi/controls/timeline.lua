@@ -7,8 +7,6 @@ local require = require
 --local log               = require "hs.logger".new "zoomMIDI"
 
 local eventtap          = require "hs.eventtap"
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
 
 local keyStroke         = eventtap.keyStroke
 
