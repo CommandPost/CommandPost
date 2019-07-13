@@ -20,7 +20,6 @@ local Do                = require("cp.rx.go.Do")
 
 local doAfter           = timer.doAfter
 
-
 local mod = {}
 
 --- plugins.finalcutpro.pasteboard.history.FILE_NAME -> string
@@ -203,7 +202,6 @@ function mod.init(manager)
     return mod
 end
 
-
 local plugin = {
     id              = "finalcutpro.pasteboard.history",
     group           = "finalcutpro",
@@ -251,27 +249,6 @@ function plugin.init(deps)
         end)
 
     return mod
-end
-
-function plugin.postInit()
-    --------------------------------------------------------------------------------
-    -- Copy Legacy Property Pasteboard History to JSON:
-    --------------------------------------------------------------------------------
-    local legacy = config.get("pasteboardHistory", nil)
-    if legacy and not config.get("pasteboardHistoryCopied") then
-
-        local migrateHistory = {}
-
-        for i=1, #legacy do
-            table.insert(migrateHistory, {base64.encode(legacy[i][1]), legacy[i][2]})
-        end
-
-        mod.history(migrateHistory)
-
-        config.set("pasteboardHistoryCopied", true)
-
-        log.df("Copied Pasteboard History from Plist to JSON.")
-    end
 end
 
 return plugin

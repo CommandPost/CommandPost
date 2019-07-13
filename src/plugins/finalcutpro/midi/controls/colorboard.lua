@@ -55,9 +55,9 @@ end
 -- Returns:
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makePercentHandler(puckFinderFn)
-    local puck = puckFinderFn()
     local value
     local updateUI = deferred.new(0.01):action(function()
+        local puck = puckFinderFn()
         puck:show():percent(value)
     end)
     return function(metadata)
@@ -105,9 +105,9 @@ end
 -- Returns:
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeAngleHandler(puckFinderFn)
-    local puck = puckFinderFn()
     local value
     local updateUI = deferred.new(0.01):action(function()
+        local puck = puckFinderFn()
         puck:show():angle(value)
     end)
     return function(metadata)

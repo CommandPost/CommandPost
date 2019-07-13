@@ -141,7 +141,9 @@ local function generateContent()
     local virtualMidiDevices = mod._midi.virtualDevices()
     local devices = {}
     for _, device in pairs(midiDevices) do
-        table.insert(devices, device)
+        if device ~= "Loupedeck+" then
+            table.insert(devices, device)
+        end
     end
     for _, device in pairs(virtualMidiDevices) do
         table.insert(devices, "virtual_" .. device)
@@ -194,7 +196,6 @@ local function generateContent()
         i18nNoteCC                  = i18n("noteCC"),
         i18nChannel                 = i18n("channel"),
         i18nValue                   = i18n("value"),
-        i18nAll                     = i18n("all"),
         i18nNoDevicesDetected       = i18n("noDevicesDetected"),
         i18nCommmandType            = i18n("commandType"),
         i18nNoteOff                 = i18n("noteOff"),
@@ -268,7 +269,7 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(_, params, cancel, skipUpdateUI)
+function mod._stopLearning(_, params, cancel)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
@@ -387,183 +388,188 @@ function mod._startLearning(id, params)
     end
     mod.learningMidiDevices = {}
     for _, deviceName in ipairs(mod.learningMidiDeviceNames) do
-        if string.sub(deviceName, 1, 8) == "virtual_" then
-            --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
-            mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
-        else
-            --log.df("Creating new MIDI Device Watcher: %s", deviceName)
-            mod.learningMidiDevices[deviceName] = midi.new(deviceName)
-        end
-        if mod.learningMidiDevices[deviceName] then
-            mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
+        --------------------------------------------------------------------------------
+        -- Prevent Loupedeck+'s from appearing in the MIDI Preferences:
+        --------------------------------------------------------------------------------
+        if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            log.df("deviceName: %s", deviceName)
+            if string.sub(deviceName, 1, 8) == "virtual_" then
+                --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
+                mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
+            else
+                --log.df("Creating new MIDI Device Watcher: %s", deviceName)
+                mod.learningMidiDevices[deviceName] = midi.new(deviceName)
+            end
+            if mod.learningMidiDevices[deviceName] then
+                mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
 
-                local learnGroupID = mod._learnGroupID
-                local learnButtonID = mod._learnButtonID
+                    local learnGroupID = mod._learnGroupID
+                    local learnButtonID = mod._learnButtonID
 
-                if not mod._currentlyLearning then
-                    --------------------------------------------------------------------------------
-                    -- First in, best dressed:
-                    --------------------------------------------------------------------------------
-                    return
-                end
-
-                if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
-
-                    --------------------------------------------------------------------------------
-                    -- Debugging:
-                    --------------------------------------------------------------------------------
-                    --log.df("commandType: %s", commandType)
-                    --log.df("metadata: %s", hs.inspect(metadata))
-                    --log.df("learnGroupID: %s", learnGroupID)
-                    --log.df("learnButtonID: %s", learnButtonID)
-
-                    --------------------------------------------------------------------------------
-                    -- Support 14bit Control Change Messages:
-                    --------------------------------------------------------------------------------
-                    local controllerValue = metadata.controllerValue
-                    if metadata.fourteenBitCommand then
-                        controllerValue = metadata.fourteenBitValue
+                    if not mod._currentlyLearning then
+                        --------------------------------------------------------------------------------
+                        -- First in, best dressed:
+                        --------------------------------------------------------------------------------
+                        return
                     end
 
-                    --------------------------------------------------------------------------------
-                    -- Ignore noteOff Commands:
-                    --------------------------------------------------------------------------------
-                    if commandType == "noteOn" and metadata.velocity == 0 then return end
+                    if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
 
-                    --------------------------------------------------------------------------------
-                    -- Check it's not already in use:
-                    --------------------------------------------------------------------------------
-                    local items = mod._midi._items()
-                    if items[learnGroupID] then
-                        for i, item in pairs(items[learnGroupID]) do
-                            if learnButtonID and i ~= tonumber(learnButtonID) then
-                                --------------------------------------------------------------------------------
-                                -- Check for matching devices:
-                                --------------------------------------------------------------------------------
-                                local deviceMatch = false
-                                if metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName then deviceMatch = true end
-                                if not metadata.isVirtual and item.device == callbackDeviceName then deviceMatch = true end
+                        --------------------------------------------------------------------------------
+                        -- Debugging:
+                        --------------------------------------------------------------------------------
+                        --log.df("commandType: %s", commandType)
+                        --log.df("metadata: %s", hs.inspect(metadata))
+                        --log.df("learnGroupID: %s", learnGroupID)
+                        --log.df("learnButtonID: %s", learnButtonID)
 
-                                --------------------------------------------------------------------------------
-                                -- Check for matching metadata:
-                                --------------------------------------------------------------------------------
-                                local match = false
-                                if item.commandType == commandType then
-                                    if commandType == "noteOn" then
-                                        if item.channel == metadata.channel and item.number == metadata.note then
-                                            match = true
+                        --------------------------------------------------------------------------------
+                        -- Support 14bit Control Change Messages:
+                        --------------------------------------------------------------------------------
+                        local controllerValue = metadata.controllerValue
+                        if metadata.fourteenBitCommand then
+                            controllerValue = metadata.fourteenBitValue
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Ignore noteOff Commands:
+                        --------------------------------------------------------------------------------
+                        if commandType == "noteOn" and metadata.velocity == 0 then return end
+
+                        --------------------------------------------------------------------------------
+                        -- Check it's not already in use:
+                        --------------------------------------------------------------------------------
+                        local items = mod._midi._items()
+                        if items[learnGroupID] then
+                            for i, item in pairs(items[learnGroupID]) do
+                                if learnButtonID and i ~= tonumber(learnButtonID) then
+                                    --------------------------------------------------------------------------------
+                                    -- Check for matching devices:
+                                    --------------------------------------------------------------------------------
+                                    local deviceMatch = false
+                                    if metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName then deviceMatch = true end
+                                    if not metadata.isVirtual and item.device == callbackDeviceName then deviceMatch = true end
+
+                                    --------------------------------------------------------------------------------
+                                    -- Check for matching metadata:
+                                    --------------------------------------------------------------------------------
+                                    local match = false
+                                    if item.commandType == commandType then
+                                        if commandType == "noteOn" then
+                                            if item.channel == metadata.channel and item.number == metadata.note then
+                                                match = true
+                                            end
+                                        end
+                                        if commandType == "controlChange" then
+                                            if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
+                                                match = true
+                                            end
+                                        end
+                                        if commandType == "pitchWheelChange" then
+                                            if item.number == metadata.pitchChange then
+                                                match = true
+                                            end
                                         end
                                     end
-                                    if commandType == "controlChange" then
-                                        if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
-                                            match = true
-                                        end
+
+                                    --------------------------------------------------------------------------------
+                                    -- Duplicate Found:
+                                    --------------------------------------------------------------------------------
+                                    if deviceMatch and match then
+
+                                        --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", learnGroupID, learnButtonID)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Reset the current line item:
+                                        --------------------------------------------------------------------------------
+                                        setValue(learnGroupID, learnButtonID, "device", "")
+                                        setItem("device", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "commandType", "")
+                                        setItem("commandType", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "channel", "")
+                                        setItem("channel", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "number", i18n("none"))
+                                        setItem("number", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                                        setItem("value", learnButtonID, learnGroupID, nil)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Exit the callback:
+                                        --------------------------------------------------------------------------------
+                                        mod._stopLearning(id, params)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Highlight the row red in JavaScript Land:
+                                        --------------------------------------------------------------------------------
+                                        injectScript("highlightRowRed('" .. learnGroupID .. "', " .. i .. ")")
+                                        return
                                     end
-                                    if commandType == "pitchWheelChange" then
-                                        if item.number == metadata.pitchChange then
-                                            match = true
-                                        end
-                                    end
-                                end
-
-                                --------------------------------------------------------------------------------
-                                -- Duplicate Found:
-                                --------------------------------------------------------------------------------
-                                if deviceMatch and match then
-
-                                    --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", learnGroupID, learnButtonID)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Reset the current line item:
-                                    --------------------------------------------------------------------------------
-                                    setValue(learnGroupID, learnButtonID, "device", "")
-                                    setItem("device", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "commandType", "")
-                                    setItem("commandType", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "channel", "")
-                                    setItem("channel", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "number", i18n("none"))
-                                    setItem("number", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "value", i18n("none"))
-                                    setItem("value", learnButtonID, learnGroupID, nil)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Exit the callback:
-                                    --------------------------------------------------------------------------------
-                                    mod._stopLearning(id, params, code, true)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Highlight the row red in JavaScript Land:
-                                    --------------------------------------------------------------------------------
-                                    injectScript("highlightRowRed('" .. learnGroupID .. "', " .. i .. ")")
-                                    return
                                 end
                             end
                         end
+
+                        --------------------------------------------------------------------------------
+                        -- Update the UI & Save Preferences:
+                        --------------------------------------------------------------------------------
+                        if metadata.isVirtual then
+                            setValue(learnGroupID, learnButtonID, "device", "virtual_" .. callbackDeviceName)
+                            setItem("device", learnButtonID, learnGroupID, "virtual_" .. callbackDeviceName)
+                        else
+                            setValue(learnGroupID, learnButtonID, "device", callbackDeviceName)
+                            setItem("device", learnButtonID, learnGroupID, callbackDeviceName)
+                        end
+
+                        setValue(learnGroupID, learnButtonID, "commandType", commandType)
+                        setItem("commandType", learnButtonID, learnGroupID, commandType)
+
+                        setValue(learnGroupID, learnButtonID, "channel", metadata.channel)
+                        setItem("channel", learnButtonID, learnGroupID, metadata.channel)
+
+                        if commandType == "noteOff" or commandType == "noteOn" then
+
+                            setValue(learnGroupID, learnButtonID, "number", metadata.note)
+                            setItem("number", learnButtonID, learnGroupID, metadata.note)
+
+                            setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                            setItem("value", learnButtonID, learnGroupID, i18n("none"))
+
+                        elseif commandType == "controlChange" then
+
+                            setValue(learnGroupID, learnButtonID, "number", metadata.controllerNumber)
+                            setItem("number", learnButtonID, learnGroupID, metadata.controllerNumber)
+
+                            setValue(learnGroupID, learnButtonID, "value", controllerValue)
+                            setItem("value", learnButtonID, learnGroupID, controllerValue)
+
+                        elseif commandType == "pitchWheelChange" then
+
+                            setValue(learnGroupID, learnButtonID, "value", metadata.pitchChange)
+                            setItem("value", learnButtonID, learnGroupID, metadata.pitchChange)
+
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Stop Learning:
+                        --------------------------------------------------------------------------------
+                        mod._stopLearning(id, params)
+
+                        --------------------------------------------------------------------------------
+                        -- If the device isn't already listed in the panel we need to refresh:
+                        --------------------------------------------------------------------------------
+                        if not tools.tableContains(mod._devices, callbackDeviceName) then
+                            mod._manager.refresh()
+                        end
                     end
-
-                    --------------------------------------------------------------------------------
-                    -- Update the UI & Save Preferences:
-                    --------------------------------------------------------------------------------
-                    if metadata.isVirtual then
-                        setValue(learnGroupID, learnButtonID, "device", "virtual_" .. callbackDeviceName)
-                        setItem("device", learnButtonID, learnGroupID, "virtual_" .. callbackDeviceName)
-                    else
-                        setValue(learnGroupID, learnButtonID, "device", callbackDeviceName)
-                        setItem("device", learnButtonID, learnGroupID, callbackDeviceName)
-                    end
-
-                    setValue(learnGroupID, learnButtonID, "commandType", commandType)
-                    setItem("commandType", learnButtonID, learnGroupID, commandType)
-
-                    setValue(learnGroupID, learnButtonID, "channel", metadata.channel)
-                    setItem("channel", learnButtonID, learnGroupID, metadata.channel)
-
-                    if commandType == "noteOff" or commandType == "noteOn" then
-
-                        setValue(learnGroupID, learnButtonID, "number", metadata.note)
-                        setItem("number", learnButtonID, learnGroupID, metadata.note)
-
-                        setValue(learnGroupID, learnButtonID, "value", i18n("none"))
-                        setItem("value", learnButtonID, learnGroupID, i18n("none"))
-
-                    elseif commandType == "controlChange" then
-
-                        setValue(learnGroupID, learnButtonID, "number", metadata.controllerNumber)
-                        setItem("number", learnButtonID, learnGroupID, metadata.controllerNumber)
-
-                        setValue(learnGroupID, learnButtonID, "value", controllerValue)
-                        setItem("value", learnButtonID, learnGroupID, controllerValue)
-
-                    elseif commandType == "pitchWheelChange" then
-
-                        setValue(learnGroupID, learnButtonID, "value", metadata.pitchChange)
-                        setItem("value", learnButtonID, learnGroupID, metadata.pitchChange)
-
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- Stop Learning:
-                    --------------------------------------------------------------------------------
-                    mod._stopLearning(id, params)
-
-                    --------------------------------------------------------------------------------
-                    -- If the device isn't already listed in the panel we need to refresh:
-                    --------------------------------------------------------------------------------
-                    if not tools.tableContains(mod._devices, callbackDeviceName) then
-                        mod._manager.refresh()
-                    end
-                end
-            end)
-        else
-            log.ef("MIDI Device did not exist when trying to create watcher: %s", deviceName)
+                end)
+            else
+                log.ef("MIDI Device did not exist when trying to create watcher: %s", deviceName)
+            end
         end
     end
-
 end
 
 -- midiPanelCallback() -> none
@@ -771,23 +777,6 @@ local function midiPanelCallback(id, params)
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
-    end
-end
-
--- plugins.core.midi.prefs._displayBooleanToString(value) -> none
--- Function
--- Converts a boolean to a string for use in the CSS block style value.
---
--- Parameters:
---  * value - a boolean value
---
--- Returns:
---  * A string
-function mod._displayBooleanToString(value)
-    if value then
-        return "block"
-    else
-        return "none"
     end
 end
 

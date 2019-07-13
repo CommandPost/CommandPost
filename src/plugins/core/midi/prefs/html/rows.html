@@ -28,14 +28,16 @@
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						for _, deviceName in ipairs(midiDevices) do
-							local selected = ""
-							if device == deviceName then
-								selected = [[selected=""]]
-								foundDevice = true
-							end
+							if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+								local selected = ""
+								if device == deviceName then
+									selected = [[selected=""]]
+									foundDevice = true
+								end
 						%}
 							<option {{selected}} value="{{deviceName}}">{{deviceName}}</option>
 						{%
+							end
 						end
 						if device ~= i18nNone and not foundDevice and not (string.sub(device, 1, 8) == "virtual_") then
 						%}
@@ -53,14 +55,16 @@
 						{%
 						local foundVirtualDevice = false
 						for _, deviceName in ipairs(virtualMidiDevices) do
-							local selected = ""
-							if device == "virtual_" .. deviceName then
-								selected = [[selected=""]]
-								foundVirtualDevice = true
-							end
+							if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+								local selected = ""
+								if device == "virtual_" .. deviceName then
+									selected = [[selected=""]]
+									foundVirtualDevice = true
+								end
 						%}
 							<option {{selected}} value="virtual_{{deviceName}}">{{deviceName}}</option>
 						{%
+							end
 						end
 						if device ~= i18nNone and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
 						%}
