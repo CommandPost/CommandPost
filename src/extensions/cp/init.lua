@@ -30,7 +30,6 @@ local tools                     = require("cp.tools")
 --------------------------------------------------------------------------------
 require("hs.ipc")
 
-
 local mod = {}
 
 --- cp.init()

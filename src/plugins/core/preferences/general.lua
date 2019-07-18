@@ -6,10 +6,9 @@ local require = require
 
 local hs = hs
 
-local config			= require("cp.config")
-local i18n        = require("cp.i18n")
-local prop				= require("cp.prop")
-
+local config    = require("cp.config")
+local i18n      = require("cp.i18n")
+local prop      = require("cp.prop")
 
 local mod = {}
 
@@ -36,17 +35,16 @@ mod.dockIcon = config.prop("dockIcon", true):watch(function(value)
     hs.dockIcon(value)
 end)
 
---- plugins.core.preferences.general.openErrorLogOnDockClick <cp.prop: boolean>
+--- plugins.core.preferences.general.openDebugConsoleOnDockClick <cp.prop: boolean>
 --- Variable
 --- Open Error Log on Dock Icon Click.
-mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
-
+mod.openDebugConsoleOnDockClick = config.prop("openDebugConsoleOnDockClick", true)
 
 local plugin = {
-    id				= "core.preferences.general",
-    group			= "core",
-    dependencies	= {
-        ["core.preferences.panels.general"]	= "general",
+    id              = "core.preferences.general",
+    group           = "core",
+    dependencies    = {
+        ["core.preferences.panels.general"] = "general",
     }
 }
 
@@ -56,14 +54,14 @@ function plugin.init(deps)
     -- Create Dock Icon Click Callback:
     --------------------------------------------------------------------------------
     config.dockIconClickCallback:new("cp", function()
-        if mod.openErrorLogOnDockClick() then hs.openConsole() end
+        if mod.openDebugConsoleOnDockClick() then hs.openConsole() end
     end)
 
     --------------------------------------------------------------------------------
     -- Cache Values:
     --------------------------------------------------------------------------------
-    mod._autoLaunch 		  = hs.autoLaunch()
-    mod._uploadCrashData 	= hs.uploadCrashData()
+    mod._autoLaunch           = hs.autoLaunch()
+    mod._uploadCrashData    = hs.uploadCrashData()
 
     --------------------------------------------------------------------------------
     -- Setup General Preferences Panel:
@@ -89,9 +87,9 @@ function plugin.init(deps)
         :addHeading(1, i18n("general"))
         :addCheckbox(3,
             {
-                label		= i18n("launchAtStartup"),
-                checked		= mod.autoLaunch,
-                onchange	= function(_, params) mod.autoLaunch(params.checked) end,
+                label       = i18n("launchAtStartup"),
+                checked     = mod.autoLaunch,
+                onchange    = function(_, params) mod.autoLaunch(params.checked) end,
             }
         )
 
@@ -101,16 +99,16 @@ function plugin.init(deps)
         :addHeading(10, i18n("privacy"))
         :addCheckbox(11,
             {
-                label		 = i18n("sendCrashData"),
-                checked	 = mod.uploadCrashData,
+                label        = i18n("sendCrashData"),
+                checked  = mod.uploadCrashData,
                 onchange = function(_, params) mod.uploadCrashData(params.checked) end,
             }
         )
         :addButton(12,
             {
-                label 	= i18n("openPrivacyPolicy"),
-                width		= 200,
-                onclick	= function() hs.execute("open '" .. config.privacyPolicyURL .. "'") end,
+                label   = i18n("openPrivacyPolicy"),
+                width       = 200,
+                onclick = function() hs.execute("open '" .. config.privacyPolicyURL .. "'") end,
             }
         )
 
@@ -125,16 +123,16 @@ function plugin.init(deps)
         :addHeading(31, i18n("dockIcon"))
         :addCheckbox(32,
             {
-                label		= i18n("enableDockIcon"),
-                checked		= mod.dockIcon,
-                onchange	= function() mod.dockIcon:toggle() end,
+                label       = i18n("enableDockIcon"),
+                checked     = mod.dockIcon,
+                onchange    = function() mod.dockIcon:toggle() end,
             }
         )
         :addCheckbox(33,
             {
-                label = i18n("openErrorLogOnDockClick"),
-                checked = mod.openErrorLogOnDockClick,
-                onchange = function() mod.openErrorLogOnDockClick:toggle() end
+                label = i18n("openDebugConsoleOnDockClick"),
+                checked = mod.openDebugConsoleOnDockClick,
+                onchange = function() mod.openDebugConsoleOnDockClick:toggle() end
             }
         )
 

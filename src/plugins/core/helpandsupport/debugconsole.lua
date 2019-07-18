@@ -1,14 +1,13 @@
---- === plugins.core.helpandsupport.errorlog ===
+--- === plugins.core.helpandsupport.debugconsole ===
 ---
---- Error Log Menu Item.
+--- Debug Console Menu Item.
 
 local require = require
 
 local i18n = require("cp.i18n")
 
-
 local plugin = {
-    id = "core.helpandsupport.errorlog",
+    id = "core.helpandsupport.debugconsole",
     group = "core",
     dependencies = {
         ["core.menu.manager"] = "menuManager",
@@ -28,7 +27,7 @@ function plugin.init(deps)
     -- Commands:
     --------------------------------------------------------------------------------
     deps.global
-        :add("cpOpenErrorLog")
+        :add("cpOpenDebugConsole")
         :whenActivated(open)
         :groupedBy("commandPost")
 
@@ -36,7 +35,7 @@ function plugin.init(deps)
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menuManager.commandPostHelpAndSupport
-        :addItem(1, function() return { title = i18n("openErrorLog"), fn = open } end)
+        :addItem(1, function() return { title = i18n("openDebugConsole"), fn = open } end)
         :addSeparator(2)
 end
 
