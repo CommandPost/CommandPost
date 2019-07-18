@@ -62,36 +62,34 @@ local function makePercentHandler(puckFinderFn)
     end)
     return function(metadata)
         local midiValue
-        if metadata and puck then
-            if metadata.fourteenBitCommand or metadata.pitchChange then
-                --------------------------------------------------------------------------------
-                -- 14bit:
-                --------------------------------------------------------------------------------
-                midiValue = metadata.pitchChange or metadata.fourteenBitValue
-                if type(midiValue) == "number" then
-                    value = tools.round(midiValue / 16383*200-100)
-                    if midiValue == 16383/2 then value = 0 end
-                end
-            else
-                --------------------------------------------------------------------------------
-                -- 7bit:
-                --------------------------------------------------------------------------------
-                midiValue = metadata.controllerValue
-                if type(midiValue) == "number" then
-                    if shiftPressed() then
-                        value = midiValue / 128*202-100
-                    else
-                        value = midiValue / 128*128-(128/2)
-                    end
-                    if midiValue == 127/2 then value = 0 end
-                end
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if type(midiValue) == "number" then
+                value = tools.round(midiValue / 16383*200-100)
+                if midiValue == 16383/2 then value = 0 end
             end
-            if value == nil then
-                log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
-                return
+        else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.controllerValue
+            if type(midiValue) == "number" then
+                if shiftPressed() then
+                    value = midiValue / 128*202-100
+                else
+                    value = midiValue / 128*128-(128/2)
+                end
+                if midiValue == 127/2 then value = 0 end
             end
-            updateUI()
         end
+        if value == nil then
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+            return
+        end
+        updateUI()
     end
 end
 
