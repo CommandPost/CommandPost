@@ -4,12 +4,12 @@
 
 local require = require
 
-local log               = require("hs.logger").new("midicolorwheels")
+--local log               = require "hs.logger".new "midicolorwheels"
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
-local ColorWell         = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 
 local plugin = {
     id = "finalcutpro.timeline.colorwheels",
