@@ -392,7 +392,6 @@ function mod._startLearning(id, params)
         -- Prevent Loupedeck+'s from appearing in the MIDI Preferences:
         --------------------------------------------------------------------------------
         if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
-            log.df("deviceName: %s", deviceName)
             if string.sub(deviceName, 1, 8) == "virtual_" then
                 --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
                 mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))

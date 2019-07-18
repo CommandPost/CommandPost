@@ -267,7 +267,7 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
                     if midiValue == 16383/2 then value = 1 end
-                    value = cachedColorWheelShadowsSaturation
+                    cachedColorWheelShadowsSaturation = value
                     updateColorWheelShadowsSaturation()
                 end
             else
