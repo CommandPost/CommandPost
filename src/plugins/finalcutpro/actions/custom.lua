@@ -18,7 +18,7 @@ local mod           = {}
 -- MAXIMUM -> number
 -- Constant
 -- The maximum number of shortcuts
-local MAXIMUM = 20
+local MAXIMUM = 50
 
 --- plugins.finalcutpro.actions.custom.shortcuts <cp.prop: table>
 --- Variable

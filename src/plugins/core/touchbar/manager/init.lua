@@ -424,8 +424,8 @@ function mod.start()
         local icon = canvas.new{x = 0, y = 0, w = 512, h = 512 }
         icon[1] = {
           type="image",
-          image = image.imageFromName(image.systemImageNames.ApplicationIcon),
-          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+          image = image.imageFromPath(config.bundledPluginsPath .. "/core/touchbar/images/icon.png"),
+          frame = { x = "15%", y = "18%", h = "65%", w = "65%" },
         }
 
         --------------------------------------------------------------------------------

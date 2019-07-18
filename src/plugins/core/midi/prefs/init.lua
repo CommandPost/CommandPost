@@ -857,7 +857,7 @@ function mod.init(deps, env)
         label           = i18n("midi"),
         image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
         tooltip         = i18n("midi"),
-        height          = 610,
+        height          = 750,
         closeFn         = mod._destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
