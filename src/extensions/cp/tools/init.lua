@@ -1202,6 +1202,37 @@ function tools.tableContains(table, element)
     return false
 end
 
+
+--- cp.tools.tableFilter(t, matchFn) -> table
+--- Function
+--- Efficiently filters out all elements from the table `t` which to not match the `matchFn`.
+--- Note: This will modify the original table.
+---
+--- Parameters:
+--- * t          - The `table` to filter.
+--- * matchFn    - A function which will receive the table, the current index, and the target index.
+---
+--- Returns:
+--- * The same table, updated.
+function tools.tableFilter(t, matchFn)
+    local j, n = 1, #t;
+
+    for i=1,n do
+        if (matchFn(t, i, j)) then
+            -- Move i's kept value to j's position, if it's not already there.
+            if (i ~= j) then
+                t[j] = t[i];
+                t[i] = nil;
+            end
+            j = j + 1; -- Increment position of where we'll place the next kept value.
+        else
+            t[i] = nil;
+        end
+    end
+
+    return t;
+end
+
 --- cp.tools.removeFromTable(table, element) -> table
 --- Function
 --- Removes a string from a table of strings

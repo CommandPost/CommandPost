@@ -7,7 +7,6 @@ local require = require
 local hswindow                      = require("hs.window")
 local class                         = require("middleclass")
 
-local app                           = require("cp.app")
 local lazy                          = require("cp.lazy")
 local prop                          = require("cp.prop")
 local axutils                       = require("cp.ui.axutils")
@@ -53,7 +52,6 @@ end
 --- Returns:
 ---  * A new `Window` instance.
 function Window:initialize(cpApp, uiProp)
-    assert(app.is(cpApp), "Parameter #1 must be a cp.app")
     assert(prop.is(uiProp), "Parameter #2 must be a cp.prop")
 
     self._app = cpApp
@@ -374,8 +372,8 @@ end
 
 function Window:__tostring()
     local title = self:title()
-    local label = title and " ("..title..")" or ""
-    return format("cp.ui.Window: %s%s", self:app(), label)
+    local label = title or "[Untitled]"
+    return format("%s: %s (%s)", self.class.name, label, self:app())
 end
 
 return Window

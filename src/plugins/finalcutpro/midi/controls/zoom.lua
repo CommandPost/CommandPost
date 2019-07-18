@@ -29,12 +29,7 @@ local function createAbsoluteMIDIZoomSlider()
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
-            end
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
             value = rescale(midiValue, 0, 16383, 0, 10)
             updateUI()
         else

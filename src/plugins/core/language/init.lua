@@ -208,14 +208,7 @@ function plugin.init(deps)
         )
         :addButton(41.2,
             {
-                label 		= i18n("suggestATranslation"),
-                width		= 200,
-                onclick		= function() hs.execute("open '" .. config.translationURL .. "'") end,
-            }
-        )
-        :addButton(41.3,
-            {
-                label 		= i18n("reportATranslationMistake"),
+                label 		= i18n("helpTranslateCommandPost"),
                 width		= 200,
                 onclick		= function() hs.execute("open '" .. config.translationURL .. "'") end,
             }

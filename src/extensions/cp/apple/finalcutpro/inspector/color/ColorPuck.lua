@@ -22,8 +22,10 @@ local tools                                 = require("cp.tools")
 local go                                    = require("cp.rx.go")
 local Do, Throw                             = go.Do, go.Throw
 
-local doAfter                               = timer.doAfter
+local toRegionalNumber                      = tools.toRegionalNumber
+local toRegionalNumberString                = tools.toRegionalNumberString
 
+local doAfter                               = timer.doAfter
 
 local ColorPuck = Element:subclass("ColorPuck")
 
@@ -164,7 +166,7 @@ function ColorPuck.lazy.value:percent()
     return TextField(self, function()
         local fields = axutils.childrenWithRole(self.row:children(), "AXTextField")
         return fields and fields[#fields] or nil
-    end, tonumber)
+    end, toRegionalNumber, toRegionalNumberString)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.ui.TextField>
@@ -178,7 +180,7 @@ function ColorPuck.lazy.value:angle()
         else
             return nil
         end
-    end, tonumber)
+    end, toRegionalNumber, toRegionalNumberString)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:index() -> number

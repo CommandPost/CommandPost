@@ -163,7 +163,7 @@ function mod.init(deps, env)
         label       = i18n("tangentPanelLabel"),
         image       = image.imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 650,
+        height      = 750,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {

@@ -424,8 +424,8 @@ function mod.start()
         local icon = canvas.new{x = 0, y = 0, w = 512, h = 512 }
         icon[1] = {
           type="image",
-          image = image.imageFromName(image.systemImageNames.ApplicationIcon),
-          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+          image = image.imageFromPath(config.bundledPluginsPath .. "/core/touchbar/images/icon.png"),
+          frame = { x = "15%", y = "18%", h = "65%", w = "65%" },
         }
 
         --------------------------------------------------------------------------------
@@ -858,7 +858,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
@@ -871,17 +870,6 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps)
-
-    --------------------------------------------------------------------------------
-    -- Copy Legacy Property List Touch Bar Buttons to JSON:
-    --------------------------------------------------------------------------------
-    local legacyControls = config.get("touchBarButtons", nil)
-    if legacyControls and not config.get("touchBarButtonsCopied") then
-        mod._items(legacyControls)
-        config.set("touchBarButtonsCopied", true)
-        log.df("Copied Touch Bar Buttons from Plist to JSON.")
-    end
-
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
@@ -924,7 +912,6 @@ function plugin.postInit(deps)
         mod.start()
         mod.update()
     end
-
 end
 
 return plugin

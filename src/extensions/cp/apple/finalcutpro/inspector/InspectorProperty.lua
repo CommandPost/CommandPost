@@ -17,7 +17,7 @@ local require = require
 local is                    = require("cp.is")
 --local just                  = require("cp.just")
 local prop                  = require("cp.prop")
---local tools                 = require("cp.tools")
+local tools                 = require("cp.tools")
 
 local axutils               = require("cp.ui.axutils")
 local Button                = require("cp.ui.Button")
@@ -38,6 +38,8 @@ local childrenMatching      = axutils.childrenMatching
 --local ninjaMouseClick       = tools.ninjaMouseClick
 --local wait                  = just.wait
 
+local toRegionalNumber          = tools.toRegionalNumber
+local toRegionalNumberString    = tools.toRegionalNumberString
 
 local mod = {}
 
@@ -354,7 +356,7 @@ end
 ---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.numberField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
+        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, toRegionalNumber, toRegionalNumberString)
     end, index)
 end
 
@@ -393,8 +395,8 @@ end
 ---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.xy(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.x = TextField(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, tonumber)
-        row.y = TextField(row, function() return childFromLeft(row:children(), 2, TextField.matches) end, tonumber)
+        row.x = TextField(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, toRegionalNumber, toRegionalNumberString)
+        row.y = TextField(row, function() return childFromLeft(row:children(), 2, TextField.matches) end, toRegionalNumber, toRegionalNumberString)
     end, index)
 end
 
@@ -414,7 +416,7 @@ end
 ---  * The `cp.prop` that returns the `PropertyRow`.
 function mod.slider(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
+        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, toRegionalNumber, toRegionalNumberString)
     end, index)
 end
 

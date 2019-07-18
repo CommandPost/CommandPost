@@ -1,9 +1,9 @@
-.streamDeckDropdown {
-	width: 200px;
+.loupedeckDropdown {
+	width: 180px;
 	float: left;
 }
 
-.streamDeck {
+.loupedeck {
 	margin-top: 10px;
 	table-layout: fixed;
 	width: 100%;
@@ -14,21 +14,13 @@
 	text-align: left;
 }
 
-.streamDeck td {
+.loupedeck td {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.sdTip {
-	color: #436694;
-	font-style: italic;
-	padding-top: 5px;
-	display: block;
-	clear: both;
-}
-
-.sdButtonLabel {
+.loupedeckButtonLabel {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -43,55 +35,54 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 290px;
+	width: 190px;
 }
 
-.sdRowIcon {
-	width: 10%;
+.loupedeckRowAction {
+	width: 240px;
+}
+.loupedeckRowActionButton {
+	width: 50px;
+}
+.loupedeckRowDevice {
+	width: 120px;
+}
+loupedeckRowType {
+	width: 120px;
+}
+.loupedeckRowNumber {
+	width: 70px;
+}
+.loupedeckRowChannel {
+	width: 70px;
 }
 
-.sdRowAction {
-	width: 40%;
+.loupedeckRowValue {
+	width: 75px;
+}
+.loupedeckRowLearn {
+	width: 120px;
 }
 
-.sdRowActionButton {
-	width: 10%;
-}
-
-.sdRowLabel {
-	width: 27%;
-}
-
-.sdResetGroup {
-	margin: 10px 0px 0px 5px;
-	text-align: center;
-	float: left;
-	width: 200px;
-}
-
-.sdRowOrder {
-	width: 8%;
-}
-
-.streamDeck thead {
+.loupedeck thead {
 	font-weight: bold;
 	font-size: 12px;
 	width: 100%;
 }
 
-.streamDeck thead tr, .streamDeck tbody tr {
+.loupedeck thead tr, .loupedeck tbody tr {
 	display: table;
 	table-layout: fixed;
 	width: 100%;
 }
 
-.streamDeck thead tr {
+.loupedeck thead tr {
 	width: calc( 100% - 8px);
 }
 
-.streamDeck tbody {
+.loupedeck tbody {
 	display:block;
-	height: 430px;
+	height: 65px;
 	font-weight: normal;
 	font-size: 10px;
 	width: 100%;
@@ -100,16 +91,42 @@
 	overflow-y: scroll;
 }
 
-.streamDeck tbody tr:hover {
+.loupedeck tbody tr:hover {
 	background-color: #006dd4;
 	color: white;
 }
 
-.resetStreamDeck {
+.openAudioLoupedeckSetup {
+	margin: 0px 0px 5px;
+	float: left;
+	width: 180px;
+}
+
+.refreshLoupedeck {
+	margin: 0px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.applyTopDeviceToAll {
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 200px;
+	width: 180px;
+}
+
+.loupedeckResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: right;
+	float: right;
 }
 
 .buttonDisabled {
@@ -117,7 +134,7 @@
 	opacity: 0.4;
 }
 
-.streamDeckControl {
+.loupedeckControl {
 	padding-top: 0px;
 	padding-bottom: 3pt;
 	padding-left: 20px;
@@ -128,7 +145,7 @@
 	height: 20px;
 }
 
-.sdActionTextbox {
+.loupedeckActionTextbox {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -143,30 +160,30 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 400px;
+	width: 230px;
 }
 
-.sdActionButton {
+.loupedeckActionButton {
 	padding: 5px 5px !important;
 }
 
-#streamDeckController {
+#loupedeckController {
 	font-weight: bold;
 }
 
-#streamDeckGroupControls {
-	min-height: 295px;
+#loupedeckGroupControls {
+	/* min-height: 295px; */
 }
 
-#streamDeckGroupControls .streamDeckGroup {
+#loupedeckGroupControls .loupedeckGroup {
 	display: none;
 }
 
-#streamDeckGroupControls .streamDeckGroup.selected {
+#loupedeckGroupControls .loupedeckGroup.selected {
 	display: block;
 }
 
-.streamDeckGroupSelect {
+.loupedeckGroupSelect {
 	float: right;
 }
 

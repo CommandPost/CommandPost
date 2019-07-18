@@ -421,6 +421,23 @@ function plugin.init(deps)
             :whenRepeated(function() shiftYPosition(shiftAmount * -1) end)
    end
 
+    fcpxCmds:add("resetPositionX")
+        :titled(i18n("reset") .. " " .. i18n("position") .. " X")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            local position = fcp:inspector():video():transform():position()
+            position:show()
+            position:x(0)
+        end)
+
+    fcpxCmds:add("resetPositionY")
+        :titled(i18n("reset") .. " " .. i18n("position") .. " Y")
+        :groupedBy("timeline")
+        :whenPressed(function()
+            local position = fcp:inspector():video():transform():position()
+            position:show()
+            position:y(0)
+        end)
 
     --------------------------------------------------------------------------------
     -- Scale:
@@ -445,6 +462,15 @@ function plugin.init(deps)
             :whenRepeated(function() shiftScale(shiftAmount * -1) end)
     end
 
+    fcpxCmds:add("resetScale")
+        :titled(i18n("reset") .. " " .. i18n("scale") .. " " .. i18n("all"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            local scaleAll = fcp:inspector():video():transform():scaleAll()
+            scaleAll:show()
+            scaleAll:value(100)
+        end)
+
     --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
@@ -467,6 +493,15 @@ function plugin.init(deps)
             :whenPressed(function() shiftRotation(shiftAmount * -1) end)
             :whenRepeated(function() shiftRotation(shiftAmount * -1) end)
     end
+
+    fcpxCmds:add("resetRotation")
+        :titled(i18n("reset") .. " " .. i18n("rotation"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            local rotation = fcp:inspector():video():transform():rotation()
+            rotation:show()
+            rotation:value(0)
+        end)
 
 end
 

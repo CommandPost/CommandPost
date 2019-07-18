@@ -21,28 +21,35 @@ local function createAbsoluteMIDIOpacitySlider()
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if midiValue == 8192 then
+                value = 100
+            elseif midiValue > 8192 then
+                value = rescale(midiValue, 8193, 16383, 50, 100)
+            elseif midiValue < 8192 then
+                value = rescale(midiValue, 0, 8191, 0, 49)
             end
-            value = rescale(midiValue, 0, 16383, 0, 100)
             updateUI()
         else
             --------------------------------------------------------------------------------
             -- 7bit:
             --------------------------------------------------------------------------------
             local controllerValue = metadata.controllerValue
-            value = rescale(controllerValue, 0, 127, 0, 100)
-            updateUI()
+            if controllerValue == 64 then
+                value = 100
+            elseif controllerValue < 64 then
+                value = rescale(controllerValue, 0, 63, 0, 49)
+            elseif controllerValue > 64 then
+                value = rescale(controllerValue, 64, 127, 50, 100)
+            end
         end
     end
 end
 
-local function createAbsoluteMIDIScaleSlider(param)
+local function createAbsoluteMIDIScaleSlider(paramFn)
     local value
     local updateUI = deferred.new(0.01):action(function()
+        local param = paramFn()
         param:show():value(value)
     end)
     return function(metadata)
@@ -50,13 +57,14 @@ local function createAbsoluteMIDIScaleSlider(param)
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if midiValue == 8192 then
+                value = 100
+            elseif midiValue > 8192 then
+                value = rescale(midiValue, 8193, 16383, 100.1, 120)
+            elseif midiValue < 8192 then
+                value = rescale(midiValue, 0, 8191, 0, 99)
             end
-            value = rescale(midiValue, 0, 16383, 0, 100)
             updateUI()
         else
             --------------------------------------------------------------------------------
@@ -69,9 +77,9 @@ local function createAbsoluteMIDIScaleSlider(param)
                 value = rescale(controllerValue, 0, 63, 0, 99)
             elseif controllerValue > 64 then
                 if controllerValue < 96 then
-                    value = rescale(controllerValue, 64, 96, 101, 200)
+                    value = rescale(controllerValue, 64, 96, 100.5, 110)
                 else
-                    value = rescale(controllerValue, 97, 127, 201, 400)
+                    value = rescale(controllerValue, 97, 127, 110, 150)
                 end
             end
             updateUI()
@@ -79,9 +87,10 @@ local function createAbsoluteMIDIScaleSlider(param)
     end
 end
 
-local function createAbsoluteMIDIPositionSlider(param)
+local function createAbsoluteMIDIPositionSlider(paramFn)
     local value
     local updateUI = deferred.new(0.01):action(function()
+        local param = paramFn()
         param:show():value(value)
     end)
     return function(metadata)
@@ -89,13 +98,14 @@ local function createAbsoluteMIDIPositionSlider(param)
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if midiValue == 8192 then
+                value = 0
+            elseif midiValue > 8192 then
+                value = rescale(midiValue, 8193, 16383, 1, 277)
+            elseif midiValue < 8192 then
+                value = rescale(midiValue, 0, 8191, -277, -1)
             end
-            value = rescale(midiValue, 0, 16383, 0, 100)
             updateUI()
         else
             --------------------------------------------------------------------------------
@@ -105,9 +115,9 @@ local function createAbsoluteMIDIPositionSlider(param)
             if controllerValue == 64 then
                 value = 0
             elseif controllerValue < 64 then
-                value = rescale(controllerValue, 0, 63, -2500, -0.1)
+                value = rescale(controllerValue, 0, 63, 277, 0.1)
             elseif controllerValue > 64 then
-                value = rescale(controllerValue, 64, 127, 0.1, 2500)
+                value = rescale(controllerValue, 64, 127, -0.1, -277)
             end
             updateUI()
         end
@@ -124,13 +134,14 @@ local function createAbsoluteMIDIRotationSlider()
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            local midiValue
-            if metadata.pitchChange then
-                midiValue = metadata.pitchChange
-            else
-                midiValue = metadata.fourteenBitValue
+            local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if midiValue == 8192 then
+                value = 0
+            elseif midiValue > 8192 then
+                value = rescale(midiValue, 8193, 16383, -0.1, -5)
+            elseif midiValue < 8192 then
+                value = rescale(midiValue, 0, 8191, 5, 0.1)
             end
-            value = rescale(midiValue, 0, 16383, 0, 100)
             updateUI()
         else
             --------------------------------------------------------------------------------
@@ -140,9 +151,9 @@ local function createAbsoluteMIDIRotationSlider()
             if controllerValue == 64 then
                 value = 0
             elseif controllerValue < 64 then
-                value = rescale(controllerValue, 0, 63, -180, -0.1)
+                value = rescale(controllerValue, 0, 63, -10, -0.1)
             elseif controllerValue > 64 then
-                value = rescale(controllerValue, 64, 127, 1, 180)
+                value = rescale(controllerValue, 64, 127, 0.1, 10)
             end
             updateUI()
         end
@@ -178,7 +189,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(fcp:inspector():video():show():transform():scaleX()),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleX() end),
     })
 
     --------------------------------------------------------------------------------
@@ -188,7 +199,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(fcp:inspector():video():show():transform():scaleY()),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleY() end),
     })
 
     --------------------------------------------------------------------------------
@@ -198,7 +209,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " " .. i18n("all") .. " (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(fcp:inspector():video():show():transform():scaleAll()),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleAll() end),
     })
 
     --------------------------------------------------------------------------------
@@ -208,7 +219,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("position") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(fcp:inspector():video():show():transform():position().x),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():position().x end),
     })
 
     --------------------------------------------------------------------------------
@@ -218,7 +229,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("position") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(fcp:inspector():video():show():transform():position().y),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():position().y end),
     })
 
     --------------------------------------------------------------------------------
@@ -238,7 +249,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("anchor") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(fcp:inspector():video():show():transform():anchor().x),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():anchor().x end),
     })
 
     --------------------------------------------------------------------------------
@@ -248,7 +259,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("anchor") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(fcp:inspector():video():show():transform():anchor().y),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():anchor().y end),
     })
 
 end
