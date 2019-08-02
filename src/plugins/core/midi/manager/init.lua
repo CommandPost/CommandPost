@@ -1088,7 +1088,9 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local global = deps.global
     global:add("cpMIDI")
-        :whenActivated(mod.enabled:toggle())
+        :whenActivated(function()
+            mod.enabled:toggle()
+        end)
         :groupedBy("commandPost")
 
     return mod.init(deps, env)
