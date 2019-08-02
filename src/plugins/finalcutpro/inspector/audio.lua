@@ -39,6 +39,22 @@ function plugin.init(deps)
         :add("toggleHumRemoval")
         :whenActivated(fcp:inspector():audio():audioEnhancements():audioAnalysis():humRemoval().enabled:doPress())
         :titled(i18n("toggle") .. " " .. i18n("humRemoval"))
+
+    --------------------------------------------------------------------------------
+    -- Audio Configuration:
+    --------------------------------------------------------------------------------
+    for i=1, 9 do
+        cmds
+            :add("toggleAudioComponent" .. i)
+            :whenActivated(fcp:inspector():audio():audioConfiguration():component(i):enabled():doPress())
+            :titled(i18n("toggle") .. " " .. i18n("audio") .. " " .. i18n("component") .. " " .. i)
+
+        cmds
+            :add("toggleAudioSubcomponent" .. i)
+            :whenActivated(fcp:inspector():audio():audioConfiguration():subcomponent(i):enabled():doPress())
+            :titled(i18n("toggle") .. " " .. i18n("audio") .. " " .. i18n("subcomponent") .. " " .. i)
+    end
+
 end
 
 return plugin
