@@ -27,7 +27,6 @@ local Element			= require("cp.ui.Element")
 local If                = require("cp.rx.go.If")
 local Do                = require("cp.rx.go.Do")
 
-
 local CheckBox = Element:subclass("cp.ui.CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
@@ -125,13 +124,16 @@ end
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
 function CheckBox.lazy.method:doPress()
-    return If(self.UI):Then(function(ui)
-        ui:doPress()
-        return true
-    end)
-    :Otherwise(false)
-    :ThenYield()
-    :Label("CheckBox:doPress")
+    return Do(self:parent():doShow())
+        :Then(
+            If(self.UI):Then(function(ui)
+                ui:doPress()
+                return true
+            end)
+            :Otherwise(false)
+            :ThenYield()
+            :Label("CheckBox:doPress")
+        )
 end
 
 --- cp.ui.CheckBox:doCheck() -> cp.rx.go.Statement
