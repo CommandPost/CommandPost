@@ -4,9 +4,8 @@
 
 local require = require
 
-local fcp		     = require("cp.apple.finalcutpro")
+local fcp        = require("cp.apple.finalcutpro")
 local i18n       = require("cp.i18n")
-
 
 local mod = {}
 
@@ -18,12 +17,11 @@ mod.enabled = fcp.preferences:prop("FFPlayerDisplayedTimeline", 0):mutate(
     function(newValue, original) original(newValue and 1 or 0) end
 )
 
-
 local plugin = {
-    id				= "finalcutpro.advanced.showtimelineinviewers",
-    group			= "finalcutpro",
-    dependencies	= {
-        ["finalcutpro.commands"] 		= "fcpxCmds",
+    id              = "finalcutpro.advanced.showtimelineinviewers",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.commands"]        = "fcpxCmds",
         ["finalcutpro.preferences.manager"] = "prefs",
     }
 }

@@ -21,7 +21,6 @@ local Throw                                     = require("cp.rx.go.Throw")
 
 local doAfter                                   = timer.doAfter
 
-
 local mod = {}
 
 -- HISTORY_EXTENSION -> string
@@ -500,7 +499,6 @@ function mod.generateSharedPasteboardMenu()
     end
     return folderItems
 end
-
 
 local plugin = {
     id              = "finalcutpro.pasteboard.shared",

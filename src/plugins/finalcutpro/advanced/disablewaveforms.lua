@@ -8,7 +8,6 @@ local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local prop              = require("cp.prop")
 
-
 local mod = {}
 
 --- plugins.finalcutpro.advanced.disablewaveforms.disableWaveform <cp.prop: boolean>
