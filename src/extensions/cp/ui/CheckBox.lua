@@ -148,13 +148,16 @@ end
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
 function CheckBox.lazy.method:doPress()
-    return If(self.UI):Then(function(ui)
-        ui:doPress()
-        return true
-    end)
-    :Otherwise(false)
-    :ThenYield()
-    :Label("CheckBox:doPress")
+    return Do(self:parent():doShow())
+        :Then(
+            If(self.UI):Then(function(ui)
+                ui:doPress()
+                return true
+            end)
+            :Otherwise(false)
+            :ThenYield()
+            :Label("CheckBox:doPress")
+        )
 end
 
 --- cp.ui.CheckBox:doCheck() -> cp.rx.go.Statement

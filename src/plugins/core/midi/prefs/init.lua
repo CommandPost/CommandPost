@@ -176,6 +176,7 @@ local function generateContent()
         groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
+        bankLabel                   = mod._midi.getBankLabel(defaultGroup),
         webviewLabel                = mod._manager.getLabel(),
         maxItems                    = mod._midi.maxItems,
         midiDevices                 = mod._midi.devices(),
@@ -768,6 +769,10 @@ local function midiPanelCallback(id, params)
                 scrollBarPosition[groupID] = value
                 mod.scrollBarPosition(scrollBarPosition)
             end
+        elseif callbackType == "updateBankLabel" then
+            local groupID = params["groupID"]
+            local bankLabel = params["bankLabel"]
+            mod._midi.setBankLabel(groupID, bankLabel)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

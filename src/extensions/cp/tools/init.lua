@@ -153,7 +153,7 @@ end
 function tools.toRegionalNumber(value)
     if type(value) == "string" then
         if locale.details().decimalSeparator == "," then
-            value = value:gsub(",", ".")
+            value = value:gsub("%,", ".")
         end
     end
     value = tonumber(value)
