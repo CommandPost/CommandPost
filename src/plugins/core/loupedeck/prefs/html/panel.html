@@ -88,6 +88,23 @@
 			alertErrorMessage(err);
 		}
 	}
+
+	function updateLoupedeckBankLabel() {
+		try {
+			var result = {
+				id: "loupedeckPanelCallback",
+				params: {
+					type: "updateBankLabel",
+					groupID: document.getElementById("loupedeckGroupSelect").value + document.getElementById("loupedeckSubGroupSelect").value,
+					bankLabel: document.getElementById("loupedeckBankLabel").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 </script>
 <table style="width: 100%; text-align: left; vertical-align: text-bottom; padding-top: 10px;">
 	<tr>
@@ -103,7 +120,7 @@
 				{% end %}
 			</select>
 		</span></th>
-		<th style="width: 3%;"><span class="loupedeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+		<th style="width: 5%;"><span class="loupedeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
 			<select id="loupedeckSubGroupSelect" style="width: 50px;" onchange="updateLoupedeckGroup()">
 				{%
 				for i=1, numberOfSubGroups do
@@ -115,6 +132,9 @@
 				{% end %}
 			</select>
 		</span></th>
+		<th style="width: 9%;"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+			<input type="text" id="loupedeckBankLabel" class="loupedeckLabel" value="{{ bankLabel }}" onchange="updateLoupedeckBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
 		<th style="width: 4%;"></th>
 	</tr>
 </table>

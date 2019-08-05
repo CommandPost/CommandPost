@@ -20,15 +20,6 @@
 				</tr>
 			</thead>
 			<tbody onscroll="saveScrollbarPosition('{{ groupID }}', this);">
-			<tr>
-				<td class="tbRowIcon"></td>
-				<td class="tbRowAction"></td>
-				<td class="tbRowActionButton"></td>
-				<td class="tbRowLabel">
-					<input type="text" id="touchbar_{{ groupID }}_bankLabel" class="tbButtonLabel" value="{{ tb.getBankLabel(groupID) or i18n("none") }}" onchange="changeTouchBarBankLabel('{{ groupID }}', this.value)">
-				</td>
-				<td class="tbRowOrder"></td>
-			</tr>
 			{(html/rows.html, _.extend({groupID = groupID}, context))}
 			</tbody>
 		</table>

@@ -56,7 +56,12 @@ function plugin.init(deps)
                 local activeGroup = manager.activeGroup()
                 local activeSubGroup = manager.activeLoupedeckSubGroup()
                 if activeGroup and activeSubGroup then
-                    displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    local bankLabel = manager.getLoupedeckBankLabel(activeGroup .. activeSubGroup)
+                    if bankLabel then
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. bankLabel)
+                    else
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    end
                 end
             end
         end)

@@ -104,6 +104,7 @@ local function generateContent()
         groupLabels             = groupLabels,
         groups                  = groups,
         defaultGroup            = defaultGroup,
+        bankLabel               = mod._sd.getBankLabel(defaultGroup),
         scrollBarPosition       = mod.scrollBarPosition(),
         groupEditor             = mod.getGroupEditor,
         i18n                    = i18n,
@@ -234,11 +235,6 @@ local function streamDeckPanelCallback(id, params)
             -- Update Label:
             --------------------------------------------------------------------------------
             mod._sd.updateLabel(params["buttonID"], params["groupID"], params["label"])
-        elseif params["type"] == "updateBankLabel" then
-            --------------------------------------------------------------------------------
-            -- Update Bank Label:
-            --------------------------------------------------------------------------------
-            mod._sd.updateBankLabel(params["groupID"], params["label"])
         elseif params["type"] == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
@@ -250,7 +246,7 @@ local function streamDeckPanelCallback(id, params)
                 local icon = image.imageFromPath(path)
                 if icon then
                     local genericPath = mod.defaultIconPath .. "Generic"
-                    local touchBarPath = mod.defaultIconPath .. "Touch Bar"
+                    local touchBarPath = mod.defaultIconPath .. "Stream Deck"
                     if string.sub(path, 1, string.len(genericPath)) == genericPath or string.sub(path, 1, string.len(touchBarPath)) == touchBarPath then
                         --------------------------------------------------------------------------------
                         -- One of our pre-supplied images:
@@ -346,11 +342,15 @@ local function streamDeckPanelCallback(id, params)
                 scrollBarPosition[groupID] = value
                 mod.scrollBarPosition(scrollBarPosition)
             end
+        elseif params["type"] == "updateBankLabel" then
+            local groupID = params["groupID"]
+            local bankLabel = params["bankLabel"]
+            mod._sd.setBankLabel(groupID, bankLabel)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Touch Bar Preferences Panel:")
+            log.df("Unknown Callback in Stream Deck Preferences Panel:")
             log.df("id: %s", hs.inspect(id))
             log.df("params: %s", hs.inspect(params))
         end
@@ -389,7 +389,7 @@ end
 
 -- resetAll() -> none
 -- Function
--- Prompts to reset all Touch Bar Preferences to their defaults.
+-- Prompts to reset all Stream Deck Preferences to their defaults.
 --
 -- Parameters:
 --  * None

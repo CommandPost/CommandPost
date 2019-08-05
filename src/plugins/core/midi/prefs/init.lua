@@ -208,6 +208,7 @@ local function generateContent()
         i18nPitchWheelChange        = i18n("pitchWheelChange"),
         i18nAll                     = i18n("all"),
         i18nBank                    = i18n("bank"),
+        i18nLabel                   = i18n("label"),
     }
 
     return renderPanel(context)
