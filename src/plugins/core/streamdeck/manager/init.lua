@@ -49,7 +49,7 @@ mod._streamDeck = {}
 
 -- plugins.core.touchbar.manager._currentSubGroup -> table
 -- Variable
--- Current Touch Bar Sub Group Statuses.
+-- Current Stream Deck Sub Group Statuses.
 mod._currentSubGroup = config.prop("streamDeckCurrentSubGroup", {})
 
 --- plugins.core.streamdeck.manager.maxItems -> number
@@ -59,7 +59,7 @@ mod.maxItems = 15
 
 --- plugins.core.streamdeck.manager.numberOfSubGroups -> number
 --- Variable
---- The number of Sub Groups per Touch Bar Group.
+--- The number of Sub Groups per Stream Deck Group.
 mod.numberOfSubGroups = 9
 
 -- plugins.core.streamdeck.manager._items <cp.prop: table>
@@ -83,7 +83,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateOrder(direction, button, group) -> none
 --- Function
---- Shifts a Touch Bar button either up or down.
+--- Shifts a Stream Deck button either up or down.
 ---
 --- Parameters:
 ---  * direction - Either "up" or "down"
@@ -124,7 +124,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateIcon(button, group, icon) -> none
 --- Function
---- Updates a Touch Bar icon.
+--- Updates a Stream Deck icon.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -150,9 +150,49 @@ function mod.updateIcon(button, group, icon)
     mod.update()
 end
 
+--- plugins.core.streamdeck.manager.setBankLabel(group, label) -> none
+--- Function
+--- Sets a Stream Deck Bank Label.
+---
+--- Parameters:
+---  * group - Group ID as string
+---  * label - Label as string
+---
+--- Returns:
+---  * None
+function mod.setBankLabel(group, label)
+    local items = mod._items()
+
+    if not items[group] then
+        items[group] = {}
+    end
+    items[group]["bankLabel"] = label
+
+    mod._items(items)
+    mod.update()
+end
+
+--- plugins.core.streamdeck.manager.getBankLabel(group) -> string
+--- Function
+--- Returns a specific Stream Deck Bank Label.
+---
+--- Parameters:
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Label as string
+function mod.getBankLabel(group)
+    local items = mod._items()
+    if items[group] and items[group] and items[group]["bankLabel"] then
+        return items[group]["bankLabel"]
+    else
+        return nil
+    end
+end
+
 --- plugins.core.streamdeck.manager.updateAction(button, group, action) -> boolean
 --- Function
---- Updates a Touch Bar action.
+--- Updates a Stream Deck action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -200,7 +240,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateLabel(button, group, label) -> none
 --- Function
---- Updates a Touch Bar label.
+--- Updates a Stream Deck label.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -226,31 +266,9 @@ function mod.updateLabel(button, group, label)
     mod.update()
 end
 
---- plugins.core.streamdeck.manager.updateBankLabel(group, label) -> none
---- Function
---- Updates a Touch Bar Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----  * label - Label as string
----
---- Returns:
----  * None
-function mod.updateBankLabel(group, label)
-    local items = mod._items()
-
-    if not items[group] then
-        items[group] = {}
-    end
-    items[group]["bankLabel"] = label
-
-    mod._items(items)
-    mod.update()
-end
-
 --- plugins.core.streamdeck.manager.getIcon(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Icon.
+--- Returns a specific Stream Deck Icon.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -269,7 +287,7 @@ end
 
 --- plugins.core.streamdeck.manager.getActionTitle(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action Title.
+--- Returns a specific Stream Deck Action Title.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -288,7 +306,7 @@ end
 
 --- plugins.core.streamdeck.manager.getActionHandlerID(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action Handler ID.
+--- Returns a specific Stream Deck Action Handler ID.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -307,7 +325,7 @@ end
 
 --- plugins.core.streamdeck.manager.getAction(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action.
+--- Returns a specific Stream Deck Action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -326,7 +344,7 @@ end
 
 --- plugins.core.streamdeck.manager.getLabel(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Label.
+--- Returns a specific Stream Deck Label.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -345,7 +363,7 @@ end
 
 --- plugins.core.streamdeck.manager.getBankLabel(group) -> string
 --- Function
---- Returns a specific Touch Bar Bank Label.
+--- Returns a specific Stream Deck Bank Label.
 ---
 --- Parameters:
 ---  * group - Group ID as string
@@ -434,7 +452,12 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            local bankLabel = mod.getBankLabel(combinedGroupAndSubGroupID)
+            if bankLabel then
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. bankLabel)
+            else
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            end
         end
     end
 end

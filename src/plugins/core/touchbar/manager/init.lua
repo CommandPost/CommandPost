@@ -635,7 +635,12 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            local bankLabel = mod.getBankLabel(combinedGroupAndSubGroupID)
+            if bankLabel then
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. bankLabel)
+            else
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            end
         end
     end
 end

@@ -372,7 +372,7 @@ end
 -- Function
 -- Updates the cachedLoupedeckActiveGroupAndSubgroup variable.
 local function updateLoupedeckCachedActiveGroupAndSubgroup()
-    cachedLoupedeckActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeLoupdeckSubGroup()
+    cachedLoupedeckActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeLoupedeckSubGroup()
 end
 
 --- plugins.core.midi.manager.clear() -> none
@@ -517,6 +517,24 @@ function mod.getBankLabel(group)
     end
 end
 
+--- plugins.core.midi.manager.getLoupedeckBankLabel(group) -> string
+--- Function
+--- Returns a specific Loupedeck Bank Label.
+---
+--- Parameters:
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Label as string
+function mod.getLoupedeckBankLabel(group)
+    local items = mod._loupedeckItems()
+    if items[group] and items[group] and items[group]["bankLabel"] then
+        return items[group]["bankLabel"]
+    else
+        return nil
+    end
+end
+
 --- plugins.core.midi.manager.getItems() -> tables
 --- Function
 --- Gets all the MIDI items in a table.
@@ -568,16 +586,16 @@ function mod.activeSubGroup()
     return tostring(result)
 end
 
---- plugins.core.midi.manager.activeSubGroup() -> string
+--- plugins.core.midi.manager.activeLoupedeckSubGroup() -> string
 --- Function
---- Returns the active sub-group.
+--- Returns the active Loupedeck+ sub-group.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * Returns the active sub group as string
-function mod.activeLoupdeckSubGroup()
+function mod.activeLoupedeckSubGroup()
     local currentSubGroup = mod._currentLoupedeckSubGroup()
     local result = 1
     local activeGroup = mod.activeGroup()
@@ -636,7 +654,12 @@ function mod.forceLoupedeckGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentLoupedeckSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            local bankLabel = mod.getLoupedeckBankLabel(combinedGroupAndSubGroupID)
+            if bankLabel then
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. bankLabel)
+            else
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            end
         end
         updateLoupedeckCachedActiveGroupAndSubgroup()
     end
