@@ -666,7 +666,8 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:tintSlider():shiftValue(-0.1)
+            local currentValue = colorWheels:tint()
+            colorWheels:tint(currentValue + 1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -675,7 +676,8 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:tintSlider():shiftValue(0.1)
+            local currentValue = colorWheels:tint()
+            colorWheels:tint(currentValue - 1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -684,7 +686,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:tintSlider():value(0)
+            colorWheels:tint(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("reset"))
 
@@ -720,41 +722,6 @@ function plugin.init(deps)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
 
-
-    --------------------------------------------------------------------------------
-    -- Color Wheel - Mix:
-    --------------------------------------------------------------------------------
-    fcpxCmds
-        :add("colorWheelMixUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:mix()
-            colorWheels:mix(currentValue + 0.1)
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
-
-    fcpxCmds
-        :add("colorWheelMixDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:mix()
-            colorWheels:mix(currentValue - 0.1)
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
-
-    fcpxCmds
-        :add("colorWheelMixReset")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:mix(0)
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("reset"))
-
-
 end
 
 return plugin
-
