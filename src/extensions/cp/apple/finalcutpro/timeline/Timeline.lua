@@ -189,6 +189,13 @@ function Timeline.lazy.prop:isFocused()
     return self:contents().isFocused
 end
 
+--- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
+function Timeline.lazy.method:doFocus()
+    return self:app():menu():doSelectMenu({"Window", "Go To", "Timeline"})
+end
+
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App
 --- Method
 --- Returns the app instance representing Final Cut Pro.
