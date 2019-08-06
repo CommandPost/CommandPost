@@ -21,7 +21,6 @@ local class             = require("middleclass")
 local cache             = axutils.cache
 local Do, Given         = go.Do, go.Given
 
-
 local Element = class("cp.ui.Element"):include(lazy)
 
 --- cp.ui.Element.matches(element) -> boolean

@@ -5,12 +5,11 @@
 local require = require
 
 local axutils                       = require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
 local Button                        = require("cp.ui.Button")
+local Element                       = require("cp.ui.Element")
 
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
-
 
 local Sheet = Element:subclass("cp.ui.Sheet")
 
@@ -37,7 +36,7 @@ end
 ---
 --- Returns:
 ---  * A new `Browser` object.
-function Sheet:initialize(parent)
+function Sheet:initialize(parent, UI)
     Element.initialize(self, parent, UI)
 end
 

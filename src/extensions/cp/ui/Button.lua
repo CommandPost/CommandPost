@@ -3,14 +3,13 @@
 --- The `Button` type extends [Element](cp.ui.Element.md) and includes all its
 --- methods, fields and other properties.
 
-local require = require
+local require       = require
 
-local axutils                       = require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
-local go                            = require("cp.rx.go")
+local axutils       = require("cp.ui.axutils")
+local Element       = require("cp.ui.Element")
+local go            = require("cp.rx.go")
 
-local If                            = go.If
-
+local If            = go.If
 
 local Button = Element:subclass("cp.ui.Button")
 
