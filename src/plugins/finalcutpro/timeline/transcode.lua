@@ -87,10 +87,10 @@ function mod.transcodeSelectedClips(type)
                 playErrorSound()
                 return
             else
-                transcode:createProxyMedia():isEnabled(true)
+                transcodeMedia:createProxyMedia():isEnabled(true)
             end
 
-            transcode:createProxyMedia():checked(true)
+            transcodeMedia:createProxyMedia():checked(true)
         end
 
         if type == mod.transcodeType.optimized then
@@ -99,7 +99,7 @@ function mod.transcodeSelectedClips(type)
                 playErrorSound()
                 return
             end
-            transcode:createOptimizedMedia():checked(true)
+            transcodeMedia:createOptimizedMedia():checked(true)
         end
 
         transcodeMedia:ok():press()
