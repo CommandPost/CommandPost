@@ -2,12 +2,11 @@
 ---
 --- Represents the Transcode Media sheet.
 
-local log					= require "hs.logger".new "TranscodeMedia"
+--local log					= require "hs.logger".new "TranscodeMedia"
 
 local axutils               = require "cp.ui.axutils"
 local Button                = require "cp.ui.Button"
 local CheckBox              = require "cp.ui.CheckBox"
-local Element               = require "cp.ui.Element"
 local StaticText            = require "cp.ui.StaticText"
 local Sheet                 = require "cp.ui.Sheet"
 
