@@ -503,6 +503,15 @@ function plugin.init(deps)
             rotation:value(0)
         end)
 
+    --------------------------------------------------------------------------------
+    -- Effects:
+    --------------------------------------------------------------------------------
+    fcpxCmds:add("toggleSelectedEffect")
+        :titled("Toggle Selected Effect")
+        :whenPressed(function()
+            --TODO
+        end)
+
 end
 
 return plugin
