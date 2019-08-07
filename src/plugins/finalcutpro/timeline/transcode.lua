@@ -32,20 +32,64 @@ mod.transcodeType = {
     proxy = "proxy"
 }
 
-function mod.transcodeSelectedClips(type)
-    local contents = fcp:timeline():contents()
-    local transcodeMedia = fcp:transcodeMedia()
+function mod.transcodeSelectedClips(transcodeType)
 
     if not fcp:launch() then
         playErrorSound()
         return
     end
 
-    if not doUntil(function()
-        fcp:selectMenu({"Window", "Go To", "Timeline"})
-        return contents:isFocused()
-    end) then
-        playErrorSound()
+    local timeline = fcp:timeline()
+    local contents = timeline:contents()
+    local transcodeMedia = fcp:transcodeMedia()
+
+    if not timeline:isFocused() then
+        -----------------------------------------------------------------------
+        -- If the timeline is not focussed, let's assume the browser is:
+        -----------------------------------------------------------------------
+        fcp:selectMenu({"Window", "Go To", "Libraries"})
+
+        if not doUntil(function()
+            return fcp:menu():isEnabled({"File", "Transcode Media…"})
+        end) then
+            playErrorSound()
+            return
+        end
+
+        fcp:selectMenu({"File", "Transcode Media…"})
+        if not doUntil(function()
+            return transcodeMedia:isShowing()
+        end) then
+            playErrorSound()
+            return
+        end
+
+        if transcodeType == mod.transcodeType.proxy then
+            if not transcodeMedia:createProxyMedia():isEnabled() then
+                transcodeMedia:cancel():press()
+                playErrorSound()
+                return
+            end
+            transcodeMedia:createProxyMedia():checked(true)
+        end
+
+        if transcodeType == mod.transcodeType.optimized then
+            if not transcodeMedia:createOptimizedMedia():isEnabled() then
+                transcodeMedia:cancel():press()
+                playErrorSound()
+                return
+            end
+            transcodeMedia:createOptimizedMedia():checked(true)
+        end
+
+        transcodeMedia:ok():press()
+
+        if not doUntil(function()
+            return not transcodeMedia:isShowing()
+        end) then
+            playErrorSound()
+            return
+        end
         return
     end
 
@@ -54,7 +98,17 @@ function mod.transcodeSelectedClips(type)
         playErrorSound()
         return
     end
+
     for _, clip in pairs(selectedClipsUI) do
+
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return contents:isFocused()
+        end) then
+            playErrorSound()
+            return
+        end
+
         if not doUntil(function()
             contents:selectClip(clip)
             local selectedClips = contents:selectedClipsUI()
@@ -81,19 +135,16 @@ function mod.transcodeSelectedClips(type)
             return
         end
 
-        if type == mod.transcodeType.proxy then
+        if transcodeType == mod.transcodeType.proxy then
             if not transcodeMedia:createProxyMedia():isEnabled() then
                 transcodeMedia:cancel():press()
                 playErrorSound()
                 return
-            else
-                transcodeMedia:createProxyMedia():isEnabled(true)
             end
-
             transcodeMedia:createProxyMedia():checked(true)
         end
 
-        if type == mod.transcodeType.optimized then
+        if transcodeType == mod.transcodeType.optimized then
             if not transcodeMedia:createOptimizedMedia():isEnabled() then
                 transcodeMedia:cancel():press()
                 playErrorSound()
@@ -121,11 +172,11 @@ function mod.proxySelectedClips()
     mod.transcodeSelectedClips(mod.transcodeType.proxy)
 end
 
-function mod.doTranscodeSelectedBrowserClips(type)
+function mod.doTranscodeSelectedBrowserClips(transcodeType)
     local transcodeMedia = fcp:transcodeMedia()
 
-    local isOptimized = type == mod.transcodeType.optimized
-    local isProxy = type == mod.transcodeType.proxy
+    local isOptimized = transcodeType == mod.transcodeType.optimized
+    local isProxy = transcodeType == mod.transcodeType.proxy
 
     return Do(fcp:selectMenu({"Window", "Go To", "Libraries"}))
     :Then(Retry(fcp:doSelectMenu({"File", "Transcode Media…"})):UpTo(5))
@@ -136,7 +187,7 @@ function mod.doTranscodeSelectedBrowserClips(type)
     :Then(WaitUntil(transcodeMedia.isShowing):Is(false):TimeoutAfter(3000))
 end
 
-function mod.doTranscodeSelectedTimelineClips(type)
+function mod.doTranscodeSelectedTimelineClips(transcodeType)
     local timeline = fcp:timeline()
     local contents = timeline:contents()
 
@@ -155,13 +206,13 @@ function mod.doTranscodeSelectedTimelineClips(type)
             -- TODO: See if this is still necessary to get around "Reveal" not working reliably the first time.
             :Then(timeline:doFocus())
             :Then(fcp:doSelectMenu({"File", "Reveal in Browser"}))
-            :Then(mod.doTranscodeSelectedBrowserClips(type))
+            :Then(mod.doTranscodeSelectedBrowserClips(transcodeType))
         end)
     end)
     :Label("doTranscodeSelectedTimelineClips")
 end
 
-function mod.doTranscodeSelectedClips(type)
+function mod.doTranscodeSelectedClips(transcodeType)
     -- local timeline = fcp:timeline()
 
     -- TODO: I18N the error messages.
@@ -171,9 +222,9 @@ function mod.doTranscodeSelectedClips(type)
     ):Then(
         -- TODO: Once we get LibraryBrowser:isFocused() and/or Timeline:isFocused() working again...
         -- If(timeline.isFocused):Then(
-            mod.doTranscodeSelectedTimelineClips(type)
+            mod.doTranscodeSelectedTimelineClips(transcodeType)
         -- ):Otherwise(
-            -- mod.doTranscodeSelectedBrowserClips(type)
+            -- mod.doTranscodeSelectedBrowserClips(transcodeType)
         -- )
     )
     :Label("doTranscodeSelectedClips")
@@ -191,14 +242,14 @@ function plugin.init(deps)
     deps.fcpxCmds
         :add("createOptimizedMediaFromTimeline")
         :titled(i18n("optimizeSelectedMedia"))
-        :whenActivated(mod.doTranscodeSelectedClips(mod.transcodeType.optimized))
-        -- :whenActivated(mod.optimizeSelectedClips)
+        --:whenActivated(mod.doTranscodeSelectedClips(mod.transcodeType.optimized))
+        :whenActivated(mod.optimizeSelectedClips)
 
     deps.fcpxCmds
         :add("createProxyMediaFromTimeline")
         :titled(i18n("proxySelectedMedia"))
-        :whenActivated(mod.doTranscodeSelectedClips(mod.transcodeType.proxy))
-        -- :whenActivated(mod.proxySelectedClips)
+        --:whenActivated(mod.doTranscodeSelectedClips(mod.transcodeType.proxy))
+        :whenActivated(mod.proxySelectedClips)
 
     return mod
 end
