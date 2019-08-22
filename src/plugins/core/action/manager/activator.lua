@@ -948,7 +948,7 @@ function activator.mt:chooser()
             :choices(choicesFn)
             :searchSubText(searchSubText)
             :showCallback(setupEventtap)
-            :refreshChoicesCallback()
+            :refreshChoicesCallback(true)
 
         if t then
             c:attachedToolbar(t)
@@ -982,7 +982,7 @@ end
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
     if theChooser then
-        theChooser:refreshChoicesCallback()
+        theChooser:refreshChoicesCallback(true)
     end
 end
 

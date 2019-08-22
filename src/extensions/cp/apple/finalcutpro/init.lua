@@ -114,9 +114,9 @@ local Do                                        = go.Do
 local Throw                                     = go.Throw
 
 local childMatching                             = axutils.childMatching
-
 local dirFiles                                  = tools.dirFiles
 local insert                                    = table.insert
+local pathFromBookmark                          = fs.pathFromBookmark
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -550,7 +550,7 @@ function fcp:activeLibraryPaths()
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do
             local activeLibrary = FFActiveLibraries[i]
-            local path = fs.getPathFromBookmark(activeLibrary)
+            local path = pathFromBookmark(activeLibrary)
             table.insert(paths, path)
         end
     end
