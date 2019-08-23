@@ -507,10 +507,26 @@ function plugin.init(deps)
     -- Effects:
     --------------------------------------------------------------------------------
     fcpxCmds:add("toggleSelectedEffect")
-        :titled("Toggle Selected Effect")
+        :titled(i18n("toggle") .. " " .. i18n("selected") .. " " .. i18n("effect"))
         :whenPressed(function()
-            --TODO
+            fcp:inspector():video():show()
+            local checkbox = fcp:inspector():video():selectedEffectCheckBox()
+            if checkbox then
+                checkbox:performAction("AXPress")
+            end
         end)
+
+    for i=1, 9 do
+        fcpxCmds:add("toggleEffect" .. i)
+            :titled(i18n("toggle") .. " " .. i18n("effect") .. " " .. i)
+            :whenPressed(function()
+                fcp:inspector():video():show()
+                local checkboxes = fcp:inspector():video():effectCheckBoxes()
+                if checkboxes and checkboxes[i] then
+                    checkboxes[i]:performAction("AXPress")
+                end
+            end)
+    end
 
 end
 

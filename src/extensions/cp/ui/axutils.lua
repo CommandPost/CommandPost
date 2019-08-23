@@ -727,10 +727,11 @@ end
 --- Parameters:
 ---  * element      - The `axuielement` to snap.
 ---  * filename     - (optional) The path to save the image as a PNG file.
+---  * elementFrame - (optional) The hs.geometry frame of what you want to capture
 ---
 --- Returns:
 ---  * An `hs.image` file, or `nil` if the element could not be snapped.
-function axutils.snapshot(element, filename)
+function axutils.snapshot(element, filename, elementFrame)
     if axutils.isValid(element) then
         local window = element:attributeValue("AXWindow")
         if window then
@@ -740,7 +741,7 @@ function axutils.snapshot(element, filename)
             local shotSize = windowSnap:size()
 
             local ratio = shotSize.h/windowFrame.h
-            local elementFrame = element:frame()
+            elementFrame = elementFrame or element:frame()
 
             local imageFrame = {
                 x = (windowFrame.x-elementFrame.x)*ratio,

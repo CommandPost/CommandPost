@@ -63,6 +63,7 @@ local xy                        = IP.xy
 local childMatching             = axutils.childMatching
 local childWithRole             = axutils.childWithRole
 local compareTopToBottom        = axutils.compareTopToBottom
+local snapshot                  = axutils.snapshot
 local withRole                  = axutils.withRole
 local withValue                 = axutils.withValue
 
@@ -164,6 +165,15 @@ function VideoInspector.lazy.prop:contentUI()
     end)
 end
 
+--- cp.apple.finalcutpro.inspector.color.VideoInspector:effectCheckBoxes() -> tables
+--- Function
+--- Gets a table containing all of the effect checkboxes.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table.
 function VideoInspector:effectCheckBoxes()
     local contentUI = self:contentUI()
     if contentUI then
@@ -197,45 +207,15 @@ function VideoInspector:effectCheckBoxes()
     end
 end
 
-local function snapshot(element, elementFrame, filename)
-    if axutils.isValid(element) then
-        local window = element:attributeValue("AXWindow")
-        if window then
-            local hsWindow = window:asHSWindow()
-            local windowSnap = hsWindow:snapshot()
-            local windowFrame = window:frame()
-            local shotSize = windowSnap:size()
-
-            local ratio = shotSize.h/windowFrame.h
-
-            local imageFrame = {
-                x = (windowFrame.x-elementFrame.x)*ratio,
-                y = (windowFrame.y-elementFrame.y)*ratio,
-                w = shotSize.w,
-                h = shotSize.h,
-            }
-
-            local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-            c[1] = {
-                type = "image",
-                image = windowSnap,
-                imageScaling = "none",
-                imageAlignment = "topLeft",
-                frame = imageFrame,
-            }
-
-            local elementSnap = c:imageFromCanvas()
-
-            if filename then
-                elementSnap:saveToFile(filename)
-            end
-
-            return elementSnap
-        end
-    end
-
-end
-
+--- cp.apple.finalcutpro.inspector.color.VideoInspector:selectedEffectCheckBox() -> axuielement
+--- Function
+--- Gets the selected effect checkbox object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A axuielement object.
 function VideoInspector:selectedEffectCheckBox()
     local effectCheckBoxes = self:effectCheckBoxes()
     if effectCheckBoxes then
@@ -244,8 +224,7 @@ function VideoInspector:selectedEffectCheckBox()
             frame.x = frame.x
             frame.w = 1
             frame.h = 1
-            --local debugPath = "/Users/chrishocking/Desktop/CHRIS/screenshot" .. i .. ".png"
-            local s = snapshot(cb, frame, debugPath)
+            local s = snapshot(cb, nil, frame)
             if s then
                 local c = s:colorAt({x=0, y=0})
                 -- UNSELECTED: blue = 0.12049089372158
