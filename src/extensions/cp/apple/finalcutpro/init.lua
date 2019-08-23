@@ -60,61 +60,66 @@
 
 local require = require
 
-local log										= require("hs.logger").new("fcp")
+local log										= require "hs.logger".new "fcp"
 
-local fs 										= require("hs.fs")
-local hsplist                                   = require("hs.plist")
-local inspect									= require("hs.inspect")
-local osascript 								= require("hs.osascript")
-local pathwatcher                               = require("hs.pathwatcher")
+local fs 										= require "hs.fs"
+local hsplist                                   = require "hs.plist"
+local inspect									= require "hs.inspect"
+local osascript 								= require "hs.osascript"
+local pathwatcher                               = require "hs.pathwatcher"
 
-local axutils                                   = require("cp.ui.axutils")
-local config                                    = require("cp.config")
-local go                                        = require("cp.rx.go")
-local i18n                                      = require("cp.i18n")
-local just										= require("cp.just")
-local localeID                                  = require("cp.i18n.localeID")
-local plist										= require("cp.plist")
-local prop										= require("cp.prop")
-local Set                                       = require("cp.collect.Set")
-local tools                                     = require("cp.tools")
+local axutils                                   = require "cp.ui.axutils"
+local config                                    = require "cp.config"
+local go                                        = require "cp.rx.go"
+local i18n                                      = require "cp.i18n"
+local just										= require "cp.just"
+local localeID                                  = require "cp.i18n.localeID"
+local plist										= require "cp.plist"
+local prop										= require "cp.prop"
+local Set                                       = require "cp.collect.Set"
+local tools                                     = require "cp.tools"
 
-local commandeditor								= require("cp.apple.commandeditor")
+local commandeditor								= require "cp.apple.commandeditor"
 
-local app                                       = require("cp.apple.finalcutpro.app")
-local menu                                      = require("cp.apple.finalcutpro.menu")
-local plugins									= require("cp.apple.finalcutpro.plugins")
-local strings                                   = require("cp.apple.finalcutpro.strings")
+local app                                       = require "cp.apple.finalcutpro.app"
+local menu                                      = require "cp.apple.finalcutpro.menu"
+local plugins									= require "cp.apple.finalcutpro.plugins"
+local strings                                   = require "cp.apple.finalcutpro.strings"
 
-local Browser									= require("cp.apple.finalcutpro.main.Browser")
-local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
-local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
-local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Timeline									= require("cp.apple.finalcutpro.timeline.Timeline")
-local Viewer									= require("cp.apple.finalcutpro.viewer.Viewer")
+local Browser									= require "cp.apple.finalcutpro.main.Browser"
+local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
+local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
+local PrimaryWindow								= require "cp.apple.finalcutpro.main.PrimaryWindow"
+local SecondaryWindow							= require "cp.apple.finalcutpro.main.SecondaryWindow"
+local TranscodeMedia                            = require "cp.apple.finalcutpro.main.TranscodeMedia"
 
-local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
-local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
-local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
-local FindAndReplaceTitleText	                = require("cp.apple.finalcutpro.main.FindAndReplaceTitleText")
+local Timeline									= require "cp.apple.finalcutpro.timeline.Timeline"
 
-local v											= require("semver")
-local class                                     = require("middleclass")
-local lazy                                      = require("cp.lazy")
+local Viewer									= require "cp.apple.finalcutpro.viewer.Viewer"
 
-local format, gsub 						        = string.format, string.gsub
-local Do, Throw                                 = go.Do, go.Throw
+local CommandEditor								= require "cp.apple.finalcutpro.cmd.CommandEditor"
+local ExportDialog								= require "cp.apple.finalcutpro.export.ExportDialog"
+local MediaImport								= require "cp.apple.finalcutpro.import.MediaImport"
+local PreferencesWindow							= require "cp.apple.finalcutpro.prefs.PreferencesWindow"
+local FindAndReplaceTitleText	                = require "cp.apple.finalcutpro.main.FindAndReplaceTitleText"
+
+local v											= require "semver"
+local class                                     = require "middleclass"
+local lazy                                      = require "cp.lazy"
+
+local format     						        = string.format
+local gsub                                      = string.gsub
+
+local Do                                        = go.Do
+local Throw                                     = go.Throw
 
 local childMatching                             = axutils.childMatching
-
 local dirFiles                                  = tools.dirFiles
 local insert                                    = table.insert
+local pathFromBookmark                          = fs.pathFromBookmark
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
-
 
 local fcp = class("cp.apple.finalcutpro"):include(lazy)
 
@@ -545,7 +550,7 @@ function fcp:activeLibraryPaths()
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do
             local activeLibrary = FFActiveLibraries[i]
-            local path = fs.getPathFromBookmark(activeLibrary)
+            local path = pathFromBookmark(activeLibrary)
             table.insert(paths, path)
         end
     end
@@ -913,6 +918,25 @@ end
 ---  * The window.
 function fcp.lazy.method:findAndReplaceTitleText()
     return FindAndReplaceTitleText(self.app)
+end
+
+----------------------------------------------------------------------------------------
+--
+-- SHEETS
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:transcodeMedia() -> TranscodeMedia
+--- Method
+--- Returns the [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Transcode Media Sheet.
+function fcp.lazy.method:transcodeMedia()
+    return TranscodeMedia(self)
 end
 
 ----------------------------------------------------------------------------------------
