@@ -45,8 +45,6 @@ local require = require
 
 local log						= require "hs.logger".new "videoInspect"
 
-local canvas                    = require "hs.canvas"
-
 local axutils					= require "cp.ui.axutils"
 
 local BasePanel                 = require "cp.apple.finalcutpro.inspector.BasePanel"
