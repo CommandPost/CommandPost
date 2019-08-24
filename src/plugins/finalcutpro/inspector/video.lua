@@ -380,7 +380,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position:
     --------------------------------------------------------------------------------
-    local shiftAmounts = {0.1, 1, 5, 10}
+    local shiftAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
     local shiftXPosition = function(value)
         local position = fcp:inspector():video():transform():position()
         position:show()
