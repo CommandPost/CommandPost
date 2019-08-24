@@ -14,7 +14,6 @@ local prop				  = require("cp.prop")
 local sourcewatcher		  = require("cp.sourcewatcher")
 local watcher			  = require("cp.watcher")
 
-
 local mod = {}
 
 --- cp.config.appName -> string
@@ -24,8 +23,23 @@ mod.appName = "CommandPost"
 
 --- cp.config.appVersion -> string
 --- Constant
---- Prefix used for Configuration Settings
+--- Application Version
 mod.appVersion = hs.processInfo["version"]
+
+--- cp.config.appBuild -> string
+--- Constant
+--- Application Build
+mod.appBuild = hs.processInfo["build"]
+
+--- cp.config.bundleID -> string
+--- Constant
+--- Application's Bundle ID
+mod.bundleID = hs.processInfo["bundleID"]
+
+--- cp.config.processID -> number
+--- Constant
+--- Application's Process ID
+mod.processID = hs.processInfo["processID"]
 
 --- cp.config.configPrefix -> string
 --- Constant
@@ -127,16 +141,6 @@ mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions)
     :watchPath(mod.scriptPath)
     :watchPath(mod.userPluginsPath)
     :watchPath(mod.bundledPluginsPath)
-
---- cp.config.bundleID -> string
---- Constant
---- Application's Bundle ID
-mod.bundleID = hs.processInfo["bundleID"]
-
---- cp.config.processID -> number
---- Constant
---- Application's Process ID
-mod.processID = hs.processInfo["processID"]
 
 --- cp.config.application() -> hs.application object
 --- Function
