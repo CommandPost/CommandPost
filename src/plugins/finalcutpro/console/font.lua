@@ -2,43 +2,37 @@
 ---
 --- Final Cut Pro Font Console
 
-local require = require
+local require               = require
 
-local hs = hs
+local hs                    = hs
 
-local log				= require "hs.logger".new "fontConsole"
+local log				    = require "hs.logger".new "fontConsole"
 
-local image             = require "hs.image"
-local styledtext        = require "hs.styledtext"
-local timer             = require "hs.timer"
+local image                 = require "hs.image"
+local styledtext            = require "hs.styledtext"
+local timer                 = require "hs.timer"
 
-local config            = require "cp.config"
-local dialog            = require "cp.dialog"
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
-local just              = require "cp.just"
-local tools             = require "cp.tools"
+local axutils               = require "cp.ui.axutils"
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local just                  = require "cp.just"
+local tools                 = require "cp.tools"
 
-local doAfter           = timer.doAfter
-local execute           = hs.execute
-local imageFromPath     = image.imageFromPath
+local displayErrorMessage   = dialog.displayErrorMessage
+local displayMessage        = dialog.displayMessage
+local doAfter               = timer.doAfter
+local execute               = hs.execute
+local imageFromPath         = image.imageFromPath
+local childWith             = axutils.childWith
 
 local mod = {}
 
 -- FONT_ICON -> hs.image object
--- Constant
+-- ConstantS
 -- Font Icon.
 local FONT_ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/font.png")
-
---- plugins.finalcutpro.console.font.fontLookup -> table
---- Variable
---- Provides a lookup between Font Names and their position in the Final Cut Pro dropdown menu.
-mod.fontLookup = {}
-
---- plugins.finalcutpro.console.font.fontCount -> number
---- Variable
---- The number of fonts available.
-mod.fontCount = 0
 
 --- plugins.finalcutpro.console.font.processedFonts -> table
 --- Variable
@@ -134,7 +128,7 @@ function mod.onActivate(_, action)
         local inspector = fcp:inspector()
         inspector:show()
         if not just.doUntil(function() return inspector:isShowing() end) then
-            dialog.displayErrorMessage("Failed to open the Inspector.")
+            displayErrorMessage("Failed to open the Inspector.")
             return
         end
 
@@ -144,7 +138,7 @@ function mod.onActivate(_, action)
         local text = inspector:text()
         text:show()
         if not just.doUntil(function() return text:isShowing() end) then
-            dialog.displayMessage(i18n("pleaseSelectATitle"))
+            displayMessage(i18n("pleaseSelectATitle"))
             return
         end
 
@@ -153,7 +147,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         local f = text:basic():font()
         if not f or not f.family then
-            dialog.displayErrorMessage(string.format("Failed to get Font Dropdown: %s", f))
+            displayErrorMessage(string.format("Failed to get Font Dropdown: %s", f))
             return
         end
 
@@ -162,7 +156,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         local ui = f.family:UI()
         if not ui then
-            dialog.displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
+            displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
             return
         end
 
@@ -174,56 +168,29 @@ function mod.onActivate(_, action)
             return ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
         end)
         if not menu then
-            dialog.displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
+            displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
             return
         end
 
         --------------------------------------------------------------------------------
-        -- Get the kids:
+        -- Select the chosen font.
         --------------------------------------------------------------------------------
-        local kids = menu:attributeValue("AXChildren")
-        if not kids then
-            dialog.displayErrorMessage(string.format("Failed to get Font Kids: %s", kids))
-            return
-        end
-
-        --------------------------------------------------------------------------------
-        -- Compare the number of items in the drop down to what we've cached:
-        --------------------------------------------------------------------------------
-        local fontCount = mod.fontCount or 0
-        local kidsCount = #kids or 0
-        local difference = kidsCount - fontCount
-        if difference ~= 0 then
-            --------------------------------------------------------------------------------
-            -- Take Two:
-            --------------------------------------------------------------------------------
-            mod._handler:reset(true)
-            fontCount = mod.fontCount or 0
-            difference = kidsCount - fontCount
-            if difference ~= 0 then
-                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by Adobe TypeKit fonts that haven't properly synced yet, corrupt fonts in your Font Book or a corrupt macOS Font Cache.\n\nPlease try deactivating and reactivating all your TypeKit Fonts, validate your Font Book fonts, or failing that, clear your macOS Font Cache & Database.", fontCount, kidsCount))
-                return
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Click on chosen font:
-        --------------------------------------------------------------------------------
-        local id = mod.fontLookup[fontName]
-        if menu[id] then
-            local result = menu[id]:performAction("AXPress")
+        local theFontUI = childWith(menu, "AXTitle", fontName)
+        if theFontUI then
+            local result = theFontUI:performAction("AXPress")
             if result then
                 return
+            else
+                displayErrorMessage("The selected font could not be found.\n\nPlease try again.")
             end
         else
-            dialog.displayErrorMessage("The selected font could not be found.\n\nPlease try again.")
+            displayErrorMessage("Could not find the font in the dropdown list.")
         end
-
     else
         --------------------------------------------------------------------------------
         -- Bad Action:
         --------------------------------------------------------------------------------
-        dialog.displayErrorMessage("Something went wrong with the action you supplied. Try re-applying the action and try again.")
+        displayErrorMessage("Something went wrong with the action you supplied. Try re-applying the action and try again.")
     end
 end
 
@@ -244,7 +211,7 @@ function mod.show()
     local inspector = fcp:inspector()
     inspector:show()
     if not just.doUntil(function() return inspector:isShowing() end) then
-        dialog.displayErrorMessage("Failed to open the Inspector.")
+        displayErrorMessage("Failed to open the Inspector.")
         return
     end
 
@@ -252,7 +219,7 @@ function mod.show()
     -- Make sure there's a "Text" tab:
     --------------------------------------------------------------------------------
     if not inspector:tabAvailable("Text") then
-        dialog.displayMessage(i18n("pleaseSelectATitle"))
+        displayMessage(i18n("pleaseSelectATitle"))
         return
     end
 
@@ -328,15 +295,9 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     -- Sort and add to table:
     --------------------------------------------------------------------------------
-    mod.fontLookup = {}
     table.sort(newFonts, function(a, b) return string.lower(a) < string.lower(b) end)
     local new = styledtext.new
-    for id,fontName in pairs(newFonts) do
-            --------------------------------------------------------------------------------
-            -- Add ID to Font Lookup Table:
-            --------------------------------------------------------------------------------
-            mod.fontLookup[fontName] = id
-
+    for _,fontName in pairs(newFonts) do
             --------------------------------------------------------------------------------
             -- Add choice to Activator:
             --------------------------------------------------------------------------------
@@ -354,11 +315,6 @@ function mod.onChoices(choices)
                     })
             end
     end
-
-    --------------------------------------------------------------------------------
-    -- Store the font count:
-    --------------------------------------------------------------------------------
-    mod.fontCount = newFonts and #newFonts or 0
 
 end
 
@@ -388,7 +344,6 @@ function mod.onExecute(action)
     if not mod._consoleFontCount then mod.onChoices() end
     mod.onActivate(nil, action)
 end
-
 
 local plugin = {
     id              = "finalcutpro.console.font",
