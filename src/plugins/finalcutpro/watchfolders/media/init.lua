@@ -121,7 +121,6 @@ mod.deleteAfterImport = config.prop("fcp.watchFolders.deleteAfterImport", false)
 --- Returns:
 ---  * Table of the module.
 function mod.init(deps)
-
     --------------------------------------------------------------------------------
     -- Ignore Panel if Final Cut Pro isn't installed.
     --------------------------------------------------------------------------------
@@ -140,6 +139,8 @@ function mod.init(deps)
     -- Define Plugins:
     --------------------------------------------------------------------------------
     mod.pasteboardManager = deps.pasteboardManager
+
+    return mod
 end
 
 
