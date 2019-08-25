@@ -4,26 +4,25 @@
 
 local require = require
 
-local log         = require("hs.logger").new("prefsMgr")
+local log         = require "hs.logger".new "prefsMgr"
 
-local inspect     = require("hs.inspect")
-local screen      = require("hs.screen")
-local timer       = require("hs.timer")
-local toolbar     = require("hs.webview.toolbar")
-local webview     = require("hs.webview")
+local inspect     = require "hs.inspect"
+local screen      = require "hs.screen"
+local timer       = require "hs.timer"
+local toolbar     = require "hs.webview.toolbar"
+local webview     = require "hs.webview"
 
-local config      = require("cp.config")
-local dialog      = require("cp.dialog")
-local just        = require("cp.just")
-local tools       = require("cp.tools")
-local i18n        = require("cp.i18n")
+local config      = require "cp.config"
+local dialog      = require "cp.dialog"
+local just        = require "cp.just"
+local tools       = require "cp.tools"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
+local _           = require "moses"
 
-local panel       = require("panel")
+local panel       = require "panel"
 
 local waitUntil   = timer.waitUntil
-
 
 local mod = {}
 
@@ -551,7 +550,6 @@ end
 ---  ** `tooltip`       - The human-readable details for the toolbar icon when the mouse is hovering over it.
 ---  ** `closeFn`       - A callback function that's triggered when the Preferences window is closed.
 function mod.addPanel(params)
-
     local newPanel = panel.new(params, mod)
 
     local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
@@ -559,7 +557,6 @@ function mod.addPanel(params)
 
     return newPanel
 end
-
 
 local plugin = {
     id              = "core.preferences.manager",
