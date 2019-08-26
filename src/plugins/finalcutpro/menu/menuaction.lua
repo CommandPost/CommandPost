@@ -195,22 +195,37 @@ end
 --
 -- Parameters:
 --  * choices - A table of choices
+--  * menu - The full menu
+--  * currentLocaleCode - Current locale code
 --
 -- Returns:
 --  * A new table of choices
-local function applyMenuWorkarounds(choices)
+local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     --------------------------------------------------------------------------------
     --
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE NOT IN THE NIB:
     --
     --------------------------------------------------------------------------------
-    local currentLocaleCode = fcp:currentLocale().code
+    local file          = menu[2][currentLocaleCode]
+    local window        = menu[9][currentLocaleCode]
+    local workspaces    = menu[9].submenu[9][currentLocaleCode]
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Commands
         --------------------------------------------------------------------------------
-
-            -- TODO: Need to build a list of user commands.
+        local userCommandSets = fcp:userCommandSets()
+        for _, title in pairs(userCommandSets) do
+            local path = {"Final Cut Pro", fcp:string("CommandSubmenu")}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Services
@@ -225,7 +240,7 @@ local function applyMenuWorkarounds(choices)
         local shares = destinations.names()
         for _, title in pairs(shares) do
             title = title .. "…"
-            local path = {"File", "Share"} -- TODO: Need to localise.
+            local path = {file, fcp:string("share")}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
@@ -274,13 +289,28 @@ local function applyMenuWorkarounds(choices)
             -- TO DO: Work out how to nicely replace "Libraries" with "Sidebar"
 
         --------------------------------------------------------------------------------
-        -- Color & Effects (Window > Workspaces)
-        -- Update Workspace (Window > Workspaces)
-        -- Open Workspace Folder in Finder (Window > Workspaces)
+        -- Custom Workspaces:
         --------------------------------------------------------------------------------
         local customWorkspaces = fcp:customWorkspaces()
         for _, title in pairs(customWorkspaces) do
-            local path = {"Window", "Workspaces"} -- TODO: Need to localise.
+            local path = {window, workspaces}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Open Workspace Folder in Finder (Window > Workspaces)
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("PEWorkspacesMenuOpenFolder")
+            local path = {window, workspaces}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
@@ -294,15 +324,15 @@ local function applyMenuWorkarounds(choices)
 
         --------------------------------------------------------------------------------
         -- Gather App Diagnostics (Help)
+        --
+        -- We can just ignore this, as it requires a modifier key to access anyway.
         --------------------------------------------------------------------------------
-        -- We can just ignore this, as it requires a modifier key to access.
 
     --------------------------------------------------------------------------------
     --
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE IN THE NIB:
     --
     --------------------------------------------------------------------------------
-    local openWorkspaceFolderInFinder = fcp:string("PEWorkspacesMenuOpenFolder")
     local item = fcp:string("FFTimelineItemElementAccessibilityDescription")
 
     for i, v in pairs(choices) do
@@ -469,7 +499,7 @@ local function applyMenuWorkarounds(choices)
         -- Open Workspace Folder in Finder (PEWorkspacesMenuOpenFolder)
         --------------------------------------------------------------------------------
 
-            -- TODO: Add workaround
+            -- TODO: Add workaround to remove this.
 
     end
     return choices
@@ -494,7 +524,7 @@ function mod.reload()
 
         local choices = processMenu(menu, currentLocaleCode)
 
-        choices = applyMenuWorkarounds(choices)
+        choices = applyMenuWorkarounds(choices, menu, currentLocaleCode)
 
         --compareLegacyVersusNew(choices)
 

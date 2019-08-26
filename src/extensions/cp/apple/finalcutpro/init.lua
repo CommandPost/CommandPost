@@ -1163,6 +1163,31 @@ function fcp.static.userCommandSetPath()
     return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
 end
 
+--- cp.apple.finalcutpro:userCommandSets() -> table
+--- Method
+--- Gets the names of all of the user command sets.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of user command sets as strings.
+function fcp:userCommandSets()
+    local result = {}
+    local userCommandSetPath = fcp:userCommandSetPath()
+    if userCommandSetPath then
+        local iterFn, dirObj = fs.dir(userCommandSetPath)
+        if iterFn then
+            for file in iterFn, dirObj do
+                if file:sub(-11) == ".commandset" then
+                    table.insert(result, file:sub(1, -12))
+                end
+            end
+       end
+    end
+    return result
+end
+
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string
 --- Method
 --- Gets the path to the 'Default' Command Set.
