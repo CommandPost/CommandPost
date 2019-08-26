@@ -239,7 +239,7 @@ end
 --- Returns:
 ---  * The index of the named Destination, or `nil`.
 function mod.indexOf(name)
-    local list = mod.details()
+    local list = mod.names()
     if list then
         return moses.detect(list, function(e) return e.name == name end)
     else

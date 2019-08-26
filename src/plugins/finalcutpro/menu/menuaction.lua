@@ -5,20 +5,23 @@
 
 local require = require
 
---local log				= require "hs.logger".new "menuaction"
+local log				= require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
 
 local config            = require "cp.config"
+local destinations      = require "cp.apple.finalcutpro.export.destinations"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local idle              = require "cp.idle"
 local localeID          = require "cp.i18n.localeID"
+local text              = require "cp.web.text"
 
 local concat            = table.concat
 local imageFromPath     = image.imageFromPath
 local insert            = table.insert
+local unescapeXML       = text.unescapeXML
 
 local mod = {}
 
@@ -50,6 +53,428 @@ function mod.id()
     return ID
 end
 
+-- processSubMenu(menu, path, localeCode, choices) -> table
+-- Function
+-- Processes a Final Cut Pro sub-menu.
+--
+-- Parameters:
+--  * menu - The menu table to process
+--  * localeCode - The current locale code
+--  * choices - A table of existing choices
+--  * path - A table containing the current path
+--
+-- Returns:
+--  * A table of choices.
+local function processSubMenu(menu, localeCode, choices, path)
+    for _, v in pairs(menu) do
+        if type(v) == "table" then
+            if not v.seperator and v[localeCode] and v[localeCode] ~= "" and v.submenu then
+                --------------------------------------------------------------------------------
+                -- Submenu:
+                --------------------------------------------------------------------------------
+                local newPath = fnutils.copy(path)
+                local title = unescapeXML(v[localeCode])
+                table.insert(newPath, title)
+                choices = processSubMenu(v.submenu, localeCode, choices, newPath)
+            elseif not v.seperator and v[localeCode] and v[localeCode] ~= "" then
+                --------------------------------------------------------------------------------
+                -- Menu Item:
+                --------------------------------------------------------------------------------
+                local title = unescapeXML(v[localeCode])
+                local params = {}
+                params.path = fnutils.concat(fnutils.copy(path), { title })
+                params.locale = localeCode
+                table.insert(choices, {
+                    text = title,
+                    subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                    params = params,
+                    id = mod.actionId(params),
+                })
+            end
+        end
+    end
+    return choices
+end
+
+-- processMenu(menu, path, localeCode, choices) -> table
+-- Function
+-- Processes a Final Cut Pro menu.
+--
+-- Parameters:
+--  * menu - The menu table to process
+--  * localeCode - The current locale code
+--
+-- Returns:
+--  * A table of choices.
+local function processMenu(menu, localeCode)
+    local choices = {}
+    for _, v in pairs(menu) do
+        if type(v) == "table" then
+            if v.submenu and v[localeCode] and v[localeCode] ~= "Debug" then
+                local path = { v[localeCode] }
+                choices = processSubMenu(v.submenu, localeCode, choices, path)
+            end
+        end
+    end
+    return choices
+end
+
+-- legacyScan() -> table
+-- Function
+-- Scans the Final Cut Pro Menubar via the Accessibility Framework.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A table of choices.
+local function legacyScan()
+    local choices = {}
+    fcp:menu():visitMenuItems(function(path, menuItem)
+        local title = menuItem:title()
+        if path[1] ~= "Apple" then
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = fcp:currentLocale().code
+            insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+    end)
+    return choices
+end
+
+-- compareLegacyVersusNew(choices) -> table
+-- Function
+-- Compares the supplied choices with the legacy choices.
+--
+-- Parameters:
+--  * choices - The new choices to compare
+--
+-- Returns:
+--  * None
+local function compareLegacyVersusNew(choices)
+    --hs.console.clearConsole()
+    local legacyChoices = legacyScan()
+    log.df("In Legacy Choices, but not in New Choices:")
+    for _, v in pairs(legacyChoices) do
+        local match = false
+        for _, vv in pairs(choices) do
+            if v.text == vv.text then
+                match = true
+                break
+            end
+        end
+        if not match then
+            log.df("NO MATCH: %s (%s)", v.text, v.subText)
+        end
+    end
+    log.df("-----------------------------------")
+    log.df("In New Choices, but not in Legacy Choices:")
+    for _, v in pairs(choices) do
+        local match = false
+        for _, vv in pairs(legacyChoices) do
+            if v.text == vv.text then
+                match = true
+                break
+            end
+        end
+        if not match then
+            log.df("NO MATCH: %s (%s)", v.text, v.subText)
+        end
+    end
+    log.df("-----------------------------------")
+end
+
+-- applyMenuWorkarounds(choices) -> table
+-- Function
+-- Applies a bunch of workarounds to the choices table.
+--
+-- Parameters:
+--  * choices - A table of choices
+--
+-- Returns:
+--  * A new table of choices
+local function applyMenuWorkarounds(choices)
+    --------------------------------------------------------------------------------
+    --
+    -- WORKAROUNDS FOR MENU ITEMS THAT WERE NOT IN THE NIB:
+    --
+    --------------------------------------------------------------------------------
+    local currentLocaleCode = fcp:currentLocale().code
+
+        --------------------------------------------------------------------------------
+        -- Final Cut Pro > Commands
+        --------------------------------------------------------------------------------
+
+            -- TODO: Need to build a list of user commands.
+
+        --------------------------------------------------------------------------------
+        -- Final Cut Pro > Services
+        --------------------------------------------------------------------------------
+
+            -- TODO: Need to build a list of services.
+            --       On my machine I only see "Development" tools in the Services list.
+
+        --------------------------------------------------------------------------------
+        -- File > Share
+        --------------------------------------------------------------------------------
+        local shares = destinations.names()
+        for _, title in pairs(shares) do
+            title = title .. "…"
+            local path = {"File", "Share"} -- TODO: Need to localise.
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Edit > Captions > Duplicate Captions to New Language
+        --------------------------------------------------------------------------------
+
+            -- TODO: Work out how to generate these menu items, taking into account language.
+
+        --------------------------------------------------------------------------------
+        -- Start Dictation… (Edit)
+        -- Emoji & Symbols (Edit)
+        --------------------------------------------------------------------------------
+
+            -- TODO: These are macOS tools, not FCPX specific, so need to work out
+            --       where the language strings are stored.
+
+        --------------------------------------------------------------------------------
+        -- Workflow Extensions
+        --
+        -- Frame.io (Window > Extensions)
+        -- Getting Started for Final Cut Pro 10.4 (Window > Extensions)
+        -- KeyFlow Pro 2 Extension (Window > Extensions)
+        -- ShareBrowser (Window > Extensions)
+        -- Shutterstock (Window > Extensions)
+        -- Simon Says Transcription (Window > Extensions)
+        --------------------------------------------------------------------------------
+
+            -- TODO: Need to generate a list of Workflow Extensions.
+
+        --------------------------------------------------------------------------------
+        -- Sidebar (Window > Show in Workspace)
+        --
+        -- Window > Show in Workspace > Libraries
+        --------------------------------------------------------------------------------
+        local sidebar = fcp:string("PEEventsLibrary")
+
+            -- TO DO: Work out how to nicely replace "Libraries" with "Sidebar"
+
+        --------------------------------------------------------------------------------
+        -- Color & Effects (Window > Workspaces)
+        -- Update Workspace (Window > Workspaces)
+        -- Open Workspace Folder in Finder (Window > Workspaces)
+        --------------------------------------------------------------------------------
+        local customWorkspaces = fcp:customWorkspaces()
+        for _, title in pairs(customWorkspaces) do
+            local path = {"Window", "Workspaces"} -- TODO: Need to localise.
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Gather App Diagnostics (Help)
+        --------------------------------------------------------------------------------
+        -- We can just ignore this, as it requires a modifier key to access.
+
+    --------------------------------------------------------------------------------
+    --
+    -- WORKAROUNDS FOR MENU ITEMS THAT WERE IN THE NIB:
+    --
+    --------------------------------------------------------------------------------
+    local openWorkspaceFolderInFinder = fcp:string("PEWorkspacesMenuOpenFolder")
+    local item = fcp:string("FFTimelineItemElementAccessibilityDescription")
+
+    for i, v in pairs(choices) do
+        --------------------------------------------------------------------------------
+        -- 360 (View > Show in Viewer)
+        -- 360 (View > Show in Event Viewer)
+        --
+        -- Add in missing degrees symbol.
+        --------------------------------------------------------------------------------
+        if v.text and v.text == "360" then
+            v.text = "360°"
+            v.params.path[3] = "360°"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Close Library (File)
+        --
+        -- File > Close Library "Library Name"
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Item (File > Share)
+        --
+        -- Not needed
+        --------------------------------------------------------------------------------
+        if v.text and v.text == item then
+            table.remove(choices, i)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Copy to Library (File)
+        --
+        -- It's actually a submenu called "Copy Clip to Library", "Copy Event to Library", "Copy Project to Library", etc.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Move to Library (File)
+        --
+        -- It's actually a submenu called "Move Clip to Library", "Move Event to Library", "Move Project to Library", etc.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Consolidate Files… (File)
+        --
+        -- Can be "Consolidate Library Media...", "Consolidate Event Media...", "Consolidate Project Media..."
+        -- Can be "Consolidate Motion Content..."
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Delete Render Files… (File)
+        --
+        -- Can be "Delete Generated Event Files..." or "Delete Generated Library Files..."
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Add Default Transition (Edit)
+        --
+        -- Add <Default Transition>
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Add Default Video Effect (Edit)
+        --
+        -- Add <Default Video Effect>
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Add Default Audio Effect (Edit)
+        --
+        -- Add <Default Audio Effect>
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Reject (Mark)
+        --
+        -- Can also be "Delete" if focussed on timeline instead of browser.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Open in Timeline (Clip)
+        --
+        -- Can also be "Open Clip", "Open in Angle Editor",
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Verify and Repair Project (Clip)
+        --
+        -- This is a hidden menu item, you can access it by holding down OPTION when pressing Clip.
+        --------------------------------------------------------------------------------
+
+            -- TODO: I'm not sure the best way to remove this from choices?
+
+        --------------------------------------------------------------------------------
+        -- Enable (Clip)
+        --
+        -- Could also be "Disable"
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Optical Flow Classic (Modify > Retime > Video Quality)
+        --
+        -- This seems to be a hidden menu item.
+        --------------------------------------------------------------------------------
+
+            -- TODO: I'm not sure the best way to remove this from choices?
+
+        --------------------------------------------------------------------------------
+        -- Assign Audio Roles (Modify)
+        --
+        -- This is actually a sub-menu.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Assign Video Roles (Modify)
+        --
+        -- This is actually a sub-menu.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Assign Caption Roles (Modify)
+        --
+        -- This is actually a sub-menu.
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Update ' ' Workspace (Window > Workspaces)
+        --
+        -- Update 'WORKSPACE NAME' Workspace
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+        --------------------------------------------------------------------------------
+        -- Open Custom Workspace Folder in Finder (Window > Workspaces)
+        --
+        -- Open Workspace Folder in Finder (PEWorkspacesMenuOpenFolder)
+        --------------------------------------------------------------------------------
+
+            -- TODO: Add workaround
+
+    end
+    return choices
+end
+
 --- plugins.finalcutpro.menu.menuaction.reload() -> none
 --- Function
 --- Reloads the choices.
@@ -63,21 +488,16 @@ local alreadyReloading = false
 function mod.reload()
     if fcp:menu():showing() and not alreadyReloading then
         alreadyReloading = true
-        local choices = {}
-        fcp:menu():visitMenuItems(function(path, menuItem)
-            local title = menuItem:title()
-            if path[1] ~= "Apple" then
-                local params = {}
-                params.path = fnutils.concat(fnutils.copy(path), { title })
-                params.locale = fcp:currentLocale().code
-                insert(choices, {
-                    text = title,
-                    subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                    params = params,
-                    id = mod.actionId(params),
-                })
-            end
-        end)
+
+        local menu = fcp:menu():getMenuTitles()
+        local currentLocaleCode = fcp:currentLocale().code
+
+        local choices = processMenu(menu, currentLocaleCode)
+
+        choices = applyMenuWorkarounds(choices)
+
+        --compareLegacyVersusNew(choices)
+
         config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
         mod._choices = choices
         mod.reset()
