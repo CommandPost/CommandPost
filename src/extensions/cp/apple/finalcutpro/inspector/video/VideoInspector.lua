@@ -103,10 +103,7 @@ function VideoInspector:initialize(parent)
 
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(self, self.contentUI) {
-        effects             = section "FFInspectorBrickEffects" {}
-            :extend(function(row)
-                log.df("row: %s", row)
-            end),
+        effects             = section "FFInspectorBrickEffects" {},
 
         compositing         = section "FFHeliumBlendCompositingEffect" {
             blendMode       = popUpButton "FFHeliumBlendMode",
