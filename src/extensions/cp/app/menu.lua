@@ -10,17 +10,19 @@ local fs                = require "hs.fs"
 
 local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
+local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
 local plist             = require "cp.plist"
 local prop              = require "cp.prop"
 local rx                = require "cp.rx"
-local go                = require "cp.rx.go"
+local tools             = require "cp.tools"
 
+local concat            = table.concat
+local exactMatch        = tools.exactMatch
 local format            = string.format
 local insert            = table.insert
-local remove            = table.remove
-local concat            = table.concat
 local Observable        = rx.Observable
+local remove            = table.remove
 
 local Do                = go.Do
 local If                = go.If
@@ -664,14 +666,6 @@ local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
         end
     end
     return title
-end
-
-local function exactMatch(value, pattern, plain)
-    if value and pattern then
-        local s,e = value:find(pattern, nil, plain)
-        return s == 1 and e == value:len()
-    end
-    return false
 end
 
 --- cp.app.menu:doFindMenuUI(path[, options]) -> cp.rx.go.Statement <hs._asm.axuielement>

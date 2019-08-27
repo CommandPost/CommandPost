@@ -1172,7 +1172,7 @@ end
 ---
 --- Returns:
 ---  * A table of user command sets as strings.
-function fcp:userCommandSets()
+function fcp.userCommandSets()
     local result = {}
     local userCommandSetPath = fcp:userCommandSetPath()
     if userCommandSetPath then

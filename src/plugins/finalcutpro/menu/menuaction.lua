@@ -156,6 +156,7 @@ end
 --
 -- Returns:
 --  * None
+--[[
 local function compareLegacyVersusNew(choices)
     --hs.console.clearConsole()
     local legacyChoices = legacyScan()
@@ -188,6 +189,7 @@ local function compareLegacyVersusNew(choices)
     end
     log.df("-----------------------------------")
 end
+--]]
 
 -- applyMenuWorkarounds(choices) -> table
 -- Function
@@ -284,7 +286,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         --
         -- Window > Show in Workspace > Libraries
         --------------------------------------------------------------------------------
-        local sidebar = fcp:string("PEEventsLibrary")
+        --local sidebar = fcp:string("PEEventsLibrary")
 
             -- TO DO: Work out how to nicely replace "Libraries" with "Sidebar"
 

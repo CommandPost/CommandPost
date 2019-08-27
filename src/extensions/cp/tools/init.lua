@@ -1623,4 +1623,28 @@ function tools.startsWith(value, startValue)
     return false
 end
 
+--- cp.tools.exactMatch(value, pattern, plain) -> boolean
+--- Function
+--- Compares two strings to see if they're an exact match.
+---
+--- Parameters:
+---  * value - The first string
+---  * pattern - The second string, including any patterns
+---  * plain - Whether or not to ignore patterns. Defaults to `false`.
+---  * ignoreCase - Ignore the case of the value & pattern.
+---
+--- Returns:
+---  * `true` if there's an exact match, otherwise `false`.
+function tools.exactMatch(value, pattern, plain, ignoreCase)
+    if ignoreCase then
+        value = string.lower(value)
+        pattern = string.lower(pattern)
+    end
+    if value and pattern then
+        local s,e = value:find(pattern, nil, plain)
+        return s == 1 and e == value:len()
+    end
+    return false
+end
+
 return tools
