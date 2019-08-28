@@ -5,7 +5,7 @@
 
 local require = require
 
-local log				= require "hs.logger".new "menuaction"
+--local log				= require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
@@ -128,6 +128,7 @@ end
 --
 -- Returns:
 --  * A table of choices.
+--[[
 local function legacyScan()
     local choices = {}
     fcp:menu():visitMenuItems(function(path, menuItem)
@@ -146,6 +147,7 @@ local function legacyScan()
     end)
     return choices
 end
+--]]
 
 -- compareLegacyVersusNew(choices) -> table
 -- Function
