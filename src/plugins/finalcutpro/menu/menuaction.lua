@@ -84,6 +84,7 @@ local function processSubMenu(menu, localeCode, choices, path)
                 local params = {}
                 params.path = fnutils.concat(fnutils.copy(path), { title })
                 params.locale = localeCode
+                params.plain = true
                 table.insert(choices, {
                     text = title,
                     subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -223,6 +224,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
+            params.plain = true
             table.insert(choices, {
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -248,6 +250,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
+            params.plain = true
             table.insert(choices, {
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -264,7 +267,10 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
 
         --------------------------------------------------------------------------------
         -- Start Dictation… (Edit)
+        -- Diktat starten …
+        --
         -- Emoji & Symbols (Edit)
+        -- Emoji & Symbole
         --------------------------------------------------------------------------------
 
             -- TODO: These are macOS tools, not FCPX specific, so need to work out
@@ -301,6 +307,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
+            params.plain = true
             table.insert(choices, {
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -318,6 +325,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
+            params.plain = true
             table.insert(choices, {
                 text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
@@ -337,7 +345,8 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE IN THE NIB:
     --
     --------------------------------------------------------------------------------
-    local item = fcp:string("FFTimelineItemElementAccessibilityDescription")
+    local itemString = fcp:string("FFTimelineItemElementAccessibilityDescription")
+    local closeLibraryString = fcp:string("FFCloseLibrary")
 
     for i, v in pairs(choices) do
         --------------------------------------------------------------------------------
@@ -356,15 +365,17 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         --
         -- File > Close Library "Library Name"
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and v.text == closeLibraryString then
+            v.params.path = {"File", "Close Library.*"}
+            v.params.plain = false
+        end
 
         --------------------------------------------------------------------------------
         -- Item (File > Share)
         --
         -- Not needed
         --------------------------------------------------------------------------------
-        if v.text and v.text == item then
+        if v.text and v.text == itemString then
             table.remove(choices, i)
         end
 
@@ -598,7 +609,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=localeID(action.locale)}):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=action.plain, locale=localeID(action.locale)}):Now()
         return true
     end
     return false
@@ -645,6 +656,8 @@ function mod.init(actionmanager)
     if fcp:menu():showing() then
         mod.reload()
     end
+
+    -- TODO: Need to reload if the FCPX language changes.
 
 end
 
