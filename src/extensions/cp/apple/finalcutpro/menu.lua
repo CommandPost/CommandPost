@@ -4,7 +4,7 @@
 
 local require = require
 
-local log           = require "hs.logger".new "fcpMenu"
+--local log           = require "hs.logger".new "fcpMenu"
 
 local axutils       = require "cp.ui.axutils"
 local destinations  = require "cp.apple.finalcutpro.export.destinations"
