@@ -39,36 +39,6 @@ menu:addMenuFinder(function(parentItem, path, childName)
 end)
 
 ----------------------------------------------------------------------------------------
--- Add a finder for Custom Workspaces:
-----------------------------------------------------------------------------------------
-menu:addMenuFinder(function(parentItem, path, childName)
-    if isEqual(path, {"Window", "Workspaces"}) then
-        return childWith(parentItem, "AXTitle", childName)
-    end
-    return nil
-end)
-
-----------------------------------------------------------------------------------------
--- Add a finder for Commands:
-----------------------------------------------------------------------------------------
-menu:addMenuFinder(function(parentItem, path, childName)
-    if isEqual(path, {"Final Cut Pro", "Commands"}) then
-        return childWith(parentItem, "AXTitle", childName)
-    end
-    return nil
-end)
-
-----------------------------------------------------------------------------------------
--- Add a finder for Extensions:
-----------------------------------------------------------------------------------------
-menu:addMenuFinder(function(parentItem, path, childName)
-    if isEqual(path, {"Window", "Extensions"}) then
-        return childWith(parentItem, "AXTitle", childName)
-    end
-    return nil
-end)
-
-----------------------------------------------------------------------------------------
 -- Add a finder for missing menus:
 ----------------------------------------------------------------------------------------
 local missingMenuMap = {
@@ -85,13 +55,23 @@ local missingMenuMap = {
     { path = {"Edit"},                          child = ".*Undo.*",                 key = "FFUndo" },
     { path = {"Edit"},                          child = ".*Redo.*",                 key = "FFRedo" },
     { path = {"Window", "Workspaces"},          child = "Update ‘.*’ Workspace",    key = "PEWorkspacesMenuUpdateWithName" },
+    { path = {"Window", "Extensions"} },
+    { path = {"Final Cut Pro", "Commands"} },
+    { path = {"Window", "Workspaces"} },
 }
 menu:addMenuFinder(function(parentItem, path, childName, locale)
     for _,item in ipairs(missingMenuMap) do
-        ----------------------------------------------------------------------------------------
-        -- Add support for Pattern Matching with Tokens:
-        ----------------------------------------------------------------------------------------
-        if string.match(childName, "%.%*") then
+        if item.child == nil and item.key == nil then
+            ----------------------------------------------------------------------------------------
+            -- Only the path is supplied (in the missing menu map):
+            ----------------------------------------------------------------------------------------
+            if isEqual(path, item.path) then
+                return childWith(parentItem, "AXTitle", childName)
+            end
+        elseif string.match(childName, "%.%*") then
+            ----------------------------------------------------------------------------------------
+            -- Add support for Pattern Matching with Tokens:
+            ----------------------------------------------------------------------------------------
             local itemChild = item.child:gsub("%%@", ".*")
             if isEqual(path, item.path) and childName == itemChild then
                 local keyWithPattern = strings:find(item.key, locale):gsub("%%@", ".*")
@@ -102,11 +82,13 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
 
             end
         elseif isEqual(path, item.path) and childName == item.child then
+            ----------------------------------------------------------------------------------------
+            -- When path, child and key is supplied without patterns or tokens:
+            ----------------------------------------------------------------------------------------
             local currentValue = strings:find(item.key, locale)
             return childWith(parentItem, "AXTitle", currentValue)
         end
     end
-    return nil
 end)
 
 return menu
