@@ -211,21 +211,17 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE NOT IN THE NIB:
     --
     --------------------------------------------------------------------------------
-    --local en = localeID("en")
-
-    local file          = menu[2][currentLocaleCode]
-    local window        = menu[9][currentLocaleCode]
-    local workspaces    = menu[9].submenu[9][currentLocaleCode]
+    local en = localeID("en")
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Commands
         --------------------------------------------------------------------------------
         local userCommandSets = fcp:userCommandSets()
         for _, title in pairs(userCommandSets) do
-            local path = {"Final Cut Pro", fcp:string("CommandSubmenu")}
+            local path = {"Final Cut Pro", "Commands"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
+            params.locale = en
             params.plain = true
             table.insert(choices, {
                 text = title,
@@ -248,10 +244,10 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         local shares = destinations.names()
         for _, title in pairs(shares) do
             title = title .. "…"
-            local path = {file, fcp:string("share")}
+            local path = {"File", "Share"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
+            params.locale = en
             params.plain = true
             table.insert(choices, {
                 text = title,
@@ -317,7 +313,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         --------------------------------------------------------------------------------
         local customWorkspaces = fcp:customWorkspaces()
         for _, title in pairs(customWorkspaces) do
-            local path = {window, workspaces}
+            local path = {"Window", "Workspaces"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
