@@ -40,17 +40,17 @@ local GROUP = "fcpx"
 -- Icon
 local ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/menu.png")
 
---- plugins.finalcutpro.menu.menuaction.id() -> none
+--- plugins.finalcutpro.menu.menuaction.actionId(params) -> string
 --- Function
---- Returns the menu ID
+--- Gets the action ID from the parameters table.
 ---
 --- Parameters:
----  * None
+---  * params - Parameters table.
 ---
 --- Returns:
----  * a string contains the menu ID
-function mod.id()
-    return ID
+---  * Action ID as string.
+function mod.actionId(params)
+    return ID .. ":" .. concat(params.path, "||")
 end
 
 -- processSubMenu(menu, path, localeCode, choices) -> table
@@ -211,6 +211,8 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE NOT IN THE NIB:
     --
     --------------------------------------------------------------------------------
+    --local en = localeID("en")
+
     local file          = menu[2][currentLocaleCode]
     local window        = menu[9][currentLocaleCode]
     local workspaces    = menu[9].submenu[9][currentLocaleCode]
@@ -286,8 +288,20 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Shutterstock (Window > Extensions)
         -- Simon Says Transcription (Window > Extensions)
         --------------------------------------------------------------------------------
-
-            -- TODO: Need to generate a list of Workflow Extensions.
+        local workflowExtensions = fcp.workflowExtensions()
+        for _, title in pairs(workflowExtensions) do
+            local path = {"Window", "Extensions"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
 
         --------------------------------------------------------------------------------
         -- Sidebar (Window > Show in Workspace)
@@ -520,101 +534,6 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     return choices
 end
 
---- plugins.finalcutpro.menu.menuaction.reload() -> none
---- Function
---- Reloads the choices.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-local alreadyReloading = false
-function mod.reload()
-    if fcp:menu():showing() and not alreadyReloading then
-        alreadyReloading = true
-
-        local menu = fcp:menu():getMenuTitles()
-        local currentLocaleCode = fcp:currentLocale().code
-
-        local choices = processMenu(menu, currentLocaleCode)
-
-        choices = applyMenuWorkarounds(choices, menu, currentLocaleCode)
-
-        --compareLegacyVersusNew(choices)
-
-        config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
-        mod._choices = choices
-        mod.reset()
-        alreadyReloading = false
-    end
-end
-
---- plugins.finalcutpro.menu.menuaction.onChoices(choices) -> none
---- Function
---- Add choices to the chooser.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.onChoices(choices)
-    if mod._choices then
-        for _,choice in ipairs(mod._choices) do
-            choices:add(choice.text)
-                :subText(choice.subText)
-                :params(choice.params)
-                :image(ICON)
-                :id(choice.id)
-        end
-    end
-end
-
---- plugins.finalcutpro.menu.menuaction.reset() -> none
---- Function
---- Resets the handler.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.reset()
-    mod._handler:reset()
-end
-
---- plugins.finalcutpro.menu.menuaction.actionId(params) -> string
---- Function
---- Gets the action ID from the parameters table.
----
---- Parameters:
----  * params - Parameters table.
----
---- Returns:
----  * Action ID as string.
-function mod.actionId(params)
-    return ID .. ":" .. concat(params.path, "||")
-end
-
---- plugins.finalcutpro.menu.menuaction.execute(action) -> boolean
---- Function
---- Executes the action with the provided parameters.
----
---- Parameters:
---- * `action`  - A table of parameters, matching the following:
----     * `group`   - The Command Group ID
----     * `id`      - The specific Command ID within the group.
----
---- * `true` if the action was executed successfully.
-function mod.onExecute(action)
-    if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path, {plain=action.plain, locale=localeID(action.locale)}):Now()
-        return true
-    end
-    return false
-end
-
 --- plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
 --- Function
 --- Initialises the Menu Action plugin
@@ -626,36 +545,37 @@ end
 ---  * None
 function mod.init(actionmanager)
 
-    mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
-
-    mod._manager = actionmanager
     mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-        :onChoices(mod.onChoices)
-        :onExecute(mod.onExecute)
-        :onActionId(mod.actionId)
+        :onChoices(function(choices)
+            local menu = fcp:menu():getMenuTitles()
+            local currentLocaleCode = fcp:currentLocale().code
+            local result = processMenu(menu, currentLocaleCode)
 
-    --------------------------------------------------------------------------------
-    -- Watch for restarts:
-    --------------------------------------------------------------------------------
-    fcp.isRunning:watch(function()
-        idle.queue(5, function()
-            mod.reload()
+            result = applyMenuWorkarounds(result, menu, currentLocaleCode)
+
+            for _,choice in ipairs(result) do
+                choices:add(choice.text)
+                    :subText(choice.subText)
+                    :params(choice.params)
+                    :image(ICON)
+                    :id(choice.id)
+            end
         end)
-    end, true)
+        :onExecute(function(action)
+            if action and action.path then
+                fcp:launch():menu():doSelectMenu(action.path, {plain=action.plain, locale=action.locale}):Now()
+            end
+        end)
+        :onActionId(function(params)
+            return ID .. ":" .. concat(params.path, "||")
+        end)
 
     --------------------------------------------------------------------------------
     -- Watch for new Custom Workspaces:
     --------------------------------------------------------------------------------
     fcp.customWorkspaces:watch(function()
-        mod.reload()
+        mod._handler:reset()
     end)
-
-    --------------------------------------------------------------------------------
-    -- Reload the menu cache if Final Cut Pro is already running:
-    --------------------------------------------------------------------------------
-    if fcp:menu():showing() then
-        mod.reload()
-    end
 
     -- TODO: Need to reload if the FCPX language changes.
 

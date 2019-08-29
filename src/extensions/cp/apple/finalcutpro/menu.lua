@@ -18,24 +18,28 @@ local childMatching = axutils.childMatching
 local childWith     = axutils.childWith
 
 local exactMatch    = tools.exactMatch
-
 local isEqual       = moses.isEqual
+local trim          = tools.trim
 
-local menu = fcpApp:menu()
+local menu          = fcpApp:menu()
 
 ----------------------------------------------------------------------------------------
 -- Add a finder for Share Destinations:
 ----------------------------------------------------------------------------------------
 menu:addMenuFinder(function(parentItem, path, childName)
     if isEqual(path, {"File", "Share"}) then
-        childName = childName:match("(.*)…$") or childName
+        ----------------------------------------------------------------------------------------
+        -- Note, that in German, there's a space between the '…", for example:
+        -- 'Super DVD …'
+        ----------------------------------------------------------------------------------------
+        local childNameClean = childName:match("(.*)…$")
+        childName = childNameClean and trim(childNameClean) or childName
         local index = destinations.indexOf(childName)
         if index then
             local children = parentItem:attributeValue("AXChildren")
             return children[index]
         end
     end
-    return nil
 end)
 
 ----------------------------------------------------------------------------------------

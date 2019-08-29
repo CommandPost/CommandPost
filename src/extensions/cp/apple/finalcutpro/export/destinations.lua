@@ -67,6 +67,7 @@ local tools             = require "cp.tools"
 
 local moses             = require "moses"
 
+local detect            = moses.detect
 local doesFileExist     = tools.doesFileExist
 local fileToTable       = plist.fileToTable
 local spairs            = tools.spairs
@@ -240,11 +241,7 @@ end
 ---  * The index of the named Destination, or `nil`.
 function mod.indexOf(name)
     local list = mod.names()
-    if list then
-        return moses.detect(list, function(e) return e.name == name end)
-    else
-        return nil
-    end
+    return list and detect(list, function(e) return e == name end)
 end
 
 return mod

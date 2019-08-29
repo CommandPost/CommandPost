@@ -799,6 +799,48 @@ end
 
 ----------------------------------------------------------------------------------------
 --
+-- WORKFLOW EXTENSIONS
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.workflowExtensions() -> table
+--- Function
+--- Gets the names of all the installed Workflow Extensions.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Workflow Extension names
+function fcp.workflowExtensions()
+    local result = {}
+    local output, status = hs.execute("pluginkit -m -v -p FxPlug")
+    if status then
+        local plugins = tools.lines(output)
+        if plugins then
+            for _, plugin in pairs(plugins) do
+                local params = tools.split(plugin, "\t")
+                local path = params[4]
+                if path then
+                    if tools.doesDirectoryExist(path) then
+                        local plistPath = path .. "/Contents/Info.plist"
+                        local plistData = hsplist.read(plistPath)
+                        if plistData and plistData.PlugInKit and plistData.PlugInKit.Protocol and plistData.PlugInKit.Protocol == "ProServiceRemoteProtocol" then
+                            local pluginName = plistData.CFBundleDisplayName
+                            if pluginName then
+                                table.insert(result, pluginName)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
+end
+
+----------------------------------------------------------------------------------------
+--
 -- WINDOWS
 --
 ----------------------------------------------------------------------------------------
