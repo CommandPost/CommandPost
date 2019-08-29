@@ -816,9 +816,9 @@ function fcp.workflowExtensions()
     local result = {}
     local output, status = hs.execute("pluginkit -m -v -p FxPlug")
     if status then
-        local plugins = tools.lines(output)
-        if plugins then
-            for _, plugin in pairs(plugins) do
+        local p = tools.lines(output)
+        if p then
+            for _, plugin in pairs(p) do
                 local params = tools.split(plugin, "\t")
                 local path = params[4]
                 if path then

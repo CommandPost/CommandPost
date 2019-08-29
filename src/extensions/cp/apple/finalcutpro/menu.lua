@@ -17,7 +17,6 @@ local moses         = require "moses"
 local childMatching = axutils.childMatching
 local childWith     = axutils.childWith
 
-local exactMatch    = tools.exactMatch
 local isEqual       = moses.isEqual
 local trim          = tools.trim
 
