@@ -4,6 +4,9 @@
 --- This has been populated with common lookups for user interface values
 --- that appear in Final Cut Pro.
 
+-- NOTE:
+-- /usr/bin/grep -r -i -s -F --include=\*.strings 'Undo %@' /System
+
 local require = require
 
 local log                   = require("hs.logger").new("fcpStrings")
@@ -33,6 +36,7 @@ mod._strings = strings.new()
 :fromPlist("${appPath}/Contents/Frameworks/Ozone.framework/Resources/${locale}.lproj/Localizable.strings") -- Text
 :fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings") -- Added for Final Cut Pro 10.4
 :fromPlist("${extraPath}/${locale}/${fcpVersion}.strings")
+:fromPlist("/System/Library/Frameworks/Foundation.framework/Versions/C/Resources/${locale}.lproj/Undo.strings") -- System Wide Undo/Redo
 
 -- toVersion(value) -> semver
 -- Function

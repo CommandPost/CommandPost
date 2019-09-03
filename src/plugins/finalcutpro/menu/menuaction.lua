@@ -5,7 +5,7 @@
 
 local require = require
 
---local log				= require "hs.logger".new "menuaction"
+local log				= require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
@@ -13,9 +13,11 @@ local image             = require "hs.image"
 local config            = require "cp.config"
 local destinations      = require "cp.apple.finalcutpro.export.destinations"
 local fcp               = require "cp.apple.finalcutpro"
+local fcpStrings        = require "cp.apple.finalcutpro.strings"
 local i18n              = require "cp.i18n"
 local idle              = require "cp.idle"
 local localeID          = require "cp.i18n.localeID"
+local strings           = require "cp.strings"
 local text              = require "cp.web.text"
 
 local concat            = table.concat
@@ -129,8 +131,7 @@ end
 --
 -- Returns:
 --  * A table of choices.
---[[
-local function legacyScan()
+local function legacyScan() -- luacheck: ignore
     local choices = {}
     fcp:menu():visitMenuItems(function(path, menuItem)
         local title = menuItem:title()
@@ -148,7 +149,6 @@ local function legacyScan()
     end)
     return choices
 end
---]]
 
 -- compareLegacyVersusNew(choices) -> table
 -- Function
@@ -159,8 +159,7 @@ end
 --
 -- Returns:
 --  * None
---[[
-local function compareLegacyVersusNew(choices)
+local function compareLegacyVersusNew(choices) -- luacheck: ignore
     --hs.console.clearConsole()
     local legacyChoices = legacyScan()
     log.df("In Legacy Choices, but not in New Choices:")
@@ -192,7 +191,6 @@ local function compareLegacyVersusNew(choices)
     end
     log.df("-----------------------------------")
 end
---]]
 
 -- applyMenuWorkarounds(choices) -> table
 -- Function
@@ -212,6 +210,22 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
     --
     --------------------------------------------------------------------------------
     local en = localeID("en")
+    local currentLocale = fcp:currentLocale()
+    local context = {
+        appPath = fcp.app:path(),
+        locale = currentLocale.aliases,
+        fcpVersion = fcpStrings:_bestVersion(currentLocale, fcp:version())
+    }
+
+    --------------------------------------------------------------------------------
+    -- NOTE: The 'Commands.strings' Property List is actually included in the
+    --       Final Cut Pro strings collection, but there's other Property Lists that
+    --       also have the same keys for Import & Export, so we'll point to it
+    --       directly instead.
+    --------------------------------------------------------------------------------
+    local commandsStrings = strings.new(context):fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings")
+    local dictationStrings = strings.new(context):fromPlist("/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/${locale}.lproj/DictationManager.strings")
+    local emojiStrings = strings.new(context):fromPlist("/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/${locale}.lproj/Menus.strings")
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Commands
@@ -232,11 +246,74 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         end
 
         --------------------------------------------------------------------------------
+        -- Customize… (Menu: Final Cut Pro > Commands)
+        --------------------------------------------------------------------------------
+        do
+            local title = commandsStrings:find("Customize")
+            local path = {"Final Cut Pro", "Commands"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title .. "…",
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Import… (Menu: Final Cut Pro > Commands)
+        --------------------------------------------------------------------------------
+        do
+            local title = commandsStrings:find("Import")
+            local path = {"Final Cut Pro", "Commands"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title .. "…",
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Export… (Menu: Final Cut Pro > Commands)
+        --------------------------------------------------------------------------------
+        do
+            local title = commandsStrings:find("Export")
+            local path = {"Final Cut Pro", "Commands"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title .. "…",
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Command Sets (Menu: Final Cut Pro > Commands)
+        -- Custom Command Sets (Menu: Final Cut Pro > Commands)
+        --
+        -- NOTE: These are just un-click-able descriptions.
+        --------------------------------------------------------------------------------
+
+        --------------------------------------------------------------------------------
         -- Final Cut Pro > Services
         --------------------------------------------------------------------------------
 
             -- TODO: Need to build a list of services.
-            --       On my machine I only see "Development" tools in the Services list.
+            --       On my machine I only see "Development" tools in the Services list
+            --       when clicking on the Final Cut Pro menu, however I can see a lot
+            --       more listed in UI Browser.
 
         --------------------------------------------------------------------------------
         -- File > Share
@@ -265,14 +342,39 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
 
         --------------------------------------------------------------------------------
         -- Start Dictation… (Edit)
-        -- Diktat starten …
-        --
-        -- Emoji & Symbols (Edit)
-        -- Emoji & Symbole
         --------------------------------------------------------------------------------
+        do
+            local title = dictationStrings:find("Start Dictation…")
+            local path = {"Edit"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
 
-            -- TODO: These are macOS tools, not FCPX specific, so need to work out
-            --       where the language strings are stored.
+        --------------------------------------------------------------------------------
+        -- Emoji & Symbols (Edit)
+        --------------------------------------------------------------------------------
+        do
+            local title = emojiStrings:find("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
+            local path = {"Edit"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
 
         --------------------------------------------------------------------------------
         -- Workflow Extensions
@@ -548,6 +650,8 @@ function mod.init(actionmanager)
             local result = processMenu(menu, currentLocaleCode)
 
             result = applyMenuWorkarounds(result, menu, currentLocaleCode)
+
+            --compareLegacyVersusNew(result)
 
             for _,choice in ipairs(result) do
                 choices:add(choice.text)
