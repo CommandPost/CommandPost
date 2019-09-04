@@ -55,8 +55,8 @@ local missingMenuMap = {
     { path = {"Window", "Show in Workspace"},   child = "Timeline Index",           key = "PEDataList" },
     { path = {"Window"},                        child = "Extensions",               key = "FFExternalProviderMenuItemTitle" },
     { path = {"File"},                          child = "Close Library.*",          key = "FFCloseLibraryFormat" },
-    { path = {"Edit"},                          child = ".*Undo.*",                 key = "Undo %@" },
-    { path = {"Edit"},                          child = ".*Redo.*",                 key = "Redo %@" },
+    { path = {"Edit"},                          child = "Undo",                     key = "Undo %@" },
+    { path = {"Edit"},                          child = "Redo",                     key = "Redo %@" },
     { path = {"Window", "Workspaces"},          child = "Update ‘.*’ Workspace",    key = "PEWorkspacesMenuUpdateWithName" },
     { path = {"Window", "Extensions"} },
     { path = {"Final Cut Pro", "Commands"} },
@@ -71,9 +71,9 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
             if isEqual(path, item.path) then
                 return childWith(parentItem, "AXTitle", childName)
             end
-        elseif string.match(childName, "%.%*") then
+        else
             ----------------------------------------------------------------------------------------
-            -- Add support for Pattern Matching with Tokens:
+            -- Perform Pattern Matching with Tokens:
             ----------------------------------------------------------------------------------------
             local itemChild = item.child:gsub("%%@", ".*")
             if isEqual(path, item.path) and childName == itemChild then
@@ -84,12 +84,6 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
                 end)
 
             end
-        elseif isEqual(path, item.path) and childName == item.child then
-            ----------------------------------------------------------------------------------------
-            -- When path, child and key is supplied without patterns or tokens:
-            ----------------------------------------------------------------------------------------
-            local currentValue = strings:find(item.key, locale)
-            return childWith(parentItem, "AXTitle", currentValue)
         end
     end
 end)
