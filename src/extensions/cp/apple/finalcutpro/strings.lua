@@ -23,20 +23,31 @@ local v                     = require("semver")
 
 local insert, sort          = table.insert, table.sort
 
-
 local mod = {}
 
 local extraPath = config.scriptPath .. "/cp/apple/finalcutpro/strings/"
 
 mod._strings = strings.new()
+--------------------------------------------------------------------------------
+-- Load the generic macOS strings first, so that any FCPX specific ones
+-- can replace any duplicate keys:
+--------------------------------------------------------------------------------
+:fromPlist("/System/Library/Frameworks/AppKit.framework/Resources/${locale}.lproj/DictationManager.strings") -- Dictation Strings
+:fromPlist("/System/Library/Frameworks/Carbon.framework/Frameworks/HIToolbox.framework/Resources/${locale}.lproj/Menus.strings") -- Emoji & Symbols
+:fromPlist("/System/Library/Frameworks/Foundation.framework/Versions/C/Resources/${locale}.lproj/Undo.strings") -- System Wide Undo/Redo
+--------------------------------------------------------------------------------
+-- Load the FCPX specific strings:
+--------------------------------------------------------------------------------
 :fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${locale}.lproj/FFEffectBundleLocalizable.strings")
 :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/PELocalizable.strings")
 :fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${locale}.lproj/FFLocalizable.strings")
-:fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings")
 :fromPlist("${appPath}/Contents/Frameworks/Ozone.framework/Resources/${locale}.lproj/Localizable.strings") -- Text
 :fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings") -- Added for Final Cut Pro 10.4
+:fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings") -- Command Editor Strings (load last)
+--------------------------------------------------------------------------------
+-- Load any extra strings we insert via CommandPost:
+--------------------------------------------------------------------------------
 :fromPlist("${extraPath}/${locale}/${fcpVersion}.strings")
-:fromPlist("/System/Library/Frameworks/Foundation.framework/Versions/C/Resources/${locale}.lproj/Undo.strings") -- System Wide Undo/Redo
 
 -- toVersion(value) -> semver
 -- Function

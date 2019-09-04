@@ -13,11 +13,8 @@ local image             = require "hs.image"
 local config            = require "cp.config"
 local destinations      = require "cp.apple.finalcutpro.export.destinations"
 local fcp               = require "cp.apple.finalcutpro"
-local fcpStrings        = require "cp.apple.finalcutpro.strings"
 local i18n              = require "cp.i18n"
-local idle              = require "cp.idle"
 local localeID          = require "cp.i18n.localeID"
-local strings           = require "cp.strings"
 local text              = require "cp.web.text"
 
 local concat            = table.concat
@@ -198,34 +195,17 @@ end
 --
 -- Parameters:
 --  * choices - A table of choices
---  * menu - The full menu
 --  * currentLocaleCode - Current locale code
 --
 -- Returns:
 --  * A new table of choices
-local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
+local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     --
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE NOT IN THE NIB:
     --
     --------------------------------------------------------------------------------
     local en = localeID("en")
-    local currentLocale = fcp:currentLocale()
-    local context = {
-        appPath = fcp.app:path(),
-        locale = currentLocale.aliases,
-        fcpVersion = fcpStrings:_bestVersion(currentLocale, fcp:version())
-    }
-
-    --------------------------------------------------------------------------------
-    -- NOTE: The 'Commands.strings' Property List is actually included in the
-    --       Final Cut Pro strings collection, but there's other Property Lists that
-    --       also have the same keys for Import & Export, so we'll point to it
-    --       directly instead.
-    --------------------------------------------------------------------------------
-    local commandsStrings = strings.new(context):fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings")
-    local dictationStrings = strings.new(context):fromPlist("/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/${locale}.lproj/DictationManager.strings")
-    local emojiStrings = strings.new(context):fromPlist("/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/${locale}.lproj/Menus.strings")
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Commands
@@ -249,7 +229,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Customize… (Menu: Final Cut Pro > Commands)
         --------------------------------------------------------------------------------
         do
-            local title = commandsStrings:find("Customize")
+            local title = fcp:string("Customize")
             local path = {"Final Cut Pro", "Commands"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
@@ -267,7 +247,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Import… (Menu: Final Cut Pro > Commands)
         --------------------------------------------------------------------------------
         do
-            local title = commandsStrings:find("Import")
+            local title = fcp:string("Import")
             local path = {"Final Cut Pro", "Commands"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
@@ -285,7 +265,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Export… (Menu: Final Cut Pro > Commands)
         --------------------------------------------------------------------------------
         do
-            local title = commandsStrings:find("Export")
+            local title = fcp:string("Export")
             local path = {"Final Cut Pro", "Commands"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
@@ -344,7 +324,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Start Dictation… (Edit)
         --------------------------------------------------------------------------------
         do
-            local title = dictationStrings:find("Start Dictation…")
+            local title = fcp:string("Start Dictation…")
             local path = {"Edit"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
@@ -362,7 +342,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         -- Emoji & Symbols (Edit)
         --------------------------------------------------------------------------------
         do
-            local title = emojiStrings:find("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
+            local title = fcp:string("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
             local path = {"Edit"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
@@ -406,9 +386,20 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         --
         -- Window > Show in Workspace > Libraries
         --------------------------------------------------------------------------------
-        --local sidebar = fcp:string("PEEventsLibrary")
-
-            -- TO DO: Work out how to nicely replace "Libraries" with "Sidebar"
+        do
+            local title = fcp:string("PEEventsLibrary")
+            local path = {"Window", "Show in Workspace"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
 
         --------------------------------------------------------------------------------
         -- Custom Workspaces:
@@ -433,7 +424,7 @@ local function applyMenuWorkarounds(choices, menu, currentLocaleCode)
         --------------------------------------------------------------------------------
         do
             local title = fcp:string("PEWorkspacesMenuOpenFolder")
-            local path = {window, workspaces}
+            local path = {"Window", "Workspaces"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
             params.locale = currentLocaleCode
@@ -649,7 +640,7 @@ function mod.init(actionmanager)
             local currentLocaleCode = fcp:currentLocale().code
             local result = processMenu(menu, currentLocaleCode)
 
-            result = applyMenuWorkarounds(result, menu, currentLocaleCode)
+            result = applyMenuWorkarounds(result, currentLocaleCode)
 
             --compareLegacyVersusNew(result)
 
