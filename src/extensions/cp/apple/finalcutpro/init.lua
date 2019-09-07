@@ -551,10 +551,79 @@ function fcp:activeLibraryPaths()
         for i=1, #FFActiveLibraries do
             local activeLibrary = FFActiveLibraries[i]
             local path = pathFromBookmark(activeLibrary)
-            table.insert(paths, path)
+            if path then
+                table.insert(paths, path)
+            end
         end
     end
     return paths
+end
+
+--- cp.apple.finalcutpro:activeLibraryPaths() -> table
+--- Method
+--- Gets a table of all the active library paths.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any active library paths.
+function fcp:activeLibraryNames()
+    local result = {}
+    local activeLibraryPaths = self:activeLibraryPaths()
+    for _, filename in pairs(activeLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
+end
+
+--- cp.apple.finalcutpro:recentLibraryPaths() -> table
+--- Method
+--- Gets a table of all the recent library paths (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library paths.
+function fcp:recentLibraryPaths()
+    local paths = {}
+    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local FFRecentLibraries = fcpPlist and fcpPlist.FFRecentLibraries
+    if FFRecentLibraries and #FFRecentLibraries >= 1 then
+        for i=1, #FFRecentLibraries do
+            local recentLibrary = FFRecentLibraries[i]
+            local path = pathFromBookmark(recentLibrary)
+            if path then
+                table.insert(paths, path)
+            end
+        end
+    end
+    return paths
+end
+
+--- cp.apple.finalcutpro:recentLibraryNames() -> table
+--- Method
+--- Gets a table of all the recent library names (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library names.
+function fcp:recentLibraryNames()
+    local result = {}
+    local recentLibraryPaths = self:recentLibraryPaths()
+    for _, filename in pairs(recentLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro:openLibrary(path) -> boolean

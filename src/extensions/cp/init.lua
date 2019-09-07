@@ -2,6 +2,8 @@
 ---
 --- Core CommandPost functionality.
 
+local startTime                 = os.clock()
+
 local require                   = require
 local hs                        = hs
 
@@ -317,6 +319,13 @@ function mod.init()
         collectgarbage("collect")
     end):start()
     mod.garbageCollector:fire()
+
+    --------------------------------------------------------------------------------
+    -- Display how long it took to load CommandPost:
+    --------------------------------------------------------------------------------
+    local finishTime = os.clock()
+    local loadingTime = finishTime-startTime
+    log.df("Startup Time: %ssecs", loadingTime)
 
     --------------------------------------------------------------------------------
     -- Return the module:

@@ -158,8 +158,9 @@ end
 --  * None
 local function compareLegacyVersusNew(choices) -- luacheck: ignore
     --hs.console.clearConsole()
+    local result = "\n"
     local legacyChoices = legacyScan()
-    log.df("In Legacy Choices, but not in New Choices:")
+    result = result .. "In Legacy Choices, but not in New Choices:" .. "\n"
     for _, v in pairs(legacyChoices) do
         local match = false
         for _, vv in pairs(choices) do
@@ -167,13 +168,28 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
                 match = true
                 break
             end
+            --------------------------------------------------------------------------------
+            -- Ignore the "Services" list:
+            --------------------------------------------------------------------------------
+            if v.params and v.params.path and v.params.path[1] == "Final Cut Pro" and v.params.path[2] == "Services" then
+                match = true
+                break
+            end
+            --------------------------------------------------------------------------------
+            -- Ignore the "Duplicate Captions to New Language" list:
+            --------------------------------------------------------------------------------
+            if v.params and v.params.path and v.params.path[1] == "Edit" and v.params.path[2] == "Captions" and v.params.path[3] == "Duplicate Captions to New Language" then
+                match = true
+                break
+            end
         end
         if not match then
-            log.df("NO MATCH: %s (%s)", v.text, v.subText)
+            result = result .. string.format("%s (%s)", v.text, v.subText) .. "\n"
         end
     end
-    log.df("-----------------------------------")
-    log.df("In New Choices, but not in Legacy Choices:")
+    result = result .. "\n"
+    result = result .. "\n"
+    result = result .. "In New Choices, but not in Legacy Choices:" .. "\n"
     for _, v in pairs(choices) do
         local match = false
         for _, vv in pairs(legacyChoices) do
@@ -183,10 +199,10 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
             end
         end
         if not match then
-            log.df("NO MATCH: %s (%s)", v.text, v.subText)
+            result = result .. string.format("%s (%s)", v.text, v.subText) .. "\n"
         end
     end
-    log.df("-----------------------------------")
+    log.df("%s", result)
 end
 
 -- applyMenuWorkarounds(choices) -> table
@@ -236,7 +252,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
             params.locale = en
             params.plain = true
             table.insert(choices, {
-                text = title .. "…",
+                text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
                 params = params,
                 id = mod.actionId(params),
@@ -254,7 +270,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
             params.locale = en
             params.plain = true
             table.insert(choices, {
-                text = title .. "…",
+                text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
                 params = params,
                 id = mod.actionId(params),
@@ -272,7 +288,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
             params.locale = en
             params.plain = true
             table.insert(choices, {
-                text = title .. "…",
+                text = title,
                 subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
                 params = params,
                 id = mod.actionId(params),
@@ -282,9 +298,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --------------------------------------------------------------------------------
         -- Command Sets (Menu: Final Cut Pro > Commands)
         -- Custom Command Sets (Menu: Final Cut Pro > Commands)
-        --
-        -- NOTE: These are just un-click-able descriptions.
         --------------------------------------------------------------------------------
+
+            -- NOTE: These are just un-click-able descriptions.
 
         --------------------------------------------------------------------------------
         -- Final Cut Pro > Services
@@ -301,6 +317,24 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         local shares = destinations.names()
         for _, title in pairs(shares) do
             title = title .. "…"
+            local path = {"File", "Share"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Share > Add Destination…
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFNewDestinationTitle")
             local path = {"File", "Share"}
             local params = {}
             params.path = fnutils.concat(fnutils.copy(path), { title })
@@ -439,17 +473,167 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
 
         --------------------------------------------------------------------------------
         -- Gather App Diagnostics (Help)
-        --
-        -- We can just ignore this, as it requires a modifier key to access anyway.
         --------------------------------------------------------------------------------
+
+            -- NOTE: We can just ignore this, as it requires a modifier key to access anyway.
+
+        --------------------------------------------------------------------------------
+        -- File > Open Library > "Library Name":
+        --------------------------------------------------------------------------------
+        local recentLibraryNames = fcp:recentLibraryNames()
+        for _, title in pairs(recentLibraryNames) do
+            local path = {"File", "Open Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Open Library > Other…:
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFLibraryMenu_SelectOther")
+            local path = {"File", "Open Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Open Library > From Backup…:
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFLibraryMenu_OpenBackup")
+            local path = {"File", "Open Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Open Library > Clear Recents:
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFLibraryMenu_ClearRecents")
+            local path = {"File", "Open Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Copy to Library > New Library…
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFMMToNewLibraryMenuItem")
+            local path = {"File", "Copy to Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Move to Library > New Library…
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFMMToNewLibraryMenuItem")
+            local path = {"File", "Move to Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- File > Copy to Library > "Library Name":
+        --------------------------------------------------------------------------------
+        local activeLibraryNames = fcp:activeLibraryNames()
+        for _, title in pairs(activeLibraryNames) do
+            local path = {"File", "Copy to Library"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+            params.locale = en
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Clip > Disable
+        --------------------------------------------------------------------------------
+        do
+            local title = fcp:string("FFClipContextMenu_Disable_Title")
+            local path = {"Clip"}
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
+            params.locale = currentLocaleCode
+            params.plain = true
+            table.insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+
 
     --------------------------------------------------------------------------------
     --
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE IN THE NIB:
     --
     --------------------------------------------------------------------------------
-    local itemString = fcp:string("FFTimelineItemElementAccessibilityDescription")
-    local closeLibraryString = fcp:string("FFCloseLibrary")
+    local closeLibraryString    = fcp:string("FFCloseLibrary")
+    local consolidateString     = fcp:string("FFInspectorModuleLibraryPropertiesConsolidateButtonTitle")
+    local copyToLibraryString   = fcp:string("FFCopy to Library…")
+    local deleteString          = fcp:string("FFDelete")
+    local itemString            = fcp:string("FFTimelineItemElementAccessibilityDescription")
+    local moveToLibraryString   = fcp:string("FFMove to Library…")
+    local openString            = fcp:string("FFLibraryBackupChooser_OpenButton")
 
     for i, v in pairs(choices) do
         --------------------------------------------------------------------------------
@@ -487,16 +671,18 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --
         -- It's actually a submenu called "Copy Clip to Library", "Copy Event to Library", "Copy Project to Library", etc.
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and v.text == copyToLibraryString then
+            table.remove(choices, i)
+        end
 
         --------------------------------------------------------------------------------
         -- Move to Library (File)
         --
         -- It's actually a submenu called "Move Clip to Library", "Move Event to Library", "Move Project to Library", etc.
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and v.text == moveToLibraryString then
+            table.remove(choices, i)
+        end
 
         --------------------------------------------------------------------------------
         -- Consolidate Files… (File)
@@ -504,16 +690,19 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         -- Can be "Consolidate Library Media...", "Consolidate Event Media...", "Consolidate Project Media..."
         -- Can be "Consolidate Motion Content..."
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and string.find(v.text, consolidateString .. ".*") then
+            table.remove(choices, i)
+        end
 
         --------------------------------------------------------------------------------
         -- Delete Render Files… (File)
         --
         -- Can be "Delete Generated Event Files..." or "Delete Generated Library Files..."
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and string.match(v.text, deleteString .. ".*") then
+            v.params.path = {"File", deleteString .. ".*"}
+            v.params.plain = false
+        end
 
         --------------------------------------------------------------------------------
         -- Add Default Transition (Edit)
@@ -523,6 +712,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
 
             -- TODO: Add workaround
 
+            -- <key>FFDefaultVideoTransition</key>
+	        -- <string>FxPlug:4731E73A-8DAC-4113-9A30-AE85B1761265</string>
+
         --------------------------------------------------------------------------------
         -- Add Default Video Effect (Edit)
         --
@@ -531,6 +723,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
 
             -- TODO: Add workaround
 
+            -- <key>FFDefaultVideoEffect</key>
+	        -- <string>FFColorCorrectionGroupEffect</string>
+
         --------------------------------------------------------------------------------
         -- Add Default Audio Effect (Edit)
         --
@@ -538,6 +733,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --------------------------------------------------------------------------------
 
             -- TODO: Add workaround
+
+    	    -- <key>FFDefaultAudioEffect</key>
+	        -- <string>AudioUnit: 0x61756678000000ec454d4147</string>
 
         --------------------------------------------------------------------------------
         -- Reject (Mark)
@@ -552,8 +750,10 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --
         -- Can also be "Open Clip", "Open in Angle Editor",
         --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
+        if v.text and string.match(v.text, openString .. ".*") then
+            v.params.path = {"Clip", openString .. ".*"}
+            v.params.plain = false
+        end
 
         --------------------------------------------------------------------------------
         -- Verify and Repair Project (Clip)
@@ -562,14 +762,6 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --------------------------------------------------------------------------------
 
             -- TODO: I'm not sure the best way to remove this from choices?
-
-        --------------------------------------------------------------------------------
-        -- Enable (Clip)
-        --
-        -- Could also be "Disable"
-        --------------------------------------------------------------------------------
-
-            -- TODO: Add workaround
 
         --------------------------------------------------------------------------------
         -- Optical Flow Classic (Modify > Retime > Video Quality)

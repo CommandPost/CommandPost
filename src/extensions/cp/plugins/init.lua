@@ -162,13 +162,12 @@ local tools                         = require("cp.tools")
 
 local doAfter                       = timer.doAfter
 
-
 local mod = {}
 
 -- SLOW_PLUGIN_WARNING_THRESHOLD -> number
 -- Constant
 -- Slow Plugin Warning Threshold
-local SLOW_PLUGIN_WARNING_THRESHOLD = 1
+local SLOW_PLUGIN_WARNING_THRESHOLD = 0.5
 
 --- cp.plugins.CACHE -> table
 --- Constant
