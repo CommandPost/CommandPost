@@ -9,11 +9,7 @@ local Element						            = require("cp.ui.Element")
 local go                            = require("cp.rx.go")
 local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local RadioGroup = Element:subclass("cp.ui.RadioGroup")
 
 --- cp.ui.RadioGroup.matches(element) -> boolean

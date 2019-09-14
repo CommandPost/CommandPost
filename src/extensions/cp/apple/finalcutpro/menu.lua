@@ -4,21 +4,18 @@
 
 local require = require
 
--- local log                       = require("hs.logger").new("fcp_menu")
+--local log               = require "hs.logger".new "fcpMenu"
 
-local fcpApp                    = require("cp.apple.finalcutpro.app")
-local strings                   = require("cp.apple.finalcutpro.strings")
-local destinations              = require("cp.apple.finalcutpro.export.destinations")
+local axutils       = require "cp.ui.axutils"
+local destinations  = require "cp.apple.finalcutpro.export.destinations"
+local fcpApp        = require "cp.apple.finalcutpro.app"
+local strings       = require "cp.apple.finalcutpro.strings"
 
-local axutils                   = require("cp.ui.axutils")
+local moses         = require "moses"
 
-local isEqual                   = require("moses").isEqual
+local childWith     = axutils.childWith
+local isEqual       = moses.isEqual
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local menu = fcpApp:menu()
 
 ----------------------------------------------------------------------------------------
@@ -35,6 +32,7 @@ menu:addMenuFinder(function(parentItem, path, childName)
     end
     return nil
 end)
+
 ----------------------------------------------------------------------------------------
 -- Add a finder for missing menus:
 ----------------------------------------------------------------------------------------
@@ -47,14 +45,44 @@ local missingMenuMap = {
     { path = {"Window", "Show in Workspace"},   child = "Timeline",                 key = "PETimeline" },
     { path = {"Window", "Show in Workspace"},   child = "Event Viewer",             key = "PEEventViewer" },
     { path = {"Window", "Show in Workspace"},   child = "Timeline Index",           key = "PEDataList" },
+    { path = {"Window"},                        child = "Extensions",               key = "FFExternalProviderMenuItemTitle" },
 }
-
 menu:addMenuFinder(function(parentItem, path, childName)
     for _,item in ipairs(missingMenuMap) do
         if isEqual(path, item.path) and childName == item.child then
             local currentValue = strings:find(item.key)
-            return axutils.childWith(parentItem, "AXTitle", currentValue)
+            return childWith(parentItem, "AXTitle", currentValue)
         end
+    end
+    return nil
+end)
+
+----------------------------------------------------------------------------------------
+-- Add a finder for Custom Workspaces:
+----------------------------------------------------------------------------------------
+menu:addMenuFinder(function(parentItem, path, childName)
+    if isEqual(path, {"Window", "Workspaces"}) then
+        return childWith(parentItem, "AXTitle", childName)
+    end
+    return nil
+end)
+
+----------------------------------------------------------------------------------------
+-- Add a finder for Commands:
+----------------------------------------------------------------------------------------
+menu:addMenuFinder(function(parentItem, path, childName)
+    if isEqual(path, {"Final Cut Pro", "Commands"}) then
+        return childWith(parentItem, "AXTitle", childName)
+    end
+    return nil
+end)
+
+----------------------------------------------------------------------------------------
+-- Add a finder for Extensions:
+----------------------------------------------------------------------------------------
+menu:addMenuFinder(function(parentItem, path, childName)
+    if isEqual(path, {"Window", "Extensions"}) then
+        return childWith(parentItem, "AXTitle", childName)
     end
     return nil
 end)

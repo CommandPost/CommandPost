@@ -21,11 +21,7 @@ local log               = require("hs.logger").new("actnhndlr")
 local choices           = require("cp.choices")
 local prop              = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local handler = {}
 
 handler.mt = {}

@@ -35,11 +35,7 @@ local doAfter                                   = timer.doAfter
 local format                                    = string.format
 local insert, sort                              = table.insert, table.sort
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.tangent.manager.TANGENT_MAPPER_BUNDLE_ID -> string
@@ -389,9 +385,9 @@ local fromHub = {
         -- TODO: FCPX specific code should not be in `core`.
         if fcp:isFrontmost() then
             if metadata.jogValue == 1 then
-                fcp:menu():selectMenu({"Mark", "Next", "Frame"})
+                fcp:menu():doSelectMenu({"Mark", "Next", "Frame"}):Now()
             elseif metadata.jogValue == -1 then
-                fcp:menu():selectMenu({"Mark", "Previous", "Frame"})
+                fcp:menu():doSelectMenu({"Mark", "Previous", "Frame"}):Now()
             end
         end
     end,
@@ -683,11 +679,7 @@ function mod._test(...)
     return require("all_tests")(...)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id          = "core.tangent.manager",
     group       = "core",

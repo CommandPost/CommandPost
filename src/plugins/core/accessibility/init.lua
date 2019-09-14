@@ -11,11 +11,7 @@ local prop                  = require("cp.prop")
 local tools                 = require("cp.tools")
 local i18n                  = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.accessibility.systemPreferencesAlreadyOpen -> boolean
@@ -124,11 +120,7 @@ function mod.init(setup)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.accessibility",
     group           = "core",

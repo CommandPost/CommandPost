@@ -17,11 +17,7 @@ local TextField						    = require("cp.ui.TextField")
 local cache                             = axutils.cache
 local childWithRole                     = axutils.childWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local MediaBrowser = {}
 
 --- cp.apple.finalcutpro.main.MediaBrowser.TITLE -> string

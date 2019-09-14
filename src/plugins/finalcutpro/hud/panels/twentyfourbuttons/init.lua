@@ -24,11 +24,7 @@ local imageFromPath             = image.imageFromPath
 local stringMaxLength           = tools.stringMaxLength
 local webviewAlert              = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.hud.panels.twentyfourbuttons.buttons <cp.prop: table>
@@ -102,7 +98,7 @@ local function assignAction(id)
     --------------------------------------------------------------------------------
     -- Setup Activator:
     --------------------------------------------------------------------------------
-    local activator = mod._actionManager.getActivator("hud")
+    local activator = mod._actionManager.getActivator("twentyfourbuttons")
     activator:preloadChoices()
     activator:onActivate(function(handler, action, text)
         --------------------------------------------------------------------------------
@@ -119,6 +115,22 @@ local function assignAction(id)
         updateInfo()
         fcp:launch()
     end)
+
+    --------------------------------------------------------------------------------
+    -- Add toolbar icons:
+    --------------------------------------------------------------------------------
+    local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+    local toolbarIcons = {
+        fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 1},
+        fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 2},
+        fcpx_generator      = { path = iconPath .. "generator.png",     priority = 3},
+        fcpx_title          = { path = iconPath .. "title.png",         priority = 4},
+        fcpx_transition     = { path = iconPath .. "transition.png",    priority = 5},
+        fcpx_fonts          = { path = iconPath .. "font.png",          priority = 6},
+        fcpx_shortcuts      = { path = iconPath .. "shortcut.png",      priority = 7},
+        fcpx_menu           = { path = iconPath .. "menu.png",          priority = 8},
+    }
+    activator:toolbarIcons(toolbarIcons)
 
     --------------------------------------------------------------------------------
     -- Show Activator:
@@ -244,11 +256,7 @@ local function rightClickButton(id)
     popup:popupMenu(position, true)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.twentyfourbuttons",
     group           = "finalcutpro",

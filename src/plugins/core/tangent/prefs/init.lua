@@ -14,11 +14,7 @@ local i18n        = require("cp.i18n")
 
 local _           = require("moses")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- TANGENT_WEBSITE -> string
@@ -167,7 +163,7 @@ function mod.init(deps, env)
         label       = i18n("tangentPanelLabel"),
         image       = image.imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 650,
+        height      = 750,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {
@@ -273,11 +269,7 @@ function mod.init(deps, env)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.tangent.prefs",
     group           = "core",

@@ -17,11 +17,7 @@ local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 local go                                = require("cp.rx.go")
 local If, WaitUntil                     = go.If, go.WaitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Contents = {}
 
 -- TODO: Add documentation
@@ -547,7 +543,7 @@ function Contents:doFocus(show)
     local menu = self:app():menu()
 
     return If(self.isFocused):Is(false):Then(
-        menu:doSelectMenu({"Window", "Go To", "Timeline"}):Debug("Go To Timeline")
+        menu:doSelectMenu({"Window", "Go To", "Timeline"}) --:Debug("Go To Timeline")
     )
     :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
     :Otherwise(true)

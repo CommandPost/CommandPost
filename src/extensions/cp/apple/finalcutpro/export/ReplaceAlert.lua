@@ -7,11 +7,7 @@ local require           = require
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ReplaceAlert = {}
 
 --- cp.apple.finalcutpro.export.ReplaceAlert.matches(element) -> boolean

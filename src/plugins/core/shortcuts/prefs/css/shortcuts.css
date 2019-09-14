@@ -1,0 +1,153 @@
+#customiseShortcuts.disabled {
+	pointer-events: none; opacity: 0.4;
+}
+
+.shortcuts {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.shortcuts td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.rowLabel {
+	width: 250px;
+}
+
+.rowAction {
+	width: 250px;
+}
+
+.rowModifier {
+	width: 100px;
+}
+
+.rowKeyCode {
+	width: 100px;
+}
+
+.rowModifier select {
+	width: 80%;
+	font-size: 12px !important;
+	text-align-last: left;
+}
+
+.rowKeyCode select {
+	width: 80%;
+	font-size: 12px !important;
+	text-align-last: left;
+}
+
+.shortcuts thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.shortcuts thead tr, .shortcuts tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.shortcuts thead tr {
+	width: calc( 100% - 8px);
+}
+
+.scActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 200px;
+}
+
+.scActionButton {
+	padding: 5px 5px !important;
+}
+
+.shortcuts tbody {
+	display:block;
+	height: 470px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.shortcuts tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+
+.resetShortcuts {
+	margin: 10px 0px;
+	text-align: center !important;
+	float: left;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: center !important;
+	float: right;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.shortcutsControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+#shortcutController {
+	font-weight: bold;
+}
+
+#shortcutsGroupControls {
+	min-height: 295px;
+}
+
+#shortcutsGroupControls .shortcutsGroup {
+	display: none;
+}
+
+#shortcutsGroupControls .shortcutsGroup.selected {
+	display: block;
+}
+
+.groupSelect {
+	float: right;
+}
+
+/*.shortcuts td, .shortcuts th {
+	border: 1px solid red;
+}*/

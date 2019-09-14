@@ -2,29 +2,25 @@
 ---
 --- Libraries List Module.
 
-local require = require
+local require               = require
 
-local axutils							= require("cp.ui.axutils")
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
-local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
-local Columns                           = require("cp.apple.finalcutpro.browser.Columns")
-local prop								= require("cp.prop")
-local Table								= require("cp.ui.Table")
+--local log                   = require "hs.logger".new "LibrariesList"
 
-local _									= require("moses")
+local axutils               = require "cp.ui.axutils"
+local Clip                  = require "cp.apple.finalcutpro.content.Clip"
+local Playhead              = require "cp.apple.finalcutpro.main.Playhead"
+local Columns               = require "cp.apple.finalcutpro.browser.Columns"
+local prop                  = require "cp.prop"
+local Table                 = require "cp.ui.Table"
 
-local cache                             = axutils.cache
-local childFromTop                      = axutils.childFromTop
-local childrenMatching                  = axutils.childrenMatching
-local childWithRole                     = axutils.childWithRole
-local isValid                           = axutils.isValid
+local moses                 = require "moses"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local cache                 = axutils.cache
+local childFromTop          = axutils.childFromTop
+local childrenMatching      = axutils.childrenMatching
+local childWithRole         = axutils.childWithRole
+local isValid               = axutils.isValid
+
 local LibrariesList = {}
 
 --- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean
@@ -70,7 +66,7 @@ function LibrariesList.new(parent)
 
     local playerUI = UI:mutate(function(original, self)
         return cache(self, "_player", function()
-            return childFromTop(original(), id "Player")
+            return childFromTop(original(), 1)
         end)
     end)
 
@@ -262,7 +258,7 @@ end
 function LibrariesList:_uiToClips(clipsUI)
     local columnIndex = self:contents():findColumnIndex("filmlist name col")
     local options = {columnIndex = columnIndex}
-    return _.map(clipsUI, function(_,clipUI)
+    return moses.map(clipsUI, function(_,clipUI)
         return Clip.new(clipUI, options)
     end)
 end
@@ -277,7 +273,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return _.map(clips, function(_,clip) return clip:UI() end)
+    return moses.map(clips, function(_,clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:clips(filterFn) -> table | nil
@@ -292,7 +288,7 @@ end
 function LibrariesList:clips(filterFn)
     local clips = self:_uiToClips(self:clipsUI())
     if filterFn then
-        clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+        clips = moses.filter(clips, function(_,clip) return filterFn(clip) end)
     end
     return clips
 
@@ -375,11 +371,32 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesList:selectClipAt(index)
     local clips = self:clipsUI()
-    if clips and #clips <= index then
+    if clips and #clips >= index then
         self:contents():selectRow(clips[index])
         return true
     end
     return false
+end
+
+--- cp.apple.finalcutpro.main.LibrariesList:indexOfClip(clip) -> number | nil
+--- Function
+--- Gets the index of a specific clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to get the index of.
+---
+--- Returns:
+---  * The index or `nil` if an error occurs.
+function LibrariesList:indexOfClip(clip)
+    local clips = self:clipsUI()
+    local ui = clip and clip:UI()
+    if clips and ui then
+        for i, v in pairs(clips) do
+            if ui == v then
+                return i
+            end
+        end
+    end
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:selectClipTitled(title) -> boolean

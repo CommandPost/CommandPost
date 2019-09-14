@@ -4,25 +4,22 @@
 
 local require = require
 
-local log				= require("hs.logger").new("commandsetactions")
+local log                   = require "hs.logger".new "commandsetactions"
 
-local image             = require("hs.image")
-local timer				= require("hs.timer")
+local image                 = require "hs.image"
+local timer                 = require "hs.timer"
+local http                  = require "hs.http"
 
-local config            = require("cp.config")
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local plist				= require("cp.plist")
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local plist                 = require "cp.plist"
 
-local doAfter           = timer.doAfter
-local imageFromPath     = image.imageFromPath
+local doAfter               = timer.doAfter
+local imageFromPath         = image.imageFromPath
+local convertHtmlEntities   = http.convertHtmlEntities
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- GROUP -> string
@@ -35,38 +32,37 @@ local GROUP = "fcpx"
 -- Icon
 local ICON = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/shortcut.png")
 
---- plugins.finalcutpro.timeline.commandsetactions.init() -> none
---- Function
---- Initialises the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init()
+local plugin = {
+    id = "finalcutpro.timeline.commandsetactions",
+    group = "finalcutpro",
+    dependencies = {
+        ["core.action.manager"]                 = "actionmanager",
+    }
+}
 
+function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add Action Handler:
     --------------------------------------------------------------------------------
-    mod._handler = mod._actionmanager.addHandler(GROUP .. "_shortcuts", GROUP)
+    local actionmanager = deps.actionmanager
+    mod._handler = actionmanager.addHandler(GROUP .. "_shortcuts", GROUP)
         :onChoices(function(choices)
             local fcpPath = fcp:getPath()
             local currentLocale = fcp:currentLocale()
             if fcpPath and currentLocale then
 
-                local namePath 			= fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
-                local descriptionPath 	= fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
+                local namePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
+                local descriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
 
-                local nameData 			= plist.fileToTable(namePath)
-                local descriptionData 	= plist.fileToTable(descriptionPath)
+                local nameData          = plist.fileToTable(namePath)
+                local descriptionData   = plist.fileToTable(descriptionPath)
 
                 if nameData and descriptionData then
                     for id, name in pairs(nameData) do
                         local subText = descriptionData[id] or i18n("commandEditorShortcut")
                         choices
-                            :add(name)
-                            :subText(subText)
+                            :add(convertHtmlEntities(name))
+                            :subText(convertHtmlEntities(subText))
                             :params(id)
                             :image(ICON)
                             :id(id)
@@ -101,24 +97,6 @@ function mod.init()
     end)
 
     return mod
-end
-
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
-local plugin = {
-    id = "finalcutpro.timeline.commandsetactions",
-    group = "finalcutpro",
-    dependencies = {
-        ["core.action.manager"]					= "actionmanager",
-    }
-}
-
-function plugin.init(deps)
-    mod._actionmanager = deps.actionmanager
-    return mod.init()
 end
 
 return plugin

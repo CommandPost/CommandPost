@@ -14,11 +14,7 @@ local tools                 = require("cp.tools")
 
 local format                = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.tangent.os.sound.currentOutputDevice <cp.prop: audio>
@@ -131,11 +127,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "core.tangent.os.sound",
     group = "core",

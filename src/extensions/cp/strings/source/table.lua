@@ -18,11 +18,7 @@ local _					    = require("moses")
 local find, len			= string.find, string.len
 local insert			  = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {
     _context = {}

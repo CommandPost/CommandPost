@@ -13,5 +13,7 @@
     <string>较高性能</string>
     <key>CPCodecs</key>
     <string>编解码器</string>
+    <key>CPShowHorizon</key>
+    <string>显示水平</string>
 </dict>
 </plist>

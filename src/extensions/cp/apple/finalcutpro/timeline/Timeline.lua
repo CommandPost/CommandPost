@@ -23,11 +23,7 @@ local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 local childrenWithRole                  = axutils.childrenWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 
 --- cp.apple.finalcutpro.timeline.Timeline.matches(element) -> boolean
@@ -191,6 +187,13 @@ end
 --- Checks if the Timeline is the focused panel.
 function Timeline.lazy.prop:isFocused()
     return self:contents().isFocused
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
+function Timeline.lazy.method:doFocus()
+    return self:app():menu():doSelectMenu({"Window", "Go To", "Timeline"})
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App

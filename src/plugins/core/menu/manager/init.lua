@@ -5,18 +5,13 @@
 local require = require
 
 local image     = require("hs.image")
-local menubar		= require("hs.menubar")
+local menubar   = require("hs.menubar")
 
-local config		= require("cp.config")
+local config    = require("cp.config")
 local i18n      = require("cp.i18n")
 
-local section		= require("section")
+local section   = require("section")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local manager = {}
 
 --- plugins.core.menu.manager.rootSection() -> section
@@ -27,7 +22,7 @@ manager.rootSection = section:new()
 --- plugins.core.menu.manager.titleSuffix() -> table
 --- Variable
 --- Table of Title Suffix's
-manager.titleSuffix	= {}
+manager.titleSuffix = {}
 
 --- plugins.core.menu.manager.init() -> none
 --- Function
@@ -183,16 +178,12 @@ function manager.generateMenuTable()
     return manager.rootSection:generateMenuTable()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
-    id			= "core.menu.manager",
-    group		= "core",
-    required	= true,
-    dependencies	= {
+    id          = "core.menu.manager",
+    group       = "core",
+    required    = true,
+    dependencies    = {
         ["core.preferences.panels.menubar"] = "prefs",
         ["core.preferences.manager"] = "prefsManager",
     }
@@ -275,6 +266,16 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     manager.bottom:addItem(99999999, function()
         return { title = i18n("quit"),  fn = function() config.application():kill() end }
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Version Info:
+    --------------------------------------------------------------------------------
+    manager.bottom:addItem(99999999.1, function()
+            return { title = "-" }
+        end)
+    :addItem(99999999.2, function()
+        return { title = i18n("version") .. ": " .. config.appVersion, disabled = true }
     end)
 
     return manager

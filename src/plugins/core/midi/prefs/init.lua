@@ -4,30 +4,24 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("prefsMIDI")
+local log           = require "hs.logger".new "prefsMIDI"
 
-local dialog                                    = require("hs.dialog")
-local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
-local midi                                      = require("hs.midi")
-local timer                                     = require("hs.timer")
+local dialog        = require "hs.dialog"
+local image         = require "hs.image"
+local inspect       = require "hs.inspect"
+local midi          = require "hs.midi"
+local timer         = require "hs.timer"
 
-local commands                                  = require("cp.commands")
-local config                                    = require("cp.config")
-local tools                                     = require("cp.tools")
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local commands      = require "cp.commands"
+local config        = require "cp.config"
+local tools         = require "cp.tools"
+local html          = require "cp.web.html"
+local i18n          = require "cp.i18n"
 
-local _                                         = require("moses")
+local moses         = require "moses"
 
-local delayed                                   = timer.delayed
+local delayed       = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- plugins.core.midi.prefs._midiCallbackInProgress -> table
@@ -88,6 +82,27 @@ function mod._resetMIDIGroup()
     end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
+-- plugins.core.midi.prefs._resetMIDISubGroup() -> none
+-- Function
+-- Prompts to reset shortcuts to default for the selected sub-group.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._resetMIDISubGroup()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local items = mod._midi._items()
+            local groupID = mod.lastGroup()
+            items[groupID] = mod._midi.DEFAULT_MIDI_CONTROLS[groupID]
+            mod._midi._items(items)
+            mod._manager.refresh()
+        end
+    end, i18n("midiResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -126,7 +141,9 @@ local function generateContent()
     local virtualMidiDevices = mod._midi.virtualDevices()
     local devices = {}
     for _, device in pairs(midiDevices) do
-        table.insert(devices, device)
+        if device ~= "Loupedeck+" then
+            table.insert(devices, device)
+        end
     end
     for _, device in pairs(virtualMidiDevices) do
         table.insert(devices, "virtual_" .. device)
@@ -137,60 +154,29 @@ local function generateContent()
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local groupOptions = {}
-    local defaultGroup = nil
+    local groupLabels = {}
+    local defaultGroup
+    local numberOfSubGroups = mod._midi.numberOfSubGroups
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
-        for subGroupID=1, mod._midi.numberOfSubGroups do
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
+        for subGroupID=1, numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bank " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
-
-    local midiGroupSelect = ui.select({
-        id          = "midiGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var midiGroupSelect = document.getElementById("midiGroupSelect")
-        midiGroupSelect.onchange = function(e) {
-            try {
-                var result = {
-                    id: "midiPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.{{ label }}.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            console.log("midiGroupSelect changed");
-            var groupControls = document.getElementById("midiGroupControls");
-            var value = midiGroupSelect.options[midiGroupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "midiGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]], {label = mod._manager.getLabel()})
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                           = _,
-        midiGroupSelect             = midiGroupSelect,
+        _                           = moses,
+        numberOfSubGroups           = numberOfSubGroups,
+        groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
+        bankLabel                   = mod._midi.getBankLabel(defaultGroup),
         webviewLabel                = mod._manager.getLabel(),
         maxItems                    = mod._midi.maxItems,
         midiDevices                 = mod._midi.devices(),
@@ -211,7 +197,6 @@ local function generateContent()
         i18nNoteCC                  = i18n("noteCC"),
         i18nChannel                 = i18n("channel"),
         i18nValue                   = i18n("value"),
-        i18nAll                     = i18n("all"),
         i18nNoDevicesDetected       = i18n("noDevicesDetected"),
         i18nCommmandType            = i18n("commandType"),
         i18nNoteOff                 = i18n("noteOff"),
@@ -221,6 +206,9 @@ local function generateContent()
         i18nProgramChange           = i18n("programChange"),
         i18nChannelPressure         = i18n("channelPressure"),
         i18nPitchWheelChange        = i18n("pitchWheelChange"),
+        i18nAll                     = i18n("all"),
+        i18nBank                    = i18n("bank"),
+        i18nLabel                   = i18n("label"),
     }
 
     return renderPanel(context)
@@ -283,7 +271,7 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(_, params, cancel, skipUpdateUI)
+function mod._stopLearning(_, params, cancel)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
@@ -402,183 +390,187 @@ function mod._startLearning(id, params)
     end
     mod.learningMidiDevices = {}
     for _, deviceName in ipairs(mod.learningMidiDeviceNames) do
-        if string.sub(deviceName, 1, 8) == "virtual_" then
-            --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
-            mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
-        else
-            --log.df("Creating new MIDI Device Watcher: %s", deviceName)
-            mod.learningMidiDevices[deviceName] = midi.new(deviceName)
-        end
-        if mod.learningMidiDevices[deviceName] then
-            mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
+        --------------------------------------------------------------------------------
+        -- Prevent Loupedeck+'s from appearing in the MIDI Preferences:
+        --------------------------------------------------------------------------------
+        if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            if string.sub(deviceName, 1, 8) == "virtual_" then
+                --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
+                mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
+            else
+                --log.df("Creating new MIDI Device Watcher: %s", deviceName)
+                mod.learningMidiDevices[deviceName] = midi.new(deviceName)
+            end
+            if mod.learningMidiDevices[deviceName] then
+                mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
 
-                local learnGroupID = mod._learnGroupID
-                local learnButtonID = mod._learnButtonID
+                    local learnGroupID = mod._learnGroupID
+                    local learnButtonID = mod._learnButtonID
 
-                if not mod._currentlyLearning then
-                    --------------------------------------------------------------------------------
-                    -- First in, best dressed:
-                    --------------------------------------------------------------------------------
-                    return
-                end
-
-                if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
-
-                    --------------------------------------------------------------------------------
-                    -- Debugging:
-                    --------------------------------------------------------------------------------
-                    --log.df("commandType: %s", commandType)
-                    --log.df("metadata: %s", hs.inspect(metadata))
-                    --log.df("learnGroupID: %s", learnGroupID)
-                    --log.df("learnButtonID: %s", learnButtonID)
-
-                    --------------------------------------------------------------------------------
-                    -- Support 14bit Control Change Messages:
-                    --------------------------------------------------------------------------------
-                    local controllerValue = metadata.controllerValue
-                    if metadata.fourteenBitCommand then
-                        controllerValue = metadata.fourteenBitValue
+                    if not mod._currentlyLearning then
+                        --------------------------------------------------------------------------------
+                        -- First in, best dressed:
+                        --------------------------------------------------------------------------------
+                        return
                     end
 
-                    --------------------------------------------------------------------------------
-                    -- Ignore noteOff Commands:
-                    --------------------------------------------------------------------------------
-                    if commandType == "noteOn" and metadata.velocity == 0 then return end
+                    if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
 
-                    --------------------------------------------------------------------------------
-                    -- Check it's not already in use:
-                    --------------------------------------------------------------------------------
-                    local items = mod._midi._items()
-                    if items[learnGroupID] then
-                        for i, item in pairs(items[learnGroupID]) do
-                            if learnButtonID and i ~= tonumber(learnButtonID) then
-                                --------------------------------------------------------------------------------
-                                -- Check for matching devices:
-                                --------------------------------------------------------------------------------
-                                local deviceMatch = false
-                                if metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName then deviceMatch = true end
-                                if not metadata.isVirtual and item.device == callbackDeviceName then deviceMatch = true end
+                        --------------------------------------------------------------------------------
+                        -- Debugging:
+                        --------------------------------------------------------------------------------
+                        --log.df("commandType: %s", commandType)
+                        --log.df("metadata: %s", hs.inspect(metadata))
+                        --log.df("learnGroupID: %s", learnGroupID)
+                        --log.df("learnButtonID: %s", learnButtonID)
 
-                                --------------------------------------------------------------------------------
-                                -- Check for matching metadata:
-                                --------------------------------------------------------------------------------
-                                local match = false
-                                if item.commandType == commandType then
-                                    if commandType == "noteOn" then
-                                        if item.channel == metadata.channel and item.number == metadata.note then
-                                            match = true
+                        --------------------------------------------------------------------------------
+                        -- Support 14bit Control Change Messages:
+                        --------------------------------------------------------------------------------
+                        local controllerValue = metadata.controllerValue
+                        if metadata.fourteenBitCommand then
+                            controllerValue = metadata.fourteenBitValue
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Ignore noteOff Commands:
+                        --------------------------------------------------------------------------------
+                        if commandType == "noteOn" and metadata.velocity == 0 then return end
+
+                        --------------------------------------------------------------------------------
+                        -- Check it's not already in use:
+                        --------------------------------------------------------------------------------
+                        local items = mod._midi._items()
+                        if items[learnGroupID] then
+                            for i, item in pairs(items[learnGroupID]) do
+                                if learnButtonID and i ~= tonumber(learnButtonID) then
+                                    --------------------------------------------------------------------------------
+                                    -- Check for matching devices:
+                                    --------------------------------------------------------------------------------
+                                    local deviceMatch = false
+                                    if metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName then deviceMatch = true end
+                                    if not metadata.isVirtual and item.device == callbackDeviceName then deviceMatch = true end
+
+                                    --------------------------------------------------------------------------------
+                                    -- Check for matching metadata:
+                                    --------------------------------------------------------------------------------
+                                    local match = false
+                                    if item.commandType == commandType then
+                                        if commandType == "noteOn" then
+                                            if item.channel == metadata.channel and item.number == metadata.note then
+                                                match = true
+                                            end
+                                        end
+                                        if commandType == "controlChange" then
+                                            if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
+                                                match = true
+                                            end
+                                        end
+                                        if commandType == "pitchWheelChange" then
+                                            if item.number == metadata.pitchChange then
+                                                match = true
+                                            end
                                         end
                                     end
-                                    if commandType == "controlChange" then
-                                        if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
-                                            match = true
-                                        end
+
+                                    --------------------------------------------------------------------------------
+                                    -- Duplicate Found:
+                                    --------------------------------------------------------------------------------
+                                    if deviceMatch and match then
+
+                                        --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", learnGroupID, learnButtonID)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Reset the current line item:
+                                        --------------------------------------------------------------------------------
+                                        setValue(learnGroupID, learnButtonID, "device", "")
+                                        setItem("device", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "commandType", "")
+                                        setItem("commandType", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "channel", "")
+                                        setItem("channel", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "number", i18n("none"))
+                                        setItem("number", learnButtonID, learnGroupID, nil)
+
+                                        setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                                        setItem("value", learnButtonID, learnGroupID, nil)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Exit the callback:
+                                        --------------------------------------------------------------------------------
+                                        mod._stopLearning(id, params)
+
+                                        --------------------------------------------------------------------------------
+                                        -- Highlight the row red in JavaScript Land:
+                                        --------------------------------------------------------------------------------
+                                        injectScript("highlightRowRed('" .. learnGroupID .. "', " .. i .. ")")
+                                        return
                                     end
-                                    if commandType == "pitchWheelChange" then
-                                        if item.number == metadata.pitchChange then
-                                            match = true
-                                        end
-                                    end
-                                end
-
-                                --------------------------------------------------------------------------------
-                                -- Duplicate Found:
-                                --------------------------------------------------------------------------------
-                                if deviceMatch and match then
-
-                                    --log.wf("Duplicate MIDI Command Found:\nGroup: %s\nButton: %s", learnGroupID, learnButtonID)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Reset the current line item:
-                                    --------------------------------------------------------------------------------
-                                    setValue(learnGroupID, learnButtonID, "device", "")
-                                    setItem("device", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "commandType", "")
-                                    setItem("commandType", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "channel", "")
-                                    setItem("channel", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "number", i18n("none"))
-                                    setItem("number", learnButtonID, learnGroupID, nil)
-
-                                    setValue(learnGroupID, learnButtonID, "value", i18n("none"))
-                                    setItem("value", learnButtonID, learnGroupID, nil)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Exit the callback:
-                                    --------------------------------------------------------------------------------
-                                    mod._stopLearning(id, params, code, true)
-
-                                    --------------------------------------------------------------------------------
-                                    -- Highlight the row red in JavaScript Land:
-                                    --------------------------------------------------------------------------------
-                                    injectScript("highlightRowRed('" .. learnGroupID .. "', " .. i .. ")")
-                                    return
                                 end
                             end
                         end
+
+                        --------------------------------------------------------------------------------
+                        -- Update the UI & Save Preferences:
+                        --------------------------------------------------------------------------------
+                        if metadata.isVirtual then
+                            setValue(learnGroupID, learnButtonID, "device", "virtual_" .. callbackDeviceName)
+                            setItem("device", learnButtonID, learnGroupID, "virtual_" .. callbackDeviceName)
+                        else
+                            setValue(learnGroupID, learnButtonID, "device", callbackDeviceName)
+                            setItem("device", learnButtonID, learnGroupID, callbackDeviceName)
+                        end
+
+                        setValue(learnGroupID, learnButtonID, "commandType", commandType)
+                        setItem("commandType", learnButtonID, learnGroupID, commandType)
+
+                        setValue(learnGroupID, learnButtonID, "channel", metadata.channel)
+                        setItem("channel", learnButtonID, learnGroupID, metadata.channel)
+
+                        if commandType == "noteOff" or commandType == "noteOn" then
+
+                            setValue(learnGroupID, learnButtonID, "number", metadata.note)
+                            setItem("number", learnButtonID, learnGroupID, metadata.note)
+
+                            setValue(learnGroupID, learnButtonID, "value", i18n("none"))
+                            setItem("value", learnButtonID, learnGroupID, i18n("none"))
+
+                        elseif commandType == "controlChange" then
+
+                            setValue(learnGroupID, learnButtonID, "number", metadata.controllerNumber)
+                            setItem("number", learnButtonID, learnGroupID, metadata.controllerNumber)
+
+                            setValue(learnGroupID, learnButtonID, "value", controllerValue)
+                            setItem("value", learnButtonID, learnGroupID, controllerValue)
+
+                        elseif commandType == "pitchWheelChange" then
+
+                            setValue(learnGroupID, learnButtonID, "value", metadata.pitchChange)
+                            setItem("value", learnButtonID, learnGroupID, metadata.pitchChange)
+
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Stop Learning:
+                        --------------------------------------------------------------------------------
+                        mod._stopLearning(id, params)
+
+                        --------------------------------------------------------------------------------
+                        -- If the device isn't already listed in the panel we need to refresh:
+                        --------------------------------------------------------------------------------
+                        if not tools.tableContains(mod._devices, callbackDeviceName) then
+                            mod._manager.refresh()
+                        end
                     end
-
-                    --------------------------------------------------------------------------------
-                    -- Update the UI & Save Preferences:
-                    --------------------------------------------------------------------------------
-                    if metadata.isVirtual then
-                        setValue(learnGroupID, learnButtonID, "device", "virtual_" .. callbackDeviceName)
-                        setItem("device", learnButtonID, learnGroupID, "virtual_" .. callbackDeviceName)
-                    else
-                        setValue(learnGroupID, learnButtonID, "device", callbackDeviceName)
-                        setItem("device", learnButtonID, learnGroupID, callbackDeviceName)
-                    end
-
-                    setValue(learnGroupID, learnButtonID, "commandType", commandType)
-                    setItem("commandType", learnButtonID, learnGroupID, commandType)
-
-                    setValue(learnGroupID, learnButtonID, "channel", metadata.channel)
-                    setItem("channel", learnButtonID, learnGroupID, metadata.channel)
-
-                    if commandType == "noteOff" or commandType == "noteOn" then
-
-                        setValue(learnGroupID, learnButtonID, "number", metadata.note)
-                        setItem("number", learnButtonID, learnGroupID, metadata.note)
-
-                        setValue(learnGroupID, learnButtonID, "value", i18n("none"))
-                        setItem("value", learnButtonID, learnGroupID, i18n("none"))
-
-                    elseif commandType == "controlChange" then
-
-                        setValue(learnGroupID, learnButtonID, "number", metadata.controllerNumber)
-                        setItem("number", learnButtonID, learnGroupID, metadata.controllerNumber)
-
-                        setValue(learnGroupID, learnButtonID, "value", controllerValue)
-                        setItem("value", learnButtonID, learnGroupID, controllerValue)
-
-                    elseif commandType == "pitchWheelChange" then
-
-                        setValue(learnGroupID, learnButtonID, "value", metadata.pitchChange)
-                        setItem("value", learnButtonID, learnGroupID, metadata.pitchChange)
-
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- Stop Learning:
-                    --------------------------------------------------------------------------------
-                    mod._stopLearning(id, params)
-
-                    --------------------------------------------------------------------------------
-                    -- If the device isn't already listed in the panel we need to refresh:
-                    --------------------------------------------------------------------------------
-                    if not tools.tableContains(mod._devices, callbackDeviceName) then
-                        mod._manager.refresh()
-                    end
-                end
-            end)
-        else
-            log.ef("MIDI Device did not exist when trying to create watcher: %s", deviceName)
+                end)
+            else
+                log.ef("MIDI Device did not exist when trying to create watcher: %s", deviceName)
+            end
         end
     end
-
 end
 
 -- midiPanelCallback() -> none
@@ -603,30 +595,48 @@ local function midiPanelCallback(id, params)
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
                 for _,groupID in ipairs(commands.groupIds()) do
-                    for subGroupID=1, mod._midi.numberOfSubGroups do
-                        --------------------------------------------------------------------------------
-                        -- Create new Activator:
-                        --------------------------------------------------------------------------------
-                        mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID .. subGroupID)
+                    --------------------------------------------------------------------------------
+                    -- Create new Activator:
+                    --------------------------------------------------------------------------------
+                    mod.activator[groupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID)
 
-                        --------------------------------------------------------------------------------
-                        -- Restrict Allowed Handlers for Activator to current group (and global):
-                        --------------------------------------------------------------------------------
-                        local allowedHandlers = {}
-                        for _,v in pairs(handlerIds) do
-                            local handlerTable = tools.split(v, "_")
-                            if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                                --------------------------------------------------------------------------------
-                                -- Don't include "widgets" (that are used for the Touch Bar):
-                                --------------------------------------------------------------------------------
-                                if handlerTable[2] ~= "widgets" then
-                                    table.insert(allowedHandlers, v)
-                                end
+                    --------------------------------------------------------------------------------
+                    -- Restrict Allowed Handlers for Activator to current group (and global):
+                    --------------------------------------------------------------------------------
+                    local allowedHandlers = {}
+                    for _,v in pairs(handlerIds) do
+                        local handlerTable = tools.split(v, "_")
+                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                            --------------------------------------------------------------------------------
+                            -- Don't include "widgets" (that are used for the Touch Bar):
+                            --------------------------------------------------------------------------------
+                            if handlerTable[2] ~= "widgets" then
+                                table.insert(allowedHandlers, v)
                             end
                         end
-                        local unpack = table.unpack
-                        mod.activator[groupID .. subGroupID]:allowHandlers(unpack(allowedHandlers))
-                        mod.activator[groupID .. subGroupID]:preloadChoices()
+                    end
+                    local unpack = table.unpack
+                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
+                    mod.activator[groupID]:preloadChoices()
+
+                    --------------------------------------------------------------------------------
+                    -- Allow specific toolbar icons in the Console:
+                    --------------------------------------------------------------------------------
+                    if groupID == "fcpx" then
+                        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+                        local toolbarIcons = {
+                            fcpx_midicontrols   = { path = iconPath .. "midi.png",          priority = 1},
+                            global_midibanks    = { path = iconPath .. "bank.png",          priority = 2},
+                            fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
+                            fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 4},
+                            fcpx_generator      = { path = iconPath .. "generator.png",     priority = 5},
+                            fcpx_title          = { path = iconPath .. "title.png",         priority = 6},
+                            fcpx_transition     = { path = iconPath .. "transition.png",    priority = 7},
+                            fcpx_fonts          = { path = iconPath .. "font.png",          priority = 8},
+                            fcpx_shortcuts      = { path = iconPath .. "shortcut.png",      priority = 9},
+                            fcpx_menu           = { path = iconPath .. "menu.png",          priority = 10},
+                        }
+                        mod.activator[groupID]:toolbarIcons(toolbarIcons)
                     end
                 end
             end
@@ -635,7 +645,9 @@ local function midiPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
-            mod.activator[groupID]:onActivate(function(handler, action, text)
+            local activatorID = groupID:sub(1, -2)
+
+            mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
                 --------------------------------------------------------------------------------
@@ -651,7 +663,7 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Show Activator:
             --------------------------------------------------------------------------------
-            mod.activator[groupID]:show()
+            mod.activator[activatorID]:show()
         elseif callbackType == "clear" then
             --------------------------------------------------------------------------------
             -- Clear:
@@ -675,6 +687,33 @@ local function midiPanelCallback(id, params)
             -- Remove the red highlight if it's still there:
             --------------------------------------------------------------------------------
             injectScript("unhighlightRowRed('" .. params["groupID"] .. "', " .. params["buttonID"] .. ")")
+        elseif callbackType == "applyToAll" then
+            --------------------------------------------------------------------------------
+            -- Apply the selected item to all banks:
+            --------------------------------------------------------------------------------
+            local getItem = mod._midi.getItem
+            local device = getItem("device", params["buttonID"], params["groupID"])
+            local channel = getItem("channel", params["buttonID"], params["groupID"])
+            local commandType = getItem("commandType", params["buttonID"], params["groupID"])
+            local number = getItem("number", params["buttonID"], params["groupID"])
+            local value = getItem("value", params["buttonID"], params["groupID"])
+            local action = getItem("action", params["buttonID"], params["groupID"])
+            local actionTitle = getItem("actionTitle", params["buttonID"], params["groupID"])
+            local handlerID = getItem("handlerID", params["buttonID"], params["groupID"])
+
+            local currentGroup = params["groupID"]:sub(1, -2)
+            local setItem = mod._midi.setItem
+            for i = 1, mod._midi.numberOfSubGroups do
+                local groupID = currentGroup .. tostring(i)
+                setItem("device", params["buttonID"], groupID, device)
+                setItem("channel", params["buttonID"], groupID, channel)
+                setItem("commandType", params["buttonID"], groupID, commandType)
+                setItem("number", params["buttonID"], groupID, number)
+                setItem("value", params["buttonID"], groupID, value)
+                setItem("action", params["buttonID"], groupID, action)
+                setItem("actionTitle", params["buttonID"], groupID, actionTitle)
+                setItem("handlerID", params["buttonID"], groupID, handlerID)
+            end
         elseif callbackType == "updateNumber" then
             --------------------------------------------------------------------------------
             -- Update Number:
@@ -731,6 +770,10 @@ local function midiPanelCallback(id, params)
                 scrollBarPosition[groupID] = value
                 mod.scrollBarPosition(scrollBarPosition)
             end
+        elseif callbackType == "updateBankLabel" then
+            local groupID = params["groupID"]
+            local bankLabel = params["bankLabel"]
+            mod._midi.setBankLabel(groupID, bankLabel)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -739,23 +782,6 @@ local function midiPanelCallback(id, params)
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
-    end
-end
-
--- plugins.core.midi.prefs._displayBooleanToString(value) -> none
--- Function
--- Converts a boolean to a string for use in the CSS block style value.
---
--- Parameters:
---  * value - a boolean value
---
--- Returns:
---  * A string
-function mod._displayBooleanToString(value)
-    if value then
-        return "block"
-    else
-        return "none"
     end
 end
 
@@ -836,7 +862,7 @@ function mod.init(deps, env)
         label           = i18n("midi"),
         image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
         tooltip         = i18n("midi"),
-        height          = 610,
+        height          = 750,
         closeFn         = mod._destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
@@ -882,15 +908,22 @@ function mod.init(deps, env)
         )
         :addButton(13,
             {
-                label       = i18n("midiResetGroup"),
-                onclick     = mod._resetMIDIGroup,
+                label       = i18n("resetEverything"),
+                onclick     = mod._resetMIDI,
                 class       = "midiResetGroup",
             }
         )
         :addButton(14,
             {
-                label       = i18n("midiResetAll"),
-                onclick     = mod._resetMIDI,
+                label       = i18n("resetApplication"),
+                onclick     = mod._resetMIDIGroup,
+                class       = "midiResetGroup",
+            }
+        )
+        :addButton(15,
+            {
+                label       = i18n("resetBank"),
+                onclick     = mod._resetMIDISubGroup,
                 class       = "midiResetGroup",
             }
         )
@@ -904,11 +937,6 @@ function mod.init(deps, env)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.midi.prefs",
     group           = "core",

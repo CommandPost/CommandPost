@@ -2,34 +2,32 @@
 ---
 --- A collection of handy miscellaneous tools for Lua development.
 
-local log                                       = require("hs.logger").new("tools")
+local require           = require
 
-local application                               = require("hs.application")
-local base64                                    = require("hs.base64")
-local eventtap                                  = require("hs.eventtap")
-local fs                                        = require("hs.fs")
-local geometry                                  = require("hs.geometry")
-local host                                      = require("hs.host")
-local inspect                                   = require("hs.inspect")
-local mouse                                     = require("hs.mouse")
-local osascript                                 = require("hs.osascript")
-local screen                                    = require("hs.screen")
-local sound                                     = require("hs.sound")
-local timer                                     = require("hs.timer")
-local window                                    = require("hs.window")
+local log               = require "hs.logger".new "tools"
 
-local config                                    = require("cp.config")
+local application       = require "hs.application"
+local base64            = require "hs.base64"
+local eventtap          = require "hs.eventtap"
+local fs                = require "hs.fs"
+local geometry          = require "hs.geometry"
+local host              = require "hs.host"
+local inspect           = require "hs.inspect"
+local mouse             = require "hs.mouse"
+local osascript         = require "hs.osascript"
+local screen            = require "hs.screen"
+local sound             = require "hs.sound"
+local timer             = require "hs.timer"
+local window            = require "hs.window"
 
-local v                                         = require("semver")
+local config            = require "cp.config"
 
-local insert                                    = table.insert
-local usleep                                    = timer.usleep
+local v                 = require "semver"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local insert            = table.insert
+local locale            = host.locale
+local usleep            = timer.usleep
+
 local tools = {}
 
 -- LEFT_MOUSE_DOWN -> number
@@ -88,6 +86,98 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.shiftPressed() -> boolean
+--- Function
+--- Is the Shift Key being pressed?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the shift key is being pressed, otherwise `false`.
+function tools.shiftPressed()
+    local mods = eventtap.checkKeyboardModifiers()
+    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        return true
+    else
+        return false
+    end
+end
+
+--- cp.tools.writeToFile(path, data) -> none
+--- Function
+--- Write data to a file at a given path.
+---
+--- Parameters:
+---  * path - The path to the file you want to write to.
+---  * data - The data to write to the file.
+---
+--- Returns:
+---  * None
+function tools.writeToFile(path, data)
+    local file = io.open(path, "w")
+    file:write(data)
+    file:close()
+end
+
+--- cp.tools.readFromFile(path) -> string
+--- Function
+--- Read data from file.
+---
+--- Parameters:
+---  * path - The path of where you want to load the file.
+---
+--- Returns:
+---  * None
+function tools.readFromFile(path)
+    local file = io.open(path, "r")
+    if file then
+        local data = file:read("*a")
+        file:close()
+        return data
+    end
+end
+
+--- cp.tools.toRegionalNumber(value) -> number | nil
+--- Function
+--- Takes a string and converts it into a number, with the correct
+--- regional decimal separator.
+---
+--- Parameters:
+---  * value - The value you want to process as a string.
+---
+--- Returns:
+---  * The value as a number or `nil`.
+function tools.toRegionalNumber(value)
+    if type(value) == "string" then
+        if locale.details().decimalSeparator == "," then
+            value = value:gsub(",", ".")
+        end
+    end
+    value = tonumber(value)
+    return value
+end
+
+--- cp.tools.toRegionalNumberString(value) -> string | nil
+--- Function
+--- Takes a number and converts it into a string, with the correct
+--- regional decimal separator.
+---
+--- Parameters:
+---  * value - The value you want to process as a number.
+---
+--- Returns:
+---  * The value as a number or `nil`.
+function tools.toRegionalNumberString(value)
+    if type(value) == "number" then
+        value = tostring(value)
+        if locale.details().decimalSeparator == "," then
+            value = value:gsub("%.", ",")
+        end
+    end
+    return tostring(value)
 end
 
 --- cp.tools.rescale(value, inMin, inMax, outMin, outMax) -> number | nil
@@ -391,7 +481,7 @@ function tools.getModelName()
                 if majorVersion >=6 then
                     return "Mac Pro (Late 2013)"
                 else
-                    return "Mac Pro (Previous generation)"
+                    return "Mac Pro (Previous generations)"
                 end
             elseif modelName == "MacBook Air" then
                 return "MacBook Air"
@@ -402,7 +492,12 @@ function tools.getModelName()
             elseif modelName == "iMac Pro" then
                 return "iMac Pro"
             elseif modelName == "Mac mini" then
-                return "Mac mini"
+                local majorVersion = tonumber(string.sub(modelIdentifier, 8, 8))
+                if majorVersion >=8 then
+                    return "Mac mini"
+                else
+                    return "Mac mini (previous generations)"
+                end
             end
         end
     end
@@ -431,10 +526,8 @@ function tools.getVRAMSize()
                 result = value
             end
         end
-        if result >= 256 and result <= 512 then
-            return "256MB-512MB"
-        elseif result >= 512 and result <= 1024 then
-            return "512MB-1GB"
+        if result < 1024 then
+            return "Less than 1GB"
         elseif result == 1024 then
             return "1GB"
         elseif result == 2048 then
@@ -1094,6 +1187,37 @@ function tools.tableContains(table, element)
         end
     end
     return false
+end
+
+
+--- cp.tools.tableFilter(t, matchFn) -> table
+--- Function
+--- Efficiently filters out all elements from the table `t` which to not match the `matchFn`.
+--- Note: This will modify the original table.
+---
+--- Parameters:
+--- * t          - The `table` to filter.
+--- * matchFn    - A function which will receive the table, the current index, and the target index.
+---
+--- Returns:
+--- * The same table, updated.
+function tools.tableFilter(t, matchFn)
+    local j, n = 1, #t;
+
+    for i=1,n do
+        if (matchFn(t, i, j)) then
+            -- Move i's kept value to j's position, if it's not already there.
+            if (i ~= j) then
+                t[j] = t[i];
+                t[i] = nil;
+            end
+            j = j + 1; -- Increment position of where we'll place the next kept value.
+        else
+            t[i] = nil;
+        end
+    end
+
+    return t;
 end
 
 --- cp.tools.removeFromTable(table, element) -> table

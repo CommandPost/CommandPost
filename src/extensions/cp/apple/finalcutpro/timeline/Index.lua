@@ -62,7 +62,7 @@ end
 --- The [SearchField](cp.ui.SearchField.md) for the Timeline Index.
 ---
 --- Returns:
---- * The SearchField.
+---  * The SearchField.
 function Index.lazy.method:search()
     return SearchField(self, self.UI:mutate(function(original)
         return childMatching(original(), SearchField.matches)
@@ -74,7 +74,7 @@ end
 --- The [IndexMode](cp.apple.finalcutpro.timeline.IndexMode.md) for the Index.
 ---
 --- Returns:
---- * The `IndexMode`.
+---  * The `IndexMode`.
 function Index.lazy.method:mode()
     return IndexMode(self)
 end
@@ -121,12 +121,36 @@ function Index.lazy.method:captions()
     return IndexCaptions(self)
 end
 
+--- cp.apple.finalcutpro.timeline.Index:activeTab() -> object
+--- Method
+--- Gets the active tab.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The active tab or `nil`.
+function Index:activeTab()
+    if self:clips():isShowing() then
+        return self:clips()
+    elseif self:tags():isShowing() then
+        return self:tags()
+    elseif self:roles():isShowing() then
+        return self:roles()
+    elseif self:captions():isShowing() then
+        return self:captions()
+    end
+end
+
 --- cp.apple.finalcutpro.timeline.Index:saveLayout() -> table
 --- Method
 --- Returns a `table` containing the layout configuration for this class.
 ---
+--- Parameters:
+---  * None
+---
 --- Returns:
---- * The layout configuration `table`.
+---  * The layout configuration `table`.
 function Index:saveLayout()
     local layout = SplitGroup.saveLayout(self)
 
@@ -146,10 +170,10 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will apply the layout provided, if possible.
 ---
 --- Parameters:
---- * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
+---  * layout - the `table` containing the layout configuration. Usually created via the [#saveLayout] method.
 ---
 --- Returns:
---- * The [Statement](cp.rx.go.Statement.md).
+---  * The [Statement](cp.rx.go.Statement.md).
 function Index:doLayout(layout)
     layout = layout or {}
     return Do(

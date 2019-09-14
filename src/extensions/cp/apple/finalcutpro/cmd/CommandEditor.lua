@@ -18,11 +18,7 @@ local If                            = require("cp.rx.go.If")
 local Throw                         = require("cp.rx.go.Throw")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local CommandEditor = {}
 
 -- _findWindowUI(windows) -> window | nil

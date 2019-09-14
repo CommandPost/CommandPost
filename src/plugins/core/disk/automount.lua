@@ -12,11 +12,7 @@ local battery               = require("cp.battery")
 local disk                  = require("cp.disk")
 local i18n                  = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.disk.automount.unmountPhysicalDrives() -> none
@@ -72,11 +68,7 @@ mod.autoUnmountOnBattery = config.prop("autoUnmountOnBattery", false):watch(upda
 --- Automatically mount on connection to mains power.
 mod.autoMountOnAC = config.prop("autoMountOnAC", false):watch(update)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "core.disk.automount",
     group = "core",

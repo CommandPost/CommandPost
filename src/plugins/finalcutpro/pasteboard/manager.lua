@@ -30,11 +30,7 @@ local Retry                                     = require("cp.rx.go.Retry")
 
 local uuid                                      = host.uuid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- PASTEBOARD -> table
@@ -650,11 +646,7 @@ function mod.doRestoreFromBuffer(id)
     end)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.pasteboard.manager",
     group           = "finalcutpro",

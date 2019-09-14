@@ -2,17 +2,12 @@
 ---
 --- Final Cut Pro Timeline Preferences.
 
-local require = require
+local require       = require
 
-local dialog                = require("cp.dialog")
-local fcp                   = require("cp.apple.finalcutpro")
-local i18n                  = require("cp.i18n")
+local dialog        = require "cp.dialog"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.timeline.preferences.backgroundRender <cp.prop: boolean>
@@ -23,19 +18,13 @@ mod.backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true):mutate(
     function(newValue, original)
         if fcp:isRunning() then
             if newValue ~= original() then
-                --------------------------------------------------------------------------------
                 -- Make sure it's active:
-                --------------------------------------------------------------------------------
                 fcp:launch()
 
-                --------------------------------------------------------------------------------
                 -- Define FCPX:
-                --------------------------------------------------------------------------------
                 local panel = fcp:preferencesWindow():playbackPanel()
 
-                --------------------------------------------------------------------------------
                 -- Toggle the checkbox:
-                --------------------------------------------------------------------------------
                 if panel:show():isShowing() then
                     panel:backgroundRender():toggle()
                 else
@@ -43,9 +32,7 @@ mod.backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true):mutate(
                     return false
                 end
 
-                --------------------------------------------------------------------------------
                 -- Close the Preferences window:
-                --------------------------------------------------------------------------------
                 panel:hide()
                 return true
             end
@@ -68,11 +55,6 @@ function mod.getAutoRenderDelay()
     return tonumber(fcp.preferences.FFAutoRenderDelay or "0.3")
 end
 
----------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id = "finalcutpro.timeline.preferences",
     group = "finalcutpro",
@@ -83,9 +65,7 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    ---------------------------------------------------------------------------------
     -- Add Menu:
-    ---------------------------------------------------------------------------------
     deps.menu.mediaImport
         :addItems(2000, function()
             local fcpxRunning = fcp:isRunning()
@@ -95,9 +75,7 @@ function plugin.init(deps)
             }
         end)
 
-    ---------------------------------------------------------------------------------
     -- Add Commands:
-    ---------------------------------------------------------------------------------
     deps.fcpxCmds
         :add("cpBackgroundRenderOn")
         :groupedBy("timeline")

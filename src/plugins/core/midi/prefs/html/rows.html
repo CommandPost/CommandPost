@@ -28,14 +28,16 @@
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						for _, deviceName in ipairs(midiDevices) do
-							local selected = ""
-							if device == deviceName then
-								selected = [[selected=""]]
-								foundDevice = true
-							end
+							if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+								local selected = ""
+								if device == deviceName then
+									selected = [[selected=""]]
+									foundDevice = true
+								end
 						%}
 							<option {{selected}} value="{{deviceName}}">{{deviceName}}</option>
 						{%
+							end
 						end
 						if device ~= i18nNone and not foundDevice and not (string.sub(device, 1, 8) == "virtual_") then
 						%}
@@ -53,14 +55,16 @@
 						{%
 						local foundVirtualDevice = false
 						for _, deviceName in ipairs(virtualMidiDevices) do
-							local selected = ""
-							if device == "virtual_" .. deviceName then
-								selected = [[selected=""]]
-								foundVirtualDevice = true
-							end
+							if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+								local selected = ""
+								if device == "virtual_" .. deviceName then
+									selected = [[selected=""]]
+									foundVirtualDevice = true
+								end
 						%}
 							<option {{selected}} value="virtual_{{deviceName}}">{{deviceName}}</option>
 						{%
+							end
 						end
 						if device ~= i18nNone and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
 						%}
@@ -83,12 +87,12 @@
 						<option {{selected}} value="">{{i18nNone}}</option>
 						{%
 							local commandTypes = {
-								["noteOff"] = i18nNoteOff,
+								--["noteOff"] = i18nNoteOff,
 								["noteOn"] = i18nNoteOn,
-								["polyphonicKeyPressure"] = i18nPolyphonicKeyPressure,
+								--["polyphonicKeyPressure"] = i18nPolyphonicKeyPressure,
 								["controlChange"] = i18nControlChange,
-								["programChange"] = i18nProgramChange,
-								["channelPressure"] = i18nChannelPressure,
+								--["programChange"] = i18nProgramChange,
+								--["channelPressure"] = i18nChannelPressure,
 								["pitchWheelChange"] = i18nPitchWheelChange,
 							}
 							for a, b in pairs(commandTypes) do
@@ -126,6 +130,7 @@
 					<input style="width: 40px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}" onchange="changeMidiValue('{{ groupID }}', '{{ buttonID }}', this.value)">
 				</td>
 				<td class="midiRowLearn">
+					<a id="midi{{ groupID }}_button{{ buttonID }}_allButton" href="#" class="button midiActionButton midiClearButton" onclick="pressMidiAllButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nAll }}</a>
 					<a id="midi{{ groupID }}_button{{ buttonID }}_clearButton" href="#" class="button midiActionButton midiClearButton" onclick="pressMidiClearButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nClear }}</a>
 					<a id="midi{{ groupID }}_button{{ buttonID }}_learnButton" href="#" class="button midiActionButton midiLearnButton" onclick="pressMidiLearnButton('{{ groupID }}', '{{ buttonID }}')">{{ i18nLearn }}</a>
 				</td>

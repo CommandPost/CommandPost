@@ -4,27 +4,21 @@
 
 local require = require
 
-local log             = require("hs.logger").new("prefsTouchBar")
+local log             = require "hs.logger".new "prefsTouchBar"
 
-local canvas          = require("hs.canvas")
-local dialog          = require("hs.dialog")
-local image           = require("hs.image")
+local canvas          = require "hs.canvas"
+local dialog          = require "hs.dialog"
+local image           = require "hs.image"
 
-local commands        = require("cp.commands")
-local config          = require("cp.config")
-local fcp             = require("cp.apple.finalcutpro")
-local tools           = require("cp.tools")
-local html            = require("cp.web.html")
-local ui              = require("cp.web.ui")
-local i18n            = require("cp.i18n")
+local commands        = require "cp.commands"
+local config          = require "cp.config"
+local fcp             = require "cp.apple.finalcutpro"
+local tools           = require "cp.tools"
+local html            = require "cp.web.html"
+local i18n            = require "cp.i18n"
 
-local _               = require("moses")
+local moses           = require "moses"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.core.touchbar.prefs.supportedExtensions -> string
@@ -57,24 +51,6 @@ mod.scrollBarPosition = config.prop("touchBarPreferencesScrollBarPosition", {})
 --- The maximum number of Touch Bar items per group.
 mod.maxItems = 8
 
--- resetTouchBar() -> none
--- Function
--- Prompts to reset shortcuts to default.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function resetTouchBar()
-    dialog.webviewAlert(mod._manager.getWebview(), function(result)
-        if result == i18n("yes") then
-            mod._tb.clear()
-            mod._manager.refresh()
-        end
-    end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -106,66 +82,30 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
-
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
     local groups = {}
-    local groupOptions = {}
-    local defaultGroup = nil
+    local groupLabels = {}
+    local defaultGroup
+    local numberOfSubGroups = mod._tb.numberOfSubGroups
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
-        for subGroupID=1, mod._tb.numberOfSubGroups do
+        table.insert(groupLabels, {
+            value = id,
+            label = i18n("shortcut_group_" .. id, {default = id}),
+        })
+        for subGroupID=1, numberOfSubGroups do
             defaultGroup = defaultGroup or id .. subGroupID
-            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (" .. i18n("bank") .. " " .. tostring(subGroupID) .. ")"}
             groups[#groups + 1] = id .. subGroupID
         end
     end
-    table.sort(groupOptions, function(a, b) return a.label < b.label end)
-
-    local touchBarGroupSelect = ui.select({
-        id          = "touchBarGroupSelect",
-        value       = defaultGroup,
-        options     = groupOptions,
-        required    = true,
-    }) .. ui.javascript([[
-        var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
-        touchBarGroupSelect.onchange = function(e) {
-
-            //
-            // Change Group Callback:
-            //
-            try {
-                var result = {
-                    id: "touchBarPanelCallback",
-                    params: {
-                        type: "updateGroup",
-                        groupID: this.value,
-                    },
-                }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
-            } catch(err) {
-                console.log("Error: " + err)
-                alert('An error has occurred. Does the controller exist yet?');
-            }
-
-            var groupControls = document.getElementById("touchbarGroupControls");
-            var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
-            var children = groupControls.children;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i];
-              if (child.id == "touchbarGroup_" + value) {
-                  child.classList.add("selected");
-              } else {
-                  child.classList.remove("selected");
-              }
-            }
-        }
-    ]])
+    table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                       = _,
-        touchBarGroupSelect     = touchBarGroupSelect,
+        _                       = moses,
+        numberOfSubGroups       = numberOfSubGroups,
+        groupLabels             = groupLabels,
         groups                  = groups,
         defaultGroup            = defaultGroup,
         scrollBarPosition       = mod.scrollBarPosition(),
@@ -176,7 +116,6 @@ local function generateContent()
     }
 
     return renderPanel(context)
-
 end
 
 -- touchBarPanelCallback() -> none
@@ -211,24 +150,43 @@ local function touchBarPanelCallback(id, params)
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
                 for _,groupID in ipairs(commands.groupIds()) do
-                    for subGroupID=1, mod._tb.numberOfSubGroups do
-                        --------------------------------------------------------------------------------
-                        -- Create new Activator:
-                        --------------------------------------------------------------------------------
-                        mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("touchbarPreferences" .. groupID .. subGroupID)
 
-                        --------------------------------------------------------------------------------
-                        -- Restrict Allowed Handlers for Activator to current group (and global):
-                        --------------------------------------------------------------------------------
-                        local allowedHandlers = {}
-                        for _,v in pairs(handlerIds) do
-                            local handlerTable = tools.split(v, "_")
-                            if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                                table.insert(allowedHandlers, v)
-                            end
+                    --------------------------------------------------------------------------------
+                    -- Create new Activator:
+                    --------------------------------------------------------------------------------
+                    mod.activator[groupID] = mod._actionmanager.getActivator("touchbarPreferences" .. groupID)
+
+                    --------------------------------------------------------------------------------
+                    -- Restrict Allowed Handlers for Activator to current group (and global):
+                    --------------------------------------------------------------------------------
+                    local allowedHandlers = {}
+                    for _,v in pairs(handlerIds) do
+                        local handlerTable = tools.split(v, "_")
+                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                            table.insert(allowedHandlers, v)
                         end
-                        mod.activator[groupID .. subGroupID]:allowHandlers(table.unpack(allowedHandlers))
-                        mod.activator[groupID .. subGroupID]:preloadChoices()
+                    end
+                    mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+                    mod.activator[groupID]:preloadChoices()
+
+                    --------------------------------------------------------------------------------
+                    -- Allow specific toolbar icons in the Console:
+                    --------------------------------------------------------------------------------
+                    if groupID == "fcpx" then
+                        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
+                        local toolbarIcons = {
+                            fcpx_widgets            = { path = iconPath .. "touchbar.png",      priority = 1},
+                            global_touchbarbanks    = { path = iconPath .. "bank.png",          priority = 2},
+                            fcpx_videoEffect        = { path = iconPath .. "videoEffect.png",   priority = 3},
+                            fcpx_audioEffect        = { path = iconPath .. "audioEffect.png",   priority = 4},
+                            fcpx_generator          = { path = iconPath .. "generator.png",     priority = 5},
+                            fcpx_title              = { path = iconPath .. "title.png",         priority = 6},
+                            fcpx_transition         = { path = iconPath .. "transition.png",    priority = 7},
+                            fcpx_fonts              = { path = iconPath .. "font.png",          priority = 8},
+                            fcpx_shortcuts          = { path = iconPath .. "shortcut.png",      priority = 9},
+                            fcpx_menu               = { path = iconPath .. "menu.png",          priority = 10},
+                        }
+                        mod.activator[groupID]:toolbarIcons(toolbarIcons)
                     end
                 end
             end
@@ -237,8 +195,9 @@ local function touchBarPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
+            local activatorID = groupID:sub(1, -2)
 
-            mod.activator[groupID]:onActivate(function(handler, action, text)
+            mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
                 --------------------------------------------------------------------------------
@@ -255,13 +214,16 @@ local function touchBarPanelCallback(id, params)
                 if not mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action) then
                     dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("touchBarDuplicateWidget"), i18n("touchBarDuplicateWidgetInfo"), i18n("ok"))
                 end
+                mod._tb.updateLabel(params["buttonID"], params["groupID"], actionTitle)
+
+                injectScript([[setTouchBarLabel("]] .. params["groupID"] .. [[", "]] .. params["buttonID"] .. [[", "]] .. actionTitle .. [[")]])
                 injectScript([[setTouchBarActionTitle("]] .. params["groupID"] .. [[", "]] .. params["buttonID"] .. [[", "]] .. actionTitle .. [[")]])
             end)
 
             --------------------------------------------------------------------------------
             -- Show Activator:
             --------------------------------------------------------------------------------
-            mod.activator[groupID]:show()
+            mod.activator[activatorID]:show()
 
         elseif params["type"] == "clearAction" then
             mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
@@ -322,7 +284,7 @@ local function touchBarPanelCallback(id, params)
                         a[1] = {
                           type="image",
                           image = icon,
-                          frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
                         }
                         local newImage = a:imageFromCanvas()
 
@@ -533,6 +495,70 @@ local function locationOptions()
     return options
 end
 
+-- resetAll() -> none
+-- Function
+-- Prompts to reset all Touch Bar Preferences to their defaults.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetAll()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            mod._tb.clear()
+            mod._manager.refresh()
+        end
+    end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
+-- resetGroup() -> none
+-- Function
+-- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetGroup()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local items = mod._tb._items()
+            local currentGroup = string.sub(mod.lastGroup(), 1, -2)
+            for groupAndSubgroupID in pairs(items) do
+                if string.sub(groupAndSubgroupID, 1, -2) == currentGroup then
+                    items[groupAndSubgroupID] = nil
+                end
+            end
+            mod._tb._items(items)
+            mod._manager.refresh()
+        end
+    end, i18n("touchBarResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
+-- resetSubGroup() -> none
+-- Function
+-- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetSubGroup()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local items = mod._tb._items()
+            local currentGroup = mod.lastGroup()
+            items[currentGroup] = nil
+            mod._tb._items(items)
+            mod._manager.refresh()
+        end
+    end, i18n("touchBarResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
 --- plugins.core.touchbar.prefs.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
@@ -621,9 +647,27 @@ function mod.init(deps, env)
     mod._panel:addButton(20,
         {
             width       = 200,
-            label       = i18n("touchBarReset"),
-            onclick     = resetTouchBar,
+            label       = i18n("resetEverything"),
+            onclick     = resetAll,
             class       = "resetTouchBar",
+        }
+    )
+
+    mod._panel:addButton(21,
+        {
+            width       = 200,
+            label       = i18n("resetApplication"),
+            onclick     = resetGroup,
+            class       = "tbResetGroup",
+        }
+    )
+
+    mod._panel:addButton(22,
+        {
+            width       = 200,
+            label       = i18n("resetBank"),
+            onclick     = resetSubGroup,
+            class       = "tbResetGroup",
         }
     )
 
@@ -636,11 +680,6 @@ function mod.init(deps, env)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.touchbar.prefs",
     group           = "core",

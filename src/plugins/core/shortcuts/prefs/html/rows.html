@@ -1,0 +1,41 @@
+{%
+	local cmds = {}
+	for id,cmd in pairs(group:getAll()) do
+		cmds[#cmds+1] = cmd
+	end
+	table.sort(cmds, function(a, b) return a:getTitle() < b:getTitle() end)
+
+	for __,cmd in ipairs(cmds) do
+		local shortcut = cmd:getFirstShortcut()
+		local groupID = group:id()
+		local cmdID = cmd:id()
+%}
+			<tr>
+				<td class="rowLabel">{{ cmd:getTitle() }}</td>
+				<td class="rowAction">
+				{%
+				if cmd:hasAction() then
+					local getFn = cmd:getAction() -- For some reason this is slow?
+					local result = getFn()
+				%}
+					<input type="text" id="shortcuts{{ groupID }}_button{{ cmdID }}_action" class="scActionTextbox" value="{{ result or i18nNone }}" disabled>
+					<a id="shortcuts{{ groupID }}_button{{ cmdID }}_actionButton" href="#" class="button scActionButton" onclick="pressShortcutsActionButton('{{ groupID }}', '{{ cmdID }}')">{{ i18nSelect }}</a>
+					<a id="shortcuts{{ groupID }}_button{{ cmdID }}_clearActionButton" href="#" class="button scActionButton" onclick="pressShortcutsClearButton('{{ groupID }}', '{{ cmdID }}')">{{ i18nClear }}</a>
+				{% end %}
+				</td>
+				<td class="rowModifier">
+					<select id="shortcuts{{ groupID }}_{{ cmdID }}_modifiers" onchange="updateShortcuts('{{ groupID }}', '{{ cmdID }}')">
+						<option value="none">{{ i18nNone }}</option>
+						{* modifierOptions(shortcut) *}
+					</select>
+				</td>
+				<td class="rowKeyCode">
+					<select id="shortcuts{{ groupID }}_{{ cmdID }}_keyCode" onchange="updateShortcuts('{{ groupID }}', '{{ cmdID }}')">
+						<option value="none">{{ i18nNone }}</option>
+						{* keyCodeOptions(shortcut) *}
+					</select>
+				</td>
+			</tr>
+{%
+	end -- shortcuts loop
+%}

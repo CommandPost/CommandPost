@@ -7,7 +7,7 @@
 
 local require = require
 
-local log								= require("hs.logger").new("bseMtnPnl")
+--local log								= require("hs.logger").new("bseMtnPnl")
 
 local axutils							= require("cp.ui.axutils")
 
@@ -21,11 +21,7 @@ local section                           = IP.section
 local withRole, childWithRole, withValue    = axutils.withRole, axutils.childWithRole, axutils.withValue
 local cache                             = axutils.cache
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local BaseMotionPanel = BasePanel:subclass("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 
 local function findContentUI(element)
@@ -80,7 +76,6 @@ function BaseMotionPanel.lazy.prop:contentUI()
         return cache(self, "_content",
             function()
                 local ui = findContentUI(original())
-                log.df("BaseMotionPanel:contentUI: %s", hs.inspect(ui))
                 return ui
             end,
             function(element) return withRole(element, "AXScrollArea") ~= nil end

@@ -2,19 +2,17 @@
 ---
 --- Pop Up Button Module.
 
-local require = require
+local require           = require
 
-local axutils                       = require("cp.ui.axutils")
-local Element                       = require("cp.ui.Element")
-local go                            = require("cp.rx.go")
+--local log				= require "hs.logger".new "PopUpButton"
 
-local If, WaitUntil                 = go.If, go.WaitUntil
+local axutils           = require "cp.ui.axutils"
+local Element           = require "cp.ui.Element"
+local go                = require "cp.rx.go"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local If                = go.If
+local WaitUntil         = go.WaitUntil
+
 local PopUpButton = Element:subclass("cp.ui.PopUpButton")
 
 -- TIMEOUT_AFTER -> number
@@ -53,7 +51,7 @@ function PopUpButton.lazy.prop:value()
     return self.UI:mutate(
         function(original)
             local ui = original()
-            return ui and ui:value()
+            return ui and ui.value and ui:value()
         end,
         function(newValue, original)
             local ui = original()
@@ -161,19 +159,25 @@ end
 ---  * the `Statement`.
 function PopUpButton:doSelectValue(value)
     return If(self.UI)
-    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
-    :Then(function(menuUI)
-        for _,item in ipairs(menuUI) do
-            if item:title() == value then
-                item:doPress()
-                return true
-            end
-        end
-        menuUI:doCancel()
-        return false
-    end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
+    :Then(
+        If(self.value):Is(value):Then(true)
+        :Otherwise(
+            If(self.menuUI):Is(nil):Then(self:doPress())
+            :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
+            :Then(function(menuUI)
+                for _,item in ipairs(menuUI) do
+                    if item:title() == value and item:enabled() then
+                        item:doPress()
+                        return true
+                    end
+                end
+                menuUI:doCancel()
+                return false
+            end)
+            :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
+            :Otherwise(false)
+        )
+    )
     :Otherwise(false)
     :Label("PopUpButton:doSelectValue")
 end

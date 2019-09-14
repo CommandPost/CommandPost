@@ -5,11 +5,7 @@
 local axutils	                = require "cp.ui.axutils"
 local Element	                = require "cp.ui.Element"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ScrollBar = Element:subclass("cp.ui.ScrollBar")
 
 --- cp.ui.ScrollBar.VERTICAL_ORIENTATION <string>

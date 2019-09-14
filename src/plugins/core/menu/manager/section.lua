@@ -8,11 +8,7 @@ local config = require("cp.config")
 
 local fnutils = require("hs.fnutils")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local section = {}
 
 --- plugins.core.menu.manager.section.DEFAULT_PRIORITY -> number

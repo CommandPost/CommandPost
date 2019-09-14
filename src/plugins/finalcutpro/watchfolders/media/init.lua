@@ -12,11 +12,7 @@ local panel             = require("panel")
 
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- The storage for the media folders.
@@ -125,7 +121,6 @@ mod.deleteAfterImport = config.prop("fcp.watchFolders.deleteAfterImport", false)
 --- Returns:
 ---  * Table of the module.
 function mod.init(deps)
-
     --------------------------------------------------------------------------------
     -- Ignore Panel if Final Cut Pro isn't installed.
     --------------------------------------------------------------------------------
@@ -144,13 +139,11 @@ function mod.init(deps)
     -- Define Plugins:
     --------------------------------------------------------------------------------
     mod.pasteboardManager = deps.pasteboardManager
+
+    return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.watchfolders.media",
     group = "finalcutpro",

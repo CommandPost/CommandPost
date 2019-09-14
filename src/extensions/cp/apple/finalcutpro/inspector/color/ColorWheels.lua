@@ -8,50 +8,40 @@ local require = require
 
 -- local log                               = require("hs.logger").new("colorWheels")
 
-local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local MenuButton						= require("cp.ui.MenuButton")
+local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
-local PropertyRow						= require("cp.ui.PropertyRow")
-local RadioGroup						= require("cp.ui.RadioGroup")
-local Slider							= require("cp.ui.Slider")
+local tools                             = require("cp.tools")
+
+local Element                           = require("cp.ui.Element")
+local MenuButton                        = require("cp.ui.MenuButton")
+local PropertyRow                       = require("cp.ui.PropertyRow")
+local RadioGroup                        = require("cp.ui.RadioGroup")
+local Slider                            = require("cp.ui.Slider")
 local TextField                         = require("cp.ui.TextField")
 
-local ColorWheel						= require("cp.apple.finalcutpro.inspector.color.ColorWheel")
+local ColorWheel                        = require("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
 local If                                = require("cp.rx.go.If")
 
-local childMatching, cache             = axutils.childMatching, axutils.cache
+local childMatching, cache              = axutils.childMatching, axutils.cache
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
+local toRegionalNumber                  = tools.toRegionalNumber
+local toRegionalNumberString            = tools.toRegionalNumberString
 
 local CORRECTION_TYPE                   = "Color Wheels"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local ColorWheels = Element:subclass("ColorWheels")
 
 function ColorWheels.__tostring()
     return "cp.apple.finalcutpro.inspector.color.ColorWheels"
 end
 
---------------------------------------------------------------------------------
--- PUBLIC FUNCTIONS & METHODS:
---------------------------------------------------------------------------------
-
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
 --- Checks if the specified element is the Color Wheels element.
 ---
 --- Parameters:
---- * element	- The element to check
+--- * element   - The element to check
 ---
 --- Returns:
 --- * `true` if the element is the Color Wheels.
@@ -92,8 +82,8 @@ function ColorWheels:initialize(parent)
     -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
     -- link these fields so they mirror each other.
     self:temperatureSlider().value:mirror(self:temperatureTextField().value)
-    self:tintSlider().value:mirror(self:tintTextField().value)
     self:mixSlider().value:mirror(self:mixTextField().value)
+    self:tintSlider().value:mirror(self:tintTextField().value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs._asm.axuielement; read-only>
@@ -154,7 +144,7 @@ end
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 function ColorWheels.lazy.prop:tint()
-    return self:tintSlider().value
+    return self:tintTextField().value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
@@ -338,7 +328,7 @@ function ColorWheels.lazy.method:mixTextField()
             local ui = self:mixRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 
@@ -379,7 +369,7 @@ function ColorWheels.lazy.method:temperatureTextField()
             local ui = self:temperatureRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 
@@ -421,8 +411,8 @@ function ColorWheels.lazy.method:tintTextField()
             local ui = self:tintRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
-    )
+        toRegionalNumber, toRegionalNumberString
+    ):forceFocus()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:hueRow() -> cp.ui.PropertyRow
@@ -454,7 +444,7 @@ function ColorWheels.lazy.method:hueTextField()
             local ui = self:hueRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 

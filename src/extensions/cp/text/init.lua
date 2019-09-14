@@ -50,11 +50,7 @@ local utf16BEchar, utf16BEcodepoint 	= utf16BE.char, utf16BE.codepoint
 local unpack, pack						        = table.unpack, table.pack
 local floor								            = math.floor
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local text = {}
 
 text.mt = {}

@@ -12,11 +12,7 @@ local axutils                           = require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 local prop                              = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Playhead = Element:subclass("cp.apple.finalcutpro.main.Playhead")
 
 --- cp.apple.finalcutpro.main.Playhead.matches(element) -> boolean

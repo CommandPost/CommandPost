@@ -1,0 +1,82 @@
+<style>{(css/shortcuts.css)}</style>
+<script>
+	function pressShortcutsActionButton(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "updateAction",
+					group: groupID,
+					command: commandID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressShortcutsClearButton(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "clearAction",
+					group: groupID,
+					command: commandID,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function setShortcutsAction(groupID, commandID, value) {
+		document.getElementById("shortcuts" + groupID + "_button" + commandID + "_action").value = value;
+	}
+
+	function updateShortcuts(groupID, commandID) {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					group: groupID,
+					command: commandID,
+					modifiers: document.getElementById("shortcuts" + groupID + "_" + commandID + "_modifiers").value,
+					keyCode: document.getElementById("shortcuts" + groupID + "_" + commandID + "_keyCode").value,
+				}
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateShortcutsGroup() {
+		try {
+			var result = {
+				id: "shortcutsPanelCallback",
+				params: {
+					type: "updateGroup",
+					groupID: document.getElementById("shortcutsGroupSelect").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<h3 class="uiItem"><span class="groupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>
+<select id="shortcutsGroupSelect" style="width: 150px;" onchange="updateShortcutsGroup()">
+	{%
+	for _, v in pairs(groupLabels) do
+		local selected = ""
+		if v.value == defaultGroup then selected = [[selected=""]] end
+	%}
+	<option {{selected}} value="{{v.value}}">{{v.label}}</option>
+	{% end %}
+</select>
+</span>{{ i18nCustomiseShortcuts }}</h3>
+{(html/controls.html, context)}

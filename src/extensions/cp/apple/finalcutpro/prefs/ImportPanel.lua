@@ -13,16 +13,10 @@ local axutils							= require("cp.ui.axutils")
 local CheckBox							= require("cp.ui.CheckBox")
 local RadioButton						= require("cp.ui.RadioButton")
 
-local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"
-
 local Panel                             = require("cp.apple.finalcutpro.prefs.Panel")
 local Do, If                            = go.Do, go.If
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local ImportPanel = {}
 ImportPanel.mt = setmetatable({}, Panel.mt)
 ImportPanel.mt.__index = ImportPanel.mt
@@ -61,7 +55,7 @@ end
 function ImportPanel.mt:createProxyMedia()
     if not self._createProxyMedia then
         self._createProxyMedia = CheckBox(self, function()
-            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateProxyMedia")
+            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), 5)
         end)
     end
     return self._createProxyMedia
@@ -70,7 +64,7 @@ end
 function ImportPanel.mt:createOptimizedMedia()
     if not self._createOptimizedMedia then
         self._createOptimizedMedia = CheckBox(self, function()
-            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateOptimizedMedia")
+            return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), 4)
         end)
     end
     return self._createOptimizedMedia
@@ -78,7 +72,7 @@ end
 
 function ImportPanel.mt:mediaLocationGroupUI()
     return axutils.cache(self, "_mediaLocationGroup", function()
-        return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXRadioGroup"), id "MediaLocationGroup")
+        return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXRadioGroup"), 1)
     end)
 end
 
@@ -86,7 +80,7 @@ function ImportPanel.mt:copyToMediaFolder()
     if not self._copyToMediaFolder then
         self._copyToMediaFolder = RadioButton(self, function()
             local groupUI = self:mediaLocationGroupUI()
-            return groupUI and groupUI[id "CopyToMediaFolder"]
+            return groupUI and groupUI[1]
         end)
     end
     return self._copyToMediaFolder
@@ -96,7 +90,7 @@ function ImportPanel.mt:leaveInPlace()
     if not self._leaveInPlace then
         self._leaveInPlace = RadioButton(self, function()
             local groupUI = self:mediaLocationGroupUI()
-            return groupUI and groupUI[id "LeaveInPlace"]
+            return groupUI and groupUI[2]
         end)
     end
     return self._leaveInPlace

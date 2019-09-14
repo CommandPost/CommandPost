@@ -9,6 +9,7 @@ local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
 local CheckBox					        = require("cp.ui.CheckBox")
+local RadioGroup                        = require("cp.ui.RadioGroup")
 local Slider							= require("cp.ui.Slider")
 
 local cache                             = axutils.cache
@@ -16,11 +17,7 @@ local childFromRight                    = axutils.childFromRight
 local childFromTop                      = axutils.childFromTop
 local childMatching                     = axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local Appearance = {}
 
 --- cp.apple.finalcutpro.timeline.Appearance.matches(element) -> boolean
@@ -176,13 +173,13 @@ end
 
 -----------------------------------------------------------------------
 --
--- THE BUTTONS:
+-- UI ELEMENTS:
 --
 -----------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.timeline.Appearance:clipHeight() -> Slider
 --- Method
---- Get the Clip Height Slider.
+--- Gets the Clip Height Slider.
 ---
 --- Parameters:
 ---  * None
@@ -202,7 +199,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Appearance:zoomAmount() -> Slider
 --- Method
---- Get the Zoom Slider.
+--- Gets the Zoom Slider.
 ---
 --- Parameters:
 ---  * None
@@ -218,6 +215,106 @@ function Appearance:zoomAmount()
         end)
     end
     return self._zoomAmount
+end
+
+--- cp.apple.finalcutpro.timeline.Appearance:clipWaveformHeight() -> RadioGroup
+--- Method
+--- Gets the Waveform Height Radio Group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `RadioGroup` object.
+function Appearance:clipWaveformHeight()
+    if not self._clipWaveformHeight then
+        self._clipWaveformHeight = RadioGroup(self, function()
+            return childFromTop(self:UI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXRadioGroup"
+            end)
+        end)
+    end
+    return self._clipWaveformHeight
+end
+
+--- cp.apple.finalcutpro.timeline.Appearance:clipNames() -> CheckBox
+--- Method
+--- Clip Names
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `CheckBox` object.
+function Appearance:clipNames()
+    if not self._clipNames then
+        self._clipNames = CheckBox(self, function()
+            return childFromTop(self:UI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXCheckBox"
+            end)
+        end)
+    end
+    return self._clipNames
+end
+
+--- cp.apple.finalcutpro.timeline.Appearance:angles() -> CheckBox
+--- Method
+--- Angles
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `CheckBox` object.
+function Appearance:angles()
+    if not self._angles then
+        self._angles = CheckBox(self, function()
+            return childFromTop(self:UI(), 2, function(element)
+                return element:attributeValue("AXRole") == "AXCheckBox"
+            end)
+        end)
+    end
+    return self._angles
+end
+
+--- cp.apple.finalcutpro.timeline.Appearance:clipRoles() -> CheckBox
+--- Method
+--- Clip Roles
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `CheckBox` object.
+function Appearance:clipRoles()
+    if not self._clipRoles then
+        self._clipRoles = CheckBox(self, function()
+            return childFromTop(self:UI(), 3, function(element)
+                return element:attributeValue("AXRole") == "AXCheckBox"
+            end)
+        end)
+    end
+    return self._clipRoles
+end
+
+--- cp.apple.finalcutpro.timeline.Appearance:laneHeaders() -> CheckBox
+--- Method
+--- Lane Headers
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `CheckBox` object.
+function Appearance:laneHeaders()
+    if not self._laneHeaders then
+        self._laneHeaders = CheckBox(self, function()
+            return childFromTop(self:UI(), 4, function(element)
+                return element:attributeValue("AXRole") == "AXCheckBox"
+            end)
+        end)
+    end
+    return self._laneHeaders
 end
 
 return Appearance

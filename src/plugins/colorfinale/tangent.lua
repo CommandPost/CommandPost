@@ -12,11 +12,7 @@ local tools         = require("cp.tools")
 
 local startsWith    = tools.startsWith
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod ={}
 
 -- APP_BUNDLE_ID -> string
@@ -109,11 +105,7 @@ prop.bind(mod) {
     colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible),
 }
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "colorfinale.tangent",
     group = "colorfinale",

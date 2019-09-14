@@ -20,6 +20,8 @@ local require = require
 -- local log                               = require("hs.logger").new("colorCurves")
 
 local prop                              = require("cp.prop")
+local tools                             = require("cp.tools")
+
 local axutils                           = require("cp.ui.axutils")
 local CheckBox                          = require("cp.ui.CheckBox")
 local Element                           = require("cp.ui.Element")
@@ -35,19 +37,11 @@ local ColorCurve                        = require("cp.apple.finalcutpro.inspecto
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
+local toRegionalNumber                  = tools.toRegionalNumber
+local toRegionalNumberString            = tools.toRegionalNumberString
 
 local CORRECTION_TYPE                   = "Color Curves"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local ColorCurves = Element:subclass("ColorCurves")
 
 function ColorCurves.__tostring()
@@ -308,7 +302,7 @@ function ColorCurves.lazy.method:mixTextField()
             local ui = self:mixRow():children()
             return ui and childMatching(ui, TextField.matches)
         end,
-        tonumber
+        toRegionalNumber, toRegionalNumberString
     )
 end
 

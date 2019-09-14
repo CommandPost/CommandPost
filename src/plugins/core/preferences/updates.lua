@@ -7,11 +7,7 @@ local hs = hs
 
 local i18n = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.updates.toggleCheckForUpdates() -> nil
@@ -46,11 +42,7 @@ function mod.checkForUpdates()
     hs.checkForUpdates()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.updates",
     group           = "core",
@@ -75,15 +67,23 @@ function plugin.init(deps)
     end)
     :addSeparator(2)
 
-    if hs.canCheckForUpdates() then
-        deps.general:addCheckbox(3,
-            {
-                label = i18n("checkForUpdates"),
-                onchange = mod.toggleCheckForUpdates,
-                checked = hs.automaticallyCheckForUpdates,
-            }
-        )
-    end
+    deps.general:addCheckbox(4,
+        {
+            label = i18n("automaticallyCheckForUpdates"),
+            onchange = mod.toggleCheckForUpdates,
+            checked = hs.automaticallyCheckForUpdates,
+            disabled = function() return not hs.canCheckForUpdates() end,
+        }
+    )
+
+    deps.general:addButton(5,
+        {
+            label   = i18n("checkForUpdatesNow"),
+            width       = 200,
+            onclick = function() hs.checkForUpdates() end,
+        }
+    )
+
 
 end
 

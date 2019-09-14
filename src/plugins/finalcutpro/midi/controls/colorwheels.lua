@@ -4,20 +4,16 @@
 
 local require = require
 
-local log               = require("hs.logger").new("colorMIDI")
+local log               = require "hs.logger".new "colorMIDI"
 
-local eventtap          = require("hs.eventtap")
-local inspect           = require("hs.inspect")
+local eventtap          = require "hs.eventtap"
+local inspect           = require "hs.inspect"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- shiftPressed() -> boolean
@@ -76,6 +72,13 @@ local UNSHIFTED_SCALE = 20/100
 -- Returns:
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
+
+    local result
+    local updateUI = deferred.new(0.01):action(function()
+        local wheel = wheelFinderFn()
+        wheel:colorOrientation(result)
+    end)
+
     return function(metadata)
 
         local midiValue, value
@@ -110,10 +113,11 @@ local function makeWheelHandler(wheelFinderFn, vertical)
         local current = wheel:colorOrientation()
         if current then
             if vertical then
-                wheel:colorOrientation({right=current.right,up=value})
+                result = {right=current.right,up=value}
             else
-                wheel:colorOrientation({right=value,up=current.up})
+                result = {right=value,up=current.up}
             end
+            updateUI()
         end
     end
 end
@@ -139,56 +143,56 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     deps.manager.controls:new("masterHorizontal", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Master (Horizontal)",
+        text = "Color Wheel Master (Horizontal)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Master (Vertical)",
+        text = "Color Wheel Master (Vertical)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Shadows (Horizontal)",
+        text = "Color Wheel Shadows (Horizontal)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Shadows (Vertical)",
+        text = "Color Wheel Shadows (Vertical)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Midtones (Horizontal)",
+        text = "Color Wheel Midtones (Horizontal)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Midtones (Vertical)",
+        text = "Color Wheel Midtones (Vertical)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Highlights (Horizontal)",
+        text = "Color Wheel Highlights (Horizontal)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Highlights (Vertical)",
+        text = "Color Wheel Highlights (Vertical)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
     })
@@ -196,9 +200,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Saturation:
     --------------------------------------------------------------------------------
+    local cachedColorWheelMasterSaturation
+    local updateColorWheelMasterSaturation = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():master():show():saturationValue(cachedColorWheelMasterSaturation)
+    end)
     deps.manager.controls:new("colorWheelMasterSaturation", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Master Saturation",
+        text = "Color Wheel Master Saturation",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -214,7 +222,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
                     if midiValue == 16383/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():master():show():saturationValue(value)
+                    cachedColorWheelMasterSaturation = value
+                    updateColorWheelMasterSaturation()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -229,15 +238,20 @@ function mod.init(deps)
                         value = midiValue / 128 * 2
                     end
                     if midiValue == 128/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():master():show():saturationValue(value)
+                    cachedColorWheelMasterSaturation = value
+                    updateColorWheelMasterSaturation()
                 end
             end
         end,
     })
 
+    local cachedColorWheelShadowsSaturation
+    local updateColorWheelShadowsSaturation = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():shadows():show():saturationValue(cachedColorWheelShadowsSaturation)
+    end)
     deps.manager.controls:new("colorWheelShadowsSaturation", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Shadows Saturation",
+        text = "Color Wheel Shadows Saturation",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -253,7 +267,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
                     if midiValue == 16383/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
+                    cachedColorWheelShadowsSaturation = value
+                    updateColorWheelShadowsSaturation()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -268,15 +283,20 @@ function mod.init(deps)
                         value = midiValue / 128 * 2
                     end
                     if midiValue == 128/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
+                    cachedColorWheelShadowsSaturation = value
+                    updateColorWheelShadowsSaturation()
                 end
             end
         end,
     })
 
+    local cachedColorWheelMidtonesSaturation
+    local updateColorWheelMidtonesSaturation = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():midtones():show():saturationValue(cachedColorWheelMidtonesSaturation)
+    end)
     deps.manager.controls:new("colorWheelMidtonesSaturation", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Midtones Saturation",
+        text = "Color Wheel Midtones Saturation",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -292,7 +312,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
                     if midiValue == 16383/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
+                    cachedColorWheelMidtonesSaturation = value
+                    updateColorWheelMidtonesSaturation()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -307,15 +328,20 @@ function mod.init(deps)
                         value = midiValue / 128 * 2
                     end
                     if midiValue == 128/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
+                    cachedColorWheelMidtonesSaturation = value
+                    updateColorWheelMidtonesSaturation()
                 end
             end
         end,
     })
 
+    local cachedColorWheelHighlightsSaturation
+    local updateColorWheelHighlightsSaturation = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():highlights():show():saturationValue(cachedColorWheelHighlightsSaturation)
+    end)
     deps.manager.controls:new("colorWheelHighlightsSaturation", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Highlights Saturation",
+        text = "Color Wheel Highlights Saturation",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -331,7 +357,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
                     if midiValue == 16383/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
+                    cachedColorWheelHighlightsSaturation = value
+                    updateColorWheelHighlightsSaturation()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -346,7 +373,8 @@ function mod.init(deps)
                         value = midiValue / 128 * 2
                     end
                     if midiValue == 128/2 then value = 1 end
-                    fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
+                    cachedColorWheelHighlightsSaturation = value
+                    updateColorWheelHighlightsSaturation()
                 end
             end
         end,
@@ -355,9 +383,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Brightness (-0.4 to 0.4):
     --------------------------------------------------------------------------------
+    local cachedColorWheelMasterBrightness
+    local updateColorWheelMasterBrightness = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():master():show():brightnessValue(cachedColorWheelMasterBrightness)
+    end)
     deps.manager.controls:new("colorWheelMasterBrightness", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Master Brightness",
+        text = "Color Wheel Master Brightness",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -373,7 +405,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():master():show():brightnessValue(value)
+                    cachedColorWheelMasterBrightness = value
+                    updateColorWheelMasterBrightness()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -388,15 +421,20 @@ function mod.init(deps)
                         value = midiValue / 128 * 0.8 - 0.4
                     end
                     if midiValue == 128/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():master():show():brightnessValue(value)
+                    cachedColorWheelMasterBrightness = value
+                    updateColorWheelMasterBrightness()
                 end
             end
         end,
     })
 
+    local cachedColorWheelShadowsBrightness
+    local updateColorWheelShadowsBrightness = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():shadows():show():brightnessValue(cachedColorWheelShadowsBrightness)
+    end)
     deps.manager.controls:new("colorWheelShadowsBrightness", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Shadows Brightness",
+        text = "Color Wheel Shadows Brightness",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -412,7 +450,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
+                    cachedColorWheelShadowsBrightness = value
+                    updateColorWheelShadowsBrightness()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -427,15 +466,20 @@ function mod.init(deps)
                         value = midiValue / 128 * 0.8 - 0.4
                     end
                     if midiValue == 128/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
+                    cachedColorWheelShadowsBrightness = value
+                    updateColorWheelShadowsBrightness()
                 end
             end
         end,
     })
 
+    local cachedColorWheelHighlightsBrightness
+    local updateColorWheelHighlightsBrightness = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():highlights():show():brightnessValue(cachedColorWheelHighlightsBrightness)
+    end)
     deps.manager.controls:new("colorWheelHighlightsBrightness", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Highlights Brightness",
+        text = "Color Wheel Highlights Brightness",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -451,7 +495,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                    cachedColorWheelHighlightsBrightness = value
+                    updateColorWheelHighlightsBrightness()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -466,15 +511,20 @@ function mod.init(deps)
                         value = midiValue / 127 * 0.8 - 0.4
                     end
                     if midiValue == 128/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                    cachedColorWheelHighlightsBrightness = value
+                    updateColorWheelHighlightsBrightness()
                 end
             end
         end,
     })
 
+    local cachedColorWheelMidtonesBrightness
+    local updateColorWheelMidtonesBrightness = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():midtones():show():brightnessValue(cachedColorWheelMidtonesBrightness)
+    end)
     deps.manager.controls:new("colorWheelMidtonesBrightness", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Midtones Brightness",
+        text = "Color Wheel Midtones Brightness",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -490,7 +540,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
+                    cachedColorWheelMidtonesBrightness = value
+                    updateColorWheelMidtonesBrightness()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -505,7 +556,8 @@ function mod.init(deps)
                         value = midiValue / 128 * 0.8 - 0.4
                     end
                     if midiValue == 128/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
+                    cachedColorWheelMidtonesBrightness = value
+                    updateColorWheelMidtonesBrightness()
                 end
             end
         end,
@@ -514,9 +566,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Temperature (2500 to 10000):
     --------------------------------------------------------------------------------
+    local cachedColorWheelTemperature
+    local updateColorWheelTemperature = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():show():temperature(cachedColorWheelTemperature)
+    end)
     deps.manager.controls:new("colorWheelTemperature", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Temperature",
+        text = "Color Wheel Temperature",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -531,7 +587,8 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * (10000-2500) + 2500)
-                    fcp:inspector():color():colorWheels():show():temperature(value)
+                    cachedColorWheelTemperature = value
+                    updateColorWheelTemperature()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -540,7 +597,8 @@ function mod.init(deps)
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 127 * (10000-2500) + 2500)
-                    fcp:inspector():color():colorWheels():show():temperature(value)
+                    cachedColorWheelTemperature = value
+                    updateColorWheelTemperature()
                 end
             end
         end,
@@ -549,9 +607,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Tint (-50 to 50):
     --------------------------------------------------------------------------------
+    local cachedColorWheelTint
+    local updateColorWheelTint = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():show():tint(cachedColorWheelTint)
+    end)
     deps.manager.controls:new("colorWheelTint", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Tint",
+        text = "Color Wheel Tint",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -567,7 +629,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * (50*2) - 50)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():show():tint(value)
+                    cachedColorWheelTint = value
+                    updateColorWheelTint()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -576,7 +639,8 @@ function mod.init(deps)
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 127 * (50*2) - 50)
-                    fcp:inspector():color():colorWheels():show():tint(value)
+                    cachedColorWheelTint = value
+                    updateColorWheelTint()
                 end
             end
         end,
@@ -585,9 +649,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Hue (0 to 360):
     --------------------------------------------------------------------------------
+    local cachedColorWheelHue
+    local updateColorWheelHue = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():show():hue(cachedColorWheelHue)
+    end)
     deps.manager.controls:new("colorWheelHue", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Hue",
+        text = "Color Wheel Hue",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -603,7 +671,8 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 360)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():show():hue(value)
+                    cachedColorWheelHue = value
+                    updateColorWheelHue()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -612,7 +681,8 @@ function mod.init(deps)
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 127 * 360)
-                    fcp:inspector():color():colorWheels():show():hue(value)
+                    cachedColorWheelHue = value
+                    updateColorWheelHue()
                 end
             end
         end,
@@ -621,9 +691,13 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Mix (0 to 1):
     --------------------------------------------------------------------------------
+    local cachedColorWheelMix
+    local updateColorWheelMix = deferred.new(0.01):action(function()
+        fcp:inspector():color():colorWheels():show():mix(cachedColorWheelMix)
+    end)
     deps.manager.controls:new("colorWheelMix", {
         group = "fcpx",
-        text = "MIDI: Color Wheel Mix",
+        text = "Color Wheel Mix",
         subText = i18n("midiControlColorWheel"),
         fn = function(metadata)
             local midiValue
@@ -638,7 +712,8 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383)
-                    fcp:inspector():color():colorWheels():show():mix(value)
+                    cachedColorWheelMix = value
+                    updateColorWheelMix()
                 end
             else
                 --------------------------------------------------------------------------------
@@ -647,21 +722,16 @@ function mod.init(deps)
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
                     local value = midiValue / 127
-                    fcp:inspector():color():colorWheels():show():mix(value)
+                    cachedColorWheelMix = value
+                    updateColorWheelMix()
                 end
             end
         end,
     })
 
     return mod
-
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "finalcutpro.midi.controls.colorwheels",
     group           = "finalcutpro",

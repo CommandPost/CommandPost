@@ -4,31 +4,26 @@
 
 local require = require
 
-local log           = require("hs.logger").new("watchMan")
+local log           = require "hs.logger".new "watchMan"
 
-local inspect       = require("hs.inspect")
-local screen        = require("hs.screen")
-local timer         = require("hs.timer")
-local toolbar       = require("hs.webview.toolbar")
-local webview       = require("hs.webview")
+local inspect       = require "hs.inspect"
+local screen        = require "hs.screen"
+local timer         = require "hs.timer"
+local toolbar       = require "hs.webview.toolbar"
+local webview       = require "hs.webview"
 
-local config        = require("cp.config")
-local dialog        = require("cp.dialog")
-local just          = require("cp.just")
-local tools         = require("cp.tools")
-local i18n          = require("cp.i18n")
+local config        = require "cp.config"
+local dialog        = require "cp.dialog"
+local just          = require "cp.just"
+local tools         = require "cp.tools"
+local i18n          = require "cp.i18n"
 
-local panel         = require("panel")
-local _             = require("moses")
+local panel         = require "panel"
+local _             = require "moses"
 
 local doAfter       = timer.doAfter
 local waitUntil     = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.core.watchfolders.manager.WEBVIEW_LABEL -> string
@@ -532,11 +527,6 @@ function mod.init(env)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.watchfolders.manager",
     group           = "core",

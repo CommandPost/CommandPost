@@ -13,12 +13,13 @@ local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
 
 local find                          = string.find
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local MenuButton = Element:subclass("cp.ui.MenuButton")
+
+-- TIMEOUT_AFTER -> number
+-- Constant
+-- The common timeout amount in milliseconds.
+local TIMEOUT_AFTER = 3000
 
 --- cp.ui.MenuButton.matches(element) -> boolean
 --- Function
@@ -155,8 +156,8 @@ end
 ---  * the `Statement`.
 function MenuButton:doSelectItem(index)
     return If(self.UI)
-    :Then(self:doPress())
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         local item = menuUI[index]
         if item then
@@ -167,7 +168,7 @@ function MenuButton:doSelectItem(index)
             return false
         end
     end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
     :Label("MenuButton:doSelectItem")
 end
@@ -183,8 +184,8 @@ end
 ---  * the `Statement`.
 function MenuButton:doSelectValue(value)
     return If(self.UI)
-    :Then(self:doPress())
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         for _,item in ipairs(menuUI) do
             if item:title() == value then
@@ -195,9 +196,9 @@ function MenuButton:doSelectValue(value)
         menuUI:doCancel()
         return false
     end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
     :Otherwise(false)
-    :Label("MeuButton:doSelectValue")
+    :Label("MenuButton:doSelectValue")
 end
 
 --- cp.ui.MenuButton:selectItemMatching(pattern) -> boolean
@@ -243,8 +244,8 @@ end
 
 function MenuButton:doSelectItemMatching(pattern)
     return If(self.UI)
-    :Then(self:doPress())
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
         for _,item in ipairs(menuUI) do
             local title = item:attributeValue("AXTitle")

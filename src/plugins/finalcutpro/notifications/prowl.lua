@@ -14,11 +14,7 @@ local i18n                                      = require("cp.i18n")
 
 local slaxdom                                   = require("slaxml.slaxdom")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.notifications.prowl.apiValidated <cp.prop: boolean>
@@ -135,11 +131,7 @@ function mod.sendNotification(message, optionalTitle)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.notifications.prowl",
     group = "finalcutpro",

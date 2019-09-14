@@ -1,0 +1,29 @@
+<div id="streamDeckGroupControls" class="uiItem">
+{%	for __, groupID in pairs(groups) do
+		if groupID == defaultGroup then
+%}
+	<div id="streamDeckGroup_{{ groupID }}" class="streamDeckGroup{{ groupID == defaultGroup and ' selected' or '' }}">
+		<script>
+			window.onload = function() {
+				{% local scrollBarValue = scrollBarPosition[groupID] or 0 %}
+				document.getElementsByClassName("streamDeck")[0].getElementsByTagName("tbody")[0].scrollTop = {{ scrollBarValue }};
+			};
+		</script>
+		<table class="streamDeck">
+			<thead>
+				<tr>
+					<th class="sdRowIcon">{{ i18n("icon") }}</th>
+					<th class="sdRowAction">{{ i18n("actionOrWidget") }}</th>
+					<th class="sdRowActionButton"></th>
+					<th class="sdRowLabel">{{ i18n("buttonLabel") }}</th>
+					<th class="sdRowOrder"></th>
+				</tr>
+			</thead>
+			<tbody onscroll="saveScrollbarPosition('{{ groupID }}', this);">
+			{(html/rows.html, _.extend({groupID = groupID}, context))}
+			</tbody>
+		</table>
+	</div>
+{% 		end
+	end %}
+</div>

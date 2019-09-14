@@ -15,20 +15,28 @@ local tools                 = require("cp.tools")
 local rescale               = tools.rescale
 local delayed               = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id = "finalcutpro.tangent.browser",
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.tangent.group"]   = "fcpGroup",
+        ["finalcutpro.tangent.common"]  = "common",
+
+        --------------------------------------------------------------------------------
+        -- NOTE: These plugins aren't actually referred here in this plugin, but we
+        --       need to include them here so that they load before this plugin loads.
+        --------------------------------------------------------------------------------
+        ["finalcutpro.browser.insertvertical"] = "insertvertical",
     }
 }
 
 function plugin.init(deps)
+
+    local common                        = deps.common
+
+    local commandParameter              = common.commandParameter
+    local dynamicPopupSliderParameter   = common.dynamicPopupSliderParameter
+    local shortcutParameter             = common.shortcutParameter
 
     local id = 0x00140000
     local fcpGroup = deps.fcpGroup
@@ -97,6 +105,27 @@ function plugin.init(deps)
             appearanceAndFiltering:show():clipHeight():value(0)
             appearanceAndFiltering:hide()
         end)
+    id = id + 1
+
+    --------------------------------------------------------------------------------
+    -- Browser Clip Filtering:
+    --------------------------------------------------------------------------------
+    local clipFilteringGroup = group:group(i18n("clipFiltering"))
+
+    id = shortcutParameter(clipFilteringGroup, id, "allClips", "AllClips")
+    id = shortcutParameter(clipFilteringGroup, id, "hideRejected", "HideRejected")
+    id = shortcutParameter(clipFilteringGroup, id, "noRatingsOrKeywords", "NoRatingsOrKeywords")
+    id = shortcutParameter(clipFilteringGroup, id, "favorites", "ShowFavorites")
+    id = shortcutParameter(clipFilteringGroup, id, "rejected", "ShowRejected")
+    id = shortcutParameter(clipFilteringGroup, id, "unused", "FilterUnusedMedia")
+
+    local libraries = fcp:libraries()
+    id = dynamicPopupSliderParameter(group, libraries.clipFiltering, id, "clipFiltering", 1)
+
+    --------------------------------------------------------------------------------
+    -- Insert Clips Vertically from Browser to Timeline:
+    --------------------------------------------------------------------------------
+    commandParameter(group, id, "fcpx", "insertClipsVerticallyFromBrowserToTimeline")
 
 end
 

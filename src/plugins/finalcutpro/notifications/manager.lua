@@ -10,11 +10,7 @@ local plist                                     = require("cp.plist")
 local watcher                                   = require("cp.watcher")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.notifications.manager -> table
@@ -174,11 +170,7 @@ function mod.unwatch(id)
     checkWatching()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.notifications.manager",
     group = "finalcutpro",

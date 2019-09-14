@@ -6,11 +6,6 @@ local require = require
 
 local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.tangent.pasteboard.group
@@ -52,11 +47,7 @@ function mod.init(fcpGroup, pbm)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.pasteboard",
     group = "finalcutpro",

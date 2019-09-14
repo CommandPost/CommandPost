@@ -21,11 +21,7 @@ local copy		        = fnutils.copy
 local format	        = string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {
     _actions	= {},
     _actionIds	= {},
@@ -43,7 +39,6 @@ local ARRAY_DELIM = "||"
 -- Constant
 -- Undefined String.
 local UNDEFINED = "_undefined"
-
 
 -- freezeParams(params) -> string
 -- Function
@@ -224,11 +219,7 @@ function mod.getActivator(activatorId)
     return a
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "core.action.manager",
     group			= "core",

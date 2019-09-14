@@ -5,10 +5,6 @@
 local require       = require
 local app           = require("cp.app")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local fcpApp = app.forBundleID("com.apple.motionapp")
-return fcpApp
+
+local motionApp = app.forBundleID("com.apple.motionapp")
+return motionApp

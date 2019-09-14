@@ -281,11 +281,7 @@ local fnutils           = require("hs.fnutils")
 local format            = string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local prop = {}
 
 -- The metatable

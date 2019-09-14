@@ -15,11 +15,7 @@ local shortcut                          = require("cp.commands.shortcut")
 
 local doAfter                           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- FULLSCREEN_KEYS -> table
@@ -224,11 +220,7 @@ function mod.checkCommand(whichModifier, whichKey)
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.fullscreen.shortcuts",
     group           = "finalcutpro",

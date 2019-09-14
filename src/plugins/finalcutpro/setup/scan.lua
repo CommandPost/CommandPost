@@ -12,11 +12,7 @@ local i18n          = require("cp.i18n")
 
 local doAfter       = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.setup.scan.init(deps) -> self
@@ -75,11 +71,7 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "finalcutpro.setup.scan",
     group			= "finalcutpro",

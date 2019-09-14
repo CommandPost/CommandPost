@@ -25,11 +25,7 @@ local go                            = require("cp.rx.go")
 
 local If, Do                        = go.If, go.Do
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local RadioButton = Element:subclass("cp.ui.RadioButton")
 
 --- cp.ui.RadioButton.matches(element) -> boolean

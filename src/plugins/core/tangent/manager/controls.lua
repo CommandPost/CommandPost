@@ -15,11 +15,7 @@ local parameter         = require("parameter")
 
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local controls = {}
 controls.mt = {}
 
@@ -91,7 +87,7 @@ function controls.mt:register(control)
         error("The control must have an ID")
     end
     if self.ids[control.id] ~= nil then
-        error("There is already a control with the same ID: %s", control.id)
+        error(string.format("There is already a control with the same ID: %s", control.id))
     end
     self.ids[control.id] = control
     return self

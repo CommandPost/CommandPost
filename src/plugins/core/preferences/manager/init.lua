@@ -4,31 +4,26 @@
 
 local require = require
 
-local log         = require("hs.logger").new("prefsMgr")
+local log         = require "hs.logger".new "prefsMgr"
 
-local inspect     = require("hs.inspect")
-local screen      = require("hs.screen")
-local timer       = require("hs.timer")
-local toolbar     = require("hs.webview.toolbar")
-local webview     = require("hs.webview")
+local inspect     = require "hs.inspect"
+local screen      = require "hs.screen"
+local timer       = require "hs.timer"
+local toolbar     = require "hs.webview.toolbar"
+local webview     = require "hs.webview"
 
-local config      = require("cp.config")
-local dialog      = require("cp.dialog")
-local just        = require("cp.just")
-local tools       = require("cp.tools")
-local i18n        = require("cp.i18n")
+local config      = require "cp.config"
+local dialog      = require "cp.dialog"
+local just        = require "cp.just"
+local tools       = require "cp.tools"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
+local _           = require "moses"
 
-local panel       = require("panel")
+local panel       = require "panel"
 
 local waitUntil   = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.core.preferences.manager.WEBVIEW_LABEL -> string
@@ -393,6 +388,7 @@ function mod.show()
         mod.selectPanel(mod.currentPanelID())
         mod._webview:html(generateHTML())
         mod._webview:show()
+        hs.focus() -- This will force a spaces change if needed.
         mod.focus()
     end
 
@@ -446,7 +442,11 @@ end
 function mod.refresh(id)
     if mod._webview then
         if mod.currentPanelID() ~= id then
-            mod.selectPanel(id)
+            if id then
+                mod.selectPanel(id)
+            else
+                mod.selectPanel(mod.currentPanelID())
+            end
             mod._webview:html(generateHTML())
         end
     end
@@ -550,7 +550,6 @@ end
 ---  ** `tooltip`       - The human-readable details for the toolbar icon when the mouse is hovering over it.
 ---  ** `closeFn`       - A callback function that's triggered when the Preferences window is closed.
 function mod.addPanel(params)
-
     local newPanel = panel.new(params, mod)
 
     local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
@@ -559,11 +558,6 @@ function mod.addPanel(params)
     return newPanel
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.preferences.manager",
     group           = "core",

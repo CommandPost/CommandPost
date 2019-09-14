@@ -4,15 +4,15 @@
 
 local require = require
 
-local log						    = require("hs.logger").new("PropertyRow")
+local log               = require("hs.logger").new("PropertyRow")
 
 local inspect           = require("hs.inspect")
-local geometry					= require("hs.geometry")
+local geometry          = require("hs.geometry")
 
-local axutils					  = require("cp.ui.axutils")
-local Button					  = require("cp.ui.Button")
+local axutils           = require("cp.ui.axutils")
+local Button            = require("cp.ui.Button")
 local is                = require("cp.is")
-local prop						  = require("cp.prop")
+local prop              = require("cp.prop")
 
 local Element           = require("cp.ui.Element")
 
@@ -20,11 +20,7 @@ local format            = string.format
 local childMatching     = axutils.childMatching
 local childrenMatching  = axutils.childrenMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local PropertyRow = Element:subclass("PropertyRow")
 
 -- UI_FINDER -> table
@@ -36,6 +32,11 @@ local UI_FINDER = {}
 -- Constant
 -- UI Finder Label.
 local UI_FINDER_LABEL = "PropertyRow UI Finder"
+
+--- cp.ui.PropertyRow.intersectBuffer
+--- Constant
+--- Defines the buffer for intersections with the `labelUI`.
+PropertyRow.static.intersectBuffer = 2
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function
@@ -341,7 +342,7 @@ function PropertyRow:children()
             children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
                 local childFrame = child and child:attributeValue("AXFrame")
-                return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
+                return childFrame ~= nil and labelFrame:intersect(childFrame).h > PropertyRow.intersectBuffer and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then
                 table.sort(children, axutils.compareLeftToRight)

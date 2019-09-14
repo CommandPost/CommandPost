@@ -33,11 +33,6 @@ local processInfo   = hs.processInfo
 local sortedIndex   = moses.sortedIndex
 local waitUntil     = timer.waitUntil
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- SNAPPING_RANGE -> number
@@ -599,25 +594,6 @@ function mod.show()
     return true
 end
 
---- plugins.finalcutpro.hud.manager.focus() -> boolean
---- Function
---- Puts focus on the HUD.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful or otherwise `false`.
-function mod.focus()
-    just.doUntil(function()
-        if mod._webview and mod._webview:hswindow() and mod._webview:hswindow():raise():focus() then
-            return true
-        else
-            return false
-        end
-    end)
-end
-
 --- plugins.finalcutpro.hud.manager.hide() -> none
 --- Function
 --- Hides the HUD.
@@ -977,11 +953,6 @@ function mod.update()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "finalcutpro.hud.manager",
     group           = "finalcutpro",
@@ -998,8 +969,7 @@ function plugin.init(deps, env)
     -- Setup Menus:
     --------------------------------------------------------------------------------
    deps.menu.tools
-        :addMenu(10000, function() return i18n("hud") end)
-        :addItem(1000, function()
+        :addItem(10000, function()
             return { title = i18n("enableHUD"), fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
         end)
 

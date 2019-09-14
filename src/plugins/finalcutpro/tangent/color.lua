@@ -4,13 +4,12 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("fcp_tangent")
+--local log                                       = require("hs.logger").new("fcp_tangent")
 
 local tangent                                   = require("hs.tangent")
 
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 local deferred                                  = require("cp.deferred")
-local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local go                                        = require("cp.rx.go")
 local i18n                                      = require("cp.i18n")
@@ -19,47 +18,27 @@ local tools                                     = require("cp.tools")
 
 local format                                    = string.format
 local If, Do                                    = go.If, go.Do
+local Done                                      = go.Done
 local round                                     = tools.round
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
+local plugin = {
+    id = "finalcutpro.tangent.color",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.tangent.group"]  = "fcpGroup",
+        ["finalcutpro.tangent.common"]  = "common",
+        ["core.tangent.manager"] = "manager",
+    }
+}
 
--- doShortcut(id) -> none
--- Function
--- Triggers a shortcut via Rx.
---
--- Parameters:
---  * id - The ID of the shortcut.
---
--- Returns:
---  * None
-local function doShortcut(id)
-    return fcp:doShortcut(id):Catch(function(message)
-        log.wf("Unable to perform %q shortcut: %s", id, message)
-        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-    end)
-end
+function plugin.init(deps)
 
---- plugins.finalcutpro.tangent.manager.init() -> none
---- Function
---- Initialises the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init(tangentManager, fcpGroup)
-    --------------------------------------------------------------------------------
-    -- Add Final Cut Pro Modes:
-    --------------------------------------------------------------------------------
-    tangentManager.addMode(0x00010003, "FCP: Board")
+    local common = deps.common
+    local fcpGroup = deps.fcpGroup
+    local manager = deps.manager
 
-    tangentManager.addMode(0x00010004, "FCP: Wheels")
+    local doShortcut = common.doShortcut
+    local doShowParameter = common.doShowParameter
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
@@ -114,7 +93,9 @@ function mod.init(tangentManager, fcpGroup)
                     end)
                     :Then(
                         If(function() return percentChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:percent()
                             if value then
@@ -128,7 +109,9 @@ function mod.init(tangentManager, fcpGroup)
                         :Otherwise(false)
                     ):Then(
                         If(function() return angleChange ~= 0 end)
-                        :Then(puck:doShow())
+                        :Then(
+                            If(function() return puck:isShowing() end):Is(false):Then(puck:doShow()):Then(Done())
+                        )
                         :Then(function()
                             local value = puck:angle()
                             if value then
@@ -224,28 +207,40 @@ function mod.init(tangentManager, fcpGroup)
         end)
         :Then(
             If(function() return rightChange ~= 0 or upChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:nudgeColor(rightChange, upChange)
-                rightChange, upChange = 0, 0
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:nudgeColor(rightChange, upChange)
+                    rightChange, upChange = 0, 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Then(
             If(function() return satChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:saturation():shiftValue(satChange)
-                satChange = 0
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:saturation():shiftValue(satChange)
+                    satChange = 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Then(
             If(function() return brightChange ~= 0 end)
-            :Then(wheel:doShow())
-            :Then(function()
-                wheel:brightness():shiftValue(brightChange)
-                brightChange = 0
-                return true
-            end)
+            :Then(
+                If(function() return wheel:isShowing() end)
+                :Then(function()
+                    wheel:brightness():shiftValue(brightChange)
+                    brightChange = 0
+                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+                    return true
+                end)
+                :Otherwise(wheel:doShow())
+            )
         ):Finally(function()
             updating(false)
         end)
@@ -350,14 +345,19 @@ function mod.init(tangentManager, fcpGroup)
         :Then(function()
             cw:temperatureSlider():shiftValue(tempChange)
             tempChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0101):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
         If(function() return tintChange ~= 0 end)
         :Then(cw:doShow())
         :Then(function()
-            cw:show():tintSlider():shiftValue(tintChange)
+            local currentValue = cw:show():tint()
+            if currentValue then
+                cw:tint(currentValue+tintChange)
+            end
             tintChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0102):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
@@ -365,10 +365,20 @@ function mod.init(tangentManager, fcpGroup)
         :Then(cw:doShow())
         :Then(function()
             local currentValue = cw:show():hue()
-            if currentValue then
-                cw:hue(currentValue+hueChange)
+
+            local newValue = currentValue + hueChange
+            if newValue > 361 then
+                newValue = 0
+            elseif newValue < 0 then
+                newValue = 360
             end
+
+            if currentValue then
+                cw:hue(newValue)
+            end
+
             hueChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0103):update() -- Force the Tangent display to update.
             return true
         end)
     ):Then(
@@ -377,13 +387,16 @@ function mod.init(tangentManager, fcpGroup)
         :Then(function()
             cw:show():mixSlider():shiftValue(mixChange)
             mixChange = 0
+            manager.controls:findByID(wheelsBaseID+0x0104):update() -- Force the Tangent display to update.
             return true
         end)
     )
 
     updateUI:action(update)
 
-    -- Color Wheel Temperature
+    --------------------------------------------------------------------------------
+    -- Color Wheel Temperature:
+    --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0101)
         :name(format("%s - %s", iColorWheel, i18n("temperature")))
         :name9(format("%s %s", iColorWheel4, i18n("temperature4")))
@@ -491,6 +504,7 @@ function mod.init(tangentManager, fcpGroup)
 
     colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
         :onPress(doShortcut("ColorBoard-ToggleInsideColorMask"))
+
     --------------------------------------------------------------------------------
     --
     -- COLOR BOARD ACTIONS:
@@ -532,30 +546,15 @@ function mod.init(tangentManager, fcpGroup)
 
     cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
         :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
-end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
-local plugin = {
-    id = "finalcutpro.tangent.color",
-    group = "finalcutpro",
-    dependencies = {
-        ["core.tangent.manager"]       = "manager",
-        ["finalcutpro.tangent.group"]  = "fcpGroup",
-    }
-}
-
-function plugin.init(deps)
+    cbGroup:action(wheelsBaseID+0x0132, i18n("resetSelectedControl"))
+        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
 
     --------------------------------------------------------------------------------
-    -- Initalise the Module:
+    -- Show Inspector:
     --------------------------------------------------------------------------------
-    mod.init(deps.manager, deps.fcpGroup)
+    doShowParameter(ciGroup, ci, wheelsBaseID+0x0132, i18n("show") .. " " .. i18n("inspector"))
 
-    return mod
 end
 
 return plugin

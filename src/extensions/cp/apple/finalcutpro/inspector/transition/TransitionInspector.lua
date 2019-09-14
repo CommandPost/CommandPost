@@ -18,13 +18,11 @@ local cache                             = axutils.cache
 
 
 local hasProperties                     = IP.hasProperties
-local section, popUpButton              = IP.section, IP.popUpButton
+local popUpButton                       = IP.popUpButton
+local section                           = IP.section
+local slider                            = IP.slider
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TransitionInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 
 local function findContentUI(element)
@@ -66,8 +64,13 @@ end
 ---  * A `TransitionInspector` object
 function TransitionInspector:initialize(parent)
     BasePanel.initialize(self, parent, "Transition")
-
     hasProperties(self, self.contentUI) {
+        crossDissolve           = section "CrossDissolve::Filter Name" {
+            look                    = popUpButton "CrossDissolve::Look",
+            amount                  = slider "CrossDissolve::Amount",
+            ease                    = popUpButton "Transition::Ease Type",
+            easeAmount              = slider "Transition::Ease Amount",
+        },
         audioCrossfade          = section "FFAudioTransitionEffect" {
             fadeInType              = popUpButton "FFAudioTransitionFadeInType",
             fadeOutType             = popUpButton "FFAudioTransitionFadeOutType",
@@ -82,5 +85,42 @@ function TransitionInspector.lazy.prop:contentUI()
         end)
     end)
 end
+
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector.LOOKS -> table
+--- Constant
+--- Cross Dissolve Looks
+TransitionInspector.LOOKS = {
+    [1]     = {flexoID = "CrossDissolve::Film", i18n = "film"},
+    [2]     = {flexoID = "CrossDissolve::Bright", i18n = "bright"},
+    [3]     = {flexoID = "CrossDissolve::Dark", i18n = "dark"},
+    [4]     = {flexoID = "CrossDissolve::Cold", i18n = "cold"},
+    [5]     = {flexoID = "CrossDissolve::Warm", i18n = "warm"},
+    [6]     = {flexoID = "CrossDissolve::Sharp", i18n = "sharp"},
+    [7]     = {flexoID = "CrossDissolve::Dull", i18n = "dull"},
+    [8]     = {flexoID = "CrossDissolve::Additive", i18n = "additive"},
+    [9]     = {flexoID = "CrossDissolve::Subtractive", i18n = "subtractive"},
+    [10]    = {flexoID = "CrossDissolve::Highlights", i18n = "highlights"},
+    [11]    = {flexoID = "CrossDissolve::Shadows", i18n = "shadows"},
+    [12]    = {flexoID = "CrossDissolve::Video", i18n = "video"},
+}
+
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector.EASE -> table
+--- Constant
+--- Ease Types
+TransitionInspector.EASE_TYPES = {
+    [1]     = {flexoID = "Transition::Ease In", i18n = "in"},
+    [2]     = {flexoID = "Transition::Ease Out", i18n = "out"},
+    [3]     = {flexoID = "Transition::Ease In Out", i18n = "inAndOut"},
+}
+
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector.FADE_TYPES -> table
+--- Constant
+--- Fade Types
+TransitionInspector.FADE_TYPES = {
+    [1]     = {flexoID = "FFAudioFadeTypeLinear", i18n = "linear"},
+    [2]     = {flexoID = "FFAudioFadeTypePlusThreeDecibels", i18n = "plusThreeDb"},
+    [3]     = {flexoID = "FFAudioFadeTypeMinusThreeDecibels", i18n = "minusThreeDb"},
+    [4]     = {flexoID = "FFAudioFadeTypeSCurve", i18n = "sCurve"},
+}
 
 return TransitionInspector

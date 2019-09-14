@@ -5,22 +5,21 @@
 
 local require = require
 
-local fnutils           = require("hs.fnutils")
-local image             = require("hs.image")
+--local log				= require "hs.logger".new "menuaction"
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local idle              = require("cp.idle")
+local fnutils           = require "hs.fnutils"
+local image             = require "hs.image"
 
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local idle              = require "cp.idle"
+local localeID          = require "cp.i18n.localeID"
+
+local concat            = table.concat
 local imageFromPath     = image.imageFromPath
-local insert, concat    = table.insert, table.concat
+local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- ID -> string
@@ -60,26 +59,30 @@ end
 ---
 --- Returns:
 ---  * None
+local alreadyReloading = false
 function mod.reload()
-    local choices = {}
-    fcp:menu():visitMenuItems(function(path, menuItem)
-        local title = menuItem:title()
-
-        if path[1] ~= "Apple" then
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-
-            insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
-    end)
-    config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
-    mod._choices = choices
-    mod.reset()
+    if fcp:menu():showing() and not alreadyReloading then
+        alreadyReloading = true
+        local choices = {}
+        fcp:menu():visitMenuItems(function(path, menuItem)
+            local title = menuItem:title()
+            if path[1] ~= "Apple" then
+                local params = {}
+                params.path = fnutils.concat(fnutils.copy(path), { title })
+                params.locale = fcp:currentLocale().code
+                insert(choices, {
+                    text = title,
+                    subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                    params = params,
+                    id = mod.actionId(params),
+                })
+            end
+        end)
+        config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
+        mod._choices = choices
+        mod.reset()
+        alreadyReloading = false
+    end
 end
 
 --- plugins.finalcutpro.menu.menuaction.onChoices(choices) -> none
@@ -92,16 +95,14 @@ end
 --- Returns:
 ---  * None
 function mod.onChoices(choices)
-    if not fcp:isFrontmost() or not mod._choices then
-        return true
-    end
-
-    for _,choice in ipairs(mod._choices) do
-        choices:add(choice.text)
-            :subText(choice.subText)
-            :params(choice.params)
-            :image(ICON)
-            :id(choice.id)
+    if mod._choices then
+        for _,choice in ipairs(mod._choices) do
+            choices:add(choice.text)
+                :subText(choice.subText)
+                :params(choice.params)
+                :image(ICON)
+                :id(choice.id)
+        end
     end
 end
 
@@ -143,7 +144,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch():menu():doSelectMenu(action.path):Now()
+        fcp:launch():menu():doSelectMenu(action.path, {plain=true, locale=localeID(action.locale)}):Now()
         return true
     end
     return false
@@ -159,31 +160,40 @@ end
 --- Returns:
 ---  * None
 function mod.init(actionmanager)
-    mod._manager = actionmanager
-    mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-    :onChoices(mod.onChoices)
-    :onExecute(mod.onExecute)
-    :onActionId(mod.actionId)
 
     mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
-    local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
+
+    mod._manager = actionmanager
+    mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
+        :onChoices(mod.onChoices)
+        :onExecute(mod.onExecute)
+        :onActionId(mod.actionId)
 
     --------------------------------------------------------------------------------
     -- Watch for restarts:
     --------------------------------------------------------------------------------
     fcp.isRunning:watch(function()
-        idle.queue(delay, function()
-            --log.df("Reloading Final Cut Menu Items")
+        idle.queue(5, function()
             mod.reload()
         end)
     end, true)
+
+    --------------------------------------------------------------------------------
+    -- Watch for new Custom Workspaces:
+    --------------------------------------------------------------------------------
+    fcp.customWorkspaces:watch(function()
+        mod.reload()
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Reload the menu cache if Final Cut Pro is already running:
+    --------------------------------------------------------------------------------
+    if fcp:menu():showing() then
+        mod.reload()
+    end
+
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "finalcutpro.menu.menuaction",
     group           = "finalcutpro",

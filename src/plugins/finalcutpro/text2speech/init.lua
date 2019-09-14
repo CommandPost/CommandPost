@@ -4,42 +4,42 @@
 
 local require = require
 
-local log                               = require("hs.logger").new("text2speech")
+local log                               = require "hs.logger".new "text2speech"
 
-local application                       = require("hs.application")
-local chooser                           = require("hs.chooser")
-local drawing                           = require("hs.drawing")
-local eventtap                          = require("hs.eventtap")
-local fs                                = require("hs.fs")
-local http                              = require("hs.http")
-local menubar                           = require("hs.menubar")
-local mouse                             = require("hs.mouse")
-local pasteboard                        = require("hs.pasteboard")
-local screen                            = require("hs.screen")
-local speech                            = require("hs.speech")
-local timer                             = require("hs.timer")
+local application                       = require "hs.application"
+local chooser                           = require "hs.chooser"
+local drawing                           = require "hs.drawing"
+local eventtap                          = require "hs.eventtap"
+local fs                                = require "hs.fs"
+local http                              = require "hs.http"
+local menubar                           = require "hs.menubar"
+local mouse                             = require "hs.mouse"
+local pasteboard                        = require "hs.pasteboard"
+local screen                            = require "hs.screen"
+local speech                            = require "hs.speech"
+local timer                             = require "hs.timer"
 
-local axutils                           = require("cp.ui.axutils")
-local config                            = require("cp.config")
-local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
-local just                              = require("cp.just")
-local tools                             = require("cp.tools")
-local i18n                              = require("cp.i18n")
+local axutils                           = require "cp.ui.axutils"
+local config                            = require "cp.config"
+local dialog                            = require "cp.dialog"
+local fcp                               = require "cp.apple.finalcutpro"
+local just                              = require "cp.just"
+local tools                             = require "cp.tools"
+local i18n                              = require "cp.i18n"
 
 local doAfter                           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local displayChooseFolder               = dialog.displayChooseFolder
+local displayErrorMessage               = dialog.displayErrorMessage
+local displaySmallNumberTextBoxMessage  = dialog.displaySmallNumberTextBoxMessage
+local displayTextBoxMessage             = dialog.displayTextBoxMessage
+
 local mod = {}
 
---- plugins.finalcutpro.text2speech.DELETE_DELAY
---- Constant
---- How long before a file is deleted in seconds.
-mod.DELETE_DELAY = 30
+-- DELETE_DELAY
+-- Constant
+-- How long before a file is deleted in seconds.
+local DELETE_DELAY = 30
 
 --- plugins.finalcutpro.text2speech.copyToMediaFolder <cp.prop: boolean; live>
 --- Constant
@@ -126,7 +126,7 @@ mod.createRoleForVoice = config.prop("text2speechCreateRoleForVoice", true)
 --- Returns:
 ---  * A string of the selected path or `false` if cancelled.
 function mod.chooseFolder()
-    local result = dialog.displayChooseFolder(i18n("textToSpeechDestination"))
+    local result = displayChooseFolder(i18n("textToSpeechDestination"))
     if result then
         mod.path(result)
     end
@@ -171,7 +171,7 @@ end
 -- Returns:
 --  * None
 function mod._speechError()
-    dialog.displayErrorMessage("Something went wrong whilst trying to generate the generated voice over.")
+    displayErrorMessage("Something went wrong whilst trying to generate the generated voice over.")
 end
 
 -- plugins.finalcutpro.text2speech._completionFn() -> none
@@ -328,7 +328,7 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     local savePath = mod._lastSavePath
     if not tools.doesFileExist(savePath) then
-        dialog.displayErrorMessage("The generated Text to Speech file could not be found.")
+        displayErrorMessage("The generated Text to Speech file could not be found.")
         return nil
     end
 
@@ -363,7 +363,7 @@ function mod._completeProcess()
     local safeSavePath = "file://" .. http.encodeForQuery(savePath)
     local result = pasteboard.writeObjects({url=safeSavePath})
     if not result then
-        dialog.displayErrorMessage("The URL could not be written to the Pasteboard.")
+        displayErrorMessage("The URL could not be written to the Pasteboard.")
         return nil
     end
 
@@ -379,7 +379,7 @@ function mod._completeProcess()
         end
     end, 0.5)
     if not pasteboardCheckResult then
-        dialog.displayErrorMessage("The URL on the pasteboard was not the same as what we wrote to the Pasteboard.")
+        displayErrorMessage("The URL on the pasteboard was not the same as what we wrote to the Pasteboard.")
         return nil
     end
 
@@ -390,7 +390,7 @@ function mod._completeProcess()
     if result then
         fcp:selectMenu({"Window", "Go To", "Timeline"})
     else
-        dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
+        displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
         return nil
     end
 
@@ -408,7 +408,7 @@ function mod._completeProcess()
         if takeTwo then
             fcp:selectMenu({"Edit", "Paste as Connected Clip"})
         else
-            dialog.displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
+            displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
             return nil
         end
     end
@@ -436,7 +436,7 @@ function mod._completeProcess()
         end)
 
         if clips == nil then
-            dialog.displayErrorMessage("No clips detected.")
+            displayErrorMessage("No clips detected.")
             return false
         end
 
@@ -459,7 +459,7 @@ function mod._completeProcess()
             end
         end
         if not clip then
-            dialog.displayErrorMessage("No clip found.")
+            displayErrorMessage("No clip found.")
             return
         end
 
@@ -478,7 +478,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         local libraries = fcp:browser():libraries()
         if not libraries:isShowing() then
-            dialog.displayErrorMessage("Library Panel is closed.")
+            displayErrorMessage("Library Panel is closed.")
             return false
         end
 
@@ -495,7 +495,7 @@ function mod._completeProcess()
             fcp:selectMenu({"File", "Reveal in Browser"})
             clips = libraries:selectedClipsUI()
             if #clips ~= 1 then
-                dialog.displayErrorMessage("Wrong number of clips selected.")
+                displayErrorMessage("Wrong number of clips selected.")
                 return false
             end
         end
@@ -559,7 +559,7 @@ function mod._completeProcess()
         -- If the 'Notes' column is missing then error:
         --------------------------------------------------------------------------------
         if notesFieldID == nil then
-            dialog.displayErrorMessage("Could not find the Notes Column.")
+            displayErrorMessage("Could not find the Notes Column.")
             return
         end
 
@@ -589,7 +589,7 @@ function mod._completeProcess()
             if fcp:menu():isEnabled({"Window", "Go To", "Timeline"}) then
                 fcp:selectMenu({"Window", "Go To", "Timeline"})
             else
-                dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
+                displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
                 return nil
             end
 
@@ -607,7 +607,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         if not mod.insertIntoTimeline() then
             if not fcp:selectMenu({"Edit", "Undo Paste"}, {pressAll = true}) then
-                dialog.displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
+                displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
                 return nil
             end
         end
@@ -628,7 +628,7 @@ function mod._completeProcess()
     -- Delete File After Import:
     --------------------------------------------------------------------------------
     if copyToMediaFolder and mod.deleteFileAfterImport() then
-        doAfter(mod.DELETE_DELAY, function()
+        doAfter(DELETE_DELAY, function()
             os.remove(savePath)
         end)
     end
@@ -732,7 +732,8 @@ function mod._rightClickCallback()
         },
         { title = "-" },
         { title = i18n("customiseFinderTag"), fn = function()
-                local result = dialog.displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), mod._tagValidation)
+                mod.chooser:hide()
+                local result = displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), mod._tagValidation)
                 if result then
                     mod.tag(result)
                 end
@@ -741,6 +742,7 @@ function mod._rightClickCallback()
         },
         { title = i18n("changeDestinationFolder"),
             fn = function()
+                mod.chooser:hide()
                 mod.chooseFolder()
                 mod.chooser:show()
             end,
@@ -794,15 +796,18 @@ function mod._rightClickCallback()
         },
         { title = i18n("setIncrementalNumber"),
             fn = function()
-                local result = dialog.displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())
+                mod.chooser:hide()
+                local result = displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())
                 if type(result) == "number" then
                     mod.currentIncrementalNumber(result)
                 end
+                mod.chooser:show()
             end,
         },
         { title = i18n("setFilenamePrefix"),
             fn = function()
-                local result = mod.customPrefix(dialog.displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", i18n("customPrefixError"), mod.customPrefix(), function(value)
+                mod.chooser:hide()
+                local result = mod.customPrefix(displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", i18n("customPrefixError"), mod.customPrefix(), function(value)
                     if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
                         return true
                     else
@@ -812,6 +817,7 @@ function mod._rightClickCallback()
                 if type(result) == "string" then
                     mod.customPrefix(result)
                 end
+                mod.chooser:show()
             end,
         },
         { title = "-" },
@@ -945,11 +951,6 @@ function mod.insertFromPasteboard()
     end
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "finalcutpro.text2speech",
     group           = "finalcutpro",

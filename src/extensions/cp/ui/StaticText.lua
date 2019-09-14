@@ -12,11 +12,7 @@ local prop                  = require("cp.prop")
 
 local delayedTimer          = timer.delayed
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local StaticText = Element:subclass("cp.ui.StaticText")
 
 --- cp.ui.StaticText.matches(element) -> boolean

@@ -23,11 +23,7 @@ local TextField							= require("cp.ui.TextField")
 local cache                             = axutils.cache
 local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local GeneratorsBrowser = {}
 
 --- cp.apple.finalcutpro.main.GeneratorsBrowser.TITLE -> string

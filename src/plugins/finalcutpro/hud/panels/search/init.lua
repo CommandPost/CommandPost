@@ -19,6 +19,7 @@ local just                      = require("cp.just")
 local pattern                   = require("cp.pattern")
 local tools                     = require("cp.tools")
 
+local childIndex                = axutils.childIndex
 local childrenWithRole          = axutils.childrenWithRole
 local childWithRole             = axutils.childWithRole
 local doesMatchPattern          = pattern.doesMatch
@@ -30,11 +31,7 @@ local tableContains             = tools.tableContains
 local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- MAXIMUM_HISTORY -> number
@@ -489,7 +486,7 @@ local function find(searchString, column, findNext, findPrevious)
         local rows = contentUI:attributeValue("AXChildren")
         local selectedRows = contentUI:attributeValue("AXSelectedRows")
         if selectedRows and next(selectedRows) then
-            currentRowID = axutils.childIndex(rows, selectedRows[#selectedRows])
+            currentRowID = childIndex(selectedRows[#selectedRows])
         else
             currentRowID = 0
         end
@@ -664,17 +661,14 @@ local function showHistoryPopup()
     popup:popupMenu(mouse.getAbsolutePosition(), true)
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.hud.panels.search",
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.hud.manager"]     = "manager",
         ["core.action.manager"]         = "actionManager",
+        ["finalcutpro.commands"]        = "fcpxCmds",
     }
 }
 
@@ -684,9 +678,10 @@ function plugin.init(deps, env)
         mod._manager = deps.manager
         mod._actionManager = deps.actionManager
 
+        local id = "search"
         local panel = deps.manager.addPanel({
             priority    = 2.1,
-            id          = "search",
+            id          = id,
             label       = i18n("search"),
             tooltip     = i18n("search"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/search.png"))),
@@ -744,6 +739,24 @@ function plugin.init(deps, env)
             end
         end
         deps.manager.addHandler("hudSearch", controllerCallback)
+
+        --------------------------------------------------------------------------------
+        -- Setup Command:
+        --------------------------------------------------------------------------------
+        deps.fcpxCmds
+            :add("cpHUDSearch")
+            :whenActivated(function()
+                if mod._manager.enabled() then
+                    if mod._manager.lastTab() == id then
+                        mod._manager.enabled(false)
+                    else
+                        mod._manager.refresh(id)
+                    end
+                else
+                    mod._manager.lastTab(id)
+                    mod._manager.enabled(true)
+                end
+            end)
     end
 end
 

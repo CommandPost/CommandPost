@@ -1,5 +1,5 @@
 .midiDropdown {
-	width: 200px;
+	width: 180px;
 	float: left;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .midiRowAction {
-	width: 260px;
+	width: 240px;
 }
 .midiRowActionButton {
 	width: 50px;
@@ -61,7 +61,7 @@ midiRowType {
 	width: 75px;
 }
 .midiRowLearn {
-	width: 100px;
+	width: 120px;
 }
 
 .midi thead {
@@ -82,7 +82,7 @@ midiRowType {
 
 .midi tbody {
 	display:block;
-	height: 250px;
+	height: 390px;
 	font-weight: normal;
 	font-size: 10px;
 	width: 100%;
@@ -96,31 +96,49 @@ midiRowType {
 	color: white;
 }
 
+.midiLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
 .openAudioMIDISetup {
 	margin: 0px 0px 5px;
 	float: left;
-	width: 200px;
+	width: 180px;
 }
 
 .refreshMidi {
 	margin: 0px 0px 0px 5px;
 	text-align: center;
 	float: left;
-	width: 200px;
+	width: 180px;
 }
 
 .applyTopDeviceToAll {
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 200px;
+	width: 180px;
 }
 
 .midiResetGroup {
 	margin: 10px 0px 0px 5px;
 	text-align: center;
 	float: left;
-	width: 200px;
+	width: 180px;
 }
 
 .resetShortcutsToNone {

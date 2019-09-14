@@ -19,11 +19,7 @@ local script            = require("cp.i18n.script")
 
 local match, format     = string.match, string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

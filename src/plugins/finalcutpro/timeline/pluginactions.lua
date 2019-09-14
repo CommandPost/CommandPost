@@ -17,11 +17,6 @@ local plugins           = require("cp.apple.finalcutpro.plugins")
 local doAfter           = timer.doAfter
 local imageFromPath     = image.imageFromPath
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- GROUP -> string
@@ -131,11 +126,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.pluginactions",
     group = "finalcutpro",

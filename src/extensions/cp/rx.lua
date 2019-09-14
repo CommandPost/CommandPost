@@ -17,11 +17,7 @@ local doAfter           = timer.doAfter
 local format            = string.format
 local insert, remove    = table.insert, table.remove
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local util = {}
 
 local defaultScheduler = nil

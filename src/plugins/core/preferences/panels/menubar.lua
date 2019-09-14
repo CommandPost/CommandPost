@@ -10,11 +10,7 @@ local config      = require("cp.config")
 local i18n        = require("cp.i18n")
 local tools       = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.core.preferences.panels.menubar.lastGroup <cp.prop: string>
@@ -32,11 +28,7 @@ mod.showSectionHeadingsInMenubar = config.prop("showSectionHeadingsInMenubar", t
 --- If `true`, the menubar item will be the app icon. If not, it will be the app name.
 mod.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "core.preferences.panels.menubar",
     group           = "core",
@@ -53,7 +45,7 @@ function plugin.init(deps)
         label       = i18n("menubarPanelLabel"),
         image       = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/DesktopScreenEffectsPref.prefPane/Contents/Resources/DesktopScreenEffectsPref.icns", "/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")),
         tooltip     = i18n("menubarPanelTooltip"),
-        height      = 250,
+        height      = 270,
     })
 
     --------------------------------------------------------------------------------

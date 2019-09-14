@@ -4,39 +4,36 @@
 
 local require = require
 
-local log								= require("hs.logger").new("librariesBrowser")
+local log						= require "hs.logger".new "librariesBrowser"
 
-local i18n                              = require("cp.i18n")
-local just								= require("cp.just")
-local axutils							= require("cp.ui.axutils")
-local Group                             = require("cp.ui.Group")
+local axutils					= require "cp.ui.axutils"
+local go                        = require "cp.rx.go"
+local Group                     = require "cp.ui.Group"
+local i18n                      = require "cp.i18n"
+local just						= require "cp.just"
 
-local AppearanceAndFiltering            = require("cp.apple.finalcutpro.browser.AppearanceAndFiltering")
+local AppearanceAndFiltering    = require "cp.apple.finalcutpro.browser.AppearanceAndFiltering"
+local LibrariesFilmstrip		= require "cp.apple.finalcutpro.main.LibrariesFilmstrip"
+local LibrariesList				= require "cp.apple.finalcutpro.main.LibrariesList"
 
-local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
-local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
+local Button					= require "cp.ui.Button"
+local PopUpButton               = require "cp.ui.PopUpButton"
+local Table						= require "cp.ui.Table"
+local TextField					= require "cp.ui.TextField"
 
-local Button							= require("cp.ui.Button")
-local Table								= require("cp.ui.Table")
-local TextField							= require("cp.ui.TextField")
+local Do                        = go.Do
+local First                     = go.First
+local Given                     = go.Given
+local If                        = go.If
+local Observable                = go.Observable
+local Throw                     = go.Throw
 
-local Observable                        = require("cp.rx").Observable
-local Do                                = require("cp.rx.go.Do")
-local Given                             = require("cp.rx.go.Given")
-local First                             = require("cp.rx.go.First")
-local If                                = require("cp.rx.go.If")
-local Throw                             = require("cp.rx.go.Throw")
+local cache                     = axutils.cache
+local childFromRight            = axutils.childFromRight
+local childMatching             = axutils.childMatching
+local childWith                 = axutils.childWith
+local childWithRole             = axutils.childWithRole
 
-local cache                             = axutils.cache
-local childFromRight                    = axutils.childFromRight
-local childMatching                     = axutils.childMatching
-local childWith, childWithRole          = axutils.childWith, axutils.childWithRole
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local LibrariesBrowser = Group:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
 function LibrariesBrowser.static.matches(element)
@@ -245,12 +242,12 @@ function LibrariesBrowser.lazy.value:search()
     end))
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.filterToggle <cp.ui.Button>
+--- cp.apple.finalcutpro.main.LibrariesBrowser.clipFiltering <cp.ui.PopUpButton>
 --- Field
---- The Filter Toggle [Button](cp.ui.Button.md).
-function LibrariesBrowser.lazy.value:filterToggle()
-    return Button(self, self.mainGroupUI:mutate(function(original)
-        return childMatching(original(), Button.matches)
+--- The Clip Filtering [PopUpButton](cp.ui.PopUpButton.md).
+function LibrariesBrowser.lazy.value:clipFiltering()
+    return PopUpButton(self, self.UI:mutate(function(original)
+        return childMatching(original(), PopUpButton.matches)
     end))
 end
 
@@ -259,64 +256,6 @@ end
 --- The Clip [AppearanceAndFiltering](cp.apple.finalcutpro.main.AppearanceAndFiltering.md) Menu Popover
 function LibrariesBrowser.lazy.value:appearanceAndFiltering()
     return AppearanceAndFiltering(self)
-end
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
---- Constant
---- All Clips ID.
-LibrariesBrowser.static.ALL_CLIPS = 1
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.HIDE_REJECTED -> number
---- Constant
---- Hide Rejected ID.
-LibrariesBrowser.static.HIDE_REJECTED = 2
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.NO_RATINGS_OR_KEYWORDS -> number
---- Constant
---- No Rating or Keywords ID.
-LibrariesBrowser.static.NO_RATINGS_OR_KEYWORDS = 3
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.FAVORITES -> number
---- Constant
---- Favourites ID.
-LibrariesBrowser.static.FAVORITES = 4
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.REJECTED -> number
---- Constant
---- Rejected ID.
-LibrariesBrowser.static.REJECTED = 5
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.UNUSED -> number
---- Constant
---- Unused ID.
-LibrariesBrowser.static.UNUSED = 6
-
---- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipFiltering(filterType) -> LibrariesBrowser
---- Method
---- Select Clip Filtering based on Filter Type.
----
---- Parameters:
----  * filterType - The filter type.
----
---- Returns:
----  * The `LibrariesBrowser` object.
-function LibrariesBrowser:selectClipFiltering(filterType)
-    local ui = self:UI()
-    if ui then
-        local button = childWithRole(ui, "AXButton")
-        if button then
-            local menu = button[1]
-            if not menu then
-                button:doPress()
-                menu = button[1]
-            end
-            local menuItem = menu[filterType]
-            if menuItem then
-                menuItem:doPress()
-            end
-        end
-    end
-    return self
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesFilmstrip
@@ -558,6 +497,23 @@ function LibrariesBrowser:selectClipAt(index)
         return self:list():selectClipAt(index)
     else
         return self:filmstrip():selectClipAt(index)
+    end
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:indexOfClip(clip) -> number | nil
+--- Function
+--- Gets the index of a specific clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to get the index of.
+---
+--- Returns:
+---  * The index or `nil` if an error occurs.
+function LibrariesBrowser:indexOfClip(clip)
+    if self:isListView() then
+        return self:list():indexOfClip(clip)
+    else
+        return self:filmstrip():indexOfClip(clip)
     end
 end
 

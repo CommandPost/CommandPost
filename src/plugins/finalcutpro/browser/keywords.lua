@@ -10,11 +10,7 @@ local config                            = require("cp.config")
 local tools                             = require("cp.tools")
 local i18n                              = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS -> number
@@ -112,11 +108,7 @@ function mod.restore(preset)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.browser.keywords",
     group           = "finalcutpro",

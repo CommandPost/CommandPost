@@ -20,11 +20,7 @@ local script            = require("cp.i18n.script")
 local match, format     = string.match, string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt

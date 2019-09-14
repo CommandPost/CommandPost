@@ -12,11 +12,6 @@ local i18n              = require("cp.i18n")
 
 local doAfter           = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.timeline.videoeffects(action) -> boolean
@@ -131,11 +126,7 @@ function mod.apply(action)
     return true
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.videoeffects",
     group = "finalcutpro",

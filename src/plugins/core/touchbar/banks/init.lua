@@ -2,16 +2,13 @@
 ---
 --- Touch Bar Bank Actions.
 
-local require = require
+local require               = require
 
-local dialog      = require("cp.dialog")
-local i18n        = require("cp.i18n")
+local dialog                = require("cp.dialog")
+local i18n                  = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local displayNotification   = dialog.displayNotification
+
 local mod = {}
 
 --- plugins.core.touchbar.banks.init() -> nil
@@ -59,7 +56,12 @@ function mod.init()
                 local activeGroup = mod._manager.activeGroup()
                 local activeSubGroup = mod._manager.activeSubGroup()
                 if activeGroup and activeSubGroup then
-                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    local bankLabel = mod._manager.getBankLabel(activeGroup .. activeSubGroup)
+                    if bankLabel then
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. bankLabel)
+                    else
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    end
                 end
                 mod._manager.update()
             end
@@ -68,11 +70,6 @@ function mod.init()
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.touchbar.banks",
     group           = "core",

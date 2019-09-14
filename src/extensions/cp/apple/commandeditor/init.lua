@@ -11,11 +11,7 @@ local fnutils               = require("hs.fnutils")
 local shortcut						  = require("cp.commands.shortcut")
 local tools									= require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.apple.commandeditor.padKeys -> table
@@ -66,6 +62,8 @@ function mod.characterStringToKeyCode(input)
     if string.find(input, "NSEndFunctionKey")           then result = "end"         end
     if string.find(input, "NSPageUpFunctionKey")        then result = "pageup"      end
     if string.find(input, "NSPageDownFunctionKey")      then result = "pagedown"    end
+    if string.find(input, "NSDeleteCharacter")          then result = "delete"      end
+    if string.find(input, "NSCarriageReturnCharacter")  then result = "return"      end
 
     --------------------------------------------------------------------------------
     -- Convert to lowercase:

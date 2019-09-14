@@ -12,11 +12,7 @@ local tools         = require("cp.tools")
 local iconFallback  = tools.iconFallback
 local imageFromPath = image.imageFromPath
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finder.preferences.panel",
     group           = "finder",

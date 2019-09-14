@@ -4,31 +4,27 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("tbManager")
+local log               = require "hs.logger".new "tbManager"
 
-local canvas                                    = require("hs.canvas")
-local fnutils                                   = require("hs.fnutils")
-local host                                      = require("hs.host")
-local image                                     = require("hs.image")
-local styledtext                                = require("hs.styledtext")
+local canvas            = require "hs.canvas"
+local fnutils           = require "hs.fnutils"
+local host              = require "hs.host"
+local image             = require "hs.image"
+local styledtext        = require "hs.styledtext"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local i18n                                      = require("cp.i18n")
-local json                                      = require("cp.json")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
 
-local touchbar                                  = require("hs._asm.undocumented.touchbar")
+local touchbar          = require "hs._asm.undocumented.touchbar"
 
-local widgets                                   = require("widgets")
-local copy                                      = fnutils.copy
+local widgets           = require "widgets"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local copy              = fnutils.copy
+
 local mod = {}
 
 --- plugins.core.touchbar.manager.DEFAULT_GROUP -> string
@@ -70,13 +66,6 @@ mod._groupStatus = {}
 -- Variable
 -- Current Touch Bar Sub Group Statuses.
 mod._currentSubGroup = config.prop("touchBarCurrentSubGroup", {})
-
---- plugins.core.touchbar.manager.closeBox -> boolean
---- Variable
---- An optional boolean, specifying whether or not the system
---- escape (or its current replacement) button should be replaced by a button
---- to remove the modal bar from the touch bar display when pressed.
-mod.dismissButton = true
 
 --- plugins.core.touchbar.manager.maxItems -> number
 --- Variable
@@ -435,8 +424,8 @@ function mod.start()
         local icon = canvas.new{x = 0, y = 0, w = 512, h = 512 }
         icon[1] = {
           type="image",
-          image = image.imageFromName(image.systemImageNames.ApplicationIcon),
-          frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+          image = image.imageFromPath(config.bundledPluginsPath .. "/core/touchbar/images/icon.png"),
+          frame = { x = "15%", y = "18%", h = "65%", w = "65%" },
         }
 
         --------------------------------------------------------------------------------
@@ -646,7 +635,12 @@ function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
             mod._currentSubGroup(currentSubGroup)
         end
         if notify then
-            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            local bankLabel = mod.getBankLabel(combinedGroupAndSubGroupID)
+            if bankLabel then
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. bankLabel)
+            else
+                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+            end
         end
     end
 end
@@ -858,11 +852,6 @@ function mod.init(deps)
     return mod
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id          = "core.touchbar.manager",
     group       = "core",
@@ -874,7 +863,6 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
-
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
@@ -887,17 +875,6 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps)
-
-    --------------------------------------------------------------------------------
-    -- Copy Legacy Property List Touch Bar Buttons to JSON:
-    --------------------------------------------------------------------------------
-    local legacyControls = config.get("touchBarButtons", nil)
-    if legacyControls and not config.get("touchBarButtonsCopied") then
-        mod._items(legacyControls)
-        config.set("touchBarButtonsCopied", true)
-        log.df("Copied Touch Bar Buttons from Plist to JSON.")
-    end
-
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
@@ -940,7 +917,6 @@ function plugin.postInit(deps)
         mod.start()
         mod.update()
     end
-
 end
 
 return plugin

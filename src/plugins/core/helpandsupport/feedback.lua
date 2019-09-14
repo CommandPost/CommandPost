@@ -7,11 +7,6 @@ local require = require
 local feedback  = require("cp.feedback")
 local i18n      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.core.helpandsupport.feedback.show() -> nil
@@ -27,11 +22,6 @@ function mod.show()
     feedback.showFeedback()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.helpandsupport.feedback",
     group           = "core",
@@ -53,9 +43,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.menuManager.commandPostHelpAndSupport
-        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = mod.show } end)
-        :addSeparator(4)
+    deps.menuManager.bottom
+        :addItem(9999998, function() return { title = i18n("provideFeedbackOrReportBug"),  fn = mod.show } end)
 
     return mod
 end

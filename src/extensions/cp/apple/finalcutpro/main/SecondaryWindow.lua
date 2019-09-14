@@ -15,11 +15,7 @@ local Do, If                        = go.Do, go.If
 local class                         = require("middleclass")
 local lazy                          = require("cp.lazy")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local SecondaryWindow = class("SecondaryWindow"):include(lazy)
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.matches(element) -> boolean

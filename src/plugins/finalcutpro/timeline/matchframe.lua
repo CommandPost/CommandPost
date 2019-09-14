@@ -2,19 +2,14 @@
 ---
 --- Match Frame Tools for Final Cut Pro.
 
-local require = require
+local require       = require
 
-local log                           = require("hs.logger").new("matchframe")
+local log           = require("hs.logger").new("matchframe")
 
-local dialog                        = require("cp.dialog")
-local fcp                           = require("cp.apple.finalcutpro")
-local just                          = require("cp.just")
+local dialog        = require("cp.dialog")
+local fcp           = require("cp.apple.finalcutpro")
+local just          = require("cp.just")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- ninjaPasteboardCopy() -> boolean, data
@@ -378,11 +373,7 @@ function mod.matchFrame(focus)
     mod.browserPlayhead.highlight()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.timeline.matchframe",
     group = "finalcutpro",

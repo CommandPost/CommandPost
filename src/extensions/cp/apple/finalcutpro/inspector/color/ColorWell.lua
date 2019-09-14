@@ -12,11 +12,6 @@ local inspect                           = require("hs.inspect")
 local Element                           = require("cp.ui.Element")
 local Do                                = require("cp.rx.go.Do")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local ColorWell = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWell")
 
 local asRGB, asHSB = color.asRGB, color.asHSB

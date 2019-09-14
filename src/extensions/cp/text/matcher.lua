@@ -36,11 +36,7 @@ local require = require
 
 local text					= require("cp.text")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local utf8codepoint 		= utf8.codepoint
 local floor, tonumber		= math.floor, tonumber
 local unpack, pack, sort, insert, remove = table.unpack, table.pack, table.sort, table.insert, table.remove

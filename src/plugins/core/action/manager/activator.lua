@@ -19,36 +19,40 @@
 
 local require                   = require
 
-local log                       = require("hs.logger").new("activator")
+local log                       = require "hs.logger".new "activator"
 
-local chooser                   = require("hs.chooser")
-local drawing                   = require("hs.drawing")
-local fnutils                   = require("hs.fnutils")
-local inspect                   = require("hs.inspect")
-local menubar                   = require("hs.menubar")
-local mouse                     = require("hs.mouse")
-local screen                    = require("hs.screen")
-local timer                     = require("hs.timer")
+local chooser                   = require "hs.chooser"
+local drawing                   = require "hs.drawing"
+local eventtap                  = require "hs.eventtap"
+local fnutils                   = require "hs.fnutils"
+local host                      = require "hs.host"
+local image                     = require "hs.image"
+local inspect                   = require "hs.inspect"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
+local screen                    = require "hs.screen"
+local timer                     = require "hs.timer"
+local toolbar                   = require "hs.webview.toolbar"
 
-local config                    = require("cp.config")
-local i18n                      = require("cp.i18n")
-local idle                      = require("cp.idle")
-local prop                      = require("cp.prop")
+local config                    = require "cp.config"
+local Do                        = require "cp.rx.go.Do"
+local i18n                      = require "cp.i18n"
+local idle                      = require "cp.idle"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
-local Do                        = require("cp.rx.go.Do")
-
-local _                         = require("moses")
+local _                         = require "moses"
 
 local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
 local format                    = string.format
-local sort, insert, pack        = table.sort, table.insert, table.pack
+local imageFromPath             = image.imageFromPath
+local insert                    = table.insert
+local pack                      = table.pack
+local sort                      = table.sort
+local spairs                    = tools.spairs
+local uuid                      = host.uuid
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
@@ -246,7 +250,7 @@ function activator.mt:getActiveHandler(id)
     return self:activeHandlers()[id]
 end
 
---- plugins.core.action.activator:allowHandlers(...) -> boolean
+--- plugins.core.action.activator:allowHandlers(...) -> self
 --- Method
 --- Specifies that only the handlers with the specified IDs will be active in
 --- this activator. By default all handlers are allowed.
@@ -255,7 +259,7 @@ end
 ---  * `...`     - The list of Handler ID strings to allow.
 ---
 --- Returns:
----  * `true` if the handlers were found.
+---  * Self
 function activator.mt:allowHandlers(...)
     local allowed = {}
     for _,id in ipairs(pack(...)) do
@@ -266,6 +270,21 @@ function activator.mt:allowHandlers(...)
         end
     end
     self._allowedHandlers(allowed)
+    return self
+end
+
+--- plugins.core.action.activator:toolbarIcons(table) -> self
+--- Method
+--- Sets which sections have an icon on the toolbar.
+---
+--- Parameters:
+---  * table - A table containing paths to all the toolbar icons. The key should be
+---            the handler ID, and the value should be the path to the icon.
+---
+--- Returns:
+---  * Self
+function activator.mt:toolbarIcons(toolbarIcons)
+    self._toolbarIcons = toolbarIcons
     return self
 end
 
@@ -718,35 +737,36 @@ activator.reducedTransparency = prop.new(function()
     return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
--- initChooser(executeFn, rightClickFn, choicesFn, searchSubText) -> `hs.chooser` object
--- Method
--- Gets a hs.chooser
---
--- Parameters:
---  * executeFn - A function that will be called when the chooser is dismissed. It should accept one parameter, which will be nil if the user dismissed the chooser window, otherwise it will be a table containing whatever information you supplied for the item the user chose.
---  * rightClickFn - A function that will be called whenever the user right clicks on a choice. If this parameter is omitted, the existing callback will be removed.
---  * choicesFn - A function to call when the list of choices is needed.
---
--- Returns:
---  * A `hs.chooser` object
-local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
-
-    local c = chooser.new(executeFn)
-        :bgDark(true)
-        :rightClickCallback(rightClickFn)
-        :choices(choicesFn)
-        :searchSubText(searchSubText)
-        :refreshChoicesCallback()
-
-    if activator.reducedTransparency() then
-        c:fgColor(nil)
-         :subTextColor(nil)
-    else
-        c:fgColor(drawing.color.x11.snow)
-         :subTextColor(drawing.color.x11.snow)
+function activator.mt:updateSelectedToolbarIcon()
+    --------------------------------------------------------------------------------
+    -- Update toolbar icons:
+    --------------------------------------------------------------------------------
+    local allHandlersActive = true
+    local toolbarIcons = self._toolbarIcons
+    local t = self._toolbar
+    if t and toolbarIcons then
+        for id,_ in pairs(toolbarIcons) do
+            local soloed = true
+            for i,_ in pairs(self:allowedHandlers()) do
+                if self:isDisabledHandler(i) then
+                    allHandlersActive = false
+                end
+                if i ~= id and not self:isDisabledHandler(i) then
+                    soloed = false
+                    break
+                end
+            end
+            if soloed and not self:isDisabledHandler(id) then
+                t:selectedItem(id)
+                return
+            end
+        end
+        if allHandlersActive then
+            t:selectedItem("showAll")
+        else
+            t:selectedItem(nil)
+        end
     end
-
-    return c
 end
 
 --- plugins.core.action.activator:refreshChooser() -> `hs.chooser` object
@@ -773,12 +793,179 @@ function activator.mt:chooser()
     -- Create new Chooser if needed:
     --------------------------------------------------------------------------------
     if not self._chooser then
-        self._chooser = initChooser(
-            function(result) self:activate(result) end,
-            function(index) self:rightClickMain(index) end,
-            function() return self:activeChoices() end,
-            self:searchSubText()
-        )
+
+        --------------------------------------------------------------------------------
+        -- Create new toolbar:
+        --------------------------------------------------------------------------------
+        local t = toolbar.new(uuid())
+            :canCustomize(true)
+            :autosaves(true)
+            :sizeMode("small")
+
+        --------------------------------------------------------------------------------
+        -- Add "Show All" button:
+        --------------------------------------------------------------------------------
+        t:addItems({
+            id = "showAll",
+            label = i18n("showAll"),
+            priority = 1,
+            image = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/showAll.png"),
+            selectable = true,
+            fn = function()
+                self:enableAllHandlers()
+            end,
+        })
+
+        local toolbarIcons = self._toolbarIcons
+        if toolbarIcons and next(toolbarIcons) ~= nil then
+            --------------------------------------------------------------------------------
+            -- Add buttons for each section that has an icon:
+            --------------------------------------------------------------------------------
+            for id, item in spairs(toolbarIcons, function(x,a,b) return x[b].priority > x[a].priority end) do
+                t:addItems({
+                    id = id,
+                    label = i18n(id .. "_action"),
+                    tooltip = i18n(id .. "_action"),
+                    image = imageFromPath(item.path),
+                    priority = item.priority + 1,
+                    selectable = true,
+                    fn = function()
+                        local soloed = true
+                        for i,_ in pairs(self:allowedHandlers()) do
+                            if i ~= id and not self:isDisabledHandler(i) then
+                                soloed = false
+                                break
+                            end
+                        end
+                        if soloed then
+                            self:enableAllHandlers()
+                            t:selectedItem("showAll")
+                        else
+                            self:disableAllHandlers()
+                            self:enableHandler(id)
+                        end
+                    end,
+                })
+            end
+        end
+
+        local executeFn = function(result)
+            self:activate(result)
+            if self._eventtap then
+                self._eventtap:stop()
+                self._eventtap = nil
+            end
+        end
+        local rightClickFn = function(index) self:rightClickMain(index) end
+        local choicesFn = function() return self:activeChoices() end
+        local searchSubText = self:searchSubText()
+
+        local updateConsole = function(id)
+            if id == "showAll" then
+                self:enableAllHandlers()
+            else
+                local soloed = true
+                for i,_ in pairs(self:allowedHandlers()) do
+                    if i ~= id and not self:isDisabledHandler(i) then
+                        soloed = false
+                        break
+                    end
+                end
+                if soloed then
+                    self:enableAllHandlers()
+                    self._toolbar:selectedItem("showAll")
+                else
+                    self:disableAllHandlers()
+                    self:enableHandler(id)
+                end
+            end
+        end
+
+        local setupEventtap = function()
+            if not self._eventtap then
+                self._eventtap = eventtap.new({eventtap.event.types.keyDown}, function(event)
+                    if event:getFlags():containExactly({"fn", "alt"}) then
+                        if event:getKeyCode() == 123 then
+                            if self._toolbar then
+                                local visibleItems = self._toolbar:visibleItems()
+                                local selectedItem = self._toolbar:selectedItem()
+                                if not selectedItem then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                elseif selectedItem == visibleItems[1] then
+                                    self._toolbar:selectedItem(visibleItems[#visibleItems])
+                                    updateConsole(visibleItems[#visibleItems])
+                                else
+                                    local current
+                                    for i=1, #visibleItems do
+                                        if visibleItems[i] == selectedItem then
+                                            current = i
+                                            break
+                                        end
+                                    end
+                                    if current then
+                                        self._toolbar:selectedItem(visibleItems[current - 1])
+                                        updateConsole(visibleItems[current - 1])
+                                    end
+                                end
+                            end
+                        elseif event:getKeyCode() == 124 then
+                            if self._toolbar then
+                                local visibleItems = self._toolbar:visibleItems()
+                                local selectedItem = self._toolbar:selectedItem()
+                                if not selectedItem then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                elseif selectedItem == visibleItems[#visibleItems] then
+                                    self._toolbar:selectedItem(visibleItems[1])
+                                    updateConsole(visibleItems[1])
+                                else
+                                    local current
+                                    for i=1, #visibleItems do
+                                        if visibleItems[i] == selectedItem then
+                                            current = i
+                                            break
+                                        end
+                                    end
+                                    if current then
+                                        self._toolbar:selectedItem(visibleItems[current + 1])
+                                        updateConsole(visibleItems[current + 1])
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+            if self._eventtap then
+                self._eventtap:start()
+            end
+        end
+
+        local c = chooser.new(executeFn)
+            :bgDark(true)
+            :rightClickCallback(rightClickFn)
+            :choices(choicesFn)
+            :searchSubText(searchSubText)
+            :showCallback(setupEventtap)
+            :refreshChoicesCallback(true)
+
+        if t then
+            c:attachedToolbar(t)
+            t:inTitleBar(true)
+        end
+
+        if activator.reducedTransparency() then
+            c:fgColor(nil)
+             :subTextColor(nil)
+        else
+            c:fgColor(drawing.color.x11.snow)
+             :subTextColor(drawing.color.x11.snow)
+        end
+
+        self._chooser = c
+        self._toolbar = t
+
     end
     return self._chooser
 end
@@ -795,8 +982,22 @@ end
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
     if theChooser then
-        theChooser:refreshChoicesCallback()
+        theChooser:refreshChoicesCallback(true)
     end
+end
+
+--- plugins.core.action.activator:isVisible() -> boolean
+--- Method
+--- Checks if the chooser is currently displayed.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A boolean, `true` if the chooser is displayed on screen, `false` if not.
+function activator.mt:isVisible()
+    local theChooser = self:chooser()
+    return theChooser and theChooser:isVisible()
 end
 
 --- plugins.core.action.activator:show() -> boolean
@@ -845,6 +1046,11 @@ function activator.mt:show()
     theChooser:placeholderText(i18n("appName"))
 
     --------------------------------------------------------------------------------
+    -- Update Selected Toolbar Icon:
+    --------------------------------------------------------------------------------
+    self:updateSelectedToolbarIcon()
+
+    --------------------------------------------------------------------------------
     -- Show Console:
     --------------------------------------------------------------------------------
     Do(function() theChooser:show() end):After(0)
@@ -877,6 +1083,23 @@ function activator.mt:hide()
         --------------------------------------------------------------------------------
         theChooser:hide()
 
+    end
+end
+
+--- plugins.core.action.activator:toggle() -> none
+--- Method
+--- Shows or hides the chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function activator.mt:toggle()
+    if self:isVisible() then
+        self:hide()
+    else
+        self:show()
     end
 end
 
@@ -1060,6 +1283,7 @@ function activator.mt:rightClickAction(index)
                     else
                         self:enableHandler(id)
                     end
+                    self:updateSelectedToolbarIcon()
                 end,
                 checked = enabled,
             }
@@ -1070,9 +1294,11 @@ function activator.mt:rightClickAction(index)
         local allItems = {
             { title = i18n("consoleSectionsShowAll"), fn = function()
                 self:enableAllHandlers()
+                self:updateSelectedToolbarIcon()
             end, disabled = allEnabled },
             { title = i18n("consoleSectionsHideAll"), fn = function()
                 self:disableAllHandlers()
+                self:updateSelectedToolbarIcon()
             end, disabled = allDisabled },
             { title = "-" }
         }

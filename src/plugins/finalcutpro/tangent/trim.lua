@@ -7,11 +7,6 @@ local require = require
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.tangent.trim.group
@@ -65,11 +60,7 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"Trim", "Nudge Right"}))
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.trim",
     group = "finalcutpro",

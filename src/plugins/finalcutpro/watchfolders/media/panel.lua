@@ -4,22 +4,17 @@
 
 local require = require
 
-local host              = require("hs.host")
-local image             = require("hs.image")
+local host              = require "hs.host"
+local image             = require "hs.image"
 
-local dialog            = require("cp.dialog")
-local Do                = require("cp.rx.go.Do")
-local fcp               = require("cp.apple.finalcutpro")
-local html				      = require("cp.web.html")
-local i18n              = require("cp.i18n")
-local tools             = require("cp.tools")
-local ui                = require("cp.web.ui")
+local dialog            = require "cp.dialog"
+local Do                = require "cp.rx.go.Do"
+local fcp               = require "cp.apple.finalcutpro"
+local html              = require "cp.web.html"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+local ui                = require "cp.web.ui"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- uuid -> string
@@ -50,13 +45,13 @@ function mod.init(mediaFolderManager, panelManager)
     -- Setup Panel:
     --------------------------------------------------------------------------------
     mod.panel = panelManager.addPanel({
-        priority 		= 2010,
-        id				= "media",
-        label			= i18n("media"),
-        image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
-        tooltip			= i18n("watchFolderFCPMediaTooltip"),
-        height			= 500,
-        loadFn			= mod.refreshTable,
+        priority        = 2010,
+        id              = "media",
+        label           = i18n("media"),
+        image           = image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
+        tooltip         = i18n("watchFolderFCPMediaTooltip"),
+        height          = 500,
+        loadFn          = mod.refreshTable,
     })
 
     --------------------------------------------------------------------------------
@@ -71,34 +66,34 @@ function mod.init(mediaFolderManager, panelManager)
         :addContent(14, html.div { id=mod.watchFolderTableID } ( mod.generateTable(), false ))
         :addButton(15,
             {
-                label		= i18n("addWatchFolder"),
-                onclick		= mod.addWatchFolder,
-                class		= "mediaAddWatchFolder",
+                label       = i18n("addWatchFolder"),
+                onclick     = mod.addWatchFolder,
+                class       = "mediaAddWatchFolder",
             })
         :addParagraph(16, "")
         :addHeading(17, i18n("options"), 3)
         :addCheckbox(18,
             {
-                label		= i18n("importToTimeline"),
-                checked		= mod.manager.insertIntoTimeline,
-                onchange	= function(_, params) mod.manager.insertIntoTimeline(params.checked) end,
+                label       = i18n("importToTimeline"),
+                checked     = mod.manager.insertIntoTimeline,
+                onchange    = function(_, params) mod.manager.insertIntoTimeline(params.checked) end,
             }
         )
         :addCheckbox(19,
             {
-                label		= i18n("automaticallyImport"),
-                checked		= mod.manager.automaticallyImport,
-                onchange	= function(_, params) mod.manager.automaticallyImport(params.checked) end,
+                label       = i18n("automaticallyImport"),
+                checked     = mod.manager.automaticallyImport,
+                onchange    = function(_, params) mod.manager.automaticallyImport(params.checked) end,
             }
         )
         :addCheckbox(20,
             {
-                label		= i18n("deleteAfterImport", {
+                label       = i18n("deleteAfterImport", {
                     numberOfSeconds = mediaFolderManager.SECONDS_UNTIL_DELETE,
                     seconds = i18n("second", {count = mediaFolderManager.SECONDS_UNTIL_DELETE})
                 }),
-                checked		= mod.manager.deleteAfterImport,
-                onchange	= function(_, params) mod.manager.deleteAfterImport(params.checked) end,
+                checked     = mod.manager.deleteAfterImport,
+                onchange    = function(_, params) mod.manager.deleteAfterImport(params.checked) end,
             }
         )
         :addParagraph(21, i18n("deleteNote"), false, "mediaDeleteNote")
@@ -363,7 +358,6 @@ function mod.addWatchFolder()
                 dialog.displayMessage(i18n("alreadyWatched"))
                 return
             end
-
 
             --------------------------------------------------------------------------------
             -- Finder Tags:

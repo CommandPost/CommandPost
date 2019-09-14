@@ -7,11 +7,7 @@ local require = require
 local app             = require("cp.apple.motion.app")
 local prop					  = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local motion = {
     app = app,
 }

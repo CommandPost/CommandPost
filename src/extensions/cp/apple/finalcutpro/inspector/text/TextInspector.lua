@@ -43,30 +43,43 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("textInspect")
+--local log                             = require("hs.logger").new("textInspect")
 
-local axutils							= require("cp.ui.axutils")
+local axutils                           = require("cp.ui.axutils")
+local If                                = require("cp.rx.go.If")
+local tools                             = require("cp.tools")
+
+local Button                            = require("cp.ui.Button")
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
 local PopUpButton                       = require("cp.ui.PopUpButton")
 local RadioButton                       = require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
+local ScrollArea                        = require("cp.ui.ScrollArea")
+local StaticText                        = require("cp.ui.StaticText")
+local TextArea                          = require("cp.ui.TextArea")
+local TextField                         = require("cp.ui.TextField")
 
 local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
-local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
-local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
+local childFromBottom                   = axutils.childFromBottom
+local childFromLeft                     = axutils.childFromLeft
+local childFromRight                    = axutils.childFromRight
+local childFromTop                      = axutils.childFromTop
+local childrenInLine                    = axutils.childrenInLine
+local childrenInNextLine                = axutils.childrenInNextLine
+local childWithRole                     = axutils.childWithRole
+local withRole                          = axutils.withRole
+
 local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
+local popUpButton, checkBox             = IP.popUpButton, IP.checkBox
+local section, slider                   = IP.section, IP.slider
 
-local If                                = require("cp.rx.go.If")
+local toRegionalNumber                  = tools.toRegionalNumber
+local toRegionalNumberString            = tools.toRegionalNumberString
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local TextInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.text.TextInspector")
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector.matches(element)
@@ -89,7 +102,7 @@ end
 --- Creates a new `TextInspector` object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A `TextInspector` object
@@ -166,14 +179,129 @@ function TextInspector:initialize(parent)
             baseline            = slider "Text Format Baseline",
             allCaps             = checkBox "Text Format All Caps",
             allCapsSize         = slider "Text Format All Caps Size",
+            position            = section "Text Sequence Channel Position" {}
+                                  :extend(function(row)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 3 + 4 + 4]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                   end),
+            rotation            = section "Text Sequence Channel Rotation" {}
+                                  :extend(function(row)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5 + 5]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                  row.animate   =   PopUpButton(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 6 + 5 + 5 + 2]
+                                                    end)
+                                   end),
+            scale               = section "Text Format Scale" {}
+                                  :extend(function(row)
+                                   row.master   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local children = rowUI and childrenInLine(rowUI)
+                                                        return children and childFromLeft(children, 1, TextField.matches)
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.x   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.y   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                        row.z   =   TextField(row, function()
+                                                        local rowUI = row:UI()
+                                                        local index = rowUI and axutils.childIndex(rowUI)
+                                                        return rowUI and rowUI:attributeValue("AXParent")[index + 7 + 5 + 5]
+                                                    end, toRegionalNumber, toRegionalNumberString)
+                                   end),
         },
         threeDeeText        = section "Text Style 3D Extrusion Properties" {
             depth               = slider "3D Property Extrusion Depth",
             depthDirection      = popUpButton "Bevel Properties Extrude Direction",
             weight              = slider "3D Property Extrusion Weight",
             frontEdge           = popUpButton "Bevel Properties Front Edge Profile",
-            frontEdgeSize       = slider "Bevel Properties Front Edge Size",
+            frontEdgeSize       = simple("Bevel Properties Front Edge Size", function(row)
+                                    row.master = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInLine(rowUI)
+                                        return children and childFromLeft(children, 1, TextField.matches)
+                                    end)
+
+                                    row.width = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInNextLine(rowUI)
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Text Sequence Channel OutlineWidth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+
+                                    row.depth = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local widthChildren = rowUI and childrenInNextLine(rowUI)
+                                        local children = widthChildren and widthChildren[1] and childrenInNextLine(widthChildren[1])
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("3D Property Extrusion Depth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+                                  end),
             backEdge            = popUpButton "Bevel Properties Back Edge Profile",
+            backEdgeSize       = simple("Bevel Properties Back Edge Size", function(row)
+                                    row.master = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInLine(rowUI)
+                                        return children and childFromLeft(children, 1, TextField.matches)
+                                    end)
+
+                                    row.width = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local children = rowUI and childrenInNextLine(rowUI)
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Text Sequence Channel OutlineWidth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+
+                                    row.depth = TextField(row, function()
+                                        local rowUI = row:UI()
+                                        local widthChildren = rowUI and childrenInNextLine(rowUI)
+                                        local children = widthChildren and widthChildren[1] and childrenInNextLine(widthChildren[1])
+                                        local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                        if labelUI and labelUI:attributeValue("AXValue") == self:app():string("3D Property Extrusion Depth") then
+                                            return childFromLeft(children, 1, TextField.matches)
+                                        end
+                                    end)
+                                  end),
             insideCorners       = popUpButton "Bevel Properties Corner Style",
         },
         lighting            = section "Extrusion Properties Lighting Folder" {
@@ -186,25 +314,82 @@ function TextInspector:initialize(parent)
             environment         = section "Material Environment Properties" {
                 type                = popUpButton "Material Environment Type",
                 intensity           = slider "Material Environment Intensity",
-                rotation            = slider "Material Environment Rotation",
+                rotation            = simple("Material Environment Rotation", function(row)
+                                            row.master = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local children = rowUI and childrenInLine(rowUI)
+                                                return children and childFromLeft(children, 1, TextField.matches)
+                                            end)
+
+                                            row.x = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local children = rowUI and childrenInNextLine(rowUI)
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "X" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.y = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local children = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "Y" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.z = TextField(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local yChildren = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local children = yChildren and yChildren[1] and childrenInNextLine(yChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == "Z" then
+                                                    return childFromLeft(children, 1, TextField.matches)
+                                                end
+                                            end)
+
+                                            row.animate = PopUpButton(row, function()
+                                                local rowUI = row:UI()
+                                                local xChildren = rowUI and childrenInNextLine(rowUI)
+                                                local yChildren = xChildren and xChildren[1] and childrenInNextLine(xChildren[1])
+                                                local zChildren = yChildren and yChildren[1] and childrenInNextLine(yChildren[1])
+                                                local children = zChildren and zChildren[1] and childrenInNextLine(zChildren[1])
+                                                local labelUI = children and childFromLeft(children, 1, StaticText.matches)
+                                                if labelUI and labelUI:attributeValue("AXValue") == self:app():string("Channel Rotation3D Iterpolation Label") then
+                                                    return childFromLeft(children, 1, PopUpButton.matches)
+                                                end
+                                            end)
+                                      end),
                 contrast            = slider "Material Environment Contrast",
                 saturation          = slider "Material Environment Saturation",
                 anisotropic         = checkBox "Material Environment Anisotropy Enable",
             },
         },
-        -- TODO: skipping "Material" for now...
+        material            = section "Material Short Desc" {},
+            --------------------------------------------------------------------------------
+            -- TODO: Add "Material" section contents.
+            --------------------------------------------------------------------------------
         face                = section "Text Face" {
             fillWith            = popUpButton "Text Face Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Face Color",
-            -- TODO: Complete 'Gradient' options.
+            --------------------------------------------------------------------------------
+            -- TODO: Complete 'Gradient' options:
+            --------------------------------------------------------------------------------
             gradient            = section "Text Face Gradient" {},
             opacity             = slider "Text Face Opacity",
             blur                = slider "Text Face Blur",
         },
         outline             = section "Text Outline" {
             fillWith            = popUpButton "Text Outline Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Outline Color",
             opacity             = slider "Text Outline Opacity",
             blur                = slider "Text Outline Blur",
@@ -212,7 +397,9 @@ function TextInspector:initialize(parent)
         },
         glow                = section "Text Glow" {
             fillWith            = popUpButton "Text Glow Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Glow Color",
             opacity             = slider "Text Glow Opacity",
             blur                = slider "Text Glow Blur",
@@ -220,7 +407,9 @@ function TextInspector:initialize(parent)
         },
         dropShadow          = section "Text Drop Shadow" {
             fillWith            = popUpButton "Text Drop Shadow Color Source",
-            -- TODO: Add a 'ColorWell' option.
+            --------------------------------------------------------------------------------
+            -- TODO: Add a 'ColorWell' option:
+            --------------------------------------------------------------------------------
             color               = simple "Text Drop Shadow Color",
             opacity             = slider "Text Drop Shadow Opacity",
             blur                = slider "Text Drop Shadow Blur",
@@ -246,19 +435,71 @@ function TextInspector.lazy.prop:contentUI()
     end)
 end
 
--- The 'Shape Preset' popup
-function TextInspector.lazy.value:shapePreset()
+--- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` containing the properties rows, if available.
+function TextInspector.lazy.prop:bottomBarUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_bottomBarUI", function()
+            local ui = original()
+            local parent = ui and ui:attributeValue("AXParent")
+            return parent and childFromBottom(parent, 1, Group.matches)
+        end, Group.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerLeft <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:textLayerLeft()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
+        return group and childFromLeft(group, 1, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerRight <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:textLayerRight()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
+        return group and childFromLeft(group, 2, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.deselectAll <cp.ui.Button>
+--- Field
+--- The left text layer arrow at the bottom of the Inspector.
+function TextInspector:deselectAll()
+    return Button(self, function()
+        local bottomBarUI = self.bottomBarUI()
+        return bottomBarUI and childFromLeft(bottomBarUI, 1, Button.matches)
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.TextInspector.preset <cp.ui.PopUpButton>
+--- Field
+--- The preset popup found at the top of the inspector.
+function TextInspector:preset()
     return PopUpButton(self, function()
         local ui = self.contentUI()
         return ui and PopUpButton.matches(ui[1]) and ui[1]
     end)
 end
 
---------------------------------------------------------------------------------
---
--- VIDEO INSPECTOR:
---
---------------------------------------------------------------------------------
+--- cp.apple.finalcutpro.inspector.color.TextInspector.textArea <cp.ui.TextArea>
+--- Field
+--- The Text Inspector main Text Area.
+function TextInspector:textArea()
+    return TextArea(self, function()
+        local contentUI = self.contentUI()
+        local scrollArea = contentUI and childFromTop(contentUI, 1, ScrollArea.matches)
+        return scrollArea and TextArea.matches(scrollArea[1]) and scrollArea[1]
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector:show() -> TextInspector
 --- Method
@@ -275,7 +516,6 @@ function TextInspector:show()
     end
     return self
 end
-
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector:doShow() -> cp.rx.go.Statement
 --- Method

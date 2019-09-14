@@ -2,42 +2,42 @@
 ---
 --- Inspector
 
-local require = require
+local require               = require
 
-local log                               = require("hs.logger").new("inspector")
+local log                   = require "hs.logger".new "inspector"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local prop                              = require("cp.prop")
+local axutils               = require "cp.ui.axutils"
+local Element               = require "cp.ui.Element"
+local prop                  = require "cp.prop"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
+local strings               = require "cp.apple.finalcutpro.strings"
 
-local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
-local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
-local ColorInspector                    = require("cp.apple.finalcutpro.inspector.color.ColorInspector")
-local GeneratorInspector                = require("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
-local InfoInspector                     = require("cp.apple.finalcutpro.inspector.info.InfoInspector")
-local ShareInspector                    = require("cp.apple.finalcutpro.inspector.share.ShareInspector")
-local TextInspector                     = require("cp.apple.finalcutpro.inspector.text.TextInspector")
-local TitleInspector                    = require("cp.apple.finalcutpro.inspector.title.TitleInspector")
-local TransitionInspector               = require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
-local VideoInspector                    = require("cp.apple.finalcutpro.inspector.video.VideoInspector")
+local AudioInspector        = require "cp.apple.finalcutpro.inspector.audio.AudioInspector"
+local ColorInspector        = require "cp.apple.finalcutpro.inspector.color.ColorInspector"
+local GeneratorInspector    = require "cp.apple.finalcutpro.inspector.generator.GeneratorInspector"
+local InfoInspector         = require "cp.apple.finalcutpro.inspector.info.InfoInspector"
+local InfoProjectInspector  = require "cp.apple.finalcutpro.inspector.info.InfoProjectInspector"
+local ShareInspector        = require "cp.apple.finalcutpro.inspector.share.ShareInspector"
+local TextInspector         = require "cp.apple.finalcutpro.inspector.text.TextInspector"
+local TitleInspector        = require "cp.apple.finalcutpro.inspector.title.TitleInspector"
+local TransitionInspector   = require "cp.apple.finalcutpro.inspector.transition.TransitionInspector"
+local VideoInspector        = require "cp.apple.finalcutpro.inspector.video.VideoInspector"
 
-local go                                = require("cp.rx.go")
-local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
-local Given, Done                       = go.Given, go.Done
+local go                    = require "cp.rx.go"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local If                    = go.If
+local Do                    = go.Do
+local WaitUntil             = go.WaitUntil
+local List                  = go.List
+local Throw                 = go.Throw
+local Given                 = go.Given
+local Done                  = go.Done
+
 local Inspector = Element:subclass("Inspector")
 
 function Inspector.__tostring()
     return "cp.apple.finalcutpro.inspector.Inspector"
 end
-
 
 --- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant
@@ -69,7 +69,6 @@ function Inspector.static.matches(element)
     local groups = axutils.childrenWith(element, "AXRole", "AXGroup")
     return (children and #children == 3 and groups and #groups == 3) -- is inspecting
         or axutils.childWith(element, "AXValue", strings:find("Nothing to Inspect")) ~= nil -- nothing to inspect
-        or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector(parent) -> Inspector
@@ -163,7 +162,6 @@ function Inspector.lazy.prop:propertiesUI()
             if ui then
                 return (
                     axutils.childWithRole(ui, "AXScrollArea") -- 10.4+ Inspector
-                    or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
                     or nil -- not found
                 )
             end
@@ -315,7 +313,7 @@ function Inspector.lazy.method:doHide()
     :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
     :Otherwise(true)
-    :Label("Inspector:doShow")
+    :Label("Inspector:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
@@ -554,6 +552,13 @@ end
 --- The  [InfoInspector](cp.apple.finalcutpro.inspector.InfoInspector.md).
 function Inspector.lazy.value:info()
     return InfoInspector(self)
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector.projectInfo <cp.apple.finalcutpro.inspector.InfoProjectInspector>
+--- Field
+--- The  [InfoProjectInspector](cp.apple.finalcutpro.inspector.InfoProjectInspector.md).
+function Inspector.lazy.value:projectInfo()
+    return InfoProjectInspector(self)
 end
 
 -----------------------------------------------------------------------

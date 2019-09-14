@@ -2,32 +2,47 @@
 ---
 --- Batch Export Plugin
 
-local require = require
+local require               = require
 
-local log           = require("hs.logger").new("batch")
+local log                   = require "hs.logger".new("batch")
 
-local fnutils       = require("hs.fnutils")
-local fs            = require("hs.fs")
-local image         = require("hs.image")
+local fnutils               = require "hs.fnutils"
+local fs                    = require "hs.fs"
+local geometry              = require "hs.geometry"
+local image                 = require "hs.image"
 
-local compressor    = require("cp.apple.compressor")
-local config        = require("cp.config")
-local destinations  = require("cp.apple.finalcutpro.export.destinations")
-local dialog        = require("cp.dialog")
-local Do            = require("cp.rx.go.Do")
-local fcp           = require("cp.apple.finalcutpro")
-local html          = require("cp.web.html")
-local i18n          = require("cp.i18n")
-local just          = require("cp.just")
-local tools         = require("cp.tools")
+local compressor            = require "cp.apple.compressor"
+local config                = require "cp.config"
+local destinations          = require "cp.apple.finalcutpro.export.destinations"
+local dialog                = require "cp.dialog"
+local Do                    = require "cp.rx.go.Do"
+local fcp                   = require "cp.apple.finalcutpro"
+local html                  = require "cp.web.html"
+local i18n                  = require "cp.i18n"
+local just                  = require "cp.just"
+local tools                 = require "cp.tools"
 
-local insert        = table.insert
+local displayChooseFolder   = dialog.displayChooseFolder
+local displayChooseFromList = dialog.displayChooseFromList
+local displayErrorMessage   = dialog.displayErrorMessage
+local displayMessage        = dialog.displayMessage
+local displayTextBoxMessage = dialog.displayTextBoxMessage
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local doesDirectoryExist    = tools.doesDirectoryExist
+local iconFallback          = tools.iconFallback
+local incrementFilename     = tools.incrementFilename
+local ninjaMouseClick       = tools.ninjaMouseClick
+local safeFilename          = tools.safeFilename
+local spairs                = tools.spairs
+local trim                  = tools.trim
+
+local doUntil               = just.doUntil
+local wait                  = just.wait
+
+local imageFromPath         = image.imageFromPath
+local insert                = table.insert
+
+
 local mod = {}
 
 --- plugins.finalcutpro.export.batch.DEFAULT_CUSTOM_FILENAME -> string
@@ -49,6 +64,11 @@ mod._clips = {}
 -- Variable
 -- Next available ID for building the UI.
 mod._nextID = 0
+
+--- plugins.finalcutpro.export.batch.destinationPreset <cp.prop: boolean>
+--- Field
+--- Destination Preset.
+mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
 --- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
 --- Field
@@ -94,14 +114,12 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Launch Compressor:
     --------------------------------------------------------------------------------
-    local result
     if not compressor:isRunning() then
-        result = just.doUntil(function()
+        if not doUntil(function()
             compressor:launch()
             return compressor:isFrontmost()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to Launch Compressor.")
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to Launch Compressor.")
             return false
         end
     end
@@ -109,152 +127,166 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
+    if not doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
-    end, 10, 0.1)
-    if not result then
-        dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
+    end, 5, 0.1) then
+        displayErrorMessage("Failed to switch back to Final Cut Pro.")
         return false
     end
 
     --------------------------------------------------------------------------------
     -- Make sure the Timeline is focussed:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
-        fcp:timeline():doFocus(true):Now()
-        return fcp:timeline():isFocused()
-    end, 10, 0.1)
-    if not result then
-        dialog.displayErrorMessage("Failed to focus on timeline.")
+    if not doUntil(function()
+        fcp:selectMenu({"Window", "Go To", "Timeline"})
+        return fcp:timeline():contents():isFocused()
+    end, 5, 0.1) then
+        displayErrorMessage("Failed to focus on timeline.")
         return false
     end
+
 
     --------------------------------------------------------------------------------
     -- Process each clip individually:
     --------------------------------------------------------------------------------
+    if not clips then
+        displayErrorMessage("No selected clips detected. This shouldn't happen. Error occured in sendTimelineClipsToCompressor().")
+        return false
+    end
+    local sortFn = function(t,a,b)
+        if t and t[a] and t[b] and t[a].attributeValue and t[b].attributeValue then
+            return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription")
+        end
+    end
     local playhead = fcp:timeline():playhead()
     local timelineContents = fcp:timeline():contents()
-    for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
+    for _,clip in spairs(clips, sortFn) do
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to switch back to Final Cut Pro.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to focus on timeline.")
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Get Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to select clip during start timecode phase.")
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to select clip during start timecode phase.")
             return false
         end
         if not fcp:selectMenu({"Mark", "Go to", "Range Start"}) then
-            dialog.displayErrorMessage("Could not trigger 'Range Start'.")
+            displayErrorMessage("Could not trigger 'Range Start'.")
             return false
         end
         local startTimecode = playhead:timecode()
         if not startTimecode then
-            dialog.displayErrorMessage("Could not get start timecode for clip.")
+            displayErrorMessage("Could not get start timecode for clip.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to select clip during end timecode phase.")
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to select clip during end timecode phase.")
             return false
         end
         if not fcp:selectMenu({"Mark", "Go to", "Range End"}) then
-            dialog.displayErrorMessage("Could not trigger 'Range End'.")
+            displayErrorMessage("Could not trigger 'Range End'.")
             return false
         end
         local endTimecode = playhead:timecode()
         if not endTimecode then
-            dialog.displayErrorMessage("Could not get end timecode for clip.")
+            displayErrorMessage("Could not get end timecode for clip.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
+        end, 5, 0.1) then
+            displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
-            dialog.displayErrorMessage("Could not trigger 'Set Range Start'.")
+            displayErrorMessage("Could not trigger 'Set Range Start'.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
+        end, 5, 0.1) then
+            displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
-            dialog.displayErrorMessage("Could not trigger 'Set Range End'.")
+            displayErrorMessage("Could not trigger 'Set Range End'.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to focus on timeline.")
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to focus on timeline.")
             return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Click on the Playhead. This seems to be the only way to ensure the timeline
+        -- has focus when the Timeline is on a secondary screen:
+        --------------------------------------------------------------------------------
+        if fcp:timeline():isOnSecondary() then
+            local playheadUI = playhead and playhead:UI()
+            local playheadFrame = playheadUI and playheadUI:frame()
+            local center = playheadFrame and geometry(playheadFrame).center
+            if center then
+                      ninjaMouseClick(center)
+                wait(1)
+            end
         end
 
         --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             return fcp:selectMenu({"File", "Send to Compressor"}) == true
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Could not trigger 'Send to Compressor'.")
+        end, 5, 0.1) then
+            displayErrorMessage("Could not trigger 'Send to Compressor'.")
             return false
         end
 
@@ -277,7 +309,6 @@ function mod.batchExportTimelineClips(clips)
     --------------------------------------------------------------------------------
     -- Setup:
     --------------------------------------------------------------------------------
-    local result
     local firstTime             = true
     local exportPath            = mod.getDestinationFolder()
     local destinationPreset     = mod.getDestinationPreset()
@@ -286,40 +317,47 @@ function mod.batchExportTimelineClips(clips)
     --------------------------------------------------------------------------------
     -- Process each clip individually:
     --------------------------------------------------------------------------------
+    if not clips then
+        displayErrorMessage("No selected clips detected. This shouldn't happen." .. errorFunction)
+        return false
+    end
+    local sortFn = function(t,a,b)
+        if t and t[a] and t[b] and t[a].attributeValue and t[b].attributeValue then
+            return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription")
+        end
+    end
     local playhead = fcp:timeline():playhead()
     local timelineContents = fcp:timeline():contents()
-    for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
+    for _,clip in spairs(clips, sortFn) do
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
         if not fcp:launch(10) then
-            dialog.displayErrorMessage("Failed to switch back to Final Cut Pro." .. errorFunction)
+            displayErrorMessage("Failed to switch back to Final Cut Pro." .. errorFunction)
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to focus on timeline.")
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Select clip:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to select clip during start timecode phase." .. errorFunction)
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to select clip during start timecode phase." .. errorFunction)
             return false
         end
 
@@ -328,7 +366,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         local clipName = clip:attributeValue("AXDescription")
         if not clipName then
-            dialog.displayErrorMessage("Could not get clip name." .. errorFunction)
+            displayErrorMessage("Could not get clip name." .. errorFunction)
             return false
         end
         local columnPostion = string.find(clipName, ":")
@@ -340,77 +378,87 @@ function mod.batchExportTimelineClips(clips)
         -- Get Start Timecode:
         --------------------------------------------------------------------------------
         if not fcp:selectMenu({"Mark", "Go to", "Range Start"}) then
-            dialog.displayErrorMessage("Could not trigger 'Range Start'." .. errorFunction)
+            displayErrorMessage("Could not trigger 'Range Start'." .. errorFunction)
             return false
         end
         local startTimecode = playhead:timecode()
         if not startTimecode then
-            dialog.displayErrorMessage("Could not get start timecode for clip." .. errorFunction)
+            displayErrorMessage("Could not get start timecode for clip." .. errorFunction)
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Get End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             timelineContents:selectClip(clip)
             local selectedClips = timelineContents:selectedClipsUI()
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to select clip during end timecode phase." .. errorFunction)
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to select clip during end timecode phase." .. errorFunction)
             return false
         end
         if not fcp:selectMenu({"Mark", "Go to", "Range End"}) then
-            dialog.displayErrorMessage("Could not trigger 'Range End'." .. errorFunction)
+            displayErrorMessage("Could not trigger 'Range End'." .. errorFunction)
             return false
         end
         local endTimecode = playhead:timecode()
         if not endTimecode then
-            dialog.displayErrorMessage("Could not get end timecode for clip." .. errorFunction)
+            displayErrorMessage("Could not get end timecode for clip." .. errorFunction)
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(startTimecode) == startTimecode
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
+        end, 5, 0.1) then
+            displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
-            dialog.displayErrorMessage("Could not trigger 'Set Range Start'." .. errorFunction)
+            displayErrorMessage("Could not trigger 'Set Range Start'." .. errorFunction)
             return false
         end
 
         --------------------------------------------------------------------------------
         -- Set End Timecode:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
+        if not doUntil(function()
             return playhead:timecode(endTimecode) == endTimecode
-        end, 5, 0.1)
-        if not result then
-            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
+        end, 5, 0.1) then
+            displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
-            dialog.displayErrorMessage("Could not trigger 'Set Range End'." .. errorFunction)
+            displayErrorMessage("Could not trigger 'Set Range End'." .. errorFunction)
             return false
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is focussed:
+        -- Make sure the Timeline is focused:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:timeline():doFocus(true):Now()
-            return fcp:timeline():isFocused()
-        end, 10, 0.1)
-        if not result then
-            dialog.displayErrorMessage("Failed to focus on timeline.")
+        if not doUntil(function()
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            return fcp:timeline():contents():isFocused()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to focus on timeline.")
             return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Click on the Playhead. This seems to be the only way to ensure the timeline
+        -- has focus when the Timeline is on a secondary screen:
+        --------------------------------------------------------------------------------
+        if fcp:timeline():isOnSecondary() then
+            local playheadUI = playhead and playhead:UI()
+            local playheadFrame = playheadUI and playheadUI:frame()
+            local center = playheadFrame and geometry(playheadFrame).center
+            if center then
+                ninjaMouseClick(center)
+                wait(1)
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -437,8 +485,8 @@ function mod.batchExportTimelineClips(clips)
             --------------------------------------------------------------------------------
             -- Click 'Save' on the save sheet:
             --------------------------------------------------------------------------------
-            if not just.doUntil(function() return saveSheet:isShowing() end) then
-                dialog.displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
+            if not doUntil(function() return saveSheet:isShowing() end) then
+                displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                 return false
             end
 
@@ -467,7 +515,7 @@ function mod.batchExportTimelineClips(clips)
                 end
 
                 while fnutils.contains(mod._existingClipNames, newFilename) do
-                    newFilename = tools.incrementFilename(newFilename)
+                    newFilename = incrementFilename(newFilename)
                 end
                 if filename ~= newFilename then
                     saveSheet:filename():setValue(newFilename)
@@ -494,11 +542,11 @@ function mod.batchExportTimelineClips(clips)
 
                 local originalFilename = saveSheet:filename():getValue()
                 if originalFilename == nil then
-                    dialog.displayErrorMessage("Failed to get the original Filename." .. errorFunction)
+                    displayErrorMessage("Failed to get the original Filename." .. errorFunction)
                     return false
                 end
 
-                local newFilename = tools.incrementFilename(originalFilename)
+                local newFilename = incrementFilename(originalFilename)
 
                 saveSheet:filename():setValue(newFilename)
                 saveSheet:pressSave()
@@ -510,8 +558,6 @@ function mod.batchExportTimelineClips(clips)
     timelineContents:selectClips(clips)
     return true
 end
-
-mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
 --- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> none
 --- Function
@@ -536,7 +582,7 @@ function mod.changeExportDestinationPreset()
             insert(destinationList, 1, i18n("sendToCompressor"))
         end
 
-        local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
+        local result = displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
 
         if result and #result > 0 then
             mod.destinationPreset(result[1])
@@ -560,7 +606,7 @@ end
 ---  * None
 function mod.changeExportDestinationFolder()
     Do(function()
-        local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
+        local result = displayChooseFolder(i18n("selectDestinationFolder"))
         if result ~= false then
             config.set("batchExportDestinationFolder", result)
 
@@ -583,8 +629,8 @@ end
 ---  * None
 function mod.changeCustomFilename()
     Do(function()
-        local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
-            if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+        local result = mod.customFilename(displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+            if value and type("value") == "string" and value ~= trim("") and safeFilename(value, value) == value then
                 return true
             else
                 return false
@@ -615,11 +661,11 @@ function mod.getDestinationFolder()
     local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
     local exportPath = os.getenv("HOME") .. "/Desktop"
     if batchExportDestinationFolder ~= nil then
-         if tools.doesDirectoryExist(batchExportDestinationFolder) then
+         if doesDirectoryExist(batchExportDestinationFolder) then
             exportPath = batchExportDestinationFolder
          end
     else
-        if tools.doesDirectoryExist(NSNavLastRootDirectory) then
+        if doesDirectoryExist(NSNavLastRootDirectory) then
             exportPath = NSNavLastRootDirectory
         end
     end
@@ -719,12 +765,11 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    local result = just.doUntil(function()
+    if not doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
-    end, 10, 0.1)
-    if not result then
-        dialog.displayErrorMessage("Failed to activate Final Cut Pro. Batch Export aborted.")
+    end, 5, 0.1) then
+        displayErrorMessage("Failed to activate Final Cut Pro. Batch Export aborted.")
         return false
     end
 
@@ -742,7 +787,7 @@ function mod.batchExport()
     local selectedClips = timelineContents:selectedClipsUI()
 
     if not selectedClips or #selectedClips == 0 then
-        dialog.displayMessage(i18n("batchExportNoClipsInTimeline"))
+        displayMessage(i18n("noSelectedClipsInTimeline"))
         return
     end
 
@@ -782,6 +827,17 @@ function mod.performBatchExport()
         mod._bmMan.hide()
 
         --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        if not doUntil(function()
+            fcp:launch()
+            return fcp:isFrontmost()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to activate Final Cut Pro. Batch Export aborted.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
         -- Make sure we're in HH:MM:SS:FF mode:
         --------------------------------------------------------------------------------
         local hhmmssff = fcp:preferencesWindow():generalPanel().TIME_DISPLAY["HH:MM:SS:FF"]
@@ -802,7 +858,7 @@ function mod.performBatchExport()
         -- Batch Export Complete:
         --------------------------------------------------------------------------------
         if result then
-            dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
+            displayMessage(i18n("batchExportComplete"), {i18n("done")})
         end
     end):After(0)
 end
@@ -821,11 +877,7 @@ local function nextID()
     return mod._nextID
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.export.batch",
     group           = "finalcutpro",
@@ -852,9 +904,9 @@ function plugin.init(deps)
         priority    = 2,
         id          = "timeline",
         label       = i18n("timeline"),
-        image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
+        image       = imageFromPath(iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 620,
+        height      = 680,
     })
         :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
@@ -924,12 +976,17 @@ function plugin.init(deps)
         :addParagraph(nextID(), i18n("usingTheFollowingNamingConvention") .. ":")
         :addParagraph(nextID(), html.br())
         :addContent(nextID(), function()
+                local destinationPreset = mod.getDestinationPreset()
                 local useCustomFilename = mod.useCustomFilename()
-                if useCustomFilename then
-                    local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                if destinationPreset == i18n("sendToCompressor") then
+                    return html.p {class="uiItem", style="color:#3f9253; font-weight:bold;"} (i18n("changeFilenamesInCompressor"))
                 else
-                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
+                    if useCustomFilename then
+                        local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
+                        return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                    else
+                        return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">]] .. i18n("originalClipName") .. [[</p>]]
+                    end
                 end
             end, false)
         :addParagraph(nextID(), html.br())
@@ -937,7 +994,13 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeCustomFilename"),
-                onclick = mod.changeCustomFilename,
+                onclick = function()
+                    if mod.getDestinationPreset() == i18n("sendToCompressor") then
+                        compressor:launch()
+                    else
+                        mod.changeCustomFilename()
+                    end
+                end
             })
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),

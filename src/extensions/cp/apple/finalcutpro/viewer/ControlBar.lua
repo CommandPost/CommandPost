@@ -37,16 +37,28 @@ local ControlBar        = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar
 --- Returns:
 --- * `true` if it matches the pattern for a `Viewer` `ControlBar`.
 function ControlBar.static.matches(element)
-    if Group.matches(element) and #element >= 6 then
+    if Group.matches(element) and #element >= 4 then
         -- Note: sorting right-to-left
         local children = axutils.children(element, rightToLeft)
-
-        return Button.matches(children[1])
-           and Button.matches(children[2])
-           and StaticText.matches(children[3])
-           and Button.matches(children[4])
-           and Button.matches(children[5])
-           and Image.matches(children[6])
+        return
+            (
+                -- Normal Control Bar:
+                #children >= 5
+                and Button.matches(children[1])
+                and Button.matches(children[2])
+                and StaticText.matches(children[3])
+                and Button.matches(children[4])
+                and Button.matches(children[5])
+            )
+            or
+            (
+                -- Timecode Entry Mode:
+                #children >= 4
+                and Button.matches(children[1])
+                and Button.matches(children[2])
+                and StaticText.matches(children[3])
+                and Image.matches(children[4])
+            )
     end
     return false
 end
@@ -126,9 +138,9 @@ function ControlBar.lazy.prop:timecode()
                 --------------------------------------------------------------------------------
                 -- Wait until the click has been registered (give it 5 seconds):
                 --------------------------------------------------------------------------------
-                local toolbar = self:bottomToolbarUI()
+                local toolbar = self:UI()
                 local ready = just.doUntil(function()
-                    return #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
+                    return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
                 end, 5)
                 if ready then
                     --------------------------------------------------------------------------------

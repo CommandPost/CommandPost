@@ -10,11 +10,7 @@ local axutils                           = require("cp.ui.axutils")
 local just                              = require("cp.just")
 local prop                              = require("cp.prop")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local KeywordEditor = {}
 
 --- cp.apple.finalcutpro.main.KeywordEditor.new(parent) -> KeywordEditor object
@@ -280,7 +276,6 @@ function KeywordEditor:removeKeyword(keyword)
                 return false
             end
             local resultString = table.concat(result, ", ")
-            log.df("resultString: %s", resultString)
             if resultString and textbox:setAttributeValue("AXValue", resultString) then
                 if textbox:performAction("AXConfirm") then
                     return true

@@ -12,11 +12,7 @@ local json                                      = require("hs.json")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.json.read(path) -> table | nil

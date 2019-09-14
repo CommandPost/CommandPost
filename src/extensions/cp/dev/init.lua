@@ -17,11 +17,7 @@ local config        = require("cp.config")
 
 local doAfter       = timer.doAfter
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- cp.dev.hotkey(fn) -> none
@@ -275,6 +271,39 @@ function mod.highlight(e)
         highlight:delete()
     end)
     return e
+end
+
+--- cp.dev.highlightFrame(frame) -> none
+--- Function
+--- Highlights aa frame on the screen.
+---
+--- Parameters:
+---  * frame - A `hs.geometry` frame object.
+---
+--- Returns:
+---  * None
+function mod.highlightFrame(frame)
+    if frame then
+        frame = geometry.rect(frame)
+        --------------------------------------------------------------------------------
+        -- Get Highlight Colour Preferences:
+        --------------------------------------------------------------------------------
+        local highlightColor = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=0.75}
+
+        local highlight = drawing.rectangle(frame)
+        highlight:setStrokeColor(highlightColor)
+        highlight:setFill(false)
+        highlight:setStrokeWidth(3)
+        highlight:show()
+
+        --------------------------------------------------------------------------------
+        -- Set a timer to delete the highlight after 3 seconds:
+        --------------------------------------------------------------------------------
+        mod._highlightTimer = doAfter(3,
+        function()
+            highlight:delete()
+        end)
+    end
 end
 
 --- cp.dev.highlightPoint(point) -> none

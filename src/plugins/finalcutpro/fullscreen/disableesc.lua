@@ -13,11 +13,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
 local tools                             = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 --- plugins.finalcutpro.fullscreen.disableesc.enabled <cp.prop: boolean>
@@ -47,11 +43,7 @@ mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:
     end
 end)
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.fullscreen.disableesc",
     group           = "finalcutpro",

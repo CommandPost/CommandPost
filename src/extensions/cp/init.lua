@@ -30,11 +30,6 @@ local tools                     = require("cp.tools")
 --------------------------------------------------------------------------------
 require("hs.ipc")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- cp.init()
@@ -263,7 +258,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Display Welcome Message In The Console:
     --------------------------------------------------------------------------------
-    console.printStyledtext(styledtext.new(config.appName .. " v" .. config.appVersion, {
+    console.printStyledtext(styledtext.new(config.appName .. " v" .. config.appVersion .. " (Build: " .. config.appBuild .. ")", {
         color = {hex = "#999999", alpha = 1},
         font = { name = "Helvetica", size = 18 },
     }))
@@ -282,7 +277,7 @@ function mod.init()
     -- Display Useful Debugging Information in Console:
     --------------------------------------------------------------------------------
     console.printStyledtext("")
-                                                writeToConsoleDebug("Date Built:                     " .. hs.processInfo.buildTime)
+                                                writeToConsoleDebug("Build Date:                     " .. hs.processInfo.buildTime)
     if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
                                                 writeToConsoleDebug(config.appName .. " Locale:             " .. tostring(i18n.getLocale()),     true)
     if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end

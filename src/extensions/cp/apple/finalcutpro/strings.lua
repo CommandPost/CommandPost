@@ -20,16 +20,13 @@ local v                     = require("semver")
 
 local insert, sort          = table.insert, table.sort
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 local extraPath = config.scriptPath .. "/cp/apple/finalcutpro/strings/"
 
 mod._strings = strings.new()
+:fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${locale}.lproj/FFEffectBundleLocalizable.strings")
 :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/PELocalizable.strings")
 :fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${locale}.lproj/FFLocalizable.strings")
 :fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings")

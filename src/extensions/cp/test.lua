@@ -6,11 +6,7 @@ local require		= require
 
 local inspect		= require("hs.inspect")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local suites = {}
 
 local format = string.format

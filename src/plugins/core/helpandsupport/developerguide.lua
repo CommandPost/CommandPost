@@ -4,13 +4,8 @@
 
 local require = require
 
-local i18n = require("cp.i18n")
+local i18n = require "cp.i18n"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.core.helpandsupport.developerguide.show() -> nil
@@ -26,11 +21,6 @@ function mod.show()
     os.execute('open "http://dev.commandpost.io/"')
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id              = "core.helpandsupport.developerguide",
     group           = "core",

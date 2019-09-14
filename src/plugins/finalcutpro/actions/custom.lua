@@ -3,27 +3,22 @@
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
 
-local require = require
+local require       = require
 
-local log           = require("hs.logger").new("customAction")
+local log           = require "hs.logger".new "customAction"
 
-local fcp           = require("cp.apple.finalcutpro")
-local config        = require("cp.config")
-local prop          = require("cp.prop")
-local tools         = require("cp.tools")
-local i18n          = require("cp.i18n")
+local fcp           = require "cp.apple.finalcutpro"
+local config        = require "cp.config"
+local prop          = require "cp.prop"
+local tools         = require "cp.tools"
+local i18n          = require "cp.i18n"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
+local mod           = {}
 
 -- MAXIMUM -> number
 -- Constant
 -- The maximum number of shortcuts
-local MAXIMUM = 20
+local MAXIMUM = 50
 
 --- plugins.finalcutpro.actions.custom.shortcuts <cp.prop: table>
 --- Variable
@@ -35,7 +30,7 @@ mod.customActions = prop(
     function(value)
         config.set(fcp:currentLocale().code .. ".actions.custom", value)
     end
-)
+):cached()
 
 --- plugins.finalcutpro.actions.custom.apply(id) -> none
 --- Function
@@ -129,11 +124,6 @@ function mod.assign(id, completionFn)
     activator:show()
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id = "finalcutpro.actions.custom",
     group = "finalcutpro",
@@ -144,7 +134,6 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Setup Action Manager:
     --------------------------------------------------------------------------------
@@ -192,7 +181,6 @@ function plugin.init(deps)
                     end
                 end)
     end
-
     return mod
 end
 

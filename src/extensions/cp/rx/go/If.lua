@@ -18,11 +18,7 @@ local insert                = table.insert
 local pack, unpack          = table.pack, table.unpack
 local format                = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 
 -- checks that the value is not false and not nil.
 local function isTruthy(value)

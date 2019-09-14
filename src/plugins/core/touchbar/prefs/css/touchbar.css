@@ -46,6 +46,24 @@
 	width: 290px;
 }
 
+.tbLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
 .tbRowIcon {
 	width: 10%;
 }
@@ -60,6 +78,13 @@
 
 .tbRowLabel {
 	width: 27%;
+}
+
+.tbResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 200px;
 }
 
 .tbRowOrder {
@@ -102,6 +127,7 @@
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
+	width: 200px;
 }
 
 .buttonDisabled {

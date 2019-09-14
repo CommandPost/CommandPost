@@ -10,11 +10,7 @@ local window   			= require("hs.window")
 
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 
 -- ID -> string
@@ -112,11 +108,7 @@ function mod.init(deps)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id				= "core.touchbar.widgets.windowslide",
     group			= "core",

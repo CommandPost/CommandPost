@@ -10,11 +10,6 @@ local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.tangent.playback.group
@@ -106,11 +101,7 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"Mark", "Previous", "Keyframe"}))
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.playback",
     group = "finalcutpro",

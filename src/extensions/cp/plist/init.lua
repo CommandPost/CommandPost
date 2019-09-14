@@ -2,20 +2,16 @@
 ---
 --- Reads & Writes plist data.
 
-local require = require
+local require       = require
 
-local log			      = require("hs.logger").new("plist")
+local log           = require("hs.logger").new("plist")
 
-local fs			      = require("hs.fs")
+local fs            = require("hs.fs")
 
-local plistParse 	  = require("cp.plist.plistParse")
-local tools 		    = require("cp.tools")
+local plistParse    = require("cp.plist.plistParse")
+local tools         = require("cp.tools")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local plist = {}
 
 plist.log = log
@@ -43,7 +39,7 @@ function plist.base64ToTable(base64Data)
     -- Define Temporary Files:
     --------------------------------------------------------------------------------
     local base64FileName = os.tmpname()
-    local plistFileName	= os.tmpname()
+    local plistFileName = os.tmpname()
 
     local err = ""
     local plistTable
@@ -80,18 +76,18 @@ end
 --- Converts Binary Data into a LUA Table.
 ---
 --- Parameters:
----  * binaryData		- Binary data
+---  * binaryData       - Binary data
 ---
 --- Returns:
----  * data				- A string of XML data
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A string of XML data
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.binaryToTable(binaryData)
     if not binaryData then
         return nil
     end
 
     -- Define Temporary File:
-    local plistFileName	= os.tmpname()
+    local plistFileName = os.tmpname()
 
     -- Write Pasteboard Data to Temporary File:
     local plistFile = io.open(plistFileName, "wb")
@@ -116,8 +112,8 @@ end
 ---  * plistFileName - Path & Filename of the Binary File
 ---
 --- Returns:
----  * data				- A table of plist data, or `nil` if there was a problem.
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A table of plist data, or `nil` if there was a problem.
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.binaryFileToTable(plistFileName)
 
     if not plistFileName then
@@ -149,8 +145,8 @@ end
 ---  * plistFileName - Path & Filename of the Binary File
 ---
 --- Returns:
----  * data				- A string of XML data
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A string of XML data
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.binaryFileToXML(plistFileName)
 
     local executeOutput, executeStatus = hs.execute([[
@@ -171,11 +167,11 @@ end
 --- Converts an XML plist string into a LUA Table.
 ---
 --- Parameters:
----  * plistXml	        - The XML string
+---  * plistXml         - The XML string
 ---
 --- Returns:
----  * data				- A table of plist data, or `nil` if there was a problem.
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A table of plist data, or `nil` if there was a problem.
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.xmlToTable(plistXml)
     local result = plistParse(plistXml)
     return result, nil
@@ -186,11 +182,11 @@ end
 --- Converts XML data from a file into a LUA Table.
 ---
 --- Parameters:
----  * plistFileName	- Path & Filename of the XML File
+---  * plistFileName    - Path & Filename of the XML File
 ---
 --- Returns:
----  * data				- A table of plist data, or `nil` if there was a problem.
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A table of plist data, or `nil` if there was a problem.
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.xmlFileToTable(plistFileName)
     if not plistFileName then
         return nil, "No plistFileName was provided"
@@ -200,11 +196,11 @@ function plist.xmlFileToTable(plistFileName)
     if not absoluteFilename then
         return nil, string.format("The provided path was not found: %s", plistFileName)
     end
-    local file = io.open(absoluteFilename, "r") 		-- r read mode
+    local file = io.open(absoluteFilename, "r")         -- r read mode
     if not file then
         return nil, string.format("Unable to open '%s'", plistFileName)
     end
-    local content = file:read "*a" 					-- *a or *all reads the whole file
+    local content = file:read "*a"                  -- *a or *all reads the whole file
     file:close()
 
     -- Convert the XML to a LUA table:
@@ -219,11 +215,11 @@ end
 --- cp.plist.xmlFileToTable() or hs.plist.binaryFileToTable() instead.
 ---
 --- Parameters:
----  * plistFileName	- Path & Filename of the XML File
+---  * plistFileName    - Path & Filename of the XML File
 ---
 --- Returns:
----  * data				- A table of plist data, or `nil` if there was a problem.
----  * err				- The error message, or `nil` if there were no problems.
+---  * data             - A table of plist data, or `nil` if there was a problem.
+---  * err              - The error message, or `nil` if there were no problems.
 function plist.fileToTable(plistFileName)
     if not plistFileName then
         return nil, "No plistFileName provided."

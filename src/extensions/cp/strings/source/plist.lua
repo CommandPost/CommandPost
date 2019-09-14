@@ -26,11 +26,7 @@ local escapeXML, unescapeXML        = text.escapeXML, text.unescapeXML
 local find, len                     = string.find, string.len
 local insert                        = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local mod = {}
 mod.mt = {}
 

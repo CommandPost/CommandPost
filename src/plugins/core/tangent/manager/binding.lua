@@ -11,11 +11,7 @@ local parameter         = require("parameter")
 local format            = string.format
 local insert            = table.insert
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local binding = {}
 binding.mt = {}
 

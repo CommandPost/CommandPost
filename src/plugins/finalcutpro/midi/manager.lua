@@ -4,14 +4,13 @@
 
 local require = require
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
+--local log             = require "hs.logger".new "fcpMIDIman"
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+local application       = require "hs.application"
+
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+
 local mod = {}
 
 --- plugins.finalcutpro.midi.manager.ID -> string
@@ -21,14 +20,21 @@ mod.ID = "fcpx"
 
 -- used to update the group status
 local function updateGroupStatus(enabled)
+    --------------------------------------------------------------------------------
+    -- Workaround for AudioSwift Support:
+    --------------------------------------------------------------------------------
+    if fcp:isRunning() then
+        local fcpApp = fcp.app.hsApplication()
+        local frontmostApplication = application.frontmostApplication()
+        if #fcpApp:visibleWindows() >= 1 and frontmostApplication:bundleID() == "com.nigelrios.AudioSwift" then
+            enabled = true
+        end
+    end
     mod._manager.groupStatus(mod.ID, enabled)
 end
 
---- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
---- Field
---- Enable or disable MIDI Support.
-mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
-    if enabled then
+local function update()
+    if mod._manager.enabled() or mod._manager.enabledLoupedeck() then
         --------------------------------------------------------------------------------
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
         --------------------------------------------------------------------------------
@@ -41,13 +47,8 @@ mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
         fcp.app.frontmost:unwatch(updateGroupStatus)
         fcp.app.showing:unwatch(updateGroupStatus)
     end
-end)
+end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
 local plugin = {
     id = "finalcutpro.midi.manager",
     group = "finalcutpro",
@@ -58,6 +59,10 @@ local plugin = {
 
 function plugin.init(deps)
     mod._manager = deps.manager
+
+    mod._manager.enabled:watch(update)
+    mod._manager.enabledLoupedeck:watch(update)
+
     return mod
 end
 
@@ -65,7 +70,7 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update Watchers:
     --------------------------------------------------------------------------------
-    mod.enableMIDI:update()
+    update()
 end
 
 return plugin

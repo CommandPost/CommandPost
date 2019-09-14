@@ -20,11 +20,7 @@ local TextField							= require("cp.ui.TextField")
 local cache, childMatching              = axutils.cache, axutils.childMatching
 local childFromLeft, childWithRole      = axutils.childFromLeft, axutils.childWithRole
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
+
 local BrowserMarkerPopover = Element:subclass("cp.apple.finalcutpro.main.BrowserMarkerPopover")
 
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.matches(element) -> boolean

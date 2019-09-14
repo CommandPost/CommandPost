@@ -1,25 +1,23 @@
 --- === cp.apple.finalcutpro.plugins.guiscan ===
 ---
 --- Final Cut Pro GUI Plugin Scanner.
+---
+--- **Usage:**
+--- ```lua
+--- require("cp.apple.finalcutpro.plugins.guiscan").checkAllPlugins()
+--- require("cp.apple.finalcutpro.plugins.guiscan").checkAllPluginsInAllLanguages()
+--- ```
 
 local require = require
 
--- local log					= require("hs.logger").new("guiscan")
+local log                   = require("hs.logger").new("guiscan")
 
-local dialog				= require("cp.dialog")
-local fcp					  = require("cp.apple.finalcutpro")
-local plugins				= require("cp.apple.finalcutpro.plugins")
-local just					= require("cp.just")
-local i18n          = require("cp.i18n")
+local dialog                = require("cp.dialog")
+local fcp                   = require("cp.apple.finalcutpro")
+local i18n                  = require("cp.i18n")
+local plugins               = require("cp.apple.finalcutpro.plugins")
 
-local insert, remove		= table.insert, table.remove
-local format				    = string.format
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 -- scanVideoEffects() -> table
@@ -36,7 +34,7 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is active:
     --------------------------------------------------------------------------------
-    fcp:launch()
+    fcp:launch(10)
 
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
@@ -123,7 +121,7 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is active:
     --------------------------------------------------------------------------------
-    fcp:launch()
+    fcp:launch(10)
 
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
@@ -210,7 +208,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is active:
     --------------------------------------------------------------------------------
-    fcp:launch()
+    fcp:launch(10)
 
     --------------------------------------------------------------------------------
     -- Save the layout of the Effects panel, in case we switch away...
@@ -275,18 +273,24 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Return results:
     --------------------------------------------------------------------------------
-    return  allTransitions
+    return allTransitions
 end
 
---------------------------------------------------------------------------------
--- GET LIST OF GENERATORS:
---------------------------------------------------------------------------------
+-- scanGenerators() -> table
+-- Function
+-- Scans the list of generators in the FCPX GUI and returns it as a list.
+--
+-- Parameters:
+-- * None
+--
+-- Returns:
+-- * The table of generator names, or `nil` if there was a problem.
 local function scanGenerators()
 
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is active:
     --------------------------------------------------------------------------------
-    fcp:launch()
+    fcp:launch(10)
 
     local generators = fcp:generators()
 
@@ -340,12 +344,21 @@ local function scanGenerators()
     return allGenerators
 end
 
+-- scanTitles() -> table
+-- Function
+-- Scans the list of titles in the FCPX GUI and returns it as a list.
+--
+-- Parameters:
+-- * None
+--
+-- Returns:
+-- * The table of titles names, or `nil` if there was a problem.
 local function scanTitles()
 
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is active:
     --------------------------------------------------------------------------------
-    fcp:launch()
+    fcp:launch(10)
 
     local generators = fcp:generators()
 
@@ -396,166 +409,75 @@ local function scanTitles()
     return allTitles
 end
 
--- cp.apple.finalcutpro.plugins.guiscan.check([locale]) -> boolean, string
+-- cp.apple.finalcutpro.plugins.guiscan.checkAllPlugins([locale]) -> none
 -- Function
 -- Compares the list of plugins created via file scanning to that produced by GUI scanning.
 -- A detailed report is output in the Error Log.
 --
 -- Parameters:
---  * `language`	- The language to scan in. Defaults the the current FCPX language.
+--  * language - The language to scan. Defaults to the current Final Cut Pro language.
 --
 -- Returns:
---  * `true` if all plugins match.
---  * The text value of the report.
-function mod.check(locale)
-
+--  * None
+function mod.checkAllPlugins(locale)
     locale = locale or fcp.app:currentLocale()
 
-    local value = ""
-    local function ln(str, ...) value = value .. format(str, ...) .. "\n" end
-
     fcp.app.currentLocale:set(locale)
-    fcp:launch()
-    just.doUntil(function() return fcp:isFrontmost() end, 20, 0.1)
+    fcp:launch(10)
 
-    --------------------------------------------------------------------------------
-    -- Debug Message:
-    --------------------------------------------------------------------------------
-    ln("\n---------------------------------------------------------")
-    ln(" COMPARING PLUGIN FILE SCAN RESULTS TO GUI SCAN RESULTS:")
-    ln("---------------------------------------------------------\n")
-
-    --------------------------------------------------------------------------------
-    -- Plugin Types:
-    --------------------------------------------------------------------------------
     local pluginScanners = {
         [plugins.types.audioEffect] = scanAudioEffects,
         [plugins.types.videoEffect] = scanVideoEffects,
-        [plugins.types.transition]	= scanTransitions,
-        [plugins.types.generator]	= scanGenerators,
-        [plugins.types.title]		= scanTitles,
+        [plugins.types.transition]  = scanTransitions,
+        [plugins.types.generator]   = scanGenerators,
+        [plugins.types.title]       = scanTitles,
     }
 
-    --------------------------------------------------------------------------------
-    -- Begin Scan:
-    --------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------
-    -- Debug Message:
-    --------------------------------------------------------------------------------
-    ln("---------------------------------------------------------")
-    ln(" CHECKING LANGUAGE: %s", locale.code)
-    ln("---------------------------------------------------------")
+    log.df("Comparing the GUI values to what we have in the Plugin Cache.")
 
-    local failed = false
-
-    for newType,scanner in pairs(pluginScanners) do
-        --------------------------------------------------------------------------------
-        -- Get settings from GUI Scripting Results:
-        --------------------------------------------------------------------------------
+    for newType, scanner in pairs(pluginScanners) do
+        log.df(" - Scanning for '%s' in '%s'.", newType, locale.code)
         local oldPlugins = scanner()
-
         if oldPlugins then
-
-            --------------------------------------------------------------------------------
-            -- Debug Message:
-            --------------------------------------------------------------------------------
-            ln("  - Checking Plugin Type: %s", newType)
-
             local newPlugins = fcp:plugins():ofType(newType, locale)
-            local newPluginNames = {}
-            if newPlugins then
-                for _,plugin in ipairs(newPlugins) do
-                    local name = plugin.name
-                    local pluginNames = newPluginNames[name]
-                    if not pluginNames then
-                        pluginNames = {
-                            matched = {},
-                            unmatched = {},
-                            partials = {},
-                        }
-                        newPluginNames[name] = pluginNames
-                    end
-                    --------------------------------------------------------------------------------
-                    -- TODO: David - I'm not exactly sure what this line of code was designed to do?
-                    --------------------------------------------------------------------------------
-                    --insert(plugins.unmatched, plugin)
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Compare Results:
-            --------------------------------------------------------------------------------
-            local errorCount = 0
             for _, oldFullName in pairs(oldPlugins) do
-                local oldTheme, oldName = string.match(oldFullName, "^(.-) %- (.+)$")
-                oldName = oldName or oldFullName
-                local np = newPluginNames[oldFullName] or newPluginNames[oldName]
-                if not np then
-                    ln("  - ERROR: Missing %s: %s", newType, oldFullName)
-                    errorCount = errorCount + 1
-                else
-                    local unmatched = np.unmatched
-                    local found = false
-                    for i,plugin in ipairs(unmatched) do
-                        -- ln("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
-                        if plugin.theme == oldTheme then
-                            -- ln("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
-                            insert(np.matched, plugin)
-                            remove(unmatched, i)
-                            found = true
-                            break
-                        end
-                    end
-                    if not found then
-                        -- ln("  - INFO:  Partial for '%s' plugin.", oldFullName)
-                        insert(np.partials, oldFullName)
+                local found = false
+                for _,plugin in ipairs(newPlugins) do
+                    if plugin.name == oldFullName or
+                    plugin.theme and (plugin.theme .. " - " .. plugin.name == oldFullName) or
+                    --------------------------------------------------------------------------------
+                    -- This is a workaround for some strange MotionVFX Plugins
+                    -- (i.e. mFlare 2/SCI-FI/UFO Glimmer)
+                    -- The theme is "SCI-FI", but it's labelled as "Sci-Fi" in Final Cut Pro's UI.
+                    --------------------------------------------------------------------------------
+                    plugin.theme and (plugin.theme:lower() .. " - " .. plugin.name:lower() == oldFullName:lower()) then
+                        found = true
                     end
                 end
-            end
-
-            for _, np in pairs(newPluginNames) do
-                if #np.partials ~= #np.unmatched then
-                    for _,oldFullName in ipairs(np.partials) do
-                        ln("  - ERROR: GUI Scan %s plugin unmatched: %s", newType, oldFullName)
-                        errorCount = errorCount + 1
-                    end
-
-                    for _,plugin in ipairs(np.unmatched) do
-                        local newFullName = plugin.name
-                        if plugin.theme then
-                            newFullName = plugin.theme .." - "..newFullName
-                        end
-                        ln("  - ERROR: File Scan %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
-                        errorCount = errorCount + 1
-                    end
+                if not found then
+                    log.df("   - Missing %s plugin: %s", newType, oldFullName)
                 end
             end
-
-            --------------------------------------------------------------------------------
-            -- If all results matched:
-            --------------------------------------------------------------------------------
-            if errorCount == 0 then
-                ln("  - SUCCESS: %s all matched!\n", newType)
-            else
-                ln("  - ERROR: %s had %d errors!\n", newType, errorCount)
-            end
-            failed = failed or (errorCount ~= 0)
-        else
-            ln(" - SKIPPING: Could not find settings for: %s (%s)", newType, locale.code)
         end
     end
-
-    return not failed, value
+    log.df("Scan complete!")
+    hs.openConsole()
 end
 
-function mod.checkAll()
-    local failed, value = false, ""
-    for _,locale in ipairs(fcp.app:getSupportedLocales()) do
-        local ok, result = mod.check(locale)
-        failed = failed or not ok
-        value = value .. result .. "\n"
+-- cp.apple.finalcutpro.plugins.guiscan.checkAllPluginsInAllLanguages() -> none
+-- Function
+-- Compares the list of plugins created via file scanning to that produced by GUI scanning.
+-- A detailed report is output in the Error Log.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod.checkAllPluginsInAllLanguages()
+    for _,locale in ipairs(fcp.app:supportedLocales()) do
+        mod.checkAllPlugins(locale)
     end
-    return not failed, value
 end
 
 return mod

@@ -7,11 +7,7 @@ local require = require
 local html                      = require("cp.web.html")
 local i18n                      = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id              = "finalcutpro.preferences.general",
     group           = "finalcutpro",
@@ -51,7 +47,7 @@ function plugin.init(deps)
                     <div class="fcpPrefsColumn">
             ]], false)
 
-            :addHeading(2200, i18n("advancedFeatures"))
+            :addHeading(2200, i18n("hiddenFinalCutProPreferences"))
 
             :addParagraph(2201, html.span { class="tbTip" } ( i18n("advancedFeaturesWarning") .. "<br /><br />", false ).. "\n\n")
 

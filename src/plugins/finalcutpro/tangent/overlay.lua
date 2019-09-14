@@ -6,11 +6,6 @@ local require = require
 
 local i18n        = require("cp.i18n")
 
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.tangent.overlay.group
@@ -67,11 +62,7 @@ function mod.init(fcpGroup, overlays)
 
 end
 
---------------------------------------------------------------------------------
---
--- THE PLUGIN:
---
---------------------------------------------------------------------------------
+
 local plugin = {
     id = "finalcutpro.tangent.overlay",
     group = "finalcutpro",
