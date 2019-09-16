@@ -4,15 +4,16 @@
 
 local require = require
 
-local base64            = require("hs.base64")
-local timer             = require("hs.timer")
+local base64            = require "hs.base64"
+local timer             = require "hs.timer"
+local window            = require "hs.window"
 
-local config            = require("cp.config")
-local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local json              = require("cp.json")
-local just              = require("cp.just")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local just              = require "cp.just"
 
 local doAfter           = timer.doAfter
 
@@ -222,6 +223,21 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
+    -- Make sure the correct window has focus:
+    --------------------------------------------------------------------------------
+    local gridWindow = grid:attributeValue("AXWindow")
+    local whichWindow = gridWindow and gridWindow:asHSWindow()
+    if whichWindow then
+        whichWindow:focus()
+        just.doUntil(function()
+            return whichWindow == window.focusedWindow()
+        end)
+    else
+        dialog.displayErrorMessage("Failed to select the window that contains the Generator Browser.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
     -- Select the chosen Generator:
     --------------------------------------------------------------------------------
     grid:setAttributeValue("AXSelectedChildren", {whichItem})
@@ -339,7 +355,6 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     return true
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.generators",
