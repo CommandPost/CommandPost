@@ -63,6 +63,7 @@ local missingMenuMap = {
     { path = {"Window", "Workspaces"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language", "English"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "French"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Portuguese"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Spanish"} },
     { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Greek"} },

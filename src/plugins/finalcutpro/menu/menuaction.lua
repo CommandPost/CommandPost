@@ -1172,9 +1172,12 @@ function mod.init(actionmanager)
         mod._handler:reset()
     end)
 
-    mod._handler:reset()
-
-    -- TODO: Need to reload if the FCPX language changes.
+    --------------------------------------------------------------------------------
+    -- Watch for Language Changes:
+    --------------------------------------------------------------------------------
+    fcp.currentLocale:watch(function()
+        mod._handler:reset()
+    end)
 
 end
 
