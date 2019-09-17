@@ -18,10 +18,11 @@ local just        = require "cp.just"
 local tools       = require "cp.tools"
 local i18n        = require "cp.i18n"
 
-local _           = require "moses"
+local moses       = require "moses"
 
 local panel       = require "panel"
 
+local sortedIndex = moses.sortedIndex
 local waitUntil   = timer.waitUntil
 
 local mod = {}
@@ -552,7 +553,7 @@ end
 function mod.addPanel(params)
     local newPanel = panel.new(params, mod)
 
-    local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
+    local index = sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
 
     return newPanel

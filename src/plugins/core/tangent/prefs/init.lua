@@ -4,16 +4,15 @@
 
 local require = require
 
-local log         = require("hs.logger").new("tangentPref")
+local log         = require "hs.logger".new "tangentPref"
 
-local dialog      = require("hs.dialog")
-local image       = require("hs.image")
+local dialog      = require "hs.dialog"
+local image       = require "hs.image"
 
-local html        = require("cp.web.html")
-local i18n        = require("cp.i18n")
+local html        = require "cp.web.html"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
-
+local moses       = require "moses"
 
 local mod = {}
 
@@ -59,7 +58,7 @@ end
 --  * HTML content as string
 local function generateContent()
     local context = {
-        _                       = _,
+        _                       = moses,
         webviewLabel            = mod._prefsManager.getLabel(),
         maxItems                = mod._favourites.MAX_ITEMS,
         favourites              = mod._favourites.favourites(),

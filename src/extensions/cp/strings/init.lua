@@ -12,16 +12,16 @@
 
 local require = require
 
-local log               = require("hs.logger").new("strings")
+local log               = require "hs.logger".new "strings"
 
-local inspect           = require("hs.inspect")
+local inspect           = require "hs.inspect"
 
-local plistSrc          = require("cp.strings.source.plist")
+local plistSrc          = require "cp.strings.source.plist"
 
-local _                 = require("moses")
+local moses             = require "moses"
 
-local append            = _.append
-
+local append            = moses.append
+local extend            = moses.extend
 
 local mod = {}
 mod.mt = {}
@@ -50,7 +50,7 @@ local UNFOUND = {}
 --- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
-        self._context = _.extend({}, context)
+        self._context = extend({}, context)
         for _,source in ipairs(self._sources) do
             source:context(context)
         end

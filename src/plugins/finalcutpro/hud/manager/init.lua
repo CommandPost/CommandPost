@@ -6,26 +6,25 @@ local require = require
 
 local hs            = hs
 
-local log           = require("hs.logger").new("hudMan")
+local log           = require "hs.logger".new "hudMan"
 
-local application   = require("hs.application")
-local drawing       = require("hs.drawing")
-local inspect       = require("hs.inspect")
-local screen        = require("hs.screen")
-local timer         = require("hs.timer")
-local toolbar       = require("hs.webview.toolbar")
-local webview       = require("hs.webview")
+local application   = require "hs.application"
+local drawing       = require "hs.drawing"
+local inspect       = require "hs.inspect"
+local screen        = require "hs.screen"
+local timer         = require "hs.timer"
+local toolbar       = require "hs.webview.toolbar"
+local webview       = require "hs.webview"
 
-local app           = require("cp.app")
-local config        = require("cp.config")
-local dialog        = require("cp.dialog")
-local fcp           = require("cp.apple.finalcutpro")
-local i18n          = require("cp.i18n")
-local just          = require("cp.just")
-local tools         = require("cp.tools")
+local app           = require "cp.app"
+local config        = require "cp.config"
+local dialog        = require "cp.dialog"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
+local tools         = require "cp.tools"
 
-local moses         = require("moses")
-local panel         = require("panel")
+local moses         = require "moses"
+local panel         = require "panel"
 
 local doAfter       = timer.doAfter
 local forBundleID   = app.forBundleID

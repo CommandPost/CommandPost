@@ -13,11 +13,13 @@
 
 local require = require
 
-local _					    = require("moses")
+local moses         = require "moses"
 
-local find, len			= string.find, string.len
-local insert			  = table.insert
+local extend        = moses.extend
 
+local find          = string.find
+local len           = string.len
+local insert        = table.insert
 
 local mod = {}
 mod.mt = {
@@ -43,13 +45,12 @@ mod.mt = {
 --- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
-        self._context = _.extend({}, context)
+        self._context = extend({}, context)
         return self
     else
         return self._context
     end
 end
-
 
 --- cp.strings.source.table:add(keyValues) -> self
 --- Method
@@ -61,7 +62,7 @@ end
 --- Returns:
 ---  * The `cp.string.source`.
 function mod.mt:add(keyValues)
-    self._cache = _.extend(self._cache or {}, keyValues)
+    self._cache = extend(self._cache or {}, keyValues)
     return self
 end
 
@@ -89,8 +90,8 @@ end
 --- Finds the array of keys who's value matches the pattern in this table. It will check that the pattern matches the beginning of the value.
 ---
 --- Parameters:
----  * `pattern		- The string pattern to match.
----  * `context`	- An optional additional context for the source.
+---  * `pattern     - The string pattern to match.
+---  * `context`    - An optional additional context for the source.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround

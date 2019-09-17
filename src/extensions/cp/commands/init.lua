@@ -4,21 +4,23 @@
 
 local require = require
 
-local log                       = require("hs.logger").new("commands")
+local log                       = require "hs.logger".new "commands"
 
-local fs                        = require("hs.fs")
-local json                      = require("hs.json")
-local timer                     = require("hs.timer")
+local fs                        = require "hs.fs"
+local json                      = require "hs.json"
+local timer                     = require "hs.timer"
 
-local command                   = require("cp.commands.command")
-local config                    = require("cp.config")
-local prop                      = require("cp.prop")
-local tools                     = require("cp.tools")
+local command                   = require "cp.commands.command"
+local config                    = require "cp.config"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
-local moses                     = require("moses")
+local moses                     = require "moses"
+
+local clone                     = moses.clone
+local isEmpty                   = moses.isEmpty
 
 local waitUntil                 = timer.waitUntil
-
 
 local commands = {}
 commands.mt = {}
@@ -75,7 +77,7 @@ end
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
 function commands.groups()
-    return moses.clone(commands._groups, true)
+    return clone(commands._groups, true)
 end
 
 --- cp.commands.new(id) -> cp.commands
@@ -335,7 +337,7 @@ function commands.mt:saveShortcuts()
         local commandData = {}
         for _,shortcut in ipairs(cmd:getShortcuts()) do
             commandData[#commandData + 1] = {
-                modifiers = moses.clone(shortcut:getModifiers()),
+                modifiers = clone(shortcut:getModifiers()),
                 keyCode = shortcut:getKeyCode(),
             }
         end
@@ -406,7 +408,7 @@ function commands.loadFromFile(name)
         --log.df("Loading shortcuts: '%s'", filePath)
         local content = file:read("*all")
         file:close()
-        if not moses.isEmpty(content) then
+        if not isEmpty(content) then
             groupData = json.decode(content)
         else
             --log.df("Empty shortcut file: '%s'", filePath)

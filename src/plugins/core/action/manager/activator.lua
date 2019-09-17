@@ -41,7 +41,7 @@ local idle                      = require "cp.idle"
 local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
 
-local _                         = require "moses"
+local moses                     = require "moses"
 
 local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
@@ -651,7 +651,7 @@ end
 --- Returns:
 ---  * Table of choices that can be displayed by an `hs.chooser`.
 function activator.mt:unhiddenChoices()
-    return _.filter(self:allChoices(), function(_,choice) return not choice.hidden end)
+    return moses.select(self:allChoices(), function(choice) return not choice.hidden end)
 end
 
 --- plugins.core.action.activator:activeChoices() -> table
@@ -667,8 +667,7 @@ end
 function activator.mt:activeChoices()
     local showHidden = self:showHidden()
     local disabledHandlers = self:_disabledHandlers()
-
-    return _.filter(self:allChoices(), function(_,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
+    return moses.select(self:allChoices(), function(choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
 end
 
 -- plugins.core.action.activator:_findChoices() -> none
