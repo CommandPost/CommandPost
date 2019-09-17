@@ -8,6 +8,7 @@ local require = require
 local log				= require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
+local host              = require "hs.host"
 local image             = require "hs.image"
 
 local config            = require "cp.config"
@@ -16,11 +17,16 @@ local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local localeID          = require "cp.i18n.localeID"
 local text              = require "cp.web.text"
+local tools             = require "cp.tools"
 
 local concat            = table.concat
 local imageFromPath     = image.imageFromPath
 local insert            = table.insert
+local locale            = host.locale
+local localizedString   = locale.localizedString
 local unescapeXML       = text.unescapeXML
+
+local findCommonWordWithinTwoStrings = tools.findCommonWordWithinTwoStrings
 
 local mod = {}
 
@@ -205,6 +211,11 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
     log.df("%s", result)
 end
 
+local function contentsInsideBrackets(a)
+    local b = string.match(a, "%(.*%)")
+    return b and b:sub(2, -2)
+end
+
 -- applyMenuWorkarounds(choices) -> table
 -- Function
 -- Applies a bunch of workarounds to the choices table.
@@ -222,6 +233,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --
     --------------------------------------------------------------------------------
     local en = localeID("en")
+    local fcpLocaleCode = fcp:currentLocale().code
 
     --------------------------------------------------------------------------------
     -- Final Cut Pro > Commands
@@ -349,13 +361,200 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     end
 
     --------------------------------------------------------------------------------
-    -- Edit > Captions > Duplicate Captions to New Language
+    -- Edit > Captions > Duplicate Captions to New Language >
+    --
+    -- af			Afrikaans
+    -- ar			Arabic
+    -- bg			Bulgarian
+    -- ca			Catalan
+    -- zh_Hans		Chinese (Simplified)
+    -- zh_Hant		Chinese (Traditional)
+    -- hr			Croatian
+    -- cs			Czech
+    -- da			Danish
+    -- et			Estonian
+    -- fi			Finnish
+    -- nl			Dutch
+    -- he			Hebrew
+    -- hi			Hindi
+    -- hu			Hungarian
+    -- is			Icelandic
+    -- id			Indonesian
+    -- it			Italian
+    -- ja			Japanese
+    -- kn			Kannada
+    -- kk			Kazakh
+    -- ko			Korean
+    -- lo			Lao
+    -- lv			Latvian
+    -- lt			Lithuanian
+    -- lb			Luxembourgish
+    -- ms			Malay
+    -- ml			Malayalam
+    -- mt			Maltese
+    -- mr			Marathi
+    -- pl			Polish
+    -- pa			Punjabi
+    -- ro			Romanian
+    -- ru			Russian
+    -- gd			Scottish Gaelic
+    -- sk			Slovak
+    -- sl			Slovenian
+    -- sv			Swedish
+    -- ta			Tamil
+    -- te			Telugu
+    -- th			Thai
+    -- tr			Turkish
+    -- uk			Ukrainian
+    -- ur			Urdu
+    -- vi			Vietnamese
+    -- cy			Welsh
+    -- zu			Zulu
+    --------------------------------------------------------------------------------
+    local easyLanguages = {"af", "ar", "bg", "ca", "zh_Hans", "zh_Hant", "hr", "cs", "da", "et", "fi", "nl", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lo", "lv", "lt", "lb", "ms", "ml", "mt", "mr", "pl", "pa", "ro", "ru", "gd", "sk", "sl", "sv", "ta", "te", "th", "tr", "uk", "ur", "vi", "cy", "zu"}
+    for _, code in pairs(easyLanguages) do
+        local _, title = localizedString(code, fcpLocaleCode)
+        local _, enTitle = localizedString(code, "en")
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { enTitle })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language >
+    --
+    -- zh			Chinese (Cantonese)
+    --------------------------------------------------------------------------------
+    do
+        local chineseString = localizedString("zh")
+        local cantoneseString = localizedString("yue")
+
+        local enChineseString = localizedString("zh", "en")
+        local enCantoneseString = localizedString("yue", "en")
+
+        local title = chineseString .. " (" .. cantoneseString .. ")"
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { enChineseString .. " (" .. enCantoneseString .. ")" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language >
+    --
+    -- no			Norwegian
+    --
+    -- NOTE: The workaround for this is to compare the 'nb' and 'nn' localised
+    --       strings.
+    --------------------------------------------------------------------------------
+    do
+        local nbString = localizedString("nb")
+        local nnString = localizedString("nn")
+
+        local enNbString = localizedString("nb", "en")
+        local enNnString = localizedString("nn", "en")
+
+        local norwegianString = findCommonWordWithinTwoStrings(nbString, nnString)
+        local enNorwegianString = findCommonWordWithinTwoStrings(enNbString, enNnString)
+
+        local title = norwegianString
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { enNorwegianString })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language >
+    --
+    -- bn			Bangla
+    -- tl			Tagalog
     --------------------------------------------------------------------------------
 
-    local easyLanguages = "af", "ar", "bg", "ca", "zh_Hans", "zh_Hant", "hr", "cs", "da", "nl", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lo", "lv", "lt", "lb", "ms", "ml", "mt", "mr", "pl", "pa", "ro", "ru", "gd", "sk", "sl", "sv", "ta", "te", "th", "tr", "uk", "ur", "vi", "cy", "zu"
-    for _, code in pairs(easyLanguages) do
-        local title = fcp:string("FFNewDestinationTitle")
-        local path = {"File", "Share"}
+        -- TODO: I have no idea how to get these values. 'bn' returns "Bengali"
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > English >
+    --
+    -- en_AU			Australia					-- English (Australia)
+    -- en_CA			Canada						-- English (Canada)
+    -- en_GB			United Kingdom				-- English (United Kingdom)
+    -- en_US			United States				-- English (United States)
+    --------------------------------------------------------------------------------
+    local englishVariants = {"en_AU", "en_CA", "en_GB", "en_US"}
+    for _, code in pairs(englishVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "English"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > French >
+    --
+    -- fr_BE			Belgium						-- French (Belgium)
+    -- fr_CA			Canada						-- French (Canada)
+    -- fr_FR			France						-- French (France)
+    -- fr_CH			Switzerland					-- French (Switzerland)
+    --------------------------------------------------------------------------------
+    local frVariants = {"fr_BE", "fr_CA", "fr_FR", "fr_CH"}
+    for _, code in pairs(frVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "French"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > English/German/Greek > All
+    --------------------------------------------------------------------------------
+    local allString = fcp:string("FFLanguageIdentifierPopupAllCountries")
+    local allMenus = {"English", "German", "Greek"}
+    for _, a in pairs(allMenus) do
+        local title = allString
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", a}
         local params = {}
         params.path = fnutils.concat(fnutils.copy(path), { title })
         params.locale = en
@@ -368,95 +567,102 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         })
     end
 
-    --[[
-    EASY LANGUAGES:
-    af			Afrikaans
-    ar			Arabic
-    bg			Bulgarian
-    ca			Catalan
-    zh_Hans		Chinese (Simplified)
-    zh_Hant		Chinese (Traditional)
-    hr			Croatian
-    cs			Czech
-    da			Danish
-    nl			Dutch
-    he			Hebrew
-    hi			Hindi
-    hu			Hungarian
-    is			Icelandic
-    id			Indonesian
-    it			Italian
-    ja			Japanese
-    kn			Kannada
-    kk			Kazakh
-    ko			Korean
-    lo			Lao
-    lv			Latvian
-    lt			Lithuanian
-    lb			Luxembourgish
-    ms			Malay
-    ml			Malayalam
-    mt			Maltese
-    mr			Marathi
-    pl			Polish
-    pa			Punjabi
-    ro			Romanian
-    ru			Russian
-    gd			Scottish Gaelic
-    sk			Slovak
-    sl			Slovenian
-    sv			Swedish
-    ta			Tamil
-    te			Telugu
-    th			Thai
-    tr			Turkish
-    uk			Ukrainian
-    ur			Urdu
-    vi			Vietnamese
-    cy			Welsh
-    zu			Zulu
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > German >
+    --
+    -- de_AT			Austria						-- German (Austria)
+    -- de_DE			Germany						-- German (Germany)
+    -- de_CH			Switzerland					-- German (Switzerland)
+    --------------------------------------------------------------------------------
+    local deVariants = {"de_AT", "de_DE", "de_CH"}
+    for _, code in pairs(deVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "German"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-    PROBLEM LANGUAGES:
-    zh			Chinese (Cantonese)				-- Cantonese = yue
-    bn			Bangla							-- NO IDEA?!? bn returns "Bengali"?
-    no			Norwegian						-- compare nb and nn
-    tl			Tagalog							-- NO IDEA?!?
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > Greek >
+    --
+    -- el_CY			Cyprus						-- Greek (Cyprus)
+    --------------------------------------------------------------------------------
+    local elVariants = {"el_CY"}
+    for _, code in pairs(elVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "Greek"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-    SUBMENUS:
-        English:
-                        All
-        en_AU			Australia					-- English (Australia)
-        en_CA			Canada						-- English (Canada)
-        en_GB			United Kingdom				-- English (United Kingdom)
-        en_US			United States				-- English (United States)
-        et				Estonian
-        fi				Finnish
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > Spanish >
+    --
+    -- es_419			Latin America				-- Spanish (Latin America)
+    -- es_MX			Mexico						-- Spanish (Mexico)
+    -- es_ES			Spain						-- Spanish (Spain)
+    --------------------------------------------------------------------------------
+    local esVariants = {"es_419", "es_MX", "es_ES"}
+    for _, code in pairs(esVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "Spanish"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        French:
-        fr_BE			Belgium						-- French (Belgium)
-        fr_CA			Canada						-- French (Canada)
-        fr_FR			France						-- French (France)
-        fr_CH			Switzerland					-- French (Switzerland)
-
-        German:
-                        All
-        de_AT			Austria						-- German (Austria)
-        de_DE			Germany						-- German (Germany)
-        de_CH			Switzerland					-- German (Switzerland)
-
-        Greek:
-                        All
-        el_CY			Cyprus						-- Greek (Cyprus)
-
-        Spanish:
-        es_419			Latin America				-- Spanish (Latin America)
-        es_MX			Mexico						-- Spanish (Mexico)
-        es_ES			Spain						-- Spanish (Spain)
-
-        Portuguese:
-        pt_BR			Brazil						-- Portuguese (Brazil)
-        pt_PT			Portugal					-- Portuguese (Portugal)
-    ]]--
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language > Portuguese >
+    --
+    -- pt_BR			Brazil						-- Portuguese (Brazil)
+    -- pt_PT			Portugal					-- Portuguese (Portugal)
+    --------------------------------------------------------------------------------
+    local ptVariants = {"pt_BR", "pt_PT"}
+    for _, code in pairs(ptVariants) do
+        local _, a = localizedString(code, fcpLocaleCode)
+        local _, b = localizedString(code, "en")
+        local title = contentsInsideBrackets(a)
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language", "Portuguese"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { contentsInsideBrackets(b) })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
     --------------------------------------------------------------------------------
     -- Start Dictation… (Edit)
@@ -937,6 +1143,9 @@ function mod.init(actionmanager)
 
             result = applyMenuWorkarounds(result, currentLocaleCode)
 
+            --------------------------------------------------------------------------------
+            -- For testing purposes:
+            --------------------------------------------------------------------------------
             --compareLegacyVersusNew(result)
 
             for _,choice in ipairs(result) do

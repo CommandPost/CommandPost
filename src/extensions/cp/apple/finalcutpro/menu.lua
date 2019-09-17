@@ -61,6 +61,12 @@ local missingMenuMap = {
     { path = {"Window", "Extensions"} },
     { path = {"Final Cut Pro", "Commands"} },
     { path = {"Window", "Workspaces"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "English"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Portuguese"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Spanish"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "Greek"} },
+    { path = {"Edit", "Captions", "Duplicate Captions to New Language", "German"} },
 }
 menu:addMenuFinder(function(parentItem, path, childName, locale)
     for _,item in ipairs(missingMenuMap) do
