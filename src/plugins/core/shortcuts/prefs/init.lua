@@ -535,7 +535,7 @@ local function generateContent()
     table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                       = _,
+        _                       = moses,
         groupLabels             = groupLabels,
         groups                  = commands.groups(),
         defaultGroup            = defaultGroup,
