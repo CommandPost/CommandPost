@@ -4,17 +4,16 @@
 
 local require = require
 
-local log         = require("hs.logger").new("tng_favs")
+local log         = require "hs.logger".new "tng_favs"
 
-local fs          = require("hs.fs")
-local inspect     = require("hs.inspect")
-local json        = require("hs.json")
+local fs          = require "hs.fs"
+local inspect     = require "hs.inspect"
+local json        = require "hs.json"
 
-local tools       = require("cp.tools")
-local i18n        = require("cp.i18n")
+local tools       = require "cp.tools"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
-
+local moses       = require "moses"
 
 local mod = {}
 
@@ -128,7 +127,7 @@ local function loadFromFile()
     if file then
         local content = file:read("*all")
         file:close()
-        if not _.isEmpty(content) then
+        if not moses.isEmpty(content) then
             local faves = json.decode(content)
             local favourites = {}
             for k,v in pairs(faves) do
@@ -253,7 +252,6 @@ function mod.favourites()
     end
     return mod._favourites
 end
-
 
 local plugin = {
     id = "core.tangent.commandpost.favourites",

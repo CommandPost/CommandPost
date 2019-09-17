@@ -4,20 +4,17 @@
 
 local require = require
 
-local log       = require("hs.logger").new("setup")
+local log       = require "hs.logger".new "setup"
 
-local screen    = require("hs.screen")
-local webview   = require("hs.webview")
+local screen    = require "hs.screen"
+local webview   = require "hs.webview"
 
-local config    = require("cp.config")
-local prop      = require("cp.prop")
-local tools     = require("cp.tools")
-local i18n      = require("cp.i18n")
+local config    = require "cp.config"
+local prop      = require "cp.prop"
+local tools     = require "cp.tools"
+local i18n      = require "cp.i18n"
 
-local _         = require("moses")
-
-local panel     = require("panel")
-
+local panel     = require "panel"
 
 local mod = {}
 
