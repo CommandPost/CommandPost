@@ -47,9 +47,7 @@ end
 local pluralization = {}
 
 local f1 = function(n)
-  return (n == 0 and "zero") or
-         (n == 1 and "one") or
-         "other"
+  return n == 1 and "one" or "other"
 end
 pluralization[f1] = words([[
   af asa bem bez bg bn brx ca cgg chr da de dv ee el
