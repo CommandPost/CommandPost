@@ -223,404 +223,507 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     local en = localeID("en")
 
-        --------------------------------------------------------------------------------
-        -- Final Cut Pro > Commands
-        --------------------------------------------------------------------------------
-        local userCommandSets = fcp:userCommandSets()
-        for _, title in pairs(userCommandSets) do
-            local path = {"Final Cut Pro", "Commands"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro > Commands
+    --------------------------------------------------------------------------------
+    local userCommandSets = fcp:userCommandSets()
+    for _, title in pairs(userCommandSets) do
+        local path = {"Final Cut Pro", "Commands"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Customize… (Menu: Final Cut Pro > Commands)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("Customize")
-            local path = {"Final Cut Pro", "Commands"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Customize… (Menu: Final Cut Pro > Commands)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("Customize")
+        local path = {"Final Cut Pro", "Commands"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Import… (Menu: Final Cut Pro > Commands)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("Import")
-            local path = {"Final Cut Pro", "Commands"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Import… (Menu: Final Cut Pro > Commands)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("Import")
+        local path = {"Final Cut Pro", "Commands"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Export… (Menu: Final Cut Pro > Commands)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("Export")
-            local path = {"Final Cut Pro", "Commands"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Export… (Menu: Final Cut Pro > Commands)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("Export")
+        local path = {"Final Cut Pro", "Commands"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Command Sets (Menu: Final Cut Pro > Commands)
-        -- Custom Command Sets (Menu: Final Cut Pro > Commands)
-        --------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Command Sets (Menu: Final Cut Pro > Commands)
+    -- Custom Command Sets (Menu: Final Cut Pro > Commands)
+    --------------------------------------------------------------------------------
 
-            -- NOTE: These are just un-click-able descriptions.
+        -- NOTE: These are just un-click-able descriptions.
 
-        --------------------------------------------------------------------------------
-        -- Final Cut Pro > Services
-        --------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro > Services
+    --------------------------------------------------------------------------------
 
-            -- TODO: Need to build a list of services.
-            --       On my machine I only see "Development" tools in the Services list
-            --       when clicking on the Final Cut Pro menu, however I can see a lot
-            --       more listed in UI Browser.
+        -- TODO: Need to build a list of services.
+        --       On my machine I only see "Development" tools in the Services list
+        --       when clicking on the Final Cut Pro menu, however I can see a lot
+        --       more listed in UI Browser.
 
-        --------------------------------------------------------------------------------
-        -- File > Share
-        --------------------------------------------------------------------------------
-        local shares = destinations.names()
-        for _, title in pairs(shares) do
-            title = title .. "…"
-            local path = {"File", "Share"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- File > Share
+    --------------------------------------------------------------------------------
+    local shares = destinations.names()
+    for _, title in pairs(shares) do
+        title = title .. "…"
+        local path = {"File", "Share"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Share > Add Destination…
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFNewDestinationTitle")
-            local path = {"File", "Share"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- File > Share > Add Destination…
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFNewDestinationTitle")
+        local path = {"File", "Share"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Edit > Captions > Duplicate Captions to New Language
-        --------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language
+    --------------------------------------------------------------------------------
 
-            -- TODO: Work out how to generate these menu items, taking into account language.
+    local easyLanguages = "af", "ar", "bg", "ca", "zh_Hans", "zh_Hant", "hr", "cs", "da", "nl", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lo", "lv", "lt", "lb", "ms", "ml", "mt", "mr", "pl", "pa", "ro", "ru", "gd", "sk", "sl", "sv", "ta", "te", "th", "tr", "uk", "ur", "vi", "cy", "zu"
+    for _, code in pairs(easyLanguages) do
+        local title = fcp:string("FFNewDestinationTitle")
+        local path = {"File", "Share"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- Start Dictation… (Edit)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("Start Dictation…")
-            local path = {"Edit"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --[[
+    EASY LANGUAGES:
+    af			Afrikaans
+    ar			Arabic
+    bg			Bulgarian
+    ca			Catalan
+    zh_Hans		Chinese (Simplified)
+    zh_Hant		Chinese (Traditional)
+    hr			Croatian
+    cs			Czech
+    da			Danish
+    nl			Dutch
+    he			Hebrew
+    hi			Hindi
+    hu			Hungarian
+    is			Icelandic
+    id			Indonesian
+    it			Italian
+    ja			Japanese
+    kn			Kannada
+    kk			Kazakh
+    ko			Korean
+    lo			Lao
+    lv			Latvian
+    lt			Lithuanian
+    lb			Luxembourgish
+    ms			Malay
+    ml			Malayalam
+    mt			Maltese
+    mr			Marathi
+    pl			Polish
+    pa			Punjabi
+    ro			Romanian
+    ru			Russian
+    gd			Scottish Gaelic
+    sk			Slovak
+    sl			Slovenian
+    sv			Swedish
+    ta			Tamil
+    te			Telugu
+    th			Thai
+    tr			Turkish
+    uk			Ukrainian
+    ur			Urdu
+    vi			Vietnamese
+    cy			Welsh
+    zu			Zulu
 
-        --------------------------------------------------------------------------------
-        -- Emoji & Symbols (Edit)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
-            local path = {"Edit"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    PROBLEM LANGUAGES:
+    zh			Chinese (Cantonese)				-- Cantonese = yue
+    bn			Bangla							-- NO IDEA?!? bn returns "Bengali"?
+    no			Norwegian						-- compare nb and nn
+    tl			Tagalog							-- NO IDEA?!?
 
-        --------------------------------------------------------------------------------
-        -- Workflow Extensions
-        --
-        -- Frame.io (Window > Extensions)
-        -- Getting Started for Final Cut Pro 10.4 (Window > Extensions)
-        -- KeyFlow Pro 2 Extension (Window > Extensions)
-        -- ShareBrowser (Window > Extensions)
-        -- Shutterstock (Window > Extensions)
-        -- Simon Says Transcription (Window > Extensions)
-        --------------------------------------------------------------------------------
-        local workflowExtensions = fcp.workflowExtensions()
-        for _, title in pairs(workflowExtensions) do
-            local path = {"Window", "Extensions"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    SUBMENUS:
+        English:
+                        All
+        en_AU			Australia					-- English (Australia)
+        en_CA			Canada						-- English (Canada)
+        en_GB			United Kingdom				-- English (United Kingdom)
+        en_US			United States				-- English (United States)
+        et				Estonian
+        fi				Finnish
 
-        --------------------------------------------------------------------------------
-        -- Sidebar (Window > Show in Workspace)
-        --
-        -- Window > Show in Workspace > Libraries
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("PEEventsLibrary")
-            local path = {"Window", "Show in Workspace"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+        French:
+        fr_BE			Belgium						-- French (Belgium)
+        fr_CA			Canada						-- French (Canada)
+        fr_FR			France						-- French (France)
+        fr_CH			Switzerland					-- French (Switzerland)
 
-        --------------------------------------------------------------------------------
-        -- Custom Workspaces:
-        --------------------------------------------------------------------------------
-        local customWorkspaces = fcp:customWorkspaces()
-        for _, title in pairs(customWorkspaces) do
-            local path = {"Window", "Workspaces"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+        German:
+                        All
+        de_AT			Austria						-- German (Austria)
+        de_DE			Germany						-- German (Germany)
+        de_CH			Switzerland					-- German (Switzerland)
 
-        --------------------------------------------------------------------------------
-        -- Open Workspace Folder in Finder (Window > Workspaces)
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("PEWorkspacesMenuOpenFolder")
-            local path = {"Window", "Workspaces"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+        Greek:
+                        All
+        el_CY			Cyprus						-- Greek (Cyprus)
 
-        --------------------------------------------------------------------------------
-        -- Gather App Diagnostics (Help)
-        --------------------------------------------------------------------------------
+        Spanish:
+        es_419			Latin America				-- Spanish (Latin America)
+        es_MX			Mexico						-- Spanish (Mexico)
+        es_ES			Spain						-- Spanish (Spain)
 
-            -- NOTE: We can just ignore this, as it requires a modifier key to access anyway.
+        Portuguese:
+        pt_BR			Brazil						-- Portuguese (Brazil)
+        pt_PT			Portugal					-- Portuguese (Portugal)
+    ]]--
 
-        --------------------------------------------------------------------------------
-        -- File > Open Library > "Library Name":
-        --------------------------------------------------------------------------------
-        local recentLibraryNames = fcp:recentLibraryNames()
-        for _, title in pairs(recentLibraryNames) do
-            local path = {"File", "Open Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Start Dictation… (Edit)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("Start Dictation…")
+        local path = {"Edit"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Open Library > Other…:
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFLibraryMenu_SelectOther")
-            local path = {"File", "Open Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Emoji & Symbols (Edit)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("Emoji & Symbols") -- NOTE: It's actually "Emoji &amp; Symbols" in the Property List.
+        local path = {"Edit"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Open Library > From Backup…:
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFLibraryMenu_OpenBackup")
-            local path = {"File", "Open Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Workflow Extensions
+    --
+    -- Frame.io (Window > Extensions)
+    -- Getting Started for Final Cut Pro 10.4 (Window > Extensions)
+    -- KeyFlow Pro 2 Extension (Window > Extensions)
+    -- ShareBrowser (Window > Extensions)
+    -- Shutterstock (Window > Extensions)
+    -- Simon Says Transcription (Window > Extensions)
+    --------------------------------------------------------------------------------
+    local workflowExtensions = fcp.workflowExtensions()
+    for _, title in pairs(workflowExtensions) do
+        local path = {"Window", "Extensions"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Open Library > Clear Recents:
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFLibraryMenu_ClearRecents")
-            local path = {"File", "Open Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Sidebar (Window > Show in Workspace)
+    --
+    -- Window > Show in Workspace > Libraries
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("PEEventsLibrary")
+        local path = {"Window", "Show in Workspace"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Copy to Library > New Library…
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFMMToNewLibraryMenuItem")
-            local path = {"File", "Copy to Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Custom Workspaces:
+    --------------------------------------------------------------------------------
+    local customWorkspaces = fcp:customWorkspaces()
+    for _, title in pairs(customWorkspaces) do
+        local path = {"Window", "Workspaces"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Move to Library > New Library…
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFMMToNewLibraryMenuItem")
-            local path = {"File", "Move to Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Open Workspace Folder in Finder (Window > Workspaces)
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("PEWorkspacesMenuOpenFolder")
+        local path = {"Window", "Workspaces"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        --------------------------------------------------------------------------------
-        -- File > Copy to Library > "Library Name":
-        --------------------------------------------------------------------------------
-        local activeLibraryNames = fcp:activeLibraryNames()
-        for _, title in pairs(activeLibraryNames) do
-            local path = {"File", "Copy to Library"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
-            params.locale = en
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+    --------------------------------------------------------------------------------
+    -- Gather App Diagnostics (Help)
+    --------------------------------------------------------------------------------
 
-        --------------------------------------------------------------------------------
-        -- Clip > Disable
-        --------------------------------------------------------------------------------
-        do
-            local title = fcp:string("FFClipContextMenu_Disable_Title")
-            local path = {"Clip"}
-            local params = {}
-            params.path = fnutils.concat(fnutils.copy(path), { title })
-            params.locale = currentLocaleCode
-            params.plain = true
-            table.insert(choices, {
-                text = title,
-                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-                params = params,
-                id = mod.actionId(params),
-            })
-        end
+        -- NOTE: We can just ignore this, as it requires a modifier key to access anyway.
 
+    --------------------------------------------------------------------------------
+    -- File > Open Library > "Library Name":
+    --------------------------------------------------------------------------------
+    local recentLibraryNames = fcp:recentLibraryNames()
+    for _, title in pairs(recentLibraryNames) do
+        local path = {"File", "Open Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Open Library > Other…:
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFLibraryMenu_SelectOther")
+        local path = {"File", "Open Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Open Library > From Backup…:
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFLibraryMenu_OpenBackup")
+        local path = {"File", "Open Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Open Library > Clear Recents:
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFLibraryMenu_ClearRecents")
+        local path = {"File", "Open Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Copy to Library > New Library…
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFMMToNewLibraryMenuItem")
+        local path = {"File", "Copy to Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Move to Library > New Library…
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFMMToNewLibraryMenuItem")
+        local path = {"File", "Move to Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- File > Copy to Library > "Library Name":
+    --------------------------------------------------------------------------------
+    local activeLibraryNames = fcp:activeLibraryNames()
+    for _, title in pairs(activeLibraryNames) do
+        local path = {"File", "Copy to Library"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title .. ".*" })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
+
+    --------------------------------------------------------------------------------
+    -- Clip > Disable
+    --------------------------------------------------------------------------------
+    do
+        local title = fcp:string("FFClipContextMenu_Disable_Title")
+        local path = {"Clip"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = currentLocaleCode
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
     --------------------------------------------------------------------------------
     --
@@ -859,6 +962,8 @@ function mod.init(actionmanager)
     fcp.customWorkspaces:watch(function()
         mod._handler:reset()
     end)
+
+    mod._handler:reset()
 
     -- TODO: Need to reload if the FCPX language changes.
 
