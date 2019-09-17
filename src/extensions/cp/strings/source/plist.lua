@@ -12,20 +12,23 @@
 
 local require = require
 
-local fs                            = require("hs.fs")
-local timer                         = require("hs.timer")
+local fs                = require "hs.fs"
+local timer             = require "hs.timer"
 
-local plist                         = require("cp.plist")
-local is                            = require("cp.is")
-local text                          = require("cp.web.text")
+local is                = require "cp.is"
+local plist             = require "cp.plist"
+local text              = require "cp.web.text"
 
-local _                             = require("moses")
+local moses             = require "moses"
 
-local delayed                       = timer.delayed
-local escapeXML, unescapeXML        = text.escapeXML, text.unescapeXML
-local find, len                     = string.find, string.len
-local insert                        = table.insert
+local extend            = moses.extend
 
+local delayed           = timer.delayed
+local escapeXML         = text.escapeXML
+local find              = string.find
+local insert            = table.insert
+local len               = string.len
+local unescapeXML       = text.unescapeXML
 
 local mod = {}
 mod.mt = {}
@@ -54,7 +57,7 @@ mod.defaultCacheSeconds = 60.0
 --- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
 function mod.mt:context(context)
     if context ~= nil then
-        self._context = _.extend({}, context)
+        self._context = extend({}, context)
         self:reset()
         return self
     else
@@ -72,7 +75,7 @@ end
 --- Returns:
 ---  * The path to the file, or `nil` if not found.
 function mod.mt:pathToAbsolute(context)
-    local ctx = _.extend({}, self._context, context)
+    local ctx = extend({}, self._context, context)
     local inPaths = {self._pathPattern}
     local outPaths
     for key,value in pairs(ctx) do
@@ -112,7 +115,7 @@ end
 --- Returns:
 ---  * The table for the specified language, or `nil` if the file doesn't exist.
 function mod.mt:loadFile(context)
-    local ctx = _.extend({}, self._context, context)
+    local ctx = extend({}, self._context, context)
     local langFile = self:pathToAbsolute(ctx)
 
     self._cleanup:start()
