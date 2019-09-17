@@ -5,7 +5,7 @@
 
 local require = require
 
-local log				= require "hs.logger".new "menuaction"
+local log               = require "hs.logger".new "menuaction"
 
 local fnutils           = require "hs.fnutils"
 local host              = require "hs.host"
@@ -363,53 +363,53 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language >
     --
-    -- af			Afrikaans
-    -- ar			Arabic
-    -- bg			Bulgarian
-    -- ca			Catalan
-    -- zh_Hans		Chinese (Simplified)
-    -- zh_Hant		Chinese (Traditional)
-    -- hr			Croatian
-    -- cs			Czech
-    -- da			Danish
-    -- et			Estonian
-    -- fi			Finnish
-    -- nl			Dutch
-    -- he			Hebrew
-    -- hi			Hindi
-    -- hu			Hungarian
-    -- is			Icelandic
-    -- id			Indonesian
-    -- it			Italian
-    -- ja			Japanese
-    -- kn			Kannada
-    -- kk			Kazakh
-    -- ko			Korean
-    -- lo			Lao
-    -- lv			Latvian
-    -- lt			Lithuanian
-    -- lb			Luxembourgish
-    -- ms			Malay
-    -- ml			Malayalam
-    -- mt			Maltese
-    -- mr			Marathi
-    -- pl			Polish
-    -- pa			Punjabi
-    -- ro			Romanian
-    -- ru			Russian
-    -- gd			Scottish Gaelic
-    -- sk			Slovak
-    -- sl			Slovenian
-    -- sv			Swedish
-    -- ta			Tamil
-    -- te			Telugu
-    -- th			Thai
-    -- tr			Turkish
-    -- uk			Ukrainian
-    -- ur			Urdu
-    -- vi			Vietnamese
-    -- cy			Welsh
-    -- zu			Zulu
+    -- af           Afrikaans
+    -- ar           Arabic
+    -- bg           Bulgarian
+    -- ca           Catalan
+    -- zh_Hans      Chinese (Simplified)
+    -- zh_Hant      Chinese (Traditional)
+    -- hr           Croatian
+    -- cs           Czech
+    -- da           Danish
+    -- et           Estonian
+    -- fi           Finnish
+    -- nl           Dutch
+    -- he           Hebrew
+    -- hi           Hindi
+    -- hu           Hungarian
+    -- is           Icelandic
+    -- id           Indonesian
+    -- it           Italian
+    -- ja           Japanese
+    -- kn           Kannada
+    -- kk           Kazakh
+    -- ko           Korean
+    -- lo           Lao
+    -- lv           Latvian
+    -- lt           Lithuanian
+    -- lb           Luxembourgish
+    -- ms           Malay
+    -- ml           Malayalam
+    -- mt           Maltese
+    -- mr           Marathi
+    -- pl           Polish
+    -- pa           Punjabi
+    -- ro           Romanian
+    -- ru           Russian
+    -- gd           Scottish Gaelic
+    -- sk           Slovak
+    -- sl           Slovenian
+    -- sv           Swedish
+    -- ta           Tamil
+    -- te           Telugu
+    -- th           Thai
+    -- tr           Turkish
+    -- uk           Ukrainian
+    -- ur           Urdu
+    -- vi           Vietnamese
+    -- cy           Welsh
+    -- zu           Zulu
     --------------------------------------------------------------------------------
     local easyLanguages = {"af", "ar", "bg", "ca", "zh_Hans", "zh_Hant", "hr", "cs", "da", "et", "fi", "nl", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lo", "lv", "lt", "lb", "ms", "ml", "mt", "mr", "pl", "pa", "ro", "ru", "gd", "sk", "sl", "sv", "ta", "te", "th", "tr", "uk", "ur", "vi", "cy", "zu"}
     for _, code in pairs(easyLanguages) do
@@ -431,7 +431,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language >
     --
-    -- zh			Chinese (Cantonese)
+    -- zh           Chinese (Cantonese)
     --------------------------------------------------------------------------------
     do
         local chineseString = localizedString("zh")
@@ -457,7 +457,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language >
     --
-    -- no			Norwegian
+    -- no           Norwegian
     --
     -- NOTE: The workaround for this is to compare the 'nb' and 'nn' localised
     --       strings.
@@ -489,8 +489,8 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language >
     --
-    -- bn			Bangla
-    -- tl			Tagalog
+    -- bn           Bangla
+    -- tl           Tagalog
     --------------------------------------------------------------------------------
 
         -- TODO: I have no idea how to get these values. 'bn' returns "Bengali"
@@ -498,10 +498,10 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > English >
     --
-    -- en_AU			Australia					-- English (Australia)
-    -- en_CA			Canada						-- English (Canada)
-    -- en_GB			United Kingdom				-- English (United Kingdom)
-    -- en_US			United States				-- English (United States)
+    -- en_AU            Australia                   -- English (Australia)
+    -- en_CA            Canada                      -- English (Canada)
+    -- en_GB            United Kingdom              -- English (United Kingdom)
+    -- en_US            United States               -- English (United States)
     --------------------------------------------------------------------------------
     local englishVariants = {"en_AU", "en_CA", "en_GB", "en_US"}
     for _, code in pairs(englishVariants) do
@@ -524,10 +524,10 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > French >
     --
-    -- fr_BE			Belgium						-- French (Belgium)
-    -- fr_CA			Canada						-- French (Canada)
-    -- fr_FR			France						-- French (France)
-    -- fr_CH			Switzerland					-- French (Switzerland)
+    -- fr_BE            Belgium                     -- French (Belgium)
+    -- fr_CA            Canada                      -- French (Canada)
+    -- fr_FR            France                      -- French (France)
+    -- fr_CH            Switzerland                 -- French (Switzerland)
     --------------------------------------------------------------------------------
     local frVariants = {"fr_BE", "fr_CA", "fr_FR", "fr_CH"}
     for _, code in pairs(frVariants) do
@@ -570,9 +570,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > German >
     --
-    -- de_AT			Austria						-- German (Austria)
-    -- de_DE			Germany						-- German (Germany)
-    -- de_CH			Switzerland					-- German (Switzerland)
+    -- de_AT            Austria                     -- German (Austria)
+    -- de_DE            Germany                     -- German (Germany)
+    -- de_CH            Switzerland                 -- German (Switzerland)
     --------------------------------------------------------------------------------
     local deVariants = {"de_AT", "de_DE", "de_CH"}
     for _, code in pairs(deVariants) do
@@ -595,7 +595,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > Greek >
     --
-    -- el_CY			Cyprus						-- Greek (Cyprus)
+    -- el_CY            Cyprus                      -- Greek (Cyprus)
     --------------------------------------------------------------------------------
     local elVariants = {"el_CY"}
     for _, code in pairs(elVariants) do
@@ -618,9 +618,9 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > Spanish >
     --
-    -- es_419			Latin America				-- Spanish (Latin America)
-    -- es_MX			Mexico						-- Spanish (Mexico)
-    -- es_ES			Spain						-- Spanish (Spain)
+    -- es_419           Latin America               -- Spanish (Latin America)
+    -- es_MX            Mexico                      -- Spanish (Mexico)
+    -- es_ES            Spain                       -- Spanish (Spain)
     --------------------------------------------------------------------------------
     local esVariants = {"es_419", "es_MX", "es_ES"}
     for _, code in pairs(esVariants) do
@@ -643,8 +643,8 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > Portuguese >
     --
-    -- pt_BR			Brazil						-- Portuguese (Brazil)
-    -- pt_PT			Portugal					-- Portuguese (Portugal)
+    -- pt_BR            Brazil                      -- Portuguese (Brazil)
+    -- pt_PT            Portugal                    -- Portuguese (Portugal)
     --------------------------------------------------------------------------------
     local ptVariants = {"pt_BR", "pt_PT"}
     for _, code in pairs(ptVariants) do
@@ -1022,7 +1022,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
             -- TODO: Add workaround
 
             -- <key>FFDefaultVideoTransition</key>
-	        -- <string>FxPlug:4731E73A-8DAC-4113-9A30-AE85B1761265</string>
+            -- <string>FxPlug:4731E73A-8DAC-4113-9A30-AE85B1761265</string>
 
         --------------------------------------------------------------------------------
         -- Add Default Video Effect (Edit)
@@ -1033,7 +1033,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
             -- TODO: Add workaround
 
             -- <key>FFDefaultVideoEffect</key>
-	        -- <string>FFColorCorrectionGroupEffect</string>
+            -- <string>FFColorCorrectionGroupEffect</string>
 
         --------------------------------------------------------------------------------
         -- Add Default Audio Effect (Edit)
@@ -1043,8 +1043,8 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
 
             -- TODO: Add workaround
 
-    	    -- <key>FFDefaultAudioEffect</key>
-	        -- <string>AudioUnit: 0x61756678000000ec454d4147</string>
+            -- <key>FFDefaultAudioEffect</key>
+            -- <string>AudioUnit: 0x61756678000000ec454d4147</string>
 
         --------------------------------------------------------------------------------
         -- Reject (Mark)
