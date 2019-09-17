@@ -356,6 +356,28 @@ function tools.split(str, pat)
     return t
 end
 
+--- cp.tools.findCommonWordWithinTwoStrings(a, b) -> string
+--- Function
+--- Finds a common word within two strings.
+---
+--- Parameters:
+---  * a - The first string
+---  * b - The second string
+---
+--- Returns:
+---  * The first common word that's found or `nil` if something goes wrong.
+function tools.findCommonWordWithinTwoStrings(a, b)
+    local at = tools.split(a, " ")
+    local bt = tools.split(b, " ")
+    for _, ar in pairs(at) do
+        for _, br in pairs(bt) do
+            if ar == br then
+                return ar
+            end
+        end
+    end
+end
+
 --- cp.tools.isNumberString(value) -> boolean
 --- Function
 --- Returns whether or not value is a number string.
@@ -1619,6 +1641,30 @@ function tools.startsWith(value, startValue)
             local sub = value:sub(1, len)
             return sub == startValue
         end
+    end
+    return false
+end
+
+--- cp.tools.exactMatch(value, pattern, plain) -> boolean
+--- Function
+--- Compares two strings to see if they're an exact match.
+---
+--- Parameters:
+---  * value - The first string
+---  * pattern - The second string, including any patterns
+---  * plain - Whether or not to ignore patterns. Defaults to `false`.
+---  * ignoreCase - Ignore the case of the value & pattern.
+---
+--- Returns:
+---  * `true` if there's an exact match, otherwise `false`.
+function tools.exactMatch(value, pattern, plain, ignoreCase)
+    if ignoreCase then
+        value = string.lower(value)
+        pattern = string.lower(pattern)
+    end
+    if value and pattern then
+        local s,e = value:find(pattern, nil, plain)
+        return s == 1 and e == value:len()
     end
     return false
 end

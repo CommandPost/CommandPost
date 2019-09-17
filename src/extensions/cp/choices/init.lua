@@ -2,7 +2,6 @@
 ---
 --- Choices Builder Module.
 
-
 local builder = {}
 
 --- cp.choices.builder.new(choiceType) -> builder
@@ -99,8 +98,6 @@ end
 --- === cp.choices ===
 ---
 --- Choices Module.
-
-
 
 local mod = {}
 

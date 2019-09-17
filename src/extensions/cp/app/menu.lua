@@ -10,17 +10,19 @@ local fs                = require "hs.fs"
 
 local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
+local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
 local plist             = require "cp.plist"
 local prop              = require "cp.prop"
 local rx                = require "cp.rx"
-local go                = require "cp.rx.go"
+local tools             = require "cp.tools"
 
+local concat            = table.concat
+local exactMatch        = tools.exactMatch
 local format            = string.format
 local insert            = table.insert
-local remove            = table.remove
-local concat            = table.concat
 local Observable        = rx.Observable
+local remove            = table.remove
 
 local Do                = go.Do
 local If                = go.If
@@ -666,14 +668,6 @@ local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
     return title
 end
 
-local function exactMatch(value, pattern, plain)
-    if value and pattern then
-        local s,e = value:find(pattern, nil, plain)
-        return s == 1 and e == value:len()
-    end
-    return false
-end
-
 --- cp.app.menu:doFindMenuUI(path[, options]) -> cp.rx.go.Statement <hs._asm.axuielement>
 --- Method
 --- Returns a `Statement` that when executed will emit each of the menu items along the path.
@@ -734,7 +728,8 @@ function menu.mt:doFindMenuUI(path, options)
                     -- Check with the finder functions:
                     --------------------------------------------------------------------------------
                     for _, finder in ipairs(self._itemFinders) do
-                        menuItemUI = finder(menuUI, currentPath, step, en)
+                        local translatedStep = _translateTitle(menuTitles, menuItemName, appLocale, en)
+                        menuItemUI = finder(menuUI, currentPath, translatedStep, appLocale)
                         if menuItemUI then
                             break
                         end
@@ -838,10 +833,12 @@ function menu.mt:findMenuUI(path, options)
     --------------------------------------------------------------------------------
     -- Start at the top of the menu bar list:
     --------------------------------------------------------------------------------
-    local locale = options and localeID(options.locale) or localeID("en")
+    local en = localeID("en")
+    local pathLocale = localeID(options.locale) or en
     local appLocale = self:app():currentLocale()
 
-    local menuTitles = self:getMenuTitles({locale, appLocale})
+    local menuTitles = self:getMenuTitles({pathLocale, appLocale, en})
+
     local menuUI = self:UI()
     if not menuUI then
         return nil
@@ -865,7 +862,7 @@ function menu.mt:findMenuUI(path, options)
             -- Access it by index:
             --------------------------------------------------------------------------------
             menuItemUI = menuUI[step]
-            menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, locale)
+
         elseif type(step) == "function" then
             --------------------------------------------------------------------------------
             -- Check each child against the function:
@@ -873,7 +870,7 @@ function menu.mt:findMenuUI(path, options)
             for _, child in ipairs(menuUI) do
                 if step(child) then
                     menuItemUI = child
-                    menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, locale)
+                    menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
                     break
                 end
             end
@@ -886,7 +883,8 @@ function menu.mt:findMenuUI(path, options)
             -- Check with the finder functions:
             --------------------------------------------------------------------------------
             for _, finder in ipairs(self._itemFinders) do
-                menuItemUI = finder(menuUI, currentPath, step, locale)
+                local translatedStep = _translateTitle(menuTitles, menuItemName, appLocale, en)
+                menuItemUI = finder(menuUI, currentPath, translatedStep, appLocale)
                 if menuItemUI then
                     break
                 end
@@ -897,7 +895,7 @@ function menu.mt:findMenuUI(path, options)
                 -- See if the menu is in the map:
                 --------------------------------------------------------------------------------
                 for _, item in ipairs(menuTitles) do
-                    local pathItemTitle = item[locale.code]
+                    local pathItemTitle = item[pathLocale.code]
                     if exactMatch(pathItemTitle, step, options.plain) then
                         menuItemUI = item.ui
                         if not axutils.isValid(menuItemUI) then
@@ -938,7 +936,7 @@ function menu.mt:findMenuUI(path, options)
             end
             insert(currentPath, menuItemName)
         else
-            --local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
+            --local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
             --log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
             return nil
         end

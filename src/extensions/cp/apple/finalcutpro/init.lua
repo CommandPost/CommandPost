@@ -551,10 +551,79 @@ function fcp:activeLibraryPaths()
         for i=1, #FFActiveLibraries do
             local activeLibrary = FFActiveLibraries[i]
             local path = pathFromBookmark(activeLibrary)
-            table.insert(paths, path)
+            if path then
+                table.insert(paths, path)
+            end
         end
     end
     return paths
+end
+
+--- cp.apple.finalcutpro:activeLibraryPaths() -> table
+--- Method
+--- Gets a table of all the active library paths.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any active library paths.
+function fcp:activeLibraryNames()
+    local result = {}
+    local activeLibraryPaths = self:activeLibraryPaths()
+    for _, filename in pairs(activeLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
+end
+
+--- cp.apple.finalcutpro:recentLibraryPaths() -> table
+--- Method
+--- Gets a table of all the recent library paths (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library paths.
+function fcp:recentLibraryPaths()
+    local paths = {}
+    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local FFRecentLibraries = fcpPlist and fcpPlist.FFRecentLibraries
+    if FFRecentLibraries and #FFRecentLibraries >= 1 then
+        for i=1, #FFRecentLibraries do
+            local recentLibrary = FFRecentLibraries[i]
+            local path = pathFromBookmark(recentLibrary)
+            if path then
+                table.insert(paths, path)
+            end
+        end
+    end
+    return paths
+end
+
+--- cp.apple.finalcutpro:recentLibraryNames() -> table
+--- Method
+--- Gets a table of all the recent library names (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library names.
+function fcp:recentLibraryNames()
+    local result = {}
+    local recentLibraryPaths = self:recentLibraryPaths()
+    for _, filename in pairs(recentLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro:openLibrary(path) -> boolean
@@ -795,6 +864,48 @@ function fcp.lazy.prop.customWorkspaces()
         return result
     end)
     :cached()
+end
+
+----------------------------------------------------------------------------------------
+--
+-- WORKFLOW EXTENSIONS
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.workflowExtensions() -> table
+--- Function
+--- Gets the names of all the installed Workflow Extensions.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Workflow Extension names
+function fcp.workflowExtensions()
+    local result = {}
+    local output, status = hs.execute("pluginkit -m -v -p FxPlug")
+    if status then
+        local p = tools.lines(output)
+        if p then
+            for _, plugin in pairs(p) do
+                local params = tools.split(plugin, "\t")
+                local path = params[4]
+                if path then
+                    if tools.doesDirectoryExist(path) then
+                        local plistPath = path .. "/Contents/Info.plist"
+                        local plistData = hsplist.read(plistPath)
+                        if plistData and plistData.PlugInKit and plistData.PlugInKit.Protocol and plistData.PlugInKit.Protocol == "ProServiceRemoteProtocol" then
+                            local pluginName = plistData.CFBundleDisplayName
+                            if pluginName then
+                                table.insert(result, pluginName)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
 end
 
 ----------------------------------------------------------------------------------------
@@ -1161,6 +1272,31 @@ end
 ---  * A path as a string or `nil` if the folder doesn't exist.
 function fcp.static.userCommandSetPath()
     return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
+end
+
+--- cp.apple.finalcutpro:userCommandSets() -> table
+--- Method
+--- Gets the names of all of the user command sets.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of user command sets as strings.
+function fcp.userCommandSets()
+    local result = {}
+    local userCommandSetPath = fcp:userCommandSetPath()
+    if userCommandSetPath then
+        local iterFn, dirObj = fs.dir(userCommandSetPath)
+        if iterFn then
+            for file in iterFn, dirObj do
+                if file:sub(-11) == ".commandset" then
+                    table.insert(result, file:sub(1, -12))
+                end
+            end
+       end
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string

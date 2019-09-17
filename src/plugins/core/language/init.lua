@@ -4,14 +4,13 @@
 
 local require = require
 
-local dialog        = require("hs.dialog")
-local fs            = require("hs.fs")
-local host          = require("hs.host")
-local json          = require("hs.json")
+local dialog        = require "hs.dialog"
+local fs            = require "hs.fs"
+local host          = require "hs.host"
+local json          = require "hs.json"
 
-local config        = require("cp.config")
-local i18n          = require("cp.i18n")
-
+local config        = require "cp.config"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -167,7 +166,6 @@ local function getLanguageOptions()
     return options
 end
 
-
 local plugin = {
     id              = "core.language",
     group           = "core",
@@ -178,11 +176,12 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     -------------------------------------------------------------------------------
     -- Cache Languages on Load:
+    --
+    -- NOTE: Chris has disabled to speed up boot time.
     -------------------------------------------------------------------------------
-    getCommandPostLanguagesMenu()
+    --getCommandPostLanguagesMenu()
 
     --------------------------------------------------------------------------------
     -- Setup General Preferences Panel:
