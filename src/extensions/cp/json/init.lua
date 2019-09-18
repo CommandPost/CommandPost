@@ -4,14 +4,13 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("json")
+local log       = require "hs.logger".new "json"
 
-local fs                                        = require("hs.fs")
-local json                                      = require("hs.json")
+local fs        = require "hs.fs"
+local json      = require "hs.json"
 
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
-
+local prop      = require "cp.prop"
+local tools     = require "cp.tools"
 
 local mod = {}
 
@@ -29,20 +28,12 @@ local mod = {}
 function mod.read(path)
     if not path then
         log.ef("Path is required for `cp.json.read`.")
-        return false
-    end
-    if path then
+    else
         local filePath = fs.pathToAbsolute(path)
         if filePath then
-            local file = io.open(filePath, "r")
-            if file then
-                local content = file:read("*all")
-                file:close()
-                return json.decode(content)
-            end
+            return json.read(path)
         end
     end
-    return nil
 end
 
 --- cp.json.write(path, data) -> boolean
@@ -68,16 +59,7 @@ function mod.write(path, data)
         log.ef("Path is required for `cp.json.write`.")
         return false
     end
-    local encodedData = json.encode(data, true)
-    if encodedData then
-        local file = io.open(path, "w")
-        if file then
-            file:write(encodedData)
-            file:close()
-            return true
-        end
-    end
-    return false
+    return json.write(data, path, false, true)
 end
 
 --- cp.json.encode(val[, prettyprint]) -> string
