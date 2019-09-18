@@ -31,7 +31,8 @@ local mod = {}
 -- Returns:
 --  * A string with the language code
 local function getLanguageCode(t)
-    for id, _ in pairs(t) do
+    -- TODO: There has to be a smarter way to do this?
+    for id, _ in pairs(t) do -- luacheck: ignore
         return id
     end
 end
