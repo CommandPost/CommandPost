@@ -12,13 +12,13 @@
 
 local require = require
 
-local language          = require("cp.i18n.language")
-local localeID          = require("cp.i18n.localeID")
-local region            = require("cp.i18n.region")
-local script            = require("cp.i18n.script")
+local language          = require "cp.i18n.language"
+local localeID          = require "cp.i18n.localeID"
+local region            = require "cp.i18n.region"
+local script            = require "cp.i18n.script"
 
-local match, format     = string.match, string.format
-
+local format            = string.format
+local match             = string.match
 
 local mod = {}
 mod.mt = {}
