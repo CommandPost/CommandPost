@@ -6,6 +6,7 @@ local require = require
 
 --local log                   = require "hs.logger".new "videoInspector"
 
+local deferred              = require "cp.deferred"
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local go                    = require "cp.rx.go"
@@ -381,18 +382,31 @@ function plugin.init(deps)
     -- Position:
     --------------------------------------------------------------------------------
     local shiftAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
-    local shiftXPosition = function(value)
+
+    local shiftXPositionValue = 0
+    local updateShiftXPositionValue = deferred.new(0.01):action(function()
         local position = fcp:inspector():video():transform():position()
         position:show()
-        local xPos = position:x()
-        position:x(xPos + value)
+        local originalPosition = position:x()
+        position:x(originalPosition + shiftXPositionValue)
+        shiftXPositionValue = 0
+    end)
+    local shiftXPosition = function(value)
+        shiftXPositionValue = shiftXPositionValue + value
+        updateShiftXPositionValue()
     end
 
-    local shiftYPosition = function(value)
+    local shiftYPositionValue = 0
+    local updateShiftYPositionValue = deferred.new(0.01):action(function()
         local position = fcp:inspector():video():transform():position()
         position:show()
-        local yPos = position:y()
-        position:y(yPos + value)
+        local originalPosition = position:y()
+        position:y(originalPosition + updateShiftYPositionValue)
+        updateShiftYPositionValue = 0
+    end)
+    local shiftYPosition = function(value)
+        shiftYPositionValue = shiftYPositionValue + value
+        updateShiftYPositionValue()
     end
 
     for _, shiftAmount in pairs(shiftAmounts) do
@@ -440,13 +454,19 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
-    -- Scale:
+    -- Scale All:
     --------------------------------------------------------------------------------
-    local shiftScale = function(value)
+    local shiftScaleValue = 0
+    local updateShiftScale = deferred.new(0.01):action(function()
         local scaleAll = fcp:inspector():video():transform():scaleAll()
         scaleAll:show()
         local original = scaleAll:value()
-        scaleAll:value(original + value)
+        scaleAll:value(original + shiftScaleValue)
+        shiftScaleValue = 0
+    end)
+    local shiftScale = function(value)
+        shiftScaleValue = shiftScaleValue + value
+        updateShiftScale()
     end
     for _, shiftAmount in pairs(shiftAmounts) do
         fcpxCmds:add("shiftScaleUp" .. shiftAmount)
@@ -474,11 +494,17 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rotation:
     --------------------------------------------------------------------------------
-    local shiftRotation = function(value)
+    local shiftRotationValue = 0
+    local updateShiftRotation = deferred.new(0.01):action(function()
         local rotation = fcp:inspector():video():transform():rotation()
         rotation:show()
         local original = rotation:value()
-        rotation:value(original + value)
+        rotation:value(original + shiftRotationValue)
+        shiftRotationValue = 0
+    end)
+    local shiftRotation = function(value)
+        shiftRotationValue = shiftRotationValue + value
+        updateShiftRotation()
     end
     for _, shiftAmount in pairs(shiftAmounts) do
         fcpxCmds:add("shiftRotationLeft" .. shiftAmount)
@@ -518,78 +544,98 @@ function plugin.init(deps)
             end)
     end
 
+    local cropLeftValue = 0
+    local updateCropLeft = deferred.new(0.01):action(function()
+        local cropLeft = fcp:inspector():video():crop():left()
+        cropLeft:show()
+        local original = cropLeft:value()
+        cropLeft:value(original + cropLeftValue)
+        cropLeftValue = 0
+    end)
+
+    local cropRightValue = 0
+    local updateCropRight = deferred.new(0.01):action(function()
+        local cropRight = fcp:inspector():video():crop():right()
+        cropRight:show()
+        local original = cropRight:value()
+        cropRight:value(original + cropRightValue)
+        cropRightValue = 0
+    end)
+
+    local cropTopValue = 0
+    local updateCropTop = deferred.new(0.01):action(function()
+        local cropTop = fcp:inspector():video():crop():top()
+        cropTop:show()
+        local original = cropTop:value()
+        cropTop:value(original + cropTopValue)
+        cropTopValue = 0
+    end)
+
+    local cropBottomValue = 0
+    local updateCropBottom = deferred.new(0.01):action(function()
+        local cropBottom = fcp:inspector():video():crop():top()
+        cropBottom:show()
+        local original = cropBottom:value()
+        cropBottom:value(original + cropBottomValue)
+        cropBottomValue = 0
+    end)
+
     local cropAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
     for _, c in pairs(cropAmounts) do
         fcpxCmds:add("cropLeftIncrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("left") .. " " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropLeft = fcp:inspector():video():crop():left()
-                cropLeft:show()
-                local original = cropLeft:value()
-                cropLeft:value(original + c)
+                cropLeftValue = cropLeftValue + c
+                updateCropLeft()
             end)
 
         fcpxCmds:add("cropLeftDecrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("left") .. " " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropLeft = fcp:inspector():video():crop():left()
-                cropLeft:show()
-                local original = cropLeft:value()
-                cropLeft:value(original - c)
+                cropLeftValue = cropLeftValue - c
+                updateCropLeft()
             end)
 
         fcpxCmds:add("cropRightIncrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("right") .. " " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropRight = fcp:inspector():video():crop():right()
-                cropRight:show()
-                local original = cropRight:value()
-                cropRight:value(original + c)
+                cropRightValue = cropRightValue + c
+                updateCropRight()
             end)
 
         fcpxCmds:add("cropRightDecrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("right") .. " " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropRight = fcp:inspector():video():crop():right()
-                cropRight:show()
-                local original = cropRight:value()
-                cropRight:value(original - c)
+                cropRightValue = cropRightValue - c
+                updateCropRight()
             end)
 
         fcpxCmds:add("cropTopIncrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("top") .. " " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropTop = fcp:inspector():video():crop():top()
-                cropTop:show()
-                local original = cropTop:value()
-                cropTop:value(original + c)
+                cropTopValue = cropTopValue + c
+                updateCropTop()
             end)
 
         fcpxCmds:add("cropTopDecrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("top") .. " " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropTop = fcp:inspector():video():crop():top()
-                cropTop:show()
-                local original = cropTop:value()
-                cropTop:value(original - c)
+                cropTopValue = cropTopValue - c
+                updateCropTop()
             end)
 
         fcpxCmds:add("cropBottomIncrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("bottom") .. " " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropBottom = fcp:inspector():video():crop():bottom()
-                cropBottom:show()
-                local original = cropBottom:value()
-                cropBottom:value(original + c)
+                cropBottomValue = cropBottomValue + c
+                updateCropBottom()
             end)
 
         fcpxCmds:add("cropBottomDecrease" .. c)
             :titled(i18n("crop") .. " " .. i18n("bottom") .. " " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local cropBottom = fcp:inspector():video():crop():bottom()
-                cropBottom:show()
-                local original = cropBottom:value()
-                cropBottom:value(original - c)
+                cropBottomValue = cropBottomValue - c
+                updateCropBottom()
             end)
     end
 
@@ -620,6 +666,79 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Distort:
     --------------------------------------------------------------------------------
+    local distortBottomLeftXValue = 0
+    local updateDistortBottomLeftX = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():bottomLeft().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortBottomLeftXValue)
+        distortBottomLeftXValue = 0
+    end)
+
+    local distortBottomLeftYValue = 0
+    local updateDistortBottomLeftY = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():bottomLeft().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortBottomLeftYValue)
+        distortBottomLeftYValue = 0
+    end)
+
+    local distortBottomRightXValue = 0
+    local updateDistortBottomRightX = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():bottomRight().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortBottomRightXValue)
+        distortBottomRightXValue = 0
+    end)
+
+    local distortBottomRightYValue = 0
+    local updateDistortBottomRightY = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():bottomRight().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortBottomRightYValue)
+        distortBottomRightYValue = 0
+    end)
+
+
+    local distortTopLeftXValue = 0
+    local updateDistortTopLeftX = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():topLeft().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortTopLeftXValue)
+        distortTopLeftXValue = 0
+    end)
+
+    local distortTopLeftYValue = 0
+    local updateDistortTopLeftY = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():topLeft().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortTopLeftYValue)
+        distortTopLeftYValue = 0
+    end)
+
+    local distortTopRightXValue = 0
+    local updateDistortTopRightX = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():topRight().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortTopRightXValue)
+        distortTopRightXValue = 0
+    end)
+
+    local distortTopRightYValue = 0
+    local updateDistortTopRightY = deferred.new(0.01):action(function()
+        local d = fcp:inspector():video():distort():topRight().x
+        d:show()
+        local original = d:value()
+        d:value(original + distortTopRightYValue)
+        distortTopRightYValue = 0
+    end)
+
     local distortAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
     for _, c in pairs(distortAmounts) do
         --------------------------------------------------------------------------------
@@ -628,34 +747,26 @@ function plugin.init(deps)
         fcpxCmds:add("distortBottomLeftXIncrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("left") .. " X " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomLeft().x
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortBottomLeftXValue = distortBottomLeftXValue + c
+                updateDistortBottomLeftX()
             end)
         fcpxCmds:add("distortBottomLeftYIncrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("left") .. " Y " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomLeft().y
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortBottomLeftYValue = distortBottomLeftYValue + c
+                updateDistortBottomLeftY()
             end)
         fcpxCmds:add("distortBottomLeftXDecrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("left") .. " X " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomLeft().x
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortBottomLeftXValue = distortBottomLeftXValue - c
+                updateDistortBottomLeftX()
             end)
         fcpxCmds:add("distortBottomLeftYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("left") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomLeft().y
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortBottomLeftYValue = distortBottomLeftYValue - c
+                updateDistortBottomLeftY()
             end)
 
         --------------------------------------------------------------------------------
@@ -664,34 +775,26 @@ function plugin.init(deps)
         fcpxCmds:add("distortBottomRightXIncrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("right") .. " X " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomRight().x
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortBottomRightXValue = distortBottomRightXValue + c
+                updateDistortBottomRightX()
             end)
         fcpxCmds:add("distortBottomRightYIncrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("right") .. " Y " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomRight().y
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortBottomRightYValue = distortBottomRightYValue + c
+                updateDistortBottomRightY()
             end)
         fcpxCmds:add("distortBottomRightXDecrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("right") .. " X " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomRight().x
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortBottomRightXValue = distortBottomRightXValue - c
+                updateDistortBottomRightX()
             end)
         fcpxCmds:add("distortBottomRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("bottom") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():bottomRight().y
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortBottomRightYValue = distortBottomRightYValue + c
+                updateDistortBottomRightY()
             end)
 
         --------------------------------------------------------------------------------
@@ -700,34 +803,26 @@ function plugin.init(deps)
         fcpxCmds:add("distortTopLeftXIncrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("left") .. " X " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topLeft().x
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortTopLeftXValue = distortTopLeftXValue + c
+                updateDistortTopLeftX()
             end)
         fcpxCmds:add("distortTopLeftYIncrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("left") .. " Y " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topLeft().y
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortTopLeftYValue = distortTopLeftYValue + c
+                updateDistortTopLeftY()
             end)
         fcpxCmds:add("distortTopLeftXDecrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("left") .. " X " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topLeft().x
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortTopLeftXValue = distortTopLeftXValue - c
+                updateDistortTopLeftX()
             end)
         fcpxCmds:add("distortTopLeftYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("left") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topLeft().y
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortTopLeftYValue = distortTopLeftYValue - c
+                updateDistortTopLeftY()
             end)
 
         --------------------------------------------------------------------------------
@@ -736,34 +831,26 @@ function plugin.init(deps)
         fcpxCmds:add("distortTopRightXIncrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("right") .. " X " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topRight().x
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortTopRightXValue = distortTopRightXValue + c
+                updateDistortTopRightX()
             end)
         fcpxCmds:add("distortTopRightYIncrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("right") .. " Y " .. i18n("increase") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topRight().y
-                d:show()
-                local original = d:value()
-                d:value(original + c)
+                distortTopRightYValue = distortTopRightYValue + c
+                updateDistortTopRightY()
             end)
         fcpxCmds:add("distortTopRightXDecrease" .. c)
             :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("right") .. " X " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topRight().x
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortTopRightXValue = distortTopRightXValue - c
+                updateDistortTopRightX()
             end)
         fcpxCmds:add("distortTopRightYDecrease" .. c)
             :titled(i18n("distort") .. " " .. i18n("top") .. " " .. i18n("right") .. " Y " .. i18n("decrease") .. " " .. c .. "px")
             :whenPressed(function()
-                local d = fcp:inspector():video():distort():topRight().y
-                d:show()
-                local original = d:value()
-                d:value(original - c)
+                distortTopRightYValue = distortTopRightYValue + c
+                updateDistortTopRightY()
             end)
     end
 
