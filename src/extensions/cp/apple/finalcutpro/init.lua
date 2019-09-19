@@ -117,6 +117,9 @@ local childMatching                             = axutils.childMatching
 local dirFiles                                  = tools.dirFiles
 local insert                                    = table.insert
 local pathFromBookmark                          = fs.pathFromBookmark
+local pathToAbsolute                            = fs.pathToAbsolute
+local pathToBookmark                            = fs.pathToBookmark
+local stringToHexString                         = tools.stringToHexString
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -1255,6 +1258,41 @@ function fcp:importXML(path)
     end
 end
 
+--- cp.apple.finalcutpro:openAndSavePanelDefaultPath <cp.prop: string>
+--- Variable
+--- A string containing the default open/save panel path.
+function fcp.lazy.prop:openAndSavePanelDefaultPath()
+    ----------------------------------------------------------------------------------------
+    -- NOTE: I'm not really sure what use this is. I was originally thinking this could be
+    --       used to change the default open and save panel path, but it doesn't seem to
+    --       work reliably. Leaving here for now, just incase we find a use for it in the
+    --       future.
+    ----------------------------------------------------------------------------------------
+    return prop(function()
+        local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+        local bookmark = fcpPlist and fcpPlist.FFLMOpenSavePanelDefaultURL
+        return bookmark and pathFromBookmark(bookmark)
+    end, function(path)
+        if pathToAbsolute(path) then
+            local bookmark = pathToBookmark(pathToAbsolute(path))
+            if bookmark then
+                local hexString = tools.stringToHexString(bookmark)
+                if hexString then
+                    local command = "defaults write " .. self.app:bundleID() ..  [[ FFLMOpenSavePanelDefaultURL -data "]] .. hexString .. [["]]
+                    local _, status = hs.execute(command)
+                    if not status then
+                        log.ef("Could not change defaults in fcp:openAndSavePanelDefaultPath().")
+                    end
+                end
+            else
+                log.ef("Could not create Bookmark of path provided to fcp:openAndSavePanelDefaultPath(): %s", path)
+            end
+        else
+            log.ef("Bad path provided to fcp:openAndSavePanelDefaultPath(): %s", path)
+        end
+    end)
+end
+
 ----------------------------------------------------------------------------------------
 --
 -- SHORTCUTS
@@ -1271,7 +1309,7 @@ end
 --- Returns:
 ---  * A path as a string or `nil` if the folder doesn't exist.
 function fcp.static.userCommandSetPath()
-    return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
+    return pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
 end
 
 --- cp.apple.finalcutpro:userCommandSets() -> table

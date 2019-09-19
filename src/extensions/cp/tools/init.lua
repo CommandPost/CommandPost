@@ -1669,4 +1669,21 @@ function tools.exactMatch(value, pattern, plain, ignoreCase)
     return false
 end
 
+--- cp.tools.stringToHexString(value, startValue) -> boolean
+--- Function
+--- Converts a string to a hex string.
+---
+--- Parameters:
+---  * value - The string to convert
+---
+--- Returns:
+---  * A hex string
+function tools.stringToHexString(value)
+    local result = ""
+    for c in string.gmatch(tostring(value), ".") do
+        result = result .. string.format("%02X", string.byte(c))
+    end
+    return result
+end
+
 return tools
