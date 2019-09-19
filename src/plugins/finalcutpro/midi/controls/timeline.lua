@@ -68,7 +68,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Trim Toggle:
     --------------------------------------------------------------------------------
-    local params =
     manager.controls:new("trimToggle", {
         group = "fcpx",
         text = i18n("trimToggle"),
