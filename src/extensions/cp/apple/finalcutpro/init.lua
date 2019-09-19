@@ -1276,7 +1276,7 @@ function fcp.lazy.prop:openAndSavePanelDefaultPath()
         if pathToAbsolute(path) then
             local bookmark = pathToBookmark(pathToAbsolute(path))
             if bookmark then
-                local hexString = tools.stringToHexString(bookmark)
+                local hexString = stringToHexString(bookmark)
                 if hexString then
                     local command = "defaults write " .. self.app:bundleID() ..  [[ FFLMOpenSavePanelDefaultURL -data "]] .. hexString .. [["]]
                     local _, status = hs.execute(command)
