@@ -401,8 +401,8 @@ function plugin.init(deps)
         local position = fcp:inspector():video():transform():position()
         position:show()
         local originalPosition = position:y()
-        position:y(originalPosition + updateShiftYPositionValue)
-        updateShiftYPositionValue = 0
+        position:y(originalPosition + shiftYPositionValue)
+        shiftYPositionValue = 0
     end)
     local shiftYPosition = function(value)
         shiftYPositionValue = shiftYPositionValue + value
