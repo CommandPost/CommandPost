@@ -6,6 +6,7 @@ local require = require
 
 --local log               = require "hs.logger".new "midicolorwheels"
 
+local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
@@ -214,37 +215,50 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Master - Wheels:
     --------------------------------------------------------------------------------
+    local colorWheelMasterVerticalValue = 0
+    local colorWheelMasterHorizontalValue = 0
+    local updateColorWheelMaster = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:master():nudgeColor(colorWheelMasterHorizontalValue, colorWheelMasterVerticalValue)
+        colorWheelMasterVerticalValue = 0
+        colorWheelMasterHorizontalValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMasterUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:master():nudgeColor(0, KEY_PRESS)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
+            colorWheelMasterVerticalValue = colorWheelMasterVerticalValue + KEY_PRESS
+            updateColorWheelMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
 
     fcpxCmds
         :add("colorWheelMasterDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:master():nudgeColor(0, KEY_PRESS * -1)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
+            colorWheelMasterVerticalValue = colorWheelMasterVerticalValue - KEY_PRESS
+            updateColorWheelMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
 
     fcpxCmds
         :add("colorWheelMasterLeft")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:master():nudgeColor(KEY_PRESS * -1, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
+            colorWheelMasterHorizontalValue = colorWheelMasterHorizontalValue - KEY_PRESS
+            updateColorWheelMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
 
     fcpxCmds
         :add("colorWheelMasterRight")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:master():nudgeColor(KEY_PRESS, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
+            colorWheelMasterHorizontalValue = colorWheelMasterHorizontalValue + KEY_PRESS
+            updateColorWheelMaster()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
 
     fcpxCmds
         :add("colorWheelMasterReset")
@@ -252,17 +266,25 @@ function plugin.init(deps)
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
                 colorWheels:master():reset():press()
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("reset"))
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheel Master - Saturation:
     --------------------------------------------------------------------------------
+    local colorWheelMasterSaturationValue = 0
+    local updateColorWheelMasterSaturation = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:master():saturation():shiftValue(colorWheelMasterSaturationValue)
+        colorWheelMasterSaturationValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMasterSaturationUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():saturation():shiftValue(-0.01)
+            colorWheelMasterSaturationValue = colorWheelMasterSaturationValue - 0.01
+            updateColorWheelMasterSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -270,8 +292,8 @@ function plugin.init(deps)
         :add("colorWheelMasterSaturationDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():saturation():shiftValue(0.01)
+            colorWheelMasterSaturationValue = colorWheelMasterSaturationValue + 0.01
+            updateColorWheelMasterSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -287,12 +309,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Master - Brightness:
     --------------------------------------------------------------------------------
+    local colorWheelMasterBrightnessValue = 0
+    local updateColorWheelMasterBrightness = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:master():brightness():shiftValue(colorWheelMasterBrightnessValue)
+        colorWheelMasterBrightnessValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMasterBrightnessUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():brightness():shiftValue(-0.01)
+            colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue - 0.01
+            updateColorWheelMasterBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -300,8 +329,8 @@ function plugin.init(deps)
         :add("colorWheelMasterBrightnessDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():brightness():shiftValue(0.01)
+            colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue + 0.01
+            updateColorWheelMasterBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -317,37 +346,50 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Shadows - Wheels:
     --------------------------------------------------------------------------------
+    local colorWheelShadowsVerticalValue = 0
+    local colorWheelShadowsHorizontalValue = 0
+    local updateColorWheelShadows = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:shadows():nudgeColor(colorWheelShadowsHorizontalValue, colorWheelShadowsVerticalValue)
+        colorWheelShadowsVerticalValue = 0
+        colorWheelShadowsHorizontalValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelShadowsUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:shadows():nudgeColor(0, KEY_PRESS)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
+            colorWheelShadowsVerticalValue = colorWheelShadowsVerticalValue + KEY_PRESS
+            updateColorWheelShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
 
     fcpxCmds
         :add("colorWheelShadowsDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:shadows():nudgeColor(0, KEY_PRESS * -1)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
+            colorWheelShadowsVerticalValue = colorWheelShadowsVerticalValue - KEY_PRESS
+            updateColorWheelShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
 
     fcpxCmds
         :add("colorWheelShadowsLeft")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:shadows():nudgeColor(KEY_PRESS * -1, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
+            colorWheelShadowsHorizontalValue = colorWheelShadowsHorizontalValue - KEY_PRESS
+            updateColorWheelShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
 
     fcpxCmds
         :add("colorWheelShadowsRight")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:shadows():nudgeColor(KEY_PRESS, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
+            colorWheelShadowsHorizontalValue = colorWheelShadowsHorizontalValue + KEY_PRESS
+            updateColorWheelShadows()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
 
     fcpxCmds
         :add("colorWheelShadowsReset")
@@ -355,17 +397,25 @@ function plugin.init(deps)
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
                 colorWheels:shadows():reset():press()
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("reset"))
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheel Shadows - Saturation:
     --------------------------------------------------------------------------------
+    local colorWheelShadowsSaturationValue = 0
+    local updateColorWheelShadowsSaturation = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:shadows():saturation():shiftValue(colorWheelShadowsSaturationValue)
+        colorWheelShadowsSaturationValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelShadowsSaturationUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():saturation():shiftValue(-0.01)
+            colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue - 0.01
+            updateColorWheelShadowsSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -373,8 +423,8 @@ function plugin.init(deps)
         :add("colorWheelShadowsSaturationDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():saturation():shiftValue(0.01)
+            colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue + 0.01
+            updateColorWheelShadowsSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -390,12 +440,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Shadows - Brightness:
     --------------------------------------------------------------------------------
+    local colorWheelShadowsBrightnessValue = 0
+    local updateColorWheelShadowsBrightness = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:shadows():brightness():shiftValue(colorWheelShadowsBrightnessValue)
+        colorWheelShadowsBrightnessValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelShadowsBrightnessUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():brightness():shiftValue(-0.01)
+            colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue - 0.01
+            updateColorWheelShadowsBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -403,8 +460,8 @@ function plugin.init(deps)
         :add("colorWheelShadowsBrightnessDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():brightness():shiftValue(0.01)
+            colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue + 0.01
+            updateColorWheelShadowsBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -418,39 +475,52 @@ function plugin.init(deps)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Midtones:
+    -- Color Wheel Midtones - Wheels:
     --------------------------------------------------------------------------------
+    local colorWheelMidtonesVerticalValue = 0
+    local colorWheelMidtonesHorizontalValue = 0
+    local updateColorWheelMidtones = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:midtones():nudgeColor(colorWheelMidtonesHorizontalValue, colorWheelMidtonesVerticalValue)
+        colorWheelMidtonesVerticalValue = 0
+        colorWheelMidtonesHorizontalValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMidtonesUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:midtones():nudgeColor(0, KEY_PRESS)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
+            colorWheelMidtonesVerticalValue = colorWheelMidtonesVerticalValue + KEY_PRESS
+            updateColorWheelMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
 
     fcpxCmds
         :add("colorWheelMidtonesDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:midtones():nudgeColor(0, KEY_PRESS * -1)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
+            colorWheelMidtonesVerticalValue = colorWheelMidtonesVerticalValue - KEY_PRESS
+            updateColorWheelMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
 
     fcpxCmds
         :add("colorWheelMidtonesLeft")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:midtones():nudgeColor(KEY_PRESS * -1, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
+            colorWheelMidtonesHorizontalValue = colorWheelMidtonesHorizontalValue - KEY_PRESS
+            updateColorWheelMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
 
     fcpxCmds
         :add("colorWheelMidtonesRight")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:midtones():nudgeColor(KEY_PRESS, 0)
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
+            colorWheelMidtonesHorizontalValue = colorWheelMidtonesHorizontalValue + KEY_PRESS
+            updateColorWheelMidtones()
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
 
     fcpxCmds
         :add("colorWheelMidtonesReset")
@@ -458,17 +528,25 @@ function plugin.init(deps)
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
                 colorWheels:midtones():reset():press()
-        end)        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("reset"))
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheel Midtones - Saturation:
     --------------------------------------------------------------------------------
+    local colorWheelMidtonesSaturationValue = 0
+    local updateColorWheelMidtonesSaturation = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:midtones():saturation():shiftValue(colorWheelMidtonesSaturationValue)
+        colorWheelMidtonesSaturationValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMidtonesSaturationUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():saturation():shiftValue(-0.01)
+            colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue - 0.01
+            updateColorWheelMidtonesSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -476,8 +554,8 @@ function plugin.init(deps)
         :add("colorWheelMidtonesSaturationDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():saturation():shiftValue(0.01)
+            colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue + 0.01
+            updateColorWheelMidtonesSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -493,12 +571,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Midtones - Brightness:
     --------------------------------------------------------------------------------
+    local colorWheelMidtonesBrightnessValue = 0
+    local updateColorWheelMidtonesBrightness = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:midtones():brightness():shiftValue(colorWheelMidtonesBrightnessValue)
+        colorWheelMidtonesBrightnessValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMidtonesBrightnessUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():brightness():shiftValue(-0.01)
+            colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue - 0.01
+            updateColorWheelMidtonesBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -506,8 +591,8 @@ function plugin.init(deps)
         :add("colorWheelMidtonesBrightnessDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():brightness():shiftValue(0.01)
+            colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue + 0.01
+            updateColorWheelMidtonesBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -521,14 +606,23 @@ function plugin.init(deps)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Highlights:
+    -- Color Wheel Highlights - Wheels:
     --------------------------------------------------------------------------------
+    local colorWheelHighlightsVerticalValue = 0
+    local colorWheelHighlightsHorizontalValue = 0
+    local updateColorWheelHighlights = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:highlights():nudgeColor(colorWheelHighlightsHorizontalValue, colorWheelHighlightsVerticalValue)
+        colorWheelHighlightsVerticalValue = 0
+        colorWheelHighlightsHorizontalValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelHighlightsUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():nudgeColor(0, KEY_PRESS)
+            colorWheelHighlightsVerticalValue = colorWheelHighlightsVerticalValue + KEY_PRESS
+            updateColorWheelHighlights()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("nudge") .. " " .. i18n("up"))
 
@@ -536,8 +630,8 @@ function plugin.init(deps)
         :add("colorWheelHighlightsDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():nudgeColor(0, KEY_PRESS * -1)
+            colorWheelHighlightsVerticalValue = colorWheelHighlightsVerticalValue - KEY_PRESS
+            updateColorWheelHighlights()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("nudge") .. " " .. i18n("down"))
 
@@ -545,8 +639,8 @@ function plugin.init(deps)
         :add("colorWheelHighlightsLeft")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():nudgeColor(KEY_PRESS * -1, 0)
+            colorWheelHighlightsHorizontalValue = colorWheelHighlightsHorizontalValue - KEY_PRESS
+            updateColorWheelHighlights()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("nudge") .. " " .. i18n("left"))
 
@@ -554,8 +648,8 @@ function plugin.init(deps)
         :add("colorWheelHighlightsRight")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():nudgeColor(KEY_PRESS, 0)
+            colorWheelHighlightsHorizontalValue = colorWheelHighlightsHorizontalValue + KEY_PRESS
+            updateColorWheelHighlights()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("nudge") .. " " .. i18n("right"))
 
@@ -564,19 +658,26 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():reset():press()
+                colorWheels:highlights():reset():press()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
     -- Color Wheel Highlights - Saturation:
     --------------------------------------------------------------------------------
+    local colorWheelHighlightsSaturationValue = 0
+    local updateColorWheelHighlightsSaturation = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:highlights():saturation():shiftValue(colorWheelHighlightsSaturationValue)
+        colorWheelHighlightsSaturationValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelHighlightsSaturationUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():saturation():shiftValue(-0.01)
+            colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue - 0.01
+            updateColorWheelHighlightsSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -584,8 +685,8 @@ function plugin.init(deps)
         :add("colorWheelHighlightsSaturationDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():saturation():shiftValue(0.01)
+            colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue + 0.01
+            updateColorWheelHighlightsSaturation()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -601,12 +702,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel Highlights - Brightness:
     --------------------------------------------------------------------------------
+    local colorWheelHighlightsBrightnessValue = 0
+    local updateColorWheelHighlightsBrightness = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:highlights():brightness():shiftValue(colorWheelHighlightsBrightnessValue)
+        colorWheelHighlightsBrightnessValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelHighlightsBrightnessUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():brightness():shiftValue(-0.01)
+            colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue - 0.01
+            updateColorWheelHighlightsBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -614,8 +722,8 @@ function plugin.init(deps)
         :add("colorWheelHighlightsBrightnessDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():brightness():shiftValue(0.01)
+            colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue + 0.01
+            updateColorWheelHighlightsBrightness()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -631,12 +739,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel - Temperature:
     --------------------------------------------------------------------------------
+    local colorWheelTemperatureValue = 0
+    local updateColorWheelTemperature = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:temperatureSlider():shiftValue(colorWheelTemperatureValue)
+        colorWheelTemperatureValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelTemperatureUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:temperatureSlider():shiftValue(-5)
+            colorWheelTemperatureValue = colorWheelTemperatureValue - 5
+            updateColorWheelTemperature()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -644,8 +759,8 @@ function plugin.init(deps)
         :add("colorWheelTemperatureDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:temperatureSlider():shiftValue(5)
+            colorWheelTemperatureValue = colorWheelTemperatureValue + 5
+            updateColorWheelTemperature()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -661,13 +776,20 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel - Tint:
     --------------------------------------------------------------------------------
+    local colorWheelTintValue = 0
+    local updateColorWheelTint = deferred.new(0.01):action(function()
+        colorWheels:show()
+        local currentValue = colorWheels:tint()
+        colorWheels:tint(currentValue + colorWheelTintValue)
+        colorWheelTintValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelTintUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:tint()
-            colorWheels:tint(currentValue + 1)
+            colorWheelTintValue = colorWheelTintValue + 1
+            updateColorWheelTint()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -675,9 +797,8 @@ function plugin.init(deps)
         :add("colorWheelTintDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:tint()
-            colorWheels:tint(currentValue - 1)
+            colorWheelTintValue = colorWheelTintValue - 1
+            updateColorWheelTint()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 
@@ -693,13 +814,20 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Color Wheel - Mix:
     --------------------------------------------------------------------------------
+    local colorWheelMixValue = 0
+    local updateColorWheelMix = deferred.new(0.01):action(function()
+        colorWheels:show()
+        local currentValue = colorWheels:mix()
+        colorWheels:mix(currentValue + colorWheelMixValue)
+        colorWheelMixValue = 0
+    end)
+
     fcpxCmds
         :add("colorWheelMixUp")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:mix()
-            colorWheels:mix(currentValue + 0.1)
+            colorWheelMixValue = colorWheelMixValue + 0.1
+            updateColorWheelMix()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
 
@@ -707,9 +835,8 @@ function plugin.init(deps)
         :add("colorWheelMixDown")
         :groupedBy("colorWheels")
         :whenActivated(function()
-            if not colorWheels:isShowing() then colorWheels:show() end
-            local currentValue = colorWheels:mix()
-            colorWheels:mix(currentValue - 0.1)
+            colorWheelMixValue = colorWheelMixValue - 0.1
+            updateColorWheelMix()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
 

@@ -4,9 +4,12 @@
 
 local require = require
 
---local log               = require "hs.logger".new "zoomMIDI"
+--local log               = require "hs.logger".new "timeline"
 
 local eventtap          = require "hs.eventtap"
+
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
 local keyStroke         = eventtap.keyStroke
 
@@ -50,14 +53,34 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Scrub Timeline:
+    --------------------------------------------------------------------------------
     local manager = deps.manager
-    local params = {
+    manager.controls:new("timelineScrub", {
         group = "fcpx",
-        text = "Scrub Timeline (Relative)",
-        subText = "Allows you to move the playhead one frame left or right.",
+        text = i18n("scrubTimeline") .. " ()" .. i18n("relative") .. ")",
+        subText = i18n("scrubTimelineDescription"),
         fn = createTimelineScrub(),
-    }
-    manager.controls:new("timelineScrub", params)
+    })
+
+    --------------------------------------------------------------------------------
+    -- Trim Toggle:
+    --------------------------------------------------------------------------------
+    manager.controls:new("trimToggle", {
+        group = "fcpx",
+        text = i18n("trimToggle"),
+        subText = i18n("trimToggleDescription"),
+        fn = function(metadata)
+            if metadata.controllerValue == 127 then
+                fcp:doShortcut("SelectToolTrim"):Now()
+            elseif metadata.controllerValue == 0 then
+                fcp:doShortcut("SelectToolArrowOrRangeSelection"):Now()
+            end
+        end,
+    })
+
 end
 
 return plugin
