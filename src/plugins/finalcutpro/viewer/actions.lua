@@ -95,6 +95,28 @@ function plugin.init(deps)
         end)
         :groupedBy("viewer")
         :titled(i18n("togglePlayerBackground"))
+
+    --------------------------------------------------------------------------------
+    -- Set Viewer to Proxy:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("setViewerToProxy")
+        :whenActivated(function()
+            fcp.preferences:set("FFPlayerQuality", 4)
+        end)
+        :groupedBy("viewer")
+        :titled(i18n("setViewerTo") .. " " .. i18n("proxy"))
+
+    --------------------------------------------------------------------------------
+    -- Set Viewer to Optimized/Original:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("setViewerToOptimizedOriginal")
+        :whenActivated(function()
+            fcp.preferences:set("FFPlayerQuality", 10)
+        end)
+        :groupedBy("viewer")
+        :titled(i18n("setViewerTo") .. " " .. i18n("optimizedOriginal"))
 end
 
 return plugin
