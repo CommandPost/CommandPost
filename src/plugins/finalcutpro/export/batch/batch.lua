@@ -761,7 +761,8 @@ function plugin.init(deps)
                 else
                     local destinationFolder = mod.getDestinationFolder()
                     if destinationFolder then
-                        local shortDestinationFolder = trim(stringMaxLength(destinationFolder, 48)) .. "…"
+                        local shortDestinationFolder = trim(stringMaxLength(destinationFolder, 48))
+                        if shortDestinationFolder ~= destinationFolder then shortDestinationFolder = shortDestinationFolder .. "…" end
                         return html.div {style="white-space: nowrap; overflow: hidden;"} (
                             html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (shortDestinationFolder)
                         )
