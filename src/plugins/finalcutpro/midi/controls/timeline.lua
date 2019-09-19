@@ -58,18 +58,18 @@ function plugin.init(deps)
     -- Scrub Timeline:
     --------------------------------------------------------------------------------
     local manager = deps.manager
-    local params = {
+    manager.controls:new("timelineScrub", {
         group = "fcpx",
         text = i18n("scrubTimeline") .. " ()" .. i18n("relative") .. ")",
         subText = i18n("scrubTimelineDescription"),
         fn = createTimelineScrub(),
-    }
-    manager.controls:new("timelineScrub", params)
+    })
 
     --------------------------------------------------------------------------------
     -- Trim Toggle:
     --------------------------------------------------------------------------------
-    local params = {
+    local params =
+    manager.controls:new("trimToggle", {
         group = "fcpx",
         text = i18n("trimToggle"),
         subText = i18n("trimToggleDescription"),
@@ -80,8 +80,7 @@ function plugin.init(deps)
                 fcp:doShortcut("SelectToolArrowOrRangeSelection"):Now()
             end
         end,
-    }
-    manager.controls:new("trimToggle", params)
+    })
 
 end
 
