@@ -4,14 +4,13 @@
 
 local require = require
 
-local timer         = require("hs.timer")
+local timer         = require "hs.timer"
 
-local config        = require("cp.config")
-local fcp			= require("cp.apple.finalcutpro")
-local i18n          = require("cp.i18n")
+local config        = require "cp.config"
+local fcp			= require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local doAfter       = timer.doAfter
-
 
 local mod = {}
 
@@ -71,12 +70,11 @@ function mod.init(deps)
     return mod
 end
 
-
 local plugin = {
     id				= "finalcutpro.setup.scan",
     group			= "finalcutpro",
     dependencies	= {
-        ["core.setup"]			        = "setup",
+        ["core.setup"] = "setup",
     }
 }
 

@@ -2,24 +2,27 @@
 ---
 --- Shared Pasteboard Plugin.
 
-local require = require
+local require               = require
 
-local base64                                    = require("hs.base64")
-local fs                                        = require("hs.fs")
-local host                                      = require("hs.host")
-local json                                      = require("hs.json")
-local timer                                     = require("hs.timer")
+local log                   = require "hs.logger".new "shared"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local fcp                                       = require("cp.apple.finalcutpro")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
+local base64                = require "hs.base64"
+local fs                    = require "hs.fs"
+local host                  = require "hs.host"
+local timer                 = require "hs.timer"
 
-local Do                                        = require("cp.rx.go.Do")
-local Throw                                     = require("cp.rx.go.Throw")
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local json                  = require "cp.json"
+local tools                 = require "cp.tools"
 
-local doAfter                                   = timer.doAfter
+local Do                    = require "cp.rx.go.Do"
+local Throw                 = require "cp.rx.go.Throw"
+
+local doAfter               = timer.doAfter
+local displayMessage        = dialog.displayMessage
 
 local mod = {}
 
@@ -94,7 +97,7 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        --log.df("Pasteboard updated. Adding '%s' to shared history.", name)
+        log.df("Pasteboard updated. Adding '%s' to shared history.", name)
 
         local sharedPasteboardPath = mod.getRootPath()
         if sharedPasteboardPath ~= nil then
@@ -147,7 +150,12 @@ end
 ---  * None
 function mod.update()
     if mod.enabled() then
+
+        log.df("ENABLED!")
+
         if not mod.validRootPath() then
+            log.df("INVALID ROOT PATH")
+
             -- Assign a new root path:
             local result = dialog.displayChooseFolder(i18n("sharedPasteboardRootFolder"))
             if result then
@@ -157,6 +165,7 @@ function mod.update()
             end
         end
         if mod.validRootPath() and not mod._watcherId then
+            log.df("SETUP WATCHER!")
             mod._watcherId = mod._manager.watch({
                 update  = watchUpdate,
             })
@@ -171,7 +180,7 @@ function mod.update()
     end
 end
 
---- plugins.finalcutpro.pasteboard.shared.update() -> table
+--- plugins.finalcutpro.pasteboard.shared.getFolderNames() -> table
 --- Function
 --- Returns the list of folder names as an array of strings.
 ---
@@ -272,16 +281,8 @@ end
 --- Returns:
 ---  * The history in a table.
 function mod.getHistory(folderName)
-    local history = {}
-
     local filePath = mod.getHistoryPath(folderName)
-    local file = io.open(filePath, "r")
-    if file then
-        local content = file:read("*all")
-        file:close()
-        history = json.decode(content)
-    end
-    return history
+    return json.read(filePath) or {}
 end
 
 --- plugins.finalcutpro.pasteboard.shared.setHistory(folderName, history) -> boolean
@@ -297,12 +298,7 @@ end
 function mod.setHistory(folderName, history)
     local filePath = mod.getHistoryPath(folderName)
     if history and #history > 0 then
-        local file = io.open(filePath, "w")
-        if file then
-            file:write(json.encode(history))
-            file:close()
-            return true
-        end
+        return json.write(filePath, history)
     else
         --------------------------------------------------------------------------------
         -- Remove it:
@@ -406,36 +402,6 @@ function mod.doPasteHistoryItem(folderName, index)
     end)
 end
 
---- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard
---- Function
---- Initialises the module.
----
---- Parameters:
----  * manager - The pasteboard manager
----
---- Returns:
----  * The sharedPasteboard object
-function mod.init(manager)
-    mod._manager = manager
-
-    local setEnabledValue = false
-    if mod.enabled() then
-        if not mod.validRootPath() then
-            local result = dialog.displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
-            if result == "Yes" then
-                setEnabledValue = true
-            end
-        else
-            setEnabledValue = true
-        end
-    end
-
-    mod.enabled(setEnabledValue)
-    mod.enabled:watch(mod.update)
-
-    return mod
-end
-
 --- plugins.finalcutpro.pasteboard.shared.generateSharedPasteboardMenu() -> table
 --- Function
 --- Generates the shared pasteboard menu.
@@ -511,16 +477,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
-    mod.init(deps.manager)
-
-    --------------------------------------------------------------------------------
-    -- Generate Menu Cache:
-    --------------------------------------------------------------------------------
-    mod.generateSharedPasteboardMenu()
+    mod._manager = deps.manager
 
     --------------------------------------------------------------------------------
     -- Add menu items:
@@ -531,7 +491,7 @@ function plugin.init(deps)
           return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
       end)
       :addSeparator(2000)
-      :addItems(3000, mod.generateSharedPasteboardMenu)
+      :addItems(3000, function() return mod.generateSharedPasteboardMenu() end)
 
     --------------------------------------------------------------------------------
     -- Commands:
@@ -541,6 +501,25 @@ function plugin.init(deps)
       :whenActivated(mod.copyWithCustomClipNameAndFolder)
 
     return mod
+end
+
+function plugin.postInit(deps)
+
+    local setEnabledValue = false
+    if mod.enabled() then
+        if not mod.validRootPath() then
+            local result = dialog.displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
+            if result == "Yes" then
+                setEnabledValue = true
+            end
+        else
+            setEnabledValue = true
+        end
+    end
+
+    mod.enabled(setEnabledValue)
+    mod.enabled:watch(mod.update)
+    mod.enabled:update()
 end
 
 return plugin
