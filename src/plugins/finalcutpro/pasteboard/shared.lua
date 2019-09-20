@@ -481,7 +481,11 @@ function plugin.init(deps)
     deps.menu.pasteboard
       :addMenu(2000, function() return i18n("sharedPasteboardHistory") end)
       :addItem(1000, function()
-          return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
+            return {
+                title       = i18n("enableSharedPasteboard"),
+                fn          = function() mod.enabled:toggle() end,
+                checked     = mod.enabled() and mod.validRootPath()
+            }
       end)
       :addSeparator(2000)
       :addItems(3000, function() return mod.generateSharedPasteboardMenu() end)
@@ -491,7 +495,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     deps.fcpxCmds
       :add("cpCopyWithCustomLabelAndFolder")
-      :whenActivated(mod.copyWithCustomClipNameAndFolder)
+      :whenActivated(function()
+            mod.copyWithCustomClipNameAndFolder()
+      end)
 
     return mod
 end
