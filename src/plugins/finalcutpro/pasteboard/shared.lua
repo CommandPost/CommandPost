@@ -4,7 +4,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "shared"
+--local log                   = require "hs.logger".new "shared"
 
 local base64                = require "hs.base64"
 local fs                    = require "hs.fs"
@@ -21,8 +21,9 @@ local tools                 = require "cp.tools"
 local Do                    = require "cp.rx.go.Do"
 local Throw                 = require "cp.rx.go.Throw"
 
-local doAfter               = timer.doAfter
 local displayMessage        = dialog.displayMessage
+local doAfter               = timer.doAfter
+local doesDirectoryExist    = tools.doesDirectoryExist
 
 local mod = {}
 
@@ -82,7 +83,7 @@ end
 --- Returns:
 ---  * `true` if it exists otherwise `false`.
 function mod.validRootPath()
-    return tools.doesDirectoryExist(mod.getRootPath())
+    return doesDirectoryExist(mod.getRootPath())
 end
 
 -- watchUpdate(data, name) -> none
@@ -97,8 +98,6 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        log.df("Pasteboard updated. Adding '%s' to shared history.", name)
-
         local sharedPasteboardPath = mod.getRootPath()
         if sharedPasteboardPath ~= nil then
 
@@ -150,12 +149,7 @@ end
 ---  * None
 function mod.update()
     if mod.enabled() then
-
-        log.df("ENABLED!")
-
         if not mod.validRootPath() then
-            log.df("INVALID ROOT PATH")
-
             -- Assign a new root path:
             local result = dialog.displayChooseFolder(i18n("sharedPasteboardRootFolder"))
             if result then
@@ -165,7 +159,6 @@ function mod.update()
             end
         end
         if mod.validRootPath() and not mod._watcherId then
-            log.df("SETUP WATCHER!")
             mod._watcherId = mod._manager.watch({
                 update  = watchUpdate,
             })
@@ -504,11 +497,10 @@ function plugin.init(deps)
 end
 
 function plugin.postInit(deps)
-
     local setEnabledValue = false
     if mod.enabled() then
         if not mod.validRootPath() then
-            local result = dialog.displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
+            local result = displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
             if result == "Yes" then
                 setEnabledValue = true
             end
