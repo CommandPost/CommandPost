@@ -502,12 +502,11 @@ function plugin.init(deps)
     return mod
 end
 
-function plugin.postInit(deps)
+function plugin.postInit()
     local setEnabledValue = false
     if mod.enabled() then
         if not mod.validRootPath() then
-            local result = displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
-            if result == "Yes" then
+            if displayMessage(i18n("sharedPasteboardPathMissing"), {i18n("yes"), i18n("no")}) == i18n("yes") then
                 setEnabledValue = true
             end
         else
