@@ -196,22 +196,6 @@ function mod.currentPanel()
     return mod._currentPanel
 end
 
---- plugins.core.setup.init(env) -> module
---- Function
---- Initialises the module.
----
---- Parameters:
----  * env - The plugin environment table
----
---- Returns:
----  * The Module
-function mod.init(env)
-    mod.setPanelRenderer(env:compileTemplate("html/template.html"))
-    mod.visible:update()
-
-    return mod
-end
-
 -- windowCallback(action, webview, frame) -> none
 -- Function
 -- Setup Panels Window Callback
@@ -461,20 +445,31 @@ function mod.addPanel(newPanel)
     return mod
 end
 
-
 local plugin = {
     id              = "core.setup",
     group           = "core",
     required        = true,
 }
 
-function plugin.init(_, env)
-    return mod.init(env)
+function plugin.init()
+    return mod
 end
 
-function plugin.postInit()
+function plugin.postInit(_, env)
+    --------------------------------------------------------------------------------
+    -- Update visibility:
+    --------------------------------------------------------------------------------
+    mod.visible:update()
+
+    --------------------------------------------------------------------------------
+    -- Setup On-boarding Watcher:
+    --------------------------------------------------------------------------------
     mod.onboardingRequired:watch(function(required)
         if required then
+            --------------------------------------------------------------------------------
+            -- Set the Panel Renderer:
+            --------------------------------------------------------------------------------
+            mod.setPanelRenderer(env:compileTemplate("html/template.html"))
 
             --------------------------------------------------------------------------------
             -- The Intro Panel:
@@ -515,7 +510,10 @@ function plugin.postInit()
         end
     end, true)
 
-    return mod.enabled(true)
+    --------------------------------------------------------------------------------
+    -- Set to 'enabled':
+    --------------------------------------------------------------------------------
+    mod.enabled(true)
 end
 
 return plugin
