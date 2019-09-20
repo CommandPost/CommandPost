@@ -72,7 +72,7 @@ local function pluralize(t, data)
   data = data or {}
   local count = data.count or 1
   local plural_form = pluralizeFunction(count)
-  return t[plural_form]
+  return t[plural_form] or t.other
 end
 
 local function treatNode(node, data)

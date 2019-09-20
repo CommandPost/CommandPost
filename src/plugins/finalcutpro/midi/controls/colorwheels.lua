@@ -90,11 +90,13 @@ local function makeWheelHandler(wheelFinderFn, vertical)
 
     local result
     local updateUI = deferred.new(0.01):action(function()
-        wheel:colorOrientation(result)
+        wheel:show()
+        if result and result.right and result.up then
+            wheel:colorOrientation(result)
+        end
     end)
 
     return function(metadata)
-
         local midiValue, value
 
         if metadata.fourteenBitCommand or metadata.pitchChange then
@@ -129,8 +131,8 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             else
                 result = {right=value,up=current.up}
             end
-            updateUI()
         end
+        updateUI()
     end
 end
 
@@ -157,56 +159,56 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Wheel Master (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
         text = "Color Wheel Master (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Shadows (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
         text = "Color Wheel Shadows (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
         text = "Color Wheel Midtones (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
         text = "Color Wheel Midtones (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Highlights (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
         text = "Color Wheel Highlights (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, true),
     })
 
     --------------------------------------------------------------------------------
