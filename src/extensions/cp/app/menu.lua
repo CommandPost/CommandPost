@@ -709,6 +709,9 @@ function menu.mt:doFindMenuUI(path, options)
 
         return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
+
+                log.df("--------------------------> STEP: %s", step)
+
                 local menuItemUI
                 local currentMenuTitles = menuTitles
                 if type(step) == "number" then
@@ -724,23 +727,53 @@ function menu.mt:doFindMenuUI(path, options)
                     end
                 else
                     menuItemName = step
+
+                    --log.df("menuItemName: %s", menuItemName)
+
                     --------------------------------------------------------------------------------
                     -- Check with the finder functions:
                     --------------------------------------------------------------------------------
                     for _, finder in ipairs(self._itemFinders) do
                         local translatedStep = _translateTitle(menuTitles, menuItemName, appLocale, en)
+
+                        --log.df("translatedStep: %s", translatedStep)
                         menuItemUI = finder(menuUI, currentPath, translatedStep, appLocale)
+
+                        --log.df("menuItemUI: %s", menuItemUI)
+
                         if menuItemUI then
+                            --log.df("BREAKING because there's a menuItemUI")
                             break
                         end
                     end
 
+                    --log.df("menuTitles: %s", menuTitles)
+
                     if not menuItemUI and menuTitles then
+                        log.df("see if the menu is in the map...")
                         --------------------------------------------------------------------------------
                         -- See if the menu is in the map:
                         --------------------------------------------------------------------------------
+                        --log.df("menuTitles: %s", hs.inspect(menuTitles))
+
+
+                        log.df("#menuTitles: %s", #menuTitles)
+
+                        --[[
+                        if #menuTitles == 0 then
+                            menuTitles = { menuTitles }
+                        end
+                        --]]
+
                         for _, item in ipairs(menuTitles) do
                             local pathItemTitle = item[pathLocale.code]
+
+                            log.df("pathLocale.code: %s", pathLocale.code)
+                            log.df("item: %s", item)
+                            log.df("pathItemTitle: %s", pathItemTitle)
+                            log.df("step: %s", step)
+                            log.df("options.plain: %s", options.plain)
+
                             if exactMatch(pathItemTitle, step, options.plain) then
                                 menuItemUI = item.ui
                                 if not axutils.isValid(menuItemUI) then
@@ -762,6 +795,7 @@ function menu.mt:doFindMenuUI(path, options)
                                         return Throw("Unable to find '%s' in '%s' with %s.", pathItemTitle, (#currentPath > 0 and concat(currentPath, " > ") or self:app():displayName()), appLocale.code)
                                     end
                                 end
+                                --log.df("item.submenu: %s", hs.inspect(item.submenu))
                                 menuTitles = item.submenu
                                 break
                             end
@@ -770,13 +804,24 @@ function menu.mt:doFindMenuUI(path, options)
                 end
 
                 if menuItemUI then
+                    log.df("there is a menuItemUI!")
 
                     if #menuItemUI == 1 then
+                        log.df("#menuItemUI is 1 so this is a sub-menu")
                         -- the item is a sub-menu. Find the next values.
                         menuUI = menuItemUI[1]
+
+                        log.df("menuUI: %s", menuUI)
+
                         for _, item in ipairs(menuTitles) do
+                            log.df("item: %s", item)
                             local mapTitle = item[appLocale.code]
+
+                            log.df("mapTitle: %s", mapTitle)
+
                             if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*"), options.plain) then
+                                log.df("MATCH!")
+                                log.df("")
                                 menuTitles = item
                                 break
                             end
