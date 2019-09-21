@@ -5,28 +5,28 @@
 
 local require = require
 
-local log               = require "hs.logger".new "menuaction"
+local log                               = require "hs.logger".new "menuaction"
 
-local fnutils           = require "hs.fnutils"
-local host              = require "hs.host"
-local image             = require "hs.image"
+local fnutils                           = require "hs.fnutils"
+local host                              = require "hs.host"
+local image                             = require "hs.image"
 
-local config            = require "cp.config"
-local destinations      = require "cp.apple.finalcutpro.export.destinations"
-local fcp               = require "cp.apple.finalcutpro"
-local i18n              = require "cp.i18n"
-local localeID          = require "cp.i18n.localeID"
-local text              = require "cp.web.text"
-local tools             = require "cp.tools"
+local config                            = require "cp.config"
+local destinations                      = require "cp.apple.finalcutpro.export.destinations"
+local fcp                               = require "cp.apple.finalcutpro"
+local i18n                              = require "cp.i18n"
+local localeID                          = require "cp.i18n.localeID"
+local text                              = require "cp.web.text"
+local tools                             = require "cp.tools"
 
-local concat            = table.concat
-local imageFromPath     = image.imageFromPath
-local insert            = table.insert
-local locale            = host.locale
-local localizedString   = locale.localizedString
-local unescapeXML       = text.unescapeXML
-
-local findCommonWordWithinTwoStrings = tools.findCommonWordWithinTwoStrings
+local concat                            = table.concat
+local contentsInsideBrackets            = tools.contentsInsideBrackets
+local findCommonWordWithinTwoStrings    = tools.findCommonWordWithinTwoStrings
+local imageFromPath                     = image.imageFromPath
+local insert                            = table.insert
+local locale                            = host.locale
+local localizedString                   = locale.localizedString
+local unescapeXML                       = text.unescapeXML
 
 local mod = {}
 
@@ -211,20 +211,6 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
     log.df("%s", result)
 end
 
--- contentsInsideBrackets(a) -> string | nil
--- Function
--- Gets the contents of any text inside a bracket
---
--- Parameters:
---  * a - The input
---
--- Returns:
---  * The contents as a string or `nil`
-local function contentsInsideBrackets(a)
-    local b = a and string.match(a, "%(.*%)")
-    return b and b:sub(2, -2)
-end
-
 -- applyMenuWorkarounds(choices) -> table
 -- Function
 -- Applies a bunch of workarounds to the choices table.
@@ -243,6 +229,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     local en = localeID("en")
     local fcpLocaleCode = fcp:currentLocale().code
+    local actualFCPLocaleCode = fcpLocaleCode
 
     --------------------------------------------------------------------------------
     -- Add workaround for Chinese:
@@ -506,10 +493,63 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- Edit > Captions > Duplicate Captions to New Language >
     --
     -- bn           Bangla
-    -- tl           Tagalog
+    --
+    -- NOTE: The only workaround I've found for this currently is to manually,
+    --       translate. Doh!
     --------------------------------------------------------------------------------
+    local banglaTranslation = {
+        ["de"]      = "Bengalisch",
+        ["en"]      = "Bangla",
+        ["es"]      = "bengalí",
+        ["fr"]      = "bengali",
+        ["ja"]      = "ベンガル語",
+        ["zh_CN"]   = "孟加拉文",
+    }
+    do
+        local title = banglaTranslation[actualFCPLocaleCode]
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
-        -- TODO: I have no idea how to get these values. 'bn' returns "Bengali"
+    --------------------------------------------------------------------------------
+    -- Edit > Captions > Duplicate Captions to New Language >
+    --
+    -- tl           Tagalog
+    --
+    -- NOTE: The only workaround I've found for this currently is to manually,
+    --       translate. Doh!
+    --------------------------------------------------------------------------------
+    local tagalogTranslation = {
+        ["de"]      = "Tagalog",
+        ["en"]      = "Tagalog",
+        ["es"]      = "tagalo",
+        ["fr"]      = "tagalog",
+        ["ja"]      = "タガログ語",
+        ["zh_CN"]   = "他加禄文",
+    }
+    do
+        local title = tagalogTranslation[actualFCPLocaleCode]
+        local path = {"Edit", "Captions", "Duplicate Captions to New Language"}
+        local params = {}
+        params.path = fnutils.concat(fnutils.copy(path), { title })
+        params.locale = en
+        params.plain = true
+        table.insert(choices, {
+            text = title,
+            subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+            params = params,
+            id = mod.actionId(params),
+        })
+    end
 
     --------------------------------------------------------------------------------
     -- Edit > Captions > Duplicate Captions to New Language > English >
