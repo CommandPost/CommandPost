@@ -313,7 +313,7 @@
         "core_touchbar_widgets_windowslide_label": "Widget: Window Slider",
         "core_watchfolders_manager_label": "Manager: Watch Folders",
         "core_watchfolders_menuitem_label": "Watch Folder Menu Item",
-        "cpAddNoteToSelectedClip_title": "Add Note to Selected Clip",
+        "cpAddNoteToSelectedClips_title": "Add Note to Selected Clip(s)",
         "cpAllowTasksDuringPlayback_title": "Toggle Rendering During Playback",
         "cpAudioEffect1_title": "Apply Audio Effect 1",
         "cpAudioEffect2_title": "Apply Audio Effect 2",
