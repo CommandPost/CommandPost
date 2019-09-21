@@ -61,7 +61,7 @@ local DEFAULT_STILLS_LAYOUT = "Left Vertical"
 -- DEFAULT_LETTERBOX_HEIGHT -> number
 -- Constant
 -- Default Letterbox Height
-local DEFAULT_LETTERBOX_HEIGHT = 300
+local DEFAULT_LETTERBOX_HEIGHT = 70
 
 -- FCP_COLOR_BLUE -> string
 -- Constant
@@ -1121,6 +1121,75 @@ function mod.toggleDraggableGuide(id)
     mod.update()
 end
 
+--- plugins.finalcutpro.viewer.overlays.resetDraggableGuide(id) -> none
+--- Function
+--- Reset a specific Draggable Guide.
+---
+--- Parameters:
+---  * id - The ID of the guide.
+---
+--- Returns:
+---  * None
+function mod.resetDraggableGuide(id)
+
+    id = tostring(id)
+
+    --------------------------------------------------------------------------------
+    -- Reset Color:
+    --------------------------------------------------------------------------------
+    local guideColor = mod.guideColor()
+    guideColor[id] = nil
+    mod.guideColor(guideColor)
+
+    --------------------------------------------------------------------------------
+    -- Reset Alpha:
+    --------------------------------------------------------------------------------
+    local guideAlpha = mod.guideAlpha()
+    guideAlpha[id] = nil
+    mod.guideAlpha(guideAlpha)
+
+    --------------------------------------------------------------------------------
+    -- Reset Position:
+    --------------------------------------------------------------------------------
+    local guidePosition = mod.guidePosition()
+    guidePosition[id] = nil
+    mod.guidePosition(guidePosition)
+
+    mod.update()
+
+end
+
+--- plugins.finalcutpro.viewer.overlays.resetOverlays() -> none
+--- Function
+--- Resets all overlays to their default values.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.resetOverlays()
+    mod.crossHairEnabled(false)
+    mod.letterboxEnabled(false)
+    mod.letterboxHeight(DEFAULT_LETTERBOX_HEIGHT)
+    mod.basicGridEnabled(false)
+    mod.crossHairColor(DEFAULT_COLOR)
+    mod.crossHairAlpha(DEFAULT_ALPHA)
+    mod.gridColor(DEFAULT_COLOR)
+    mod.gridAlpha(DEFAULT_ALPHA)
+    mod.customGridColor(nil)
+    mod.gridSpacing(DEFAULT_GRID_SPACING)
+    mod.activeMemory(0)
+    mod.stillsLayout(DEFAULT_STILLS_LAYOUT)
+    mod.draggableGuideEnabled({})
+    mod.guidePosition({})
+    mod.guideColor({})
+    mod.guideAlpha({})
+    mod.customGuideColor({})
+    mod.customCrossHairColor({})
+    mod.update()
+end
+
 -- generateMenu -> table
 -- Function
 -- Returns a table with the Overlay menu.
@@ -1149,6 +1218,7 @@ local function generateMenu()
         { title = "  " .. i18n("draggableGuides"), menu = {
             { title = i18n("guide") .. " 1", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(1), fn = function() mod.toggleDraggableGuide(1); mod.update(); end },
+                { title = i18n("reset"), fn = function() mod.resetDraggableGuide(1) end },
                 { title = i18n("appearance"), menu = {
                     { title = "  " .. i18n("color"), menu = {
                         { title = i18n("black"),    checked = mod.getGuideColor(1) == "#000000", fn = function() mod.setGuideColor(1, "#000000") end },
@@ -1174,6 +1244,7 @@ local function generateMenu()
             }},
             { title = i18n("guide") .. " 2", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(2), fn = function() mod.toggleDraggableGuide(2); mod.update(); end },
+                { title = i18n("reset"), fn = function() mod.resetDraggableGuide(2) end },
                 { title = i18n("appearance"), menu = {
                     { title = "  " .. i18n("color"), menu = {
                         { title = i18n("black"),    checked = mod.getGuideColor(2) == "#000000", fn = function() mod.setGuideColor(2, "#000000") end },
@@ -1199,6 +1270,7 @@ local function generateMenu()
             }},
             { title = i18n("guide") .. " 3", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(3), fn = function() mod.toggleDraggableGuide(3); mod.update(); end },
+                { title = i18n("reset"), fn = function() mod.resetDraggableGuide(3) end },
                 { title = i18n("appearance"), menu = {
                     { title = "  " .. i18n("color"), menu = {
                         { title = i18n("black"),    checked = mod.getGuideColor(3) == "#000000", fn = function() mod.setGuideColor(3, "#000000") end },
@@ -1224,6 +1296,7 @@ local function generateMenu()
             }},
             { title = i18n("guide") .. " 4", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(4), fn = function() mod.toggleDraggableGuide(4); mod.update(); end },
+                { title = i18n("reset"), fn = function() mod.resetDraggableGuide(4) end },
                 { title = i18n("appearance"), menu = {
                     { title = "  " .. i18n("color"), menu = {
                         { title = i18n("black"),    checked = mod.getGuideColor(4) == "#000000", fn = function() mod.setGuideColor(4, "#000000") end },
@@ -1249,6 +1322,7 @@ local function generateMenu()
             }},
             { title = i18n("guide") .. " 5", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(5), fn = function() mod.toggleDraggableGuide(5); mod.update(); end },
+                { title = i18n("reset"), fn = function() mod.resetDraggableGuide(5) end },
                 { title = i18n("appearance"), menu = {
                     { title = "  " .. i18n("color"), menu = {
                         { title = i18n("black"),    checked = mod.getGuideColor(5) == "#000000", fn = function() mod.setGuideColor(5, "#000000") end },
@@ -1404,6 +1478,8 @@ local function generateMenu()
                 { title = "100",    checked = mod.gridSpacing() == 100, fn = function() mod.setGridSpacing(100) end },
             }},
         }},
+        { title = "-", disabled = true },
+        { title = i18n("reset") .. " " .. i18n("overlays"), fn = function() mod.resetOverlays() end },
     }
 end
 
