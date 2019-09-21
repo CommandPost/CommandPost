@@ -21,7 +21,7 @@ function assert() {
   assert_notarization_token && source "${NOTARIZATION_TOKEN_FILE}"
   # shellcheck source=../token-crashlytics disable=SC1091
   assert_fabric_token && source "${FABRIC_TOKEN_FILE}"
-  assert_version_in_xcode
+  #assert_version_in_xcode
   #assert_version_in_git_tags
   #assert_version_not_in_github_releases
   #assert_docs_bundle_complete
