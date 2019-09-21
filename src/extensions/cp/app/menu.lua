@@ -695,8 +695,8 @@ function menu.mt:doFindMenuUI(path, options)
     end
     options = options or {}
 
-    -- make sure the app is active.
-    return If(self.UI):Then(function(ui)
+    return If(self.UI) -- Make sure the app is active:
+    :Then(function(ui)
         local en = localeID("en")
         local pathLocale = localeID(options.locale) or en
         local appLocale = self:app():currentLocale()
@@ -709,9 +709,6 @@ function menu.mt:doFindMenuUI(path, options)
 
         return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
-
-                log.df("--------------------------> STEP: %s", step)
-
                 local menuItemUI
                 local currentMenuTitles = menuTitles
                 if type(step) == "number" then
@@ -727,53 +724,24 @@ function menu.mt:doFindMenuUI(path, options)
                     end
                 else
                     menuItemName = step
-
-                    --log.df("menuItemName: %s", menuItemName)
-
                     --------------------------------------------------------------------------------
                     -- Check with the finder functions:
                     --------------------------------------------------------------------------------
                     for _, finder in ipairs(self._itemFinders) do
                         local translatedStep = _translateTitle(menuTitles, menuItemName, appLocale, en)
-
-                        --log.df("translatedStep: %s", translatedStep)
                         menuItemUI = finder(menuUI, currentPath, translatedStep, appLocale)
 
-                        --log.df("menuItemUI: %s", menuItemUI)
-
                         if menuItemUI then
-                            --log.df("BREAKING because there's a menuItemUI")
                             break
                         end
                     end
 
-                    --log.df("menuTitles: %s", menuTitles)
-
                     if not menuItemUI and menuTitles then
-                        log.df("see if the menu is in the map...")
                         --------------------------------------------------------------------------------
                         -- See if the menu is in the map:
                         --------------------------------------------------------------------------------
-                        --log.df("menuTitles: %s", hs.inspect(menuTitles))
-
-
-                        log.df("#menuTitles: %s", #menuTitles)
-
-                        --[[
-                        if #menuTitles == 0 then
-                            menuTitles = { menuTitles }
-                        end
-                        --]]
-
                         for _, item in ipairs(menuTitles) do
                             local pathItemTitle = item[pathLocale.code]
-
-                            log.df("pathLocale.code: %s", pathLocale.code)
-                            log.df("item: %s", item)
-                            log.df("pathItemTitle: %s", pathItemTitle)
-                            log.df("step: %s", step)
-                            log.df("options.plain: %s", options.plain)
-
                             if exactMatch(pathItemTitle, step, options.plain) then
                                 menuItemUI = item.ui
                                 if not axutils.isValid(menuItemUI) then
@@ -795,7 +763,6 @@ function menu.mt:doFindMenuUI(path, options)
                                         return Throw("Unable to find '%s' in '%s' with %s.", pathItemTitle, (#currentPath > 0 and concat(currentPath, " > ") or self:app():displayName()), appLocale.code)
                                     end
                                 end
-                                --log.df("item.submenu: %s", hs.inspect(item.submenu))
                                 menuTitles = item.submenu
                                 break
                             end
@@ -804,32 +771,20 @@ function menu.mt:doFindMenuUI(path, options)
                 end
 
                 if menuItemUI then
-                    log.df("there is a menuItemUI!")
-
                     if #menuItemUI == 1 then
-                        log.df("#menuItemUI is 1 so this is a sub-menu")
-                        -- the item is a sub-menu. Find the next values.
+                        --------------------------------------------------------------------------------
+                        -- The 'item' is a sub-menu:
+                        --
+                        -- Assign the contained AXMenu to the menuUI,
+                        -- it contains the next set of AXMenuItems.
+                        --------------------------------------------------------------------------------
                         menuUI = menuItemUI[1]
-
-                        log.df("menuUI: %s", menuUI)
-
-                        for _, item in ipairs(menuTitles) do
-                            log.df("item: %s", item)
-                            local mapTitle = item[appLocale.code]
-
-                            log.df("mapTitle: %s", mapTitle)
-
-                            if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*"), options.plain) then
-                                log.df("MATCH!")
-                                log.df("")
-                                menuTitles = item
-                                break
-                            end
-                        end
                     end
 
-                    -- translate the item name to English for use in finders.
-                    local menuItemNameEn = _translateTitle(currentMenuTitles, menuItemName, pathLocale, en)
+                    --------------------------------------------------------------------------------
+                    -- Translate the 'menuItemName' to English for use in finders:
+                    --------------------------------------------------------------------------------
+                    local menuItemNameEn = _translateTitle(menuTitles, menuItemName, pathLocale, en)
                     insert(currentPath, menuItemNameEn)
 
                     return menuItemUI
@@ -980,6 +935,13 @@ function menu.mt:findMenuUI(path, options)
                 menuUI = menuItemUI[1]
             end
             insert(currentPath, menuItemName)
+
+            --------------------------------------------------------------------------------
+            -- Translate the 'menuItemName' to English for use in finders:
+            --------------------------------------------------------------------------------
+            local menuItemNameEn = _translateTitle(currentMenuTitles, menuItemName, pathLocale, en)
+            insert(currentPath, menuItemNameEn)
+
         else
             --local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
             --log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
