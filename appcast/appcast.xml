@@ -8,8 +8,8 @@
 		<item>
 			<title>Version 1.0.0-beta.79</title>
 			<description><![CDATA[
-				<h2>New in Beta 78:</h2>
-				<ul><li>CommandPost Beta 78 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<h2>New in Beta 79:</h2>
+				<ul><li>CommandPost Beta 79 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
 				<li>Added an action for "Play Full Screen & Stop".</li>
 				<li>Added individual reset menu items for draggable guides and a "Reset Overlays" menu item to reset all overlays.</li>
 				<li>Changed "Add Note to Selected Clip" to "Add Note to Selected Clip(s)". This action now works with multiple selected timeline or browser clips.</li>
