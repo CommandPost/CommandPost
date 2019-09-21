@@ -703,7 +703,7 @@ function app.lazy.prop:currentLocale()
                 end
             end
             if self:running() then
-                self:doRestart():TimeoutAfter(20*1000):Now()
+                self:doRestart():Now()
             end
         end
     ):monitor(self.running)

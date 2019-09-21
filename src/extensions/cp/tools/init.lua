@@ -1686,4 +1686,24 @@ function tools.stringToHexString(value)
     return result
 end
 
+--- cp.tools.contentsInsideBrackets(value) -> string | nil
+--- Function
+--- Gets the contents of any text inside the first bracket set.
+---
+--- Parameters:
+---  * value - The string to process
+---
+--- Returns:
+---  * The contents as a string or `nil`
+function tools.contentsInsideBrackets(a)
+    --------------------------------------------------------------------------------
+    -- Workaround for Chinese:
+    --------------------------------------------------------------------------------
+    a = a:gsub("）", ")")
+    a = a:gsub("（", "(")
+
+    local b = a and string.match(a, "%(.*%)")
+    return b and b:sub(2, -2)
+end
+
 return tools

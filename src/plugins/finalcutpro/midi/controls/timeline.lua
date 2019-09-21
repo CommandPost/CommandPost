@@ -60,7 +60,7 @@ function plugin.init(deps)
     local manager = deps.manager
     manager.controls:new("timelineScrub", {
         group = "fcpx",
-        text = i18n("scrubTimeline") .. " ()" .. i18n("relative") .. ")",
+        text = i18n("scrubTimeline") .. " (" .. i18n("relative") .. ")",
         subText = i18n("scrubTimelineDescription"),
         fn = createTimelineScrub(),
     })
