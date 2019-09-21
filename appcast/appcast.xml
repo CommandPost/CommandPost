@@ -455,7 +455,7 @@
 			</description>
 			<pubDate>Sun, 22 Sep 2019 02:13:20 +1000</pubDate>
 			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.79/CommandPost_1.0.0-beta.79.dmg"
-				sparkle:version="5567"
+				sparkle:version="5585"
 				sparkle:shortVersionString="1.0.0-beta.79"
 				sparkle:dsaSignature="MC0CFQC57THl7FMW1OfTpvS07c09PLtB0gIUXUVpkIoLTjVnbEvYMTy5kapaLdw="
 				type="application/octet-stream"
