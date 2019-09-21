@@ -4,7 +4,7 @@
 
 local require                   = require
 
-local log                       = require "hs.logger".new "addnote"
+--local log                       = require "hs.logger".new "addnote"
 
 local chooser                   = require "hs.chooser"
 local drawing                   = require "hs.drawing"
@@ -86,9 +86,11 @@ function mod.addNoteToSelectedClips()
 
         --------------------------------------------------------------------------------
         -- Select the first timeline clip:
+        --
+        -- NOTE: I'm sure there's a much better/smarter way to do this. Sorry David!
         --------------------------------------------------------------------------------
         local timelineClip
-        for _, v in spairs(selectedTimelineClips, sortFn) do
+        for _, v in spairs(selectedTimelineClips, sortFn) do -- luacheck: ignore
             timelineClip = v
             break
         end
