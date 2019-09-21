@@ -939,7 +939,7 @@ function menu.mt:findMenuUI(path, options)
             --------------------------------------------------------------------------------
             -- Translate the 'menuItemName' to English for use in finders:
             --------------------------------------------------------------------------------
-            local menuItemNameEn = _translateTitle(currentMenuTitles, menuItemName, pathLocale, en)
+            local menuItemNameEn = _translateTitle(menuTitles, menuItemName, pathLocale, en)
             insert(currentPath, menuItemNameEn)
 
         else
