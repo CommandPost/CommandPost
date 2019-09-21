@@ -211,8 +211,17 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
     log.df("%s", result)
 end
 
+-- contentsInsideBrackets(a) -> string | nil
+-- Function
+-- Gets the contents of any text inside a bracket
+--
+-- Parameters:
+--  * a - The input
+--
+-- Returns:
+--  * The contents as a string or `nil`
 local function contentsInsideBrackets(a)
-    local b = string.match(a, "%(.*%)")
+    local b = a and string.match(a, "%(.*%)")
     return b and b:sub(2, -2)
 end
 
@@ -234,6 +243,13 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     --------------------------------------------------------------------------------
     local en = localeID("en")
     local fcpLocaleCode = fcp:currentLocale().code
+
+    --------------------------------------------------------------------------------
+    -- Add workaround for Chinese:
+    --------------------------------------------------------------------------------
+    if fcpLocaleCode == "zh_CN" then
+        fcpLocaleCode = "zh_Hans_CN"
+    end
 
     --------------------------------------------------------------------------------
     -- Final Cut Pro > Commands
