@@ -1669,7 +1669,7 @@ function tools.exactMatch(value, pattern, plain, ignoreCase)
     return false
 end
 
---- cp.tools.stringToHexString(value, startValue) -> boolean
+--- cp.tools.stringToHexString(value) -> string
 --- Function
 --- Converts a string to a hex string.
 ---
@@ -1684,6 +1684,24 @@ function tools.stringToHexString(value)
         result = result .. string.format("%02X", string.byte(c))
     end
     return result
+end
+
+--- cp.tools.hexStringToString(value) -> string
+--- Function
+--- Converts a hex string to a string.
+---
+--- Parameters:
+---  * value - The string to convert
+---
+--- Returns:
+---  * A string
+function tools.stringToHexString(value)
+    local hexToChar = {}
+    for idx = 0, 255 do
+        hexToChar[("%02X"):format(idx)] = string.char(idx)
+        hexToChar[("%02x"):format(idx)] = string.char(idx)
+    end
+    return value and value:gsub("(..)", hexToChar)
 end
 
 --- cp.tools.contentsInsideBrackets(value) -> string | nil
