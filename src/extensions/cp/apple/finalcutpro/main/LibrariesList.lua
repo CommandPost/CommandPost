@@ -261,7 +261,7 @@ end
 function LibrariesList:_uiToClips(clipsUI)
     local columnIndex = self:contents():findColumnIndex("filmlist name col")
     local options = {columnIndex = columnIndex}
-    return map(clipsUI, function(_,clipUI)
+    return map(clipsUI, function(clipUI)
         return Clip.new(clipUI, options)
     end)
 end
@@ -276,7 +276,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return map(clips, function(_,clip) return clip:UI() end)
+    return map(clips, function(clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:clips(filterFn) -> table | nil
