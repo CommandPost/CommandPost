@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("MenuButton")
+--local log               = require("hs.logger").new("MenuButton")
 
 local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
