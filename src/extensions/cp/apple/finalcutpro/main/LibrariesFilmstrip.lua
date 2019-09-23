@@ -220,7 +220,7 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 local function _uiToClips(clipsUI)
-    return map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+    return map(clipsUI, function(clipUI) return Clip.new(clipUI) end)
 end
 
 -- _clipsToUI(clips) -> none
@@ -233,7 +233,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return map(clips, function(_,clip) return clip:UI() end)
+    return map(clips, function(clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:clipsUI(filterFn) -> table | nil
