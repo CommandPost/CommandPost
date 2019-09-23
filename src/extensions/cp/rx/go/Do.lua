@@ -23,13 +23,14 @@
 ---
 --- For more power, you can add a [Then](#Then) to futher modify the results, or chain other operations.
 
-local rx                = require("cp.rx")
-local Statement         = require("cp.rx.go.Statement")
+local rx                = require "cp.rx"
+local Statement         = require "cp.rx.go.Statement"
 
-local Observable        = rx.Observable
 local insert            = table.insert
-local pack, unpack      = table.pack, table.unpack
+local Observable        = rx.Observable
+local pack              = table.pack
 local toObservables     = Statement.toObservables
+local unpack            = table.unpack
 
 --- cp.rx.go.Do(...) -> Do
 --- Constructor

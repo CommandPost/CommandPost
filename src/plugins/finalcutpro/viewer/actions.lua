@@ -4,6 +4,7 @@
 
 local require   = require
 
+local Do        = require "cp.rx.go.Do"
 local fcp       = require "cp.apple.finalcutpro"
 local i18n      = require "cp.i18n"
 
@@ -16,6 +17,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    local viewer = fcp:viewer()
+    local infoBar = viewer:infoBar()
+
     --------------------------------------------------------------------------------
     -- Show Horizon (Viewer):
     --------------------------------------------------------------------------------
@@ -117,6 +122,38 @@ function plugin.init(deps)
         end)
         :groupedBy("viewer")
         :titled(i18n("setViewerTo") .. " " .. i18n("optimizedOriginal"))
+
+    --------------------------------------------------------------------------------
+    -- Set Viewer to Fit:
+    --------------------------------------------------------------------------------
+    cmds
+        :add("setViewerZoomFactorToFit")
+        :whenActivated(function()
+            Do(infoBar.zoomMenu:doShow())
+                :Then(infoBar.zoomMenu:doSelectValue(fcp:string("PEViewerZoomFit")))
+                :Label("plugins.finalcutpro.viewer.actions.setViewerZoomFactorToFit")
+                :Now()
+        end)
+        :groupedBy("viewer")
+        :titled(i18n("setViewerTo") .. " " .. i18n("fit"))
+
+    --------------------------------------------------------------------------------
+    -- Set Viewer to %:
+    --------------------------------------------------------------------------------
+    local zoomFactors = {"12.5%", "25%", "50%", "100%", "150%", "200%", "400%", "600%"}
+    for _, zoomFactor in pairs(zoomFactors) do
+        cmds
+            :add("setViewerZoomFactorTo" .. zoomFactor)
+            :whenActivated(function()
+                Do(infoBar.zoomMenu:doShow())
+                    :Then(infoBar.zoomMenu:doSelectValue(zoomFactor))
+                    :Label("plugins.finalcutpro.viewer.actions.setViewerZoomFactorToFit")
+                    :Now()
+            end)
+            :groupedBy("viewer")
+            :titled(i18n("setViewerTo") .. " " .. zoomFactor)
+    end
+
 end
 
 return plugin

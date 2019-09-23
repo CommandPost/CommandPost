@@ -6,19 +6,18 @@ local require = require
 
 --local log                   = require("hs.logger").new("go_If")
 
-local inspect               = require("hs.inspect")
+local inspect               = require "hs.inspect"
 
-local Observable            = require("cp.rx").Observable
-local Statement             = require("cp.rx.go.Statement")
+local Observable            = require "cp.rx".Observable
+local Statement             = require "cp.rx.go.Statement"
 
 local toObservable          = Statement.toObservable
 local toObservables         = Statement.toObservables
 
-local insert                = table.insert
-local pack, unpack          = table.pack, table.unpack
 local format                = string.format
-
-
+local insert                = table.insert
+local pack                  = table.pack
+local unpack                = table.unpack
 
 -- checks that the value is not false and not nil.
 local function isTruthy(value)
