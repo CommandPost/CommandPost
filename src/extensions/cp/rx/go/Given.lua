@@ -1,4 +1,3 @@
-
 --- === cp.rx.go.Given ===
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will execute the provided `resolvable` values.
@@ -7,13 +6,14 @@
 --- This will continue until one of the `Observables` has completed, at which
 --- point other results from values are ignored.
 
-local rx                = require("cp.rx")
-local Statement         = require("cp.rx.go.Statement")
+local rx                = require "cp.rx"
+local Statement         = require "cp.rx.go.Statement"
 
-local Observable        = rx.Observable
 local insert            = table.insert
-local pack, unpack      = table.pack, table.unpack
+local Observable        = rx.Observable
+local pack              = table.pack
 local toObservables     = Statement.toObservables
+local unpack            = table.unpack
 
 --- cp.rx.go.Given(...) -> Given
 --- Constructor
