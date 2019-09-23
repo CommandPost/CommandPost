@@ -217,6 +217,22 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Tools Section:
+    --------------------------------------------------------------------------------
+    local tools = manager.addSection(7777777)
+    local toolsEnabled = config.prop("menubarToolsEnabled", true)
+    tools:setDisabledFn(function() return not toolsEnabled() end)
+    tools:addHeading(i18n("tools"))
+    prefs:addCheckbox(105,
+        {
+            label = i18n("show") .. " " .. i18n("tools"),
+            onchange = function(_, params) toolsEnabled(params.checked) end,
+            checked = toolsEnabled,
+        }
+    )
+    manager.tools = tools
+
+    --------------------------------------------------------------------------------
     -- Help & Support Section:
     --------------------------------------------------------------------------------
     local helpAndSupport = manager.addSection(8888888)
