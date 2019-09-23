@@ -958,7 +958,7 @@ local plugin = {
     required        = true,
     dependencies    = {
         ["finalcutpro.commands"] = "fcpxCmds",
-        ["finalcutpro.menu.manager"] = "menu",
+        ["core.menu.manager"] = "menu",
     }
 }
 
@@ -969,7 +969,9 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
    deps.menu.tools
         :addItem(10000, function()
-            return { title = i18n("enableHUD"), fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
+            if fcp:isSupported() and fcp:isFrontmost() then
+                return { title = i18n("enableHUD"), fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
+            end
         end)
 
     --------------------------------------------------------------------------------

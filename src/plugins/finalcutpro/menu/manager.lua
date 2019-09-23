@@ -137,24 +137,6 @@ function plugin.init(deps)
         }
     )
 
-    --------------------------------------------------------------------------------
-    -- Add "Tools" section to the menubar:
-    --------------------------------------------------------------------------------
-    local tools = menuManager.addSection(6000)
-    tools:setDisabledFn(disabledFn)
-    tools:setDisabledPreferenceKey("tools")
-    tools:addHeading(i18n("tools"))
-    mod.tools = tools
-
-    local toolsDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "tools", false)
-    prefs:addCheckbox(406,
-        {
-            label = i18n("show") .. " " .. i18n("tools"),
-            onchange = function(_, params) toolsDisabled(not params.checked) end,
-            checked = function() return not toolsDisabled() end,
-        }
-    )
-
     return mod
 end
 
