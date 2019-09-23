@@ -159,6 +159,11 @@ function mod.findMagicMouses()
     mod.foundMagicMouse = false
 
     --------------------------------------------------------------------------------
+    -- Only start this extension if required:
+    --------------------------------------------------------------------------------
+    touchdevice = require("hs._asm.undocumented.touchdevice")
+
+    --------------------------------------------------------------------------------
     -- Search for Magic Mouses:
     --------------------------------------------------------------------------------
     if touchdevice.available() then
@@ -374,11 +379,6 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-
-    --------------------------------------------------------------------------------
-    -- Only start this extension if required:
-    --------------------------------------------------------------------------------
-    touchdevice = require("hs._asm.undocumented.touchdevice")
 
     --------------------------------------------------------------------------------
     -- Monitor Touch Devices:
