@@ -4,13 +4,13 @@
 
 local require = require
 
-local image     = require("hs.image")
-local menubar   = require("hs.menubar")
+local image     = require "hs.image"
+local menubar   = require "hs.menubar"
 
-local config    = require("cp.config")
-local i18n      = require("cp.i18n")
+local config    = require "cp.config"
+local i18n      = require "cp.i18n"
 
-local section   = require("section")
+local section   = require "section"
 
 local manager = {}
 
@@ -42,7 +42,7 @@ function manager.init()
     --------------------------------------------------------------------------------
     -- Set Tool Tip:
     --------------------------------------------------------------------------------
-    manager.menubar:setTooltip(config.appName .. " " .. i18n("version") .. " " .. config.appVersion)
+    manager.menubar:setTooltip(config.appName .. " " .. config.appVersion .. " (" .. config.appBuild .. ")")
 
     --------------------------------------------------------------------------------
     -- Work out Menubar Display Mode:
@@ -275,7 +275,7 @@ function plugin.init(deps)
             return { title = "-" }
         end)
     :addItem(99999999.2, function()
-        return { title = i18n("version") .. ": " .. config.appVersion, disabled = true }
+        return { title = i18n("version") .. ": " .. config.appVersion .. " (" .. config.appBuild .. ")", disabled = true }
     end)
 
     return manager
