@@ -61,7 +61,7 @@
         "appName": "Командный пункт",
         "appVersion": "Версия",
         "appearance": "Внешность",
-        "apple": "яблоко",
+        "apple": "Apple",
         "appleBugReporter": "Apple Bug Reporter",
         "appleFeedbackAssistant": "Помощник по обратной связи Apple",
         "application": "заявка",
@@ -72,6 +72,8 @@
         "applyColorCorrectionFromTwoClipsBack": "Применить цветокоррекцию с двух клипов назад",
         "applyTopDeviceToAll": "Применить верхнее устройство для всех",
         "areYouConnectedToTheInternet": "Вы действительно подключены к Интернету?",
+        "areYouSureTheXMLIsValid": "Вы уверены, что XML действителен?",
+        "areYouSureTheresSomethingOnThePasteboard": "Вы уверены, что что-то есть в Final Cut Pro Pasteboard?",
         "assignAction": "Назначить действие",
         "assignHUDButtons": "Назначить кнопки HUD",
         "atLeastOneBrowserClipMustBeSelected": "Для использования этой функции в браузере необходимо выбрать хотя бы один клип.",
@@ -158,6 +160,7 @@
         "buttonLabel": "Метка кнопки",
         "buttonPress": "Нажатие кнопки",
         "buttons": "Кнопки",
+        "caffeinate": "Caffeinate",
         "cancel": "Отмена",
         "center": "Центр",
         "changeBrowserClipHeightDown_title": "Уменьшение высоты клипа браузера",
@@ -272,7 +275,7 @@
         "core_menu_helpandsupport_commandpost_label": "Menubar: Справка и поддержка CommandPost",
         "core_menu_helpandsupport_label": "Раздел: Раздел справки и поддержки",
         "core_menu_manager_label": "Менеджер: Menubar",
-        "core_menu_preferences_label": "Менубар: Настройки",
+        "core_menu_preferences_label": "Менюбар: Настройки",
         "core_menu_quit_label": "Менубар: Выйти",
         "core_menu_restart_label": "Менубар: перезагрузка",
         "core_menu_top_label": "Меню: Верхняя часть",
@@ -320,6 +323,7 @@
         "core_watchfolders_manager_label": "Manger: Смотреть папки",
         "core_watchfolders_menuitem_label": "Элемент меню «Папка»",
         "cpAddNoteToSelectedClip_title": "Добавить примечание к выбранному клипу",
+        "cpAddNoteToSelectedClips_title": "Добавить заметку к выбранным клипам",
         "cpAllowTasksDuringPlayback_title": "Переключение рендеринга во время воспроизведения",
         "cpAudioEffect1_title": "Применение аудиоэффекта 1",
         "cpAudioEffect2_title": "Применить аудиоэффект 2",
@@ -409,7 +413,7 @@
         "cpPasteTextAsCaption_title": "Вставить текст в качестве заголовка",
         "cpPause_title": "Пауза",
         "cpPlay_title": "Играть",
-        "cpPreferences_title": "предпочтения",
+        "cpPreferences_title": "Настройки",
         "cpPuckDirection_customTitle": "Выберите %{panel} Шайба %{count} & %{direction}",
         "cpPuckMousePanel_customTitle": "Управление мышью %{panel} Puck %{count}",
         "cpPuckMouse_customTitle": "Контрольная шайба мыши %{count}",
@@ -583,8 +587,10 @@
         "enableAppleScriptSupport": "Включить поддержку AppleScript",
         "enableAutomaticScriptReloading": "Включить автоматическую перезагрузку скрипта",
         "enableBackgroundRender": {
+            "few": "Включить фоновую визуализацию (%{count} сек)",
+            "many": "Включить фоновую визуализацию (%{count} сек)",
             "one": "Включить фоновую визуализацию (%{count} сек)",
-            "other": "Enable Background Render (%{count} secs)"
+            "other": "Включить фоновую визуализацию (%{count} сек)"
         },
         "enableCommandLineSupport": "Включить поддержку командной строки",
         "enableCustomisedTouchBar": "Включить настраиваемую сенсорную панель",
@@ -617,6 +623,8 @@
         "environment": "Среда",
         "equalization": "уравнивание",
         "errorLog": "Журнал ошибок",
+        "errorProcessingThePasteboard": "Произошла ошибка при обработке Картона.",
+        "errorWritingToPasteboard": "Произошла ошибка при записи в Картон.",
         "eventViewer": "Просмотрщик событий",
         "exactMatch": "Полное совпадение",
         "exclusion": "исключение",
@@ -629,6 +637,7 @@
         "fadeInType": "Fade In Type",
         "fadeOutType": "Тип затухания",
         "failedToChangeLanguage": "Невозможно изменить язык Final Cut Pro.",
+        "failedToSwitchBackToFinalCutPro": "Не удалось переключиться обратно в Final Cut Pro.",
         "family": "семья",
         "favorites": "Избранные",
         "favourite": "любимец",
@@ -638,12 +647,16 @@
         "fcpMediaFolderImport": "Импортировать",
         "fcpMediaFolderImportAll": "Все файлы",
         "fcpMediaFolderIncomingSubTitle": {
-            "one": "'%{file}' и еще один входящий ...",
-            "other": "'%{file}' and %{count} others are incoming..."
+            "few": "'%{file}' и ещё один входящий...",
+            "many": "'%{file}' и ещё один входящий...",
+            "one": "'%{file}' и ещё один входящий...",
+            "other": "'%{file}' и ещё %{count} входящих..."
         },
         "fcpMediaFolderReadySubTitle": {
+            "few": "Один файл готов для импорта.",
+            "many": "Один файл готов для импорта.",
             "one": "Один файл готов для импорта.",
-            "other": "%{count} files are ready to import."
+            "other": "%{count} файлов готовы для импорта."
         },
         "fcpMediaFolderRevealInFinder": "Показать в Finder",
         "fcpMediaFolder_Error_NoFiles": "Файлы не были импортированы.",
@@ -651,9 +664,10 @@
         "fcpMediaFolder_Error_ProjectRequired": "На временной шкале должен быть проект или составной клип.",
         "fcpMediaFolder_Error_ShowTimeline": "Не удалось показать временную шкалу",
         "fcpMediaFolder_Error_UnableToPaste": {
-            "one": "Невозможно добавить «%{file}» и еще один элемент в разделочную панель.",
-            "other": "Unable to add '%{file}' and %{count} others to the Pasteboard.",
-            "zero": "Unable to add '%{file}' to the Pasteboard."
+            "few": "Невозможно добавить '%{file}' и еще один элемент в буфер обмена.",
+            "many": "Невозможно добавить '%{file}' и еще один элемент в буфер обмена.",
+            "one": "Невозможно добавить '%{file}' и еще один элемент в буфер обмена.",
+            "other": "Невозможно добавить '%{file}' и ещё %{count} элементов в буфер обмена."
         },
         "fcpMediaWatchFolderTitle": "FCP Media Watch Folder",
         "fcpShortcut_NoShortcutAssigned": "Для \"%{id}\" не назначены сочетания клавиш.",
@@ -685,7 +699,7 @@
         "filterBrowserBeforeSearch": "Браузер фильтров перед поиском",
         "filterShortcuts": "Сочетания фильтров",
         "finalCutPro": "Final Cut Pro",
-        "finalCutProLanguage": "Final Cut Pro Language",
+        "finalCutProLanguage": "Язык Final Cut Pro",
         "finalCutProNotRunning": "Opps! Final Cut Pro в настоящее время не работает.\n\nЭто уведомление будет восстановлено.",
         "finalCutProPanelLabel": "Final Cut Pro",
         "finalCutProPanelTooltip": "Настройки Final Cut Pro",
@@ -720,6 +734,7 @@
         "finalcutpro_fullscreen_disableesc_label": "Отключить клавишу ESC, когда Final Cut Pro является полноэкранным",
         "finalcutpro_fullscreen_dockicon_label": "Полноэкранный диспетчер Icon Dock",
         "finalcutpro_fullscreen_shortcuts_label": "Полноэкранные ярлыки",
+        "finalcutpro_fullscreen_stopped_label": "Играть на весь экран и остановить",
         "finalcutpro_hud_label": "HUD",
         "finalcutpro_hud_manager_label": "HUD: Менеджер",
         "finalcutpro_hud_panels_fcpxml_label": "HUD: панель FCPXML",
@@ -940,6 +955,7 @@
         "iMessageMissingMessage": "Перед включением уведомлений iMessage необходимо ввести действительный номер телефона или идентификатор Apple.",
         "iMessageNotifications": "Уведомления iMessage",
         "icon": "Значок",
+        "identification": "Идентификация",
         "ignore": "игнорировать",
         "ignoreESCKeyWhenFinalCutProIsFullscreen": "Игнорировать клавишу ESC, когда Final Cut Pro является полноэкранным",
         "ignoreInsertedCameraCards": "Игнорировать вставленные карты камеры",
@@ -972,8 +988,10 @@
         "invalidSearchField": "Поле поиска выглядит недействительным.",
         "invalidSearchFieldDescription": "Пожалуйста, проверьте, что вы написали в поле поиска и попробуйте снова.",
         "item": {
+            "few": "пункты",
+            "many": "пункты",
             "one": "пункт",
-            "other": "items"
+            "other": "пункты"
         },
         "joinClips": "Присоединяйтесь к клипам",
         "justified": "Оправдано",
@@ -1087,8 +1105,10 @@
         "midtones2": "Монтана",
         "midtones4": "Mids",
         "mins": {
+            "few": "мин",
+            "many": "мин",
             "one": "мин",
-            "other": "mins"
+            "other": "мин"
         },
         "minusThreeDb": "-3dB",
         "mix": "Смешивание",
@@ -1129,6 +1149,7 @@
         "noDevicesDetected": "Не обнаружено устройств",
         "noFCPUIElementDetected": "Нет существующего элемента пользовательского интерфейса Final Cut Pro",
         "noGeneratorShortcut": "Для этого ярлыка нет генератора.\n\nВы можете назначить ярлыки через панель меню CommandPost.",
+        "noKeyboardShortcutsInKeywordEditor": "Похоже, что в редакторе ключевых слов нет выделенных горячих клавиш.",
         "noKeywordPresetsError": "Не похоже, что вы еще что-нибудь сохранили до этого ключевого слова?",
         "noMatchesFound": "Совпадений не найдено.",
         "noMatchesFoundDescription": "Мы не смогли найти соответствия для строки, которую вы искали. Убедитесь, что все строки, которые вы хотите найти, видны в браузере.",
@@ -1176,6 +1197,7 @@
         "openPrivacyPolicy": "Открыть политику конфиденциальности",
         "openProjectAfterFind": "Открытый проект после поиска",
         "openTangentMapper": "Открыть карту касания",
+        "openUserSettingsFolder": "Открыть папку настроек пользователя",
         "openVoiceOverUtility": "Открыть голосовую утилиту",
         "optimizeSelectedMedia": "Создать оптимизированный медиа из выбранных клипов",
         "optimizedOriginal": "Оптимизированный / Оригинал",
@@ -1219,6 +1241,7 @@
         "playAround": "Игры",
         "playFromBeginning": "Играть от начала",
         "playFullScreen": "Воспроизвести полный экран",
+        "playFullScreenAndStop_title": "Играть на весь экран и остановить",
         "playPowerChimeSound": "Воспроизведение звукового сигнала при подключении ноутбука",
         "playSelection": "Выбор воспроизведения",
         "playToEnd": "Играть до конца",
@@ -1289,7 +1312,7 @@
         "pushoverTestFailed": "Вы должны ввести ключ пользователя и приложения API, а затем нажать кнопку «Проверить», прежде чем вы сможете проверить Pushover-уведомления.",
         "pushoverValidateFailed": "Вы должны ввести ключ пользователя и приложения API, а затем нажать кнопку «Проверить», прежде чем вы сможете включить Pushover Notifications.",
         "quality": "Качественный",
-        "quit": "Уволиться",
+        "quit": "Выход",
         "radius": "Радиус",
         "rectangle": "Прямоугольник",
         "red": "красный",
@@ -1297,7 +1320,7 @@
         "refreshMidi": "Обновить MIDI-устройства",
         "rejected": "Отклонено",
         "relative": "Родственник",
-        "reload": "перезагружать",
+        "reload": "Перезагрузить",
         "rememberLastQuery": "Запомнить последний запрос",
         "removeFromList": "Убрать из списка",
         "renameButton": "Кнопка переименования",
@@ -1374,12 +1397,16 @@
         "searchIn": "Искать в",
         "searchSubtext": "Подтекст поиска",
         "second": {
+            "few": "второй",
+            "many": "второй",
             "one": "второй",
             "other": "Seconds"
         },
         "secs": {
+            "few": "сек",
+            "many": "сек",
             "one": "сек",
-            "other": "secs"
+            "other": "сек"
         },
         "sections": "Разделы",
         "segments": "Сегменты",
@@ -1398,6 +1425,7 @@
         "selectRightEdge": "Выбрать правую грань",
         "selectVoice": "Выбрать голос",
         "selected": "выбранный",
+        "selectedClipDoesntOfferAnyTextAlignmentOptions": "Выбранный клип не предлагает никаких вариантов выравнивания текста.",
         "selectedColumnNotShown": "Выбранный столбец не может быть показан.",
         "selectedColumnNotShownDescription": "Пожалуйста, убедитесь, что столбец заметок виден, и попробуйте снова.",
         "selectedControl": "Выбранный элемент управления",
@@ -1415,7 +1443,8 @@
         "setIncrementalNumberMessage": "Что бы вы хотели установить для Инкрементального номера?",
         "setPlayerBackgroundTo": "Установить фон игрока на",
         "setViewerTo": "Установите Viewer на",
-        "settings": "настройки",
+        "settings": "Установки",
+        "settingsDescription": "В будущем выпуске CommandPost у нас будет соответствующая функция импорта / экспорта настроек. В это время...",
         "setupTitle": "Настройка CommandPost",
         "setupWatchFolders": "Установочные часы для папок",
         "seven": "7",
@@ -1438,58 +1467,86 @@
         "sharedPasteboardRootFolder": "Общая корневая папка картонной корзины",
         "sharp": "диез",
         "shiftPositionDownPixels": {
+            "few": "Shift Position Down %{amount} пикселей",
+            "many": "Shift Position Down %{amount} пикселей",
             "one": "Shift Position Down %{amount} пикселей",
             "other": "Shift Position Down %{amount} пикселей"
         },
         "shiftPositionLeftPixels": {
+            "few": "Shift Position Left %{amount} Pixel",
+            "many": "Shift Position Left %{amount} Pixel",
             "one": "Shift Position Left %{amount} Pixel",
             "other": "Shift Position Left %{amount} Pixel"
         },
         "shiftPositionRightPixels": {
+            "few": "Shift Position Right %{amount} пикселей",
+            "many": "Shift Position Right %{amount} пикселей",
             "one": "Shift Position Right %{amount} пикселей",
             "other": "Shift Position Right %{amount} пикселей"
         },
         "shiftPositionUpPixels": {
+            "few": "Shift Position Up %{amount} пикселей",
+            "many": "Shift Position Up %{amount} пикселей",
             "one": "Shift Position Up %{amount} пикселей",
             "other": "Shift Position Up %{amount} пикселей"
         },
         "shiftRotationLeft": {
-            "one": "Вращение смещения влево на %{amount} градусов",
-            "other": "Вращение смещения влево на %{amount} градусов"
+            "few": "Сдвиг вращения влево на %{amount} градусов",
+            "many": "Сдвиг вращения влево на %{amount} градусов",
+            "one": "Сдвиг вращения влево на %{amount} градусов",
+            "other": "Сдвиг вращения влево на %{amount} градусов"
         },
         "shiftRotationRight": {
-            "one": "Сдвиг вправо на %{amount} градусов",
-            "other": "Сдвиг вправо на %{amount} градусов"
+            "few": "Сдвиг вращения вправо на %{amount} градусов",
+            "many": "Сдвиг вращения вправо на %{amount} градусов",
+            "one": "Сдвиг вращения вправо на %{amount} градусов",
+            "other": "Сдвиг вращения вправо на %{amount} градусов"
         },
         "shiftScaleDown": {
+            "few": "Уменьшить масштаб на %{amount} пикселей",
+            "many": "Уменьшить масштаб на %{amount} пикселей",
             "one": "Уменьшить масштаб на %{amount} пикселей",
             "other": "Уменьшить масштаб на %{amount} пикселей"
         },
         "shiftScaleLeft": {
-            "one": "Сдвиг Масштаб на %{amount} пикселей",
-            "other": "Сдвиг Масштаб на %{amount} пикселей"
+            "few": "Сдвиг Масштаба на %{amount} пикселей",
+            "many": "Сдвиг Масштаба на %{amount} пикселей",
+            "one": "Сдвиг Масштаба на %{amount} пиксель",
+            "other": "Сдвиг Масштаба на %{amount} пикселей"
         },
         "shiftScaleRight": {
+            "few": "Уменьшить масштаб на %{amount} пикселей",
+            "many": "Уменьшить масштаб на %{amount} пикселей",
             "one": "Уменьшить масштаб на %{amount} пикселей",
             "other": "Уменьшить масштаб на %{amount} пикселей"
         },
         "shiftScaleUp": {
+            "few": "Сдвиг Масштаб на %{amount} пикселей",
+            "many": "Сдвиг Масштаб на %{amount} пикселей",
             "one": "Сдвиг Масштаб на %{amount} пикселей",
             "other": "Сдвиг Масштаб на %{amount} пикселей"
         },
         "shiftXPositionLeftPixels": {
+            "few": "Shift Position Left %{amount} Pixel",
+            "many": "Shift Position Left %{amount} Pixel",
             "one": "Shift Position Left %{amount} Pixel",
             "other": "Shift Position Left %{amount} Pixel"
         },
         "shiftXPositionRightPixels": {
+            "few": "Shift Position Right %{amount} пикселей",
+            "many": "Shift Position Right %{amount} пикселей",
             "one": "Shift Position Right %{amount} пикселей",
             "other": "Shift Position Right %{amount} пикселей"
         },
         "shiftYPositionDownPixels": {
+            "few": "Shift Position Down %{amount} пикселей",
+            "many": "Shift Position Down %{amount} пикселей",
             "one": "Shift Position Down %{amount} пикселей",
             "other": "Shift Position Down %{amount} пикселей"
         },
         "shiftYPositionUpPixels": {
+            "few": "Shift Position Up %{amount} пикселей",
+            "many": "Shift Position Up %{amount} пикселей",
             "one": "Shift Position Up %{amount} пикселей",
             "other": "Shift Position Up %{amount} пикселей"
         },
@@ -1571,18 +1628,21 @@
         "switchBetweenInsideOutsideMarks": "Переключение между внутренними / внешними масками",
         "switchingTo": "Переход на",
         "tag": "Тег",
+        "tangent": "касательный",
+        "tangentFavouriteDescription": "Вы можете назначить любое действие в CommandPost избранному ниже, которое затем будет доступно в Tangent Mapper.",
         "tangentFinalCutProShortcutFailed": "К этой команде не применяется комбинация клавиш, поэтому команда не может быть запущена.\n\nОткройте редактор команд Final Cut Pro и назначьте команду быстрого вызова команде, а затем повторите попытку.",
         "tangentMapperNotFound": "Касательный картон не найден",
         "tangentMapperNotFoundMessage": "Приложение Tangent Mapper не найдено.\n\nЗагрузите последнюю версию с веб-сайта Tangent и повторите попытку.",
         "tangentPanelLabel": "касательный",
         "tangentPanelSupport": "Поддержка Tangent Panel",
         "tangentPanelTooltip": "Касательные предпочтения",
-        "tangentPreferencesInfo": "CommandPost предлагает встроенную поддержку всего диапазона панелей Tangent, включая <strong> Element </ strong>, <strong> Wave </ strong>, <strong> Ripple </ strong>, приложение <strong> Element-Vs iPad </ strong> и любых будущих панелях. <br />\n                                                    <br /> <br />\n                                                    Все действия в CommandPost могут быть назначены любой кнопке / колесике панели Tangent с помощью приложения <strong> Mapping </ strong>. Это позволяет создавать собственные макеты и режимы. <br />\n                                                    <br /> <br />\n                                                    Если вы добавите новый эффект или плагин в Final Cut Pro или измените языки, вы можете использовать кнопку <strong> Перестроить контрольную карту </ strong> ниже, чтобы эти новые элементы отображались в <strong> Tangent Mapper </ strong>. Помните, что когда вы перестраиваете карту управления, это может повлиять на ваши пользовательские макеты в Tangent Mapper, поскольку плагины / эффекты могут быть добавлены, удалены или переименованы. <br />\n                                                    <br /> <br />",
+        "tangentPreferencesInfo": "CommandPost предлагает встроенную поддержку всего диапазона панелей Tangent, включая <strong>Element</strong>, <strong>Wave</strong>, <strong>Ripple</strong>, приложение <strong>Element-Vs iPad</ strong> и любых будущих панелях. Все действия в CommandPost могут быть назначены любой кнопке / колесике панели Tangent с помощью приложения <strong>Mapping</strong>. Это позволяет создавать собственные макеты и режимы. Если вы добавите новый эффект или плагин в Final Cut Pro или измените языки, вы можете использовать кнопку <strong>Перестроить контрольную карту</strong> ниже, чтобы эти новые элементы отображались в <strong>Tangent Mapper</strong>. Помните, что когда вы перестраиваете карту управления, это может повлиять на ваши пользовательские макеты в Tangent Mapper, поскольку плагины / эффекты могут быть добавлены, удалены или переименованы.",
         "temperature": "температура",
         "temperature4": "температура",
         "ten": "10",
         "testTitle": "Тест CommandPost",
         "text": "Текст",
+        "textInspectorCouldNotBeShown": "Текст Инспектор не может быть показан.",
         "textLayer": "Текстовый слой",
         "textToSpeechDestination": "Выберите, где вы хотите сохранить аудиофайлы:",
         "texture": "Текстура",
@@ -1593,6 +1653,7 @@
         "timeline": "График",
         "timelineBatchExportBeginMessage": "Этот инструмент пакетного экспорта по шкале времени использует автоматизацию для индивидуального выбора каждого клипа, а затем запускает пункт меню «Файл> Поделиться».\n\nПожалуйста, не перемещайте мышь и не касайтесь клавиатуры, пока этот процесс не будет завершен.",
         "timelineBatchExportCompressorBeginMessage": "Этот инструмент пакетного экспорта по шкале времени использует автоматизацию для индивидуального выбора каждого клипа, а затем вызывает пункт меню «Файл> Отправить в компрессор».\n\nПожалуйста, не перемещайте мышь и не касайтесь клавиатуры, пока этот процесс не будет завершен.",
+        "timelineCouldNotBeShown": "Временная шкала не может быть показана.",
         "timelineHistory": "История хронологии",
         "timelineZoom": "Временная шкала Zoom",
         "timelineZoom9": "Увеличить",
@@ -1631,7 +1692,7 @@
         "touchBarSetupTip": "Убедитесь, что «Управление приложениями с помощью контрольной полосы» выбрано в «Сенсорной панели», «Настройки клавиатуры», чтобы увидеть значок CommandPost. Затем вы можете использовать этот значок для переключения между различными группами сенсорной панели.",
         "touchBarWidget": "Виджет Touch Bar",
         "touchbarPanelLabel": "Сенсорная панель",
-        "touchbarPanelTooltip": "Настройки сенсорного экрана",
+        "touchbarPanelTooltip": "Настройки Touch Bar",
         "transform": "преобразование",
         "transition": "переход",
         "transition_group": "переход",
