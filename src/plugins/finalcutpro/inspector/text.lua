@@ -6,10 +6,11 @@ local require                   = require
 
 local log                       = require "hs.logger".new "textInspector"
 
-local fcp                       = require "cp.apple.finalcutpro"
-local tools                     = require "cp.tools"
-local just                      = require "cp.just"
 local dialog                    = require "cp.dialog"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local just                      = require "cp.just"
+local tools                     = require "cp.tools"
 
 local displayErrorMessage       = dialog.displayErrorMessage
 

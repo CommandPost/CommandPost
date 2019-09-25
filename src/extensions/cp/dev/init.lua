@@ -75,8 +75,8 @@ function mod.findUnusedLanguageStrings()
             end
         end
         if not skip then
-            local path = pathToAbsolute(cp.config.scriptPath .. "/../")
-            local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. path .. [[/']]
+            local codePath = pathToAbsolute(cp.config.scriptPath .. "/../")
+            local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. codePath .. [[/']]
             local _, status = hs.execute(executeString)
             if not status then
                 result = result .. string .. "\n"
