@@ -85,7 +85,7 @@ end
 function VideoInspector.static.matches(element)
     local contentUI = findContentUI(element)
     return contentUI and #contentUI > 0 and childMatching(contentUI, function(child)
-        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumBlendCompositingEffect"))
+        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumConformEffect"))
     end) ~= nil or false
 end
 

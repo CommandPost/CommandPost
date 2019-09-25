@@ -31,21 +31,33 @@ local displayMessage        = dialog.displayMessage
 local function doSpatialConformType(value)
     local timeline = fcp:timeline()
     local timelineContents = timeline:contents()
+    local libraries = fcp:browser():libraries()
     local spatialConformType = fcp:inspector():video():spatialConform():type()
 
     return Do(function()
-        --------------------------------------------------------------------------------
-        -- Make sure at least one clip is selected:
-        --------------------------------------------------------------------------------
-        local clips = timelineContents:selectedClipsUI()
-        if clips and #clips == 0 then
-            displayMessage(i18n("noSelectedClipsInTimeline"))
-            return false
+        if timeline:isFocused() then
+            --------------------------------------------------------------------------------
+            -- Make sure at least one clip is selected in the timeline:
+            --------------------------------------------------------------------------------
+            local clips = timelineContents:selectedClipsUI()
+            if clips and #clips == 0 then
+                displayMessage(i18n("noSelectedClipsInTimeline"))
+                return false
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- Make sure at least one clip is selected in the browser:
+            --------------------------------------------------------------------------------
+            local clips = libraries:selectedClipsUI()
+            if clips and #clips == 0 then
+                displayMessage(i18n("noSelectedClipsInBrowser"))
+                return false
+            end
         end
 
         return Do(spatialConformType:doSelectValue(fcp:string(value)))
-        :Then(WaitUntil(spatialConformType):Is(fcp:string(value)):TimeoutAfter(2000))
-        :Then(true)
+            :Then(WaitUntil(spatialConformType):Is(fcp:string(value)):TimeoutAfter(5000))
+            :Then(true)
     end)
     :Catch(function(message)
         displayErrorMessage(message)
