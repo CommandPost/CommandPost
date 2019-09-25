@@ -2,10 +2,10 @@
 ---
 --- Show Timeline In Player.
 
-local require = require
+local require   = require
 
-local fcp        = require("cp.apple.finalcutpro")
-local i18n       = require("cp.i18n")
+local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
 
 local mod = {}
 

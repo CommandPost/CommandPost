@@ -2,20 +2,21 @@
 ---
 --- Final Cut Pro Text Inspector Additions.
 
-local require = require
+local require                   = require
 
-local log               = require("hs.logger").new("textInspector")
+local log                       = require "hs.logger".new "textInspector"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local just              = require("cp.just")
-local dialog            = require("cp.dialog")
+local fcp                       = require "cp.apple.finalcutpro"
+local tools                     = require "cp.tools"
+local just                      = require "cp.just"
+local dialog                    = require "cp.dialog"
 
+local displayErrorMessage       = dialog.displayErrorMessage
 
 local function setTextAlign(value)
 
     --------------------------------------------------------------------------------
-    -- TODO: This could probably be Rx-ified?
+    -- TODO: This should probably be Rx-ified.
     --------------------------------------------------------------------------------
 
     --------------------------------------------------------------------------------
@@ -42,7 +43,7 @@ local function setTextAlign(value)
             fcp:launch()
             return fcp:isFrontmost()
         end) then
-            dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
+            displayErrorMessage(i18n("failedToSwitchBackToFinalCutPro"))
             return false
         end
 
@@ -53,7 +54,7 @@ local function setTextAlign(value)
             timeline:show()
             return timeline:isShowing()
         end) then
-            dialog.displayErrorMessage("Timeline could not be shown.")
+            displayErrorMessage(i18n("timelineCouldNotBeShown"))
             return false
         end
 
@@ -77,7 +78,7 @@ local function setTextAlign(value)
             text:show()
             return text:isShowing()
         end) then
-            dialog.displayErrorMessage("Text Inspector could not be shown.")
+            displayErrorMessage(i18n("textInspectorCouldNotBeShown"))
             return false
         end
 
@@ -89,7 +90,7 @@ local function setTextAlign(value)
             basic:show()
             return basic:isShowing()
         end) then
-            dialog.displayErrorMessage("The selected clip doesn't offer any Text Alignment options.")
+            displayErrorMessage(i18n("selectedClipDoesntOfferAnyTextAlignmentOptions"))
             return false
         end
 
@@ -120,7 +121,6 @@ local function setTextAlign(value)
     timelineContents:selectClips(clips)
 
 end
-
 
 local plugin = {
     id              = "finalcutpro.inspector.text",

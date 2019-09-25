@@ -7,7 +7,6 @@ local require   = require
 local config    = require "cp.config"
 local tools     = require "cp.tools"
 
-
 local plugin = {
     id              = "finalcutpro.console",
     group           = "finalcutpro",

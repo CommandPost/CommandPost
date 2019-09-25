@@ -2,34 +2,33 @@
 ---
 --- Pasteboard Manager.
 
-local require = require
+local require               = require
 
-local log                                       = require("hs.logger").new("clipmgr")
+local log                   = require "hs.logger".new "clipmgr"
 
-local host                                      = require("hs.host")
-local pasteboard                                = require("hs.pasteboard")
-local timer                                     = require("hs.timer")
+local host                  = require "hs.host"
+local pasteboard            = require "hs.pasteboard"
+local timer                 = require "hs.timer"
 
-local archiver                                  = require("cp.plist.archiver")
-local base64                                    = require("hs.base64")
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local fcp                                       = require("cp.apple.finalcutpro")
-local i18n                                      = require("cp.i18n")
-local json                                      = require("cp.json")
-local plist                                     = require("cp.plist")
-local prop                                      = require("cp.prop")
-local protect                                   = require("cp.protect")
-local Set                                       = require("cp.collect.Set")
-local tools                                     = require("cp.tools")
+local archiver              = require "cp.plist.archiver"
+local base64                = require "hs.base64"
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local json                  = require "cp.json"
+local plist                 = require "cp.plist"
+local prop                  = require "cp.prop"
+local protect               = require "cp.protect"
+local Set                   = require "cp.collect.Set"
+local tools                 = require "cp.tools"
 
-local Do                                        = require("cp.rx.go.Do")
-local Throw                                     = require("cp.rx.go.Throw")
-local Require                                   = require("cp.rx.go.Require")
-local Retry                                     = require("cp.rx.go.Retry")
+local Do                    = require "cp.rx.go.Do"
+local Throw                 = require "cp.rx.go.Throw"
+local Require               = require "cp.rx.go.Require"
+local Retry                 = require "cp.rx.go.Retry"
 
-local uuid                                      = host.uuid
-
+local uuid                  = host.uuid
 
 local mod = {}
 
@@ -645,7 +644,6 @@ function mod.doRestoreFromBuffer(id)
         tools.playErrorSound()
     end)
 end
-
 
 local plugin = {
     id              = "finalcutpro.pasteboard.manager",

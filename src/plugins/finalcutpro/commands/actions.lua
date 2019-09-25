@@ -147,7 +147,6 @@ function mod.reset()
     mod._handler:reset()
 end
 
-
 local plugin = {
     id              = "finalcutpro.commands.actions",
     group           = "finalcutpro",

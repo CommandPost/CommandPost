@@ -4,13 +4,12 @@
 
 local require           = require
 
---local log               = require("hs.logger").new("info")
+--local log               = require "hs.logger".new "info"
 
-local image             = require("hs.image")
+local image             = require "hs.image"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
 
 local plugin = {
     id              = "finalcutpro.hud.panels.minimise",

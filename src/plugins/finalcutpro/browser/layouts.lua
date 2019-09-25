@@ -35,18 +35,18 @@
 
 local require           = require
 
-local log               = require("hs.logger").new("layouts")
+local log               = require "hs.logger".new "layouts"
 
-local eventtap          = require("hs.eventtap")
-local geometry          = require("hs.geometry")
-local timer             = require("hs.timer")
+local eventtap          = require "hs.eventtap"
+local geometry          = require "hs.geometry"
+local timer             = require "hs.timer"
 
-local axutils           = require("cp.ui.axutils")
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local just              = require("cp.just")
-local tools	            = require("cp.tools")
+local axutils           = require "cp.ui.axutils"
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local just              = require "cp.just"
+local tools	            = require "cp.tools"
 
 local tableCount        = tools.tableCount
 local tableMatch        = tools.tableMatch
@@ -57,7 +57,6 @@ local childrenWithRole  = axutils.childrenWithRole
 local childWithRole     = axutils.childWithRole
 
 local doAfter           = timer.doAfter
-
 
 local mod = {}
 
@@ -183,7 +182,6 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.restoreLayoutFromTable(layout)
-
     local libraries = fcp:libraries()
     local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
@@ -433,7 +431,6 @@ end
 --- Returns:
 ---  * A table containing the layout settings if successful otherwise `false`.
 function mod.saveLayoutToTable()
-
     local libraries = fcp.libraries
     local appearanceAndFiltering = libraries.appearanceAndFiltering
 
@@ -673,7 +670,6 @@ end
 --- Variable
 --- The last collection registered.
 mod.lastCollection = mod.getSingleSelectedCollection()
-
 
 local plugin = {
     id              = "finalcutpro.browser.layouts",

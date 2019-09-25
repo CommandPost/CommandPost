@@ -2,11 +2,11 @@
 ---
 --- Disable Waveforms Plugin.
 
-local require = require
+local require       = require
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local prop              = require("cp.prop")
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
+local prop          = require "cp.prop"
 
 local mod = {}
 
