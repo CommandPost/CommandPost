@@ -1348,7 +1348,7 @@
         "saveTimelineIndexToCSV": "Save Timeline Index to CSV",
         "scale": "Scale",
         "scanFinalCutPro": "Scan Final Cut Pro",
-        "scanFinalCutProSetupOne": "CommandPost needs to scan your system for Final Cut Pro for Plugins & Motion Templates.",
+        "scanFinalCutProSetupOne": "CommandPost needs to scan your system for Final Cut Pro Plugins & Motion Templates.",
         "scanFinalCutProSetupTwo": "Depending on how many plugins and effects you have installed, this can take several minutes.",
         "scanningInProgress": "Scanning in progress",
         "screen": "Screen",
