@@ -2,7 +2,7 @@
 ---
 --- iMessage Notifications Plugin.
 
-local require = require
+local require       = require
 
 local messages      = require "hs.messages"
 local dialog        = require "hs.dialog"

@@ -2,15 +2,14 @@
 ---
 --- CommandPost Batch Export Panel.
 
-local require = require
+local require   = require
 
-local host              = require("hs.host")
+local host      = require "hs.host"
 
-local html              = require("cp.web.html")
-local ui                = require("cp.web.ui")
+local html      = require "cp.web.html"
+local ui        = require "cp.web.ui"
 
-local uuid              = host.uuid
-
+local uuid      = host.uuid
 
 local panel = {}
 

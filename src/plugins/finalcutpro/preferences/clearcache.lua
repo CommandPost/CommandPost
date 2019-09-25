@@ -2,14 +2,13 @@
 ---
 --- Adds a "Clear Cache" button to the Final Cut Pro Preferences.
 
-local require = require
+local require       = require
 
-local dialog        = require("hs.dialog")
+local dialog        = require "hs.dialog"
 
-local fcp           = require("cp.apple.finalcutpro")
-local html          = require("cp.web.html")
-local i18n          = require("cp.i18n")
-
+local fcp           = require "cp.apple.finalcutpro"
+local html          = require "cp.web.html"
+local i18n          = require "cp.i18n"
 
 local plugin = {
     id              = "finalcutpro.preferences.clearcache",

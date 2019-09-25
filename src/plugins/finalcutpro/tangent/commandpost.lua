@@ -4,9 +4,9 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("tangentVideo")
+--local log                   = require "hs.logger".new "tangentVideo"
 
-local i18n                  = require("cp.i18n")
+local i18n                  = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.commandpost",

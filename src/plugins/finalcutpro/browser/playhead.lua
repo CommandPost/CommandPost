@@ -2,30 +2,47 @@
 ---
 --- Browser Playhead Plugin.
 
-local require = require
+local require           = require
 
-local dialog                        = require("hs.dialog")
-local drawing                       = require("hs.drawing")
-local geometry                      = require("hs.geometry")
-local timer                         = require("hs.timer")
+local dialog            = require "hs.dialog"
+local drawing           = require "hs.drawing"
+local geometry          = require "hs.geometry"
+local timer             = require "hs.timer"
 
-local config                        = require("cp.config")
-local fcp                           = require("cp.apple.finalcutpro")
-local i18n                          = require("cp.i18n")
-local tools                         = require("cp.tools")
-local ui                            = require("cp.web.ui")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+local ui                = require "cp.web.ui"
 
-local doAfter                       = timer.doAfter
-
+local doAfter           = timer.doAfter
 
 local mod = {}
 
-local DEFAULT_TIME                  = 3
-local DEFAULT_COLOR                 = "Red"
+-- DEFAULT_TIME -> number
+-- Constant
+-- Default Time
+local DEFAULT_TIME = 3
 
-local SHAPE_RECTANGLE               = "Rectangle"
-local SHAPE_CIRCLE                  = "Circle"
-local SHAPE_DIAMOND                 = "Diamond"
+-- DEFAULT_COLOR -> string
+-- Constant
+-- Default Color
+local DEFAULT_COLOR = "Red"
+
+-- SHAPE_RECTANGLE -> string
+-- Constant
+-- Rectangle Shape
+local SHAPE_RECTANGLE = "Rectangle"
+
+-- SHAPE_CIRCLE -> string
+-- Constant
+-- Circle Shape
+local SHAPE_CIRCLE = "Circle"
+
+-- SHAPE_DIAMOND -> string
+-- Constant
+-- Diamond Shape
+local SHAPE_DIAMOND = "Diamond"
 
 --- plugins.finalcutpro.browser.playhead.getHighlightColor() -> table
 --- Function
@@ -154,7 +171,6 @@ function mod.setHighlightTime(value)
     config.set("highlightPlayheadTime", value)
 end
 
-
 --- plugins.finalcutpro.browser.playhead.highlight() -> none
 --- Function
 --- Highlight's the Final Cut Pro Browser Playhead.
@@ -190,7 +206,6 @@ end
 --- Returns:
 ---  * None
 function mod.highlightFrame(frame)
-
     --------------------------------------------------------------------------------
     -- Delete Previous Highlights:
     --------------------------------------------------------------------------------
@@ -238,7 +253,6 @@ function mod.highlightFrame(frame)
     -- Set a timer to delete the circle after the configured time:
     --------------------------------------------------------------------------------
     mod.browserHighlightTimer = doAfter(mod.getHighlightTime(), mod.deleteHighlight)
-
 end
 
 --- plugins.finalcutpro.browser.playhead.deleteHighlight() -> none
@@ -280,7 +294,6 @@ local function timeOptions()
     end
     return timeOptionsTable
 end
-
 
 local plugin = {
     id              = "finalcutpro.browser.playhead",

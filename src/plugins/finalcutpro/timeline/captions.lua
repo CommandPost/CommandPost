@@ -4,13 +4,13 @@
 
 local require = require
 
-local eventtap                          = require("hs.eventtap")
-local keycodes                          = require("hs.keycodes")
-local pasteboard                        = require("hs.pasteboard")
+local eventtap                          = require "hs.eventtap"
+local keycodes                          = require "hs.keycodes"
+local pasteboard                        = require "hs.pasteboard"
 
-local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
-local go                                = require("cp.rx.go")
+local dialog                            = require "cp.dialog"
+local fcp                               = require "cp.apple.finalcutpro"
+local go                                = require "cp.rx.go"
 
 local event                             = eventtap.event
 local Given, Require, Retry             = go.Given, go.Require, go.Retry
@@ -63,7 +63,6 @@ function mod.doPasteTextAsCaption()
         dialog.displayErrorMessage("Unable to 'Paste Text as Caption': "..message)
     end)
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.captions",

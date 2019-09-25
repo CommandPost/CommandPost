@@ -2,15 +2,15 @@
 ---
 --- Final Cut Pro Tangent Browser Group
 
-local require = require
+local require               = require
 
---local log                   = require("hs.logger").new("tangentBrowser")
+--local log                   = require "hs.logger".new "tangentBrowser"
 
-local timer                 = require("hs.timer")
+local timer                 = require "hs.timer"
 
-local fcp                   = require("cp.apple.finalcutpro")
-local i18n                  = require("cp.i18n")
-local tools                 = require("cp.tools")
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
 
 local rescale               = tools.rescale
 local delayed               = timer.delayed

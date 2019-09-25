@@ -2,12 +2,11 @@
 ---
 --- Import Preferences
 
-local require = require
+local require       = require
 
-local fcp           = require("cp.apple.finalcutpro")
-local dialog        = require("cp.dialog")
-local i18n          = require("cp.i18n")
-
+local fcp           = require "cp.apple.finalcutpro"
+local dialog        = require "cp.dialog"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -179,7 +178,6 @@ mod.leaveInPlace = fcp.preferences:prop("FFImportCopyToMediaFolder", true):mutat
         end
     end
 )
-
 
 local plugin = {
     id              = "finalcutpro.import.preferences",
