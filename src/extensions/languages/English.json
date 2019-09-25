@@ -1637,6 +1637,8 @@
         "version": "Version",
         "vertical": "Vertical",
         "vertical4": "Vert",
+        "verticalTimelineScroll": "Vertical Timeline Scroll",
+        "verticalTimelineScrollDescription": "Scrolls the timeline vertically using 7-bit or 14-bit MIDI.",
         "video": "Video",
         "videoEffect_group": "Video Effect",
         "videoWaveform": "Video Waveform",
