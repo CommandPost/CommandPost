@@ -6,6 +6,8 @@ local require                   = require
 
 local log                       = require "hs.logger".new "textInspector"
 
+local pasteboard                = require "hs.pasteboard"
+
 local dialog                    = require "cp.dialog"
 local fcp                       = require "cp.apple.finalcutpro"
 local i18n                      = require "cp.i18n"
@@ -13,6 +15,7 @@ local just                      = require "cp.just"
 local tools                     = require "cp.tools"
 
 local displayErrorMessage       = dialog.displayErrorMessage
+local playErrorSound            = tools.playErrorSound
 
 local function setTextAlign(value)
 
@@ -133,7 +136,7 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Commands:
+    -- Text Align:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
@@ -148,6 +151,9 @@ function plugin.init(deps)
         :add("alignTextToTheRight")
         :whenActivated(function() setTextAlign("right") end)
 
+    --------------------------------------------------------------------------------
+    -- Text Justify:
+    --------------------------------------------------------------------------------
     fcpxCmds
         :add("justifyLastLeft")
         :whenActivated(function() setTextAlign("justifiedLeft") end)
@@ -163,6 +169,44 @@ function plugin.init(deps)
     fcpxCmds
         :add("justifyAll")
         :whenActivated(function() setTextAlign("justifiedFull") end)
+
+    --------------------------------------------------------------------------------
+    -- Replace Pasteboard Contents with Selected Title Text:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("replaceSelectedTitleTextwithPasteboardContents")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            local contents = pasteboard.getContents()
+            if contents then
+                textArea:show()
+                textArea:value(contents)
+                return
+            end
+            playErrorSound()
+        end)
+        :titled(i18n("replaceSelectedTitleTextwithPasteboardContents"))
+
+    --------------------------------------------------------------------------------
+    -- Replace Pasteboard Contents with Selected Title Text:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("appendSelectedTitleTextwithPasteboardContents")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            local contents = pasteboard.getContents()
+            if contents then
+                textArea:show()
+                local original = textArea:value()
+                if original then
+                    textArea:value(original .. contents)
+                    return
+                end
+            end
+            playErrorSound()
+        end)
+        :titled(i18n("appendSelectedTitleTextwithPasteboardContents"))
+
 end
 
 return plugin
