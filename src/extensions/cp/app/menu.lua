@@ -710,7 +710,6 @@ function menu.mt:doFindMenuUI(path, options)
         return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
                 local menuItemUI
-                local currentMenuTitles = menuTitles
                 if type(step) == "number" then
                     menuItemUI = menuUI[step]
                     menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
