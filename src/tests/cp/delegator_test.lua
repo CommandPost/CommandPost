@@ -16,7 +16,7 @@ return test.suite("cp.delegator"):with {
     test("simple", function()
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("delegated")
+        Alpha:delegateTo("delegated")
 
         function Alpha:initialize()
             self.delegated = {
@@ -45,7 +45,7 @@ return test.suite("cp.delegator"):with {
 
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("beta")
+        Alpha:delegateTo("beta")
 
         function Alpha:initialize()
             self.beta = Beta()
@@ -80,7 +80,7 @@ return test.suite("cp.delegator"):with {
 
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("beta")
+        Alpha:delegateTo("beta")
 
         function Alpha:initialize()
             self._beta = Beta()
@@ -111,6 +111,7 @@ return test.suite("cp.delegator"):with {
         function Beta:initialize()
             self.betaValue = "betaValue"
             self.alphaValue = "betaAlphaValue"
+            self.betaProp = prop.TRUE():bind(self, "betaProp")
         end
 
         function Beta:betaMethod()
@@ -119,10 +120,10 @@ return test.suite("cp.delegator"):with {
 
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("beta")
+        Alpha:delegateTo("beta")
 
         function Alpha:initialize()
-            self.beta = prop.THIS(Beta())
+            self.beta = prop.THIS(Beta()):bind(self)
             self.alphaValue = "alphaValue"
         end
 
@@ -140,17 +141,20 @@ return test.suite("cp.delegator"):with {
         ok(eq(a.alphaValue, "alphaValue"))
         ok(eq(a:alphaMethod(), "alphaValue"))
 
-        ok(eq(a.beta().alphaValue, "betaAlphaValue"))
-        ok(eq(a.beta().betaValue, "betaValue"))
-        ok(eq(a.beta():betaMethod(), "betaValue"))
+        ok(eq(a:beta().alphaValue, "betaAlphaValue"))
+        ok(eq(a:beta().betaValue, "betaValue"))
+        ok(eq(a:beta():betaMethod(), "betaValue"))
         ok(eq(a.betaValue, "betaValue"))
         ok(eq(a:betaMethod(), "betaValue"))
+
+        ok(eq(a:beta():betaProp(), true))
+        ok(eq(a:betaProp(), true))
     end),
 
     test("override", function()
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("delegate")
+        Alpha:delegateTo("delegate")
 
         function Alpha:initialize()
             self.value = "undelegated"
@@ -174,7 +178,7 @@ return test.suite("cp.delegator"):with {
     test("subclass", function()
         local Alpha = class("Alpha"):include(delegator)
 
-        Alpha.delegateTo("aDelegate")
+        Alpha:delegateTo("aDelegate")
 
         function Alpha:initialize()
             self.aDelegate = {
@@ -192,7 +196,7 @@ return test.suite("cp.delegator"):with {
 
         local Beta = Alpha:subclass("Beta")
 
-        Beta.delegateTo("bDelegate")
+        Beta:delegateTo("bDelegate")
 
         function Beta:initialize()
             Alpha.initialize(self)
@@ -226,7 +230,7 @@ return test.suite("cp.delegator"):with {
 
     test("lazy first", function()
         local LazyFirst = class("LazyFirst"):include(lazy):include(delegator)
-        LazyFirst.delegateTo("delegate")
+        LazyFirst:delegateTo("delegate")
 
         function LazyFirst:initialize()
             self.delegate = {
@@ -246,7 +250,7 @@ return test.suite("cp.delegator"):with {
 
     test("lazy second", function()
         local LazySecond = class("LazySecond"):include(delegator):include(lazy)
-        LazySecond.delegateTo("delegate")
+        LazySecond:delegateTo("delegate")
 
         function LazySecond:initialize()
             self.delegate = {
@@ -262,5 +266,10 @@ return test.suite("cp.delegator"):with {
 
         ok(eq(lf.value, "delegated value"))
         ok(eq(lf.delegate.value, "delegated value"))
+    end),
+
+    test("delegated prop", function()
+        local Alpha = class("Alpha"):include(delegator)
+        Alpha:delegateTo("delegate")
     end),
 }

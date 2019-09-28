@@ -19,8 +19,7 @@
 ---    return true
 --- end
 ---
---- local Boss = class("Boss"):include(delegator)
---- Boss.delegateTo("minion")
+--- local Boss = class("Boss"):include(delegator):delegateTo("minion")
 ---
 --- function Boss:initialize()
 --- end
@@ -39,7 +38,48 @@
 --- johnSmith.minion:doTask() -- The exact same thing.
 --- ```
 ---
---- Delegates can be hard-coded into the class type, or set later.
+--- The order that `delegator` is included with other mixins can affect how it functions. For example,
+--- when mixing with `cp.lazy`, if `cp.lazy` is mixed in second, like so:
+---
+--- ```lua
+--- local MyClass = class("MyClass"):include(delegator):include(lazy):delegateTo("delegate")
+---
+--- function MyClass:initialize()
+---     self.delegate = {
+---         value = "delegated value"
+---     }
+--- end
+---
+--- function MyClass.lazy.value()
+---     return "lazy value"
+--- end
+---
+--- local myInstance = MyClass()
+--- assert(myInstance.value == "delegated value") -- passes
+--- assert(myInstance.delegated.value == "delegated value") -- passes
+--- ```
+---
+--- ...then any delegated methods will take priority over lazy ones. Most likely you want to put `lazy` first, like so:
+---
+--- ```lua
+--- local MyClass = class("MyClass"):include(lazy):include(delegator):delegateTo("delegate")
+---
+--- function MyClass:initialize()
+---     self.delegate = {
+---         value = "delegated value"
+---     }
+--- end
+---
+--- function MyClass.lazy.value()
+---     return "lazy value"
+--- end
+---
+--- local myInstance = MyClass()
+--- assert(myInstance.value == "lazy value") -- passes
+--- assert(myInstance.delegated.value == "delegated value") -- passes
+--- ```
+---
+--- The easy way to remember is to read them together - "lazy delegator" sounds better than "delegator lazy".
 
 -- local log           = require "hs.logger".new("delegator")
 
@@ -66,9 +106,11 @@ local function _initDelegated(klass)
     local delegates = {}
 
     klass.static[DELEGATES] = delegates
-    function klass.static.delegateTo(...)
+
+    function klass.static:delegateTo(...)
+        local myDelegates = self[DELEGATES]
         for i = 1,select("#", ...) do
-            insert(delegates, select(i, ...))
+            insert(myDelegates, select(i, ...))
         end
 
         return klass
@@ -127,6 +169,15 @@ local function _getDelegatedResult(instance, name, klass)
                                 return fn(self, ...)
                             end
                         end
+                        -- cache it for future access.
+                        rawset(instance, name, value)
+                    end
+
+                    if prop.is(value) then
+                        -- wrap it so it can get called directly.
+                        value = value:wrap(instance):label(name)
+                        -- cache it for future access.
+                        rawset(instance, name, value)
                     end
 
                     if value then
