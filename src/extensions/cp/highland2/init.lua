@@ -1,19 +1,23 @@
 --- === cp.highland2 ===
 ---
---- Highland 2
+--- Highland 2 support.
 
 local require                                   = require
 
 local class                                     = require "middleclass"
 local lazy                                      = require "cp.lazy"
+local delegator                                 = require "cp.delegator"
 local tools                                     = require "cp.tools"
 
 local app                                       = require "cp.highland2.app"
 local Document                                  = require "cp.highland2.Document"
 
-local highland2                                 = class("cp.highland2"):include(lazy)
-
 local tableFilter                               = tools.tableFilter
+
+local highland2 = class("cp.highland2")
+    :include(lazy)
+    :include(delegator)
+    :delegateTo("app", "menu")
 
 function highland2.lazy.value.app()
     return app
