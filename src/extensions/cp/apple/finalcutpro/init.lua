@@ -58,7 +58,7 @@
 --- end
 --- ```
 ---
---- **Delegates to:** [app](cp.app.md)
+--- **Delegates to:** [app](cp.app.md), [menu](cp.app.menu.md)
 ---
 --- Note: All values/methods/props from deleegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
 ---
