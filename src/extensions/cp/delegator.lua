@@ -81,7 +81,7 @@
 ---
 --- The easy way to remember is to read them together - "lazy delegator" sounds better than "delegator lazy".
 
--- local log           = require "hs.logger".new("delegator")
+local log           = require "hs.logger" .new("delegator")
 
 local prop          = require "cp.prop"
 local insert        = table.insert
@@ -110,11 +110,25 @@ local function _initDelegated(klass)
     function klass.static:delegateTo(...)
         local myDelegates = self[DELEGATES]
         for i = 1,select("#", ...) do
-            insert(myDelegates, select(i, ...))
+            local value = select(i, ...)
+            insert(myDelegates, value)
         end
 
         return klass
     end
+end
+
+local function _getDelegate(instance, key)
+    local delegate = instance[key]
+    local delegateType = type(delegate)
+
+    if delegateType == "function" then
+        delegate = delegate(instance)
+    elseif prop.is(delegate) then
+        delegate = delegate:get()
+    end
+
+    return delegate
 end
 
 -- _getDelegatedResult(instance, name[], klass]) -> anything
@@ -136,25 +150,11 @@ local function _getDelegatedResult(instance, name, klass)
     local value = rawget(instance, name)
 
     if not value then
-        local found = false
-
         for _,key in ipairs(delegates) do
-            if found then
-                break
-            end
-
             if key ~= name then
-                local delegate = instance[key]
-                local delegateType = type(delegate)
-
-                if delegateType == "function" then
-                    delegate = delegate(instance)
-                elseif prop.is(delegate) then
-                    delegate = delegate:get()
-                end
+                local delegate = _getDelegate(instance, key)
 
                 if delegate then
-                    found = true
                     value = delegate[name]
 
                     if type(value) == "function" then
@@ -181,13 +181,13 @@ local function _getDelegatedResult(instance, name, klass)
                     end
 
                     if value then
-                        break
+                        return value
                     end
                 end
             end
         end
 
-        if not found and klass.super then
+        if klass.super then
             -- check the super-class hierarchy.
             value = _getDelegatedResult(instance, name, klass.super)
         end

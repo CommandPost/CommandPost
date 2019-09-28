@@ -272,4 +272,29 @@ return test.suite("cp.delegator"):with {
         local Alpha = class("Alpha"):include(delegator)
         Alpha:delegateTo("delegate")
     end),
+
+    test("multiple delegates", function()
+        local Alpha = class("Alpha"):include(delegator)
+            :delegateTo("one", "two")
+
+        function Alpha:initialize()
+            self.one = {
+                alpha = true
+            }
+
+            self.two = {
+                alpha = false,
+                beta = true,
+            }
+        end
+
+        local a = Alpha()
+
+        ok(eq(a.alpha, true))
+        ok(eq(a.beta, true))
+
+        ok(eq(a.one.alpha, true))
+        ok(eq(a.two.alpha, false))
+        ok(eq(a.two.beta, true))
+    end),
 }
