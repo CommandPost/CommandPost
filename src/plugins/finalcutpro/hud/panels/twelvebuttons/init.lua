@@ -4,26 +4,25 @@
 
 local require                   = require
 
-local log                       = require("hs.logger").new("hudButton")
+local log                       = require "hs.logger".new "hudButton"
 
-local dialog                    = require("hs.dialog")
-local image                     = require("hs.image")
-local inspect                   = require("hs.inspect")
-local menubar                   = require("hs.menubar")
-local mouse                     = require("hs.mouse")
+local dialog                    = require "hs.dialog"
+local image                     = require "hs.image"
+local inspect                   = require "hs.inspect"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
 
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local i18n                      = require("cp.i18n")
-local json                      = require("cp.json")
-local tools                     = require("cp.tools")
+local config                    = require "cp.config"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
+local tools                     = require "cp.tools"
 
 local cleanupButtonText         = tools.cleanupButtonText
 local iconFallback              = tools.iconFallback
 local imageFromPath             = image.imageFromPath
 local stringMaxLength           = tools.stringMaxLength
 local webviewAlert              = dialog.webviewAlert
-
 
 local mod = {}
 

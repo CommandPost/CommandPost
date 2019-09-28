@@ -2,22 +2,30 @@
 ---
 --- Add Note Plugin.
 
-local require = require
+local require                   = require
 
-local log           = require "hs.logger".new "addnote"
+--local log                       = require "hs.logger".new "addnote"
 
-local chooser       = require "hs.chooser"
-local drawing       = require "hs.drawing"
-local eventtap      = require "hs.eventtap"
-local menubar       = require "hs.menubar"
-local mouse         = require "hs.mouse"
-local screen        = require "hs.screen"
+local chooser                   = require "hs.chooser"
+local drawing                   = require "hs.drawing"
+local eventtap                  = require "hs.eventtap"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
+local screen                    = require "hs.screen"
 
-local axutils       = require "cp.ui.axutils"
-local config        = require "cp.config"
-local fcp           = require "cp.apple.finalcutpro"
-local dialog        = require "cp.dialog"
-local i18n          = require "cp.i18n"
+local axutils                   = require "cp.ui.axutils"
+local config                    = require "cp.config"
+local dialog                    = require "cp.dialog"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local just                      = require "cp.just"
+local tools                     = require "cp.tools"
+
+local childWithRole             = axutils.childWithRole
+local displayErrorMessage       = dialog.displayErrorMessage
+local displayMessage            = dialog.displayMessage
+local doUntil                   = just.doUntil
+local spairs                    = tools.spairs
 
 local mod = {}
 
@@ -35,26 +43,89 @@ mod.recentNotes = config.prop("recentNotes", {})
 ---
 --- Returns:
 ---  * None
-function mod.addNoteToSelectedClip()
+function mod.addNoteToSelectedClips()
 
     local errorFunction = " Error occurred in addNoteToSelectedClip()."
+
+    --------------------------------------------------------------------------------
+    -- Timeline Clip Sort Function:
+    --------------------------------------------------------------------------------
+    local sortFn = function(t,a,b)
+        if t and t[a] and t[b] and t[a].attributeValue and t[b].attributeValue then
+            return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription")
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Make sure the Browser is visible:
     --------------------------------------------------------------------------------
     local libraries = fcp:browser():libraries()
-    if not libraries:isShowing() then
-        log.df("Library Panel is closed." .. errorFunction)
+    if not doUntil(function()
+        libraries:show()
+        return libraries:show()
+    end, 5, 0.1) then
+        displayErrorMessage("Failed to show the Browser.")
         return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Check to see if Timeline has focus.
+    --------------------------------------------------------------------------------
+    local timeline = fcp:timeline()
+    local contents = timeline:contents()
+    local selectedTimelineClips = contents:selectedClipsUI()
+    local timelineMode = false
+    if timeline:isFocused() then
+        --------------------------------------------------------------------------------
+        -- Make sure at least one clip is selected:
+        --------------------------------------------------------------------------------
+        if #selectedTimelineClips == 0 then
+            displayMessage("There are no clips selected in the timeline.\n\nPlease select one or more clips and try again.")
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Select the first timeline clip:
+        --
+        -- NOTE: I'm sure there's a much better/smarter way to do this. Sorry David!
+        --------------------------------------------------------------------------------
+        local timelineClip
+        for _, v in spairs(selectedTimelineClips, sortFn) do -- luacheck: ignore
+            timelineClip = v
+            break
+        end
+        contents:selectClip(timelineClip)
+        doUntil(function()
+            local selected = contents:selectedClipsUI()
+            return selected and #selected == 1 and selected[1] == timelineClip
+        end, 5, 0.1)
+
+        --------------------------------------------------------------------------------
+        -- Reveal in Browser:
+        --------------------------------------------------------------------------------
+        local textField = childWithRole(timelineClip, "AXTextField")
+        local timelineClipName = textField and textField:attributeValue("AXValue")
+        fcp:selectMenu({"File", "Reveal in Browser"})
+        doUntil(function()
+            local selected = libraries:selectedClipsUI()
+            local tf = selected and selected[1] and selected[1][1] and childWithRole(selected[1][1], "AXTextField")
+            local browserClipName = tf and tf:attributeValue("AXValue")
+            return browserClipName and browserClipName == timelineClipName
+        end, 3, 0.1)
+
+        --------------------------------------------------------------------------------
+        -- We're now in timeline mode:
+        --------------------------------------------------------------------------------
+        timelineMode = true
     end
 
     --------------------------------------------------------------------------------
     -- Get number of Selected Browser Clips:
     --------------------------------------------------------------------------------
     local clips = libraries:selectedClipsUI()
-    if #clips ~= 1 then
-        log.df("Wrong number of clips selected." .. errorFunction)
-        return false
+    if not timelineMode and #clips == 0 then
+        displayMessage("There are no clips selected in the browser.\n\nPlease select one or more clips and try again.")
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -75,7 +146,8 @@ function mod.addNoteToSelectedClip()
     --------------------------------------------------------------------------------
     -- Get Selected Clip & Selected Clip's Parent:
     --------------------------------------------------------------------------------
-    local selectedClip = libraries:selectedClipsUI()[1]
+    local selectedClips = libraries:selectedClipsUI()
+    local selectedClip = selectedClips and selectedClips[1]
     local selectedClipParent = selectedClip:attributeValue("AXParent")
 
     --------------------------------------------------------------------------------
@@ -136,15 +208,94 @@ function mod.addNoteToSelectedClip()
         --------------------------------------------------------------------------------
         -- When Chooser Item is Selected or Closed:
         --------------------------------------------------------------------------------
-        mod.noteChooser:hide()
-        fcp:launch()
+        doUntil(function()
+            mod.noteChooser:hide()
+            return mod.noteChooser:isVisible() == false
+        end, 5, 0.1)
+
+        --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        if not doUntil(function()
+            fcp:launch()
+            return fcp:isFrontmost()
+        end, 5, 0.1) then
+            displayErrorMessage("Failed to switch back to Final Cut Pro.")
+            return false
+        end
 
         if result ~= nil then
-            selectedNotesField:setAttributeValue("AXFocused", true)
-            selectedNotesField:setAttributeValue("AXValue", result["text"])
-            selectedNotesField:setAttributeValue("AXFocused", false)
-            if not filmstripView then
-                eventtap.keyStroke({}, "return") -- List view requires an "return" key press
+            if timelineMode then
+                --------------------------------------------------------------------------------
+                -- Timeline Clips:
+                --------------------------------------------------------------------------------
+                local firstClip = true
+                for _, timelineClip in spairs(selectedTimelineClips, sortFn) do
+                    --------------------------------------------------------------------------------
+                    -- We've already selected the first clip:
+                    --------------------------------------------------------------------------------
+                    if not firstClip then
+                        --------------------------------------------------------------------------------
+                        -- Make sure the timeline has focus:
+                        --------------------------------------------------------------------------------
+                        doUntil(function()
+                            fcp:selectMenu({"Window", "Go To", "Timeline"})
+                            return contents:isFocused()
+                        end, 5, 0.1)
+
+                        --------------------------------------------------------------------------------
+                        -- Select the timeline clip:
+                        --------------------------------------------------------------------------------
+                        contents:selectClip(timelineClip)
+                        doUntil(function()
+                            local selected = contents:selectedClipsUI()
+                            return selected and #selected == 1 and selected[1] == timelineClip
+                        end, 5, 0.1)
+
+                        --------------------------------------------------------------------------------
+                        -- Reveal in Browser:
+                        --------------------------------------------------------------------------------
+                        local textField = childWithRole(timelineClip, "AXTextField")
+                        local timelineClipName = textField and textField:attributeValue("AXValue")
+                        doUntil(function()
+                            fcp:selectMenu({"File", "Reveal in Browser"})
+                            local selected = libraries:selectedClipsUI()
+                            local tf = selected and selected[1] and selected[1][1] and childWithRole(selected[1][1], "AXTextField")
+                            local browserClipName = tf and tf:attributeValue("AXValue")
+                            return browserClipName and browserClipName == timelineClipName
+                        end, 5, 0.1)
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Apply note:
+                    --------------------------------------------------------------------------------
+                    local selected = libraries:selectedClipsUI()[1]
+                    local clipNotesField = selected[notesFieldID][1]
+                    clipNotesField:setAttributeValue("AXFocused", true)
+                    clipNotesField:setAttributeValue("AXValue", result["text"])
+                    clipNotesField:setAttributeValue("AXFocused", false)
+                    if not filmstripView then
+                        eventtap.keyStroke({}, "return") -- List view requires an "return" key press
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- First clip complete:
+                    --------------------------------------------------------------------------------
+                    firstClip = false
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Browser Clips:
+                --------------------------------------------------------------------------------
+                for _, clip in pairs(selectedClips) do
+                    local clipNotesField = clip[notesFieldID][1]
+                    clipNotesField:setAttributeValue("AXFocused", true)
+                    clipNotesField:setAttributeValue("AXValue", result["text"])
+                    clipNotesField:setAttributeValue("AXFocused", false)
+                    if not filmstripView then
+                        eventtap.keyStroke({}, "return") -- List view requires an "return" key press
+                    end
+                end
             end
 
             local selectedRow = mod.noteChooser:selectedRow()
@@ -192,7 +343,6 @@ function mod.addNoteToSelectedClip()
         --------------------------------------------------------------------------------
         local rightClickMenu = {
             { title = i18n("clearList"), fn = function()
-                log.df("Clearing List")
                 mod.recentNotes({})
                 local currentQuery = mod.noteChooser:query()
                 local currentQueryTable = {
@@ -236,8 +386,8 @@ local plugin = {
 
 function plugin.init(deps)
     deps.fcpxCmds
-        :add("cpAddNoteToSelectedClip")
-        :whenActivated(function() mod.addNoteToSelectedClip() end)
+        :add("cpAddNoteToSelectedClips")
+        :whenActivated(function() mod.addNoteToSelectedClips() end)
 
     return mod
 end

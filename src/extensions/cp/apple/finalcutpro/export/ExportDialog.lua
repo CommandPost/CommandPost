@@ -2,22 +2,21 @@
 ---
 --- Export Dialog Module.
 
-local require                       = require
+local require               = require
 
---local log                           = require("hs.logger").new("ExportDialog")
+--local log                   = require("hs.logger").new("ExportDialog")
 
-local axutils                       = require("cp.ui.axutils")
-local dialog                        = require("cp.dialog")
-local i18n                          = require("cp.i18n")
-local just                          = require("cp.just")
-local prop                          = require("cp.prop")
-local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
+local axutils               = require "cp.ui.axutils"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local just                  = require "cp.just"
+local prop                  = require "cp.prop"
+local SaveSheet             = require "cp.apple.finalcutpro.export.SaveSheet"
 
-local v                             = require("semver")
+local v                     = require "semver"
 
-local displayMessage                = dialog.displayMessage
-local wait                          = just.wait
-
+local displayMessage        = dialog.displayMessage
+local wait                  = just.wait
 
 local ExportDialog = {}
 

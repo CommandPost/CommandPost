@@ -3,8 +3,9 @@
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will wait for the first value from a `resolveable` that matches the predicate.
 
-local Statement                 = require("cp.rx.go.Statement")
-local toObservable              = Statement.toObservable
+local Statement         = require "cp.rx.go.Statement"
+
+local toObservable      = Statement.toObservable
 
 -- checks that the value is not false and not nil.
 local function isTruthy(value)

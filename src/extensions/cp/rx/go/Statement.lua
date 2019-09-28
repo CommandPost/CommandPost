@@ -62,19 +62,17 @@
 
 -- local log           = require("hs.logger").new("Statement")
 
-local inspect       = require("hs.inspect")
+local inspect       = require "hs.inspect"
 
------------------------------------------------------------
--- Imports and Local functions
------------------------------------------------------------
-local rx            = require("cp.rx")
+local rx            = require "cp.rx"
 
 local Observable    = rx.Observable
 local Observer      = rx.Observer
-local insert        = table.insert
-local pack, unpack  = table.pack, table.unpack
 
 local format        = string.format
+local insert        = table.insert
+local pack          = table.pack
+local unpack        = table.unpack
 
 -----------------------------------------------------------
 -- Utility functions

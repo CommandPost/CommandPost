@@ -2,28 +2,29 @@
 ---
 --- Core CommandPost functionality.
 
-local require                   = require
-local hs                        = hs
+local startTime             = os.clock()
 
-local logger                    = require("hs.logger")
-logger.defaultLogLevel          = "verbose"
+local require               = require
+local hs                    = hs
 
-local application               = require("hs.application")
-local console                   = require("hs.console")
-local image                     = require("hs.image")
-local keycodes                  = require("hs.keycodes")
-local settings                  = require("hs.settings")
-local styledtext                = require("hs.styledtext")
-local timer                     = require("hs.timer")
-local toolbar                   = require("hs.webview.toolbar")
-local window                    = require("hs.window")
+local logger                = require "hs.logger"
+logger.defaultLogLevel      = "verbose"
 
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local feedback                  = require("cp.feedback")
-local i18n                      = require("cp.i18n")
-local plugins                   = require("cp.plugins")
-local tools                     = require("cp.tools")
+local application           = require "hs.application"
+local console               = require "hs.console"
+local image                 = require "hs.image"
+local keycodes              = require "hs.keycodes"
+local settings              = require "hs.settings"
+local styledtext            = require "hs.styledtext"
+local toolbar               = require "hs.webview.toolbar"
+local window                = require "hs.window"
+
+local config                = require "cp.config"
+local fcp                   = require "cp.apple.finalcutpro"
+local feedback              = require "cp.feedback"
+local i18n                  = require "cp.i18n"
+local plugins               = require "cp.plugins"
+local tools                 = require "cp.tools"
 
 --------------------------------------------------------------------------------
 -- Not used in `init.lua`, but is required to "jump start" the CLI support:
@@ -298,11 +299,6 @@ function mod.init()
     config.automaticScriptReloading:update()
 
     --------------------------------------------------------------------------------
-    -- Global Variable to confirm CommandPost has successfully loaded:
-    --------------------------------------------------------------------------------
-    hs._cpLoaded = true
-
-    --------------------------------------------------------------------------------
     -- Load Plugins:
     --------------------------------------------------------------------------------
     log.df("Loading Plugins...")
@@ -310,13 +306,17 @@ function mod.init()
     log.df("Plugins Loaded.")
 
     --------------------------------------------------------------------------------
+    -- Display how long it took to load CommandPost:
+    --------------------------------------------------------------------------------
+    local finishTime = os.clock()
+    local loadingTime = finishTime-startTime
+    log.df("Startup Time: %s seconds", loadingTime)
+
+    --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
-    mod.garbageCollector = timer.new(60, function()
-        collectgarbage("collect")
-        collectgarbage("collect")
-    end):start()
-    mod.garbageCollector:fire()
+    collectgarbage("collect")
+    collectgarbage("collect")
 
     --------------------------------------------------------------------------------
     -- Return the module:

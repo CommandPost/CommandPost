@@ -6,16 +6,16 @@
 
 local require = require
 
-local eventtap                          = require("hs.eventtap")
-local mouse                             = require("hs.mouse")
-local pathwatcher                       = require("hs.pathwatcher")
+local eventtap          = require "hs.eventtap"
+local mouse             = require "hs.mouse"
+local pathwatcher       = require "hs.pathwatcher"
 
-local config                            = require("cp.config")
-local fcp                               = require("cp.apple.finalcutpro")
-local tools                             = require("cp.tools")
-local i18n                              = require("cp.i18n")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
 
-local semver                            = require("semver")
+local semver            = require "semver"
 
 local touchdevice
 
@@ -134,6 +134,11 @@ function mod.stop()
         mod.keytap = nil
     end
 
+    --------------------------------------------------------------------------------
+    -- Destroy the extension:
+    --------------------------------------------------------------------------------
+    touchdevice = nil
+
 end
 
 --- plugins.finalcutpro.timeline.mousezoom.findMagicMouses() -> none
@@ -152,6 +157,11 @@ function mod.findMagicMouses()
     --------------------------------------------------------------------------------
     mod.stop()
     mod.foundMagicMouse = false
+
+    --------------------------------------------------------------------------------
+    -- Only start this extension if required:
+    --------------------------------------------------------------------------------
+    touchdevice = require("hs._asm.undocumented.touchdevice")
 
     --------------------------------------------------------------------------------
     -- Search for Magic Mouses:
@@ -525,7 +535,6 @@ function mod.start()
 
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.mousezoom",
     group = "finalcutpro",
@@ -540,9 +549,7 @@ function plugin.init(deps)
     -- Version Check:
     --------------------------------------------------------------------------------
     local osVersion = tools.macOSVersion()
-    if semver(osVersion) >= semver("10.12") then
-        touchdevice = require("hs._asm.undocumented.touchdevice")
-    else
+    if semver(osVersion) <= semver("10.12") then
         --------------------------------------------------------------------------------
         -- Setup Menubar Preferences Panel:
         --------------------------------------------------------------------------------

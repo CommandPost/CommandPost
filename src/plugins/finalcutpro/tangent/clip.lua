@@ -2,13 +2,13 @@
 ---
 --- Final Cut Pro Tangent View Group
 
-local require = require
+local require       = require
 
-local log                                       = require("hs.logger").new("fcptng_timeline")
+local log           = require "hs.logger".new "fcptng_timeline"
 
-local dialog                                    = require("cp.dialog")
-local fcp                                       = require("cp.apple.finalcutpro")
-local i18n                                      = require("cp.i18n")
+local dialog        = require "cp.dialog"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.clip",
@@ -75,9 +75,6 @@ function plugin.init(deps)
 
     group:action(baseID+9, i18n("createStoryline"))
         :onPress(fcp:doSelectMenu({"Clip", "Create Storyline"}))
-
-
-
 
 end
 

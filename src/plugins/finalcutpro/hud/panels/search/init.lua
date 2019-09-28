@@ -4,20 +4,20 @@
 
 local require                   = require
 
-local log                       = require("hs.logger").new("hudButton")
+local log                       = require "hs.logger".new "hudButton"
 
-local dialog                    = require("hs.dialog")
-local image                     = require("hs.image")
-local menubar                   = require("hs.menubar")
-local mouse                     = require("hs.mouse")
+local dialog                    = require "hs.dialog"
+local image                     = require "hs.image"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
 
-local axutils                   = require("cp.ui.axutils")
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local i18n                      = require("cp.i18n")
-local just                      = require("cp.just")
-local pattern                   = require("cp.pattern")
-local tools                     = require("cp.tools")
+local axutils                   = require "cp.ui.axutils"
+local config                    = require "cp.config"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local just                      = require "cp.just"
+local pattern                   = require "cp.pattern"
+local tools                     = require "cp.tools"
 
 local childIndex                = axutils.childIndex
 local childrenWithRole          = axutils.childrenWithRole
@@ -30,7 +30,6 @@ local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
 local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
-
 
 local mod = {}
 
@@ -660,7 +659,6 @@ local function showHistoryPopup()
     popup:removeFromMenuBar()
     popup:popupMenu(mouse.getAbsolutePosition(), true)
 end
-
 
 local plugin = {
     id              = "finalcutpro.hud.panels.search",

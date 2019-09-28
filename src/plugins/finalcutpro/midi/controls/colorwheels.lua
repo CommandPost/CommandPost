@@ -14,6 +14,9 @@ local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
+local rescale           = tools.rescale
+local round             = tools.round
+
 local mod = {}
 
 -- shiftPressed() -> boolean
@@ -52,10 +55,20 @@ end
 -- Maximum 14bit Limit (16383)
 local MAX_14BIT = 0x3FFF
 
+-- HALF_14BIT -> number
+-- Constant
+-- Half-way 14bit (8192)
+local HALF_14BIT = (MAX_14BIT + 1) / 2
+
 -- MAX_7BIT -> number
 -- Constant
 -- Maximum 7bit Limit (127)
 local MAX_7BIT  = 0x7F
+
+-- HALF_7BIT -> number
+-- Constant
+-- Half-way 7bit (64)
+local HALF_7BIT = (MAX_7BIT + 1) / 2
 
 -- UNSHIFTED_SCALE -> number
 -- Constant
@@ -73,16 +86,18 @@ local UNSHIFTED_SCALE = 20/100
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
 
+    local wheel = wheelFinderFn()
+
     local result
     local updateUI = deferred.new(0.01):action(function()
-        local wheel = wheelFinderFn()
-        wheel:colorOrientation(result)
+        wheel:show()
+        if result and result.right and result.up then
+            wheel:colorOrientation(result)
+        end
     end)
 
     return function(metadata)
-
         local midiValue, value
-        local wheel = wheelFinderFn()
 
         if metadata.fourteenBitCommand or metadata.pitchChange then
             --------------------------------------------------------------------------------
@@ -90,8 +105,7 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             --------------------------------------------------------------------------------
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
-                value = (midiValue / MAX_14BIT) * 2 - 1
-                if midiValue == 16383/2 then value = 0 end
+                value = rescale(midiValue, 0, MAX_14BIT, -0.33, 0.33)
             end
         else
             --------------------------------------------------------------------------------
@@ -102,7 +116,7 @@ local function makeWheelHandler(wheelFinderFn, vertical)
                 value = (midiValue / MAX_7BIT) * 2 - 1
                 if not shiftPressed() then -- scale it down
                     value = value * UNSHIFTED_SCALE
-                    if midiValue == 128/2 then value = 0 end
+                    if midiValue == HALF_7BIT then value = 0 end
                 end
             end
         end
@@ -117,8 +131,8 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             else
                 result = {right=value,up=current.up}
             end
-            updateUI()
         end
+        updateUI()
     end
 end
 
@@ -145,56 +159,56 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Wheel Master (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
         text = "Color Wheel Master (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Shadows (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
         text = "Color Wheel Shadows (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
         text = "Color Wheel Midtones (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
         text = "Color Wheel Midtones (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Highlights (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
         text = "Color Wheel Highlights (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, true),
     })
 
     --------------------------------------------------------------------------------
@@ -214,15 +228,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383*2)
-                    if midiValue == 16383/2 then value = 1 end
-                    cachedColorWheelMasterSaturation = value
+                    cachedColorWheelMasterSaturation = rescale(midiValue, 0, 16383, 0, 2)
                     updateColorWheelMasterSaturation()
                 end
             else
@@ -237,7 +245,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
-                    if midiValue == 128/2 then value = 1 end
+                    if midiValue == HALF_7BIT then value = 1 end
                     cachedColorWheelMasterSaturation = value
                     updateColorWheelMasterSaturation()
                 end
@@ -259,15 +267,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383*2)
-                    if midiValue == 16383/2 then value = 1 end
-                    cachedColorWheelShadowsSaturation = value
+                    cachedColorWheelShadowsSaturation = rescale(midiValue, 0, 16383, 0, 2)
                     updateColorWheelShadowsSaturation()
                 end
             else
@@ -282,7 +284,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
-                    if midiValue == 128/2 then value = 1 end
+                    if midiValue == HALF_7BIT then value = 1 end
                     cachedColorWheelShadowsSaturation = value
                     updateColorWheelShadowsSaturation()
                 end
@@ -304,15 +306,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383*2)
-                    if midiValue == 16383/2 then value = 1 end
-                    cachedColorWheelMidtonesSaturation = value
+                    cachedColorWheelMidtonesSaturation = rescale(midiValue, 0, 16383, 0, 2)
                     updateColorWheelMidtonesSaturation()
                 end
             else
@@ -327,7 +323,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
-                    if midiValue == 128/2 then value = 1 end
+                    if midiValue == HALF_7BIT then value = 1 end
                     cachedColorWheelMidtonesSaturation = value
                     updateColorWheelMidtonesSaturation()
                 end
@@ -349,15 +345,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383*2)
-                    if midiValue == 16383/2 then value = 1 end
-                    cachedColorWheelHighlightsSaturation = value
+                    cachedColorWheelHighlightsSaturation = rescale(midiValue, 0, 16383, 0, 2)
                     updateColorWheelHighlightsSaturation()
                 end
             else
@@ -372,7 +362,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
-                    if midiValue == 128/2 then value = 1 end
+                    if midiValue == HALF_7BIT then value = 1 end
                     cachedColorWheelHighlightsSaturation = value
                     updateColorWheelHighlightsSaturation()
                 end
@@ -397,15 +387,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
-                    if midiValue == 16383/2 then value = 0 end
-                    cachedColorWheelMasterBrightness = value
+                    cachedColorWheelMasterBrightness = rescale(midiValue, 0, 16383, -0.4, 0.4)
                     updateColorWheelMasterBrightness()
                 end
             else
@@ -420,7 +404,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 0.8 - 0.4
                     end
-                    if midiValue == 128/2 then value = 0 end
+                    if midiValue == HALF_7BIT then value = 0 end
                     cachedColorWheelMasterBrightness = value
                     updateColorWheelMasterBrightness()
                 end
@@ -442,15 +426,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
-                    if midiValue == 16383/2 then value = 0 end
-                    cachedColorWheelShadowsBrightness = value
+                    cachedColorWheelShadowsBrightness = rescale(midiValue, 0, 16383, -0.4, 0.4)
                     updateColorWheelShadowsBrightness()
                 end
             else
@@ -465,7 +443,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 0.8 - 0.4
                     end
-                    if midiValue == 128/2 then value = 0 end
+                    if midiValue == HALF_7BIT then value = 0 end
                     cachedColorWheelShadowsBrightness = value
                     updateColorWheelShadowsBrightness()
                 end
@@ -487,15 +465,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
-                    if midiValue == 16383/2 then value = 0 end
-                    cachedColorWheelHighlightsBrightness = value
+                    cachedColorWheelHighlightsBrightness = rescale(midiValue, 0, 16383, -0.4, 0.4)
                     updateColorWheelHighlightsBrightness()
                 end
             else
@@ -510,7 +482,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 127 * 0.8 - 0.4
                     end
-                    if midiValue == 128/2 then value = 0 end
+                    if midiValue == HALF_7BIT then value = 0 end
                     cachedColorWheelHighlightsBrightness = value
                     updateColorWheelHighlightsBrightness()
                 end
@@ -532,15 +504,9 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
-                    if midiValue == 16383/2 then value = 0 end
-                    cachedColorWheelMidtonesBrightness = value
+                    cachedColorWheelMidtonesBrightness = rescale(midiValue, 0, 16383, -0.4, 0.4)
                     updateColorWheelMidtonesBrightness()
                 end
             else
@@ -555,7 +521,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 0.8 - 0.4
                     end
-                    if midiValue == 128/2 then value = 0 end
+                    if midiValue == HALF_7BIT then value = 0 end
                     cachedColorWheelMidtonesBrightness = value
                     updateColorWheelMidtonesBrightness()
                 end
@@ -564,7 +530,7 @@ function mod.init(deps)
     })
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Temperature (2500 to 10000):
+    -- Color Wheel Temperature (2500 to 10000; Middle is 5000):
     --------------------------------------------------------------------------------
     local cachedColorWheelTemperature
     local updateColorWheelTemperature = deferred.new(0.01):action(function()
@@ -580,13 +546,16 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 -- 14bit:
                 --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383 * (10000-2500) + 2500)
+                    local value
+                    if midiValue == HALF_14BIT then
+                        value = 5000
+                    elseif midiValue < HALF_14BIT then
+                        value = rescale(midiValue, 0, HALF_14BIT-1, 2500, 4997)
+                    elseif midiValue > HALF_14BIT then
+                        value = rescale(midiValue, HALF_14BIT+1, MAX_14BIT, 5001, 10000)
+                    end
                     cachedColorWheelTemperature = value
                     updateColorWheelTemperature()
                 end
@@ -596,7 +565,14 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 127 * (10000-2500) + 2500)
+                    local value
+                    if midiValue == HALF_7BIT then
+                        value = 5000
+                    elseif midiValue < HALF_7BIT then
+                        value = rescale(midiValue, 0, HALF_7BIT-1, 2500, 4997)
+                    elseif midiValue > HALF_7BIT then
+                        value = rescale(midiValue, HALF_7BIT+1, MAX_7BIT, 5001, 10000)
+                    end
                     cachedColorWheelTemperature = value
                     updateColorWheelTemperature()
                 end
@@ -627,7 +603,7 @@ function mod.init(deps)
                     midiValue = metadata.fourteenBitValue
                 end
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383 * (50*2) - 50)
+                    local value = round(midiValue / 16383 * (50*2) - 50)
                     if midiValue == 16383/2 then value = 0 end
                     cachedColorWheelTint = value
                     updateColorWheelTint()
@@ -638,7 +614,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 127 * (50*2) - 50)
+                    local value = round(midiValue / 127 * (50*2) - 50)
                     cachedColorWheelTint = value
                     updateColorWheelTint()
                 end
@@ -669,7 +645,7 @@ function mod.init(deps)
                     midiValue = metadata.fourteenBitValue
                 end
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383 * 360)
+                    local value = round(midiValue / 16383 * 360)
                     if midiValue == 16383/2 then value = 0 end
                     cachedColorWheelHue = value
                     updateColorWheelHue()
@@ -680,7 +656,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 127 * 360)
+                    local value = round(midiValue / 127 * 360)
                     cachedColorWheelHue = value
                     updateColorWheelHue()
                 end
@@ -711,7 +687,7 @@ function mod.init(deps)
                     midiValue = metadata.fourteenBitValue
                 end
                 if type(midiValue) == "number" then
-                    local value = tools.round(midiValue / 16383)
+                    local value = round(midiValue / 16383)
                     cachedColorWheelMix = value
                     updateColorWheelMix()
                 end

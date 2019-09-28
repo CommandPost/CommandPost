@@ -5,8 +5,9 @@
 --- A [Statement](cp.rx.go.Statement.md) that will retry the contained statement if there is an error.
 --- It can be limited to a set number of retries, and have a delay added between retries.
 
-local Statement             = require("cp.rx.go.Statement")
-local toObservable          = Statement.toObservable
+local Statement         = require "cp.rx.go.Statement"
+
+local toObservable      = Statement.toObservable
 
 --- cp.rx.go.Retry(resolvable) -> Retry
 --- Constructor
@@ -56,7 +57,6 @@ Retry.modifier("UpTo")
     context.count = count
 end)
 :define()
-
 
 --- cp.rx.go.Retry.DelayedBy <cp.rx.go.Statement.Modifier>
 --- Constant

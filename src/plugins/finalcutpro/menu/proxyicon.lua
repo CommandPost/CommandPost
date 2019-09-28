@@ -2,12 +2,11 @@
 ---
 --- Final Cut Pro Proxy Icon Plugin.
 
-local require = require
+local require           = require
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -65,7 +64,6 @@ function mod.init(menuManager)
     end, true)
 
 end
-
 
 local plugin = {
     id              = "finalcutpro.menu.proxyicon",

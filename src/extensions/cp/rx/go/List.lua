@@ -6,8 +6,8 @@
 
 -- local log                   = require("hs.logger").new("List")
 
-local Statement             = require("cp.rx.go.Statement")
-local Observable            = require("cp.rx").Observable
+local Statement         = require "cp.rx.go.Statement"
+local Observable        = require "cp.rx".Observable
 
 local function isCallable(value)
     local valueType = type(value)

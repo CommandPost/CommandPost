@@ -2,14 +2,13 @@
 ---
 --- Final Cut Pro Preferences Panel Manager.
 
-local require = require
+local require       = require
 
-local image                                     = require("hs.image")
+local image         = require "hs.image"
 
-local fcp                                       = require("cp.apple.finalcutpro")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
-
+local fcp           = require "cp.apple.finalcutpro"
+local tools         = require "cp.tools"
+local i18n          = require "cp.i18n"
 
 local plugin = {
     id              = "finalcutpro.preferences.manager",

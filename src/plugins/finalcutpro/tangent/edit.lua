@@ -23,10 +23,10 @@ function plugin.init(deps)
     local group = fcpGroup:group(i18n("edit"))
 
     group:action(baseID+1, i18n("undo"))
-        :onPress(fcp:doSelectMenu({"Edit", "Undo.*"}))
+        :onPress(fcp:doSelectMenu({"Edit", "Undo"}))
 
     group:action(baseID+2, i18n("redo"))
-        :onPress(fcp:doSelectMenu({"Edit", "Redo.*"}))
+        :onPress(fcp:doSelectMenu({"Edit", "Redo"}))
 
     group:action(baseID+3, i18n("delete"))
         :onPress(fcp:doSelectMenu({"Edit", "Delete"}))

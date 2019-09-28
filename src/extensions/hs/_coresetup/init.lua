@@ -92,42 +92,24 @@ return {
                 print("*** ERROR: " .. err)
                 hs.focus()
                 hs.openConsole()
-                hs._TERMINATED = true
             else
-                if not hs._cpLoaded then
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    hs.openConsole()
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-                        "Send Bug Report",
-                        "Quit"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback(true)
-                    else
-                        hs.application.applicationForPID(hs.processInfo["processID"]):kill()
-                    end
+                --------------------------------------------------------------------------------
+                -- NOT DEBUG MODE:
+                --------------------------------------------------------------------------------
+                print("*** ERROR: " .. err)
+                local result =
+                    dialog.blockAlert(
+                    "An unexpected error has occured.",
+                    "Would you like to report this bug to the team?",
+                    "Continue",
+                    "Send Bug Report"
+                )
+                hs.focus()
+                if result == "Send Bug Report" then
+                    local feedback = require("cp.feedback")
+                    feedback.showFeedback()
                 else
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    print("*** ERROR: " .. err)
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
-                        "Continue",
-                        "Send Bug Report"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback()
-                    end
+                    hs.openConsole()
                 end
             end
         end

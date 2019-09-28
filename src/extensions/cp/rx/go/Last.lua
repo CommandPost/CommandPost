@@ -1,9 +1,8 @@
-
 --- === cp.rx.go.Last ===
 ---
 --- A `Statement` that will complete after the only the last result resolves.
 
-local Statement         = require("cp.rx.go.Statement")
+local Statement         = require "cp.rx.go.Statement"
 local toObservable      = Statement.toObservable
 
 --- cp.rx.go.Last(resolvable) -> Last

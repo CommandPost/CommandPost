@@ -8,6 +8,7 @@ local log       = require "hs.logger".new "titles"
 
 local base64    = require "hs.base64"
 local timer     = require "hs.timer"
+local window    = require "hs.window"
 
 local config    = require "cp.config"
 local dialog    = require "cp.dialog"
@@ -234,6 +235,21 @@ function mod.apply(action)
         log.ef("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
         log.ef("action: %s", hs.inspect(action))
         dialog.displayErrorMessage("Something went wrong when trying to select the requested Title.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the correct window has focus:
+    --------------------------------------------------------------------------------
+    local gridWindow = grid:attributeValue("AXWindow")
+    local whichWindow = gridWindow and gridWindow:asHSWindow()
+    if whichWindow then
+        whichWindow:focus()
+        just.doUntil(function()
+            return whichWindow == window.focusedWindow()
+        end)
+    else
+        dialog.displayErrorMessage("Failed to select the window that contains the Titles Browser.")
         return false
     end
 

@@ -4,20 +4,17 @@
 
 local require = require
 
-local log       = require("hs.logger").new("setup")
+local log       = require "hs.logger".new "setup"
 
-local screen    = require("hs.screen")
-local webview   = require("hs.webview")
+local screen    = require "hs.screen"
+local webview   = require "hs.webview"
 
-local config    = require("cp.config")
-local prop      = require("cp.prop")
-local tools     = require("cp.tools")
-local i18n      = require("cp.i18n")
+local config    = require "cp.config"
+local prop      = require "cp.prop"
+local tools     = require "cp.tools"
+local i18n      = require "cp.i18n"
 
-local _         = require("moses")
-
-local panel     = require("panel")
-
+local panel     = require "panel"
 
 local mod = {}
 
@@ -197,22 +194,6 @@ end
 ---  * The current panel as a string
 function mod.currentPanel()
     return mod._currentPanel
-end
-
---- plugins.core.setup.init(env) -> module
---- Function
---- Initialises the module.
----
---- Parameters:
----  * env - The plugin environment table
----
---- Returns:
----  * The Module
-function mod.init(env)
-    mod.setPanelRenderer(env:compileTemplate("html/template.html"))
-    mod.visible:update()
-
-    return mod
 end
 
 -- windowCallback(action, webview, frame) -> none
@@ -464,21 +445,32 @@ function mod.addPanel(newPanel)
     return mod
 end
 
-
 local plugin = {
     id              = "core.setup",
     group           = "core",
     required        = true,
 }
 
-function plugin.init(_, env)
-    return mod.init(env)
+function plugin.init()
+    return mod
 end
 
-function plugin.postInit()
+function plugin.postInit(_, env)
+    --------------------------------------------------------------------------------
+    -- Set the Panel Renderer:
+    --------------------------------------------------------------------------------
+    mod.setPanelRenderer(env:compileTemplate("html/template.html"))
+
+    --------------------------------------------------------------------------------
+    -- Update visibility:
+    --------------------------------------------------------------------------------
+    mod.visible:update()
+
+    --------------------------------------------------------------------------------
+    -- Setup On-boarding Watcher:
+    --------------------------------------------------------------------------------
     mod.onboardingRequired:watch(function(required)
         if required then
-
             --------------------------------------------------------------------------------
             -- The Intro Panel:
             --------------------------------------------------------------------------------
@@ -518,7 +510,10 @@ function plugin.postInit()
         end
     end, true)
 
-    return mod.enabled(true)
+    --------------------------------------------------------------------------------
+    -- Set to 'enabled':
+    --------------------------------------------------------------------------------
+    mod.enabled(true)
 end
 
 return plugin

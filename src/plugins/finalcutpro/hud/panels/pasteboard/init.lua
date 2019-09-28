@@ -6,23 +6,22 @@ local require           = require
 
 local hs                = hs
 
---local log               = require("hs.logger").new("fcpxmlHud")
+--local log               = require "hs.logger".new "fcpxmlHud"
 
-local base64            = require("hs.base64")
-local dialog            = require("hs.dialog")
-local image             = require("hs.image")
-local pasteboard        = require("hs.pasteboard")
+local base64            = require "hs.base64"
+local dialog            = require "hs.dialog"
+local image             = require "hs.image"
+local pasteboard        = require "hs.pasteboard"
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local json              = require("cp.json")
-local tools             = require("cp.tools")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local tools             = require "cp.tools"
 
 local encode            = base64.encode
 local execute           = hs.execute
 local webviewAlert      = dialog.webviewAlert
-
 
 local mod = {}
 
@@ -127,7 +126,6 @@ local function convertXMLtoBinary(xml)
 
 end
 
-
 local plugin = {
     id              = "finalcutpro.hud.panels.pasteboard",
     group           = "finalcutpro",
@@ -176,7 +174,7 @@ function plugin.init(deps, env)
                 else
                     local webview = mod._manager._webview
                     if webview then
-                        webviewAlert(webview, function() end, "There was an error processing the Pasteboard.", "Are you sure there's Final Cut Pro copied?", i18n("ok"))
+                        webviewAlert(webview, function() end, i18n("errorProcessingThePasteboard"), i18n("areYouSureTheresSomethingOnThePasteboard"), i18n("ok"))
                     end
                     mod._manager.injectScript([[setCode("]] .. encode("") .. [[");]])
                 end
@@ -202,7 +200,7 @@ function plugin.init(deps, env)
                 end
                 local webview = mod._manager._webview
                 if webview then
-                    webviewAlert(webview, function() end, "There was an error writing to the Pasteboard.", "Are you sure the XML is valid?", i18n("ok"))
+                    webviewAlert(webview, function() end, i18n("errorWritingToPasteboard"), i18n("areYouSureTheXMLIsValid"), i18n("ok"))
                 end
             elseif params["type"] == "clear" then
                 mod.lastValue({})

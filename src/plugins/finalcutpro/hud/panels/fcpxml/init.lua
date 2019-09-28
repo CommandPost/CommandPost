@@ -4,21 +4,20 @@
 
 local require           = require
 
---local log               = require("hs.logger").new("fcpxmlHud")
+--local log               = require "hs.logger".new "fcpxmlHud"
 
-local base64            = require("hs.base64")
-local dialog            = require("hs.dialog")
-local image             = require("hs.image")
+local base64            = require "hs.base64"
+local dialog            = require "hs.dialog"
+local image             = require "hs.image"
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local json              = require("cp.json")
-local tools             = require("cp.tools")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local json              = require "cp.json"
+local tools             = require "cp.tools"
 
 local encode            = base64.encode
 local webviewAlert      = dialog.webviewAlert
-
 
 local mod = {}
 
@@ -58,7 +57,6 @@ local function updateInfo()
         mod._manager.injectScript([[setCode("]] .. encode(value) .. [[");]])
     end
 end
-
 
 local plugin = {
     id              = "finalcutpro.hud.panels.fcpxml",

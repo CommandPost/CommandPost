@@ -4,7 +4,7 @@
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will complete after the first result resolves.
 
-local Statement             = require("cp.rx.go.Statement")
+local Statement             = require "cp.rx.go.Statement"
 local toObservable          = Statement.toObservable
 
 --- cp.rx.go.First(resolvable) -> First

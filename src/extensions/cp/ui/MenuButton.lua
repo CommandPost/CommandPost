@@ -2,17 +2,20 @@
 ---
 --- Menu Button Module.
 
-local require = require
+local require           = require
 
-local axutils                       = require("cp.ui.axutils")
-local Element						            = require("cp.ui.Element")
-local just							            = require("cp.just")
+--local log               = require("hs.logger").new("MenuButton")
 
-local go                            = require("cp.rx.go")
-local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
+local axutils           = require "cp.ui.axutils"
+local Element           = require "cp.ui.Element"
+local go                = require "cp.rx.go"
+local just              = require "cp.just"
 
-local find                          = string.find
-
+local Do                = go.Do
+local Done              = go.Done
+local find              = string.find
+local If                = go.If
+local WaitUntil         = go.WaitUntil
 
 local MenuButton = Element:subclass("cp.ui.MenuButton")
 
@@ -39,8 +42,8 @@ end
 --- Creates a new MenuButton.
 ---
 --- Parameters:
---- * parent		- The parent object. Should have an `isShowing` property.
---- * uiFinder		- A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
+--- * parent        - The parent object. Should have an `isShowing` property.
+--- * uiFinder      - A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
 
 --- cp.ui.MenuButton.value <cp.prop: anything>
 --- Field
@@ -49,11 +52,11 @@ function MenuButton.lazy.prop:value()
     return self.UI:mutate(
         function(original)
             local ui = original()
-            return ui and ui:attributeValue("AXValue")
+            return ui and ui:attributeValue("AXTitle")
         end,
         function(newValue, original)
             local ui = original()
-            if ui and ui:attributeValue("AXValue") ~= newValue then
+            if ui and ui:attributeValue("AXTitle") ~= newValue then
                 local items = ui:doPress()[1]
                 if items then
                     for _,item in ipairs(items) do
@@ -184,6 +187,17 @@ end
 ---  * the `Statement`.
 function MenuButton:doSelectValue(value)
     return If(self.UI)
+    :Then(function()
+        --------------------------------------------------------------------------------
+        -- Don't bother pressing it if it's already active:
+        --------------------------------------------------------------------------------
+        local ui = self.UI()
+        if ui:attributeValue("AXTitle") == value then
+            return Done()
+        else
+            return true
+        end
+    end)
     :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
     :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
     :Then(function(menuUI)
@@ -400,7 +414,7 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+--- * path      - (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.

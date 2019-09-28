@@ -45,18 +45,18 @@
 
 local require = require
 
-local Statement     = require("cp.rx.go.Statement")
-local Do            = require("cp.rx.go.Do")
-local Done          = require("cp.rx.go.Done")
-local First         = require("cp.rx.go.First")
-local Given         = require("cp.rx.go.Given")
-local If            = require("cp.rx.go.If")
-local Last          = require("cp.rx.go.Last")
-local List          = require("cp.rx.go.List")
-local Retry         = require("cp.rx.go.Retry")
-local Require       = require("cp.rx.go.Require")
-local Throw         = require("cp.rx.go.Throw")
-local WaitUntil     = require("cp.rx.go.WaitUntil")
+local Statement     = require "cp.rx.go.Statement"
+local Do            = require "cp.rx.go.Do"
+local Done          = require "cp.rx.go.Done"
+local First         = require "cp.rx.go.First"
+local Given         = require "cp.rx.go.Given"
+local If            = require "cp.rx.go.If"
+local Last          = require "cp.rx.go.Last"
+local List          = require "cp.rx.go.List"
+local Retry         = require "cp.rx.go.Retry"
+local Require       = require "cp.rx.go.Require"
+local Throw         = require "cp.rx.go.Throw"
+local WaitUntil     = require "cp.rx.go.WaitUntil"
 
 -----------------------------------------------------------
 -- Utility functions
