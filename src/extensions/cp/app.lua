@@ -754,7 +754,7 @@ end
 --- Field
 --- The main [menu](cp.app.menu.md) for the application.
 function app.lazy.value:menu()
-    return menu.new(self)
+    return menu(self)
 end
 
 --- cp.app:launch([waitSeconds], [path]) -> self
