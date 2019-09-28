@@ -1,6 +1,6 @@
---- === cp.delegated ===
+--- === cp.delegator ===
 ---
---- `cp.delegated` is a [middleclass](https://github.com/kikito/middleclass) "mix-in" that allows for
+--- `cp.delegator` is a [middleclass](https://github.com/kikito/middleclass) "mix-in" that allows for
 --- simple specification of "delegated" values and functions in class definitions.
 ---
 --- This allows you to compose an object from other objects, but allow methods or values from the
