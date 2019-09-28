@@ -1021,6 +1021,11 @@ function menu.mt:_visitMenuItems(visitFn, path, menuUI, options)
     end
 end
 
+-- returns the menu when the menu is called as a function or method.
+function menu.mt.__call(self)
+    return self
+end
+
 function menu.mt:__tostring()
     return format("cp.app.menu: %s", self:app():bundleID())
 end

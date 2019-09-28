@@ -750,16 +750,10 @@ function app.lazy.prop:localeResourcesPath()
     :monitor(self.currentLocale)
 end
 
---- cp.app:menu() -> cp.app.menu
---- Method
---- Returns the main `menu` for the application.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.app.menu` for the `cp.app` instance.
-function app.lazy.method:menu()
+--- cp.app.menu <cp.app.menu>
+--- Field
+--- The main [menu](cp.app.menu.md) for the application.
+function app.lazy.value:menu()
     return menu.new(self)
 end
 
