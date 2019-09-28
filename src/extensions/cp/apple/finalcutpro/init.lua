@@ -90,7 +90,6 @@ local tools                                     = require "cp.tools"
 local commandeditor								= require "cp.apple.commandeditor"
 
 local app                                       = require "cp.apple.finalcutpro.app"
-local menu                                      = require "cp.apple.finalcutpro.menu"
 local plugins									= require "cp.apple.finalcutpro.plugins"
 local strings                                   = require "cp.apple.finalcutpro.strings"
 
