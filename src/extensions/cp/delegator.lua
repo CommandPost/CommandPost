@@ -19,7 +19,7 @@
 ---    return true
 --- end
 ---
---- local Boss = class("Boss"):extends(delegator)
+--- local Boss = class("Boss"):include(delegator)
 --- Boss.delegateTo("minion")
 ---
 --- function Boss:initialize()
