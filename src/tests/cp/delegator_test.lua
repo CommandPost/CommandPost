@@ -1,7 +1,8 @@
 local test          = require "cp.test"
 local class         = require "middleclass"
-local delegator      = require "cp.delegator"
+local delegator     = require "cp.delegator"
 local prop          = require "cp.prop"
+local lazy          = require "cp.lazy"
 
 -- local log           = require "hs.logger" .new "lazy_test"
 
@@ -221,5 +222,45 @@ return test.suite("cp.delegator"):with {
         ok(eq(a:b(), "b"))
         ok(eq(b:a(), "a"))
         ok(eq(b:b(), "bb"))
+    end),
+
+    test("lazy first", function()
+        local LazyFirst = class("LazyFirst"):include(lazy):include(delegator)
+        LazyFirst.delegateTo("delegate")
+
+        function LazyFirst:initialize()
+            self.delegate = {
+                value = "delegated value"
+            }
+        end
+
+        function LazyFirst.lazy.value.value()
+            return "lazy value"
+        end
+
+        local lf = LazyFirst()
+
+        ok(eq(lf.value, "lazy value"))
+        ok(eq(lf.delegate.value, "delegated value"))
+    end),
+
+    test("lazy second", function()
+        local LazySecond = class("LazySecond"):include(delegator):include(lazy)
+        LazySecond.delegateTo("delegate")
+
+        function LazySecond:initialize()
+            self.delegate = {
+                value = "delegated value"
+            }
+        end
+
+        function LazySecond.lazy.value.value()
+            return "lazy value"
+        end
+
+        local lf = LazySecond()
+
+        ok(eq(lf.value, "delegated value"))
+        ok(eq(lf.delegate.value, "delegated value"))
     end),
 }
