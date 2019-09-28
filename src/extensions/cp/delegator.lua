@@ -41,10 +41,9 @@
 ---
 --- Delegates can be hard-coded into the class type, or set later.
 
--- local log           = require "hs.logger".new("lazy")
+-- local log           = require "hs.logger".new("delegator")
 
 local prop          = require "cp.prop"
-local format        = string.format
 local insert        = table.insert
 
 local delegator = {}
@@ -62,15 +61,8 @@ local DELEGATES = {}
 -- * superDelegates  - The `delegates` table from the superclass, if available.
 --
 -- Returns:
--- * Nothing
-local function _initDelegateTo(klass)
-    if klass.static.delegates then
-        error("An existing static `delegates` already exists.")
-    end
-    if klass.static.delegateTo then
-        error("An existing static `delegateTo` function already exists.")
-    end
-
+-- * The class instance
+local function _initDelegated(klass)
     local delegates = {}
 
     klass.static[DELEGATES] = delegates
@@ -78,43 +70,75 @@ local function _initDelegateTo(klass)
         for i = 1,select("#", ...) do
             insert(delegates, select(i, ...))
         end
+
+        return klass
     end
 end
 
--- _getDelegatedResult(instance, name) -> anything
+-- _getDelegatedResult(instance, name[], klass]) -> anything
 -- Function
 -- Goes through the list of delegates and
 --
 -- Parameters:
 -- * instance       - The instance to check.
 -- * name           - The key to check for.
+-- * klass          - The `class` to search in (optional). If none is provided, the instance class is used.
 --
 -- Returns:
 -- * The value or `function`, depending on the factory type.
-local function _getDelegatedResult(instance, name)
-    local klass = instance.class
-    local delegates = instance and klass[DELEGATES]
+local function _getDelegatedResult(instance, name, klass)
 
-    local value = instance[name]
+    klass = klass or instance.class
+    local delegates = klass.static[DELEGATES]
+
+    local value = rawget(instance, name)
 
     if not value then
-        for _,key in ipairs(delegates) do
-            local delegate = delegates[key]
-            local delegateType = type(delegate)
+        local found = false
 
-            if delegateType == "function" then
-                delegate = delegate()
-            elseif prop.is(delegate) then
-                delegate = prop()
+        for _,key in ipairs(delegates) do
+            if found then
+                break
             end
 
-            if delegate then
-                value = delegate[name]
+            if key ~= name then
+                local delegate = instance[key]
+                local delegateType = type(delegate)
 
-                if value then
-                    break
+                if delegateType == "function" then
+                    delegate = delegate(instance)
+                elseif prop.is(delegate) then
+                    delegate = delegate:get()
+                end
+
+                if delegate then
+                    found = true
+                    value = delegate[name]
+
+                    if type(value) == "function" then
+                        -- we wrap the function so that we can redirect to the delegate when appropriate.
+                        local fn = value
+                        value = function(self, ...)
+                            if self == instance then
+                                -- it's getting called as a method with the instance as `self` so redirect it to the delegate.
+                                return fn(delegate, ...)
+                            else
+                                -- it's probably a direct function call
+                                return fn(self, ...)
+                            end
+                        end
+                    end
+
+                    if value then
+                        break
+                    end
                 end
             end
+        end
+
+        if not found and klass.super then
+            -- check the super-class hierarchy.
+            value = _getDelegatedResult(instance, name, klass.super)
         end
     end
 
@@ -139,7 +163,7 @@ end
 
 -- _modifyInstanceIndex(klass) -> nothing
 -- Function
--- Updates the `__index` function to the wrapper for lazy.
+-- Updates the `__index` function to the wrapper for delegator.
 --
 -- Parameters:
 -- * klass      - The middleclass `class` instance to modify.
@@ -149,14 +173,14 @@ end
 
 -- _newSublassMethod(prevSubclass) -> function
 -- Function
--- Creates a wrapper function to replace the existing `subclass` method to pass on lazy configurations.
+-- Creates a wrapper function to replace the existing `subclass` method to pass on delegations.
 --
 -- Parameters:
 -- * prevSubclass       - The previous `subclass` function/method
 local function _getNewSubclassMethod(prevSubclass)
     return function(klass, name)
         local subclass = prevSubclass(klass, name)
-        _initDelegateTo(subclass, klass.static.lazy)
+        _initDelegated(subclass, klass.static[DELEGATES])
         _modifyInstanceIndex(subclass)
         return subclass
     end
@@ -171,7 +195,7 @@ end
 
 -- initialises the provided class when it includes the `lazy` mix-in.
 function delegator:included(klass) -- luacheck: ignore
-    _initDelegateTo(klass)
+    _initDelegated(klass)
     _modifyInstanceIndex(klass)
     _modifySubclassMethod(klass)
 end

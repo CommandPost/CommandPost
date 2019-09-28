@@ -10,8 +10,6 @@ return test.suite("cp.delegator"):with {
         local Alpha = class("Alpha"):include(delegator)
 
         ok(eq(type(Alpha.static.delegateTo), "function"))
-        ok(eq(type(Alpha.delegates), "table"))
-        ok(eq(Alpha.lazy, Alpha.static.lazy))
     end),
 
     test("simple", function()
@@ -61,7 +59,7 @@ return test.suite("cp.delegator"):with {
 
         ok(eq(a.alphaValue, "alphaValue"))
         ok(eq(a:alphaMethod(), "alphaValue"))
-        ok(eq(a.beta.alphaValue, "alphaBetaValue"))
+        ok(eq(a.beta.alphaValue, "betaAlphaValue"))
         ok(eq(a.beta.betaValue, "betaValue"))
         ok(eq(a.beta:betaMethod(), "betaValue"))
         ok(eq(a.betaValue, "betaValue"))
@@ -100,9 +98,9 @@ return test.suite("cp.delegator"):with {
 
         ok(eq(a.alphaValue, "alphaValue"))
         ok(eq(a:alphaMethod(), "alphaValue"))
-        ok(eq(a.beta.alphaValue, "alphaBetaValue"))
-        ok(eq(a.beta.betaValue, "betaValue"))
-        ok(eq(a.beta:betaMethod(), "betaValue"))
+        ok(eq(a:beta().alphaValue, "betaAlphaValue"))
+        ok(eq(a:beta().betaValue, "betaValue"))
+        ok(eq(a:beta():betaMethod(), "betaValue"))
         ok(eq(a.betaValue, "betaValue"))
         ok(eq(a:betaMethod(), "betaValue"))
     end),
@@ -141,36 +139,83 @@ return test.suite("cp.delegator"):with {
         ok(eq(a.alphaValue, "alphaValue"))
         ok(eq(a:alphaMethod(), "alphaValue"))
 
-        ok(eq(a.beta.alphaValue, "alphaBetaValue"))
-        ok(eq(a.beta.betaValue, "betaValue"))
-        ok(eq(a.beta:betaMethod(), "betaValue"))
+        ok(eq(a.beta().alphaValue, "betaAlphaValue"))
+        ok(eq(a.beta().betaValue, "betaValue"))
+        ok(eq(a.beta():betaMethod(), "betaValue"))
         ok(eq(a.betaValue, "betaValue"))
         ok(eq(a:betaMethod(), "betaValue"))
+    end),
+
+    test("override", function()
+        local Alpha = class("Alpha"):include(delegator)
+
+        Alpha.delegateTo("delegate")
+
+        function Alpha:initialize()
+            self.value = "undelegated"
+
+            self.delegate = {
+                value = "delegated",
+                getValue = function(this)
+                    return this.value
+                end,
+            }
+        end
+
+        local a = Alpha()
+
+        ok(eq(a.value, "undelegated"))
+        ok(eq(a.delegate.value, "delegated"))
+        ok(eq(a.delegate:getValue(), "delegated"))
+        ok(eq(a:getValue(), "delegated"))
     end),
 
     test("subclass", function()
         local Alpha = class("Alpha"):include(delegator)
 
+        Alpha.delegateTo("aDelegate")
+
         function Alpha:initialize()
-            self.delegated = {
-                delegatedValue = "delegatedValue",
-                betaValue = "delegatedBeta"
+            self.aDelegate = {
+                value = "alpha",
             }
+        end
+
+        function Alpha.a()
+            return "a"
+        end
+
+        function Alpha.b()
+            return "b"
         end
 
         local Beta = Alpha:subclass("Beta")
 
-        function Beta.lazy.method.b()
+        Beta.delegateTo("bDelegate")
+
+        function Beta:initialize()
+            Alpha.initialize(self)
+
+            self.aDelegate.value = "changed alpha"
+
+            self.bDelegate = {
+                value = "beta"
+            }
+        end
+
+        function Beta.b()
             return "bb"
         end
 
         local a = Alpha()
         local b = Beta()
 
-        ok(eq(a:id(), 1))
-        ok(eq(a:id(), 1))
-        ok(eq(b:id(), 2))
-        ok(eq(b:id(), 2))
+        ok(eq(a.aDelegate.value, "alpha"))
+        ok(eq(a.value, "alpha"))
+
+        ok(eq(b.aDelegate.value, "changed alpha"))
+        ok(eq(b.bDelegate.value, "beta"))
+        ok(eq(b.value, "beta"))
 
         ok(eq(a:a(), "a"))
         ok(eq(a:b(), "b"))
