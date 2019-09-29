@@ -217,7 +217,6 @@ function plugin.init(deps)
             textArea:show()
             fcp:selectMenu({"Window", "Go To", "Inspector"})
             textArea:focused(true)
-            print("test")
         end)
         :titled(i18n("focusOnTitleTextInInspector"))
 
