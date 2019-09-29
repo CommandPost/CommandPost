@@ -1,3 +1,7 @@
+--- === cp.apple ===
+---
+--- A collection of modules related to Apple apps and frameworks.
+
 local require   = require
 local log       = require "hs.logger" .new "cp.apple"
 
