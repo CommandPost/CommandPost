@@ -129,19 +129,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local updateTimelineScrollValue
     local updateTimelineScroll = deferred.new(0.01):action(function()
-        local timelineUI = fcp:timeline():UI()
-        local splitGroup = timelineUI and childWithRole(timelineUI, "AXSplitGroup")
-        local scrollArea = splitGroup and childWithRole(splitGroup, "AXScrollArea")
-        local scrollBar = scrollArea and childWithRole(scrollArea, "AXScrollBar")
+        local scrollBar = fcp:timeline():contents():horizontalScrollBarUI()
         if scrollBar then
             scrollBar:setAttributeValue("AXValue", tonumber(updateTimelineScrollValue))
         end
     end)
-
-    manager.controls:new("verticalTimelineScroll", {
+    manager.controls:new("horizontalTimelineScroll", {
         group = "fcpx",
-        text = i18n("verticalTimelineScroll"),
-        subText = i18n("verticalTimelineScrollDescription"),
+        text = i18n("horizontalTimelineScroll"),
+        subText = i18n("horizontalTimelineScrollDescription"),
         fn = function(metadata)
             if metadata.fourteenBitCommand or metadata.pitchChange then
                 --------------------------------------------------------------------------------
