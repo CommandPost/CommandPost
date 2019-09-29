@@ -210,7 +210,7 @@ end
 --- Field
 --- The current [preferences](cp.app.prefs.md) for the application.
 function app.lazy.value:preferences()
-    return prefs.new(self:bundleID())
+    return prefs(self:bundleID())
 end
 
 --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
