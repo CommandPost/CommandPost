@@ -1,4 +1,4 @@
-local spec          = require("cp.spec")
+local spec          = require "cp.spec"
 local describe, it  = spec.describe, spec.it
 
 return describe "Specification" {

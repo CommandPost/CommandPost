@@ -1,5 +1,5 @@
 local test		= require("cp.test")
--- local log		= require("hs.logger").new("testjust")
+-- local log		= require "hs.logger" .new "testjust"
 
 local Run		= require("cp.spec.Run")
 

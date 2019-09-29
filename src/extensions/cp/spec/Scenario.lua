@@ -127,11 +127,11 @@ local ASSERT = {}
 local ERROR = {}
 
 local function hijackAssert(this)
-    log.df("hijackAssert: called")
+    -- log.df(">>> hijackAssert: called")
     this._run[ASSERT] = _G.assert
     this._run[ERROR] = _G.error
     _G.assert = function(ok, message, ...)
-        -- log.df("hijacked assert: called")
+        -- log.df("hijacked assert: called with %s, %q", ok, string.format(message, ...))
         if ok then
             -- log.df("hijacked assert: passed")
             return ok, message, ...
@@ -151,7 +151,7 @@ local function hijackAssert(this)
 end
 
 local function restoreAssert(this)
-    log.df("restoreAssert: called")
+    -- log.df(">>> restoreAssert: called")
     if this._run[ASSERT] then
         -- log.df("restoreAssert: resetting assert")
         _G.assert = this._run[ASSERT]
@@ -172,7 +172,6 @@ end
 function Scenario:run(...)
     -- TODO: support filtering
     return Run(self.name)
-
     :onBefore(hijackAssert)
     :onRunning(self.testFn)
     :onAfter(restoreAssert)

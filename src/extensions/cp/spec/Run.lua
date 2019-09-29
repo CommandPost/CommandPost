@@ -147,10 +147,10 @@ end
 -- Method
 -- Completes this run.
 function Run.This:_complete()
-    log.df("Run.This:_complete: index = %d", self._index)
+    -- log.df("Run.This:_complete: index = %d", self._index)
     self:cleanup()
     if self:isActive() then
-        log.df("Run.This:_complete: is active...")
+        -- log.df("Run.This:_complete: is active...")
         self.state = Run.This.state.done
         self._run:_doPhaseAction(self._index + 1)
     end
@@ -197,10 +197,12 @@ function Run.This:__call()
         return err
     end)
 
-    if ok ~= true and not Handled.is(err) then
-        -- there was an error, and is has not been handled already
-        self:log("Action #%d failed. Aborting...", self._index)
-        self._run:_doAbort(err)
+    if ok ~= true then
+        if not Handled.is(err) then
+            -- there was an error, and is has not been handled already
+            self:log("Action #%d failed. Aborting...", self._index)
+            self._run:_doAbort(err)
+        end
     elseif not self:isWaiting() then
         self:log("Action #%d completed.", self._index)
         self._run:_doPhaseAction(self._index + 1)
@@ -342,15 +344,22 @@ function Run:initialize(name)
 end
 
 function Run:_do(runFn)
+    -- self:log("_do: called...")
     self:_doCancelled()
+    -- self:log("_do: previous 'do' cancelled...")
     self._runTimer = timer.doAfter(0, function()
+        -- log.df("Run:_do: doAfter: called...")
         self._runTimer = nil
+        -- log.df("Run:_do: Executing runFn...")
         runFn()
     end)
+    -- self:log("_do: timer running...")
 end
 
 function Run:_doCancelled()
+    -- log.df("Run:_doCancelled: called...")
     if self._runTimer then
+        -- log.df("Run:_doCancelled: cancelling _runTimer")
         self._runTimer:stop()
         self._runTimer = nil
     end
@@ -434,17 +443,19 @@ end
 -- triggers an error, it is logged in the `report` and we move to the `abort`
 -- phase for the current phase.
 function Run:_doPhaseAction(index)
-    self:log("_doPhaseAction: %d", index)
+    -- self:log("_doPhaseAction: %d", index)
     local currentPhase = self.phase
     local currentActions = self.phaseActions[currentPhase]
     local actionFn = currentActions and currentActions[index]
     if actionFn then
-        self:log("Running action #%d in %s phase...", index, currentPhase)
+        self:log("Running action #%d (%s) in %s phase...", index, type(actionFn), currentPhase)
         self:_do(function()
-            -- self:log("_doPhaseAction: running timer...")
+            -- log.df("_doPhaseAction: _do: running _this...")
             self._this = Run.This(self, actionFn, index)
             self._this()
+            -- log.df("_doPhaseAction: _do: _this queued...")
         end)
+        -- log.df("_doPhaseAction: #%d sent to _do...", index)
     else
         self:_doNext()
     end
@@ -481,12 +492,14 @@ end
 -- Logs the error with the current report's `fail` log and begins processing the
 -- `abort` phase for the current phase.
 function Run:_doFail(err)
+    -- log.df("Run:_doFail: called")
     self:timeoutCancelled()
     self.report:failed(err)
     self.result = Run.result.failed
 
     local currentPhase = self.phase
     if currentPhase then
+        -- log.df("Run:_doFail: doing phase %s", currentPhase.abort)
         self:_doPhase(currentPhase.abort)
     end
 end
