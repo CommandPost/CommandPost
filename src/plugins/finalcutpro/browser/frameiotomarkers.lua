@@ -3,18 +3,16 @@
 --- Takes the contents of a Frame.io CSV file and adds markers to a clip
 --- selected in the Final Cut Pro Browser. Only one clip can be selected.
 
-local require = require
+local require           = require
 
-local log                       = require("hs.logger").new("frameiotomarkers")
+local log               = require "hs.logger".new "frameiotomarkers"
 
-local dialog                    = require("cp.dialog")
-local fcp                       = require("cp.apple.finalcutpro")
-local just                      = require("cp.just")
-local i18n                      = require("cp.i18n")
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local just              = require "cp.just"
+local i18n              = require "cp.i18n"
 
-local csv                       = require("csv")
-
-
+local csv               = require "csv"
 
 -- process() -> nil
 -- Function
@@ -26,7 +24,6 @@ local csv                       = require("csv")
 -- Returns:
 --  * None
 local function process()
-
     --------------------------------------------------------------------------------
     -- Request the CSV file:
     --------------------------------------------------------------------------------
@@ -140,7 +137,6 @@ local function process()
     dialog.displayMessage(i18n("addMarkersToSelectedClipInBrowserFromFrameIOCSVCompleted"))
 
 end
-
 
 local plugin = {
     id                = "finalcutpro.browser.frameiotomarkers",

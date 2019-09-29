@@ -18,7 +18,15 @@ local tools       = require "cp.tools"
 local ui          = require "cp.web.ui"
 local i18n        = require "cp.i18n"
 
-local _           = require "moses"
+local moses       = require "moses"
+
+local append      = moses.append
+local clone       = moses.clone
+local isEmpty     = moses.isEmpty
+local map         = moses.map
+local pop         = moses.pop
+local reduce      = moses.reduce
+local same        = moses.same
 
 local mod = {}
 
@@ -374,7 +382,7 @@ local baseModifiers = {
     { value = "control",    label = "⌃" },
 }
 
--- _.combinations(list) -> none
+-- combinations(list) -> none
 -- Function
 -- Creates a table of every possible combination of list items
 --
@@ -383,22 +391,22 @@ local baseModifiers = {
 --
 -- Returns:
 --  * None
-function _.combinations(list)
-    if _.isEmpty(list) then
+local function combinations(list)
+    if isEmpty(list) then
         return {}
     end
     --------------------------------------------------------------------------------
     -- Work with a copy of the list:
     --------------------------------------------------------------------------------
-    list = _.clone(list)
-    local first = _.pop(list)
-    local result = _({{first}})
-    if not _.isEmpty(list) then
+    list = clone(list)
+    local first = pop(list)
+    local result = moses({{first}})
+    if not isEmpty(list) then
         --------------------------------------------------------------------------------
         -- Get all combinations of the remainder of the list:
         --------------------------------------------------------------------------------
-        local combos = _.combinations(list)
-        result = result:append(_.map(combos, function(x,v) return _.append({first}, v) end)) -- luacheck: ignore
+        local combos = combinations(list)
+        result = result:append(map(combos, function(v) return append({first}, v) end))
         --------------------------------------------------------------------------------
         -- Add the sub-combos at the end:
         --------------------------------------------------------------------------------
@@ -407,7 +415,7 @@ function _.combinations(list)
     return result:value()
 end
 
--- _.reduceCombinations(list, f, state) -> table
+-- reduceCombinations(list, f, state) -> table
 -- Function
 -- Reduces combinations of modifiers
 --
@@ -418,8 +426,8 @@ end
 --
 -- Returns:
 --  * Table of reduced combinations
-function _.reduceCombinations(list, f, state)
-    return _.map(_.combinations(list), function(x,v) return _.reduce(v, f, state) end) -- luacheck: ignore
+local function reduceCombinations(list, f, state)
+    return map(combinations(list), function(v) return reduce(v, f, state) end)
 end
 
 -- iterateModifiers(list) -> table
@@ -432,7 +440,7 @@ end
 -- Returns:
 --  * Table of modifiers
 local function iterateModifiers(list)
-    return _.reduceCombinations(list, function(memo, v)
+    return reduceCombinations(list, function(memo, v)
         return { value = v.value .. ":" .. memo.value, label = v.label .. memo.label}
     end)
 end
@@ -453,8 +461,8 @@ local allModifiers = iterateModifiers(baseModifiers)
 --  * HTML as string
 local function modifierOptions(shortcut)
     local out = ""
-    for x,modifiers in ipairs(allModifiers) do -- luacheck: ignore
-        local selected = shortcut and _.same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
+    for _, modifiers in ipairs(allModifiers) do
+        local selected = shortcut and same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
         out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
     end
     return out
@@ -527,7 +535,7 @@ local function generateContent()
     table.sort(groupLabels, function(a, b) return a.label < b.label end)
 
     local context = {
-        _                       = _,
+        _                       = moses,
         groupLabels             = groupLabels,
         groups                  = commands.groups(),
         defaultGroup            = defaultGroup,

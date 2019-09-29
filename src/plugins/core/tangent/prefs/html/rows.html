@@ -3,14 +3,14 @@
 %}
 			<tr>
 				<td class="tangentRowFavourite">
-					Tangent Favourite #{{ i }}
+					{{ i18n("tangent") }} {{ i18n("favourite") }} #{{ i }}
 				</td>
 				<td class="tangentRowAction">
 					<input type="text" id="tangent_button{{ i }}_action" class="tangentActionTextbox" value="{{ favourites[i] and favourites[i].actionTitle or none }}" disabled>
 				</td>
 				<td class="tangentRowActionButton">
-					<a id="tangent_button{{ i }}_actionButton" href="#" class="button tangentActionButton" onclick="pressTangetActionButton({{ i }})">Select</a>
-					<a id="tangent_button{{ i }}_clearActionButton" href="#" class="button tangentActionButton" onclick="pressTangetClearButton({{ i }})">Clear</a>
+					<a id="tangent_button{{ i }}_actionButton" href="#" class="button tangentActionButton" onclick="pressTangetActionButton({{ i }})">{{ i18n("select") }}</a>
+					<a id="tangent_button{{ i }}_clearActionButton" href="#" class="button tangentActionButton" onclick="pressTangetClearButton({{ i }})">{{ i18n("clear") }}</a>
 				</td>
 			</tr>
 {%

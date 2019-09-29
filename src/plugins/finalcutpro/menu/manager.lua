@@ -2,15 +2,13 @@
 ---
 --- Final Cut Pro Menu Manager.
 
-local require = require
+local require       = require
 
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local i18n                      = require("cp.i18n")
-
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local mod = {}
-
 
 local plugin = {
     id              = "finalcutpro.menu.manager",
@@ -134,24 +132,6 @@ function plugin.init(deps)
             label = i18n("show") .. " " .. i18n("pasteboard"),
             onchange = function(_, params) pasteboardDisabled(not params.checked) end,
             checked = function() return not pasteboardDisabled() end,
-        }
-    )
-
-    --------------------------------------------------------------------------------
-    -- Add "Tools" section to the menubar:
-    --------------------------------------------------------------------------------
-    local tools = menuManager.addSection(6000)
-    tools:setDisabledFn(disabledFn)
-    tools:setDisabledPreferenceKey("tools")
-    tools:addHeading(i18n("tools"))
-    mod.tools = tools
-
-    local toolsDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "tools", false)
-    prefs:addCheckbox(406,
-        {
-            label = i18n("show") .. " " .. i18n("tools"),
-            onchange = function(_, params) toolsDisabled(not params.checked) end,
-            checked = function() return not toolsDisabled() end,
         }
     )
 

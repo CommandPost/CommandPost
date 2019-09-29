@@ -4,13 +4,12 @@
 
 local require       = require
 
-local log           = require("hs.logger").new("plist")
+local log           = require "hs.logger".new "plist"
 
-local fs            = require("hs.fs")
+local fs            = require "hs.fs"
 
-local plistParse    = require("cp.plist.plistParse")
-local tools         = require("cp.tools")
-
+local plistParse    = require "cp.plist.plistParse"
+local tools         = require "cp.tools"
 
 local plist = {}
 

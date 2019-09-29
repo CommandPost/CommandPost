@@ -256,7 +256,7 @@
 </script>
 <table style="width: 100%; text-align: left; vertical-align: text-bottom; padding-top: 10px;">
 	<tr>
-		<th style="width: 20%;"><span style="font-weight:bold; font-size:1.17em; padding-left: 20px;">{{ i18n("layoutEditor") }}</span></th>
+		<th style="width: 10%;"><span style="font-weight:bold; font-size:1.17em; padding-left: 20px;">{{ i18n("layoutEditor") }}</span></th>
 		<th style="width: 30%; text-align: right;"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 			<select id="streamDeckGroupSelect" style="width: 150px;" onchange="updateStreamDeckGroup()">
 				{%
@@ -281,7 +281,7 @@
 				{% end %}
 			</select>
 		</span></th>
-		<th style="width: 16%;"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+		<th style="width: 16%; ; text-align: right;"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
 			<input type="text" id="streamDeckBankLabel" class="streamDeckLabel" value="{{ bankLabel }}" onchange="updateStreamDeckBankLabel()" placeholder="{{ i18n("none") }}">
 		</th>
 		<th style="width: 1%;"></th>

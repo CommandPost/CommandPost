@@ -4,13 +4,13 @@
 
 local require = require
 
-local image     = require("hs.image")
-local menubar   = require("hs.menubar")
+local image     = require "hs.image"
+local menubar   = require "hs.menubar"
 
-local config    = require("cp.config")
-local i18n      = require("cp.i18n")
+local config    = require "cp.config"
+local i18n      = require "cp.i18n"
 
-local section   = require("section")
+local section   = require "section"
 
 local manager = {}
 
@@ -42,7 +42,7 @@ function manager.init()
     --------------------------------------------------------------------------------
     -- Set Tool Tip:
     --------------------------------------------------------------------------------
-    manager.menubar:setTooltip(config.appName .. " " .. i18n("version") .. " " .. config.appVersion)
+    manager.menubar:setTooltip(config.appName .. " " .. config.appVersion .. " (" .. config.appBuild .. ")")
 
     --------------------------------------------------------------------------------
     -- Work out Menubar Display Mode:
@@ -217,6 +217,22 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Tools Section:
+    --------------------------------------------------------------------------------
+    local tools = manager.addSection(7777777)
+    local toolsEnabled = config.prop("menubarToolsEnabled", true)
+    tools:setDisabledFn(function() return not toolsEnabled() end)
+    tools:addHeading(i18n("tools"))
+    prefs:addCheckbox(105,
+        {
+            label = i18n("show") .. " " .. i18n("tools"),
+            onchange = function(_, params) toolsEnabled(params.checked) end,
+            checked = toolsEnabled,
+        }
+    )
+    manager.tools = tools
+
+    --------------------------------------------------------------------------------
     -- Help & Support Section:
     --------------------------------------------------------------------------------
     local helpAndSupport = manager.addSection(8888888)
@@ -275,7 +291,7 @@ function plugin.init(deps)
             return { title = "-" }
         end)
     :addItem(99999999.2, function()
-        return { title = i18n("version") .. ": " .. config.appVersion, disabled = true }
+        return { title = i18n("version") .. ": " .. config.appVersion .. " (" .. config.appBuild .. ")", disabled = true }
     end)
 
     return manager

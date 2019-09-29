@@ -1,4 +1,3 @@
-
 --- === cp.rx.go.Throw ===
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will throw the provided message.
@@ -9,8 +8,8 @@
 --- Throw("There was an error: %s", errorMessage)
 --- ```
 
-local Statement             = require("cp.rx.go.Statement")
-local Observable            = require("cp.rx").Observable
+local Statement             = require "cp.rx.go.Statement"
+local Observable            = require "cp.rx".Observable
 
 local format                = string.format
 

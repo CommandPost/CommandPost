@@ -19,7 +19,9 @@ local tools         = require "cp.tools"
 local i18n          = require "cp.i18n"
 
 local panel         = require "panel"
-local _             = require "moses"
+local moses         = require "moses"
+
+local sortedIndex   = moses.sortedIndex
 
 local doAfter       = timer.doAfter
 local waitUntil     = timer.waitUntil
@@ -507,7 +509,7 @@ function mod.addPanel(params)
     --log.df("Adding Preferences Panel with ID: %s", id)
     local newPanel = panel.new(params, mod)
 
-    local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
+    local index = sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
 
     return newPanel

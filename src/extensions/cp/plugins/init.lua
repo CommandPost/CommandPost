@@ -147,28 +147,27 @@
 
 local require = require
 
-local log                           = require("hs.logger").new("plugins")
+local log           = require "hs.logger".new "plugins"
 
-local console                       = require("hs.console")
-local fs                            = require("hs.fs")
-local inspect                       = require("hs.inspect")
-local fnutils                       = require("hs.fnutils")
-local timer                         = require("hs.timer")
+local console       = require "hs.console"
+local fs            = require "hs.fs"
+local inspect       = require "hs.inspect"
+local fnutils       = require "hs.fnutils"
+local timer         = require "hs.timer"
 
-local config                        = require("cp.config")
-local env                           = require("cp.plugins.env")
-local plugin                        = require("cp.plugins.plugin")
-local tools                         = require("cp.tools")
+local config        = require "cp.config"
+local env           = require "cp.plugins.env"
+local plugin        = require "cp.plugins.plugin"
+local tools         = require "cp.tools"
 
-local doAfter                       = timer.doAfter
-
+local doAfter       = timer.doAfter
 
 local mod = {}
 
 -- SLOW_PLUGIN_WARNING_THRESHOLD -> number
 -- Constant
 -- Slow Plugin Warning Threshold
-local SLOW_PLUGIN_WARNING_THRESHOLD = 1
+local SLOW_PLUGIN_WARNING_THRESHOLD = 0.1
 
 --- cp.plugins.CACHE -> table
 --- Constant

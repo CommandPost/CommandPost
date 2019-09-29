@@ -11,6 +11,9 @@ local prop                  = require "cp.prop"
 
 local moses                 = require "moses"
 
+local filter                = moses.filter
+local map                   = moses.map
+
 local cache                 = axutils.cache
 local isValid               = axutils.isValid
 local childrenMatching      = axutils.childrenMatching
@@ -217,7 +220,7 @@ end
 -- Returns:
 --  * A table of `Clip` objects.
 local function _uiToClips(clipsUI)
-    return moses.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+    return map(clipsUI, function(clipUI) return Clip.new(clipUI) end)
 end
 
 -- _clipsToUI(clips) -> none
@@ -230,7 +233,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return moses.map(clips, function(_,clip) return clip:UI() end)
+    return map(clips, function(clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:clipsUI(filterFn) -> table | nil
@@ -271,7 +274,7 @@ function LibrariesFilmstrip:clips(filterFn)
     if clipsUI then
         local clips = _uiToClips(clipsUI)
         if filterFn then
-            clips = moses.filter(clips, function(_,clip) return filterFn(clip) end)
+            clips = filter(clips, function(_,clip) return filterFn(clip) end)
         end
         return clips
     end

@@ -2,14 +2,16 @@
 ---
 --- Browser Keywords Presets.
 
-local require = require
+local require               = require
 
-local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
-local config                            = require("cp.config")
-local tools                             = require("cp.tools")
-local i18n                              = require("cp.i18n")
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
 
+local displayErrorMessage   = dialog.displayErrorMessage
+local displayNotification   = dialog.displayNotification
 
 local mod = {}
 
@@ -47,9 +49,9 @@ function mod.save(preset)
         --------------------------------------------------------------------------------
         -- Display Notification:
         --------------------------------------------------------------------------------
-        dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
+        displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
     else
-        dialog.displayErrorMessage("There doesn't appear to be any Keyword Shortcuts allocated in the Keyword Editor.")
+        displayErrorMessage(i18n("noKeyboardShortcutsInKeywordEditor"))
     end
 
 end
@@ -64,7 +66,6 @@ end
 --- Returns:
 ---  * None
 function mod.restore(preset)
-
     --------------------------------------------------------------------------------
     -- Get Values from Settings:
     --------------------------------------------------------------------------------
@@ -104,10 +105,8 @@ function mod.restore(preset)
     --------------------------------------------------------------------------------
     -- Display Notification:
     --------------------------------------------------------------------------------
-    dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
-
+    displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
 end
-
 
 local plugin = {
     id              = "finalcutpro.browser.keywords",

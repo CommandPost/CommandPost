@@ -7,16 +7,17 @@
 --- * Originally forked from: https://github.com/bjornbytes/rxlua
 --- * MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
 
-local require = require
+local require           = require
 
-local timer             = require("hs.timer")
-local List              = require("cp.collect.List")
-local Queue             = require("cp.collect.Queue")
+local timer             = require "hs.timer"
+
+local List              = require "cp.collect.List"
+local Queue             = require "cp.collect.Queue"
 
 local doAfter           = timer.doAfter
 local format            = string.format
-local insert, remove    = table.insert, table.remove
-
+local insert            = table.insert
+local remove            = table.remove
 
 local util = {}
 

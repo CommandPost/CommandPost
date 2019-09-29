@@ -16,11 +16,10 @@
 
 local require = require
 
-local log               = require("hs.logger").new("actnhndlr")
+local log       = require "hs.logger".new "actnhndlr"
 
-local choices           = require("cp.choices")
-local prop              = require("cp.prop")
-
+local choices   = require "cp.choices"
+local prop      = require "cp.prop"
 
 local handler = {}
 

@@ -5,8 +5,7 @@
 local require = require
 local hs = hs
 
-local i18n = require("cp.i18n")
-
+local i18n = require "cp.i18n"
 
 local mod = {}
 
@@ -62,7 +61,8 @@ function plugin.init(deps)
 
     deps.menu.top:addItem(0.00000000000000000000000000001, function()
         if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
-            return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",    fn = mod.checkForUpdates }
+            local version, build = hs.updateAvailable()
+            return { title = i18n("updateAvailable") .. ": " .. version .. " (" .. build .. ")",    fn = mod.checkForUpdates }
         end
     end)
     :addSeparator(2)

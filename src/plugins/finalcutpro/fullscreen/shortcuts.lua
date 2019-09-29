@@ -2,19 +2,18 @@
 ---
 --- Fullscreen Shortcuts
 
-local require = require
+local require               = require
 
-local eventtap                          = require("hs.eventtap")
-local timer                             = require("hs.timer")
+local eventtap              = require "hs.eventtap"
+local timer                 = require "hs.timer"
 
-local commandeditor                     = require("cp.apple.commandeditor")
-local config                            = require("cp.config")
-local fcp                               = require("cp.apple.finalcutpro")
-local i18n                              = require("cp.i18n")
-local shortcut                          = require("cp.commands.shortcut")
+local commandeditor         = require "cp.apple.commandeditor"
+local config                = require "cp.config"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local shortcut              = require "cp.commands.shortcut"
 
-local doAfter                           = timer.doAfter
-
+local doAfter               = timer.doAfter
 
 local mod = {}
 
@@ -219,7 +218,6 @@ function mod.checkCommand(whichModifier, whichKey)
 
     end
 end
-
 
 local plugin = {
     id              = "finalcutpro.fullscreen.shortcuts",

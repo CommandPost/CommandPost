@@ -4,14 +4,13 @@
 
 local require           = require
 
---local log               = require("hs.logger").new("info")
+--local log               = require "hs.logger".new "info"
 
-local image             = require("hs.image")
+local image             = require "hs.image"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local i18n              = require("cp.i18n")
-
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -114,7 +113,6 @@ function mod.updateWatchers(enabled)
         fcp.app.preferences:prop("FFPlayerQuality"):unwatch(mod.updateInfo)
     end
 end
-
 
 local plugin = {
     id              = "finalcutpro.hud.panels.info",

@@ -6,7 +6,6 @@ local require = require
 
 local i18n = require("cp.i18n")
 
-
 local plugin = {
     id = "core.tangent.commandpost.functions",
     group = "core",
@@ -29,49 +28,49 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Global Console:
     --------------------------------------------------------------------------------
-    group:action(id, i18n("cpGlobalConsole" .. "_title"))
+    group:action(id, i18n("cpGlobalConsole_title"))
         :onPress(deps.coreConsole.show)
     id = id + 1
 
     --------------------------------------------------------------------------------
     -- Developers Guide:
     --------------------------------------------------------------------------------
-    group:action(id, i18n("cpDeveloperGuide" .. "_title"))
+    group:action(id, i18n("cpDeveloperGuide_title"))
         :onPress(deps.developerguide.show)
     id = id + 1
 
     --------------------------------------------------------------------------------
     -- Feedback:
     --------------------------------------------------------------------------------
-    group:action(id, i18n("cpFeedback" .. "_title"))
+    group:action(id, i18n("cpFeedback_title"))
         :onPress(deps.feedback.show)
     id = id + 1
 
     --------------------------------------------------------------------------------
     -- User Guide:
     --------------------------------------------------------------------------------
-    group:action(id, i18n("cpUserGuide" .. "_title"))
+    group:action(id, i18n("cpUserGuide_title"))
         :onPress(deps.userguide.show)
     id = id + 1
 
     --------------------------------------------------------------------------------
-    -- Open Error Log:
+    -- Open Debug Console:
     --------------------------------------------------------------------------------
-     group:action(id, i18n("cpOpenErrorLog" .. "_title"))
+     group:action(id, i18n("cpOpenDebugConsole_title"))
         :onPress(function() hs.openConsole() end)
     id = id + 1
 
     --------------------------------------------------------------------------------
     -- Preferences:
     --------------------------------------------------------------------------------
-     group:action(id, i18n("cpPreferences" .. "_title"))
+     group:action(id, i18n("cpPreferences_title"))
         :onPress(deps.prefsMan.show)
     id = id + 1
 
     --------------------------------------------------------------------------------
     -- Setup Watch Folders:
     --------------------------------------------------------------------------------
-     group:action(id, i18n("cpSetupWatchFolders" .. "_title"))
+     group:action(id, i18n("cpSetupWatchFolders_title"))
         :onPress(deps.watchfolders.show)
 
 end

@@ -1478,14 +1478,9 @@ function mod.mt:_loadPluginVersionCache(rootPath, version, locale, searchHistory
     version = type(version) == "string" and v(version) or version
     local filePath = pathToAbsolute(string.format("%s/%s/plugins.%s.cpCache", rootPath, version, locale.code))
     if filePath then
-        local file = io.open(filePath, "r")
-        if file then
-            local content = file:read("*all")
-            file:close()
-            local result = json.decode(content)
-            self._plugins[locale.code] = result
-            return result ~= nil
-        end
+        local result = json.read(filePath)
+        self._plugins[locale.code] = result
+        return result ~= nil
     elseif searchHistory and version.patch > 0 then
         return self:_loadPluginVersionCache(rootPath, v(version.major, version.minor, version.patch-1), locale, searchHistory)
     end
@@ -1569,12 +1564,8 @@ function mod.mt:_saveAppPluginCache(locale)
     local cachePath = path .. "/plugins."..locale.code..".cpCache"
     local plugins = self._plugins[locale.code]
     if plugins then
-        local file = io.open(cachePath, "w")
-        if file then
-            file:write(json.encode(plugins))
-            file:close()
-            return true
-        end
+        json.write(cachePath, plugins)
+        return true
     else
         --------------------------------------------------------------------------------
         -- Remove it:

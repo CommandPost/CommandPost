@@ -2,22 +2,22 @@
 ---
 --- Common Final Cut Pro functions for Tangent
 
-local require = require
+local require               = require
 
-local log                   = require("hs.logger").new("tangentVideo")
+local log                   = require "hs.logger".new "tangentVideo"
 
-local geometry              = require("hs.geometry")
-local timer                 = require("hs.timer")
+local geometry              = require "hs.geometry"
+local timer                 = require "hs.timer"
 
-local axutils               = require("cp.ui.axutils")
-local commands              = require("cp.commands")
-local deferred              = require("cp.deferred")
-local dialog                = require("cp.dialog")
-local Do                    = require("cp.rx.go.Do")
-local fcp                   = require("cp.apple.finalcutpro")
-local i18n                  = require("cp.i18n")
+local axutils               = require "cp.ui.axutils"
+local commands              = require "cp.commands"
+local deferred              = require "cp.deferred"
+local dialog                = require "cp.dialog"
+local Do                    = require "cp.rx.go.Do"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
 local If                    = require('cp.rx.go.If')
-local tools                 = require("cp.tools")
+local tools                 = require "cp.tools"
 
 local childrenMatching      = axutils.childrenMatching
 local delayed               = timer.delayed
@@ -896,7 +896,6 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
 
     return id + 1, valueParam
 end
-
 
 local plugin = {
     id = "finalcutpro.tangent.common",

@@ -85,7 +85,7 @@ end
 function VideoInspector.static.matches(element)
     local contentUI = findContentUI(element)
     return contentUI and #contentUI > 0 and childMatching(contentUI, function(child)
-        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumBlendCompositingEffect"))
+        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumConformEffect"))
     end) ~= nil or false
 end
 
@@ -149,7 +149,7 @@ function VideoInspector:initialize(parent)
     }
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
 function VideoInspector.lazy.prop:contentUI()
@@ -160,8 +160,8 @@ function VideoInspector.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector:effectCheckBoxes() -> tables
---- Function
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:effectCheckBoxes() -> table
+--- Method
 --- Gets a table containing all of the effect checkboxes.
 ---
 --- Parameters:
@@ -202,7 +202,7 @@ function VideoInspector:effectCheckBoxes()
     end
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector:selectedEffectCheckBox() -> axuielement
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:selectedEffectCheckBox() -> axuielement
 --- Function
 --- Gets the selected effect checkbox object.
 ---
@@ -233,7 +233,7 @@ function VideoInspector:selectedEffectCheckBox()
     end
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.BLEND_MODES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.BLEND_MODES -> table
 --- Constant
 --- Blend Modes
 VideoInspector.BLEND_MODES = {
@@ -272,7 +272,7 @@ VideoInspector.BLEND_MODES = {
     [33]    = {flexoID = "FFHeliumBlendModePremultipliedMix", i18n="premultipliedMix"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.CROP_TYPES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.CROP_TYPES -> table
 --- Constant
 --- Crop Types
 VideoInspector.CROP_TYPES = {
@@ -281,7 +281,7 @@ VideoInspector.CROP_TYPES = {
     [3]     = {flexoID = "FFKenBurns", i18n = "kenBurns"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.STABILIZATION_METHODS -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.STABILIZATION_METHODS -> table
 --- Constant
 --- Stabilisation Methods
 VideoInspector.STABILIZATION_METHODS = {
@@ -290,7 +290,7 @@ VideoInspector.STABILIZATION_METHODS = {
     [3]     = {flexoID = "FFStabilizationUseSmoothCam", i18n="smoothCam"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.ROLLING_SHUTTER_AMOUNTS -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.ROLLING_SHUTTER_AMOUNTS -> table
 --- Constant
 --- Rolling Shutter Amounts
 VideoInspector.ROLLING_SHUTTER_AMOUNTS = {
@@ -301,7 +301,7 @@ VideoInspector.ROLLING_SHUTTER_AMOUNTS = {
     [5]     = {flexoID = "FFRollingShutterAmountExtraHigh", i18n="extraHigh"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.SPATIAL_CONFORM_TYPES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.SPATIAL_CONFORM_TYPES -> table
 --- Constant
 --- Spatial Conform Types
 VideoInspector.SPATIAL_CONFORM_TYPES = {

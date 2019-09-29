@@ -4,16 +4,15 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("pushover")
+local log               = require "hs.logger".new "pushover"
 
-local http                                      = require("hs.http")
-local json                                      = require("hs.json")
-local dialog                                    = require("hs.dialog")
-local i18n                                      = require("cp.i18n")
+local http              = require "hs.http"
+local json              = require "hs.json"
+local dialog            = require "hs.dialog"
+local i18n              = require "cp.i18n"
 
-local config                                    = require("cp.config")
-local ui                                        = require("cp.web.ui")
-
+local config            = require "cp.config"
+local ui                = require "cp.web.ui"
 
 local mod = {}
 
@@ -163,7 +162,6 @@ function mod.sendNotification(message, optionalTitle)
 
 end
 
-
 local plugin = {
     id = "finalcutpro.notifications.pushover",
     group = "finalcutpro",
@@ -264,7 +262,7 @@ function plugin.init(deps)
             :addTextbox(106,
                 {
                     label = i18n("userAPIKey") .. ":",
-                    value = mod.userAPIKey(),
+                    value = function() return mod.userAPIKey() end,
                     class = "api",
                     id = "pushoverUserAPIKey",
                     onchange = function(_, params)
@@ -280,7 +278,7 @@ function plugin.init(deps)
             :addTextbox(107,
                 {
                     label = i18n("applicationAPIKey") .. ":",
-                    value = mod.appAPIKey(),
+                    value = function() return mod.appAPIKey() end,
                     class = "api",
                     id = "pushoverAppAPIKey",
                     onchange = function(_, params)

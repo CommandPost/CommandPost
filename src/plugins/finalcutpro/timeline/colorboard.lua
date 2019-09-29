@@ -122,7 +122,6 @@ function mod.nextAspect()
     colorBoard:nextAspect()
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.colorboard",
     group = "finalcutpro",

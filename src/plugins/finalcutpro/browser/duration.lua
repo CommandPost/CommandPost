@@ -2,15 +2,14 @@
 ---
 --- Shortcut for changing Final Cut Pro's Browser Height
 
-local require = require
+local require       = require
 
-local timer                             = require("hs.timer")
-local eventtap                          = require("hs.eventtap")
+local timer         = require "hs.timer"
+local eventtap      = require "hs.eventtap"
 
-local fcp                               = require("cp.apple.finalcutpro")
+local fcp           = require "cp.apple.finalcutpro"
 
-local doUntil                           = timer.doUntil
-
+local doUntil       = timer.doUntil
 
 local mod = {}
 
@@ -70,7 +69,6 @@ end
 --- Returns:
 ---  * None
 function mod.changeBrowserDuration(direction)
-
     --------------------------------------------------------------------------------
     -- Prevent multiple keypresses:
     --------------------------------------------------------------------------------
@@ -92,7 +90,6 @@ function mod.changeBrowserDuration(direction)
     end
 
 end
-
 
 local plugin = {
     id = "finalcutpro.browser.duration",
