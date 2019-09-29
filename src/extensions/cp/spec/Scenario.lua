@@ -1,6 +1,6 @@
 local require               = require
 
-local log                   = require "hs.logger" .new "Scenario"
+-- local log                   = require "hs.logger" .new "Scenario"
 
 local Definition            = require "cp.spec.Definition"
 local Handled               = require "cp.spec.Handled"
@@ -170,7 +170,7 @@ end
 ---
 --- Parameters:
 --- * ...   - The list of filters. The first one will be compared to this scenario to determine it should be run.
-function Scenario:run(...)
+function Scenario:run()
     -- TODO: support filtering
     return Run(self.name)
     :onBefore(hijackAssert)
