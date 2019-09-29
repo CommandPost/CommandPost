@@ -8,6 +8,7 @@ local describe, it, context = spec.describe, spec.it, spec.context
 local callable = {}
 local mt = {
     __call = function() end,
+    __tostring = function() return "callable" end
 }
 setmetatable(callable, mt)
 
@@ -37,8 +38,8 @@ return describe "cp.is" {
         :doing(function()
             expect(is.nothing(nil)):is(true)
             expect(is.nothing(0)):is(false)
-            expect(is.nothing(false):is(false))
-            expect(is.nothing(""):is(false))
+            expect(is.nothing(false)):is(false)
+            expect(is.nothing("")):is(false)
         end),
     },
 
@@ -100,7 +101,7 @@ return describe "cp.is" {
     },
 
     context "calling `table`" {
-        it "returns ${result} when given ${input}"
+        it "returns ${result} when given ${type}"
         :doing(function(this)
             assert(is.table(this.input) == this.result)
         end)
@@ -171,13 +172,13 @@ return describe "cp.is" {
         },
     },
 
-    it("list", function()
+    it("is list", function()
         local list = {1,2}
         assert(is.list({}) == false)
         assert(is.list(list) == true)
     end),
 
-    it("truthy", function()
+    it("is truthy", function()
         expect(is.truthy(true)):is(true)
         expect(is.truthy(callable)):is(true)
         expect(is.truthy(nil)):is(false)
@@ -186,7 +187,7 @@ return describe "cp.is" {
         expect(is.truthy(1)):is(true)
     end),
 
-    it("falsey", function()
+    it(" is falsey", function()
         expect(is.falsey(true)):is(false)
         expect(is.falsey(callable)):is(false)
         expect(is.falsey(nil)):is(true)
@@ -195,15 +196,20 @@ return describe "cp.is" {
         expect(is.falsey(1)):is(false)
     end),
 
-    it("callable", function()
-        expect(is.callable(function() end)):is(true)
-        expect(is.callable(callable)):is(true)
-        expect(is.callable(subcallable)):is(true)
-        expect(is.callable({})):is(false)
-        expect(is.callable("string")):is(false)
-    end),
+    it "is callable returns ${result} given ${input}"
+    :doing(function(this)
+        expect(is.callable(this.input, this.result))
+    end)
+    :where {
+        { "input",          "result" },
+        { function() end,   true },
+        { callable,         true },
+        { subcallable,      true },
+        { {},               false },
+        { "string",         false },
+    },
 
-    it("blank", function()
+    it("is blank", function()
         expect(is.blank(nil)):is(true)
         expect(is.blank("")):is(true)
         expect(is.blank(" ")):is(false)

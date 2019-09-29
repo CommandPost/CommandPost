@@ -139,7 +139,7 @@ local function hijackAssert(this)
         else
             local msg = tostring(message)
             this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-            this._run[ASSERT](ok, Handled(msg))
+            this._run[ASSERT](ok, Handled(msg, 2))
         end
     end
 

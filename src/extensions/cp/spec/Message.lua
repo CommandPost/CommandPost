@@ -19,8 +19,9 @@ end
 ---
 --- Parameters:
 --- * message   - the message to send.
-function Message:initialize(msg)
+function Message:initialize(msg, level)
     self.message = msg
+    self.level = (level or 1) + 1
 end
 
 --- cp.spec.Message:traceback()
@@ -28,7 +29,7 @@ end
 --- Stores the `debug.traceback` result at the present time. Can be retrieved via `stacktrace`
 function Message:traceback()
     if self._traceback == nil then
-        self._traceback = debug.traceback(self.message)
+        self._traceback = debug.traceback(self.message or "", self.level)
     end
     return self._traceback
 end
