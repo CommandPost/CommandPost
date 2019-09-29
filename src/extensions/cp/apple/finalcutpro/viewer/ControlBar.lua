@@ -218,7 +218,7 @@ function ControlBar.lazy.value:playButton()
     end))
 end
 
---- cp.apple.finalcut.main.ControlBar.isPlaying <cp.prop: boolean>
+--- cp.apple.finalcutpro.main.ControlBar.isPlaying <cp.prop: boolean>
 --- Field
 --- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
 --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.

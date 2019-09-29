@@ -210,7 +210,7 @@ end
 --- Field
 --- The current [preferences](cp.app.prefs.md) for the application.
 function app.lazy.value:preferences()
-    return prefs.new(self:bundleID())
+    return prefs(self:bundleID())
 end
 
 --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
@@ -750,17 +750,11 @@ function app.lazy.prop:localeResourcesPath()
     :monitor(self.currentLocale)
 end
 
---- cp.app:menu() -> cp.app.menu
---- Method
---- Returns the main `menu` for the application.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.app.menu` for the `cp.app` instance.
-function app.lazy.method:menu()
-    return menu.new(self)
+--- cp.app.menu <cp.app.menu>
+--- Field
+--- The main [menu](cp.app.menu.md) for the application.
+function app.lazy.value:menu()
+    return menu(self)
 end
 
 --- cp.app:launch([waitSeconds], [path]) -> self
