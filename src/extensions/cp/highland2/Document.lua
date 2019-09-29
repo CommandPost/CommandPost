@@ -1,6 +1,6 @@
 --- === cp.highland2.Document ===
 ---
---- Highland 2 Document.
+--- Highland 2 Document [Window](cp.ui.Window.md) extension.
 
 local axutils                                   = require "cp.ui.axutils"
 local Group                                     = require "cp.ui.Group"
