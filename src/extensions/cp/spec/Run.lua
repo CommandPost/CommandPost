@@ -5,6 +5,7 @@ local log                       = require "hs.logger" .new "spec"
 local class                     = require "middleclass"
 
 local timer                     = require "hs.timer"
+local interpolate               = require "cp.interpolate"
 local Handled                   = require "cp.spec.Handled"
 local Message                   = require "cp.spec.Message"
 local Report                    = require "cp.spec.Report"
@@ -611,16 +612,12 @@ function Run:onComplete(actionFn)
 end
 
 function Run:realName()
-    -- self:log("Retrieving name: %s", self._name)
-    -- return interpolate(self._name, self.shared)
-    return self._name
+    return interpolate(self._name, self.shared)
 end
 
 function Run:fullName()
     local parent = self:parent()
     local parentName = parent and parent:fullName() .. " > " or ""
-    -- log.df("Run:fullName: realName = %s", hs.inspect(self.realName))
-    -- log.df("Run:fullName: _name = %s", hs.inspect(self._name))
     return parentName .. self:realName()
 end
 

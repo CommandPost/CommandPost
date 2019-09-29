@@ -5,6 +5,8 @@ local Run                       = require "cp.spec.Run"
 
 local insert                    = table.insert
 
+local WHERE_NAME = "[WHERE]"
+
 -- === cp.spec.RunWhere ===
 --
 -- Private implementation class.
@@ -18,7 +20,7 @@ local insert                    = table.insert
 local RunWhere = Run:subclass("cp.spec.RunWhere")
 
 function RunWhere:initialize(where)
-    Run.initialize(self, "[Where]")
+    Run.initialize(self, WHERE_NAME)
     self.where = where
     setmetatable(self.shared, {
         __index = function(_, key)
@@ -59,21 +61,21 @@ local function convertData(whereData)
     return data
 end
 
--- cp.spec.Where(scenario, whereData)
+-- cp.spec.Where(definition, whereData)
 -- Construtor
 -- Creates a new `Where`
 --
 -- Parameters:
--- * scenario     - The [Scenario](cp.spec.Scenario.md) where it spawned from.
-function Where:initialize(definition, whereData)
+-- * definition     - The [Definition](cp.spec.Definition.md) where it spawned from.
+function Where:initialize(scenario, whereData)
     self.whereData = convertData(whereData)
-    self.definition = definition
+    self.scenario = scenario
 
-    Definition.initialize(self, definition.name)
+    Definition.initialize(self, WHERE_NAME)
 end
 
-function Where:run(...)
-    self.currentRun = Run("[Where]")
+function Where:run()
+    self.currentRun = RunWhere(self)
     :onRunning(function(this)
         this:wait()
         self:_runNext(1, this)
@@ -82,28 +84,25 @@ function Where:run(...)
     return self.currentRun
 end
 
--- cp.spec.Where:_runNext(suite, index, this)
+-- cp.spec.Where:_runNext(index, whereThis)
 -- Function
 -- Runs the next test definition at the specified `index`, if available.
 -- If not, the `this:passed()` method is called to complete the test.
 function Where:_runNext(index, whereThis)
     local data = self.whereData[index]
     if data then
-        whereThis:log("running data row #1...")
+        whereThis:log("running data row #%d: %s", index, hs.inspect(data))
 
-        whereThis.run.data = data
+        self.currentRun.data = data
 
-        local run = self.definition:run()
+        local run = self.scenario:run()
 
         run:parent(self.currentRun)
         :onComplete(function(this)
-            local report = this.run.report
-            if this.run.result == Run.result.running then
-                report:passed()
-            end
+            local report = this._run.report
 
             -- add the run reports
-            report:add(self.currentRun.report)
+            self.currentRun.report:add(report)
             -- onto the next run...
             self:_runNext(index + 1, whereThis)
         end)
