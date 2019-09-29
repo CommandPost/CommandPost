@@ -232,6 +232,23 @@ function Toolbar.lazy.method:title()
     end))
 end
 
+--- cp.apple.finalcutpro.timeline.Toolbar:duration() -> cp.ui.StaticText
+--- Method
+--- Returns the duration [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+---
+--- Parameters:
+--- * None.
+---
+--- Returns:
+--- * The [StaticText](cp.ui.StaticText.md) containing the title.
+function Toolbar.lazy.method:duration()
+    return StaticText(self, self.UI:mutate(function(original)
+        return cache(self, "_durationUI", function()
+            return childFromLeft(original(), 2, StaticText.matches)
+        end)
+    end))
+end
+
 --- cp.apple.finalcutpro.timeline.Toolbar:appearance() -> cp.apple.finalcutpro.timeline.Appearance
 --- Method
 --- The [Appearance](cp.apple.finalcutpro.timeline.Appearance.md) button/palette control.
