@@ -128,38 +128,38 @@ local ERROR = {}
 
 local function hijackAssert(this)
     log.df("hijackAssert: called")
-    this.run[ASSERT] = _G.assert
-    this.run[ERROR] = _G.error
+    this._run[ASSERT] = _G.assert
+    this._run[ERROR] = _G.error
     _G.assert = function(ok, message, ...)
-        log.df("hijacked assert: called")
+        -- log.df("hijacked assert: called")
         if ok then
-            log.df("hijacked assert: passed")
+            -- log.df("hijacked assert: passed")
             return ok, message, ...
         else
-            log.df("hijacked assert: failed")
+            -- log.df("hijacked assert: failed")
             local msg = type(message) == "string" and format(message, ...) or tostring(message)
             this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-            this.run[ASSERT](ok, Handled(msg))
+            this._run[ASSERT](ok, Handled(msg))
         end
     end
 
     _G.error = function(msg, level)
-        log.df("hijacked error: %s", msg)
+        -- log.df("hijacked error: %s", msg)
         this:abort(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-        this.run[ERROR](msg, level and level + 1 or 2)
+        this._run[ERROR](msg, level and level + 1 or 2)
     end
 end
 
 local function restoreAssert(this)
     log.df("restoreAssert: called")
-    if this.run[ASSERT] then
+    if this._run[ASSERT] then
         -- log.df("restoreAssert: resetting assert")
-        _G.assert = this.run[ASSERT]
-        this.run[ASSERT] = nil
+        _G.assert = this._run[ASSERT]
+        this._run[ASSERT] = nil
     end
-    if this.run[ERROR] then
-        _G.error = this.run[ERROR]
-        this.run[ERROR] = nil
+    if this._run[ERROR] then
+        _G.error = this._run[ERROR]
+        this._run[ERROR] = nil
     end
 end
 
@@ -172,12 +172,13 @@ end
 function Scenario:run(...)
     -- TODO: support filtering
     return Run(self.name)
+
     :onBefore(hijackAssert)
     :onRunning(self.testFn)
     :onAfter(restoreAssert)
     :onComplete(function(this)
-        if this.run.result == Run.result.running then
-            this.run.report:passed()
+        if this._run.result == Run.result.running then
+            this._run.report:passed()
         end
     end)
 end

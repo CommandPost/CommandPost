@@ -3,6 +3,7 @@ local require                   = require
 local log                       = require "hs.logger" .new "spec"
 
 local class                     = require "middleclass"
+
 local timer                     = require "hs.timer"
 local Handled                   = require "cp.spec.Handled"
 local Message                   = require "cp.spec.Message"
@@ -56,12 +57,13 @@ function Run.This.static.defaultTimeout(timeout)
     return asyncTimeout
 end
 
---- cp.spec.Run.This(run, index) -> cp.spec.Run.This
+--- cp.spec.Run.This(run, actionFn, index) -> cp.spec.Run.This
 --- Constructor
 --- Creates a new `Run.This` instance for a [Run](cp.spec.Run.md).
 ---
 --- Parameters:
 --- * run       - The [Run](cp.spec.Run.md).
+--- * actionFn  - The action function to execute.
 --- * index     - The index of the action in the current phase.
 ---
 --- Returns:
@@ -145,12 +147,12 @@ end
 -- Method
 -- Completes this run.
 function Run.This:_complete()
-    log.df("Run.This:_complete: index = %d", self.index)
+    log.df("Run.This:_complete: index = %d", self._index)
     self:cleanup()
     if self:isActive() then
         log.df("Run.This:_complete: is active...")
         self.state = Run.This.state.done
-        self._run:_doPhaseAction(self.index + 1)
+        self._run:_doPhaseAction(self._index + 1)
     end
 end
 
@@ -197,13 +199,13 @@ function Run.This:__call()
 
     if ok ~= true and not Handled.is(err) then
         -- there was an error, and is has not been handled already
-        self:log("Action #%d failed. Aborting...", index)
-        self:_doAbort(err)
-    elseif not this:isWaiting() then
-        self:log("Action #%d completed.", index)
-        self:_doPhaseAction(index + 1)
+        self:log("Action #%d failed. Aborting...", self._index)
+        self._run:_doAbort(err)
+    elseif not self:isWaiting() then
+        self:log("Action #%d completed.", self._index)
+        self._run:_doPhaseAction(self._index + 1)
     else
-        self:log("Action #%d is waiting...", index)
+        self:log("Action #%d is waiting...", self._index)
     end
 end
 
@@ -355,7 +357,7 @@ function Run:_doCancelled()
 end
 
 function Run:timeoutAfter(seconds, thenFn)
-    log.df("Run:timeoutAfter: seconds = %s", seconds)
+    -- log.df("Run:timeoutAfter: seconds = %s", seconds)
     self:timeoutCancelled()
     self._timeoutTimer = timer.doAfter(seconds, function()
         self:timeoutCancelled()
@@ -364,9 +366,9 @@ function Run:timeoutAfter(seconds, thenFn)
 end
 
 function Run:timeoutCancelled()
-    log.df("Run:timeoutCancelled: called...")
+    -- log.df("Run:timeoutCancelled: called...")
     if self._timeoutTimer then
-        log.df("Run:timeoutCancelled: got timer to cancel.")
+        -- log.df("Run:timeoutCancelled: got timer to cancel.")
         self._timeoutTimer:stop()
         self._timeoutTimer = nil
     end

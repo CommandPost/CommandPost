@@ -60,13 +60,13 @@ function Specification:_runNext(index, this)
         run = t:run()
         :onComplete(function()
             -- add the run reports
-            this.run.report:add(run.report)
+            this._run.report:add(run.report)
             -- onto the next run...
             self:_runNext(index + 1, this)
         end)
 
         -- set ourselves as the parent
-        run:parent(this.run)
+        run:parent(this._run)
 
         if self._beforeEach then
             run:onBefore(self._beforeEach)
