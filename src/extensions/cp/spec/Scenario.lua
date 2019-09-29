@@ -126,6 +126,7 @@ end
 local ASSERT = {}
 local ERROR = {}
 
+-- hijacks the global `assert` and `error` functions and captures the results as part of the spec.
 local function hijackAssert(this)
     -- log.df(">>> hijackAssert: called")
     this._run[ASSERT] = _G.assert
@@ -150,6 +151,7 @@ local function hijackAssert(this)
     end
 end
 
+-- restores the global `assert` and `error` functions to their previous values.
 local function restoreAssert(this)
     -- log.df(">>> restoreAssert: called")
     if this._run[ASSERT] then

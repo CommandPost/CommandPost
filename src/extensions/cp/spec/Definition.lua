@@ -3,6 +3,7 @@ local require               = require
 local class                 = require "middleclass"
 
 --- === cp.spec.Definition ===
+---
 --- A [Definition](cp.spec.Definition.md) is an optional collection of [Scenarios](cp.spec.Scenario.md).
 --- It should not contain any `assert` checks itself.
 
