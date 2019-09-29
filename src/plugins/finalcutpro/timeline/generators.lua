@@ -224,6 +224,26 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
+    -- If there's a range selected, do the old fashion way:
+    --------------------------------------------------------------------------------
+    if rangeSelected then
+        --------------------------------------------------------------------------------
+        -- Apply item:
+        --------------------------------------------------------------------------------
+        generators:applyItem(whichItem)
+
+        --------------------------------------------------------------------------------
+        -- Restore Layout:
+        --------------------------------------------------------------------------------
+        doAfter(0.1, function()
+            generators:loadLayout(generatorsLayout)
+            if browserLayout then browser:loadLayout(browserLayout) end
+        end)
+
+        return
+    end
+
+    --------------------------------------------------------------------------------
     -- Make sure the correct window has focus:
     --------------------------------------------------------------------------------
     local gridWindow = grid:attributeValue("AXWindow")
@@ -293,13 +313,11 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Cache the item for faster recall next time, unless there's a range selected:
+    -- Cache the item for faster recall next time:
     --------------------------------------------------------------------------------
-    if not rangeSelected then
-        local cache = mod._cache()
-        cache[cacheID] = base64.encode(newPasteboard)
-        mod._cache(cache)
-    end
+    local cache = mod._cache()
+    cache[cacheID] = base64.encode(newPasteboard)
+    mod._cache(cache)
 
     --------------------------------------------------------------------------------
     -- Make sure Timeline has focus:
