@@ -207,6 +207,20 @@ function plugin.init(deps)
         end)
         :titled(i18n("appendSelectedTitleTextwithPasteboardContents"))
 
+    --------------------------------------------------------------------------------
+    -- Focus on Title Text in Inspector:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("focusOnTitleTextInInspector")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            textArea:show()
+            fcp:selectMenu({"Window", "Go To", "Inspector"})
+            textArea:focused(true)
+            print("test")
+        end)
+        :titled(i18n("focusOnTitleTextInInspector"))
+
 end
 
 return plugin
