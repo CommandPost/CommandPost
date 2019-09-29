@@ -5,7 +5,7 @@
 --- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
 --- ```lua
---- local fcp = require("cp.apple.finalcutpro")
+--- local fcp = require "cp.apple.finalcutpro"
 --- ```
 ---
 --- Then, there are the `UpperCase` files, which represent the application itself:
@@ -58,9 +58,9 @@
 --- end
 --- ```
 ---
---- **Delegates to:** [app](cp.app.md), [menu](cp.app.menu.md)
+--- **Delegates to:** [app](cp.apple.finalcutpro.app.md), [menu](cp.app.menu.md)
 ---
---- Note: All values/methods/props from deleegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
+--- Note: All values/methods/props from delegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
 ---
 --- ```lua
 --- fcp.app:UI() == fcp:UI() -- the same `cp.prop` result.
@@ -950,7 +950,7 @@ end
 
 --- cp.apple.finalcutpro.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
 --- Field
---- Returns the [LibrariesBrowser](cp.apple.finalcut.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
+--- Returns the [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:libraries()
     return self.browser.libraries
 end
