@@ -35,6 +35,9 @@ function highland2.lazy.prop:focusedDocument()
     end)
 end
 
+--- cp.highland2.documents <cp.prop: table of cp.highland2.Document>
+--- Field
+--- The list of [Documents](cp.highland2.Document.md) currently open.
 function highland2.lazy.prop:documents()
     return self.app.windows:mutate(function(original)
         local windows = original()
