@@ -145,6 +145,7 @@ function Timeline.lazy.prop:isShowing()
         return ui ~= nil and #ui > 0
     end)
 end
+
 --- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
@@ -314,7 +315,6 @@ function Timeline:showOnSecondary()
     return self
 end
 
-
 --- cp.apple.finalcutpro.timeline.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the secondary window.
@@ -404,9 +404,9 @@ end
 
 -----------------------------------------------------------------------
 --
--- CONTENT:
--- The Content is the main body of the timeline, containing the
--- Timeline Index, the Content, and the Effects/Transitions panels.
+-- CONTENTS:
+-- The Contents is the main body of the timeline, containing the
+-- Timeline Index, the Contents, and the Effects/Transitions panels.
 --
 -----------------------------------------------------------------------
 
@@ -426,8 +426,8 @@ end
 
 -----------------------------------------------------------------------
 --
--- EFFECT BROWSER:
--- The (sometimes hidden) Effect Browser.
+-- EFFECTS BROWSER:
+-- The (sometimes hidden) Effects Browser.
 --
 -----------------------------------------------------------------------
 
@@ -486,7 +486,7 @@ end
 
 -----------------------------------------------------------------------
 --
--- PLAYHEAD:
+-- SKIMMING PLAYHEAD:
 -- The Playhead that tracks under the mouse while skimming.
 --
 -----------------------------------------------------------------------
@@ -535,6 +535,17 @@ end
 ---  * `StaticText` object.
 function Timeline:title()
     return self:toolbar():title()
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline.rangeSelected <cp.prop: boolean; read-only>
+--- Field
+--- Checks if a range is selected in the timeline.
+function Timeline.lazy.prop:rangeSelected()
+    return self:toolbar():duration().UI:mutate(function(original)
+        local ui = original()
+        local selected = self:app():string("PEEditorSelectedItemsDurationFormat-%@"):gsub("%%@", ".*")
+        return ui and ui:attributeValue("AXValue"):find(selected) ~= nil
+    end)
 end
 
 -----------------------------------------------------------------------

@@ -74,9 +74,10 @@ function mod.apply(action)
     if category then cacheID = cacheID .. "-" .. name end
 
     --------------------------------------------------------------------------------
-    -- Restore from Cache:
+    -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    if mod._cache()[cacheID] then
+    local rangeSelected = fcp:timeline():rangeSelected()
+    if not rangeSelected and mod._cache()[cacheID] then
 
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
@@ -292,11 +293,13 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Cache the item for faster recall next time:
+    -- Cache the item for faster recall next time, unless there's a range selected:
     --------------------------------------------------------------------------------
-    local cache = mod._cache()
-    cache[cacheID] = base64.encode(newPasteboard)
-    mod._cache(cache)
+    if not rangeSelected then
+        local cache = mod._cache()
+        cache[cacheID] = base64.encode(newPasteboard)
+        mod._cache(cache)
+    end
 
     --------------------------------------------------------------------------------
     -- Make sure Timeline has focus:
