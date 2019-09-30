@@ -543,8 +543,8 @@ end
 function Timeline.lazy.prop:rangeSelected()
     return self:toolbar():duration().UI:mutate(function(original)
         local ui = original()
-        local selected = self:app():string("PEEditorSelectedItemsDurationFormat-%@"):gsub("%%@", ".*")
-        return ui and ui:attributeValue("AXValue"):find(selected) ~= nil
+        local value = ui and ui:attributeValue("AXValue")
+        return value and (value:find("/") ~= nil or value:find("／") ~= nil)
     end)
 end
 
