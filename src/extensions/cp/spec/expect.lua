@@ -21,27 +21,27 @@ function Expect:initialize(value)
 end
 
 function Expect:is(other)
-    assert(self.value == other, format("Expected value of %s, but it was %s", inspect(other), inspect(self.value)) )
+    assert(self.value == other, format("Expected value of %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 function Expect:isNot(other)
-    assert(self.value ~= other, format("Expected value to not be %s, but it was %s", inspect(other), inspect(self.value)))
+    assert(self.value ~= other, format("Expected value to not be %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 function Expect:isAtLeast(other)
-    assert(self.value >= other, format("Expected value to be at least %s, but it was %s", inspect(other), inspect(self.value)))
+    assert(self.value >= other, format("Expected value to be at least %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 function Expect:isAtMost(other)
-    assert(self.value <= other, format("Expected value to be at most %s, but it was %s", inspect(other), inspect(self.value)))
+    assert(self.value <= other, format("Expected value to be at most %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 function Expect:isLessThan(other)
-    assert(self.value < other, format("Expected value to be less than %s, but it was %s", inspect(other), inspect(self.value)))
+    assert(self.value < other, format("Expected value to be less than %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 function Expect:isGreaterThan(other)
-    assert(self.value > other, format("Expected value to be greater than %s, but it was %s", inspect(other), inspect(self.value)))
+    assert(self.value > other, format("Expected value to be greater than %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
 local expect = {}

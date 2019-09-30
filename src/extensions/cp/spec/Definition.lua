@@ -4,8 +4,9 @@ local class                 = require "middleclass"
 
 --- === cp.spec.Definition ===
 ---
---- A [Definition](cp.spec.Definition.md) is an optional collection of [Scenarios](cp.spec.Scenario.md).
---- It should not contain any `assert` checks itself.
+--- A [Definition](cp.spec.Definition.md) is a superclass for a "runnable" specification.
+--- It doesn't do anything itself, but provides a common ancestor for all implementation
+--- classes like [Specification](cp.spec.Specification.md) and [Scenario](cp.spec.Scenario.md).
 
 local Definition = class("cp.spec.Definition")
 
@@ -20,6 +21,19 @@ function Definition:initialize(name)
         error "The name must be at least one character long."
     end
     self.name = name
+end
+
+--- cp.spec.Definition:is(instance) -> boolean
+--- Field
+--- Called as a method, this will check if the provided object is an instance of this class.
+---
+--- Parameters:
+--- * instance - The instance to check.
+---
+--- Returns:
+--- * `true` if the instance is an instance of this class.
+function Definition.static:is(instance)
+    return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(self)
 end
 
 --- cp.spec.Definition:run([...]) -> cp.spec.Run
@@ -38,6 +52,10 @@ end
 
 function Definition:__tostring()
     return self.name
+end
+
+function Definition:__call(...)
+    return self:run(...)
 end
 
 return Definition

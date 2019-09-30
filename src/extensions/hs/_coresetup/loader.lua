@@ -93,6 +93,12 @@ function loader.mt:__index(key)
     return rawget(self, key)
 end
 
+function loader.mt:__pairs()
+    local available = loader.availableExtensions(self)
+    table.sort(available)
+    return pairs(available)
+end
+
 function loader.mt:__tostring()
     return "extension: " .. self[ID]
 end

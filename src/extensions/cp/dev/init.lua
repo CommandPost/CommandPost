@@ -425,7 +425,7 @@ function mod.spec(id)
     id = id or ""
     local testsRoot = config.testsPath
     if not testsRoot then
-        error "Unable to locate the spec scripts."
+        error("Unable to locate the spec scripts.", 2)
     end
 
     local testPath = testsRoot .. "/?.lua;" .. testsRoot .. "/?/init.lua"
@@ -436,7 +436,7 @@ function mod.spec(id)
         if package.searchpath(id .. "._spec", testPath) then
             testId = id .. "._spec"
         else
-            error(string.format("Unable to find specs for '%s'", id))
+            error(string.format("Unable to find specs for '%s'", id), 2)
         end
     end
 
@@ -445,14 +445,14 @@ function mod.spec(id)
 
     package.path = tempPath
 
-    local ok, result = xpcall(function() return require(testId) end, debug.traceback)
+    local ok, result = xpcall(function() return require(testId) end, function() return debug.traceback("finding spec failed", 2) end)
 
     package.path = originalPath
 
     if not ok then
-        error(result)
+        error(result, 2)
     elseif type(result) == "boolean" then
-        error("Ensure the spec file returns the test specification.")
+        error("Ensure the spec file returns the test specification.", 2)
     else
         return result:run()
     end

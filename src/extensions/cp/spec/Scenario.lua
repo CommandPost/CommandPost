@@ -131,22 +131,24 @@ local function hijackAssert(this)
     -- log.df(">>> hijackAssert: called")
     this._run[ASSERT] = _G.assert
     this._run[ERROR] = _G.error
-    _G.assert = function(ok, message)
+    _G.assert = function(ok, message, level)
+        level = (level or 1) + 1
         -- log.df("hijacked assert: called with %s, %q", ok, string.format(message, ...))
         if ok then
             -- log.df("hijacked assert: passed")
             return ok, message
         else
             local msg = tostring(message)
-            this:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-            this._run[ASSERT](ok, Handled(msg, 2))
+            this:fail(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg))
+            this._run[ASSERT](ok, Handled(msg, level))
         end
     end
 
     _G.error = function(msg, level)
+        level = (level or 1) + 1
         -- log.df("hijacked error: %s", msg)
-        this:abort(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, msg))
-        this._run[ERROR](msg, level and level + 1 or 2)
+        this:abort(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg))
+        this._run[ERROR](msg, level)
     end
 end
 

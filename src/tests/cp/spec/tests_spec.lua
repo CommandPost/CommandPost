@@ -56,6 +56,6 @@ return describe "cp.spec.tests" {
     },
 
     context "requiring another spec" {
-        require "cp.spec.simple_spec"
+        spec "cp.spec.simple"
     }
 }

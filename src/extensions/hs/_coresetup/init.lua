@@ -476,13 +476,6 @@ return {
             return res
         end
 
-        local function tablesMerge(t1, t2)
-            for i = 1, #t2 do
-                t1[#t1 + 1] = t2[i]
-            end
-            return t1
-        end
-
         local function tableKeys(t)
             local keyset = {}
             local n = 0

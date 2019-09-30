@@ -74,7 +74,7 @@ function Run.This:initialize(run, actionFn, index)
     assert(type(run) == "table", "The Run must be a Run instance.")
     self._run = run
     self._actionFn = actionFn
-    self._index = index
+    self._index = index or 1
     self._phase = run.phase
     self.shared = run.shared
     self.state = Run.This.state.running
