@@ -129,6 +129,9 @@ local pathToAbsolute                            = fs.pathToAbsolute
 local pathToBookmark                            = fs.pathToBookmark
 local stringToHexString                         = tools.stringToHexString
 
+-- Load the menu helpers:
+require "cp.apple.finalcutpro.menu"
+
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
 
