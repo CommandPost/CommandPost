@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.menu ===
 ---
---- Final Cut Pro Menu.
+--- Final Cut Pro Menu Helper Functions.
 
 local require = require
 
@@ -94,5 +94,3 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
         end
     end
 end)
-
-return menu
