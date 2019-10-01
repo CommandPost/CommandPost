@@ -206,10 +206,14 @@ end
 -- Returns:
 -- * The new `__index` `function`.
 local function _getNewInstanceIndex(prevIndex)
-    if type(prevIndex) == 'function' then
+    local indexType = type(prevIndex)
+    if indexType == 'function' then
         return function(instance, name) return prevIndex(instance, name) or _getDelegatedResult(instance, name) end
+    elseif indexType == 'table' then
+        return function(instance, name) return prevIndex[name] or _getDelegatedResult(instance, name) end
+    else
+        return _getDelegatedResult
     end
-    return function(instance, name) return prevIndex[name] or _getDelegatedResult(instance, name) end
 end
 
 -- _modifyInstanceIndex(klass) -> nothing
