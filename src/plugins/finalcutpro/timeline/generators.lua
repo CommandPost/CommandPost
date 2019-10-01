@@ -74,9 +74,10 @@ function mod.apply(action)
     if category then cacheID = cacheID .. "-" .. name end
 
     --------------------------------------------------------------------------------
-    -- Restore from Cache:
+    -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    if mod._cache()[cacheID] then
+    local rangeSelected = fcp:timeline():rangeSelected()
+    if not rangeSelected and mod._cache()[cacheID] then
 
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
@@ -220,6 +221,26 @@ function mod.apply(action)
     if not grid then
         dialog.displayErrorMessage("Failed to get grid in plugins.finalcutpro.timeline.generators.apply.")
         return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- If there's a range selected, do the old fashion way:
+    --------------------------------------------------------------------------------
+    if rangeSelected then
+        --------------------------------------------------------------------------------
+        -- Apply item:
+        --------------------------------------------------------------------------------
+        generators:applyItem(whichItem)
+
+        --------------------------------------------------------------------------------
+        -- Restore Layout:
+        --------------------------------------------------------------------------------
+        doAfter(0.1, function()
+            generators:loadLayout(generatorsLayout)
+            if browserLayout then browser:loadLayout(browserLayout) end
+        end)
+
+        return
     end
 
     --------------------------------------------------------------------------------
