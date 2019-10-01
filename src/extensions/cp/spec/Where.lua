@@ -99,7 +99,7 @@ function Where:_runNext(index, whereThis)
 
         run:parent(self.currentRun)
         :onComplete(function(this)
-            local report = this._run.report
+            local report = this:run().report
 
             -- add the run reports
             self.currentRun.report:add(report)

@@ -10,7 +10,8 @@ return describe "cp.spec.tests" {
     end),
 
     it "fails when an assert is false"
-    :doing(function()
+    :doing(function(this)
+        this:expectFail("This should fail.")
         assert(false, "This should fail.")
     end),
 
@@ -21,10 +22,8 @@ return describe "cp.spec.tests" {
 
     it "will wait until an async is done"
     :doing(function(this)
-        this:log("waiting...")
         this:wait(10)
         timer.doAfter(2, function()
-            this:log("completing...")
             assert(true, "Asynched!")
             this:done()
         end)
@@ -32,15 +31,16 @@ return describe "cp.spec.tests" {
 
     it "will time out before the async completes"
     :doing(function(this)
+        this:expectAbort()
         this:wait(1)
         timer.doAfter(2, function()
-            assert(not this:isActive(), "Timeout failed!")
             this:done()
         end)
     end),
 
     it "will send an error in an async before being done."
     :doing(function(this)
+        this:expectAbort("This should be an abort.")
         this:wait(5)
         timer.doAfter(0.5, function()
             error("This should be an abort.")

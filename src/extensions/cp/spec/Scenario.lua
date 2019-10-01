@@ -1,6 +1,6 @@
 local require               = require
 
--- local log                   = require "hs.logger" .new "Scenario"
+local log                   = require "hs.logger" .new "Scenario"
 
 local Definition            = require "cp.spec.Definition"
 local Handled               = require "cp.spec.Handled"
@@ -129,8 +129,8 @@ local ERROR = {}
 -- hijacks the global `assert` and `error` functions and captures the results as part of the spec.
 local function hijackAssert(this)
     -- log.df(">>> hijackAssert: called")
-    this._run[ASSERT] = _G.assert
-    this._run[ERROR] = _G.error
+    this:run()[ASSERT] = _G.assert
+    this:run()[ERROR] = _G.error
     _G.assert = function(ok, message, level)
         level = (level or 1) + 1
         -- log.df("hijacked assert: called with %s, %q", ok, string.format(message, ...))
@@ -139,30 +139,32 @@ local function hijackAssert(this)
             return ok, message
         else
             local msg = tostring(message)
-            this:fail(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg))
-            this._run[ASSERT](ok, Handled(msg, level))
+            if this:fail(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg)) then
+                this:run()[ASSERT](ok, Handled(msg, level))
+            end
         end
     end
 
     _G.error = function(msg, level)
         level = (level or 1) + 1
         -- log.df("hijacked error: %s", msg)
-        this:abort(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg))
-        this._run[ERROR](msg, level)
+        if this:abort(format("[%s:%d] %s", debug.getinfo(level, 'S').short_src, debug.getinfo(level, 'l').currentline, msg)) then
+            this:run()[ERROR](msg, level)
+        end
     end
 end
 
 -- restores the global `assert` and `error` functions to their previous values.
 local function restoreAssert(this)
     -- log.df(">>> restoreAssert: called")
-    if this._run[ASSERT] then
+    if this:run()[ASSERT] then
         -- log.df("restoreAssert: resetting assert")
-        _G.assert = this._run[ASSERT]
-        this._run[ASSERT] = nil
+        _G.assert = this:run()[ASSERT]
+        this:run()[ASSERT] = nil
     end
-    if this._run[ERROR] then
-        _G.error = this._run[ERROR]
-        this._run[ERROR] = nil
+    if this:run()[ERROR] then
+        _G.error = this:run()[ERROR]
+        this:run()[ERROR] = nil
     end
 end
 
@@ -179,8 +181,8 @@ function Scenario:run()
     :onRunning(self.testFn)
     :onAfter(restoreAssert)
     :onComplete(function(this)
-        if this._run.result == Run.result.running then
-            this._run.report:passed()
+        if this:run().result == Run.result.running then
+            this:run().report:passed()
         end
     end)
 end

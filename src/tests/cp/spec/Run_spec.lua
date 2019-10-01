@@ -12,14 +12,14 @@ return describe "cp.spec.Run" {
         it "is constructed"
         :doing(function()
             local run = Run("foo")
-            local this = Run.This(run, 1)
+            local this = Run.This(run, function() end, 1)
             expect(this.state):is(Run.This.state.running)
         end),
 
         it "isWaiting"
         :doing(function()
             local run = Run("foo")
-            local this = Run.This(run, 1)
+            local this = Run.This(run, function() end, 1)
             expect(this:isWaiting()):is(false)
             this:wait(123)
             expect(this:isWaiting()):is(true)

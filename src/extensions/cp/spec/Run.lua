@@ -31,7 +31,7 @@ Run.static.This = class("cp.spec.Run.This")
 --- Notes:
 --- * States include:
 ---   * running     - The Run is currently running and will terminate at the end of the function (synchrnonous).
----   * waiting     - The Run is waiting,  and will terminate when [done()](#done) is called. (asynchronous).
+---   * waiting     - The Run is waiting, and will terminate when [done()](#done) is called. (asynchronous).
 ---   * done        - The Run is done.
 Run.This.static.state = {
     running = "running",
@@ -80,6 +80,185 @@ function Run.This:initialize(run, actionFn, index)
     self.state = Run.This.state.running
 end
 
+--- cp.spec.Run.This:run() -> cp.spec.Run
+--- Method
+--- Returns the current [Run](cp.spec.Run.md)
+function Run.This:run()
+    return self._run
+end
+
+--- cp.spec.Run:expectFail([messagePattern]) -> Run
+--- Method
+--- Indicates that this spec is expecting an assert/fail to occur.
+--- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
+--- fail doesn't occur, it will raise a failure at the end of the run.
+--- The `messagePattern` can be used to ensure it's the fail you expect.
+--- This should be called before the actual assert/fail would occur.
+---
+--- Parameters:
+--- * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
+---
+--- Returns:
+--- * The same `Run` instance.
+function Run:expectFail(messagePattern)
+    self._expectFail = true
+    self._expectFailPattern = messagePattern
+    self:log("Expecting to fail, matching %q", messagePattern or ".*")
+    return self
+end
+
+--- cp.spec.Run.This:expectFail([messagePattern]) -> Run.This
+--- Method
+--- Indicates that this spec is expecting an assert/fail to occur.
+--- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
+--- fail doesn't occur, it will raise a failure at the end of the run.
+--- The `messagePattern` can be used to ensure it's the fail you expect.
+--- This should be called before the actual assert/fail would occur.
+---
+--- Parameters:
+--- * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
+---
+--- Returns:
+--- * The same `Run.This` instance.
+function Run.This:expectFail(messagePattern)
+    self:run():expectFail(messagePattern)
+    return self
+end
+
+--- cp.spec.Run:isExpectingFail() -> boolean, string or nil
+--- Method
+--- Checks if the run is expecting a fail to occur.
+--- If so, it will return the expected message pattern, if specified.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * boolean - `true`, if a fail is expected.
+--- * string - the message pattern, if specified.
+function Run:isExpectingFail()
+    return self._expectFail == true, self._expectFailPattern
+end
+
+-- cp.spec.Run:_resetExpectedFail() -> nil
+-- Method
+-- Resets any expected fail that may be set will be cleared.
+function Run:_resetExpectedFail()
+    self._expectFail = nil
+    self._expectFailPattern = nil
+end
+
+-- cp.spec.Run:_checkExpectedFail(message[, reset]) -> boolean
+-- Method
+-- Checks if the provided message matches an expected fail. If so, the expected
+-- fail is reset, and `true` is returned.
+--
+-- Parameters:
+-- * message - The fail message to check.
+-- * reset - (optional) If set to `false`, the run will not be reset. Defaults to `true`.
+--
+-- Returns:
+-- * `true` if the fail message was expected or `false` if not.
+function Run:_checkExpectedFail(message, reset)
+    if self._expectFail then
+        local pattern = self._expectFailPattern
+        if pattern == nil or message:match(pattern) then
+            self:log("Expected `fail` occurred: %q", message)
+            if reset ~= false then
+                self:_resetExpectedFail()
+            end
+            return true
+        end
+    end
+    return false
+end
+
+--- cp.spec.Run:expectAbort([messagePattern]) -> Run
+--- Method
+--- Indicates that this spec is expecting an abort/`error` to occur.
+--- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
+--- it doesn't occur at some point during the run, it will raise a failure at the end of the run.
+--- The `messagePattern` can be used to ensure it's the fail you expect.
+--- This should be called before the actual abort/`error` would occur.
+---
+--- Parameters:
+--- * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
+---
+--- Returns:
+--- * The same `Run` instance.
+function Run:expectAbort(messagePattern)
+    self._expectAbort = true
+    self._expectAbortPattern = messagePattern
+    self:log("Expecting to abort, matching %q", messagePattern or ".*")
+    return self
+end
+
+--- cp.spec.Run.This:expectAbort([messagePattern]) -> Run.This
+--- Method
+--- Indicates that this spec is expecting an abort/`error` to occur.
+--- When this is expected, it doesn't log the problem as a 'fail'. In fact, if the
+--- it doesn't occur at some point during the run, it will raise a failure at the end of the run.
+--- The `messagePattern` can be used to ensure it's the fail you expect.
+--- This should be called before the actual abort/`error` would occur.
+---
+--- Parameters:
+--- * messagePattern - The pattern to check the fail message against. If not provided, any message will match.
+---
+--- Returns:
+--- * The same `Run.This` instance.
+function Run.This:expectAbort(messagePattern)
+    self:run():expectAbort(messagePattern)
+    return self
+end
+
+--- cp.spec.Run:isExpectingAbort() -> boolean, string or nil
+--- Method
+--- Checks if the run is expecting a abort/error to occur.
+--- If so, it will return the expected message pattern as the second value, if specified.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * boolean - `true`, if a fail is expected.
+--- * string - the message pattern, if specified.
+function Run:isExpectingAbort()
+    return self._expectAbort == true, self._expectAbortPattern
+end
+
+-- cp.spec.Run:_resetExpectedAbort() -> nil
+-- Method
+-- Resets any expected abort/error that may be set will be cleared.
+function Run:_resetExpectedAbort()
+    self._expectAbort = nil
+    self._expectAbortPattern = nil
+end
+
+-- cp.spec.Run:_checkExpectedAbort(message[, reset]) -> boolean
+-- Method
+-- Checks if the provided message matches an expected abort/error. If so, the expected
+-- fail is reset, and `true` is returned.
+--
+-- Parameters:
+-- * message - The fail message to check.
+-- * reset - (optional) If set to `false`, the run will not be reset. Defaults to `true`.
+--
+-- Returns:
+-- * `true` if the fail message was expected or `false` if not.
+function Run:_checkExpectedAbort(message, reset)
+    if self._expectAbort then
+        local pattern = self._expectAbortPattern
+        if pattern == nil or message:match(pattern) then
+            self:log("Expected `fail` occurred: %q", message)
+            if reset ~= false then
+                self:_resetExpectedAbort()
+            end
+            return true
+        end
+    end
+    return false
+end
+
 --- cp.spec.Run.This:isActive() -> boolean
 --- Method
 --- Checks if the this is in an active state - either `running` or `waiting`.
@@ -105,11 +284,11 @@ function Run.This:wait(timeout)
     timeout = timeout or Run.This.defaultTimeout()
 
     if timeout then
-        self._run:timeoutAfter(timeout, function()
+        self:run():timeoutAfter(timeout, function()
             local seconds = timeout == 1 and "second" or "seconds"
             self:abort(format("Timed out after %d %s.", timeout, seconds))
         end)
-        self._run.report:waiting(timeout)
+        self:run().report:waiting(timeout)
     end
 end
 
@@ -124,24 +303,29 @@ function Run.This:isWaiting()
     return self.state == Run.This.state.waiting
 end
 
---- cp.spec.Run.This:log(message[, ...])
---- Method
---- When the current [Run](cp.spec.Run.md) is in [debug](cp.spec.Run.md#debug) mode, output the message to the console.
----
---- Parameters:
---- * message   - the text message to output.
---- * ...       - optional parameters, to be injected into the message, ala `string.format`.
-function Run.This:log(message, ...)
-    self._run:log(message, ...)
-end
-
 --- cp.spec.Run.This:done()
 --- Method
 --- Indicates that the test is completed.
 function Run.This:done()
     self:log("This: done")
+    local expecting, pattern = self:run():isExpectingFail()
+    if expecting then
+        local withPattern = format(" with %q", pattern) or ""
+        self:run():_resetExpectedFail()
+        self:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, "Expected to fail" ..withPattern))
+        return
+    end
+
+    expecting, pattern = self:run():isExpectingAbort()
+    if expecting then
+        local withPattern = format(" with %q", pattern) or ""
+        self:run():_resetExpectedAbort()
+        self:fail(format("[%s:%d] %s", debug.getinfo(2, 'S').short_src, debug.getinfo(2, 'l').currentline, "Expected to abort" ..withPattern))
+        return
+    end
+
     self.state = Run.This.state.done
-    self._run:_doPhaseAction(self._index + 1)
+    self:run():_doPhaseAction(self._index + 1)
 end
 
 -- cp.spec.Run.This:_complete()
@@ -153,7 +337,7 @@ function Run.This:_complete()
     if self:isActive() then
         -- log.df("Run.This:_complete: is active...")
         self.state = Run.This.state.done
-        self._run:_doPhaseAction(self._index + 1)
+        self:run():_doPhaseAction(self._index + 1)
     end
 end
 
@@ -172,7 +356,17 @@ end
 --- * message   - The optional message to output.
 function Run.This:abort(message)
     self:log("This: abort: %s", message)
-    self._run:_doAbort(message)
+    local expecting, pattern = self:run():isExpectingAbort()
+    if expecting then
+        local matchPattern = pattern == nil or (message or ""):match(".*" .. pattern) ~= false
+        if matchPattern then
+            self:log("This: abort: was expected: %s", message)
+            self:run():_resetExpectedAbort()
+            return false
+        end
+    end
+    self:run():_doAbort(message)
+    return true
 end
 
 --- cp.spec.Run.This:fail([message])
@@ -183,7 +377,17 @@ end
 --- * message   - The optional message to output.
 function Run.This:fail(message)
     self:log("This: fail: %s", message)
-    self._run:_doFail(message)
+    local expecting, pattern = self:run():isExpectingFail()
+    if expecting then
+        local matchPattern = pattern == nil or (message or ""):match(".*" .. pattern) ~= false
+        if matchPattern then
+            self:log("This: fail: was expected: %s", message)
+            self:run():_resetExpectedFail()
+            return false
+        end
+    end
+    self:run():_doFail(message)
+    return true
 end
 
 function Run.This:__call()
@@ -202,11 +406,11 @@ function Run.This:__call()
         if not Handled.is(err) then
             -- there was an error, and is has not been handled already
             self:log("Action #%d failed. Aborting...", self._index)
-            self._run:_doAbort(err)
+            self:run():_doAbort(err)
         end
     elseif not self:isWaiting() then
         self:log("Action #%d completed.", self._index)
-        self._run:_doPhaseAction(self._index + 1)
+        self:run():_doPhaseAction(self._index + 1)
     else
         self:log("Action #%d is waiting...", self._index)
     end
@@ -222,7 +426,7 @@ end
 --- Method
 --- Cleans up This after a step.
 function Run.This:cleanup()
-    self._run:timeoutCancelled()
+    self:run():timeoutCancelled()
 end
 
 -- looks up the value from the shared data.
@@ -231,7 +435,7 @@ function Run.This:__index(key)
 end
 
 function Run.This:__tostring()
-    return format("This: %s: %s #%d", self._run, self._phase, self._index)
+    return format("This: %s: %s #%d", self:run(), self._phase, self._index)
 end
 
 Run.Phase = class("cp.spec.Run.Phase")
@@ -416,6 +620,17 @@ function Run:log(message, ...)
     if self:isDebugging() then
         log.df("%s: " .. message, self, ...)
     end
+end
+
+--- cp.spec.Run.This:log(message[, ...])
+--- Method
+--- When the current [Run](cp.spec.Run.md) is in [debug](#debug) mode, output the message to the console.
+---
+--- Parameters:
+--- * message   - the text message to output.
+--- * ...       - optional parameters, to be injected into the message, ala `string.format`.
+function Run.This:log(message, ...)
+    return self:run():log(message, ...)
 end
 
 -- cp.spec.Run:_doPhase(nextPhase)
