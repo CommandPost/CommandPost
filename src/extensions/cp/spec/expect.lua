@@ -1,6 +1,6 @@
 --- === cp.spec.expect ===
 ---
---- Provides a way of checking values match expected results. At it's core, it uses `assert` to check.
+--- Provides a way of checking values match expected results. At it's core, it uses `assert` to make the check.
 ---
 --- For example:
 ---
@@ -8,13 +8,14 @@
 --- expect("Hello World"):is("Hello World")
 --- expect("Hello World"):isNot("Hello Mars")
 --- expect(value):isAtLeast(10)
+--- expect.given("the world is a globe"):that(theEarth):isNot("flat")
 --- ```
 
 local class     = require "middleclass"
 local inspect   = require "hs.inspect"
 local format    = string.format
 
-local Expect = class("cp.spec.Expect")
+local expect = class("cp.spec.expect")
 
 local function deepeq(a, b)
     -- Different types: false
@@ -56,40 +57,58 @@ local function deepneq(a, b)
     end
 end
 
-function Expect:initialize(value)
+function expect.static.given(context)
+    return expect(nil, context)
+end
+
+function expect.static.that(value)
+    return expect(value)
+end
+
+function expect:initialize(value, context)
+    self:that(value)
+    self:given(context)
+end
+
+function expect:given(context)
+    self.context = context
+end
+
+function expect:that(value)
     self.value = value
 end
 
-function Expect:is(other)
-    assert(deepeq(self.value, other), format("Expected value to be %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:_expected(message, ...)
+    local expected = self.context and "Given " .. self.context .. ", expected " or "Expected "
+    return expected .. format(message, ...)
 end
 
-function Expect:isNot(other)
-    assert(deepneq(self.value, other), format("Expected value to not be %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:is(other)
+    assert(deepeq(self.value, other), self:_expected("that the value would be %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
-function Expect:isAtLeast(other)
-    assert(self.value >= other, format("Expected value to be at least %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:isNot(other)
+    assert(deepneq(self.value, other), self:_expected("that the value would not be %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
-function Expect:isAtMost(other)
-    assert(self.value <= other, format("Expected value to be at most %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:isAtLeast(other)
+    assert(self.value >= other, self:_expected("the value would be at least %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
-function Expect:isLessThan(other)
-    assert(self.value < other, format("Expected value to be less than %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:isAtMost(other)
+    assert(self.value <= other, self:_expected("the value would be at most %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
-function Expect:isGreaterThan(other)
-    assert(self.value > other, format("Expected value to be greater than %s, but it was %s", inspect(other), inspect(self.value)), 2)
+function expect:isLessThan(other)
+    assert(self.value < other, self:_expected("the value would be less than %s, but it was %s", inspect(other), inspect(self.value)), 2)
 end
 
-local expect = {}
+function expect:isGreaterThan(other)
+    assert(self.value > other, self:_expected("the value would be greater than %s, but it was %s", inspect(other), inspect(self.value)), 2)
+end
 
-setmetatable(expect, {
-    __call = function(_, value)
-        return Expect(value)
-    end
-})
+function expect:matches(other)
+    assert(type(self.value) == "string" and self.value:match(other) ~= nil, self:_expected("the value to match '%s', but it was '%s'", other, self.value))
+end
 
 return expect

@@ -1,6 +1,6 @@
 local require               = require
 
-local log                   = require "hs.logger" .new "Scenario"
+-- local log                   = require "hs.logger" .new "Scenario"
 
 local Definition            = require "cp.spec.Definition"
 local Handled               = require "cp.spec.Handled"

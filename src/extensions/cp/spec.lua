@@ -1,7 +1,10 @@
 --- === cp.spec ===
 ---
 --- An asynchronous test suite for Lua.
+
 local require               = require
+
+local fs                    = require "hs.fs"
 
 local Handler               = require "cp.spec.Handler"
 local DefaultHandler        = require "cp.spec.DefaultHandler"
@@ -11,8 +14,12 @@ local Definition            = require "cp.spec.Definition"
 local Where                 = require "cp.spec.Where"
 local Scenario              = require "cp.spec.Scenario"
 local Specification         = require "cp.spec.Specification"
+local Test                  = require "cp.spec.Test"
 
 local expect                = require "cp.spec.expect"
+local test                  = require "cp.test"
+
+local format                = string.format
 
 --- cp.spec.describe(name) -> function(definitions) -> cp.spec.Specification
 --- Function
@@ -72,13 +79,18 @@ local function setSearchPath(path)
     searchPath = path
 end
 
---- cp.spec(item) -> cp.spec.Definition
+--- cp.spec(id) -> cp.spec.Definition
 --- Function
 --- This will search the package path (and [specPath](#setSpecPath), if set) for `_spec.lua` files.
 --- It will first look for a file ending with `_spec.lua`, then will look for a file named `_spec.lua` in the folder.
----
 --- For example, if you run `require "cp.spec" "foo.bar"`, it will first look for `"foo/bar_spec.lua"`, then `"foo/bar/_spec.lua"`.
 --- This gives flexibility for extensions that are organised as single files or as folders.
+---
+--- Parameters:
+--- * id - the path ID for the spec. Eg. "cp.app"
+---
+--- Returns:
+--- * The [Definition](cp.spec.Definition.md), or throws an error.
 local function find(id)
     id = id or ""
     local testsPath = package.path
@@ -92,7 +104,7 @@ local function find(id)
         if package.searchpath(id .. "._spec", testsPath) then
             testId = id .. "._spec"
         else
-            error(string.format("Unable to find specs for '%s'.", id), 2)
+            error(format("Unable to find specs for '%s'.", id), 2)
         end
     end
 
@@ -114,6 +126,61 @@ local function find(id)
     end
 end
 
+local function wrapTest(tester)
+    if test.case.is(tester) then
+        -- if it's a case, wrap it as a Scenario.
+        return Test("test " .. tester.name):doing(tester.executeFn)
+    elseif test.suite.is(tester) then
+        -- if it's a suite, wrap it as a Specification.
+        local result = Specification(tester.name)
+
+        for _,t in ipairs(tester.tests) do
+            result:with(wrapTest(t))
+        end
+
+        return result
+    else
+        error(format("Unsupported test type: %s", type(tester)))
+    end
+end
+
+--- cp.spec.test(id) -> cp.spec.Definition
+--- Function
+--- Attempts to load a [cp.test](cp.test.md) with the specified ID, converting
+--- it to a `cp.spec` [Definition](cp.spec.Definition.md). This can then
+--- be run like any other `spec`.
+---
+--- Parameters:
+--- * id - The `cp.test` ID (eg. `"cp.app"`).
+---
+--- Returns:
+--- * The `Definition` or throws an error if it can't be found.
+local function loadTest(id)
+    -- 1. Find the test file
+    local idPath = searchPath .. "/" .. id:gsub("%.", "/")
+
+    -- check for `<id>_test.lua`
+    local testPath = fs.pathToAbsolute(idPath .. "_test.lua")
+    if not testPath then
+        -- try `<id>/_test.lua`
+        testPath = fs.pathToAbsolute(idPath .. "/_test.lua")
+    end
+
+    if not testPath then
+        error(format("Unable to find test file for %q", id))
+    end
+
+    -- 2. Load the test file
+
+    local testFn, err = loadfile(testPath)
+    if not testFn then
+        error(format("Unable to load test %q: %s", id, err))
+    end
+
+    -- 3. Return the wrapped result
+    return wrapTest(testFn())
+end
+
 return setmetatable({
     Handler = Handler,
     DefaultHandler = DefaultHandler,
@@ -127,6 +194,7 @@ return setmetatable({
     context = context,
     it = it,
     expect = expect,
+    test = loadTest,
     setSearchPath = setSearchPath,
 }, {
     __call = function(_, ...)

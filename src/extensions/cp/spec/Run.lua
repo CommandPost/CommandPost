@@ -1,6 +1,7 @@
 local require                   = require
 
 local log                       = require "hs.logger" .new "spec"
+local inspect                   = require "hs.inspect"
 
 local class                     = require "middleclass"
 
@@ -9,6 +10,8 @@ local interpolate               = require "cp.interpolate"
 local Handled                   = require "cp.spec.Handled"
 local Message                   = require "cp.spec.Message"
 local Report                    = require "cp.spec.Report"
+
+local Observer                  = require "cp.rx" .Observer
 
 local format                    = string.format
 local insert                    = table.insert
@@ -257,6 +260,23 @@ function Run:_checkExpectedAbort(message, reset)
         end
     end
     return false
+end
+
+--- cp.spec.Run.This:toObserver([onNext[, onError[, onCompleted]]) -> cp.rx.Observer
+--- Method
+--- Creates an [Observer](cp.rx.Observer.md). If the `onNext`/`onError`/`onCompleted` functions are
+--- not provided, then it will provide defaults. `onNext` will be logged, `onError` will throw an error,
+--- and `onCompleted` will trigger [done](#done).
+---
+--- Parameters:
+--- * onNext - The `next` handler.
+--- * onError - The `error` handler.
+--- * onCompleted - The `completed` handler.
+function Run.This:toObserver(onNext, onError, onCompleted)
+    onNext = onNext or function(value) self:log("onNext: %s", inspect(value)) end
+    onError = onError or error
+    onCompleted = onCompleted or function() self:done() end
+    return Observer.create(onNext, onError or error, onCompleted)
 end
 
 --- cp.spec.Run.This:isActive() -> boolean
