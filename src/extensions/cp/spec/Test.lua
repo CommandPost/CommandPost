@@ -1,3 +1,7 @@
+--- === cp.spec.Test ===
+---
+--- Wraps [cp.test](cp.test.md) into a subclass of [Scenario](cp.spec.Scenario.md).
+
 local require           = require
 local expect            = require "cp.spec.expect"
 local Scenario          = require "cp.spec.Scenario"
@@ -17,11 +21,7 @@ end
 
 -- wraps the `eq` function from `cp.test`.
 local function eq(left, right, message)
-    if message then
-        expect.given(message):that(left):is(right)
-    else
-        expect(left):is(right)
-    end
+    expect.given(message):level(2):that(left):is(right)
     return HANDLED
 end
 
