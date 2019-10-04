@@ -22,8 +22,9 @@ local tools         = require "cp.tools"
 local moses         = require "moses"
 local panel         = require "panel"
 
-local doUntil       = just.doUntil
+local sortedIndex   = moses.sortedIndex
 
+local doUntil       = just.doUntil
 
 local mod = {}
 
@@ -540,12 +541,11 @@ function mod.addPanel(params)
 
     local newPanel = panel.new(params, mod)
 
-    local index = moses.sortedIndex(mod._panels, newPanel, comparePriorities)
+    local index = sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
 
     return newPanel
 end
-
 
 local plugin = {
     id              = "finalcutpro.export.batch.manager",

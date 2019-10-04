@@ -2,16 +2,15 @@
 ---
 --- Static Text Module.
 
-local require = require
+local require           = require
 
-local timer                 = require("hs.timer")
+local timer             = require "hs.timer"
 
-local Element               = require("cp.ui.element")
-local notifier              = require("cp.ui.notifier")
-local prop                  = require("cp.prop")
+local Element           = require "cp.ui.Element"
+local notifier          = require "cp.ui.notifier"
+local prop              = require "cp.prop"
 
-local delayedTimer          = timer.delayed
-
+local delayedTimer      = timer.delayed
 
 local StaticText = Element:subclass("cp.ui.StaticText")
 

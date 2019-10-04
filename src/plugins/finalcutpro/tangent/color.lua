@@ -2,24 +2,25 @@
 ---
 --- Final Cut Pro Tangent Color Manager.
 
-local require = require
+local require           = require
 
---local log                                       = require("hs.logger").new("fcp_tangent")
+--local log               = require "hs.logger".new "fcp_tangent"
 
-local tangent                                   = require("hs.tangent")
+local tangent           = require "hs.tangent"
 
-local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
-local deferred                                  = require("cp.deferred")
-local fcp                                       = require("cp.apple.finalcutpro")
-local go                                        = require("cp.rx.go")
-local i18n                                      = require("cp.i18n")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
+local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
+local go                = require "cp.rx.go"
+local i18n              = require "cp.i18n"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
 
-local format                                    = string.format
-local If, Do                                    = go.If, go.Do
-local Done                                      = go.Done
-local round                                     = tools.round
+local format            = string.format
+local If                = go.If
+local Do                = go.Do
+local Done              = go.Done
+local round             = tools.round
 
 local plugin = {
     id = "finalcutpro.tangent.color",

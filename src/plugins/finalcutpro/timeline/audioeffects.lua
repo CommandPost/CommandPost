@@ -4,13 +4,13 @@
 
 local require = require
 
-local log				= require("hs.logger").new("audiofx")
+local log				= require "hs.logger".new "audiofx"
 
-local timer				= require("hs.timer")
+local timer				= require "hs.timer"
 
-local dialog            = require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local dialog            = require "cp.dialog"
+local fcp				= require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
 local doAfter           = timer.doAfter
 
@@ -138,7 +138,6 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     return true
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.audioeffects",

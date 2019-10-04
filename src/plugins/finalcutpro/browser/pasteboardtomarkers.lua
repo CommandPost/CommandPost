@@ -21,18 +21,20 @@
 ---
 --- If a # is place before the timecode, it will create a "To Do" marker.
 
-local require = require
+local require               = require
 
-local log                       = require("hs.logger").new("pasteboardtomarkers")
+local log                   = require "hs.logger".new "pasteboardtomarkers"
 
-local pasteboard                = require("hs.pasteboard")
+local pasteboard            = require "hs.pasteboard"
 
-local dialog                    = require("cp.dialog")
-local fcp                       = require("cp.apple.finalcutpro")
-local just                      = require("cp.just")
-local tools                     = require("cp.tools")
-local i18n                      = require("cp.i18n")
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local just                  = require "cp.just"
+local tools                 = require "cp.tools"
+local i18n                  = require "cp.i18n"
 
+local displayAlertMessage   = dialog.displayAlertMessage
+local displayErrorMessage   = dialog.displayErrorMessage
 
 local mod = {}
 
@@ -53,7 +55,7 @@ function mod.process()
     -- Make sure the browser is showing:
     --------------------------------------------------------------------------------
     if not fcp:browser():isShowing() then
-        dialog.displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
+        displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
     end
 
@@ -62,10 +64,10 @@ function mod.process()
     --------------------------------------------------------------------------------
     local selectedClips = fcp:browser():libraries():selectedClips()
     if not selectedClips or #selectedClips == 0 then
-        dialog.displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
+        displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
     elseif #selectedClips ~= 1 then
-        dialog.displayAlertMessage(i18n("onlyOneBrowserClipMustBeSelected"))
+        displayAlertMessage(i18n("onlyOneBrowserClipMustBeSelected"))
         return
     end
 
@@ -75,7 +77,7 @@ function mod.process()
     local pasteboardContents = pasteboard.getContents()
     if not pasteboardContents then
         log.df("pasteboardContents: %s", pasteboardContents)
-        dialog.displayErrorMessage(i18n("pasteboardToMarkersFailed"))
+        displayErrorMessage(i18n("pasteboardToMarkersFailed"))
         return
     end
 
@@ -85,7 +87,7 @@ function mod.process()
     local lines = tools.lines(pasteboardContents)
     if not lines then
         log.df("pasteboardContents: %s", pasteboardContents)
-        dialog.displayErrorMessage(i18n("pasteboardToMarkersFailed"))
+        displayErrorMessage(i18n("pasteboardToMarkersFailed"))
         return
     end
 
@@ -140,10 +142,10 @@ function mod.process()
         if not timecode or not description then
             if i == 1 then
                 log.df("pasteboardContents: %s", pasteboardContents)
-                dialog.displayErrorMessage(i18n("pasteboardToMarkersFailed"))
+                displayErrorMessage(i18n("pasteboardToMarkersFailed"))
             else
                 log.df("pasteboardContents: %s", pasteboardContents)
-                dialog.displayErrorMessage(string.format("Failed to process line %s of the pasteboard contents.", i))
+                displayErrorMessage(string.format("Failed to process line %s of the pasteboard contents.", i))
             end
             return
         end
@@ -172,7 +174,7 @@ function mod.process()
         result = fcp:viewer():timecode(timecode)
         if not result then
             log.df("Current Line: %s", v)
-            dialog.displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
+            displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
             return
         end
 
@@ -183,7 +185,7 @@ function mod.process()
         markerPopover:show()
         result = just.doUntil(function() return markerPopover:isShowing() end)
         if not result then
-            dialog.displayErrorMessage(string.format("Could not add marker for line %s.", i))
+            displayErrorMessage(string.format("Could not add marker for line %s.", i))
             return
         end
 
@@ -194,7 +196,7 @@ function mod.process()
             markerPopover:toDo():press()
             result = just.doUntil(function() return markerPopover:toDo():checked() end)
             if not result then
-                dialog.displayErrorMessage(string.format("Could not check 'To Do' for line %s.", i))
+                displayErrorMessage(string.format("Could not check 'To Do' for line %s.", i))
                 return
             end
         end
@@ -228,7 +230,7 @@ function mod.process()
             result = fcp:viewer():timecode(favouriteStart)
             if not result then
                 log.df("favouriteStart: %s", favouriteStart)
-                dialog.displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))
+                displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))
                 return
             end
 
@@ -237,7 +239,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             result = fcp:selectMenu({"Mark", "Set Range Start"})
             if not result then
-                dialog.displayErrorMessage(string.format("Could not set in point for favourite start on line %s.", i))
+                displayErrorMessage(string.format("Could not set in point for favourite start on line %s.", i))
                 return
             end
 
@@ -248,7 +250,7 @@ function mod.process()
                 result = fcp:libraries():playhead():timecode(favouriteEnd)
                 if not result then
                     log.df("favouriteEnd: %s", favouriteEnd)
-                    dialog.displayErrorMessage(string.format("Could not go to favourite end timecode for line %s.", i))
+                    displayErrorMessage(string.format("Could not go to favourite end timecode for line %s.", i))
                     return
                 end
             else
@@ -257,7 +259,7 @@ function mod.process()
                 --------------------------------------------------------------------------------
                 result = fcp:selectMenu({"Mark", "Go to", "End"})
                 if not result then
-                    dialog.displayErrorMessage(string.format("Could not go to end for favourite end on line %s.", i))
+                    displayErrorMessage(string.format("Could not go to end for favourite end on line %s.", i))
                     return
                 end
             end
@@ -267,7 +269,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             result = fcp:selectMenu({"Mark", "Set Range End"})
             if not result then
-                dialog.displayErrorMessage(string.format("Could not set out point for favourite start on line %s.", i))
+                displayErrorMessage(string.format("Could not set out point for favourite start on line %s.", i))
                 return
             end
 
@@ -276,7 +278,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             result = fcp:selectMenu({"Mark", "Favorite"})
             if not result then
-                dialog.displayErrorMessage(string.format("Could not favourite on line %s.", i))
+                displayErrorMessage(string.format("Could not favourite on line %s.", i))
                 return
             end
 
@@ -301,7 +303,6 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps)
-
     --------------------------------------------------------------------------------
     -- Add a new Global Command:
     --------------------------------------------------------------------------------
@@ -311,7 +312,6 @@ function mod.init(deps)
 
     return mod
 end
-
 
 local plugin = {
     id                = "finalcutpro.browser.pasteboardtomarkers",

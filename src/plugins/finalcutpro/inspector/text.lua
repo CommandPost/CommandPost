@@ -2,20 +2,25 @@
 ---
 --- Final Cut Pro Text Inspector Additions.
 
-local require = require
+local require                   = require
 
-local log               = require("hs.logger").new("textInspector")
+local log                       = require "hs.logger".new "textInspector"
 
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-local just              = require("cp.just")
-local dialog            = require("cp.dialog")
+local pasteboard                = require "hs.pasteboard"
 
+local dialog                    = require "cp.dialog"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local just                      = require "cp.just"
+local tools                     = require "cp.tools"
+
+local displayErrorMessage       = dialog.displayErrorMessage
+local playErrorSound            = tools.playErrorSound
 
 local function setTextAlign(value)
 
     --------------------------------------------------------------------------------
-    -- TODO: This could probably be Rx-ified?
+    -- TODO: This should probably be Rx-ified.
     --------------------------------------------------------------------------------
 
     --------------------------------------------------------------------------------
@@ -42,7 +47,7 @@ local function setTextAlign(value)
             fcp:launch()
             return fcp:isFrontmost()
         end) then
-            dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.")
+            displayErrorMessage(i18n("failedToSwitchBackToFinalCutPro"))
             return false
         end
 
@@ -53,7 +58,7 @@ local function setTextAlign(value)
             timeline:show()
             return timeline:isShowing()
         end) then
-            dialog.displayErrorMessage("Timeline could not be shown.")
+            displayErrorMessage(i18n("timelineCouldNotBeShown"))
             return false
         end
 
@@ -77,7 +82,7 @@ local function setTextAlign(value)
             text:show()
             return text:isShowing()
         end) then
-            dialog.displayErrorMessage("Text Inspector could not be shown.")
+            displayErrorMessage(i18n("textInspectorCouldNotBeShown"))
             return false
         end
 
@@ -89,7 +94,7 @@ local function setTextAlign(value)
             basic:show()
             return basic:isShowing()
         end) then
-            dialog.displayErrorMessage("The selected clip doesn't offer any Text Alignment options.")
+            displayErrorMessage(i18n("selectedClipDoesntOfferAnyTextAlignmentOptions"))
             return false
         end
 
@@ -121,7 +126,6 @@ local function setTextAlign(value)
 
 end
 
-
 local plugin = {
     id              = "finalcutpro.inspector.text",
     group           = "finalcutpro",
@@ -132,7 +136,7 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Commands:
+    -- Text Align:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
@@ -147,6 +151,9 @@ function plugin.init(deps)
         :add("alignTextToTheRight")
         :whenActivated(function() setTextAlign("right") end)
 
+    --------------------------------------------------------------------------------
+    -- Text Justify:
+    --------------------------------------------------------------------------------
     fcpxCmds
         :add("justifyLastLeft")
         :whenActivated(function() setTextAlign("justifiedLeft") end)
@@ -162,6 +169,57 @@ function plugin.init(deps)
     fcpxCmds
         :add("justifyAll")
         :whenActivated(function() setTextAlign("justifiedFull") end)
+
+    --------------------------------------------------------------------------------
+    -- Replace Pasteboard Contents with Selected Title Text:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("replaceSelectedTitleTextwithPasteboardContents")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            local contents = pasteboard.getContents()
+            if contents then
+                textArea:show()
+                textArea:value(contents)
+                return
+            end
+            playErrorSound()
+        end)
+        :titled(i18n("replaceSelectedTitleTextwithPasteboardContents"))
+
+    --------------------------------------------------------------------------------
+    -- Replace Pasteboard Contents with Selected Title Text:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("appendSelectedTitleTextwithPasteboardContents")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            local contents = pasteboard.getContents()
+            if contents then
+                textArea:show()
+                local original = textArea:value()
+                if original then
+                    textArea:value(original .. contents)
+                    return
+                end
+            end
+            playErrorSound()
+        end)
+        :titled(i18n("appendSelectedTitleTextwithPasteboardContents"))
+
+    --------------------------------------------------------------------------------
+    -- Focus on Title Text in Inspector:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("focusOnTitleTextInInspector")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            textArea:show()
+            fcp:selectMenu({"Window", "Go To", "Inspector"})
+            textArea:focused(true)
+        end)
+        :titled(i18n("focusOnTitleTextInInspector"))
+
 end
 
 return plugin

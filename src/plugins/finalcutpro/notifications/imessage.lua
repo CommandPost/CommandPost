@@ -2,16 +2,15 @@
 ---
 --- iMessage Notifications Plugin.
 
-local require = require
+local require       = require
 
-local messages                                  = require("hs.messages")
-local dialog                                    = require("hs.dialog")
+local messages      = require "hs.messages"
+local dialog        = require "hs.dialog"
 
-local config                                    = require("cp.config")
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
-
+local config        = require "cp.config"
+local html          = require "cp.web.html"
+local i18n          = require "cp.i18n"
+local ui            = require "cp.web.ui"
 
 local mod = {}
 
@@ -80,7 +79,6 @@ function mod.init(notifications)
     mod.update()
 end
 
-
 local plugin = {
     id = "finalcutpro.notifications.imessage",
     group = "finalcutpro",
@@ -142,7 +140,7 @@ function plugin.init(deps)
             :addTextbox(304,
                 {
                     label = i18n("iMessageDestination") .. ":",
-                    value = mod.target(),
+                    value = function() return mod.target() end,
                     class = "api",
                     onchange = function(_, params)
                         mod.target(params.value)

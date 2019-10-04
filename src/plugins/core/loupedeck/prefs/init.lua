@@ -85,6 +85,27 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
     mod.items(items)
 end
 
+-- setBankLabel(group, label) -> none
+-- Function
+-- Sets a Loupedeck Bank Label.
+--
+-- Parameters:
+--  * group - Group ID as string
+--  * label - Label as string
+--
+-- Returns:
+--  * None
+local function setBankLabel(group, label)
+    local items = mod.items()
+
+    if not items[group] then
+        items[group] = {}
+    end
+    items[group]["bankLabel"] = label
+
+    mod.items(items)
+end
+
 -- resetEverything() -> none
 -- Function
 -- Prompts to reset shortcuts to default for all groups.
@@ -210,7 +231,10 @@ local function generateContent()
     local leftValue = i18n("none")
     local rightValue = i18n("none")
 
+    local bankLabel
+
     if items[groupID] then
+        bankLabel = items[groupID]["bankLabel"]
         if items[groupID][note .. "Press"] then
             if items[groupID][note .. "Press"]["actionTitle"] then
                 pressValue = items[groupID][note .. "Press"]["actionTitle"]
@@ -237,6 +261,7 @@ local function generateContent()
         groupLabels                 = groupLabels,
         groups                      = groups,
         defaultGroup                = defaultGroup,
+        bankLabel                   = bankLabel,
         i18n                        = i18n,
 
         lastNote                    = mod.lastNote(),
@@ -414,6 +439,10 @@ local function loupedeckPanelCallback(id, params)
             mod._midi.forceLoupedeckGroupChange(params["groupID"], mod.enabled())
             mod.lastGroup(params["groupID"])
             mod._manager.refresh()
+        elseif callbackType == "updateBankLabel" then
+            local groupID = params["groupID"]
+            local bankLabel = params["bankLabel"]
+            setBankLabel(groupID, bankLabel)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

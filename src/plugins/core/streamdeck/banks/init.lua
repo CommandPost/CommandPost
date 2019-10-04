@@ -54,7 +54,12 @@ function mod.init()
                 local activeGroup = mod._manager.activeGroup()
                 local activeSubGroup = mod._manager.activeSubGroup()
                 if activeGroup and activeSubGroup then
-                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    local bankLabel = mod._manager.getBankLabel(activeGroup .. activeSubGroup)
+                    if bankLabel then
+                        dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. bankLabel)
+                    else
+                        dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    end
                 end
                 mod._manager.update()
             end

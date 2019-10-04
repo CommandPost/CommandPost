@@ -356,6 +356,28 @@ function tools.split(str, pat)
     return t
 end
 
+--- cp.tools.findCommonWordWithinTwoStrings(a, b) -> string
+--- Function
+--- Finds a common word within two strings.
+---
+--- Parameters:
+---  * a - The first string
+---  * b - The second string
+---
+--- Returns:
+---  * The first common word that's found or `nil` if something goes wrong.
+function tools.findCommonWordWithinTwoStrings(a, b)
+    local at = tools.split(a, " ")
+    local bt = tools.split(b, " ")
+    for _, ar in pairs(at) do
+        for _, br in pairs(bt) do
+            if ar == br then
+                return ar
+            end
+        end
+    end
+end
+
 --- cp.tools.isNumberString(value) -> boolean
 --- Function
 --- Returns whether or not value is a number string.
@@ -1634,6 +1656,85 @@ function tools.startsWith(value, startValue)
         end
     end
     return false
+end
+
+--- cp.tools.exactMatch(value, pattern, plain) -> boolean
+--- Function
+--- Compares two strings to see if they're an exact match.
+---
+--- Parameters:
+---  * value - The first string
+---  * pattern - The second string, including any patterns
+---  * plain - Whether or not to ignore patterns. Defaults to `false`.
+---  * ignoreCase - Ignore the case of the value & pattern.
+---
+--- Returns:
+---  * `true` if there's an exact match, otherwise `false`.
+function tools.exactMatch(value, pattern, plain, ignoreCase)
+    if ignoreCase then
+        value = string.lower(value)
+        pattern = string.lower(pattern)
+    end
+    if value and pattern then
+        local s,e = value:find(pattern, nil, plain)
+        return s == 1 and e == value:len()
+    end
+    return false
+end
+
+--- cp.tools.stringToHexString(value) -> string
+--- Function
+--- Converts a string to a hex string.
+---
+--- Parameters:
+---  * value - The string to convert
+---
+--- Returns:
+---  * A hex string
+function tools.stringToHexString(value)
+    local result = ""
+    for c in string.gmatch(tostring(value), ".") do
+        result = result .. string.format("%02X", string.byte(c))
+    end
+    return result
+end
+
+--- cp.tools.hexStringToString(value) -> string
+--- Function
+--- Converts a hex string to a string.
+---
+--- Parameters:
+---  * value - The string to convert
+---
+--- Returns:
+---  * A string
+function tools.stringToHexString(value)
+    local hexToChar = {}
+    for idx = 0, 255 do
+        hexToChar[("%02X"):format(idx)] = string.char(idx)
+        hexToChar[("%02x"):format(idx)] = string.char(idx)
+    end
+    return value and value:gsub("(..)", hexToChar)
+end
+
+--- cp.tools.contentsInsideBrackets(value) -> string | nil
+--- Function
+--- Gets the contents of any text inside the first bracket set.
+---
+--- Parameters:
+---  * value - The string to process
+---
+--- Returns:
+---  * The contents as a string or `nil`
+function tools.contentsInsideBrackets(a)
+    --------------------------------------------------------------------------------
+    -- Workaround for Chinese:
+    --------------------------------------------------------------------------------
+    a = a:gsub("）", ")")
+    a = a:gsub("（", "(")
+
+    local b = a and string.match(a, "%(.*%)")
+    return b and b:sub(2, -2)
 end
 
 return tools

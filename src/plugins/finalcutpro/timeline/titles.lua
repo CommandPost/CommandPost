@@ -8,6 +8,7 @@ local log       = require "hs.logger".new "titles"
 
 local base64    = require "hs.base64"
 local timer     = require "hs.timer"
+local window    = require "hs.window"
 
 local config    = require "cp.config"
 local dialog    = require "cp.dialog"
@@ -75,10 +76,10 @@ function mod.apply(action)
     if category then cacheID = cacheID .. "-" .. name end
 
     --------------------------------------------------------------------------------
-    -- Restore from Cache:
+    -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    if mod._cache()[cacheID] then
-
+    local rangeSelected = fcp:timeline():rangeSelected()
+    if not rangeSelected and mod._cache()[cacheID] then
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
         --------------------------------------------------------------------------------
@@ -238,7 +239,42 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Select the chosen Generator:
+    -- If there's a range selected, do the old fashion way:
+    --------------------------------------------------------------------------------
+    if rangeSelected then
+        --------------------------------------------------------------------------------
+        -- Apply item:
+        --------------------------------------------------------------------------------
+        generators:applyItem(whichItem)
+
+        --------------------------------------------------------------------------------
+        -- Restore Layout:
+        --------------------------------------------------------------------------------
+        doAfter(0.1, function()
+            generators:loadLayout(generatorsLayout)
+            if browserLayout then browser:loadLayout(browserLayout) end
+        end)
+
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the correct window has focus:
+    --------------------------------------------------------------------------------
+    local gridWindow = grid:attributeValue("AXWindow")
+    local whichWindow = gridWindow and gridWindow:asHSWindow()
+    if whichWindow then
+        whichWindow:focus()
+        just.doUntil(function()
+            return whichWindow == window.focusedWindow()
+        end)
+    else
+        dialog.displayErrorMessage("Failed to select the window that contains the Titles Browser.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Select the chosen Title:
     --------------------------------------------------------------------------------
     grid:setAttributeValue("AXSelectedChildren", {whichItem})
     whichItem:setAttributeValue("AXFocused", true)

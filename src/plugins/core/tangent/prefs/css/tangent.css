@@ -38,7 +38,7 @@
 }
 
 .tangentRowAction {
-	width: 73%;
+	width: 50%;
 }
 
 .tangentRowActionButton {
@@ -103,7 +103,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 630px;
+	width: 620px;
 }
 
 .tangentActionButton {

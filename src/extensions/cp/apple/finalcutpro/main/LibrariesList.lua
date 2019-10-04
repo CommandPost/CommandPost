@@ -15,6 +15,9 @@ local Table                 = require "cp.ui.Table"
 
 local moses                 = require "moses"
 
+local filter                = moses.filter
+local map                   = moses.map
+
 local cache                 = axutils.cache
 local childFromTop          = axutils.childFromTop
 local childrenMatching      = axutils.childrenMatching
@@ -258,7 +261,7 @@ end
 function LibrariesList:_uiToClips(clipsUI)
     local columnIndex = self:contents():findColumnIndex("filmlist name col")
     local options = {columnIndex = columnIndex}
-    return moses.map(clipsUI, function(_,clipUI)
+    return map(clipsUI, function(clipUI)
         return Clip.new(clipUI, options)
     end)
 end
@@ -273,7 +276,7 @@ end
 -- Returns:
 --  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
-    return moses.map(clips, function(_,clip) return clip:UI() end)
+    return map(clips, function(clip) return clip:UI() end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesList:clips(filterFn) -> table | nil
@@ -288,7 +291,7 @@ end
 function LibrariesList:clips(filterFn)
     local clips = self:_uiToClips(self:clipsUI())
     if filterFn then
-        clips = moses.filter(clips, function(_,clip) return filterFn(clip) end)
+        clips = filter(clips, function(_,clip) return filterFn(clip) end)
     end
     return clips
 

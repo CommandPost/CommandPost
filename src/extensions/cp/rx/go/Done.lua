@@ -1,4 +1,3 @@
-
 --- === cp.rx.go.Done ===
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will complete without sending any values.
@@ -9,8 +8,8 @@
 --- Done()
 --- ```
 
-local Statement             = require("cp.rx.go.Statement")
-local Observable            = require("cp.rx").Observable
+local Statement             = require "cp.rx.go.Statement"
+local Observable            = require "cp.rx".Observable
 
 --- cp.rx.go.Done() -> Done
 --- Constructor

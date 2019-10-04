@@ -4,19 +4,18 @@
 
 local require = require
 
---local log				        = require("hs.logger").new("ignorecard")
+--local log				        = require "hs.logger".new "ignorecard"
 
-local application               = require("hs.application")
-local fs                        = require("hs.fs")
-local timer                     = require("hs.timer")
+local application               = require "hs.application"
+local fs                        = require "hs.fs"
+local timer                     = require "hs.timer"
 
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local i18n                      = require("cp.i18n")
+local config                    = require "cp.config"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
 
 local doEvery                   = timer.doEvery
 local volume                    = fs.volume
-
 
 local mod = {}
 
@@ -111,7 +110,6 @@ end
 --- Variable
 --- Toggles the Ignore Card Plugin
 mod.enabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
-
 
 local plugin = {
     id              = "finalcutpro.import.ignorecard",

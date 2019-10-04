@@ -2,22 +2,22 @@
 ---
 --- Export Dialog Module.
 
-local require                       = require
+local require               = require
 
---local log                           = require("hs.logger").new("ExportDialog")
+--local log                   = require("hs.logger").new("ExportDialog")
 
-local axutils                       = require("cp.ui.axutils")
-local dialog                        = require("cp.dialog")
-local i18n                          = require("cp.i18n")
-local just                          = require("cp.just")
-local prop                          = require("cp.prop")
-local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
+local axutils               = require "cp.ui.axutils"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local just                  = require "cp.just"
+local prop                  = require "cp.prop"
+local SaveSheet             = require "cp.apple.finalcutpro.export.SaveSheet"
 
-local v                             = require("semver")
+local v                     = require "semver"
 
-local displayMessage                = dialog.displayMessage
-local wait                          = just.wait
-
+local displayMessage        = dialog.displayMessage
+local doUntil               = just.doUntil
+local wait                  = just.wait
 
 local ExportDialog = {}
 
@@ -146,20 +146,28 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
         local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
 
         --------------------------------------------------------------------------------
-        -- Wait for Final Cut Pro to catch up:
+        -- No destination selected:
         --------------------------------------------------------------------------------
-        wait(0.1)
-
         if not menuItem then
-            --------------------------------------------------------------------------------
-            -- No destination selected:
-            --------------------------------------------------------------------------------
             local msg = i18n("batchExportNoDestination")
             if not quiet then displayMessage(msg) end
             return self, msg
-        elseif menuItem:attributeValue("AXEnabled") then
-            menuItem:doPress()
+        end
 
+        --------------------------------------------------------------------------------
+        -- Keep trying to press the menu item until we timeout:
+        --------------------------------------------------------------------------------
+        if not doUntil(function() return menuItem:doPress() end) then
+            --------------------------------------------------------------------------------
+            -- Unsuccessfully selected the share menu item:
+            --------------------------------------------------------------------------------
+            local msg = i18n("batchExportDestinationDisabled")
+            if not quiet then displayMessage(msg) end
+            return self, msg
+        else
+            --------------------------------------------------------------------------------
+            -- Successfully selected the share menu item:
+            --------------------------------------------------------------------------------
             local alert = fcp:alert()
 
             local missingMediaString = fcp:string("FFMissingMediaMessageText")
@@ -251,13 +259,6 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                 if not quiet then displayMessage(msg) end
                 return self, msg
             end
-        else
-            --------------------------------------------------------------------------------
-            -- Batch Export Destination is disabled:
-            --------------------------------------------------------------------------------
-            local msg = i18n("batchExportDestinationDisabled")
-            if not quiet then displayMessage(msg) end
-            return self, msg
         end
     end
     return self

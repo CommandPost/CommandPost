@@ -2,10 +2,12 @@
 ---
 --- MIDI Control Bank Actions.
 
-local require   = require
+local require               = require
 
-local dialog    = require "cp.dialog"
-local i18n      = require "cp.i18n"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+
+local displayNotification   = dialog.displayNotification
 
 local plugin = {
     id              = "core.midi.controls.banks",
@@ -54,7 +56,12 @@ function plugin.init(deps)
                 local activeGroup = manager.activeGroup()
                 local activeSubGroup = manager.activeSubGroup()
                 if activeGroup and activeSubGroup then
-                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    local bankLabel = manager.getBankLabel(activeGroup .. activeSubGroup)
+                    if bankLabel then
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. bankLabel)
+                    else
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
+                    end
                 end
             end
         end)

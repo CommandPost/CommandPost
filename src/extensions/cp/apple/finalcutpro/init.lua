@@ -5,7 +5,7 @@
 --- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
 --- ```lua
---- local fcp = require("cp.apple.finalcutpro")
+--- local fcp = require "cp.apple.finalcutpro"
 --- ```
 ---
 --- Then, there are the `UpperCase` files, which represent the application itself:
@@ -30,10 +30,10 @@
 ---
 --- The `UpperCase` classes also have a variety of `UI` methods. These will return the `axuielement` for the relevant GUI element, if it is accessible. If not, it will return `nil`. These allow direct interaction with the GUI if necessary. It's most useful when adding new functions to `UpperCase` files for a particular element.
 ---
---- This can also be used to 'wait' for an element to be visible before performing a task. For example, if you need to wait for the `Preferences` window to finish loading before doing something else, you can do this with the `cp.just` library:
+--- This can also be used to 'wait' for an element to be visible before performing a task. For example, if you need to wait for the `Preferences` window to finish loading before doing something else, you can do this with the [just](cp.just.md) library:
 ---
 --- ```lua
---- local just = require("cp.just")
+--- local just = require "cp.just"
 ---
 --- local prefsWindow = fcp:preferencesWindow()
 ---
@@ -57,71 +57,96 @@
 --- 	-- it's closed!
 --- end
 --- ```
+---
+--- **Delegates to:** [app](cp.apple.finalcutpro.app.md), [menu](cp.app.menu.md)
+---
+--- Note: All values/methods/props from delegates can be accessed directly from the `cp.apple.finalcutpro` instance. For example:
+---
+--- ```lua
+--- fcp.app:UI() == fcp:UI() -- the same `cp.prop` result.
+--- ```
 
 local require = require
 
-local log										= require("hs.logger").new("fcp")
+local log										= require "hs.logger".new "fcp"
 
-local fs 										= require("hs.fs")
-local hsplist                                   = require("hs.plist")
-local inspect									= require("hs.inspect")
-local osascript 								= require("hs.osascript")
-local pathwatcher                               = require("hs.pathwatcher")
+local fs 										= require "hs.fs"
+local hsplist                                   = require "hs.plist"
+local inspect									= require "hs.inspect"
+local osascript 								= require "hs.osascript"
+local pathwatcher                               = require "hs.pathwatcher"
 
-local axutils                                   = require("cp.ui.axutils")
-local config                                    = require("cp.config")
-local go                                        = require("cp.rx.go")
-local i18n                                      = require("cp.i18n")
-local just										= require("cp.just")
-local localeID                                  = require("cp.i18n.localeID")
-local plist										= require("cp.plist")
-local prop										= require("cp.prop")
-local Set                                       = require("cp.collect.Set")
-local tools                                     = require("cp.tools")
+local axutils                                   = require "cp.ui.axutils"
+local config                                    = require "cp.config"
+local go                                        = require "cp.rx.go"
+local i18n                                      = require "cp.i18n"
+local just										= require "cp.just"
+local localeID                                  = require "cp.i18n.localeID"
+local plist										= require "cp.plist"
+local prop										= require "cp.prop"
+local Set                                       = require "cp.collect.Set"
+local tools                                     = require "cp.tools"
 
-local commandeditor								= require("cp.apple.commandeditor")
+local commandeditor								= require "cp.apple.commandeditor"
 
-local app                                       = require("cp.apple.finalcutpro.app")
-local menu                                      = require("cp.apple.finalcutpro.menu")
-local plugins									= require("cp.apple.finalcutpro.plugins")
-local strings                                   = require("cp.apple.finalcutpro.strings")
+local app                                       = require "cp.apple.finalcutpro.app"
+local plugins									= require "cp.apple.finalcutpro.plugins"
+local strings                                   = require "cp.apple.finalcutpro.strings"
 
-local Browser									= require("cp.apple.finalcutpro.main.Browser")
-local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
-local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
-local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Timeline									= require("cp.apple.finalcutpro.timeline.Timeline")
-local Viewer									= require("cp.apple.finalcutpro.viewer.Viewer")
+local Browser									= require "cp.apple.finalcutpro.main.Browser"
+local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
+local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
+local PrimaryWindow								= require "cp.apple.finalcutpro.main.PrimaryWindow"
+local SecondaryWindow							= require "cp.apple.finalcutpro.main.SecondaryWindow"
+local TranscodeMedia                            = require "cp.apple.finalcutpro.main.TranscodeMedia"
 
-local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
-local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
-local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
-local FindAndReplaceTitleText	                = require("cp.apple.finalcutpro.main.FindAndReplaceTitleText")
+local Timeline									= require "cp.apple.finalcutpro.timeline.Timeline"
 
-local v											= require("semver")
-local class                                     = require("middleclass")
-local lazy                                      = require("cp.lazy")
+local Viewer									= require "cp.apple.finalcutpro.viewer.Viewer"
 
-local format, gsub 						        = string.format, string.gsub
-local Do, Throw                                 = go.Do, go.Throw
+local CommandEditor								= require "cp.apple.finalcutpro.cmd.CommandEditor"
+local ExportDialog								= require "cp.apple.finalcutpro.export.ExportDialog"
+local MediaImport								= require "cp.apple.finalcutpro.import.MediaImport"
+local PreferencesWindow							= require "cp.apple.finalcutpro.prefs.PreferencesWindow"
+local FindAndReplaceTitleText	                = require "cp.apple.finalcutpro.main.FindAndReplaceTitleText"
+
+local v											= require "semver"
+local class                                     = require "middleclass"
+local lazy                                      = require "cp.lazy"
+local delegator                                 = require "cp.delegator"
+
+local format     						        = string.format
+local gsub                                      = string.gsub
+
+local Do                                        = go.Do
+local Throw                                     = go.Throw
 
 local childMatching                             = axutils.childMatching
-
 local dirFiles                                  = tools.dirFiles
 local insert                                    = table.insert
+local pathFromBookmark                          = fs.pathFromBookmark
+local pathToAbsolute                            = fs.pathToAbsolute
+local pathToBookmark                            = fs.pathToBookmark
+local stringToHexString                         = tools.stringToHexString
+
+-- Load the menu helpers:
+require "cp.apple.finalcutpro.menu"
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
 
-
-local fcp = class("cp.apple.finalcutpro"):include(lazy)
+local fcp = class("cp.apple.finalcutpro")
+    :include(lazy)
+    :include(delegator)
+    :delegateTo("app", "menu")
 
 function fcp:initialize()
 --- cp.apple.finalcutpro.app <cp.app>
 --- Constant
---- The `cp.app` for Final Cut Pro.
+--- The [app](cp.app.md) for Final Cut Pro.
+---
+--- Notes:
+--- * All values from [app](cp.app.md) can be accessed directly from the `finalcutpro` instance.
     self.app = app
 
 --- cp.apple.finalcutpro.preferences <cp.app.prefs>
@@ -236,9 +261,6 @@ end
 --- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The Final Cut Pro `axuielement`, if available.
-function fcp.lazy.prop:UI()
-    return self.app.UI
-end
 
 --- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
@@ -288,34 +310,6 @@ function fcp.lazy.prop:isSupported()
     end)
 end
 
---- cp.apple.finalcutpro.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only>
---- Field
---- The list of supported locales for this version of FCPX.
-function fcp.lazy.prop:supportedLocales()
-    return self.app.supportedLocales
-end
-
---- cp.apple.finalcutpro.currentLocale <cp.prop: cp.i18n.localeID; live>
---- Field
---- Gets and sets the current locale for FCPX.
-function fcp.lazy.prop:currentLocale()
-    return self.app.currentLocale
-end
-
---- cp.apple.finalcutpro.version <cp.prop: semver; read-only; live>
---- Field
---- The version number of the running or default installation of FCPX as a `semver`.
-function fcp.lazy.prop:version()
-    return self.app.version
-end
-
---- cp.apple.finalcutpro.versionString <cp.prop: string; read-only; live>
---- Field
---- The version number of the running or default installation of FCPX as a `string`.
-function fcp.lazy.prop:versionString()
-    return self.app.versionString
-end
-
 --- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
 --- Field
 --- Is an unsupported version of Final Cut Pro installed?
@@ -359,32 +353,6 @@ function fcp:keysWithString(string, locale)
     return self.strings:findKeys(string, locale)
 end
 
---- cp.apple.finalcutpro:bundleID() -> string
---- Method
---- Returns the Bundle ID for the app.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The Bundle ID
-function fcp:bundleID()
-    return self.app:bundleID()
-end
-
---- cp.apple.finalcutpro:notifier() -> cp.ui.notifier
---- Method
---- Returns a notifier that is tracking the application UI element. It has already been started.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The notifier.
-function fcp:notifier()
-    return self.app:notifier()
-end
-
 --- cp.apple.finalcutpro:launch([waitSeconds], [path]) -> self
 --- Method
 --- Launches Final Cut Pro, or brings it to the front if it was already running.
@@ -403,32 +371,6 @@ function fcp:launch(waitSeconds, path)
     return self
 end
 
---- cp.apple.finalcutpro:doLaunch() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will launch, or focus it if already running FCP.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement` to execute.
-function fcp.lazy.method:doLaunch()
-    return self.app:doLaunch()
-end
-
---- cp.apple.finalcutpro:doRestart() -> cp.rx.go.Statement
---- Method
---- Returns a [Statement](cp.rx.go.Statement.cp) that will restart Final Cut Pro, if it is running. If not, nothing happens.
----
---- Parameters:
----  * None.
----
---- Returns:
----  * The FCP instance.
-function fcp.lazy.method:doRestart()
-    return self.app:doRestart()
-end
-
 --- cp.apple.finalcutpro:show() -> cp.apple.finalcutpro
 --- Method
 --- Activate Final Cut Pro, if it is running.
@@ -441,19 +383,6 @@ end
 function fcp:show()
     self.app:show()
     return self
-end
-
---- cp.apple.finalcutpro:doShow() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will show FCP on-screen.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement` to execute.
-function fcp.lazy.method:doShow()
-    return self.app:doShow()
 end
 
 --- cp.apple.finalcutpro:hide() -> self
@@ -470,19 +399,6 @@ function fcp:hide()
     return self
 end
 
---- cp.apple.finalcutpro:doHide() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will hide the FCP.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement` to execute.
-function fcp.lazy.method:doHide()
-    return self.app:doHide()
-end
-
 --- cp.apple.finalcutpro:quit([waitSeconds]) -> self
 --- Method
 --- Quits Final Cut Pro, if it's running.
@@ -497,18 +413,6 @@ function fcp:quit(waitSeconds)
     return self
 end
 
---- cp.apple.finalcutpro:doQuit() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that will quit FCP.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement` to execute.
-function fcp.lazy.method:doQuit()
-    return self.app:doQuit()
-end
 
 --- cp.apple.finalcutpro:getPath() -> string or nil
 --- Method
@@ -522,7 +426,6 @@ end
 function fcp:getPath()
     return self.app:path()
 end
-
 ----------------------------------------------------------------------------------------
 --
 -- LIBRARIES
@@ -545,11 +448,80 @@ function fcp:activeLibraryPaths()
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do
             local activeLibrary = FFActiveLibraries[i]
-            local path = fs.getPathFromBookmark(activeLibrary)
-            table.insert(paths, path)
+            local path = pathFromBookmark(activeLibrary)
+            if path then
+                table.insert(paths, path)
+            end
         end
     end
     return paths
+end
+
+--- cp.apple.finalcutpro:activeLibraryPaths() -> table
+--- Method
+--- Gets a table of all the active library paths.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any active library paths.
+function fcp:activeLibraryNames()
+    local result = {}
+    local activeLibraryPaths = self:activeLibraryPaths()
+    for _, filename in pairs(activeLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
+end
+
+--- cp.apple.finalcutpro:recentLibraryPaths() -> table
+--- Method
+--- Gets a table of all the recent library paths (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library paths.
+function fcp:recentLibraryPaths()
+    local paths = {}
+    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local FFRecentLibraries = fcpPlist and fcpPlist.FFRecentLibraries
+    if FFRecentLibraries and #FFRecentLibraries >= 1 then
+        for i=1, #FFRecentLibraries do
+            local recentLibrary = FFRecentLibraries[i]
+            local path = pathFromBookmark(recentLibrary)
+            if path then
+                table.insert(paths, path)
+            end
+        end
+    end
+    return paths
+end
+
+--- cp.apple.finalcutpro:recentLibraryNames() -> table
+--- Method
+--- Gets a table of all the recent library names (that are accessible).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A table containing any recent library names.
+function fcp:recentLibraryNames()
+    local result = {}
+    local recentLibraryPaths = self:recentLibraryPaths()
+    for _, filename in pairs(recentLibraryPaths) do
+        local name = tools.getFilenameFromPath(filename, true)
+        if name then
+            table.insert(result, name)
+        end
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro:openLibrary(path) -> boolean
@@ -665,74 +637,6 @@ end
 
 ----------------------------------------------------------------------------------------
 --
--- MENU BAR
---
-----------------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro:menu() -> cp.app.menu
---- Method
---- Returns the `cp.app.menu` for FCP.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.app.menu` for the app.
-function fcp.lazy.method.menu()
-    return menu
-end
-
---- cp.apple.finalcutpro:selectMenu(path[, options]) -> boolean
---- Method
---- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
----
---- Parameters:
----  * `path`	    - The list of menu items you'd like to activate, for example:
----            select("View", "Browser", "as List")
----  * `options`    - (optional) The table of options. See `cp.app.menu:selectMenu(...)` for details.
----
---- Returns:
----  * `true` if the press was successful.
-function fcp:selectMenu(path, options)
-    return self:menu():selectMenu(path, options)
-end
-
---- cp.apple.finalcutpro:doSelectMenu(path, options) -> cp.rx.Observable <hs._asm.axuielement>
---- Method
---- Selects a Menu Item based on the provided menu path.
----
---- Each step on the path can be either one of:
----  * a string     - The exact name of the menu item.
----  * a number     - The menu item number, starting from 1.
----  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
----
---- Options supported include:
----  * locale - The `localeID` or `string` for the locale that the path values are in.
----  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
----  * timeout - The maximum time to wait for the menu to be available before producing an error. Defaults to 10 seconds.
----
---- Examples:
----
---- ```lua
---- local preview = require("cp.app").forBundleID("com.apple.Preview")
---- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()
---- ```
----
---- Parameters:
----  * path - The list of menu items you'd like to activate.
----  * options - (optional) The table of options to apply.
----
---- Returns:
----  * An `Observable` which emits the final menu item, or an error if the selection failed.
----
---- Notes:
----  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
-function fcp:doSelectMenu(...)
-    return self.app:menu():doSelectMenu(...)
-end
-
-----------------------------------------------------------------------------------------
---
 -- WORKSPACES
 --
 ----------------------------------------------------------------------------------------
@@ -790,6 +694,48 @@ function fcp.lazy.prop.customWorkspaces()
         return result
     end)
     :cached()
+end
+
+----------------------------------------------------------------------------------------
+--
+-- WORKFLOW EXTENSIONS
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.workflowExtensions() -> table
+--- Function
+--- Gets the names of all the installed Workflow Extensions.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Workflow Extension names
+function fcp.workflowExtensions()
+    local result = {}
+    local output, status = hs.execute("pluginkit -m -v -p FxPlug")
+    if status then
+        local p = tools.lines(output)
+        if p then
+            for _, plugin in pairs(p) do
+                local params = tools.split(plugin, "\t")
+                local path = params[4]
+                if path then
+                    if tools.doesDirectoryExist(path) then
+                        local plistPath = path .. "/Contents/Info.plist"
+                        local plistData = hsplist.read(plistPath)
+                        if plistData and plistData.PlugInKit and plistData.PlugInKit.Protocol and plistData.PlugInKit.Protocol == "ProServiceRemoteProtocol" then
+                            local pluginName = plistData.CFBundleDisplayName
+                            if pluginName then
+                                table.insert(result, pluginName)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
 end
 
 ----------------------------------------------------------------------------------------
@@ -917,6 +863,25 @@ end
 
 ----------------------------------------------------------------------------------------
 --
+-- SHEETS
+--
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:transcodeMedia() -> TranscodeMedia
+--- Method
+--- Returns the [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Transcode Media Sheet.
+function fcp.lazy.method:transcodeMedia()
+    return TranscodeMedia(self)
+end
+
+----------------------------------------------------------------------------------------
+--
 -- APP SECTIONS
 --
 ----------------------------------------------------------------------------------------
@@ -988,7 +953,7 @@ end
 
 --- cp.apple.finalcutpro.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
 --- Field
---- Returns the [LibrariesBrowser](cp.apple.finalcut.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
+--- Returns the [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:libraries()
     return self.browser.libraries
 end
@@ -1120,6 +1085,41 @@ function fcp:importXML(path)
     end
 end
 
+--- cp.apple.finalcutpro:openAndSavePanelDefaultPath <cp.prop: string>
+--- Variable
+--- A string containing the default open/save panel path.
+function fcp.lazy.prop:openAndSavePanelDefaultPath()
+    ----------------------------------------------------------------------------------------
+    -- NOTE: I'm not really sure what use this is. I was originally thinking this could be
+    --       used to change the default open and save panel path, but it doesn't seem to
+    --       work reliably. Leaving here for now, just incase we find a use for it in the
+    --       future.
+    ----------------------------------------------------------------------------------------
+    return prop(function()
+        local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+        local bookmark = fcpPlist and fcpPlist.FFLMOpenSavePanelDefaultURL
+        return bookmark and pathFromBookmark(bookmark)
+    end, function(path)
+        if pathToAbsolute(path) then
+            local bookmark = pathToBookmark(pathToAbsolute(path))
+            if bookmark then
+                local hexString = stringToHexString(bookmark)
+                if hexString then
+                    local command = "defaults write " .. self.app:bundleID() ..  [[ FFLMOpenSavePanelDefaultURL -data "]] .. hexString .. [["]]
+                    local _, status = hs.execute(command)
+                    if not status then
+                        log.ef("Could not change defaults in fcp:openAndSavePanelDefaultPath().")
+                    end
+                end
+            else
+                log.ef("Could not create Bookmark of path provided to fcp:openAndSavePanelDefaultPath(): %s", path)
+            end
+        else
+            log.ef("Bad path provided to fcp:openAndSavePanelDefaultPath(): %s", path)
+        end
+    end)
+end
+
 ----------------------------------------------------------------------------------------
 --
 -- SHORTCUTS
@@ -1136,7 +1136,32 @@ end
 --- Returns:
 ---  * A path as a string or `nil` if the folder doesn't exist.
 function fcp.static.userCommandSetPath()
-    return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
+    return pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
+end
+
+--- cp.apple.finalcutpro:userCommandSets() -> table
+--- Method
+--- Gets the names of all of the user command sets.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of user command sets as strings.
+function fcp.userCommandSets()
+    local result = {}
+    local userCommandSetPath = fcp:userCommandSetPath()
+    if userCommandSetPath then
+        local iterFn, dirObj = fs.dir(userCommandSetPath)
+        if iterFn then
+            for file in iterFn, dirObj do
+                if file:sub(-11) == ".commandset" then
+                    table.insert(result, file:sub(1, -12))
+                end
+            end
+       end
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string

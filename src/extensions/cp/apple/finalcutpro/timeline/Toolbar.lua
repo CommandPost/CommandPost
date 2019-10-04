@@ -4,20 +4,20 @@
 
 local require = require
 
-local axutils							= require("cp.ui.axutils")
+local axutils							= require "cp.ui.axutils"
 
-local CheckBox                          = require("cp.ui.CheckBox")
-local Group                             = require("cp.ui.Group")
-local RadioButton						= require("cp.ui.RadioButton")
-local RadioGroup                        = require("cp.ui.RadioGroup")
-local StaticText                        = require("cp.ui.StaticText")
+local Button                            = require "cp.ui.Button"
+local CheckBox                          = require "cp.ui.CheckBox"
+local Group                             = require "cp.ui.Group"
+local RadioButton						= require "cp.ui.RadioButton"
+local RadioGroup                        = require "cp.ui.RadioGroup"
+local StaticText                        = require "cp.ui.StaticText"
 
-local Appearance				        = require("cp.apple.finalcutpro.timeline.Appearance")
+local Appearance				        = require "cp.apple.finalcutpro.timeline.Appearance"
 
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childMatching                     = axutils.childMatching
-
 
 local Toolbar = Group:subclass("cp.apple.finalcutpro.timeline.Toolbar")
 
@@ -67,6 +67,28 @@ function Toolbar.lazy.method:index()
         return cache(self, "_index", function()
             return childFromLeft(original(), 1, CheckBox.matches)
         end, CheckBox.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.timeline.Toolbar:back() -> cp.ui.Button
+--- Method
+--- The [Button](cp.ui.Button.md) for "go back in timeline history".
+function Toolbar.lazy.method:back()
+    return Button(self, self.UI:mutate(function(original)
+        return cache(self, "_back", function()
+            return childFromLeft(original(), 5, Button.matches)
+        end, Button.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.timeline.Toolbar:forward() -> cp.ui.Button
+--- Method
+--- The [Button](cp.ui.Button.md) for "go forward in timeline history".
+function Toolbar.lazy.method:forward()
+    return Button(self, self.UI:mutate(function(original)
+        return cache(self, "_forward", function()
+            return childFromLeft(original(), 6, Button.matches)
+        end, Button.matches)
     end))
 end
 
@@ -206,6 +228,23 @@ function Toolbar.lazy.method:title()
     return StaticText(self, self.UI:mutate(function(original)
         return cache(self, "_titleUI", function()
             return childFromLeft(original(), 1, StaticText.matches)
+        end)
+    end))
+end
+
+--- cp.apple.finalcutpro.timeline.Toolbar:duration() -> cp.ui.StaticText
+--- Method
+--- Returns the duration [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+---
+--- Parameters:
+--- * None.
+---
+--- Returns:
+--- * The [StaticText](cp.ui.StaticText.md) containing the title.
+function Toolbar.lazy.method:duration()
+    return StaticText(self, self.UI:mutate(function(original)
+        return cache(self, "_durationUI", function()
+            return childFromLeft(original(), 2, StaticText.matches)
         end)
     end))
 end

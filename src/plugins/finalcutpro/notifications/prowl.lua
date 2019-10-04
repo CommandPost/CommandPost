@@ -4,16 +4,15 @@
 
 local require = require
 
-local dialog                                    = require("hs.dialog")
-local http                                      = require("hs.http")
+local dialog        = require "hs.dialog"
+local http          = require "hs.http"
 
-local config                                    = require("cp.config")
-local html                                      = require("cp.web.html")
-local ui                                        = require("cp.web.ui")
-local i18n                                      = require("cp.i18n")
+local config        = require "cp.config"
+local html          = require "cp.web.html"
+local ui            = require "cp.web.ui"
+local i18n          = require "cp.i18n"
 
-local slaxdom                                   = require("slaxml.slaxdom")
-
+local slaxdom       = require "slaxml.slaxdom"
 
 local mod = {}
 
@@ -131,7 +130,6 @@ function mod.sendNotification(message, optionalTitle)
     end
 end
 
-
 local plugin = {
     id = "finalcutpro.notifications.prowl",
     group = "finalcutpro",
@@ -193,7 +191,7 @@ function plugin.init(deps)
             :addTextbox(204,
                 {
                     label = i18n("prowlAPIKey") .. ":",
-                    value = mod.apiKey(),
+                    value = function() return mod.apiKey() end,
                     class = "api",
                     onchange = function(_, params)
                         mod.apiKey(params.value)

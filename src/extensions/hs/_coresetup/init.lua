@@ -92,42 +92,24 @@ return {
                 print("*** ERROR: " .. err)
                 hs.focus()
                 hs.openConsole()
-                hs._TERMINATED = true
             else
-                if not hs._cpLoaded then
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    hs.openConsole()
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-                        "Send Bug Report",
-                        "Quit"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback(true)
-                    else
-                        hs.application.applicationForPID(hs.processInfo["processID"]):kill()
-                    end
+                --------------------------------------------------------------------------------
+                -- NOT DEBUG MODE:
+                --------------------------------------------------------------------------------
+                print("*** ERROR: " .. err)
+                local result =
+                    dialog.blockAlert(
+                    "An unexpected error has occured.",
+                    "Would you like to report this bug to the team?",
+                    "Continue",
+                    "Send Bug Report"
+                )
+                hs.focus()
+                if result == "Send Bug Report" then
+                    local feedback = require("cp.feedback")
+                    feedback.showFeedback()
                 else
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    print("*** ERROR: " .. err)
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
-                        "Continue",
-                        "Send Bug Report"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback()
-                    end
+                    hs.openConsole()
                 end
             end
         end
@@ -335,8 +317,9 @@ return {
         ---    * the identifier `lua._man` provides the table of contents for the Lua 5.3 manual.  You can pull up a specific section of the lua manual by including the chapter (and subsection) like this: `lua._man._3_4_8`.
         ---    * the identifier `lua._C` will provide information specifically about the Lua C API for use when developing modules which require external libraries.
 
-        hs.help = require("hs.doc")
-        _G.help = hs.help
+        -- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
+        --hs.help = require("hs.doc")
+        --_G.help = hs.help
 
         --- hs.hsdocs([identifier])
         --- Function
@@ -354,6 +337,8 @@ return {
         ---  * See `hs.doc.hsdocs` for more information about the available settings for the documentation browser.
         ---  * This function provides documentation for Hammerspoon modules, functions, and methods similar to the Hammerspoon Dash docset, but does not require any additional software.
         ---  * This currently only provides documentation for the built in Hammerspoon modules, functions, and methods.  The Lua documentation and third-party modules are not presently supported, but may be added in a future release.
+        -- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
+        --[[
         local hsdocsMetatable
         hsdocsMetatable = {
             __index = function(self, key)
@@ -383,6 +368,7 @@ return {
             },
             hsdocsMetatable
         )
+        --]]
 
         --setup lazy loading
         if autoload_extensions then

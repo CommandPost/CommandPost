@@ -55,6 +55,7 @@ export CODESIGN_AUTHORITY_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-codesign-auth
 #export GITHUB_USER="hammerspoon"
 #export GITHUB_REPO="hammerspoon"
 export FABRIC_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-crashlytics"
+export NOTARIZATION_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-notarization"
 
 # Import our function library
 # shellcheck source=scripts/librelease.sh disable=SC1091
@@ -71,6 +72,7 @@ upload
 
 build_uninstall
 build_dmgcanvas
+notarize
 generate_appcast
 
 #echo "Appcast zip length is: ${ZIPLEN}"

@@ -13,7 +13,6 @@ local dialog            = require "cp.dialog"
 
 local playErrorSound    = tools.playErrorSound
 
-
 local plugin = {
     id = "finalcutpro.browser.csv",
     group = "finalcutpro",

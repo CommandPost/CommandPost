@@ -2,21 +2,22 @@
 ---
 --- A set of handy developer tools for CommandPost.
 
-local log           = require("hs.logger").new("dev")
+local log               = require "hs.logger".new "dev"
 
-local ax            = require("hs._asm.axuielement")
-local drawing       = require("hs.drawing")
-local geometry      = require("hs.geometry")
-local hotkey        = require("hs.hotkey")
-local inspect       = require("hs.inspect")
-local json          = require("hs.json")
-local mouse         = require("hs.mouse")
-local timer         = require("hs.timer")
+local ax                = require "hs._asm.axuielement"
+local drawing           = require "hs.drawing"
+local fs                = require "hs.fs"
+local geometry          = require "hs.geometry"
+local hotkey            = require "hs.hotkey"
+local inspect           = require "hs.inspect"
+local json              = require "hs.json"
+local mouse             = require "hs.mouse"
+local timer             = require "hs.timer"
 
-local config        = require("cp.config")
+local config            = require "cp.config"
 
-local doAfter       = timer.doAfter
-
+local doAfter           = timer.doAfter
+local pathToAbsolute    = fs.pathToAbsolute
 
 local mod = {}
 
@@ -60,7 +61,7 @@ function mod.findUnusedLanguageStrings()
     local result = "\nUNUSED STRINGS IN English.json:\n"
     local stringCount = 0
     local ignoreStart = {"plugin_group_", "shareDetails_", "plugin_status_", "plugin_action_", "shortcut_group_"}
-    local ignoreEnd = {"_action", "_label", "_title", "_customTitle", "_group"}
+    local ignoreEnd = {"_action", "_label", "_title", "_customTitle", "_group", "2", "4", "9"}
     for string, _ in pairs(translations) do
         local skip = false
         for _, ignoreFile in pairs(ignoreStart) do
@@ -74,7 +75,8 @@ function mod.findUnusedLanguageStrings()
             end
         end
         if not skip then
-            local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
+            local codePath = pathToAbsolute(cp.config.scriptPath .. "/../")
+            local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. codePath .. [[/']]
             local _, status = hs.execute(executeString)
             if not status then
                 result = result .. string .. "\n"

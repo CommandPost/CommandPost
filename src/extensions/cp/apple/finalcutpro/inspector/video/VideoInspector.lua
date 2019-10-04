@@ -43,20 +43,27 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("videoInspect")
+local log						= require "hs.logger".new "videoInspect"
 
-local axutils							= require("cp.ui.axutils")
+local axutils					= require "cp.ui.axutils"
 
-local strings                           = require("cp.apple.finalcutpro.strings")
-local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
+local BasePanel                 = require "cp.apple.finalcutpro.inspector.BasePanel"
+local IP                        = require "cp.apple.finalcutpro.inspector.InspectorProperty"
+local strings                   = require "cp.apple.finalcutpro.strings"
 
-local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+local checkBox                  = IP.checkBox
+local hasProperties             = IP.hasProperties
+local popUpButton               = IP.popUpButton
+local section                   = IP.section
+local slider                    = IP.slider
+local xy                        = IP.xy
 
-local hasProperties                     = IP.hasProperties
-local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
-local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
-local withValue, childMatching          = axutils.withValue, axutils.childMatching
-
+local childMatching             = axutils.childMatching
+local childWithRole             = axutils.childWithRole
+local compareTopToBottom        = axutils.compareTopToBottom
+local snapshot                  = axutils.snapshot
+local withRole                  = axutils.withRole
+local withValue                 = axutils.withValue
 
 local VideoInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
@@ -78,7 +85,7 @@ end
 function VideoInspector.static.matches(element)
     local contentUI = findContentUI(element)
     return contentUI and #contentUI > 0 and childMatching(contentUI, function(child)
-        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumBlendCompositingEffect"))
+        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumConformEffect"))
     end) ~= nil or false
 end
 
@@ -142,7 +149,7 @@ function VideoInspector:initialize(parent)
     }
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
 function VideoInspector.lazy.prop:contentUI()
@@ -153,7 +160,80 @@ function VideoInspector.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.BLEND_MODES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:effectCheckBoxes() -> table
+--- Method
+--- Gets a table containing all of the effect checkboxes.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table.
+function VideoInspector:effectCheckBoxes()
+    local contentUI = self:contentUI()
+    if contentUI then
+        local effectsString = strings:find("FFInspectorBrickEffects")
+        local compositingString = strings:find("FFHeliumBlendCompositingEffect")
+        local children = axutils.children(contentUI, compareTopToBottom)
+        local valid
+        local checkBoxes = {}
+        local topCheckBox
+        for _, child in pairs(children) do
+            if child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == effectsString then
+                valid = true
+            end
+            if child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == compositingString then
+                return checkBoxes
+            end
+            if valid then
+                if child:attributeValue("AXRole") == "AXCheckBox" then
+                    if not topCheckBox then
+                        topCheckBox = child
+                    else
+                        local a = topCheckBox:attributeValue("AXFrame")
+                        local b = child:attributeValue("AXFrame")
+                        if a.x == b.x and a.w == b.w and a.h == b.h then
+                            table.insert(checkBoxes, child)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:selectedEffectCheckBox() -> axuielement
+--- Function
+--- Gets the selected effect checkbox object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A axuielement object.
+function VideoInspector:selectedEffectCheckBox()
+    local effectCheckBoxes = self:effectCheckBoxes()
+    if effectCheckBoxes then
+        for i, cb in pairs(effectCheckBoxes) do
+            local frame = cb:attributeValue("AXFrame")
+            frame.x = frame.x
+            frame.w = 1
+            frame.h = 1
+            local s = snapshot(cb, nil, frame)
+            if s then
+                local c = s:colorAt({x=0, y=0})
+                -- UNSELECTED: blue = 0.12049089372158
+                -- WHITE: blue = 0.8587818145752
+                -- YELLOW: blue = 0.048267990350723
+                if c.blue > 0.7 and c.blue < 0.9 or c.blue < 0.05 and c.blue > 0.03 then
+                    return effectCheckBoxes[i]
+                end
+            end
+        end
+    end
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.BLEND_MODES -> table
 --- Constant
 --- Blend Modes
 VideoInspector.BLEND_MODES = {
@@ -192,7 +272,7 @@ VideoInspector.BLEND_MODES = {
     [33]    = {flexoID = "FFHeliumBlendModePremultipliedMix", i18n="premultipliedMix"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.CROP_TYPES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.CROP_TYPES -> table
 --- Constant
 --- Crop Types
 VideoInspector.CROP_TYPES = {
@@ -201,7 +281,7 @@ VideoInspector.CROP_TYPES = {
     [3]     = {flexoID = "FFKenBurns", i18n = "kenBurns"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.STABILIZATION_METHODS -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.STABILIZATION_METHODS -> table
 --- Constant
 --- Stabilisation Methods
 VideoInspector.STABILIZATION_METHODS = {
@@ -210,7 +290,7 @@ VideoInspector.STABILIZATION_METHODS = {
     [3]     = {flexoID = "FFStabilizationUseSmoothCam", i18n="smoothCam"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.ROLLING_SHUTTER_AMOUNTS -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.ROLLING_SHUTTER_AMOUNTS -> table
 --- Constant
 --- Rolling Shutter Amounts
 VideoInspector.ROLLING_SHUTTER_AMOUNTS = {
@@ -221,7 +301,7 @@ VideoInspector.ROLLING_SHUTTER_AMOUNTS = {
     [5]     = {flexoID = "FFRollingShutterAmountExtraHigh", i18n="extraHigh"},
 }
 
---- cp.apple.finalcutpro.inspector.color.VideoInspector.SPATIAL_CONFORM_TYPES -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.SPATIAL_CONFORM_TYPES -> table
 --- Constant
 --- Spatial Conform Types
 VideoInspector.SPATIAL_CONFORM_TYPES = {

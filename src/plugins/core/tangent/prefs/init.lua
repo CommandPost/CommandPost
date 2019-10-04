@@ -4,16 +4,15 @@
 
 local require = require
 
-local log         = require("hs.logger").new("tangentPref")
+local log         = require "hs.logger".new "tangentPref"
 
-local dialog      = require("hs.dialog")
-local image       = require("hs.image")
+local dialog      = require "hs.dialog"
+local image       = require "hs.image"
 
-local html        = require("cp.web.html")
-local i18n        = require("cp.i18n")
+local html        = require "cp.web.html"
+local i18n        = require "cp.i18n"
 
-local _           = require("moses")
-
+local moses       = require "moses"
 
 local mod = {}
 
@@ -59,7 +58,7 @@ end
 --  * HTML content as string
 local function generateContent()
     local context = {
-        _                       = _,
+        _                       = moses,
         webviewLabel            = mod._prefsManager.getLabel(),
         maxItems                = mod._favourites.MAX_ITEMS,
         favourites              = mod._favourites.favourites(),
@@ -256,8 +255,8 @@ function mod.init(deps, env)
         )
         :addParagraph(10, html.br())
         :addParagraph(11, html.br())
-        :addHeading(12, "Tangent Favourites")
-        :addParagraph(13, "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Tangent Mapper.", false)
+        :addHeading(12, i18n("tangent") .. " " .. i18n("favourites"))
+        :addParagraph(13, i18n("tangentFavouriteDescription"), false)
         :addContent(14, generateContent, false)
 
         --------------------------------------------------------------------------------
@@ -268,7 +267,6 @@ function mod.init(deps, env)
     return mod
 
 end
-
 
 local plugin = {
     id              = "core.tangent.prefs",

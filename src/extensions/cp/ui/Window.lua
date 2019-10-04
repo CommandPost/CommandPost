@@ -328,7 +328,7 @@ end
 
 --- cp.ui.Window:alert() -> cp.ui.Alert
 --- Method
---- Provides access to any 'Alert' windows on the PrimaryWindow.
+--- Provides access to any 'Alert' windows on the Window.
 ---
 --- Parameters:
 ---  * None
@@ -337,6 +337,42 @@ end
 ---  * A `cp.ui.Alert` object
 function Window.lazy.method:alert()
     return Alert(self)
+end
+
+--- cp.ui.Window.findSectionUI(windowUI, sectionID) -> hs._asm.axuielement
+--- Function
+--- Finds the `axuielement` for the specified `sectionID`, if present in the provided `axuielement` `windowUI`.
+---
+--- Parameters:
+--- * windowUI - The `AXWindow` `axuielement` to search in.
+--- * sectionID - The string value for the `SectionUniqueID`.
+---
+--- Returns:
+--- * The matching `axuielement`, or `nil`.
+function Window.static.findSectionUI(windowUI, sectionID)
+    if windowUI then
+        local sections = windowUI:attributeValue("AXSections")
+        if sections then
+            for _,section in ipairs(sections) do
+                if section.SectionUniqueID == sectionID then
+                    return section.SectionObject
+                end
+            end
+        end
+    end
+end
+
+--- cp.ui.Window:findSectionUI(sectionID) -> hs._asm.axuielement
+--- Method
+--- Looks for th section with the specified `SectionUniqueID` value and returns the matching `axuielement` value.
+---
+--- Parameters:
+--- * sectionID - The string for the section ID.
+---
+--- Returns:
+--- * The matching `axuielement`, or `nil`.
+function Window:findSectionUI(sectionID)
+    return Window.findSectionUI(self:UI(), sectionID)
 end
 
 --- cp.ui.Window:notifier() -> cp.ui.notifier

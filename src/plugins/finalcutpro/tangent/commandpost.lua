@@ -4,9 +4,9 @@
 
 local require = require
 
---local log                   = require("hs.logger").new("tangentVideo")
+--local log                   = require "hs.logger".new "tangentVideo"
 
-local i18n                  = require("cp.i18n")
+local i18n                  = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.commandpost",
@@ -55,7 +55,7 @@ function plugin.init(deps)
     id = commandParameter(commandPostGroup, id, "fcpx", "cpPasteTextAsCaption")
     id = commandParameter(commandPostGroup, id, "fcpx", "cpZoomToSelection")
     id = commandParameter(commandPostGroup, id, "fcpx", "cpScrollingTimeline")
-    id = commandParameter(commandPostGroup, id, "fcpx", "cpAddNoteToSelectedClip")
+    id = commandParameter(commandPostGroup, id, "fcpx", "cpAddNoteToSelectedClips")
     id = commandParameter(commandPostGroup, id, "fcpx", "cpDisableWaveforms")
     id = commandParameter(commandPostGroup, id, "fcpx", "cpHUD")
     commandParameter(commandPostGroup, id, "fcpx", "cpHUDSearch")

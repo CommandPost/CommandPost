@@ -4,12 +4,11 @@
 
 local require = require
 
-local fs                                        = require("hs.fs")
+local fs            = require "hs.fs"
 
-local plist                                     = require("cp.plist")
-local watcher                                   = require("cp.watcher")
-local i18n                                      = require("cp.i18n")
-
+local plist         = require "cp.plist"
+local watcher       = require "cp.watcher"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -169,7 +168,6 @@ function mod.unwatch(id)
     mod.watchers:unwatch(id)
     checkWatching()
 end
-
 
 local plugin = {
     id = "finalcutpro.notifications.manager",

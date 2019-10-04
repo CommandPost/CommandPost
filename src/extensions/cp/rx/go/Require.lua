@@ -4,8 +4,8 @@
 --- A `Statement` that will require that the `resolvable` value matches a predicate,
 --- and if not, it will send an error.
 
-local Observable        = require("cp.rx").Observable
-local Statement         = require("cp.rx.go.Statement")
+local Observable        = require "cp.rx".Observable
+local Statement         = require "cp.rx.go.Statement"
 
 local toObservable      = Statement.toObservable
 
