@@ -84,6 +84,20 @@ local function doingNothing()
     error("It must be doing something.")
 end
 
+
+--- cp.spec.Specification.is(instance) -> boolean
+--- Function
+--- Checks if the `instance` is an instance of `Specification`.
+---
+--- Presentation:
+--- * instance - The instance to check
+---
+--- Returns:
+--- * `true` if it's a `Specification` instance.
+function Scenario.static.is(instance)
+    return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Scenario)
+end
+
 --- cp.spec.Scenario(name[, testFn]) -> cp.spec.Scenario
 --- Constructor
 --- Creates a new `Scenario` with the specified name.
@@ -176,7 +190,7 @@ end
 --- * ...   - The list of filters. The first one will be compared to this scenario to determine it should be run.
 function Scenario:run()
     -- TODO: support filtering
-    return Run(self.name)
+    return Run(self.name, self)
     :onBefore(hijackAssert)
     :onRunning(self.testFn)
     :onAfter(restoreAssert)

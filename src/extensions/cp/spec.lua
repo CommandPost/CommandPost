@@ -4,6 +4,8 @@
 
 local require               = require
 
+local log                   = require "hs.logger" .new "spec"
+
 local fs                    = require "hs.fs"
 
 local Handler               = require "cp.spec.Handler"
@@ -14,7 +16,9 @@ local Definition            = require "cp.spec.Definition"
 local Where                 = require "cp.spec.Where"
 local Scenario              = require "cp.spec.Scenario"
 local Specification         = require "cp.spec.Specification"
-local Test                  = require "cp.spec.Test"
+
+local TestCase              = require "cp.spec.TestCase"
+local TestSuite             = require "cp.spec.TestSuite"
 
 local expect                = require "cp.spec.expect"
 local test                  = require "cp.test"
@@ -65,6 +69,8 @@ local function it(name, doingFn)
     return Scenario("it " .. name, doingFn)
 end
 
+------- spec/test loading functions --------
+
 -- The path to search to find `spec` files. Defaults to the standard path.
 local searchPath = nil
 
@@ -79,6 +85,122 @@ local function setSearchPath(path)
     searchPath = path
 end
 
+-- loadSpecFile(path) -> function, string
+-- Local Function
+-- This will load a specified file with the spec `searchPath` added to the package path temporarily.
+--
+-- Parameters:
+-- * path - the absolute path to the spec file to load.
+--
+-- Returns:
+-- * function - a function which when executed will run the spec file and return the result. If there was a problem, this will be `nil`.
+-- * err - If there was a problem, this will contain the error message.
+local function loadSpecFile(path)
+    -- 2. Load the file
+    local originalPath = package.path
+    local testsPath = package.path
+    if searchPath then
+        testsPath = searchPath .. "/?.lua;" .. searchPath .. "/?/init.lua;" .. originalPath
+    end
+
+    package.path = testsPath
+
+    local fn, err = loadfile(path)
+
+    package.path = originalPath
+
+    return fn, err
+end
+
+-- converts the id to a path including the search path. Does not include any suffix such as `_spec.lua`.
+local function idToPath(id)
+    return searchPath .. "/" .. id:gsub("%.", "/")
+end
+
+-- findSpecFilePath(id, postfix) -> string
+-- Function
+-- Checks for both `<id>_<postfix>.lua` and `<id>/._<postfix>.lua` files and returns the absolute path, if the file exists.
+--
+-- Parameters:
+-- * id - eg. `"cp.prop"`
+-- * postfix - The postfix to search for (eg. `"spec"` or `"test"`).
+local function findSpecFilePath(id, postfix)
+    -- 1. Find the test file
+    local idPath = idToPath(id)
+
+    -- check for `<id>_<postfix>.lua`
+    local testPath = fs.pathToAbsolute(idPath .. "_".. postfix .. ".lua")
+    if not testPath then
+        -- try `<id>/_<postfix>.lua`
+        testPath = fs.pathToAbsolute(idPath .. "/_" .. postfix .. ".lua")
+    end
+
+    return testPath
+end
+
+-- execSpecFile(path[, errorLevel]) -> anything
+-- Function
+-- Loads and executes the script at the specified path.
+---
+--- Parameters:
+--- * path - The absolute path to the spec file to execute.
+--- * errorLevel - (optional) The error level to report from.
+---
+--- Returns:
+--- * The result of the script at the specified path.
+local function execSpecFile(path, errorLevel)
+    errorLevel = errorLevel or 1
+
+    local fn, err = loadSpecFile(path)
+
+    if not fn then
+        return nil, err
+    end
+
+    local ok, result = xpcall(fn, function() debug.traceback(format("Executing %q.", path), errorLevel + 1) end)
+
+    if ok then
+        return result
+    else
+        return nil, result
+    end
+end
+
+-- execSpec(id, postfix[, errorLevel]) -> function, string
+-- Function
+-- Tries to find a matching file for the provided `id` and `postfix`. If so, executes the result and returns it.
+--
+-- Parameters:
+-- * id - The test id to execute
+-- * postfix - The postfix to search for (eg. "spec" or "test").
+-- * errorLevel - If specified, the number of levels up to start reporting the error from. Defaults to 1.
+local function execSpec(id, postfix, errorLevel)
+    errorLevel = errorLevel or 1
+    local testPath = findSpecFilePath(id, postfix)
+
+    if not testPath then
+        return nil, format("Unable to find file for %q with postfix of %q", id, postfix)
+    end
+
+    return execSpecFile(testPath, errorLevel + 1)
+end
+
+-- loadError(id, level, msg, ...) -> nothing
+-- Generates a standard 'loading' error message for spec stuff.
+--
+-- Parameters:
+-- * id - The ID of the file being loaded at the time
+-- * level - The error level to start reporting from (defaults to 1)
+-- * msg - The message to output.
+-- * ... - Additional parameters to inject into the message via `string.format`.
+--
+-- Returns:
+-- * Nothing.
+local function loadError(id, level, msg, ...)
+    level = level or 1
+    error(format("Error loading %q: %s", id, msg and format(msg, ...) or "Unknown error."), level + 1)
+end
+
 --- cp.spec(id) -> cp.spec.Definition
 --- Function
 --- This will search the package path (and [specPath](#setSpecPath), if set) for `_spec.lua` files.
@@ -91,57 +213,50 @@ end
 ---
 --- Returns:
 --- * The [Definition](cp.spec.Definition.md), or throws an error.
-local function find(id)
-    id = id or ""
-    local testsPath = package.path
-    if searchPath then
-        testsPath = searchPath .. "/?.lua;" .. searchPath .. "/?/init.lua"
+local function loadSpec(id)
+    local result, err = execSpec(id, "spec", 2)
+
+    if not result then
+        loadError(id, 2, err)
     end
 
-    local testId = id .. "_spec"
-
-    if not package.searchpath(testId, testsPath) then
-        if package.searchpath(id .. "._spec", testsPath) then
-            testId = id .. "._spec"
-        else
-            error(format("Unable to find specs for '%s'.", id), 2)
-        end
-    end
-
-    local originalPath = package.path
-    local tempPath = testsPath .. ";" .. originalPath
-
-    package.path = tempPath
-
-    local ok, result = xpcall(function() return require(testId) end, function() return debug.traceback("Finding '" .. id .. "' spec failed.", 2) end)
-
-    package.path = originalPath
-
-    if not ok then
-        error(result, 2)
-    elseif not Definition:is(result) then
-        error("Ensure the spec file returns the test specification.", 2)
+    if not Definition.is(result) then
+        loadError(id, 2, "Ensure the spec file returns the test specification.")
     else
         return result
     end
 end
 
+-- wrapTest(tester) -> cp.spec.Definition
+-- Function
+-- Wraps the `cp.test` `tester` as a [Definition](cp.spec.Definition.md).
+--
+-- Parameters:
+-- * tester - The `cp.test` instance to wrap.
+--
+-- Returns:
+-- * The [Definition](cp.spec.Definition.md).
 local function wrapTest(tester)
     if test.case.is(tester) then
         -- if it's a case, wrap it as a Scenario.
-        return Test("test " .. tester.name):doing(tester.executeFn)
+        return TestCase(tester)
     elseif test.suite.is(tester) then
         -- if it's a suite, wrap it as a Specification.
-        local result = Specification(tester.name)
-
-        for _,t in ipairs(tester.tests) do
-            result:with(wrapTest(t))
-        end
-
-        return result
+        return TestSuite(tester)
     else
-        error(format("Unsupported test type: %s", type(tester)))
+        return nil, format("Unsupported test type: %s", type(tester))
     end
+end
+
+-- execTestFile(path) -> 
+local function execTestFile(path)
+    local result, err = execSpecFile(path, 2)
+
+    if result then
+        result, err = wrapTest(result)
+    end
+
+    return result, err
 end
 
 --- cp.spec.test(id) -> cp.spec.Definition
@@ -156,29 +271,152 @@ end
 --- Returns:
 --- * The `Definition` or throws an error if it can't be found.
 local function loadTest(id)
-    -- 1. Find the test file
-    local idPath = searchPath .. "/" .. id:gsub("%.", "/")
+    local result, err = execSpec(id, "test")
 
-    -- check for `<id>_test.lua`
-    local testPath = fs.pathToAbsolute(idPath .. "_test.lua")
-    if not testPath then
-        -- try `<id>/_test.lua`
-        testPath = fs.pathToAbsolute(idPath .. "/_test.lua")
+    if result then
+        result, err = wrapTest(result)
     end
 
-    if not testPath then
-        error(format("Unable to find test file for %q", id))
+    if result then
+        return result
+    else
+        loadError(id, 2, err)
+    end
+end
+
+local function findSpec(id)
+    local path = findSpecFilePath(id, "spec")
+
+    if path then
+        local result, err = execSpecFile(path, 2)
+
+        if not result then
+            return nil, err
+        end
+
+        if not Definition.is(result) then
+            return nil, err
+        else
+            return result
+        end
+    else -- try load as a `cp.test`
+        path = findSpecFilePath(id, "test")
+
+        if path then
+            local result, err = execSpecFile(path, 2)
+
+            if not result then
+                return nil, err
+            end
+
+            result, err = wrapTest(result)
+            if not result then
+                return nil, err
+            else
+                return result
+            end
+        end
     end
 
-    -- 2. Load the test file
+    return nil, "Unable to find a spec or test"
+end
 
-    local testFn, err = loadfile(testPath)
-    if not testFn then
-        error(format("Unable to load test %q: %s", id, err))
+local SPEC_FILE = "(.*)_spec%.lua$"
+local TEST_FILE = "(.*)_test%.lua$"
+
+local function findSpecsInDirectory(path, result)
+    path = fs.pathToAbsolute(path)
+
+    if path and fs.attributes(path, "mode") == "directory" then
+        for file in fs.dir(path) do
+            if file ~= "." and file ~= ".." then
+                local filePath = path .. "/" .. file
+                local newSpec, err
+                local matched = false
+
+                local mode = fs.attributes(filePath, "mode")
+
+                if mode == "file" then
+                    if file:match(SPEC_FILE) then
+                        log.df("fSID: matched spec: %s", file)
+                        matched = true
+                        newSpec, err = execSpecFile(filePath)
+                    elseif file:match(TEST_FILE) then
+                        log.df("fSID: matched test: %s", file)
+                        matched = true
+                        newSpec, err = execTestFile(filePath)
+                    end
+                elseif mode == "directory" then
+                    log.df("fSID: matched directory")
+                    ok, err = findSpecsInDirectory(filePath, result)
+                    if not ok then
+                        return false, err
+                    end
+                end
+
+                if newSpec then
+                    if Definition.is(newSpec) then
+                        result:with(newSpec)
+                    else
+                        return false, format("Result from %q is not a cp.spec.Definition: %s", filePath, hs.inspect(newSpec))
+                    end
+                elseif matched then
+                    return false, format("Error loading %q as a spec file: %s", filePath, err)
+                end
+            end
+        end
+
+        return true
     end
 
-    -- 3. Return the wrapped result
-    return wrapTest(testFn())
+    return false, format("Expected a directory: %s", path)
+end
+
+local function findAllSpecs(id)
+    local result = Specification(id .. ".*")
+
+    -- first, find any spec for the actual ID itself:
+    local idSpec = findSpec(id)
+    if idSpec then
+        result:with(idSpec)
+    end
+
+    -- next, roll through the file/directory hierarchy looking for additional tests.
+    local ok, err = findSpecsInDirectory(idToPath(id), result)
+
+    if ok then
+        return result
+    else
+        return nil, err
+    end
+end
+
+-- The pattern for id searches
+local ID_SEARCH_PATTERN = "(.*)%.%*$"
+
+--- cp.spec.find(idPattern) -> cp.spec.Definition
+--- Function
+--- Attempts to find specs that match the provided ID pattern.
+--- Essentially, this is a standard `require` id/path to the spec file, with
+--- an optional `"*"` at the end to indicate that all specs available
+--- under that path should be loaded. Eg. "foo.bar" will find the specific spec at `foo/bar_spec.lua` or `foo/bar/._spec.lua`,
+--- or if those don't exist it will see if there is a `foo/bar_test.lua` or `foo/bar/._test.lua` and load that via [test](#test) instead.
+--- However, if the pattern is "foo.bar.*", it will not only look for those specs, but will also check under that folder for other
+--- `_spec.lua` or `_test.lua` files to add to the collection to run.
+local function find(idPattern)
+    local id = idPattern:match(ID_SEARCH_PATTERN)
+    local result, err
+    if id then
+        result, err = findAllSpecs(id)
+    else
+        result, err = findSpec(idPattern)
+    end
+
+    if result then
+        return result
+    else
+        return nil, err
+    end
 end
 
 return setmetatable({
@@ -194,6 +432,7 @@ return setmetatable({
     context = context,
     it = it,
     expect = expect,
+    load = loadSpec,
     test = loadTest,
     setSearchPath = setSearchPath,
 }, {

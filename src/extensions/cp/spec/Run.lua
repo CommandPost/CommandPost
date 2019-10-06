@@ -526,7 +526,8 @@ Run.static.result = {
 ---
 --- Parameters:
 --- * name          - The name of the run.
-function Run:initialize(name)
+--- * source        - The object (typically a [Definition](cp.spec.Definition.md)) that initiated the run.
+function Run:initialize(name, source)
 
 --- cp.spec.Run.report <cp.spec.Report>
 --- Field
@@ -535,6 +536,11 @@ function Run:initialize(name)
 
     self._name = name
     -- log.df("Run:initialize: self.realName = %s", type(self.realName))
+
+--- cp.spec.Run.source
+--- Field
+--- The object that initiated the run. Typically a [Definition](cp.spec.Definition.md).
+    self.source = source
 
     self.phaseActions = {}
 

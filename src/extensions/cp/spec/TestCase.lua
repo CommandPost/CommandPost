@@ -1,4 +1,4 @@
---- === cp.spec.Test ===
+--- === cp.spec.TestCase ===
 ---
 --- Wraps [cp.test](cp.test.md) into a subclass of [Scenario](cp.spec.Scenario.md).
 
@@ -6,7 +6,7 @@ local require           = require
 local expect            = require "cp.spec.expect"
 local Scenario          = require "cp.spec.Scenario"
 
-local Test = Scenario:subclass("cp.spec.Test")
+local TestCase = Scenario:subclass("cp.spec.TestCase")
 
 local HANDLED = {}
 local OK = {}
@@ -25,7 +25,12 @@ local function eq(left, right, message)
     return HANDLED
 end
 
-function Test:run()
+function TestCase:initialize(testCase)
+    self.case = testCase
+    Scenario.initialize(self, "test " .. testCase.name, testCase.executeFn)
+end
+
+function TestCase:run()
     return Scenario.run(self)
     :onBefore(function(this)
         this:run()[OK] = _G.ok
@@ -39,4 +44,4 @@ function Test:run()
     end)
 end
 
-return Test
+return TestCase

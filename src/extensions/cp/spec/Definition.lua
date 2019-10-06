@@ -23,8 +23,8 @@ function Definition:initialize(name)
     self.name = name
 end
 
---- cp.spec.Definition:is(instance) -> boolean
---- Field
+--- cp.spec.Definition.is(instance) -> boolean
+--- Function
 --- Called as a method, this will check if the provided object is an instance of this class.
 ---
 --- Parameters:
@@ -32,8 +32,8 @@ end
 ---
 --- Returns:
 --- * `true` if the instance is an instance of this class.
-function Definition.static:is(instance)
-    return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(self)
+function Definition.static.is(instance)
+    return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Definition)
 end
 
 --- cp.spec.Definition:run([...]) -> cp.spec.Run

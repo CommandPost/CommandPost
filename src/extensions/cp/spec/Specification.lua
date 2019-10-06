@@ -27,6 +27,19 @@ local insert                = table.insert
 --- ```
 local Specification = Definition:subclass("cp.spec.Specification")
 
+--- cp.spec.Specification.is(instance) -> boolean
+--- Function
+--- Checks if the `instance` is an instance of `Specification`.
+---
+--- Presentation:
+--- * instance - The instance to check
+---
+--- Returns:
+--- * `true` if it's a `Specification` instance.
+function Specification.static.is(instance)
+    return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(Specification)
+end
+
 --- cp.spec.Specification(name) -> cp.spec.Specification
 --- Constructor
 --- Creates a new test suite.
@@ -35,13 +48,43 @@ function Specification:initialize(name)
     Definition.initialize(self, name)
 end
 
+--- cp.spec.Specification:onBeforeEach(beforeEachFn) -> cp.spec.Specification
+--- Method
+--- Specifies a function to execute before each of the contained specifications is run.
+--- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
+---
+--- Parameters:
+--- * beforeEachFn - The function to run before each child runs.
+---
+--- Returns:
+--- * The same `cp.spec.Specification` instance.
+function Specification:onBeforeEach(beforeEachFn)
+    self._beforeEach = beforeEachFn
+    return self
+end
+
+--- cp.spec.Specification:onAfterEach(afterEachFn) -> cp.spec.Specification
+--- Method
+--- Specifies a function to execute after each of the contained specifications is run.
+--- The function will be passed the [Run.This](cp.spec.Run.This.md) for the current Run.
+---
+--- Parameters:
+--- * afterEachFn - The function to run after each child runs.
+---
+--- Returns:
+--- * The same `cp.spec.Specification` instance.
+function Specification:onAfterEach(afterEachFn)
+    self._afterEach = afterEachFn
+    return self
+end
+
 --- cp.spec.Specification:run() -> cp.spec.Run
 --- Runs the specification, returning the [Run](cp.spec.Run.md) instance, already running.
 ---
 --- Returns:
 --- * The [Run](cp.spec.Run.md) instance.
 function Specification:run()
-    return Run(self.name)
+    return Run(self.name, self)
     :onRunning(function(this)
         this:wait()
         self:_runNext(1, this)
