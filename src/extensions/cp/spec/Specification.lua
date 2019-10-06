@@ -79,6 +79,7 @@ function Specification:onAfterEach(afterEachFn)
 end
 
 --- cp.spec.Specification:run() -> cp.spec.Run
+--- Method
 --- Runs the specification, returning the [Run](cp.spec.Run.md) instance, already running.
 ---
 --- Returns:
