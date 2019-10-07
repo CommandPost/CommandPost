@@ -21,7 +21,7 @@ function assert() {
   assert_notarization_token && source "${NOTARIZATION_TOKEN_FILE}"
   # shellcheck source=../token-crashlytics disable=SC1091
   assert_fabric_token && source "${FABRIC_TOKEN_FILE}"
-  #assert_version_in_xcode
+  assert_version_in_xcode
   #assert_version_in_git_tags
   #assert_version_not_in_github_releases
   #assert_docs_bundle_complete
@@ -143,7 +143,7 @@ function assert_fabric_token() {
 
 function assert_version_in_xcode() {
   echo "Checking Xcode build version..."
-  XCODEVER="$(defaults read "${HAMMERSPOON_HOME}/Hammerspoon/CommandPost-Info" CFBundleShortVersionString)"
+  XCODEVER="$(xcodebuild -target Hammerspoon -configuration Release -showBuildSettings 2>/dev/null | grep MARKETING_VERSION | awk '{ print $3 }')"
 
   if [ "$VERSION" != "$XCODEVER" ]; then
       fail "You asked for $VERSION to be released, but Xcode will build $XCODEVER"
@@ -540,6 +540,7 @@ EOF
 
 function release_update_appcast() {
   echo "Updating appcast.xml..."
+  local BUILD_NUMBER=$(xcodebuild -target Hammerspoon -configuration Release -showBuildSettings 2>/dev/null | grep CURRENT_PROJECT_VERSION | awk '{ print $3 }')
   echo "Add this manually, for now:"
   cat <<EOF
          <item>
@@ -549,7 +550,8 @@ function release_update_appcast() {
             </sparkle:releaseNotesLink>
             <pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
             <enclosure url="https://github.com/Hammerspoon/hammerspoon/releases/download/${VERSION}/Hammerspoon-${VERSION}.zip"
-                sparkle:version="${VERSION}"
+				sparkle:version=\"${BUILD_NUMBER}\"
+                sparkle:shortVersionString\"${VERSION}\"
                 length="${ZIPLEN}"
                 type="application/octet-stream"
             />
