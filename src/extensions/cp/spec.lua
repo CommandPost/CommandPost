@@ -403,7 +403,17 @@ local function wrapTest(tester)
     end
 end
 
--- execTestFile(path) -> 
+-- execTestFile(path) -> anything, string or nil
+-- Function
+-- Executes the script at the specified path, returning the result.
+-- If there was an error, a second return value will contain the error message.
+--
+-- Parameters:
+-- * path - The path to execute
+--
+-- Returns:
+-- * anything - the result
+-- * err - the error message, or `nil` if none occurred.
 local function execTestFile(path)
     local result, err = execSpecFile(path, 2)
 
