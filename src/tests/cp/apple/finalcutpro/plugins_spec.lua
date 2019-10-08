@@ -91,7 +91,6 @@ return describe "cp.apple.finalcutpro.plugins" {
     :doing(function()
         local path = EFFECTS_PATH
         local scanner = plugins.new(app)
-        local en = localeID("en")
 
         local plugin = {
             type = "Effect",
