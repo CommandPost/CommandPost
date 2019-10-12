@@ -1,4 +1,7 @@
-local test          = require "cp.test"
+local spec          = require "cp.spec"
+local describe, it  = spec.describe, spec.it
+local expect        = require "cp.spec.expect"
+
 local class         = require "middleclass"
 local delegator     = require "cp.delegator"
 local prop          = require "cp.prop"
@@ -6,14 +9,16 @@ local lazy          = require "cp.lazy"
 
 -- local log           = require "hs.logger" .new "lazy_test"
 
-return test.suite("cp.delegator"):with {
-    test("statics", function()
+return describe "cp.delegator" {
+    it "configures the class"
+    :doing(function()
         local Alpha = class("Alpha"):include(delegator)
 
-        ok(eq(type(Alpha.static.delegateTo), "function"))
+        expect(type(Alpha.static.delegateTo)):is("function")
     end),
 
-    test("simple", function()
+    it "delegates table values"
+    :doing(function()
         local Alpha = class("Alpha"):include(delegator)
 
         Alpha:delegateTo("delegated")
@@ -27,12 +32,13 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha()
 
-        ok(eq(a.alphaValue, "alphaValue"))
-        ok(eq(a.delegatedValue, "delegatedValue"))
-        ok(eq(a.delegated.delegatedValue, "delegatedValue"))
+        expect(a.alphaValue):is("alphaValue")
+        expect(a.delegatedValue):is("delegatedValue")
+        expect(a.delegated.delegatedValue):is("delegatedValue")
     end),
 
-    test("delegate value", function()
+    it "delegates to classes"
+    :doing(function()
         local Beta = class("Beta")
         function Beta:initialize()
             self.betaValue = "betaValue"
@@ -58,16 +64,17 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha()
 
-        ok(eq(a.alphaValue, "alphaValue"))
-        ok(eq(a:alphaMethod(), "alphaValue"))
-        ok(eq(a.beta.alphaValue, "betaAlphaValue"))
-        ok(eq(a.beta.betaValue, "betaValue"))
-        ok(eq(a.beta:betaMethod(), "betaValue"))
-        ok(eq(a.betaValue, "betaValue"))
-        ok(eq(a:betaMethod(), "betaValue"))
+        expect(a.alphaValue):is("alphaValue")
+        expect(a:alphaMethod()):is("alphaValue")
+        expect(a.beta.alphaValue):is("betaAlphaValue")
+        expect(a.beta.betaValue):is("betaValue")
+        expect(a.beta:betaMethod()):is("betaValue")
+        expect(a.betaValue):is("betaValue")
+        expect(a:betaMethod()):is("betaValue")
     end),
 
-    test("delegate method", function()
+    it "delegates methods"
+    :doing(function()
         local Beta = class("Beta")
         function Beta:initialize()
             self.betaValue = "betaValue"
@@ -97,16 +104,17 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha()
 
-        ok(eq(a.alphaValue, "alphaValue"))
-        ok(eq(a:alphaMethod(), "alphaValue"))
-        ok(eq(a:beta().alphaValue, "betaAlphaValue"))
-        ok(eq(a:beta().betaValue, "betaValue"))
-        ok(eq(a:beta():betaMethod(), "betaValue"))
-        ok(eq(a.betaValue, "betaValue"))
-        ok(eq(a:betaMethod(), "betaValue"))
+        expect(a.alphaValue):is("alphaValue")
+        expect(a:alphaMethod()):is("alphaValue")
+        expect(a:beta().alphaValue):is("betaAlphaValue")
+        expect(a:beta().betaValue):is("betaValue")
+        expect(a:beta():betaMethod()):is("betaValue")
+        expect(a.betaValue):is("betaValue")
+        expect(a:betaMethod()):is("betaValue")
     end),
 
-    test("delegate prop", function()
+    it "delegates cp.prop"
+    :doing(function()
         local Beta = class("Beta")
         function Beta:initialize()
             self.betaValue = "betaValue"
@@ -138,20 +146,21 @@ return test.suite("cp.delegator"):with {
         local a = Alpha()
 
         -- delegate methods should not override parent methods.
-        ok(eq(a.alphaValue, "alphaValue"))
-        ok(eq(a:alphaMethod(), "alphaValue"))
+        expect(a.alphaValue):is("alphaValue")
+        expect(a:alphaMethod()):is("alphaValue")
 
-        ok(eq(a:beta().alphaValue, "betaAlphaValue"))
-        ok(eq(a:beta().betaValue, "betaValue"))
-        ok(eq(a:beta():betaMethod(), "betaValue"))
-        ok(eq(a.betaValue, "betaValue"))
-        ok(eq(a:betaMethod(), "betaValue"))
+        expect(a:beta().alphaValue):is("betaAlphaValue")
+        expect(a:beta().betaValue):is("betaValue")
+        expect(a:beta():betaMethod()):is("betaValue")
+        expect(a.betaValue):is("betaValue")
+        expect(a:betaMethod()):is("betaValue")
 
-        ok(eq(a:beta():betaProp(), true))
-        ok(eq(a:betaProp(), true))
+        expect(a:beta():betaProp()):is(true)
+        expect(a:betaProp()):is(true)
     end),
 
-    test("override", function()
+    it "executes delegated methods relative to the delegate"
+    :doing(function()
         local Alpha = class("Alpha"):include(delegator)
 
         Alpha:delegateTo("delegate")
@@ -169,13 +178,14 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha()
 
-        ok(eq(a.value, "undelegated"))
-        ok(eq(a.delegate.value, "delegated"))
-        ok(eq(a.delegate:getValue(), "delegated"))
-        ok(eq(a:getValue(), "delegated"))
+        expect(a.value):is("undelegated")
+        expect(a.delegate.value):is("delegated")
+        expect(a.delegate:getValue()):is("delegated")
+        expect(a:getValue()):is("delegated")
     end),
 
-    test("subclass", function()
+    it "inherits delegations from superclasses"
+    :doing(function()
         local Alpha = class("Alpha"):include(delegator)
 
         Alpha:delegateTo("aDelegate")
@@ -215,20 +225,21 @@ return test.suite("cp.delegator"):with {
         local a = Alpha()
         local b = Beta()
 
-        ok(eq(a.aDelegate.value, "alpha"))
-        ok(eq(a.value, "alpha"))
+        expect(a.aDelegate.value):is("alpha")
+        expect(a.value):is("alpha")
 
-        ok(eq(b.aDelegate.value, "changed alpha"))
-        ok(eq(b.bDelegate.value, "beta"))
-        ok(eq(b.value, "beta"))
+        expect(b.aDelegate.value):is("changed alpha")
+        expect(b.bDelegate.value):is("beta")
+        expect(b.value):is("beta")
 
-        ok(eq(a:a(), "a"))
-        ok(eq(a:b(), "b"))
-        ok(eq(b:a(), "a"))
-        ok(eq(b:b(), "bb"))
+        expect(a:a()):is("a")
+        expect(a:b()):is("b")
+        expect(b:a()):is("a")
+        expect(b:b()):is("bb")
     end),
 
-    test("lazy first", function()
+    it "prioritises lazy values if lazy is included first"
+    :doing(function()
         local LazyFirst = class("LazyFirst"):include(lazy):include(delegator)
         LazyFirst:delegateTo("delegate")
 
@@ -244,11 +255,12 @@ return test.suite("cp.delegator"):with {
 
         local lf = LazyFirst()
 
-        ok(eq(lf.value, "lazy value"))
-        ok(eq(lf.delegate.value, "delegated value"))
+        expect(lf.value):is("lazy value")
+        expect(lf.delegate.value):is("delegated value")
     end),
 
-    test("lazy second", function()
+    it "prioritises delegated values if lazy is included second"
+    :doing(function()
         local LazySecond = class("LazySecond"):include(delegator):include(lazy)
         LazySecond:delegateTo("delegate")
 
@@ -264,16 +276,12 @@ return test.suite("cp.delegator"):with {
 
         local lf = LazySecond()
 
-        ok(eq(lf.value, "delegated value"))
-        ok(eq(lf.delegate.value, "delegated value"))
+        expect(lf.value):is("delegated value")
+        expect(lf.delegate.value):is("delegated value")
     end),
 
-    test("delegated prop", function()
-        local Alpha = class("Alpha"):include(delegator)
-        Alpha:delegateTo("delegate")
-    end),
-
-    test("multiple delegates", function()
+    it "delegates to multiple targets in left-to-right order"
+    :doing(function()
         local Alpha = class("Alpha"):include(delegator)
             :delegateTo("one", "two")
 
@@ -290,15 +298,16 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha()
 
-        ok(eq(a.alpha, true))
-        ok(eq(a.beta, true))
+        expect(a.alpha):is(true)
+        expect(a.beta):is(true)
 
-        ok(eq(a.one.alpha, true))
-        ok(eq(a.two.alpha, false))
-        ok(eq(a.two.beta, true))
+        expect(a.one.alpha):is(true)
+        expect(a.two.alpha):is(false)
+        expect(a.two.beta):is(true)
     end),
 
-    test("delegate to parent class", function()
+    it "delegates to parent class"
+    :doing(function()
         local Alpha = class("Alpha")
         Alpha.static.Beta = class("Beta"):include(delegator)
             :delegateTo("parent")
@@ -319,8 +328,8 @@ return test.suite("cp.delegator"):with {
 
         local a = Alpha("foo")
 
-        ok(eq(a.value, "foo"))
-        ok(eq(a.beta.value, "foo beta"))
-        ok(eq(a.beta:alphaMethod(), "foo"))
+        expect(a.value):is("foo")
+        expect(a.beta.value):is("foo beta")
+        expect(a.beta:alphaMethod()):is("foo")
     end),
 }
