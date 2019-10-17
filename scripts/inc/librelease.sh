@@ -423,7 +423,7 @@ function generate_appcast() {
 			<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
 			<enclosure url=\"https://github.com/CommandPost/CommandPost/releases/download/${VERSION}/CommandPost_${VERSION}.dmg\"
 				sparkle:version=\"${BUILD_NUMBER}\"
-                sparkle:shortVersionString\"${VERSION}\"
+                sparkle:shortVersionString=\"${VERSION}\"
 				sparkle:dsaSignature=\"${SPARKLE_DSA_SIGNATURE}\"
 				type=\"application/octet-stream\"
 			/>
