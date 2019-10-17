@@ -157,7 +157,11 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
         --------------------------------------------------------------------------------
         -- Keep trying to press the menu item until we timeout:
         --------------------------------------------------------------------------------
-        if not doUntil(function() return menuItem:doPress() end) then
+        if not doUntil(function()
+            local path = {"File", "Share", destinationSelect}
+            local options = {["pressAll"] = true}
+            return fcp:selectMenu(path, options)
+        end) then
             --------------------------------------------------------------------------------
             -- Unsuccessfully selected the share menu item:
             --------------------------------------------------------------------------------
