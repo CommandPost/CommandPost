@@ -394,6 +394,8 @@ function generate_appcast() {
 
   SPARKLE_DSA_SIGNATURE="$(../CommandPost/scripts/inc/sign_update "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "../dsa_priv.pem")"
 
+  local BUILD_NUMBER=$(xcodebuild -target Hammerspoon -configuration Release -showBuildSettings 2>/dev/null | grep CURRENT_PROJECT_VERSION | awk '{ print $3 }')
+
   touch "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
   echo "
 		<item>
@@ -420,7 +422,8 @@ function generate_appcast() {
 			</description>
 			<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
 			<enclosure url=\"https://github.com/CommandPost/CommandPost/releases/download/${VERSION}/CommandPost_${VERSION}.dmg\"
-				sparkle:version=\"${VERSION}\"
+				sparkle:version=\"${BUILD_NUMBER}\"
+                sparkle:shortVersionString\"${VERSION}\"
 				sparkle:dsaSignature=\"${SPARKLE_DSA_SIGNATURE}\"
 				type=\"application/octet-stream\"
 			/>
