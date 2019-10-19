@@ -104,6 +104,11 @@ mod.ignoreInvalidCaptions = config.prop("batchExportIgnoreInvalidCaptions", fals
 --- Defines whether or not a Batch Export should Ignore Proxies.
 mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
 
+--- plugins.finalcutpro.export.batch.ignoreBackgroundTasks <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Background Tasks.
+mod.ignoreBackgroundTasks = config.prop("batchExportIgnoreBackgroundTasks", false)
+
 --- plugins.finalcutpro.export.batch.batchExportTimelineClips(clips) -> boolean
 --- Function
 --- Batch Export Timeline Clips
@@ -332,6 +337,17 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                     local useCustomFilename = mod.useCustomFilename()
                     if useCustomFilename and customFilename then
                         newFilename = customFilename
+                        --------------------------------------------------------------------------------
+                        -- Process variables:
+                        --------------------------------------------------------------------------------
+                        newFilename = string.gsub(newFilename, "{original}", clipName)
+                        newFilename = string.gsub(newFilename, "{yyyy}", os.date("%Y"))
+                        newFilename = string.gsub(newFilename, "{yy}", os.date("%y"))
+                        newFilename = string.gsub(newFilename, "{mm}", os.date("%m"))
+                        newFilename = string.gsub(newFilename, "{dd}", os.date("%d"))
+                        newFilename = string.gsub(newFilename, "{hh}", os.date("%H"))
+                        newFilename = string.gsub(newFilename, "{mm}", os.date("%M"))
+                        newFilename = string.gsub(newFilename, "{ss}", os.date("%S"))
                     end
 
                     while fnutils.contains(mod._existingClipNames, newFilename) do
@@ -370,6 +386,41 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
 
                     saveSheet:filename():setValue(newFilename)
                     saveSheet:pressSave()
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Give Final Cut Pro a chance to show the "Preparing" modal dialog:
+            --
+            -- NOTE: I tried to avoid doing this, but it seems to be the only way to
+            --       ensure the "Preparing" modal dialog actually appears. If I try and
+            --       use a just.doUntil(), it seems to block Final Cut Pro from actually
+            --       opening the "Preparing" modal dialog.
+            --------------------------------------------------------------------------------
+            wait(4)
+
+            --------------------------------------------------------------------------------
+            -- Wait until the "Preparing" modal dialog closes or the
+            -- Background Tasks Dialog opens:
+            --------------------------------------------------------------------------------
+            local backgroundTasksDialog = fcp:backgroundTasksDialog()
+            if fcp:isModalDialogOpen() then
+                doUntil(function()
+                    return backgroundTasksDialog:isShowing() or fcp:isModalDialogOpen() == false
+                end, 15)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Check for Background Tasks warning:
+            --------------------------------------------------------------------------------
+            local ignoreBackgroundTasks = mod.ignoreBackgroundTasks()
+            if backgroundTasksDialog:isShowing() then
+                if ignoreBackgroundTasks then
+                    backgroundTasksDialog:continue():press()
+                else
+                    backgroundTasksDialog:cancel():press()
+                    displayMessage(i18n("batchExportBackgroundTasksDetected"))
+                    return false
                 end
             end
         end
@@ -459,7 +510,7 @@ end
 ---  * None
 function mod.changeCustomFilename()
     Do(function()
-        local result = mod.customFilename(displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+        local result = mod.customFilename(displayTextBoxMessage(i18n("enterCustomFilename"), i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
             if value and type("value") == "string" and value ~= trim("") and safeFilename(value, value) == value then
                 return true
             else
@@ -739,12 +790,12 @@ function plugin.init(deps)
     -- Timeline Panel:
     --------------------------------------------------------------------------------
     mod._timelinePanel = mod._bmMan.addPanel({
-        priority    = 2,
+        priority    = 1,
         id          = "timeline",
         label       = i18n("timeline"),
         image       = imageFromPath(iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 680,
+        height      = 720,
     })
         :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
@@ -845,10 +896,24 @@ function plugin.init(deps)
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
             {
+                label = i18n("useCustomFilename"),
+                onchange = function(_, params)
+                    mod.useCustomFilename(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the Preferences:
+                    --------------------------------------------------------------------------------
+                    mod._bmMan.refresh()
+                end,
+                checked = mod.useCustomFilename,
+            })
+        :addCheckbox(nextID(),
+            {
                 label = i18n("replaceExistingFiles"),
                 onchange = function(_, params) mod.replaceExistingFiles(params.checked) end,
                 checked = mod.replaceExistingFiles,
             })
+        :addParagraph(nextID(), html.br())
         :addCheckbox(nextID(),
             {
                 label = i18n("ignoreMissingEffects"),
@@ -869,16 +934,9 @@ function plugin.init(deps)
             })
         :addCheckbox(nextID(),
             {
-                label = i18n("useCustomFilename"),
-                onchange = function(_, params)
-                    mod.useCustomFilename(params.checked)
-
-                    --------------------------------------------------------------------------------
-                    -- Refresh the Preferences:
-                    --------------------------------------------------------------------------------
-                    mod._bmMan.refresh()
-                end,
-                checked = mod.useCustomFilename,
+                label = i18n("ignoreBackgroundTasks"),
+                onchange = function(_, params) mod.ignoreBackgroundTasks(params.checked) end,
+                checked = mod.ignoreBackgroundTasks,
             })
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
