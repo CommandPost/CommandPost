@@ -293,6 +293,11 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             end
 
             --------------------------------------------------------------------------------
+            -- Get the file extension for later:
+            --------------------------------------------------------------------------------
+            local fileExtension = exportDialog:fileExtension():value()
+
+            --------------------------------------------------------------------------------
             -- Press 'Next':
             --------------------------------------------------------------------------------
             exportDialog:pressNext()
@@ -350,9 +355,23 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                         newFilename = string.gsub(newFilename, "{ss}", os.date("%S"))
                     end
 
+                    --------------------------------------------------------------------------------
+                    -- Increment filename is filename already exists in this batch:
+                    --------------------------------------------------------------------------------
                     while fnutils.contains(mod._existingClipNames, newFilename) do
                         newFilename = incrementFilename(newFilename)
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- Increment filename is filename already exists in the output directory:
+                    --------------------------------------------------------------------------------
+                    while tools.doesFileExist(exportPath .. "/" .. newFilename .. fileExtension) do
+                        newFilename = incrementFilename(newFilename)
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Update the filename and save it for comparison of next clip:
+                    --------------------------------------------------------------------------------
                     if filename ~= newFilename then
                         saveSheet:filename():setValue(newFilename)
                     end
@@ -797,6 +816,17 @@ function plugin.init(deps)
         tooltip     = i18n("timeline"),
         height      = 720,
     })
+        :addContent(nextID(), [[
+            <script>
+                document.addEventListener("keyup", function(event) {
+                    // NOTE: 13 is the "return" key on the keyboard
+                    if (event.keyCode === 13) {
+                        event.preventDefault();
+                        document.getElementById("performBatchExportButton").click();
+                    }
+                });
+            </script>
+        ]], false)
         :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
                 local clipCount = mod._clips and #mod._clips or 0
@@ -943,6 +973,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("performBatchExport"),
+                id = "performBatchExportButton",
                 onclick = function() mod.performBatchExport() end,
             })
 

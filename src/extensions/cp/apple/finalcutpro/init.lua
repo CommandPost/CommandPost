@@ -846,7 +846,7 @@ end
 --- Returns:
 ---  * The Final Cut Pro Export Dialog Box
 function fcp.lazy.method:exportDialog()
-    return ExportDialog.new(self)
+    return ExportDialog(self)
 end
 
 --- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
