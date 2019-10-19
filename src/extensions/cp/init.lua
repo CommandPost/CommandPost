@@ -62,9 +62,9 @@ function mod.init()
     hs._consoleHistory = require("cp.console.history")
 
     --------------------------------------------------------------------------------
-    -- Disable Spotlight for Name Searches:
+    -- Enable Spotlight for Name Searches (used in Search Console):
     --------------------------------------------------------------------------------
-    application.enableSpotlightForNameSearches(false)
+    application.enableSpotlightForNameSearches(true)
 
     --------------------------------------------------------------------------------
     -- Disable Window Animations:
