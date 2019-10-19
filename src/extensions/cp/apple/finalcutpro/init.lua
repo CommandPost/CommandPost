@@ -93,6 +93,7 @@ local app                                       = require "cp.apple.finalcutpro.
 local plugins									= require "cp.apple.finalcutpro.plugins"
 local strings                                   = require "cp.apple.finalcutpro.strings"
 
+local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
 local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
 local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
@@ -859,6 +860,19 @@ end
 ---  * The window.
 function fcp.lazy.method:findAndReplaceTitleText()
     return FindAndReplaceTitleText(self.app)
+end
+
+--- cp.apple.finalcutpro:backgroundTasksDialog() -> BackgroundTasksDialog
+--- Method
+--- Returns the [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The window.
+function fcp.lazy.method:backgroundTasksDialog()
+    return BackgroundTasksDialog(self.app)
 end
 
 ----------------------------------------------------------------------------------------

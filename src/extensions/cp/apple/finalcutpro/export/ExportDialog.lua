@@ -177,19 +177,13 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             local missingMediaString = fcp:string("FFMissingMediaMessageText")
             local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")
 
-            local proxyPlaybackEnabled, missingMediaAndInvalidCaptionsString, missingMediaAndInvalidCaptions, invalidCaptionsString, invalidCaptions
-            if fcp:version() >= v("10.4.0") then
-                --------------------------------------------------------------------------------
-                -- These alerts are only available in Final Cut Pro 10.4 and later:
-                --------------------------------------------------------------------------------
-                proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
 
-                missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
-                missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
+            local missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
+            local missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
 
-                invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
-                invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
-            end
+            local invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
+            local invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
 
             local counter = 0
             while not self:isShowing() and counter < 100 do
