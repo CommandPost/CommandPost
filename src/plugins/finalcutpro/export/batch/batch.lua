@@ -287,7 +287,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             local exportDialog = fcp:exportDialog()
             local errorMessage
-            _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions(), mod.ignoreBackgroundTasks())
+            _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
             if errorMessage then
                 return false
             end
@@ -415,7 +415,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             local ignoreBackgroundTasks = mod.ignoreBackgroundTasks()
             if backgroundTasksDialog:isShowing() then
-                if mod.ignoreBackgroundTasks() then
+                if ignoreBackgroundTasks then
                     backgroundTasksDialog:continue():press()
                 else
                     backgroundTasksDialog:cancel():press()
