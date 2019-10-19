@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.console ===
 ---
---- Final Cut Pro Console
+--- Final Cut Pro Search Console
 
 local require   = require
 
