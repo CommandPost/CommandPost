@@ -1,6 +1,6 @@
---- === plugins.core.console.applications ===
+--- === plugins.core.console.scripts ===
 ---
---- Adds all installed applications to the Search Console.
+--- Adds all installed AppleScripts to the Search Console.
 
 local require               = require
 
@@ -16,8 +16,6 @@ local spotlight             = require "hs.spotlight"
 
 local displayName           = fs.displayName
 local execute               = hs.execute
-local iconForFile           = image.iconForFile
-local imageFromAppBundle    = image.imageFromAppBundle
 local imageFromPath         = image.imageFromPath
 
 local mod = {}
@@ -26,35 +24,22 @@ mod.appCache = {}
 
 local function modifyNameMap(info, add)
     for _, item in ipairs(info) do
-        local icon = nil
         local displayname = item.kMDItemDisplayName or displayName(item.kMDItemPath)
-        displayname = displayname:gsub("%.app$", "", 1)
-
-        --------------------------------------------------------------------------------
-        -- Preferences Panel:
-        --------------------------------------------------------------------------------
-        if string.find(item.kMDItemPath, "%.prefPane$") then
-            displayname = displayname .. " preferences"
-            if add then
-                icon = iconForFile(item.kMDItemPath)
-            end
-        end
 
         --------------------------------------------------------------------------------
         -- Add to the cache:
         --------------------------------------------------------------------------------
         if add then
-            local bundleID = item.kMDItemCFBundleIdentifier
-            if (not icon) and (bundleID) then
-                icon = imageFromAppBundle(bundleID)
-            end
+            --------------------------------------------------------------------------------
+            -- AppleScript Icon:
+            --------------------------------------------------------------------------------
+            local icon = imageFromPath(config.bundledPluginsPath .. "/core/console/images/SEScriptDocument.icns")
 
             --------------------------------------------------------------------------------
             -- Add application to cache:
             --------------------------------------------------------------------------------
             mod.appCache[displayname] = {
                 path = item.kMDItemPath,
-                bundleID = bundleID,
                 icon = icon
             }
         --------------------------------------------------------------------------------
@@ -101,7 +86,7 @@ function mod.startSpotlightSearch()
        "~/Library/Scripts"
     }
 
-    mod.spotlight = spotlight.new():queryString([[ (kMDItemContentType = "com.apple.application-bundle") || (kMDItemContentType = "com.apple.systempreference.prefpane") ]])
+    mod.spotlight = spotlight.new():queryString([[ (kMDItemContentType = "com.apple.applescript.text")  || (kMDItemContentType = "com.apple.applescript.script") ]])
        :callbackMessages("didUpdate", "inProgress")
        :setCallback(updateNameMap)
        :searchScopes(searchPaths)
@@ -109,7 +94,7 @@ function mod.startSpotlightSearch()
 end
 
 local plugin = {
-    id = "core.console.applications",
+    id = "core.console.scripts",
     group = "core",
     dependencies = {
         ["core.action.manager"] = "actionmanager",
@@ -125,7 +110,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
-    mod._handler = deps.actionmanager.addHandler("global_applications", "global")
+    mod._handler = deps.actionmanager.addHandler("global_scripts", "global")
         :onChoices(function(choices)
             for name, app in pairs(mod.appCache) do
                 choices:add(name)
@@ -138,9 +123,9 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
-            execute(string.format("/usr/bin/open '%s'", action["path"]))
+            execute(string.format("/usr/bin/osascript '%s'", action["path"]))
         end)
-        :onActionId(function() return "global_applications" end)
+        :onActionId(function() return "global_scripts" end)
 
     return mod
 end
