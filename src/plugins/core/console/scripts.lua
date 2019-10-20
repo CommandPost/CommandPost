@@ -16,8 +16,6 @@ local spotlight             = require "hs.spotlight"
 
 local displayName           = fs.displayName
 local execute               = hs.execute
-local iconForFile           = image.iconForFile
-local imageFromAppBundle    = image.imageFromAppBundle
 local imageFromPath         = image.imageFromPath
 
 local mod = {}
