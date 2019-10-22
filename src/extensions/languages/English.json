@@ -65,6 +65,7 @@
         "applyColorCorrectionFromPreviousClip": "Apply Color Correction from Previous Clip",
         "applyColorCorrectionFromThreeClipsBack": "Apply Color Correction from Three Clips Back",
         "applyColorCorrectionFromTwoClipsBack": "Apply Color Correction from Two Clips Back",
+        "applyKeywordFromPasteboard": "Apply Keyword from Pasteboard",
         "applyTopDeviceToAll": "Apply Top Device to All",
         "appName": "CommandPost",
         "appVersion": "Version",
