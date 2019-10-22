@@ -155,6 +155,8 @@ function plugin.init(deps)
                 if not wasShowing then
                     keywordEditor:hide()
                 end
+            else
+                playErrorSound()
             end
         end)
 
