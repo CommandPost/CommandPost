@@ -227,6 +227,11 @@ end
 function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
+        local title = ui:attributeValue("AXTitle")
+        if string.match(title, pattern) then
+            -- Don't bother selecting if it's already selected.
+            return true
+        end
         ui:doPress()
         local items = just.doUntil(function() return ui[1] end, 5, 0.01)
         if items then
