@@ -4,6 +4,8 @@
 
 local require               = require
 
+local pasteboard            = require "hs.pasteboard"
+
 local config                = require "cp.config"
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
@@ -12,6 +14,7 @@ local tools                 = require "cp.tools"
 
 local displayErrorMessage   = dialog.displayErrorMessage
 local displayNotification   = dialog.displayNotification
+local playErrorSound        = tools.playErrorSound
 
 local mod = {}
 
@@ -117,17 +120,46 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    local fcpxCmds = deps.fcpxCmds
+
+    --------------------------------------------------------------------------------
+    -- Save/Restore Keyword Presets:
+    --------------------------------------------------------------------------------
     for i=1, mod.NUMBER_OF_PRESETS do
-        deps.fcpxCmds
+        fcpxCmds
             :add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.restore(i) end)
 
-        deps.fcpxCmds
+        fcpxCmds
             :add("cpSaveKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.save(i) end)
     end
+
+    --------------------------------------------------------------------------------
+    -- Apply Keyword from Pasteboard:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("applyKeywordFromPasteboard")
+        :titled(i18n("applyKeywordFromPasteboard"))
+        :whenActivated(function()
+            local value = pasteboard.readString()
+            if value then
+                local keywordEditor = fcp:keywordEditor()
+                local wasShowing = keywordEditor:isShowing()
+                keywordEditor:show()
+                local keywords = keywordEditor:keyword() or {}
+                table.insert(keywords, value)
+                keywordEditor:keyword(keywords)
+                if not wasShowing then
+                    keywordEditor:hide()
+                end
+            else
+                playErrorSound()
+            end
+        end)
+
     return mod
 end
 
