@@ -20,24 +20,27 @@ function plugin.init(deps)
     -- Audio Enhancements:
     --------------------------------------------------------------------------------
     local cmds = deps.cmds
+    local audio = fcp:inspector():audio()
+    local audioEnhancements = audio:audioEnhancements()
+    local audioConfiguration = audio:audioConfiguration()
     cmds
         :add("toggleEqualization")
-        :whenActivated(fcp:inspector():audio():audioEnhancements():equalization().enabled:doPress())
+        :whenActivated(audioEnhancements:equalization().enabled:doPress())
         :titled(i18n("toggle") .. " " .. i18n("equalization"))
 
     cmds
         :add("toggleLoudness")
-        :whenActivated(fcp:inspector():audio():audioEnhancements():audioAnalysis():loudness().enabled:doPress())
+        :whenActivated(audioEnhancements:audioAnalysis():loudness().enabled:doPress())
         :titled(i18n("toggle") .. " " .. i18n("loudness"))
 
     cmds
         :add("toggleNoiseRemoval")
-        :whenActivated(fcp:inspector():audio():audioEnhancements():audioAnalysis():noiseRemoval().enabled:doPress())
+        :whenActivated(audioEnhancements:audioAnalysis():noiseRemoval().enabled:doPress())
         :titled(i18n("toggle") .. " " .. i18n("noiseRemoval"))
 
     cmds
         :add("toggleHumRemoval")
-        :whenActivated(fcp:inspector():audio():audioEnhancements():audioAnalysis():humRemoval().enabled:doPress())
+        :whenActivated(audioEnhancements:audioAnalysis():humRemoval().enabled:doPress())
         :titled(i18n("toggle") .. " " .. i18n("humRemoval"))
 
     --------------------------------------------------------------------------------
@@ -46,13 +49,27 @@ function plugin.init(deps)
     for i=1, 9 do
         cmds
             :add("toggleAudioComponent" .. i)
-            :whenActivated(fcp:inspector():audio():audioConfiguration():component(i):enabled():doPress())
+            :whenActivated(audioConfiguration:component(i):enabled():doPress())
             :titled(i18n("toggle") .. " " .. i18n("audio") .. " " .. i18n("component") .. " " .. i)
 
         cmds
             :add("toggleAudioSubcomponent" .. i)
-            :whenActivated(fcp:inspector():audio():audioConfiguration():subcomponent(i):enabled():doPress())
+            :whenActivated(audioConfiguration:subcomponent(i):enabled():doPress())
             :titled(i18n("toggle") .. " " .. i18n("audio") .. " " .. i18n("subcomponent") .. " " .. i)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Volume:
+    --------------------------------------------------------------------------------
+    for i=-12, 12 do
+        cmds
+            :add("setVolumeTo" .. " " .. i)
+            :whenActivated(function()
+                local volume = audio:volume()
+                volume:show()
+                volume:value(tostring(i))
+            end)
+            :titled(i18n("setVolumeTo") .. " " .. tostring(i))
     end
 
 end
