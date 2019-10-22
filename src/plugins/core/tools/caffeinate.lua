@@ -34,7 +34,7 @@ function plugin.init(deps)
     deps.menu.tools
         :addItem(1, function()
             return {
-                title = i18n("enable") .. " " .. i18n("caffeinate"),
+                title = i18n("preventMacFromSleeping"),
                 fn = function()
                     enabled:toggle()
                 end,
