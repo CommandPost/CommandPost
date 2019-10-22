@@ -244,6 +244,7 @@
         "controlFCPUIElementAbsolute": "Control Final Cut Pro User Interface Element (Absolute)",
         "controlFCPUIElementRelative": "Control Final Cut Pro User Interface Element (Relative)",
         "controlFCPUIElementRelativeNote": "Hover mouse over a UI Element, hold CONTROL, then adjust MIDI Knob/Fader to register.",
+        "copyTitleTextContentsToPasteboard": "Copy Title Text Contents to Pasteboard",
         "copyToFinalCutProPasteboardBuffer": "Copy to Final Cut Pro Pasteboard Buffer %{id}",
         "core_accessibility_label": "Accessibility Permissions",
         "core_action_manager_label": "Manager: Actions",
