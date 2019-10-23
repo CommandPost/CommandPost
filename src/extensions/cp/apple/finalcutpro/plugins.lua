@@ -16,7 +16,7 @@ local log                       = require "hs.logger".new "scan"
 local audiounit                 = require "hs.audiounit"
 local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
-local hsplist                   = require "hs.plist"
+local plist                     = require "hs.plist"
 local notify                    = require "hs.notify"
 local pathwatcher               = require "hs.pathwatcher"
 
@@ -28,7 +28,6 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local localeID                  = require "cp.i18n.localeID"
 local localized                 = require "cp.localized"
-local plist                     = require "cp.plist"
 local strings                   = require "cp.strings"
 local text                      = require "cp.web.text"
 local tools                     = require "cp.tools"
@@ -350,7 +349,7 @@ function mod.mt:scanSystemAudioUnits(locale)
     if effects and next(effects) ~= nil then
 
         local coreAudioPlistPath = CORE_AUDIO_PREFERENCES_PATH
-        local coreAudioPlistData = plist.fileToTable(coreAudioPlistPath)
+        local coreAudioPlistData = plist.read(coreAudioPlistPath)
 
         for _, fullName in pairs(effects) do
             local category, plugin = string.match(fullName, "^(.-):%s*(.*)$")
@@ -422,7 +421,7 @@ end
 --- Returns:
 ---  * None
 function mod.mt:scanAppEffectsPresets(locale)
-    local data = plist.fileToTable(fcpApp:path() .. APP_EFFECTS_PRESETS_STRINGS_PATH)
+    local data = plist.read(fcpApp:path() .. APP_EFFECTS_PRESETS_STRINGS_PATH)
     if data then
         local videoEffect = PLUGIN_TYPES.videoEffect
         local category = fcpStrings:find("FFColorPresetsCategory", locale)
@@ -575,7 +574,7 @@ function mod.mt:scanUserColorPresets(locale)
                 local plugin = string.match(file, "(.+)%.cboard")
                 if plugin then
                     local effectPath = path .. "/" .. file
-                    if hsplist.read(effectPath) then
+                    if plist.read(effectPath) then
                         --------------------------------------------------------------------------------
                         -- Is a valid property list:
                         --------------------------------------------------------------------------------
