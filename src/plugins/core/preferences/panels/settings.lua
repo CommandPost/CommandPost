@@ -6,13 +6,12 @@ local require       = require
 
 local hs            = hs
 
-local image         = require("hs.image")
+local image         = require "hs.image"
 
-local i18n          = require("cp.i18n")
+local i18n          = require "cp.i18n"
 
 local execute       = hs.execute
 local imageFromName = image.imageFromName
-
 
 local plugin = {
     id              = "core.preferences.panels.settings",
@@ -29,14 +28,14 @@ function plugin.init(deps)
         label       = i18n("settings"),
         image       = imageFromName("NSAdvanced"),
         tooltip     = i18n("settings"),
-        height      = 170,
+        height      = 190,
     })
 
     panel
-        :addContent(1, [[<p style="padding-left:20px;">In a future release of CommandPost we will have a proper import/export feature for settings. In the meantime...</p>]], false)
+        :addContent(1, [[<p style="padding-left:20px;">]] .. i18n("settingsDescription") .. [[</p>]], false)
         :addButton(2,
             {
-                label 	    = "Open User Settings Folder",
+                label 	    = i18n("openUserSettingsFolder"),
                 width       = 200,
                 onclick	    = function() execute([[open ~/Library/Application\ Support/CommandPost]]) end,
             }

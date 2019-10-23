@@ -7,21 +7,17 @@ local require           = require
 --local log               = require "hs.logger".new "localized"
 
 local fs                = require "hs.fs"
+local plist             = require "hs.plist"
 
 local localeID          = require "cp.i18n.localeID"
 local matcher           = require "cp.text.matcher"
-local plist             = require "cp.plist"
 local text              = require "cp.text"
 local wtext             = require "cp.web.text"
 
-local binaryFileToTable = plist.binaryFileToTable
 local escapeXML         = wtext.escapeXML
-local isBinaryPlist     = plist.isBinaryPlist
 local match             = string.match
 local pathToAbsolute    = fs.pathToAbsolute
 local unescapeXML       = wtext.unescapeXML
-
-
 
 -- KEY_VALUE -> string
 -- Constant
@@ -65,28 +61,30 @@ local function readLocalizedStrings(stringsFile, name)
     local stringsPath = pathToAbsolute(stringsFile)
     if stringsPath then
         --------------------------------------------------------------------------------
-        -- Binary Plist:
-        --------------------------------------------------------------------------------
-        if isBinaryPlist(stringsFile) then
-            local plistValues = binaryFileToTable(stringsFile)
-
-            if plistValues then
-                --------------------------------------------------------------------------------
-                -- Escape folderCode:
-                --------------------------------------------------------------------------------
-                local localName = plistValues[escapeXML(name)]
-                return localName and unescapeXML(localName)
-            end
-        --------------------------------------------------------------------------------
+        -- PROPERTY LIST
         --
-        -- Plain Text:
+        -- Example:
+        -- <?xml version="1.0" encoding="UTF-8"?>
+        -- <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        -- <plist version="1.0">
+        -- <dict>
+        --  <key>Basic Title</key>
+        --  <string>Standardtitel</string>
+        -- </dict>
+        -- </plist>
+        --------------------------------------------------------------------------------
+        local contents = plist.read(stringsPath)
+        if contents then
+            local localName = contents[escapeXML(name)]
+            return localName and unescapeXML(localName)
+        --------------------------------------------------------------------------------
+        -- PLAIN TEXT
         --
         -- Example:
         -- "03EF6CA6-E3E2-4DA0-B68F-26B2762A46BC" = "Perspective Reflection";
-        --
         --------------------------------------------------------------------------------
         else
-            local content = text.fromFile(stringsFile)
+            local content = text.fromFile(stringsPath)
             local key, value = KEY_VALUE:match(content)
             if key and value then
                 -- unescape the key.

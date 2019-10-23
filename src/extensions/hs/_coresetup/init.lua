@@ -92,42 +92,24 @@ return {
                 print("*** ERROR: " .. err)
                 hs.focus()
                 hs.openConsole()
-                hs._TERMINATED = true
             else
-                if not hs._cpLoaded then
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    hs.openConsole()
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-                        "Send Bug Report",
-                        "Quit"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback(true)
-                    else
-                        hs.application.applicationForPID(hs.processInfo["processID"]):kill()
-                    end
+                --------------------------------------------------------------------------------
+                -- NOT DEBUG MODE:
+                --------------------------------------------------------------------------------
+                print("*** ERROR: " .. err)
+                local result =
+                    dialog.blockAlert(
+                    "An unexpected error has occured.",
+                    "Would you like to report this bug to the team?",
+                    "Continue",
+                    "Send Bug Report"
+                )
+                hs.focus()
+                if result == "Send Bug Report" then
+                    local feedback = require("cp.feedback")
+                    feedback.showFeedback()
                 else
-                    --------------------------------------------------------------------------------
-                    -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
-                    --------------------------------------------------------------------------------
-                    print("*** ERROR: " .. err)
-                    local result =
-                        dialog.blockAlert(
-                        "Opps! Something has gone wrong!",
-                        "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
-                        "Continue",
-                        "Send Bug Report"
-                    )
-                    if result == "Send Bug Report" then
-                        local feedback = require("cp.feedback")
-                        feedback.showFeedback()
-                    end
+                    hs.openConsole()
                 end
             end
         end
@@ -390,65 +372,13 @@ return {
 
         --setup lazy loading
         if autoload_extensions then
-            --print("-- Lazy extension loading enabled")
-            hs._extensions = {}
+            local loader = require "hs._coresetup.loader"
 
-            -- Discover extensions in our .app bundle
-            local iter, dir_obj = require("hs.fs").dir(modpath .. "/hs")
-            local extension = iter(dir_obj)
-            while extension do
-                if (extension ~= ".") and (extension ~= "..") then
-                    hs._extensions[extension] = true
-                end
-                extension = iter(dir_obj)
-            end
-
-            -- Inject a lazy extension loader into the main HS table
-            setmetatable(
-                hs,
-                {
-                    __index = function(_, key)
-                        if hs._extensions[key] ~= nil then
-                            print("-- Loading extension: " .. key)
-                            hs[key] = require("hs." .. key)
-                            return hs[key]
-                        else
-                            return nil
-                        end
-                    end
-                }
-            )
+            loader.extend(hs, "hs", modpath .. "/hs")
 
             -- COMMANDPOST:
 
-            cp = {}
-            cp._extensions = {}
-
-            -- Discover extensions in our .app bundle
-            iter, dir_obj = require("hs.fs").dir(modpath .. "/cp")
-            extension = iter(dir_obj)
-            while extension do
-                if (extension ~= ".") and (extension ~= "..") then
-                    cp._extensions[extension] = true
-                end
-                extension = iter(dir_obj)
-            end
-
-            -- Inject a lazy extension loader into the main HS table
-            setmetatable(
-                cp,
-                {
-                    __index = function(_, key)
-                        if cp._extensions[key] ~= nil then
-                            print("-- Loading extension: " .. key)
-                            cp[key] = require("cp." .. key)
-                            return cp[key]
-                        else
-                            return nil
-                        end
-                    end
-                }
-            )
+            _G.cp = loader.new("cp", modpath .. "/cp")
         end
 
         local logger = require("hs.logger").new("LuaSkin", "info")
@@ -546,19 +476,14 @@ return {
             return res
         end
 
-        local function tablesMerge(t1, t2)
-            for i = 1, #t2 do
-                t1[#t1 + 1] = t2[i]
-            end
-            return t1
-        end
-
         local function tableKeys(t)
             local keyset = {}
             local n = 0
             for k, _ in pairs(t) do
-                n = n + 1
-                keyset[n] = k
+                if type(k) == "string" then
+                    n = n + 1
+                    keyset[n] = k
+                end
             end
             table.sort(keyset)
             return keyset
@@ -609,6 +534,7 @@ return {
         --- Notes:
         ---  * Hammerspoon provides a default implementation of this function, which can complete against the global Lua namespace, the 'hs' (i.e. extension) namespace, and object metatables. You can assign a new function to the variable to replace it with your own variant.
         function hs.completionsForInputString(completionWord)
+            local loader = require "hs._coresetup.loader"
             local completions = {}
             local mapJoiner = "."
             local mapEnder = ""
@@ -629,14 +555,10 @@ return {
                 -- Easiest case first, we have no text to work with, so just return keys from _G
                 mapJoiner = ""
                 completions = findCompletions(src, remnant)
-            elseif mod == "cp" then
-                -- We're either at the top of the 'cp' namespace, or completing the first level under it
+            elseif loader.is(src[mod]) then
+                -- We're working with a `loader`.
                 -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
-                completions = filterForRemnant(tableSet(tablesMerge(tableKeys(cp), tableKeys(cp._extensions))), remnant)
-            elseif mod == "hs" then
-                -- We're either at the top of the 'hs' namespace, or completing the first level under it
-                -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
-                completions = filterForRemnant(tableSet(tablesMerge(tableKeys(hs), tableKeys(hs._extensions))), remnant)
+                completions = filterForRemnant(tableSet(loader.availableExtensions(src[mod])), remnant)
             elseif mod and string.find(completionWord, ":") then
                 -- We're trying to complete an object's methods
                 mapJoiner = ":"
@@ -651,10 +573,14 @@ return {
             elseif mod and #parents > 0 then
                 -- We're some way inside the hs. namespace, so walk our way down the ancestral chain to find the final table
                 for i = 1, #parents do
-                    src = src[parents[i]]
+                    if src then
+                        src = src[parents[i]]
+                    end
                 end
                 -- If nothing left to show, show nothing
-                if src ~= nil then
+                if loader.is(src) then
+                    completions = filterForRemnant(tableSet(loader.availableExtensions(src)), remnant)
+                elseif src ~= nil then
                     completions = findCompletions(src, remnant)
                 end
             end

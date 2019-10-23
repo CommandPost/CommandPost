@@ -76,10 +76,10 @@ function mod.apply(action)
     if category then cacheID = cacheID .. "-" .. name end
 
     --------------------------------------------------------------------------------
-    -- Restore from Cache:
+    -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    if mod._cache()[cacheID] then
-
+    local rangeSelected = fcp:timeline():rangeSelected()
+    if not rangeSelected and mod._cache()[cacheID] then
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
         --------------------------------------------------------------------------------
@@ -239,6 +239,26 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
+    -- If there's a range selected, do the old fashion way:
+    --------------------------------------------------------------------------------
+    if rangeSelected then
+        --------------------------------------------------------------------------------
+        -- Apply item:
+        --------------------------------------------------------------------------------
+        generators:applyItem(whichItem)
+
+        --------------------------------------------------------------------------------
+        -- Restore Layout:
+        --------------------------------------------------------------------------------
+        doAfter(0.1, function()
+            generators:loadLayout(generatorsLayout)
+            if browserLayout then browser:loadLayout(browserLayout) end
+        end)
+
+        return
+    end
+
+    --------------------------------------------------------------------------------
     -- Make sure the correct window has focus:
     --------------------------------------------------------------------------------
     local gridWindow = grid:attributeValue("AXWindow")
@@ -254,7 +274,7 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
-    -- Select the chosen Generator:
+    -- Select the chosen Title:
     --------------------------------------------------------------------------------
     grid:setAttributeValue("AXSelectedChildren", {whichItem})
     whichItem:setAttributeValue("AXFocused", true)

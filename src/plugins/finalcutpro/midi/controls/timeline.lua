@@ -8,19 +8,62 @@ local require = require
 
 local eventtap          = require "hs.eventtap"
 
+local axutils		    = require "cp.ui.axutils"
+local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
+local childWithRole     = axutils.childWithRole
 local keyStroke         = eventtap.keyStroke
+local rescale           = tools.rescale
 
+-- MAX_14BIT -> number
+-- Constant
+-- Maximum 14bit Limit (16383)
+local MAX_14BIT = 0x3FFF
+
+
+-- MAX_7BIT -> number
+-- Constant
+-- Maximum 7bit Limit (127)
+local MAX_7BIT  = 0x7F
+
+-- doNextFrame() -> none
+-- Function
+-- Triggers keyboard shortcuts to go to the next frame.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function doNextFrame()
     keyStroke({"shift"}, "right", 0)
 end
 
+-- doPreviousFrame() -> none
+-- Function
+-- Triggers keyboard shortcuts to go to the previous frame.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function doPreviousFrame()
     keyStroke({"shift"}, "left", 0)
 end
 
+-- createTimelineScrub() -> function
+-- Function
+-- Returns the Timeline Scrub callback.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function createTimelineScrub()
     local lastValue
     return function(metadata)
@@ -78,6 +121,42 @@ function plugin.init(deps)
             elseif metadata.controllerValue == 0 then
                 fcp:doShortcut("SelectToolArrowOrRangeSelection"):Now()
             end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Timeline Scroll:
+    --------------------------------------------------------------------------------
+    local updateTimelineScrollValue
+    local updateTimelineScroll = deferred.new(0.01):action(function()
+        local scrollBar = fcp:timeline():contents():horizontalScrollBarUI()
+        if scrollBar then
+            scrollBar:setAttributeValue("AXValue", tonumber(updateTimelineScrollValue))
+        end
+    end)
+    manager.controls:new("horizontalTimelineScroll", {
+        group = "fcpx",
+        text = i18n("horizontalTimelineScroll"),
+        subText = i18n("horizontalTimelineScrollDescription"),
+        fn = function(metadata)
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+                if type(midiValue) == "number" then
+                    updateTimelineScrollValue = rescale(midiValue, 0, MAX_14BIT, 0, 1)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                local midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    updateTimelineScrollValue = rescale(midiValue, 0, MAX_7BIT, 0, 1)
+                end
+            end
+            updateTimelineScroll()
         end,
     })
 

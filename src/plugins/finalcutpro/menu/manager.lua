@@ -2,15 +2,13 @@
 ---
 --- Final Cut Pro Menu Manager.
 
-local require = require
+local require       = require
 
-local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
-local i18n                      = require("cp.i18n")
-
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local mod = {}
-
 
 local plugin = {
     id              = "finalcutpro.menu.manager",

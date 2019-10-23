@@ -4,11 +4,10 @@
 
 local require   = require
 
-local log       = require("hs.logger").new("soloclip")
+local log       = require "hs.logger".new "soloclip"
 
-local fcp       = require("cp.apple.finalcutpro")
-local tools     = require("cp.tools")
-
+local fcp       = require "cp.apple.finalcutpro"
+local tools     = require "cp.tools"
 
 local plugin = {
     id              = "finalcutpro.browser.soloclip",
@@ -21,7 +20,6 @@ local plugin = {
 function plugin.init(deps)
 
     local soloClip = function()
-
         --------------------------------------------------------------------------------
         -- Make sure the libraries window is open:
         --------------------------------------------------------------------------------

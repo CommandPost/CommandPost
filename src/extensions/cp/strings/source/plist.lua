@@ -13,10 +13,10 @@
 local require = require
 
 local fs                = require "hs.fs"
+local plist             = require "hs.plist"
 local timer             = require "hs.timer"
 
 local is                = require "cp.is"
-local plist             = require "cp.plist"
 local text              = require "cp.web.text"
 
 local moses             = require "moses"
@@ -120,7 +120,7 @@ function mod.mt:loadFile(context)
 
     self._cleanup:start()
     if langFile then
-        return plist.fileToTable(langFile)
+        return plist.read(langFile)
     end
     return nil
 end

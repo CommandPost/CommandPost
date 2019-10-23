@@ -4,15 +4,15 @@
 
 local require = require
 
-local log                   = require("hs.logger").new("colorBoard")
+local log                   = require "hs.logger".new "colorBoard"
 
-local eventtap              = require("hs.eventtap")
-local timer                 = require("hs.timer")
+local eventtap              = require "hs.eventtap"
+local timer                 = require "hs.timer"
 
-local dialog                = require("cp.dialog")
-local fcp                   = require("cp.apple.finalcutpro")
-local i18n                  = require("cp.i18n")
-local tools                 = require("cp.tools")
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
 
 local doWhile               = timer.doWhile
 local format                = string.format
@@ -41,6 +41,26 @@ function mod.startShiftingPuck(puck, property, amount)
         local value = property()
         if value ~= nil then property(value + amount) end
     end, eventtap.keyRepeatInterval())
+end
+
+-- shiftPuck(puck, percentShift, angleShift) -> none
+-- Function
+-- Shifts a puck.
+--
+-- Parameters:
+--  * puck         - The puck to shift
+--  * property     - The property to shift (typically the `percent` or `angle` value for the puck)
+--  * amount       - The amount to shift the property.
+--
+-- Returns:
+--  * None
+local function shiftPuck(puck, property, amount)
+    if not puck:select():isShowing() then
+        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        return false
+    end
+    local value = property()
+    if value ~= nil then property(value + amount) end
 end
 
 --- plugins.finalcutpro.timeline.colorboard.stopShiftingPuck() -> none
@@ -122,7 +142,6 @@ function mod.nextAspect()
     colorBoard:nextAspect()
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.colorboard",
     group = "finalcutpro",
@@ -180,36 +199,62 @@ function plugin.init(deps)
                 :whenActivated(function() puckControl:select() end)
 
             fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Up")
-                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Up"}))
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Up"}) .. " (" .. i18n("keyboardShortcut") .. ")")
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, 1) end)
                 :whenReleased(function() mod.stopShiftingPuck() end)
 
             fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Down")
-                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Down"}))
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Down"}) .. " (" .. i18n("keyboardShortcut") .. ")")
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, -1) end)
                 :whenReleased(function() mod.stopShiftingPuck() end)
 
             if aspect.hasAngle then
                 fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Left")
-                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Left"}))
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Left"}) .. " (" .. i18n("keyboardShortcut") .. ")")
                     :groupedBy("colorboard")
                     :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, -1) end)
                     :whenReleased(function() mod.stopShiftingPuck() end)
 
                 fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Right")
-                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Right"}))
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Right"}) .. " (" .. i18n("keyboardShortcut") .. ")")
                     :groupedBy("colorboard")
                     :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, 1) end)
                     :whenReleased(function() mod.stopShiftingPuck() end)
             end
 
             fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Mouse")
-                :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = aspect.title}))
+                :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = aspect.title}) .. " (" .. i18n("keyboardShortcut") .. ")")
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startMousePuck(puckControl) end)
                 :whenReleased(function() mod.stopMousePuck() end)
+
+            --------------------------------------------------------------------------------
+            -- Non-Keyboard Actions (such as MIDI):
+            --------------------------------------------------------------------------------
+            fcpxCmds:add("cpGeneric" .. aspect.title .. "Puck" .. iWord .. "Up")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Up"}))
+                :groupedBy("colorboard")
+                :whenActivated(function() shiftPuck(puckControl, puckControl.percent, 1) end)
+
+            fcpxCmds:add("cpGeneric" .. aspect.title .. "Puck" .. iWord .. "Down")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Down"}))
+                :groupedBy("colorboard")
+                :whenActivated(function() shiftPuck(puckControl, puckControl.percent, -1) end)
+
+            if aspect.hasAngle then
+                fcpxCmds:add("cpGeneric" .. aspect.title .. "Puck" .. iWord .. "Left")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Left"}))
+                    :groupedBy("colorboard")
+                    :whenActivated(function() shiftPuck(puckControl, puckControl.angle, -1) end)
+
+                fcpxCmds:add("cpGeneric" .. aspect.title .. "Puck" .. iWord .. "Right")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Right"}))
+                    :groupedBy("colorboard")
+                    :whenActivated(function() shiftPuck(puckControl, puckControl.angle, 1) end)
+            end
+
         end
     end
 
@@ -236,6 +281,11 @@ function plugin.init(deps)
         for _,aspect in ipairs(colorBoardAspects) do
             fcpxCmds:add("cpResetColorBoard" .. aspect.title .. puck.title)
             :titled(format("%s %s %s %s", iReset, iColorBoard, aspect.i18n, puck.i18n))
+            :groupedBy("colorboard")
+            :whenActivated(function()
+                local puckControl = aspect.control[puck.id]()
+                puckControl:show():reset()
+            end)
         end
     end
 end

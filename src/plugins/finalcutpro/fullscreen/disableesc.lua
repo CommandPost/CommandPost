@@ -2,17 +2,16 @@
 ---
 --- Disables the ESC key when Final Cut Pro is in fullscreen mode.
 
-local require = require
+local require       = require
 
-local eventtap                          = require("hs.eventtap")
-local keycodes                          = require("hs.keycodes")
+local eventtap      = require "hs.eventtap"
+local keycodes      = require "hs.keycodes"
 
-local app                               = require("cp.app")
-local config                            = require("cp.config")
-local fcp                               = require("cp.apple.finalcutpro")
-local i18n                              = require("cp.i18n")
-local tools                             = require("cp.tools")
-
+local app           = require "cp.app"
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
+local tools         = require "cp.tools"
 
 local mod = {}
 
@@ -42,7 +41,6 @@ mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:
         end
     end
 end)
-
 
 local plugin = {
     id              = "finalcutpro.fullscreen.disableesc",

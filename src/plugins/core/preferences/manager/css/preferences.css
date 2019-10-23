@@ -59,7 +59,11 @@ select {
 	border-radius: 3px;
 	cursor: default;
 	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
 }
+
 .button:active {
 	color: white;
 	border-color:#1262fb;

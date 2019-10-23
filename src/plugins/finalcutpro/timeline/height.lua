@@ -2,14 +2,16 @@
 ---
 --- Shortcut for changing Final Cut Pro's Timeline Height
 
-local require = require
+local require           = require
 
-local timer                             = require("hs.timer")
-local eventtap                          = require("hs.eventtap")
+local timer             = require "hs.timer"
+local eventtap          = require "hs.eventtap"
 
-local fcp                               = require("cp.apple.finalcutpro")
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
-local doUntil                           = timer.doUntil
+local doUntil           = timer.doUntil
 
 local mod = {}
 
@@ -92,7 +94,6 @@ function mod.changeTimelineClipHeight(direction)
 
 end
 
-
 local plugin = {
     id = "finalcutpro.timeline.height",
     group = "finalcutpro",
@@ -103,7 +104,7 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Commands:
+    -- Keyboard Actions:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
@@ -111,12 +112,42 @@ function plugin.init(deps)
         :whenActivated(function() mod.changeTimelineClipHeight("up") end)
         :whenReleased(function() changeTimelineClipHeightRelease() end)
         :activatedBy():ctrl():option():cmd("=")
+        :titled(i18n("timelineClipHeight") .. " " .. i18n("increase") .. " (" .. i18n("keyboardShortcut") .. ")")
+        :subtitled(i18n("holdDownShortcutKeyToRepeatAction"))
 
     fcpxCmds
         :add("cpChangeTimelineClipHeightDown")
         :whenActivated(function() mod.changeTimelineClipHeight("down") end)
         :whenReleased(function() changeTimelineClipHeightRelease() end)
         :activatedBy():ctrl():option():cmd("-")
+        :titled(i18n("timelineClipHeight") .. " " .. i18n("decrease") .. " (" .. i18n("keyboardShortcut") .. ")")
+        :subtitled(i18n("holdDownShortcutKeyToRepeatAction"))
+
+    --------------------------------------------------------------------------------
+    -- Non-Keyboard Actions (such as MIDI):
+    --------------------------------------------------------------------------------
+    local closeAppearancePopup = deferred.new(1):action(function()
+        fcp:timeline():toolbar():appearance():hide()
+    end)
+    fcpxCmds
+        :add("timelineClipHeightIncrease")
+        :whenActivated(function()
+            local appearance = fcp:timeline():toolbar():appearance()
+            appearance:show()
+            appearance:clipHeight():increment()
+            closeAppearancePopup()
+        end)
+        :titled(i18n("timelineClipHeight") .. " " .. i18n("increase"))
+
+    fcpxCmds
+        :add("timelineClipHeightDecrease")
+        :whenActivated(function()
+            local appearance = fcp:timeline():toolbar():appearance()
+            appearance:show()
+            appearance:clipHeight():decrement()
+            closeAppearancePopup()
+        end)
+        :titled(i18n("timelineClipHeight") .. " " .. i18n("decrease"))
 
     return mod
 end

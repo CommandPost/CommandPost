@@ -860,7 +860,7 @@ function mod.init(deps, env)
         priority        = 2033,
         id              = panelID,
         label           = i18n("midi"),
-        image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
+        image           = image.imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
         tooltip         = i18n("midi"),
         height          = 750,
         closeFn         = mod._destroyMIDIWatchers,

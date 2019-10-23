@@ -1,13 +1,13 @@
 --- === cp.apple.finalcutpro.app ===
 ---
---- The `cp.app` for Final Cut Pro.
+--- The [cp.app](cp.app.md) for Final Cut Pro. Will automatically determine
+--- if only the trial version of FCPX is installed and use that instead.
 
 local require = require
 
 local application = require("hs.application")
 
 local app = require("cp.app")
-
 
 local fcpID = "com.apple.FinalCut"
 local trialID = "com.apple.FinalCutTrial"

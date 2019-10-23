@@ -19,12 +19,13 @@
 --- myButton(false) == false	-- now false
 --- ```
 
-local require = require
-local Element                       = require("cp.ui.Element")
-local go                            = require("cp.rx.go")
+local require       = require
 
-local If, Do                        = go.If, go.Do
+local Element       = require "cp.ui.Element"
+local go            = require "cp.rx.go"
 
+local If            = go.If
+local Do            = go.Do
 
 local RadioButton = Element:subclass("cp.ui.RadioButton")
 

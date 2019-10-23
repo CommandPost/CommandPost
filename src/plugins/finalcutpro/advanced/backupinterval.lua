@@ -2,11 +2,10 @@
 ---
 --- Change Final Cut Pro's Backup Interval.
 
-local require = require
+local require       = require
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local plugin = {
     id              = "finalcutpro.advanced.backupinterval",

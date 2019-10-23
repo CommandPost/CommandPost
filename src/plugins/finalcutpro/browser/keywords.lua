@@ -2,14 +2,19 @@
 ---
 --- Browser Keywords Presets.
 
-local require = require
+local require               = require
 
-local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
-local config                            = require("cp.config")
-local tools                             = require("cp.tools")
-local i18n                              = require("cp.i18n")
+local pasteboard            = require "hs.pasteboard"
 
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
+
+local displayErrorMessage   = dialog.displayErrorMessage
+local displayNotification   = dialog.displayNotification
+local playErrorSound        = tools.playErrorSound
 
 local mod = {}
 
@@ -47,9 +52,9 @@ function mod.save(preset)
         --------------------------------------------------------------------------------
         -- Display Notification:
         --------------------------------------------------------------------------------
-        dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
+        displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
     else
-        dialog.displayErrorMessage("There doesn't appear to be any Keyword Shortcuts allocated in the Keyword Editor.")
+        displayErrorMessage(i18n("noKeyboardShortcutsInKeywordEditor"))
     end
 
 end
@@ -64,7 +69,6 @@ end
 --- Returns:
 ---  * None
 function mod.restore(preset)
-
     --------------------------------------------------------------------------------
     -- Get Values from Settings:
     --------------------------------------------------------------------------------
@@ -104,10 +108,8 @@ function mod.restore(preset)
     --------------------------------------------------------------------------------
     -- Display Notification:
     --------------------------------------------------------------------------------
-    dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
-
+    displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
 end
-
 
 local plugin = {
     id              = "finalcutpro.browser.keywords",
@@ -118,17 +120,46 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    local fcpxCmds = deps.fcpxCmds
+
+    --------------------------------------------------------------------------------
+    -- Save/Restore Keyword Presets:
+    --------------------------------------------------------------------------------
     for i=1, mod.NUMBER_OF_PRESETS do
-        deps.fcpxCmds
+        fcpxCmds
             :add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.restore(i) end)
 
-        deps.fcpxCmds
+        fcpxCmds
             :add("cpSaveKeywordPreset" .. tools.numberToWord(i))
             :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
             :whenActivated(function() mod.save(i) end)
     end
+
+    --------------------------------------------------------------------------------
+    -- Apply Keyword from Pasteboard:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("applyKeywordFromPasteboard")
+        :titled(i18n("applyKeywordFromPasteboard"))
+        :whenActivated(function()
+            local value = pasteboard.readString()
+            if value then
+                local keywordEditor = fcp:keywordEditor()
+                local wasShowing = keywordEditor:isShowing()
+                keywordEditor:show()
+                local keywords = keywordEditor:keyword() or {}
+                table.insert(keywords, value)
+                keywordEditor:keyword(keywords)
+                if not wasShowing then
+                    keywordEditor:hide()
+                end
+            else
+                playErrorSound()
+            end
+        end)
+
     return mod
 end
 

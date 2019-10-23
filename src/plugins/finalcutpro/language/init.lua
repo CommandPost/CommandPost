@@ -2,15 +2,15 @@
 ---
 --- Final Cut Pro Language Plugin.
 
-local require = require
+local require       = require
 
-local dialog        = require("cp.dialog")
-local fcp           = require("cp.apple.finalcutpro")
-local localeID      = require("cp.i18n.localeID")
-local i18n          = require("cp.i18n")
+local dialog                    = require "cp.dialog"
+local fcp                       = require "cp.apple.finalcutpro"
+local localeID                  = require "cp.i18n.localeID"
+local i18n                      = require "cp.i18n"
 
-local insert        = table.insert
-
+local insert                    = table.insert
+local displayErrorMessage       = dialog.displayErrorMessage
 
 local mod = {}
 
@@ -30,7 +30,7 @@ function mod.change(locale)
     end
 
     if locale == nil then
-        dialog.displayErrorMessage("failedToChangeLanguage")
+        displayErrorMessage("failedToChangeLanguage")
         return false
     end
 
@@ -48,7 +48,7 @@ function mod.change(locale)
     if currentLocale ~= locale then
         local result = fcp.app.currentLocale(locale)
         if result ~= locale then
-            dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
+            displayErrorMessage(i18n("failedToChangeLanguage"))
             return false
         end
     end
@@ -74,7 +74,6 @@ local function getFinalCutProLanguagesMenu()
     table.sort(result, function(a, b) return a.title < b.title end)
     return result
 end
-
 
 local plugin = {
     id = "finalcutpro.language",

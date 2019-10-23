@@ -7,13 +7,15 @@ local require           = require
 local log               = require "hs.logger".new "menu"
 
 local fs                = require "hs.fs"
+local plist             = require "hs.plist"
+
+local class             = require "middleclass"
+local lazy              = require "cp.lazy"
 
 local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
 local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
-local plist             = require "cp.plist"
-local prop              = require "cp.prop"
 local rx                = require "cp.rx"
 local tools             = require "cp.tools"
 
@@ -29,8 +31,7 @@ local If                = go.If
 local Throw             = go.Throw
 local Last              = go.Last
 
-local menu = {}
-menu.mt = {}
+local menu = class("cp.app.menu"):include(lazy)
 
 -- BASE_LOCALE -> string
 -- Constant
@@ -45,7 +46,7 @@ local STRINGS_EXT = "strings"
 --- cp.app.menu.ROLE -> string
 --- Constant
 --- The menu role
-menu.ROLE = "AXMenuBar"
+menu.static.ROLE = "AXMenuBar"
 
 -- NIB_EXT -> string
 -- Constant
@@ -55,7 +56,7 @@ local NIB_EXT = "nib"
 --- cp.app.menu.NIB_FILE -> string
 --- Constant
 --- Main NIB File.
-menu.NIB_FILE = "NSMainNibFile"
+menu.static.NIB_FILE = "NSMainNibFile"
 
 -- STORYBOARD_EXT -> string
 -- Constant
@@ -65,7 +66,7 @@ local STORYBOARD_EXT = "storyboardc"
 --- cp.app.menu.STORYBOARD_NAME -> string
 --- Constant
 --- Main Storyboard name.
-menu.STORYBOARD_FILE = "NSMainStoryboardFile"
+menu.static.STORYBOARD_FILE = "NSMainStoryboardFile"
 
 local function isLocalizableString(value)
     if type(value) == "table" then
@@ -254,7 +255,7 @@ end
 local function readStringsFile(app, locale, stringsName)
     local path = findMenuStringsPath(app, locale, stringsName)
     if path then
-        return plist.fileToTable(path)
+        return plist.read(path)
     end
 end
 
@@ -321,7 +322,7 @@ local function loadMenuTitlesFromStoryboard(app, locale, menuCache)
     end
 
     -- next, read the Storyboard's `Info.plist` to discover the menu's .nib file name.
-    local info = plist.fileToTable(storyboardPath .. "/Info.plist")
+    local info = plist.read(storyboardPath .. "/Info.plist")
     if not info then
         log.ef("Unable to find the `Info.plist` for the Storyboard at %q", storyboardPath)
         return false
@@ -373,11 +374,11 @@ local function loadMenuTitlesLocale(app, locale, menuCache)
     return loadMenuTitlesFromNib(app, locale, menuCache) or loadMenuTitlesFromStoryboard(app, locale, menuCache)
 end
 
-function menu.matches(element)
+function menu.static.matches(element)
     return element and element:attributeValue("AXRole") == menu.ROLE and #element > 0
 end
 
---- cp.app.menu.new(app) -> menu
+--- cp.app.menu(app) -> menu
 --- Constructor
 --- Constructs a new menu for the specified App.
 ---
@@ -386,38 +387,33 @@ end
 ---
 --- Returns:
 ---  * a new menu instance
-function menu.new(app)
-    local o = prop.extend({
-        _app = app,
-        _menuTitles = {},
-        _itemFinders = {}
-    }, menu.mt)
+function menu:initialize(app)
+    self._app = app
+    self._menuTitles = {}
+    self._itemFinders = {}
 
-    local UI = app.UI:mutate(function(original, self)
+    -- load default locale for the menu when the local changes.
+    app.currentLocale:watch(function(newLocale)
+        self:getMenuTitles({newLocale})
+    end)
+end
+
+--- cp.app.menu.UI <cp.prop:hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the `axuielement` representing the menu.
+function menu.lazy.prop:UI()
+    return self._app.UI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             return axutils.childMatching(original(), menu.matches)
         end, menu.matches)
     end)
+end
 
-    local showing = UI:ISNOT(nil)
-
-    prop.bind(o) {
-        --- cp.app.menu.UI <cp.prop:hs._asm.axuielement; read-only; live>
-        --- Field
-        --- Returns the `axuielement` representing the menu.
-        UI = UI,
-        --- cp.app.menu.showing <cp.prop: boolean; read-only; live>
-        --- Field
-        --- Tells you if the app's Menu Bar is visible.
-        showing = showing,
-    }
-
-    -- load default locale for the menu when the local changes.
-    app.currentLocale:watch(function(newLocale)
-        o:getMenuTitles({newLocale})
-    end)
-
-    return o
+--- cp.app.menu.showing <cp.prop: boolean; read-only; live>
+--- Field
+--- Tells you if the app's Menu Bar is visible.
+function menu.lazy.prop:showing()
+    return self:UI():ISNOT(nil)
 end
 
 --- cp.app.menu:app() -> cp.app
@@ -429,7 +425,7 @@ end
 ---
 --- Returns:
 ---  * The `cp.app`.
-function menu.mt:app()
+function menu:app()
     return self._app
 end
 
@@ -446,7 +442,7 @@ end
 ---
 --- Notes:
 --- * This menu may get added to over time if additional locales are loaded - previously loaded locales are not removed from the cache.
-function menu.mt:getMenuTitles(locales)
+function menu:getMenuTitles(locales)
     local app = self:app()
     if type(locales) ~= "table" then
         local locale = locales or app:currentLocale()
@@ -485,7 +481,7 @@ end
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Examples:
 ---   * `previewApp:menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()`
-function menu.mt:doSelectMenu(path, options)
+function menu:doSelectMenu(path, options)
     options = options or {}
     local findMenu = self:doFindMenuUI(path, options)
 
@@ -528,7 +524,7 @@ end
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Example usage:
 ---   * `require("cp.app").forBundleID("com.apple.FinalCut"):menu():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
-function menu.mt:selectMenu(path, options)
+function menu:selectMenu(path, options)
     options = options or {}
 
     local menuItemUI, menuPath = self:findMenuUI(path, options)
@@ -576,7 +572,7 @@ end
 --- Notes:
 --- * The `options` may include:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
-function menu.mt:isChecked(path, options)
+function menu:isChecked(path, options)
     local menuItemUI = self:findMenuUI(path, options)
     return menuItemUI and _isMenuChecked(menuItemUI)
 end
@@ -595,7 +591,7 @@ end
 --- Notes:
 --- * The `options` may include:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
-function menu.mt:isEnabled(path, options)
+function menu:isEnabled(path, options)
     local menuItemUI = self:findMenuUI(path, options)
     return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
@@ -610,7 +606,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute.
-function menu.mt:doIsEnabled(path, options)
+function menu:doIsEnabled(path, options)
     return Do(Last(self:doFindMenuUI(path, options)))
     :Then(function(item)
         return item:attributeValue("AXEnabled") == true
@@ -639,7 +635,7 @@ end
 ---   * locale        - The `cp.i18n.localeID` that the menu titles are in.
 ---   * childItem     - The `AXMenuItem` that was found, or `nil` if not found.
 
-function menu.mt:addMenuFinder(finder)
+function menu:addMenuFinder(finder)
     self._itemFinders[#self._itemFinders + 1] = finder
 end
 
@@ -689,7 +685,7 @@ end
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
 --- * Examples:
 ---   * `myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)`
-function menu.mt:doFindMenuUI(path, options)
+function menu:doFindMenuUI(path, options)
     if type(path) ~= "table" or #path == 0 then
         return Observable.throw("Please provide a table array of menu steps.")
     end
@@ -710,7 +706,6 @@ function menu.mt:doFindMenuUI(path, options)
         return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
                 local menuItemUI
-                local currentMenuTitles = menuTitles
                 if type(step) == "number" then
                     menuItemUI = menuUI[step]
                     menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
@@ -826,7 +821,7 @@ end
 --- * The `options` can contain:
 ---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 ---   * plain    - Whether or not to disable the pattern matching feature. Defaults to `false`.
-function menu.mt:findMenuUI(path, options)
+function menu:findMenuUI(path, options)
     assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
     options = options or {}
 
@@ -971,7 +966,7 @@ end
 --- * The `visitFn` will be called on each menu item with the following parameters:
 ---   * `function(path, menuItem)`
 --- * The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be `{ "Edit" }`.
-function menu.mt:visitMenuItems(visitFn, options)
+function menu:visitMenuItems(visitFn, options)
     local menuUI
     local path = options and options.startPath or {}
     if #path > 0 then
@@ -997,7 +992,7 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` for the menu items.
-function menu.mt:_visitMenuItems(visitFn, path, menuUI, options)
+function menu:_visitMenuItems(visitFn, path, menuUI, options)
     local role = menuUI:attributeValue("AXRole")
     local children = menuUI:attributeValue("AXChildren")
     if role == "AXMenuBar" or role == "AXMenu" then
@@ -1026,7 +1021,12 @@ function menu.mt:_visitMenuItems(visitFn, path, menuUI, options)
     end
 end
 
-function menu.mt:__tostring()
+-- returns the menu when the menu is called as a function or method.
+function menu:__call()
+    return self
+end
+
+function menu:__tostring()
     return format("cp.app.menu: %s", self:app():bundleID())
 end
 

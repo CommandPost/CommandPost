@@ -4,13 +4,12 @@
 
 local require   = require
 
-local log       = require("hs.logger").new("appearanceandfiltering")
+local log       = require "hs.logger".new "appearanceandfiltering"
 
-local fcp       = require("cp.apple.finalcutpro")
-local i18n      = require("cp.i18n")
-local just      = require("cp.just")
-local tools	    = require("cp.tools")
-
+local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
+local just      = require "cp.just"
+local tools	    = require "cp.tools"
 
 local plugin = {
     id              = "finalcutpro.browser.appearanceandfiltering",

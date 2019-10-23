@@ -7,7 +7,7 @@
 --- For example:
 ---
 --- ```lua
---- local previewPrefs = require("cp.app.prefs").new("com.apple.Preview")
+--- local previewPrefs = require("cp.app.prefs") "com.apple.Preview"
 --- previewPrefs.MyCustomPreference = "Hello world"
 --- print(previewPrefs.MyCustomPreference) --> "Hello world"
 ---
@@ -16,14 +16,17 @@
 --- end
 --- ```
 
+-- local log           = require "hs.logger" .new "prefs"
+
 local require       = require
 
 local cfprefs       = require "hs._asm.cfpreferences"
 local pathwatcher   = require "hs.pathwatcher"
 local prop          = require "cp.prop"
 
-local mod = {}
-mod.mt = {}
+local class         = require "middleclass"
+
+local mod = class("cp.app.prefs")
 
 local METADATA = {}
 
@@ -88,7 +91,7 @@ local function prefsProps(prefs, create)
     return cache
 end
 
---- cp.app.prefs.new(bundleID) -> cp.app.prefs
+--- cp.app.prefs(bundleID) -> cp.app.prefs
 --- Constructor
 --- Creates a new `cp.app.prefs` instance, pointing at the specified `bundleID`.
 ---
@@ -97,17 +100,10 @@ end
 ---
 --- Returns:
 ---  * A new `cp.app.prefs` with read/write access to the application's preferences.
-function mod.new(bundleID)
-    local o = setmetatable(
-        {
-            [METADATA] = {
-                bundleID = bundleID
-            }
-        },
-        mod.mt
-    )
-
-    return o
+function mod:initialize(bundleID)
+    rawset(self, METADATA, {
+        bundleID = bundleID
+    })
 end
 
 --- cp.app.prefs.is(thing) -> boolean
@@ -119,8 +115,8 @@ end
 ---
 --- Returns:
 ---  * `true` if if's a `prefs`, otherwise `false`.
-function mod.is(thing)
-    return type(thing) == "table" and getmetatable(thing) == mod.mt
+function mod.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(mod)
 end
 
 --- cp.app.prefs.bundleID(prefs) -> string
@@ -132,7 +128,7 @@ end
 ---
 --- Returns:
 ---  * The Bundle ID string, or `nil` if it's not a `cp.app.prefs`.
-function mod.bundleID(prefs)
+function mod.static.bundleID(prefs)
     if mod.is(prefs) then
         return metadata(prefs).bundleID
     end
@@ -175,7 +171,7 @@ end
 ---
 --- Returns:
 ---  * The current value, or `defaultValue` if not set.
-function mod.get(prefs, key, defaultValue)
+function mod.static.get(prefs, key, defaultValue)
     local data = metadata(prefs)
     local bundleID = data and data.bundleID
     if bundleID and type(key) == "string" then
@@ -199,7 +195,7 @@ end
 ---
 --- Returns:
 ---  * Nothing.
-function mod.set(prefs, key, value)
+function mod.static.set(prefs, key, value)
     local data = metadata(prefs)
     local bundleID = data and data.bundleID
     if bundleID and key then
@@ -228,7 +224,7 @@ end
 ---
 --- Returns:
 ---  * The `cp.prop` for the key.
-function mod.prop(prefs, key, defaultValue, deepTable)
+function mod.static.prop(prefs, key, defaultValue, deepTable)
     local props = prefsProps(prefs, true)
     local propValue = props[key]
 
@@ -246,7 +242,7 @@ function mod.prop(prefs, key, defaultValue, deepTable)
     return propValue
 end
 
-function mod.mt:__index(key)
+function mod:__index(key)
     if key == "prop" then
         --- cp.app.prefs:prop(key, defaultValue) -> cp.prop
         --- Method
@@ -289,11 +285,11 @@ function mod.mt:__index(key)
     return mod.get(self, key)
 end
 
-function mod.mt:__newindex(key, value)
+function mod:__newindex(key, value)
     mod.set(self, key, value)
 end
 
-function mod.mt:__pairs()
+function mod:__pairs()
     local keys
 
     local data = metadata(self)
@@ -333,8 +329,9 @@ function mod.mt:__pairs()
     return stateless_iter, self, nil
 end
 
-function mod.mt:__tostring()
-    return "cp.app.prefs: " .. metadata(self).bundleID
+function mod:__tostring()
+    local data = metadata(self)
+    return "cp.app.prefs: " .. (data and data.bundleID or "<nil>")
 end
 
 return mod

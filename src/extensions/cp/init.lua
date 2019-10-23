@@ -62,9 +62,9 @@ function mod.init()
     hs._consoleHistory = require("cp.console.history")
 
     --------------------------------------------------------------------------------
-    -- Disable Spotlight for Name Searches:
+    -- Enable Spotlight for Name Searches (used in Search Console):
     --------------------------------------------------------------------------------
-    application.enableSpotlightForNameSearches(false)
+    application.enableSpotlightForNameSearches(true)
 
     --------------------------------------------------------------------------------
     -- Disable Window Animations:
@@ -297,11 +297,6 @@ function mod.init()
     -- Setup Automatic Script Reloading:
     --------------------------------------------------------------------------------
     config.automaticScriptReloading:update()
-
-    --------------------------------------------------------------------------------
-    -- Global Variable to confirm CommandPost has successfully loaded:
-    --------------------------------------------------------------------------------
-    hs._cpLoaded = true
 
     --------------------------------------------------------------------------------
     -- Load Plugins:

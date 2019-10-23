@@ -69,12 +69,15 @@ function mod.onChoices(choices)
             if not group and cmd:getGroup() then
                 group = i18n(cmd:getGroup().."_group")
             end
-            group = group or ""
             local action = {
                 id      = cmd:id(),
             }
+            local subtext
+            if group then
+                subtext = i18n("category") .. ": " .. group
+            end
             choices:add(title)
-                :subText(i18n("commandChoiceSubText", {group = group}))
+                :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
         end
@@ -146,7 +149,6 @@ end
 function mod.reset()
     mod._handler:reset()
 end
-
 
 local plugin = {
     id              = "finalcutpro.commands.actions",

@@ -255,8 +255,8 @@ function mod.init(deps, env)
         )
         :addParagraph(10, html.br())
         :addParagraph(11, html.br())
-        :addHeading(12, "Tangent Favourites")
-        :addParagraph(13, "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Tangent Mapper.", false)
+        :addHeading(12, i18n("tangent") .. " " .. i18n("favourites"))
+        :addParagraph(13, i18n("tangentFavouriteDescription"), false)
         :addContent(14, generateContent, false)
 
         --------------------------------------------------------------------------------
@@ -267,7 +267,6 @@ function mod.init(deps, env)
     return mod
 
 end
-
 
 local plugin = {
     id              = "core.tangent.prefs",

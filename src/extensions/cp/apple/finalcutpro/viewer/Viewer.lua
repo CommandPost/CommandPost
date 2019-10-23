@@ -307,7 +307,7 @@ function Viewer.lazy.method:viewMenu()
     return self.infoBar.viewMenu
 end
 
---- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
+--- cp.apple.finalcutpro.main.Viewer.isPlaying <cp.prop: boolean>
 --- Field
 --- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
 --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.

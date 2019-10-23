@@ -2,11 +2,10 @@
 ---
 --- Opens Final Cut Pro via Global Shortcut & Menubar.
 
-local require = require
+local require       = require
 
-local fcp           = require("cp.apple.finalcutpro")
-local i18n          = require("cp.i18n")
-
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local mod = {}
 
@@ -36,7 +35,6 @@ function mod.commandEditor()
     fcp:launch()
     fcp:commandEditor():show()
 end
-
 
 local plugin = {
     id = "finalcutpro.open",

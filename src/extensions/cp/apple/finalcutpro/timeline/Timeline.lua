@@ -4,25 +4,32 @@
 
 local require = require
 
---local log								= require("hs.logger").new("timeline")
+--local log								= require "hs.logger".new "timeline"
 
-local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local go                                = require("cp.rx.go")
-local prop								= require("cp.prop")
+local axutils							= require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local go                                = require "cp.rx.go"
+local prop								= require "cp.prop"
+local tools                             = require "cp.tools"
 
-local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Contents					        = require("cp.apple.finalcutpro.timeline.Contents")
-local Toolbar					        = require("cp.apple.finalcutpro.timeline.Toolbar")
-local Index                             = require("cp.apple.finalcutpro.timeline.Index")
+local Contents					        = require "cp.apple.finalcutpro.timeline.Contents"
+local EffectsBrowser					= require "cp.apple.finalcutpro.main.EffectsBrowser"
+local Index                             = require "cp.apple.finalcutpro.timeline.Index"
+local PrimaryWindow						= require "cp.apple.finalcutpro.main.PrimaryWindow"
+local SecondaryWindow					= require "cp.apple.finalcutpro.main.SecondaryWindow"
+local SpeedPopover                      = require "cp.apple.finalcutpro.timeline.SpeedPopover"
+local Toolbar					        = require "cp.apple.finalcutpro.timeline.Toolbar"
 
-local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 local cache                             = axutils.cache
-local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
+local childMatching                     = axutils.childMatching
 local childrenWithRole                  = axutils.childrenWithRole
+local childWithRole                     = axutils.childWithRole
 
+local Do                                = go.Do
+local If                                = go.If
+local WaitUntil                         = go.WaitUntil
+
+local playErrorSound                    = tools.playErrorSound
 
 local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 
@@ -141,6 +148,7 @@ function Timeline.lazy.prop:isShowing()
         return ui ~= nil and #ui > 0
     end)
 end
+
 --- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
@@ -310,7 +318,6 @@ function Timeline:showOnSecondary()
     return self
 end
 
-
 --- cp.apple.finalcutpro.timeline.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the secondary window.
@@ -400,9 +407,9 @@ end
 
 -----------------------------------------------------------------------
 --
--- CONTENT:
--- The Content is the main body of the timeline, containing the
--- Timeline Index, the Content, and the Effects/Transitions panels.
+-- CONTENTS:
+-- The Contents is the main body of the timeline, containing the
+-- Timeline Index, the Contents, and the Effects/Transitions panels.
 --
 -----------------------------------------------------------------------
 
@@ -422,8 +429,8 @@ end
 
 -----------------------------------------------------------------------
 --
--- EFFECT BROWSER:
--- The (sometimes hidden) Effect Browser.
+-- EFFECTS BROWSER:
+-- The (sometimes hidden) Effects Browser.
 --
 -----------------------------------------------------------------------
 
@@ -482,7 +489,7 @@ end
 
 -----------------------------------------------------------------------
 --
--- PLAYHEAD:
+-- SKIMMING PLAYHEAD:
 -- The Playhead that tracks under the mouse while skimming.
 --
 -----------------------------------------------------------------------
@@ -533,6 +540,17 @@ function Timeline:title()
     return self:toolbar():title()
 end
 
+--- cp.apple.finalcutpro.timeline.Timeline.rangeSelected <cp.prop: boolean; read-only>
+--- Field
+--- Checks if a range is selected in the timeline.
+function Timeline.lazy.prop:rangeSelected()
+    return self:toolbar():duration().UI:mutate(function(original)
+        local ui = original()
+        local value = ui and ui:attributeValue("AXValue")
+        return value and (value:find("/") ~= nil or value:find("／") ~= nil)
+    end)
+end
+
 -----------------------------------------------------------------------
 --
 -- INDEX:
@@ -551,6 +569,72 @@ end
 ---  * `Index` object.
 function Timeline.lazy.method:index()
     return Index(self)
+end
+
+-----------------------------------------------------------------------
+--
+-- TIMELINE NAVIGATION:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.timeline.Timeline:openProject(title) -> none
+--- Method
+--- Opens a project from the timeline navigation popups.
+---
+--- Parameters:
+---  * title - The title of the project you want to open.
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * The title supports patterns, so you can do things like:
+---    `require("cp.apple.finalcutpro"):timeline():openProject("Audio.*")`
+function Timeline:openProject(title)
+    local backButton = self:toolbar():back():UI()
+    local forwardButton = self:toolbar():forward():UI()
+    if backButton and backButton:attributeValue("AXEnabled") then
+        backButton:performAction("AXShowMenu")
+        local menu = childWithRole(backButton, "AXMenu")
+        if menu then
+            local children = menu:attributeValue("AXChildren")
+            for _, item in pairs(children) do
+                if string.match(item:attributeValue("AXTitle"), title) then
+                    item:performAction("AXPress")
+                    return
+                end
+            end
+        end
+        menu:performAction("AXCancel")
+    end
+    if forwardButton and forwardButton:attributeValue("AXEnabled") then
+        forwardButton:performAction("AXShowMenu")
+        local menu = childWithRole(forwardButton, "AXMenu")
+        if menu then
+            local children = menu:attributeValue("AXChildren")
+            for _, item in pairs(children) do
+                if string.match(item:attributeValue("AXTitle"), title) then
+                    item:performAction("AXPress")
+                    return
+                end
+            end
+        end
+        menu:performAction("AXCancel")
+    end
+    playErrorSound()
+end
+
+-----------------------------------------------------------------------
+--
+-- SPEED POPOVER:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.timeline.Timeline.speedPopover <cp.apple.finalcutpro.timeline.SpeedPopover>
+--- Field
+--- Provides the [SpeedPopover](cp.apple.finalcutpro.timeline.SpeedPopover.md).
+function Timeline.lazy.value:speedPopover()
+    return SpeedPopover(self)
 end
 
 return Timeline

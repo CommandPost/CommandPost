@@ -48,7 +48,7 @@ end
 --- Parameters:
 ---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
 ---  * `timeout`	- (optional) the number of seconds after which we will give up. Defaults to 1 second.
----  * `frequency`	- (optional) the amount of time between checks. Defaults to 1 millisecond.
+---  * `frequency`	- (optional) the amount of time in seconds between checks. Defaults to 1 millisecond.
 ---
 --- Returns:
 ---  * The last return value of the action function.
