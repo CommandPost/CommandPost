@@ -7,6 +7,7 @@ local require           = require
 local log               = require "hs.logger".new "menu"
 
 local fs                = require "hs.fs"
+local plist             = require "hs.plist"
 
 local class             = require "middleclass"
 local lazy              = require "cp.lazy"
@@ -15,7 +16,6 @@ local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
 local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
-local plist             = require "cp.plist"
 local rx                = require "cp.rx"
 local tools             = require "cp.tools"
 
@@ -255,7 +255,7 @@ end
 local function readStringsFile(app, locale, stringsName)
     local path = findMenuStringsPath(app, locale, stringsName)
     if path then
-        return plist.fileToTable(path)
+        return plist.read(path)
     end
 end
 
@@ -322,7 +322,7 @@ local function loadMenuTitlesFromStoryboard(app, locale, menuCache)
     end
 
     -- next, read the Storyboard's `Info.plist` to discover the menu's .nib file name.
-    local info = plist.fileToTable(storyboardPath .. "/Info.plist")
+    local info = plist.read(storyboardPath .. "/Info.plist")
     if not info then
         log.ef("Unable to find the `Info.plist` for the Storyboard at %q", storyboardPath)
         return false
