@@ -12,21 +12,24 @@ local go                                = require "cp.rx.go"
 local prop								= require "cp.prop"
 local tools                             = require "cp.tools"
 
+local Contents					        = require "cp.apple.finalcutpro.timeline.Contents"
 local EffectsBrowser					= require "cp.apple.finalcutpro.main.EffectsBrowser"
+local Index                             = require "cp.apple.finalcutpro.timeline.Index"
 local PrimaryWindow						= require "cp.apple.finalcutpro.main.PrimaryWindow"
 local SecondaryWindow					= require "cp.apple.finalcutpro.main.SecondaryWindow"
-local Contents					        = require "cp.apple.finalcutpro.timeline.Contents"
+local SpeedPopover                      = require "cp.apple.finalcutpro.timeline.SpeedPopover"
 local Toolbar					        = require "cp.apple.finalcutpro.timeline.Toolbar"
-local Index                             = require "cp.apple.finalcutpro.timeline.Index"
 
 local cache                             = axutils.cache
 local childMatching                     = axutils.childMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local childWithRole                     = axutils.childWithRole
+
 local Do                                = go.Do
 local If                                = go.If
-local playErrorSound                    = tools.playErrorSound
 local WaitUntil                         = go.WaitUntil
+
+local playErrorSound                    = tools.playErrorSound
 
 local Timeline = Element:subclass("cp.apple.finalcutpro.timeline.Timeline")
 
@@ -619,6 +622,19 @@ function Timeline:openProject(title)
         menu:performAction("AXCancel")
     end
     playErrorSound()
+end
+
+-----------------------------------------------------------------------
+--
+-- SPEED POPOVER:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.timeline.Timeline.speedPopover <cp.apple.finalcutpro.timeline.SpeedPopover>
+--- Field
+--- Provides the [SpeedPopover](cp.apple.finalcutpro.timeline.SpeedPopover.md).
+function Timeline.lazy.value:speedPopover()
+    return SpeedPopover(self)
 end
 
 return Timeline
