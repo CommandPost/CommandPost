@@ -79,7 +79,8 @@ function mod.show()
         --------------------------------------------------------------------------------
         local iconPath = config.basePath .. "/plugins/core/console/images/"
         local toolbarIcons = {
-            global_applications = { path = iconPath .. "apps.png",          priority = 1},
+            global_applications = { path = iconPath .. "apps.png", priority = 1},
+            global_menuactions = { path = iconPath .. "menu.png", priority = 2},
         }
         mod.activator:toolbarIcons(toolbarIcons)
 
