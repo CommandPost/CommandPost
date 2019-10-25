@@ -24,11 +24,9 @@ local moses             = require "moses"
 local extend            = moses.extend
 
 local delayed           = timer.delayed
-local escapeXML         = text.escapeXML
 local find              = string.find
 local insert            = table.insert
 local len               = string.len
-local unescapeXML       = text.unescapeXML
 
 local mod = {}
 mod.mt = {}
@@ -144,7 +142,7 @@ function mod.mt:find(key, context)
         end
     end
 
-    return unescapeXML(values[escapeXML(key)])
+    return values[key]
 end
 
 --- cp.strings.source.plist:findKeys(pattern[, context]) -> table of strings
@@ -168,11 +166,10 @@ function mod.mt:findKeys(pattern, context)
 
     local keys = {}
     for k,v in pairs(values) do
-        v = unescapeXML(v)
         -- check if the pattern matches the beginning of the key value
         local s, e = find(v, pattern)
         if s == 1 and e == len(v) then
-        insert(keys, unescapeXML(k))
+        insert(keys, k)
         end
     end
     return keys

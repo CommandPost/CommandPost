@@ -610,7 +610,7 @@ local function midiPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" then
+                            if handlerTable[2] ~= "widgets" and v ~= "global_menuactions" then
                                 table.insert(allowedHandlers, v)
                             end
                         end

@@ -162,7 +162,7 @@ local function touchBarPanelCallback(id, params)
                     local allowedHandlers = {}
                     for _,v in pairs(handlerIds) do
                         local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                        if handlerTable[1] == groupID or handlerTable[1] == "global" and v ~= "global_menuactions" then
                             table.insert(allowedHandlers, v)
                         end
                     end
