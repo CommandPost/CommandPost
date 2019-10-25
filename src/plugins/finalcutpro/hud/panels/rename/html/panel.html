@@ -1,0 +1,98 @@
+<style>
+	th {
+		font-weight: normal;
+		text-align:left !important;
+	}
+	.rename {
+		float: left;
+		-webkit-appearance: none;
+		-webkit-box-shadow: none;
+		-webkit-rtl-ordering: logical;
+		-webkit-user-select: text;
+		color: #959595;
+		background-color:#161616;
+		border-style: solid;
+		border-color: #0a0a0a;
+		border-width: 2px;
+		border-radius: 6px;
+		text-align: center;
+		font-size: 13px;
+		height: 20px;
+		margin-top: 5px;
+		margin-bottom: 5px;
+		width: 99%;
+	}
+</style>
+<script>
+	function sendMessage(action) {
+		try {
+			var result = {
+				id: "renameHandler",
+				params: {
+					type: action,
+					prefix: document.getElementById("prefix").value,
+					suffix: document.getElementById("suffix").value,
+					find: document.getElementById("find").value,
+					replace: document.getElementById("replace").value,
+					keepOriginal: document.getElementById("keepOriginal").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("prefix") }}:</span>
+		</th>
+		<th>
+			<input id="prefix" class="rename" type="text" name="prefix" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("suffix") }}:</span>
+		</th>
+		<th>
+			<input id="suffix" class="rename" type="text" name="suffix" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("find") }}:</span>
+		</th>
+		<th>
+			<input id="find" class="rename" type="text" name="find" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("replace") }}:</span>
+		</th>
+		<th>
+			<input id="replace" class="rename" type="text" name="replace" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th style="width: 200px;">
+			<label><input type="checkbox" id="keepOriginal" value="true" onchange="sendMessage('update');">{{ i18n("keepOriginalValue") }}</label>
+		</th>
+	</tr>
+</table>
+<table style="padding-top: 5px;">
+	<tr>
+		<th>
+			<a id="rename" href="#" class="button" onclick="sendMessage('rename');">{{ i18n("batchRename") }}</a>
+		</th>
+		<th>
+			<a id="reset" href="#" class="button" onclick="sendMessage('reset');">{{ i18n("reset") }}</a>
+		</th>
+	</tr>
+</table>
