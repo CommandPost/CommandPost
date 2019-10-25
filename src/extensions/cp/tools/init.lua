@@ -1724,4 +1724,25 @@ function tools.contentsInsideBrackets(a)
     return b and b:sub(2, -2)
 end
 
+--- cp.tools.replace(text, old, new) -> string
+--- Function
+--- A find and replace feature that doesn't use patterns.
+---
+--- Parameters:
+---  * text - The string you want to process
+---  * old - The string you want to find
+---  * new - The new string you want to replace the old string with
+---
+--- Returns:
+---  * A new string
+function tools.replace(text, old, new)
+    local b,e = text:find(old, 1, true)
+    if b == nil then
+        return text
+    else
+        local result = text:sub(1, b - 1) .. new .. text:sub(e + 1)
+        return tools.replace(result, old, new)
+    end
+end
+
 return tools
