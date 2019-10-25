@@ -313,7 +313,7 @@ local function loupedeckPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" then
+                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" and v ~= "global_menuactions" then
                                 table.insert(allowedHandlers, v)
                             end
                         end

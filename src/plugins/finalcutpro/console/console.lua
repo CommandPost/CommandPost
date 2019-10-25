@@ -37,7 +37,7 @@ function plugin.init(deps)
             local handlerIds = actionmanager.handlerIds()
             for _,id in pairs(handlerIds) do
                 local handlerTable = tools.split(id, "_")
-                if handlerTable[2]~= "widgets" then
+                if handlerTable[2]~= "widgets" and id ~= "global_menuactions" then
                     table.insert(allowedHandlers, id)
                 end
             end

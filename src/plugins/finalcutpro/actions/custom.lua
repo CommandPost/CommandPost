@@ -3,15 +3,17 @@
 --- Creates a bunch of commands that can be used to assign actions to.
 --- This allows you to assign any action to a shortcut key in CommandPost.
 
-local require       = require
+local require           = require
 
-local log           = require "hs.logger".new "customAction"
+local log               = require "hs.logger".new "customAction"
 
-local fcp           = require "cp.apple.finalcutpro"
-local config        = require "cp.config"
-local prop          = require "cp.prop"
-local tools         = require "cp.tools"
-local i18n          = require "cp.i18n"
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+
+local removeFromTable   = tools.removeFromTable
 
 local mod           = {}
 
@@ -103,10 +105,12 @@ function mod.assign(id, completionFn)
         end)
 
     --------------------------------------------------------------------------------
-    -- Remove Final Cut Pro Commands from Activator:
+    -- Remove Final Cut Pro Commands & Global Menu Actions from Activator:
     --------------------------------------------------------------------------------
     local handlerIds = mod._actionmanager.handlerIds()
-    activator:allowHandlers(table.unpack(tools.removeFromTable(handlerIds, "fcpx_cmds")))
+    local allowedHandlers = removeFromTable(handlerIds, "fcpx_cmds")
+    allowedHandlers = removeFromTable(allowedHandlers, "global_menuactions")
+    activator:allowHandlers(table.unpack(allowedHandlers))
 
     --------------------------------------------------------------------------------
     -- Don't bother remembering the last query:
