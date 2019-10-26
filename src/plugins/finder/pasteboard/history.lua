@@ -19,9 +19,9 @@ local keyStroke         = eventtap.keyStroke
 
 local mod = {}
 
---- HISTORY_SIZE -> number
---- Constant
---- The number of history items to keep.
+-- HISTORY_SIZE -> number
+-- Constant
+-- The number of history items to keep.
 local HISTORY_SIZE = 50
 
 -- DISALLOWED_UTI -> table

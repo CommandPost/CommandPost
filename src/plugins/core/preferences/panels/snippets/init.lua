@@ -18,7 +18,7 @@ local blockAlert        = dialog.blockAlert
 
 local mod = {}
 
---- plugins.finalcutpro.hud.panels.snippets.snippets <cp.prop: table>
+--- plugins.core.preferences.panels.snippets.snippets <cp.prop: table>
 --- Field
 --- Snippets
 mod.snippets = json.prop(config.userConfigRootPath, "Snippets", "Snippets.cpSnippets", {}):watch(function()
