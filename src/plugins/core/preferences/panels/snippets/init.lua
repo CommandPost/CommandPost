@@ -7,20 +7,13 @@ local require           = require
 --local log               = require "hs.logger".new "snippets"
 
 local dialog            = require "hs.dialog"
-local fs                = require "hs.fs"
 local image             = require "hs.image"
-local inspect           = require "hs.inspect"
-local timer             = require "hs.timer"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
-local plugins           = require "cp.plugins"
-local tools             = require "cp.tools"
 
-local doAfter           = timer.doAfter
 local webviewAlert      = dialog.webviewAlert
-local tableCount        = tools.tableCount
 local blockAlert        = dialog.blockAlert
 
 local mod = {}
@@ -202,7 +195,7 @@ function plugin.init(deps, env)
             local snippet = params["snippet"]
             if snippet then
                 local snippets = mod.snippets()
-                for label, v in pairs(snippets) do
+                for label, _ in pairs(snippets) do
                     if label == snippet then
                         snippets[label].selected = true
                     else
