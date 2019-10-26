@@ -1,4 +1,4 @@
---- === plugins.core.pasteboard.history ===
+--- === plugins.finder.pasteboard.history ===
 ---
 --- Adds text pasteboard history actions to the Search Console.
 
@@ -42,14 +42,14 @@ local DISALLOWED_UTI = {
 -- Cached pasteboard history
 mod.cached = {}
 
---- plugins.core.pasteboard.history.history <cp.prop: table>
+--- plugins.finder.pasteboard.history.history <cp.prop: table>
 --- Field
 --- Contains the pasteboard history.
 mod.history = json.prop(config.userConfigRootPath, "Pasteboard History", "Text Pasteboard History.cpPasteboard", {})
 
 local plugin = {
-    id              = "core.pasteboard.history",
-    group           = "core",
+    id              = "finder.pasteboard.history",
+    group           = "finder",
     dependencies    = {
         ["core.action.manager"] = "actionmanager",
     }
