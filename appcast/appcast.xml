@@ -9,7 +9,7 @@
 			<title>Version 1.0.0-beta.87</title>
 			<description><![CDATA[
 				<h2>New in Beta 87:</h2>
-				<ul><li>CommandPost Beta 87 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<ul><li>CommandPost Beta 87 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li><ul>
 
 				<h2>Name Changes:</h2>
 				<ul><li>Renamed "Caffeinate" to "Prevent Mac from Sleeping" to avoid any confusion.</li>
