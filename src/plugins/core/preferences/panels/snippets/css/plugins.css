@@ -1,0 +1,145 @@
+.tooltip {
+	position: relative;
+	display: inline-block;
+	/* border-bottom: 1px dotted black; */
+}
+
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 120px;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	bottom: 150%;
+	left: 50%;
+	margin-left: -60px;
+}
+
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: black transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+}
+
+.plugins {
+	float: left;
+	margin-left: 20px;
+	table-layout: fixed;
+	width: 96%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.plugins td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowCategory {
+	width:20%;
+	font-weight: bold;
+}
+
+.rowName {
+	width:50%;
+}
+
+.rowStatus {
+	width:15%;
+}
+
+.rowOption {
+	width:15%;
+}
+
+.rowOption a {
+	color: white;
+}
+
+.plugins thead tr, .plugins tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.plugins thead tr {
+	width: calc( 100% - 8px);
+}
+
+.plugins tbody {
+	display:block;
+	height: 250px;
+	font-weight: normal;
+	font-size: 10px;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.plugins thead {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.plugins tbody {
+	font-weight: normal;
+	font-size: 10px;
+}
+
+.plugins tbody tr:nth-child(even) {
+	background-color: #4a4a4a;
+}
+
+.plugins tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+
+.plugins .status-failed {
+	font-weight: bold;
+	color: red;
+}
+
+.plugins .status-disabled {
+	font-weight: bold;
+}
+divTable{
+	display: table;
+	width: 100%;
+}
+.divTableRow {
+	display: table-row;
+}
+.divTableHeading {
+	display: table-header-group;
+}
+.divTableCell, .divTableHead {
+	display: table-cell;
+	padding: 20px;
+}
+.divTableHeading {
+	display: table-header-group;
+}
+.divTableFoot {
+	display: table-footer-group;
+}
+.divTableBody {
+	display: table-row-group;
+}
