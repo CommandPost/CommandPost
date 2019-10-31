@@ -42,6 +42,7 @@ local function createAbsoluteMIDIOpacitySlider()
             elseif controllerValue > 64 then
                 value = rescale(controllerValue, 64, 127, 50, 100)
             end
+            updateUI()
         end
     end
 end
@@ -177,7 +178,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     manager.controls:new("opacity", {
         group = "fcpx",
-        text = i18n("opacity") .. "(" .. i18n("absolute") .. ")",
+        text = i18n("opacity") .. " (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
         fn = createAbsoluteMIDIOpacitySlider(),
     })

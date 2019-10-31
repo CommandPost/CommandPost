@@ -16,6 +16,7 @@ local tools                 = require "cp.tools"
 
 local doWhile               = timer.doWhile
 local format                = string.format
+local playErrorSound        = tools.playErrorSound
 
 local mod = {}
 
@@ -31,8 +32,9 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.startShiftingPuck(puck, property, amount)
+    fcp:colorBoard():show()
     if not puck:select():isShowing() then
-        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        playErrorSound()
         return false
     end
 
@@ -55,8 +57,9 @@ end
 -- Returns:
 --  * None
 local function shiftPuck(puck, property, amount)
+    fcp:colorBoard():show()
     if not puck:select():isShowing() then
-        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        playErrorSound()
         return false
     end
     local value = property()
@@ -92,8 +95,9 @@ function mod.startMousePuck(puck)
     --------------------------------------------------------------------------------
     mod.playhead.deleteHighlight()
 
+    fcp:colorBoard():show()
     if not fcp:colorBoard():isActive() then
-        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        playErrorSound()
         return false
     end
 
