@@ -2,13 +2,19 @@
 ---
 --- Match Frame Tools for Final Cut Pro.
 
-local require       = require
+local require           = require
 
-local log           = require("hs.logger").new("matchframe")
+local log               = require "hs.logger".new "matchframe"
 
-local dialog        = require("cp.dialog")
-local fcp           = require("cp.apple.finalcutpro")
-local just          = require("cp.just")
+local chooser           = require "hs.chooser"
+
+local axutils           = require "cp.ui.axutils"
+local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
+local just              = require "cp.just"
+local tools             = require "cp.tools"
+
+local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
@@ -388,8 +394,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Link to dependencies:
     --------------------------------------------------------------------------------
+    local manager = deps.pasteboardManager
     mod.browserPlayhead = deps.browserPlayhead
-    mod.pasteboardManager = deps.pasteboardManager
+    mod.pasteboardManager = manager
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
@@ -414,6 +421,92 @@ function plugin.init(deps)
         :add("cpSingleMatchFrameAndHighlight")
         :groupedBy("timeline")
         :whenActivated(function() mod.matchFrame(true) end)
+
+    cmds
+        :add("revealInKeywordCollection")
+        :groupedBy("timeline")
+        :whenActivated(function()
+            local result, archivedData = ninjaPasteboardCopy()
+            local data = result and manager.unarchiveFCPXData(archivedData)
+            if data and data.root and data.root.objects and data.root.objects[1] then
+                local containedItems = data.root.objects[1].containedItems
+
+                if #containedItems ~= 1 then
+                    log.df("only one contained item")
+                    playErrorSound()
+                    return
+                end
+
+                local anchoredItems = containedItems and containedItems[1] and containedItems[1].anchoredItems
+
+                --------------------------------------------------------------------------------
+                -- Allow for secondary storylines:
+                --------------------------------------------------------------------------------
+                if anchoredItems and anchoredItems[1] and anchoredItems[1]["containedItems"] then
+                    anchoredItems = anchoredItems[1]["containedItems"] and anchoredItems[1]["containedItems"][1] and anchoredItems[1]["containedItems"][1]["anchoredItems"]
+                end
+
+                local metadata = anchoredItems and anchoredItems[1] and anchoredItems[1].metadata and anchoredItems[1].metadata
+                local keywords = metadata and metadata.keywords or {}
+
+                log.df("#containedItems: %s", #containedItems)
+                log.df("#anchoredItems: %s", #anchoredItems)
+                log.df("data: %s", hs.inspect(data))
+
+                if #keywords <= 1 then
+                    fcp:menu():selectMenu({"File", "Reveal in Browser"})
+                    return
+                end
+
+                local choices = {}
+                for i, v in ipairs(keywords) do
+                    local keyword = v
+                    if type(v) == "table" then
+                        keyword = v["NS.string"]
+                    end
+                    table.insert(choices, {
+                        ["text"] = keyword,
+                        ["subText"] = "Reveal in Keyword Collection",
+                    })
+                end
+
+                table.sort(choices, function(a, b) return a.text < b.text end)
+
+                if keywords then
+                    mod.chooser = chooser.new(function(result)
+                        if result and result.text then
+                            fcp:menu():selectMenu({"File", "Reveal in Browser"})
+
+                            local sidebar = fcp:libraries():sidebar()
+
+                            local selectedRowsUI = sidebar:selectedRowsUI()
+                            local selectedRowUI = selectedRowsUI[1]
+
+                            local index = axutils.childIndex(selectedRowUI)
+
+                            local rows = sidebar:rowsUI()
+
+                            for i=index + 1, #rows do
+                                local selectedRow = rows[i]
+                                if selectedRow:attributeValue("AXDisclosureLevel") == 1 then
+                                    playErrorSound()
+                                    return
+                                end
+                                local selectedValue = selectedRow:attributeValue("AXChildren")[1]:attributeValue("AXValue")
+                                if string.lower(selectedValue) == result.text then
+                                    sidebar:selectRowAt(i)
+                                    return
+                                end
+                            end
+                            playErrorSound()
+                        end
+                    end):choices(choices):bgDark(true):show()
+                end
+            else
+                playErrorSound()
+            end
+        end)
+        :titled("Reveal in Keyword Collection")
 
     return mod
 end
