@@ -6,7 +6,7 @@ local require           = require
 
 local hs                = hs
 
-local log               = require "hs.logger" .new "updates"
+--local log               = require "hs.logger" .new "updates"
 
 local timer             = require "hs.timer"
 
