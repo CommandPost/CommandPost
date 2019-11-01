@@ -4,15 +4,14 @@
 --- been idle for a specified amount of time. 'Idle' is defined as no keyboard
 --- or mouse movement.
 
-local require = require
+local require       = require
 
-local log						= require("hs.logger").new("idle")
+local log			= require "hs.logger" .new "idle"
 
-local host						= require("hs.host")
-local timer						= require("hs.timer")
+local host			= require "hs.host"
+local timer			= require "hs.timer"
 
-local insert					= table.insert
-
+local insert        = table.insert
 
 local mod = {}
 
@@ -40,7 +39,6 @@ local function checkQueue()
                 insert(newQueue, item)
             end
         end
-
         queue = newQueue
     end
 end
