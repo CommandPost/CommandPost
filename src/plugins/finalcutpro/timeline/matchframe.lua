@@ -402,11 +402,14 @@ local function revealInKeywordCollection(solo)
     local result, archivedData = manager.ninjaPasteboardCopy()
     local data = result and manager.unarchiveFCPXData(archivedData)
     if data and data.root and data.root.objects and data.root.objects[1] then
+
+        --log.df("data: %s", hs.inspect(data))
+
         --------------------------------------------------------------------------------
         -- Make sure only one clip is selected:
         --------------------------------------------------------------------------------
         local containedItems = data.root.objects[1].containedItems
-        if #containedItems ~= 1 then
+        if not containedItems or (containedItems and #containedItems ~= 1) then
             playErrorSound()
             return
         end
@@ -428,7 +431,28 @@ local function revealInKeywordCollection(solo)
                                 table.insert(keywords, keyword)
                             end
                         end
-
+                    end
+                    --------------------------------------------------------------------------------
+                    -- If there's contained items within the root object (i.e. secondary storyline):
+                    --------------------------------------------------------------------------------
+                    if v["containedItems"] then
+                        for _, c in pairs(v["containedItems"]) do
+                            local anchoredItems = c.anchoredItems
+                            if anchoredItems then
+                                for _, a in pairs(anchoredItems) do
+                                    local metadata = a and a.metadata
+                                    if metadata and metadata.keywords then
+                                        for _, keyword in pairs(metadata.keywords) do
+                                            if type(keyword) == "table" and keyword["NS.string"] then
+                                                table.insert(keywords, keyword["NS.string"])
+                                            else
+                                                table.insert(keywords, keyword)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
             end
