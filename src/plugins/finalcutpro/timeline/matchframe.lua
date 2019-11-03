@@ -7,8 +7,11 @@ local require                   = require
 local log                       = require "hs.logger".new "matchframe"
 
 local chooser                   = require "hs.chooser"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
 
 local axutils                   = require "cp.ui.axutils"
+local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
 local fcp                       = require "cp.apple.finalcutpro"
 local i18n                      = require "cp.i18n"
@@ -23,6 +26,8 @@ local sort                      = table.sort
 local tableCount                = tools.tableCount
 
 local mod = {}
+
+mod.hiddenKeywords = config.prop("revealInKeywordCollection.hiddenKeywords", {})
 
 --- plugins.finalcutpro.timeline.matchframe.multicamMatchFrame(goBackToTimeline) -> none
 --- Function
@@ -638,30 +643,60 @@ local function revealInKeywordCollection(solo)
             return
         elseif #keywords > 1 then
             --------------------------------------------------------------------------------
-            -- If there's multiple keywords on the clip:
-            --------------------------------------------------------------------------------
-            local choices = {}
-            for _, keyword in ipairs(keywords) do
-                table.insert(choices, {
-                    ["text"] = keyword,
-                    ["subText"] = "Reveal in Keyword Collection",
-                })
-            end
-
-            --------------------------------------------------------------------------------
-            -- Sort the choices:
-            --------------------------------------------------------------------------------
-            sort(choices, function(a, b) return a.text < b.text end)
-
-            --------------------------------------------------------------------------------
-            -- Open the Search Console:
+            -- If there's multiple keywords on the clip, open the Search Console:
             --------------------------------------------------------------------------------
             if keywords then
                 mod.chooser = chooser.new(function(k)
                     if k and k.text then
                         selectKeywordCollection(k.text, solo)
                     end
-                end):choices(choices):bgDark(true):show()
+                end)
+                    :choices(function()
+                        local choices = {}
+                        local hiddenKeywords = mod.hiddenKeywords()
+                        for _, keyword in ipairs(keywords) do
+                            if not hiddenKeywords[keyword] then
+                                table.insert(choices, {
+                                    ["text"] = keyword,
+                                })
+                            end
+                        end
+                        sort(choices, function(a, b) return a.text < b.text end)
+                        return choices
+                    end)
+                    :bgDark(true)
+                    :rightClickCallback(function(row)
+                        local hiddenKeywords = mod.hiddenKeywords()
+                        local hiddenKeywordsMenu = {}
+                        if next(hiddenKeywords) == nil then
+                            table.insert(hiddenKeywordsMenu, { title = i18n("none"), disabled = true })
+                        else
+                            for i,_ in pairs(hiddenKeywords) do
+                                table.insert(hiddenKeywordsMenu, {title = i, fn = function()
+                                    hiddenKeywords[i] = nil
+                                    mod.hiddenKeywords(hiddenKeywords)
+                                    mod.chooser:refreshChoicesCallback(true)
+                                end})
+                            end
+                        end
+
+                        local menu = {
+                            { title = "Hide Keyword", fn = function()
+                                local contents = mod.chooser:selectedRowContents(row)
+                                log.df("contents: %s", hs.inspect(contents))
+                                local hiddenKeywords = mod.hiddenKeywords()
+                                hiddenKeywords[contents.text] = true
+                                mod.hiddenKeywords(hiddenKeywords)
+                                mod.chooser:refreshChoicesCallback(true)
+                            end, disabled = row == 0 },
+                            { title = "Restore Hidden Keyword", menu = hiddenKeywordsMenu }
+                        }
+
+                        local mb = menubar.new(false)
+                            :setMenu(menu)
+                            :popupMenu(mouse.getAbsolutePosition(), true)
+                    end)
+                    :show()
             end
         end
     else
