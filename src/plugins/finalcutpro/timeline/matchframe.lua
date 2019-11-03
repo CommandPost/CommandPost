@@ -17,8 +17,10 @@ local tools                     = require "cp.tools"
 
 local childIndex                = axutils.childIndex
 local displayErrorMessage       = dialog.displayErrorMessage
+local displayNotification       = dialog.displayNotification
 local playErrorSound            = tools.playErrorSound
 local sort                      = table.sort
+local tableCount                = tools.tableCount
 
 local mod = {}
 
@@ -398,18 +400,51 @@ end
 -- Returns:
 --  * None
 local function revealInKeywordCollection(solo)
+    --------------------------------------------------------------------------------
+    -- Make sure the timeline is focussed:
+    --------------------------------------------------------------------------------
+    fcp:selectMenu({"Window", "Go To", "Timeline"})
+
+    --------------------------------------------------------------------------------
+    -- Ninja Pasteboard time:
+    --------------------------------------------------------------------------------
     local manager = mod.pasteboardManager
     local result, archivedData = manager.ninjaPasteboardCopy()
     local data = result and manager.unarchiveFCPXData(archivedData)
     if data and data.root and data.root.objects and data.root.objects[1] then
 
-        --log.df("data: %s", hs.inspect(data))
+        --hs.console.clearConsole()
+        --log.df("%s", hs.inspect(data))
+
+        --------------------------------------------------------------------------------
+        -- Get root object:
+        --------------------------------------------------------------------------------
+        local object = data.root.objects[1]
+        local containedItems = object.containedItems
 
         --------------------------------------------------------------------------------
         -- Make sure only one clip is selected:
         --------------------------------------------------------------------------------
-        local containedItems = data.root.objects[1].containedItems
-        if not containedItems or (containedItems and #containedItems ~= 1) then
+        local singleClipSelected = true
+        if containedItems and containedItems[1] and containedItems[1]["anchoredItems"] then
+            --------------------------------------------------------------------------------
+            -- More than one clip in primary storyline selected:
+            --------------------------------------------------------------------------------
+            if object.displayName == "__timelineContainerClip" and tableCount(containedItems) ~= 1 then
+                singleClipSelected = false
+            end
+
+            --------------------------------------------------------------------------------
+            -- More than one clip in secondary storyline groups selected:
+            --------------------------------------------------------------------------------
+            if containedItems[1]["displayName"] == "Gap" and tableCount(containedItems[1]["anchoredItems"]) ~= 1 then
+                singleClipSelected = false
+            elseif containedItems[1]["displayName"] == "Gap" and tableCount(containedItems[1]["anchoredItems"][1]["containedItems"]) ~= 1 then
+                singleClipSelected = false
+            end
+        end
+        if not singleClipSelected then
+            displayNotification(i18n("mustHaveSingleClipSelectedInTimeline"))
             playErrorSound()
             return
         end
@@ -419,34 +454,148 @@ local function revealInKeywordCollection(solo)
         --------------------------------------------------------------------------------
         local keywords = {}
         for _, vv in pairs(containedItems) do
+
+            local cr = vv.clippedRange and load("return " .. vv.clippedRange)()
+
+            local clipStart = cr[1]
+            local clipEnd = cr[1] + cr[2]
+
             local anchoredItems = vv.anchoredItems
             if anchoredItems then
                 for _, v in pairs(anchoredItems) do
-                    local metadata = v and v.metadata
+
+                    local anchorPair = v.anchorPair and load("return " .. v.anchorPair)()
+                    local duration = v.duration and load("return " .. v.duration)()
+
+                    local aClippedRange = v.clippedRange and load("return " .. v.clippedRange)()
+                    local baseClipStart = aClippedRange and aClippedRange[1]
+                    local baseClipEnd = aClippedRange and (aClippedRange[1] + aClippedRange[2])
+
+                    --------------------------------------------------------------------------------
+                    -- If the clip is in the primary storyline:
+                    --------------------------------------------------------------------------------
+                    local metadata = v.metadata
                     if metadata and metadata.keywords then
-                        for _, keyword in pairs(metadata.keywords) do
-                            if type(keyword) == "table" and keyword["NS.string"] then
-                                table.insert(keywords, keyword["NS.string"])
-                            else
-                                table.insert(keywords, keyword)
+                        local keywordStart = anchorPair and anchorPair[2]
+                        local keywordEnd = duration and keywordStart and (duration + keywordStart)
+
+                        --------------------------------------------------------------------------------
+                        -- If a keyword begins at the start of a multicam clip, it might not have an
+                        -- anchorPair value for some reason:
+                        --------------------------------------------------------------------------------
+                        if duration and not anchorPair then
+                            keywordStart = 0
+                            keywordEnd = duration
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the keyword is within the range of the selected clip:
+                        --------------------------------------------------------------------------------
+                        if keywordStart and keywordEnd and clipStart and clipEnd
+                        and (clipStart >= keywordStart and clipStart <= keywordEnd)
+                        or (clipEnd >= keywordStart and clipEnd <= keywordEnd)
+                        or (clipStart < keywordStart and clipEnd > keywordEnd) then
+                            for _, keyword in pairs(metadata.keywords) do
+                                local r
+                                if type(keyword) == "table" and keyword["NS.string"] then
+                                    r = keyword["NS.string"]
+                                else
+                                    r = keyword
+                                end
+                                table.insert(keywords, r)
                             end
                         end
                     end
+
                     --------------------------------------------------------------------------------
-                    -- If there's contained items within the root object (i.e. secondary storyline):
+                    -- If the clip is above or below the primary storyline, but not in a
+                    -- secondary storyline group:
+                    --------------------------------------------------------------------------------
+                    if v["anchoredItems"] then
+                        for _, vvv in pairs(v["anchoredItems"]) do
+                            local m = vvv.metadata
+                            if m and m.keywords then
+
+                                local sAnchorPair = vvv.anchorPair and load("return " .. vvv.anchorPair)()
+                                local sDuration = vvv.duration and load("return " .. vvv.duration)()
+
+                                local keywordStart = sAnchorPair and sAnchorPair[2]
+                                local keywordEnd = sDuration and keywordStart and (sDuration + keywordStart)
+
+                                --------------------------------------------------------------------------------
+                                -- If a keyword begins at the start of a multicam clip, it might not have an
+                                -- anchorPair value for some reason:
+                                --------------------------------------------------------------------------------
+                                if sDuration and not sAnchorPair then
+                                    keywordStart = 0
+                                    keywordEnd = sDuration
+                                end
+
+                                --------------------------------------------------------------------------------
+                                -- Make sure the keyword is within the range of the selected clip:
+                                --------------------------------------------------------------------------------
+                                if keywordStart and keywordEnd and baseClipStart and baseClipEnd
+                                and (baseClipStart >= keywordStart and baseClipStart <= keywordEnd)
+                                or (baseClipEnd >= keywordStart and baseClipEnd <= keywordEnd)
+                                or (baseClipStart < keywordStart and baseClipEnd > keywordEnd) then
+                                    for _, keyword in pairs(m.keywords) do
+                                        local r
+                                        if type(keyword) == "table" and keyword["NS.string"] then
+                                            r = keyword["NS.string"]
+                                        else
+                                            r = keyword
+                                        end
+                                        table.insert(keywords, r)
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If the clip is within a secondary storyline:
                     --------------------------------------------------------------------------------
                     if v["containedItems"] then
                         for _, c in pairs(v["containedItems"]) do
-                            local anchoredItems = c.anchoredItems
-                            if anchoredItems then
-                                for _, a in pairs(anchoredItems) do
-                                    local metadata = a and a.metadata
-                                    if metadata and metadata.keywords then
-                                        for _, keyword in pairs(metadata.keywords) do
-                                            if type(keyword) == "table" and keyword["NS.string"] then
-                                                table.insert(keywords, keyword["NS.string"])
-                                            else
-                                                table.insert(keywords, keyword)
+
+                            local bClippedRange = c.clippedRange and load("return " .. c.clippedRange)()
+                            local bClipStart = bClippedRange and bClippedRange[1]
+                            local bClipEnd = bClippedRange and (bClippedRange[1] + bClippedRange[2])
+
+                            local ai = c.anchoredItems
+                            if ai then
+                                for _, a in pairs(ai) do
+                                    local mm = a and a.metadata
+                                    if mm and mm.keywords then
+
+                                        local ap = a.anchorPair and load("return " .. a.anchorPair)()
+                                        local du = a.duration and load("return " .. a.duration)()
+
+                                        local keywordStart = ap and ap[2]
+                                        local keywordEnd = du and keywordStart and (du + keywordStart)
+
+                                        --------------------------------------------------------------------------------
+                                        -- If a keyword begins at the start of a multicam clip, it might not have an
+                                        -- anchorPair value for some reason:
+                                        --------------------------------------------------------------------------------
+                                        if du and not ap then
+                                            keywordStart = 0
+                                            keywordEnd = du
+                                        end
+
+                                        --------------------------------------------------------------------------------
+                                        -- Make sure the keyword is within the range of the selected clip:
+                                        --------------------------------------------------------------------------------
+                                        if keywordStart and keywordEnd and bClipStart and bClipEnd
+                                        and (bClipStart >= keywordStart and bClipStart <= keywordEnd)
+                                        or (bClipEnd >= keywordStart and bClipEnd <= keywordEnd)
+                                        or (bClipStart < keywordStart and bClipEnd > keywordEnd) then
+                                            for _, keyword in pairs(mm.keywords) do
+                                                if type(keyword) == "table" and keyword["NS.string"] then
+                                                    table.insert(keywords, keyword["NS.string"])
+                                                else
+                                                    table.insert(keywords, keyword)
+                                                end
                                             end
                                         end
                                     end
