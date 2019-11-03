@@ -412,10 +412,6 @@ local function revealInKeywordCollection(solo)
     local result, archivedData = manager.ninjaPasteboardCopy()
     local data = result and manager.unarchiveFCPXData(archivedData)
     if data and data.root and data.root.objects and data.root.objects[1] then
-
-        --hs.console.clearConsole()
-        --log.df("%s", hs.inspect(data))
-
         --------------------------------------------------------------------------------
         -- Get root object:
         --------------------------------------------------------------------------------
@@ -606,6 +602,19 @@ local function revealInKeywordCollection(solo)
                 end
             end
         end
+
+        --------------------------------------------------------------------------------
+        -- Remove duplicate keywords:
+        --------------------------------------------------------------------------------
+        local hash = {}
+        local uniqueKeywords = {}
+        for _, v in ipairs(keywords) do
+           if not hash[v] then
+               uniqueKeywords[#uniqueKeywords+1] = v
+               hash[v] = true
+           end
+        end
+        keywords = uniqueKeywords
 
         if #keywords == 0 then
             --------------------------------------------------------------------------------
