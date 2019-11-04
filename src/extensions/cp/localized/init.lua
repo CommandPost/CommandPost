@@ -154,7 +154,7 @@ local function getLocalizedName(path, locale)
         end
         return result, file
     else
-        file = match(path, "^.-([^/%.]+)$")
+        file = match(path, "^.-([^/]+)$")
         return file, file
     end
 end
