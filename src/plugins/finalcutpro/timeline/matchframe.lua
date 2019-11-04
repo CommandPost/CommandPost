@@ -695,7 +695,7 @@ local function revealInKeywordCollection(solo)
                             { title = i18n("restoreHiddenKeyword"), menu = hiddenKeywordsMenu }
                         }
 
-                        local mb = menubar.new(false)
+                        menubar.new(false)
                             :setMenu(menu)
                             :popupMenu(mouse.getAbsolutePosition(), true)
                     end)
