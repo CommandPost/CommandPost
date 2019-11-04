@@ -27,7 +27,11 @@ local tableCount                = tools.tableCount
 
 local mod = {}
 
+-- TODO: Add documentation
 mod.hiddenKeywords = config.prop("revealInKeywordCollection.hiddenKeywords", {})
+
+-- TODO: Add Favourite Keywords:
+--mod.favouriteKeywords = config.prop("revealInKeywordCollection.favouriteKeywords", {})
 
 --- plugins.finalcutpro.timeline.matchframe.multicamMatchFrame(goBackToTimeline) -> none
 --- Function
@@ -681,15 +685,14 @@ local function revealInKeywordCollection(solo)
                         end
 
                         local menu = {
-                            { title = "Hide Keyword", fn = function()
+                            { title = i18n("hideKeyword"), fn = function()
                                 local contents = mod.chooser:selectedRowContents(row)
-                                log.df("contents: %s", hs.inspect(contents))
-                                local hiddenKeywords = mod.hiddenKeywords()
-                                hiddenKeywords[contents.text] = true
-                                mod.hiddenKeywords(hiddenKeywords)
+                                local hk = mod.hiddenKeywords()
+                                hk[contents.text] = true
+                                mod.hk(hiddenKeywords)
                                 mod.chooser:refreshChoicesCallback(true)
                             end, disabled = row == 0 },
-                            { title = "Restore Hidden Keyword", menu = hiddenKeywordsMenu }
+                            { title = i18n("restoreHiddenKeyword"), menu = hiddenKeywordsMenu }
                         }
 
                         local mb = menubar.new(false)
