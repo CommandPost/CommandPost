@@ -1183,10 +1183,17 @@ end
 ---
 --- Returns:
 ---  * The number of items in the table.
+---
+--- Notes:
+---  * If something other than a table is supplied, this function will return 0.
 function tools.tableCount(table)
-    local count = 0
-    for _ in pairs(table) do count = count + 1 end
-    return count
+    if type(table) == "table" then
+        local count = 0
+        for _ in pairs(table) do count = count + 1 end
+        return count
+    else
+        return 0
+    end
 end
 
 --- cp.tools.tableContains(table, element) -> boolean

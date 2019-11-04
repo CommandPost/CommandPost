@@ -27,11 +27,15 @@ local tableCount                = tools.tableCount
 
 local mod = {}
 
--- TODO: Add documentation
+--- plugins.finalcutpro.timeline.matchframe.hiddenKeywords <cp.prop: table>
+--- Variable
+--- Hidden Keywords
 mod.hiddenKeywords = config.prop("revealInKeywordCollection.hiddenKeywords", {})
 
--- TODO: Add Favourite Keywords:
---mod.favouriteKeywords = config.prop("revealInKeywordCollection.favouriteKeywords", {})
+--- plugins.finalcutpro.timeline.matchframe.hiddenKeywords <cp.prop: table>
+--- Variable
+--- Favourite Keywords
+mod.favouriteKeywords = config.prop("revealInKeywordCollection.favouriteKeywords", {})
 
 --- plugins.finalcutpro.timeline.matchframe.multicamMatchFrame(goBackToTimeline) -> none
 --- Function
@@ -444,8 +448,6 @@ local function revealInKeywordCollection(solo)
             --------------------------------------------------------------------------------
             if containedItems[1]["displayName"] == "Gap" and tableCount(containedItems[1]["anchoredItems"]) ~= 1 then
                 singleClipSelected = false
-            elseif containedItems[1]["displayName"] == "Gap" and tableCount(containedItems[1]["anchoredItems"][1]["containedItems"]) ~= 1 then
-                singleClipSelected = false
             end
         end
         if not singleClipSelected then
@@ -665,11 +667,29 @@ local function revealInKeywordCollection(solo)
                                 })
                             end
                         end
-                        sort(choices, function(a, b) return a.text < b.text end)
+                        local favouriteKeywords = mod.favouriteKeywords()
+                        sort(choices, function(a, b)
+                            --------------------------------------------------------------------------------
+                            -- Prioritise Favourites First:
+                            --------------------------------------------------------------------------------
+                            if favouriteKeywords[a.text] and not favouriteKeywords[b.text] then
+                                return true
+                            elseif favouriteKeywords[b.text] and not favouriteKeywords[a.text] then
+                                return false
+                            end
+
+                            --------------------------------------------------------------------------------
+                            -- Then sort alphabetically:
+                            --------------------------------------------------------------------------------
+                            return a.text < b.text
+                        end)
                         return choices
                     end)
                     :bgDark(true)
                     :rightClickCallback(function(row)
+                        --------------------------------------------------------------------------------
+                        -- Hidden Keywords:
+                        --------------------------------------------------------------------------------
                         local hiddenKeywords = mod.hiddenKeywords()
                         local hiddenKeywordsMenu = {}
                         if next(hiddenKeywords) == nil then
@@ -684,12 +704,41 @@ local function revealInKeywordCollection(solo)
                             end
                         end
 
+                        --------------------------------------------------------------------------------
+                        -- Favourite Keywords:
+                        --------------------------------------------------------------------------------
+                        local favouriteKeywords = mod.favouriteKeywords()
+                        local favouriteKeywordsMenu = {}
+                        if next(favouriteKeywords) == nil then
+                            table.insert(favouriteKeywordsMenu, { title = i18n("none"), disabled = true })
+                        else
+                            for i,_ in pairs(favouriteKeywords) do
+                                table.insert(favouriteKeywordsMenu, {title = i, fn = function()
+                                    favouriteKeywords[i] = nil
+                                    mod.favouriteKeywords(favouriteKeywords)
+                                    mod.chooser:refreshChoicesCallback(true)
+                                end})
+                            end
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Setup Popup Menu:
+                        --------------------------------------------------------------------------------
                         local menu = {
+                            { title = i18n("favouriteKeyword"), fn = function()
+                                local contents = mod.chooser:selectedRowContents(row)
+                                local fk = mod.favouriteKeywords()
+                                fk[contents.text] = true
+                                mod.favouriteKeywords(fk)
+                                mod.chooser:refreshChoicesCallback(true)
+                            end, disabled = row == 0 },
+                            { title = i18n("removeFavouriteKeyword"), menu = favouriteKeywordsMenu },
+                            { title = "-" },
                             { title = i18n("hideKeyword"), fn = function()
                                 local contents = mod.chooser:selectedRowContents(row)
                                 local hk = mod.hiddenKeywords()
                                 hk[contents.text] = true
-                                mod.hk(hiddenKeywords)
+                                mod.hiddenKeywords(hk)
                                 mod.chooser:refreshChoicesCallback(true)
                             end, disabled = row == 0 },
                             { title = i18n("restoreHiddenKeyword"), menu = hiddenKeywordsMenu }
