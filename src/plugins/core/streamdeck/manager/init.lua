@@ -727,7 +727,7 @@ function mod.discoveryCallback(connected, object)
             mod._streamDeck[serialNumber] = object:buttonCallback(mod.buttonCallback)
             mod.update()
         else
-            if mod._streamDeck[serialNumber] then
+            if mod._streamDeck and mod._streamDeck[serialNumber] then
                 --log.df("Disconnected Stream Deck: %s", serialNumber)
                 mod._streamDeck[serialNumber] = nil
             else
