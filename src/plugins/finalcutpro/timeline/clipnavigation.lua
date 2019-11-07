@@ -6,12 +6,17 @@ local require = require
 
 --local log               = require "hs.logger".new "clipnavigation"
 
+local audiodevice       = require "hs.audiodevice"
+local timer             = require "hs.timer"
+
+local deferred          = require "cp.deferred"
 local dialog            = require "cp.dialog"
 local fcp               = require "cp.apple.finalcutpro"
 local flicks            = require "cp.time.flicks"
 local i18n              = require "cp.i18n"
 
 local displayMessage    = dialog.displayMessage
+local doAfter           = timer.doAfter
 
 local plugin = {
     id = "finalcutpro.timeline.clipnavigation",
@@ -141,6 +146,41 @@ function plugin.init(deps)
             end
         end)
         :titled(i18n("selectMiddleOfPreviousClipInSameStoryline"))
+
+    --------------------------------------------------------------------------------
+    -- Go to Next Frame (with muted audio):
+    --------------------------------------------------------------------------------
+    local nextFrame = deferred.new(0.01):action(function()
+        local defaultOutputDevice = audiodevice.defaultOutputDevice()
+        defaultOutputDevice:setMuted(true)
+        fcp:doShortcut("JumpToNextFrame"):Now()
+        doAfter(0.5, function() defaultOutputDevice:setMuted(false) end)
+    end)
+    fcpxCmds
+        :add("goToNextFrameWithMutedAudio")
+        :whenActivated(function()
+            nextFrame()
+        end)
+        :titled(i18n("goToNextFrameWithMutedAudio"))
+        :subtitled(i18n("goToNextFrameWithMutedAudioDescription"))
+
+    --------------------------------------------------------------------------------
+    -- Go to Previous Frame (with muted audio):
+    --------------------------------------------------------------------------------
+    local previousFrame = deferred.new(0.01):action(function()
+        local defaultOutputDevice = audiodevice.defaultOutputDevice()
+        defaultOutputDevice:setMuted(true)
+        fcp:doShortcut("JumpToPreviousFrame"):Now()
+        doAfter(0.5, function() defaultOutputDevice:setMuted(false) end)
+    end)
+    fcpxCmds
+        :add("goToPreviousFrameWithMutedAudio")
+        :whenActivated(function()
+            previousFrame()
+        end)
+        :titled(i18n("goToPreviousFrameWithMutedAudio"))
+        :subtitled(i18n("goToPreviousFrameWithMutedAudioDescription"))
+
 end
 
 return plugin
