@@ -1277,7 +1277,7 @@
         "plugin_status_loaded": "Loaded",
         "pluginAction": "Action",
         "pluginCache": "Plugin Cache",
-        "pluginCacheDescription": "This is the plugin cache used by CommandPost's Console.",
+        "pluginCacheDescription": "This is the plugin cache used by CommandPost's Search Console.",
         "pluginCategory": "Category",
         "pluginName": "Plugin Name",
         "pluginRequired": "Required",
