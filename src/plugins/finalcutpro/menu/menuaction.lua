@@ -1064,7 +1064,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
         --
         -- Can be "Delete Generated Event Files..." or "Delete Generated Library Files..."
         --------------------------------------------------------------------------------
-        if v.text and string.match(v.text, deleteString .. ".*") then
+        if v.text and string.match(v.text, deleteString .. ".*") and v.params and v.params.path and v.params.path[1] == "File" then
             v.params.path = {"File", deleteString .. ".*"}
             v.params.plain = false
         end
