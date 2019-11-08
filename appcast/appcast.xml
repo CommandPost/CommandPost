@@ -13,6 +13,18 @@
 				<p>Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.</p>
 				<p>Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!</p>
 				<p><i>Chris Hocking & David Peterson</i></p>
+
+				<hr />
+
+				<h2>New in Beta 91:</h2>
+
+				<ul><li>CommandPost Beta 91 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>The Loupedeck+ Preferences panel now offers additional banks with a "Fn" suffix which allow you to have different actions when you hold down the "Fn" key (similar to the native Loupedeck+ application). You can still use the Fn key as a standalone button if desired.</li>
+				<li>Fixed bug which prevented any Final Cut Pro Menu Actions with "delete" in the name to work correctly.</li>
+				<li>Improved Performance of Command Editor Shortcut Actions, so they don't feel laggy on MIDI Devices (for example).</li>
+				<li>Added actions for "Go to Next/Previous Frame (with muted audio)". This temporarily mutes your speaker so that you can go frame by frame without sound.</li>
+				<li>Optimised various plugins to improve startup time.</li>
+				<li>Replaced "Paypal Donation to Developers" with "Sponsor CommandPost", which now points to the main CommandPost website.</li></ul>
 			]]>
 			</description>
 			<pubDate>Fri,  8 Nov 2019 16:53:44 +1100</pubDate>
