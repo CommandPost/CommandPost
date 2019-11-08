@@ -8,11 +8,13 @@ local require           = require
 
 local application       = require "hs.application"
 local fnutils           = require "hs.fnutils"
+local timer             = require "hs.timer"
 
 local tools             = require "cp.tools"
 
 local concat            = table.concat
 local copy              = fnutils.copy
+local doAfter           = timer.doAfter
 local playErrorSound    = tools.playErrorSound
 local watcher           = application.watcher
 
@@ -60,12 +62,17 @@ local plugin = {
 function plugin.init(deps)
 
     mod._appWatcher = watcher.new(function(_, event, app)
-        if app and event == watcher.activated then
+        if app and event == watcher.activated and app:pid() then
             mod._handler:reset(true)
-            app:getMenuItems(function(result)
-                local pid = app:pid()
-                if pid then
-                    mod._cache[pid] = result
+            doAfter(0.1, function()
+                if app and app:pid() then
+                    app:getMenuItems(function(result)
+                        local pid = app:pid()
+                        if pid then
+                            mod._cache[pid] = result
+                            mod._handler:reset(true)
+                        end
+                    end)
                 end
             end)
         elseif event == watcher.terminated then

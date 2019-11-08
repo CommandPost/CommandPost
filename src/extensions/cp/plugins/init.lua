@@ -145,7 +145,7 @@
 ---
 --- These modules will not be accessible to other plugins or to the main application. They are only available to code inside the plugin.
 
-local require = require
+local require       = require
 
 local log           = require "hs.logger".new "plugins"
 
@@ -167,7 +167,7 @@ local mod = {}
 -- SLOW_PLUGIN_WARNING_THRESHOLD -> number
 -- Constant
 -- Slow Plugin Warning Threshold
-local SLOW_PLUGIN_WARNING_THRESHOLD = 0.1
+local SLOW_PLUGIN_WARNING_THRESHOLD = 1
 
 --- cp.plugins.CACHE -> table
 --- Constant

@@ -314,28 +314,28 @@ function plugin.init(deps)
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
         :add("cpStabilizationEnable")
-        :whenActivated(doStabilization(true))
+        :whenActivated(function() doStabilization(true):Now() end)
 
     fcpxCmds
         :add("cpStabilizationDisable")
-        :whenActivated(doStabilization(false))
+        :whenActivated(function() doStabilization(false):Now() end)
 
     --------------------------------------------------------------------------------
     -- Stabilization Method:
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("stabilizationMethodAutomatic")
-        :whenActivated(doStabilizationMethod("FFStabilizationDynamic"))
+        :whenActivated(function() doStabilizationMethod("FFStabilizationDynamic"):Now() end)
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("automatic"))
 
     fcpxCmds
         :add("stabilizationMethodInertiaCam")
-        :whenActivated(doStabilizationMethod("FFStabilizationUseInertiaCam"))
+        :whenActivated(function() doStabilizationMethod("FFStabilizationUseInertiaCam"):Now() end)
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("inertiaCam"))
 
     fcpxCmds
         :add("stabilizationMethodSmoothCam")
-        :whenActivated(doStabilizationMethod("FFStabilizationUseSmoothCam"))
+        :whenActivated(function() doStabilizationMethod("FFStabilizationUseSmoothCam"):Now() end)
         :titled(i18n("stabilizationMethod") .. ": " .. i18n("smoothCam"))
 
     --------------------------------------------------------------------------------
@@ -343,11 +343,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpRollingShutterEnable")
-        :whenActivated(doRollingShutter(true))
+        :whenActivated(function() doRollingShutter(true):Now() end)
 
     fcpxCmds
         :add("cpRollingShutterDisable")
-        :whenActivated(doRollingShutter(false))
+        :whenActivated(function() doRollingShutter(false):Now() end)
 
     --------------------------------------------------------------------------------
     -- Rolling Shutter Amount:
@@ -358,7 +358,7 @@ function plugin.init(deps)
     for _, v in pairs(rollingShutterAmounts) do
         fcpxCmds
             :add(v.flexoID)
-            :whenActivated(doRollingShutterAmount(v.flexoID))
+            :whenActivated(function() doRollingShutterAmount(v.flexoID):Now() end)
             :titled(rollingShutterTitle .. " " .. rollingShutterAmount .. ": " .. i18n(v.i18n))
     end
 
@@ -367,15 +367,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpSetSpatialConformTypeToFit")
-        :whenActivated(doSpatialConformType("FFConformTypeFit"))
+        :whenActivated(function() doSpatialConformType("FFConformTypeFit"):Now() end)
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToFill")
-        :whenActivated(doSpatialConformType("FFConformTypeFill"))
+        :whenActivated(function() doSpatialConformType("FFConformTypeFill"):Now() end)
 
     fcpxCmds
         :add("cpSetSpatialConformTypeToNone")
-        :whenActivated(doSpatialConformType("FFConformTypeNone"))
+        :whenActivated(function() doSpatialConformType("FFConformTypeNone"):Now() end)
 
     --------------------------------------------------------------------------------
     -- Blend Modes:
@@ -385,7 +385,7 @@ function plugin.init(deps)
         if v.flexoID ~= nil then
             fcpxCmds
                 :add(v.flexoID)
-                :whenActivated(doBlendMode(v.flexoID))
+                :whenActivated(function() doBlendMode(v.flexoID):Now() end)
                 :titled(i18n("blendMode") .. ": " .. i18n(v.i18n))
         end
     end

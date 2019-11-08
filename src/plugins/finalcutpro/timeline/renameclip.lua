@@ -4,11 +4,12 @@
 
 local require = require
 
-local axutils       = require("cp.ui.axutils")
-local fcp           = require("cp.apple.finalcutpro")
-local tools         = require("cp.tools")
+local axutils       = require "cp.ui.axutils"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
+local tools         = require "cp.tools"
 
-local geometry      = require("hs.geometry")
+local geometry      = require "hs.geometry"
 
 local plugin = {
     id = "finalcutpro.timeline.renameclip",
@@ -19,11 +20,6 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
-    --------------------------------------------------------------------------------
-    -- Add Commands:
-    --------------------------------------------------------------------------------
-    local renameClip = fcp:string("FFRename Bin Object")
     deps.fcpxCmds:add("renameClip")
         :whenActivated(function()
             local selectedClip
@@ -56,6 +52,7 @@ function plugin.init(deps)
                         tools.ninjaRightMouseClick(point)
                         local parent = selectedClip:attributeValue("AXParent")
                         local menu = parent and axutils.childWithRole(parent, "AXMenu")
+                        local renameClip = fcp:string("FFRename Bin Object")
                         local item = menu and axutils.childWith(menu, "AXTitle", renameClip)
                         if item and item:attributeValue("AXEnabled") == true then
                             item:performAction("AXPress")
@@ -77,8 +74,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             tools.playErrorSound()
         end)
-        :titled(renameClip)
-
+        :titled(i18n("renameClip"))
 end
 
 return plugin

@@ -2,7 +2,7 @@
 ---
 --- Adds Actions to the Console for triggering Final Cut Pro shortcuts as defined in the Command Set files.
 
-local require = require
+local require               = require
 
 local log                   = require "hs.logger".new "commandsetactions"
 
@@ -11,14 +11,17 @@ local timer                 = require "hs.timer"
 local http                  = require "hs.http"
 
 local config                = require "cp.config"
+local deferred              = require "cp.deferred"
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local plist                 = require "cp.plist"
 
-local doAfter               = timer.doAfter
-local imageFromPath         = image.imageFromPath
 local convertHtmlEntities   = http.convertHtmlEntities
+local displayMessage        = dialog.displayMessage
+local doAfter               = timer.doAfter
+local fileToTable           = plist.fileToTable
+local imageFromPath         = image.imageFromPath
 
 local mod = {}
 
@@ -41,6 +44,27 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    local cachedAction
+    local triggerDeferredAction = deferred.new(0.01):action(function()
+        local action = cachedAction
+        if action then
+            if type(action) == "table" then
+                --------------------------------------------------------------------------------
+                -- Used by URL Handler:
+                --------------------------------------------------------------------------------
+                action = action.id
+            end
+            fcp
+                :doShortcut(action)
+                :Catch(function(message)
+                    displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
+                    log.ef("Failed to trigger shortcut with action: %s; %s", hs.inspect(action), message)
+                end)
+                :Now()
+        end
+    end)
+
     --------------------------------------------------------------------------------
     -- Add Action Handler:
     --------------------------------------------------------------------------------
@@ -54,8 +78,8 @@ function plugin.init(deps)
                 local namePath          = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
                 local descriptionPath   = fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
 
-                local nameData          = plist.fileToTable(namePath)
-                local descriptionData   = plist.fileToTable(descriptionPath)
+                local nameData          = fileToTable(namePath)
+                local descriptionData   = fileToTable(descriptionPath)
 
                 if nameData and descriptionData then
                     for id, name in pairs(nameData) do
@@ -71,18 +95,11 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
-            if type(action) == "table" then
-                --------------------------------------------------------------------------------
-                -- Used by URL Handler:
-                --------------------------------------------------------------------------------
-                action = action.id
-            end
-            fcp:doShortcut(action)
-            :Catch(function(message)
-                dialog.displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
-                log.ef("Failed to trigger shortcut with action: %s; %s", hs.inspect(action), message)
-            end)
-            :Now()
+            --------------------------------------------------------------------------------
+            -- Defer the execution of the action:
+            --------------------------------------------------------------------------------
+            cachedAction = action
+            triggerDeferredAction()
         end)
         :onActionId(function()
             return "fcpxShortcuts"
