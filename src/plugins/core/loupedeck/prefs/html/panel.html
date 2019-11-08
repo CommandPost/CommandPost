@@ -113,7 +113,12 @@
 				{%
 				for _, v in pairs(groupLabels) do
 					local selected = ""
-					local selectedGroup = defaultGroup:sub(1, -2)
+					local selectedGroup
+					if defaultGroup:sub(-2) == "fn" then
+						selectedGroup = defaultGroup:sub(1, -4)
+					else
+						selectedGroup = defaultGroup:sub(1, -2)
+					end
 					if v.value == selectedGroup then selected = [[selected=""]] end
 				%}
 				<option {{selected}} value="{{v.value}}">{{v.label}}</option>
@@ -121,14 +126,28 @@
 			</select>
 		</span></th>
 		<th style="width: 5%;"><span class="loupedeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
-			<select id="loupedeckSubGroupSelect" style="width: 50px;" onchange="updateLoupedeckGroup()">
+			<select id="loupedeckSubGroupSelect" style="width: 100px;" onchange="updateLoupedeckGroup()">
 				{%
 				for i=1, numberOfSubGroups do
 					local selected = ""
 					local selectedSubGroup = defaultGroup:sub(-1)
 					if tostring(i) == selectedSubGroup then selected = [[selected=""]] end
+					if defaultGroup:sub(-2) == "fn" then selected = "" end
 				%}
 				<option {{selected}} value="{{i}}">{{i}}</option>
+				{% end %}
+				<option disabled>──────────</option>
+				{%
+				for i=1, numberOfSubGroups do
+					local selected = ""
+					local selectedSubGroup
+					if defaultGroup:sub(-2) == "fn" then
+						selectedSubGroup = defaultGroup:sub(1, -3)
+						selectedSubGroup = selectedSubGroup:sub(-1)
+					end
+					if tostring(i) == selectedSubGroup then selected = [[selected=""]] end
+				%}
+				<option {{selected}} value="{{i}}fn">{{i}} (Fn)</option>
 				{% end %}
 			</select>
 		</span></th>
