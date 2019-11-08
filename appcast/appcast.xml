@@ -8,14 +8,11 @@
 		<item>
 			<title>Version 1.0.0</title>
 			<description><![CDATA[
-				<strong>Woohoo!</strong> 🎉
-				After 78 releases of FCPX Hacks and 91 beta releases of CommandPost, we're extremely excited to announce that we're finally removing the beta from CommandPost. With over 3300 active monthly users and over 1208 users in our Facebook Community, we're very happy with the progress CommandPost has made over the last 3 years and we can't wait to show you what we have in-store for future releases!
-
-				Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.
-
-				Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!
-
-				<i>Chris Hocking & David Peterson</i>
+				<h2>Woohoo! 🎉</h2>
+				<p>After 78 releases of FCPX Hacks and 91 beta releases of CommandPost, we're extremely excited to announce that we're finally removing the beta from CommandPost. With over 3300 active monthly users and over 1208 users in our Facebook Community, we're very happy with the progress CommandPost has made over the last 3 years and we can't wait to show you what we have in-store for future releases!</p>
+				<p>Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.</p>
+				<p>Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!</p>
+				<p><i>Chris Hocking & David Peterson</i></p>
 			]]>
 			</description>
 			<pubDate>Fri,  8 Nov 2019 16:53:44 +1100</pubDate>
