@@ -16,7 +16,7 @@ local dialog                = require "cp.dialog"
 local Do                    = require "cp.rx.go.Do"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
-local If                    = require('cp.rx.go.If')
+local If                    = require "cp.rx.go.If"
 local tools                 = require "cp.tools"
 
 local childrenMatching      = axutils.childrenMatching
@@ -55,11 +55,12 @@ local DELAY = 0.2
 function mod.popupParameter(group, param, id, value, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(
-            Do(param:doShow())
+        :onPress(function()
+            return Do(param:doShow())
                 :Then(param:doSelectValue(value))
                 :Label("plugins.finalcutpro.tangent.common.popupParameter")
-        )
+                :Now()
+        end)
     return id + 1
 end
 
@@ -139,8 +140,8 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
                 updateUI:start()
             end
         end)
-        :onReset(
-            Do(function()
+        :onReset(function()
+            return Do(function()
                 popupSliderCache = type(defaultValue) == "number" and defaultValue or 1
             end)
                 :Then(
@@ -154,7 +155,8 @@ function mod.dynamicPopupSliderParameter(group, param, id, label, defaultValue)
                 popupSliderCache = nil
             end)
             :Label("plugins.finalcutpro.tangent.common.dynamicPopupSliderParameter.reset")
-        )
+            :Now()
+        end)
     return id + 1
 
 end
@@ -268,8 +270,8 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
             popupSliderCache = newID
             updateUI:start()
         end)
-        :onReset(
-            Do(function()
+        :onReset(function()
+            return Do(function()
                 popupSliderCache = resetIndex
             end)
                 :Then(param:doShow())
@@ -278,7 +280,8 @@ function mod.popupSliderParameter(group, param, id, label, options, resetIndex)
                     popupSliderCache = nil
                 end)
                 :Label("plugins.finalcutpro.tangent.common.popupSliderParameter.reset")
-        )
+                :Now()
+        end)
     return id + 1
 
 end
@@ -323,13 +326,15 @@ end
 function mod.checkboxParameter(group, param, id, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(
-            Do(param:doShow()):Then(
+        :onPress(function()
+            return Do(param:doShow()):Then(
                 If(param):Is(nil):Then():Otherwise(
                     param:doPress()
                 )
-            ):Label("plugins.finalcutpro.tangent.common.checkboxParameter")
-        )
+            )
+            :Label("plugins.finalcutpro.tangent.common.checkboxParameter")
+            :Now()
+        end)
     return id + 1
 end
 
@@ -406,8 +411,8 @@ function mod.checkboxSliderParameter(group, id, label, options, resetIndex)
                 updateUI:start()
             end
         end)
-        :onReset(
-            Do(function()
+        :onReset(function()
+            return Do(function()
                 cachedValue = 1
             end)
                 :Then(options[1].param:doShow())
@@ -416,7 +421,8 @@ function mod.checkboxSliderParameter(group, id, label, options, resetIndex)
                     cachedValue = nil
                 end)
                 :Label("plugins.finalcutpro.tangent.common.checkboxSliderParameter.reset")
-        )
+                :Now()
+        end)
     return id + 1
 
 end
@@ -453,11 +459,12 @@ end
 function mod.radioButtonParameter(group, param, id, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(
-            Do(param:doShow())
+        :onPress(function()
+            return Do(param:doShow())
                 :Then(param:doPress())
                 :Label("plugins.finalcutpro.tangent.common.radioButtonParameter")
-        )
+                :Now()
+        end)
     return id + 1
 end
 
@@ -477,11 +484,14 @@ end
 function mod.buttonParameter(group, param, id, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(
-            Do(param:doShow()):Then(
-                param:doPress()
-            ):Label("plugins.finalcutpro.tangent.common.buttonParameter")
-        )
+        :onPress(function()
+            return Do(param:doShow())
+                :Then(
+                    param:doPress()
+                )
+                :Label("plugins.finalcutpro.tangent.common.buttonParameter")
+                :Now()
+        end)
     return id + 1
 end
 
@@ -501,10 +511,11 @@ end
 function mod.doShowParameter(group, param, id, label)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(
-            Do(param:doShow())
-            :Label("plugins.finalcutpro.tangent.common.buttonParameter")
-        )
+        :onPress(function()
+            return Do(param:doShow())
+                :Label("plugins.finalcutpro.tangent.common.buttonParameter")
+                :Now()
+        end)
     return id + 1
 end
 
@@ -545,7 +556,9 @@ end
 function mod.shortcutParameter(group, id, label, shortcut)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(fcp:doShortcut(shortcut))
+        :onPress(function()
+            return fcp:doShortcut(shortcut):Now()
+        end)
     return id + 1
 end
 
@@ -565,7 +578,9 @@ end
 function mod.menuParameter(group, id, label, path)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(fcp:doSelectMenu(path))
+        :onPress(function()
+            return fcp:doSelectMenu(path):Now()
+        end)
     return id + 1
 end
 
@@ -585,7 +600,7 @@ end
 function mod.functionParameter(group, id, label, fn)
     group
         :action(id + 1, i18n(label, {default=label}))
-        :onPress(fn)
+        :onPress(function() fn() end)
     return id + 1
 end
 
@@ -689,8 +704,8 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
     local x, y = 0, 0
     local updateUI = deferred.new(DEFER)
     local updating = false
-    updateUI:action(
-        If(function() return not updating and (x ~= 0 or y ~= 0) end)
+    updateUI:action(function()
+        return If(function() return not updating and (x ~= 0 or y ~= 0) end)
         :Then(
             Do(param:doShow())
             :Then(function()
@@ -712,8 +727,10 @@ function mod.xyParameter(group, param, id, minValue, maxValue, stepSize)
                 mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
-        ):Label("plugins.finalcutpro.tangent.common.xyParameter.updateUI")
-    )
+        )
+        :Label("plugins.finalcutpro.tangent.common.xyParameter.updateUI")
+        :Now()
+    end)
 
     local label = param:label()
     local xParam = group:parameter(id + 1)
@@ -772,8 +789,8 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
     local value = 0
     local updateUI = deferred.new(DEFER)
     local updating = false
-    updateUI:action(
-        If(function() return not updating and value ~= 0 end)
+    updateUI:action(function()
+        return If(function() return not updating and value ~= 0 end)
         :Then(
             Do(param:doShow())
             :Then(function()
@@ -792,8 +809,10 @@ function mod.sliderParameter(group, param, id, minValue, maxValue, stepSize, def
                 mod._manager.controls:findByID(id + 1):update() -- Force the Tangent display to update.
                 updating = false
             end)
-        ):Label("plugins.finalcutpro.tangent.common.sliderParameter.updateUI")
-    )
+        )
+        :Label("plugins.finalcutpro.tangent.common.sliderParameter.updateUI")
+        :Now()
+    end)
 
     default = default or 0
     label = (label and i18n(label, {default=label})) or param:label()
@@ -842,8 +861,8 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
     local updateUI = deferred.new(DEFER)
     local updating = false
     local wasPlaying = false
-    updateUI:action(
-        If(function() return not updating and value ~= 0 end)
+    updateUI:action(function()
+        return If(function() return not updating and value ~= 0 end)
         :Then(
             Do(param:doShow())
             :Then(function()
@@ -873,8 +892,10 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
             :Then(function()
                 updating = false
                 end)
-        ):Label("plugins.finalcutpro.tangent.common.volumeSliderParameter.updateUI")
-    )
+        )
+        :Label("plugins.finalcutpro.tangent.common.volumeSliderParameter.updateUI")
+        :Now()
+    end)
 
     default = default or 0
     label = (label and i18n(label, {default=label})) or param:label()
