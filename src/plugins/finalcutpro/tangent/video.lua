@@ -4,7 +4,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "tangentVideo"
+--local log                   = require "hs.logger".new "tangentVideo"
 
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
