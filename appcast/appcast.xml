@@ -6,6 +6,583 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.91</title>
+			<description><![CDATA[
+				<h2>New in Beta 91:</h2>
+				<ul><li>CommandPost Beta 91 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>The Loupedeck+ Preferences panel now offers additional banks with a "Fn" suffix which allow you to have different actions when you hold down the "Fn" key (similar to the native Loupedeck+ application). You can still use the Fn key as a standalone button if desired.</li>
+				<li>Fixed bug which prevented any Final Cut Pro Menu Actions with "delete" in the name to work correctly.</li>
+				<li>Improved Performance of Command Editor Shortcut Actions, so they don't feel laggy on MIDI Devices (for example).</li>
+				<li>Added actions for "Go to Next/Previous Frame (with muted audio)". This temporarily mutes your speaker so that you can go frame by frame without sound.</li>
+				<li>Optimised various plugins to improve startup time.</li>
+				<li>Replaced "Paypal Donation to Developers" with "Sponsor CommandPost", which now points to the main CommandPost website.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 90:</h2>
+				<ul><li>CommandPost Beta 90 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>The "Reveal in Keyword Collection" action now correctly handles clips in a secondary storyline. It also now only lists keywords that are contained within the range of the clip in the timeline. You can now right-click on items in the "Reveal in Keyword Collection" Search Console to favourite or hide keywords.</li>
+				<li>The plugin scanner now correctly handles Motion Templates that have dots in their folder name (for example "Pixel Film Studios - FCPX Auto Tracker 2.1").</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 89:</h2>
+				<ul><li>CommandPost Beta 89 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>Added actions for "Reveal in Keyword Collection" and "Reveal in Keyword Collection & Solo".</li>
+				<li>Fixed the "Snippets" label in the Search Console Sections popup.</li>
+				<li>If "Automatically Check for Updates" is enabled, CommandPost will now automatically check for updates when the application is first launched, then every hour onwards. It will only prompt an update dialog box after there has been no keyboard or mouse movement for at least 30 seconds.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 88:</h2>
+				<ul><li>CommandPost Beta 88 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>Color Board Mouse Puck actions now open the Color Board when the keyboard shortcuts are pressed.</li>
+				<li>Fixed a bug that caused the "Opacity (Absolute)" MIDI action to fail when receiving 7-bit MIDI commands.</li>
+				<li>Fixed a bug related to Application actions in the Search Console.</li>
+				<li>Fixed a potential crash on some machines related to application menu items in the Search Console.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 87:</h2>
+				<ul><li>CommandPost Beta 87 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li></ul>
+
+				<h2>Name Changes:</h2>
+				<ul><li>Renamed "Caffeinate" to "Prevent Mac from Sleeping" to avoid any confusion.</li>
+				<li>We now refer to the Console as the "Search Console". We've also unified the Global Console and the Final Cut Pro specific Console, so now you can use the Global Search Console to also access Final Cut Pro actions. By default the shortcut for the system-wide Search Console is still CONTROL+OPTION+COMMAND+SPACE, and the default shortcut for the Final Cut Pro Search Console is still CONTROL+SPACE. You can customise these in the Shortcut Preferences panel, and remove the Final Cut Pro specific Search Console shortcut if wanted.</li></ul>
+
+				<h2>New Features:</h2>
+				<ul><li>Added a preferences panel for "Snippets". Code Snippets are simple Lua scripts, that can be easily thrown together, shared around, and triggered via actions. For example, a snippet can be triggered via the Search Console. This allows you to quickly code things without creating a plugin.</li>
+				<li>You can now launch all your installed application from the Search Console.</li>
+				<li>You can now access the menubar items of the active application from the Search Console.</li>
+				<li>You can now access a text Pasteboard History from the Search Console.</li>
+				<li>Added a Browser Batch Rename tool to the Final Cut Pro HUD.</li>
+				<li>Added action for "Copy Title Text Contents to Pasteboard".</li>
+				<li>Added action to "Set Camera LUT to None".</li>
+				<li>Added action for "Apply Keyword from Pasteboard".</li>
+				<li>Added actions to set the clip volume from -12 to +12.</li>
+				<li>Added actions to set the clip speed rate from -10000 to + 10000.</li>
+				<li>Added Screen Capture Actions.</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>Improved the Timeline Batch Export reliability. It now also has an option to "Ignore Background Tasks Warning", and support for variables when using Custom Filenames (such as date and time).</li>
+				<li>Added Korean Translation.</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed missing panel Preferences icons when using macOS Catalina.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 86:</h2>
+				<ul><li>CommandPost Beta 86 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>Improved the way the Final Cut Pro Timeline Batch Export feature selects the Share Destination from the menubar.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 85:</h2>
+				<ul><li>CommandPost Beta 85 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>There are now seperate actions for the Color Board controls and "Timeline Clip Height" - ones specifically designed for keyboard shortcuts (i.e. if you hold down a keyboard key, the action will repeat until you release the key) and ones designed for other devices (such as MIDI knobs and Touch Bar buttons).</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 84:</h2>
+				<ul><li>CommandPost Beta 84 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug introduced in Beta 83 which prevented certain menubar actions from triggering (such as custom workspaces and share destinations).</li>
+				<li>Fixed a bug which prevented individual actions for Titles & Generators from respecting timeline ranges in some cases.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 83:</h2>
+				<ul><li>CommandPost Beta 83 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added an action for "Focus on Title Text in Inspector".</li>
+				<li>Individual actions for Titles & Generators now respect timeline ranges.</li>
+				<li>Fixed a bug where some built-in Motion Templates would fail to appear correctly in the Console in languages other than English.</li>
+				<li>Improved Timeline Batch Export reliability.</li>
+				<li>Renamed the "Vertical Timeline Scroll" MIDI control to "Horizontal Timeline Scroll".</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 82:</h2>
+				<ul><li>CommandPost Beta 82 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added MIDI control for "Vertical Timeline Scroll".</li>
+				<li>Added actions for "Append/Replace Selected Title Text with Pasteboard Contents".</li>
+				<li>Fixed a bug where CommandPost would fail to load if run from a case-sensitive file system.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 81:</h2>
+				<ul><li>CommandPost Beta 81 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added action for "Open Recent Project Starting With 1-9".</li>
+				<li>Spatial Conform Actions now work correctly for Browser clips (in addition to timeline clips).</li>
+				<li>Improved the "Background Render" actions.</li>
+				<li>Improvements to German, Italian & Russian translations.</li>
+				<li>Improvements to Preferences interface in languages other than English.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 80:</h2>
+				<ul><li>CommandPost Beta 80 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added actions for Viewer Zoom Factor.</li>
+				<li>Added Caffeinate option to menubar, which prevents your Mac from sleeping.</li>
+				<li>Fixed bug in "Clear Notes on Selected Browser Clips" action.</li>
+				<li>Fixed bug in "Enable Timeline Zooming with Mouse Scroll & Modifier Key" feature.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 79:</h2>
+				<ul><li>CommandPost Beta 79 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added an action for "Play Full Screen & Stop".</li>
+				<li>Added individual reset menu items for draggable guides and a "Reset Overlays" menu item to reset all overlays.</li>
+				<li>Changed "Add Note to Selected Clip" to "Add Note to Selected Clip(s)". This action now works with multiple selected timeline or browser clips.</li>
+				<li>Fixed a bug where certain actions would fail if Final Cut Pro was in Japanese or Chinese.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 78:</h2>
+				<ul><li>CommandPost Beta 78 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>CommandPost is now notarised for easier installation on macOS Catalina.</li>
+				<li>Improved CommandPost's startup and restart times.</li>
+				<li>Improved CommandPost's performance when getting values of the Final Cut Pro menubar.</li>
+				<li>Re-designed Timeline Batch Export to be more reliable.</li>
+				<li>Improved performance when using actions on Loupedeck+ & MIDI devices.</li>
+				<li>Improved 14-bit MIDI actions.</li>
+				<li>Improved performance of Font actions.</li></ul>
+
+				<h2>New Actions:</h2>
+				<ul><li>Added action for "Create Optimized Media of Selected Clips" and "Create Proxy Media of Selected Clips".</li>
+				<li>Added actions to enable/disable individual effects in the Inspector.</li>
+				<li>Added additional shift amounts for the "Shift Position" actions.</li>
+				<li>Added actions for Crop & Distort.</li>
+				<li>Added action for "Set Viewer to Proxy/Original".</li></ul>
+
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed a bug when applying Titles & Generators in dual-screen layout.</li>
+				<li>Fixed a UI bug in the iMessage Notification Preferences.</li></ul>
+
+				<h2>Localisation:</h2>
+				<ul><li>Added translations for Greek, Malayalam and Swedish.</li>
+				<li>Updated translations for Arabic, Bengali, Chinese (Simplified), Chinese (Traditional), Dutch, French, German, Hindi, Italian, Japanese, Norwegian, Portuguese, Punjabi, Russian, Spanish, Ukrainian and Vietnamese.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 77:</h2>
+				<ul><li>CommandPost Beta 77 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added custom bank labels for Loupedeck+ and Stream Deck preferences panels.</li>
+				<li>Changing MIDI banks via an action now displays the custom bank label.</li>
+				<li>Color Wheel Tint actions now work correctly.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 76:</h2>
+				<ul><li>CommandPost Beta 76 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added the ability to label MIDI banks.</li>
+				<li>Added Final Cut Pro actions for "Toggle Equalization", "Toggle Loudness", "Toggle Noise Removal", "Toggle Hum Removal", "Toggle Audio Component 1-9" and "Toggle Audio Subcomponent 1-9".</li>
+				<li>Fixed a bug where MIDI support would incorrectly toggle when launching CommandPost.</li>
+				<li>Fixed a bug where the CommandPost icon could appear multiple times in the macOS status menubar.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 75:</h2>
+				<ul><li>CommandPost Beta 75 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Color Wheel actions now ensure that the Color Inspector is activated first.</li>
+				<li>Increased the height of the Stream Deck, Tangent, Shortcuts & MIDI Preferences panels.</li>
+				<li>Renamed "Error Log" to "Debug Console".</li>
+				<li>Increased the amount of custom Final Cut Pro actions in the Shortcuts Preferences panel from 20 to 50.</li>
+				<li>Changed the Touch Bar icon from the colour CommandPost icon to the black & white menubar icon.</li>
+				<li>Added a "Check for Updates Now" button in the General Preferences panel.</li>
+				<li>Renamed "Check for Updates" to "Automatically Check for Updates".</li>
+				<li>Added CommandPost version details to bottom of the menubar.</li>
+				<li>Removed "Suggest a translation" and "Report a translation mistake", and replaced with a button to "Help Translate CommandPost".</li>
+				<li>Renamed "Provide Feedback" to "Provide Feedback or Report Bug" and moved it to the main menubar.</li>
+				<li>Fixed various 14-bit MIDI control bugs.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 74:</h2>
+				<ul><li>CommandPost Beta 74 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added a new Preferences panel for Loupedeck+ support.</li>
+				<li>You can no longer use the MIDI Preferences panel to setup a Loupedeck+ device.</li>
+				<li>Fixed a bug where Color Board controls could fail if you have a comma as your decimal separator in macOS System Preferences.</li>
+				<li>Improved 14-bit MIDI support.</li>
+				<li>Improvements to the CommandPost Feedback Form.</li>
+				<li>Renamed "Apple Bug Reporter" to "Apple Feedback Assistant" to match Apple's recent changes.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 73:</h2>
+				<ul><li>CommandPost Beta 73 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Improved MIDI performance. You can now adjust multiple MIDI controls at the same time.</li>
+				<li>Final Cut Pro MIDI Controls have been renamed and improved.</li>
+				<li>Fixed a bug where Menu Item actions failed when Final Cut Pro was set to a language other than English.</li>
+				<li>Command Editor Shortcuts with special characters now display correctly in the Console.</li>
+				<li>Improved load times of the Finder & Shortcuts Preferences panels.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 72:</h2>
+				<ul><li>CommandPost Beta 72 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug where the Console failed to load on machines running High Sierra or earlier.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 71:</h2>
+				<ul><li>CommandPost Beta 71 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug where the Console could fail to load.</li>
+				<li>Fixed a bug where Spatial Conform actions failed when Final Cut Pro was set to a language other than English.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 70:</h2>
+				<ul><li>CommandPost Beta 70 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>CommandPost now works great with AudioSwift, allowing you to control CommandPost using a Trackpad (i.e. you can control the colour wheels with your MacBook Pro Trackpad).</li>
+				<li>Brought back and improved Stream Deck support (it was removed in a previous beta).</li>
+				<li>Activating the Console no longer makes the CommandPost application frontmost (i.e. if you open the Console from Final Cut Pro, Final Cut Pro remains active).</li>
+				<li>Added an action to "Clear Notes on Selected Browser Clips".</li>
+				<li>Improved CommandPost’s ability to read the Final Cut Pro Destination preferences.</li>
+				<li>"Save Timeline Index to CSV" now works correctly in the Tags tab.</li>
+				<li>Added "Insert Clips Vertically from Browser to Timeline" & "Zoom to Selection" to Tangent Mapper.</li>
+				<li>Fixed a bug in the MIDI Preferences where the "All" button didn’t copy across the action.</li>
+				<li>Fixed a bug where dialog boxes triggered from the "Text to Speech" tool didn’t come frontmost.</li>
+				<li>Fixed a bug where installing macOS Language Packs could confuse CommandPost’s ability to detect Final Cut Pro’s language.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 69:</h2>
+				<ul><li>CommandPost Beta 69 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug where custom titles within two sub-folders could fail to activate when triggered by an action.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 68:</h2>
+				<ul><li>CommandPost Beta 68 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added an action to "Modify Project".</li>
+				<li>Added actions for "Select Middle of Next/Previous Clip In Same Storyline".</li>
+				<li>Added actions to "Set Player Background to Black/White/Checkerboard" and "Toggle Player Background".</li>
+				<li>Added an action to "Insert Clips Vertically from Browser to Timeline".</li>
+				<li>Added actions that allow you to save and open user-defined favourite folders.</li>
+				<li>Actions for Rolling Shutter Amount & Stabilisation Method now enable stabilisation first.</li>
+				<li>Added an "All" button to MIDI Preferences which allows you to apply a line item to all banks of the same application.</li>
+				<li>Added a button to the MIDI Preferences to reset the selected bank and changed the MIDI Preferences panel button wording so that it’s consistent with the Touch Bar preferences.</li>
+				<li>Improved HUD Notes performance.</li>
+				<li>Overlays now work correctly when Final Cut Pro is in a zoomed window.</li>
+				<li>Added support for the older Axel colour preset format.</li>
+				<li>Fixed a bug where actions with a % symbol in the title would fail.</li>
+				<li>Updated the Apple Feedback Form helpers based on their new wording.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 67:</h2>
+				<ul><li>CommandPost Beta 67 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug where pressing Touch Bar buttons would incorrectly trigger the action twice.</li>
+				<li>Added actions to increase and decrease Scale/Position/Rotation values by 0.1.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 66:</h2>
+				<ul><li>CommandPost Beta 66 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>General improvements and refinements to Batch Export.</li>
+				<li>You can now use the OPTION+LEFT/RIGHT ARROW shortcut keys to toggle through Console sections.</li>
+				<li>Added actions to Shift Scale/Position/Rotation by 1, 5 and 10 pixels/degrees.</li>
+				<li>Fixed bug in Color Board Master Exposure Touch Bar widget.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 65:</h2>
+				<ul><li>CommandPost Beta 65 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>General improvements and refinements for Tangent users.</li>
+				<li>The Final Cut Pro plugin scanner has been improved so that more plugins and motion effects are available in the Console. It now also provides a macOS notification when we detect that a new plugin or motion effect has been installed.</li>
+				<li>Fixed a bug in Batch Export where the list of destinations could sometimes not be correctly determined.</li>
+				<li>Added Console toolbar buttons for Touch Bar Bank & Widgets.</li>
+				<li>Added Console toolbar buttons to the HUD actions selector.</li>
+				<li>Added Audio Fade In & Out, Denoise & Echo Remover Touch Bar icons - kindly created by Michael Lunt.</li>
+				<li>"Open Error Log on Dock Icon Click" is now enabled by default when doing a fresh install of CommandPost.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 64:</h2>
+				<ul><li>CommandPost Beta 64 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>CommandPost can now trigger Final Cut Pro shortcuts that contain the "return" key.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 63:</h2>
+				<ul><li>CommandPost Beta 63 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Improved the Console Toolbar buttons.</li>
+				<li>Added Tangent buttons for changing Workspaces in Final Cut Pro.</li>
+				<li>Added "Save Timeline Index to CSV" and "Save Browser Contents to CSV" to the CommandPost menubar.</li>
+				<li>Tangent Color Wheel Tint control now supports values with decimal places.</li>
+				<li>Tangent Color Wheel Hue control now loops back to zero after you pass 360.</li>
+				<li>The Touch Bar & MIDI Preferences now have a unique Console per group (as opposed to per bank) so you can favourite or hide items across an entire group. We've also added buttons to these Consoles to match the Final Cut Pro Console.</li>
+				<li>The Touch Bar label is now automatically populated when you select an action.</li>
+				<li>Added options to reset “Everything”, “Application” or “Bank” in the Touch Bar Preferences.</li>
+				<li>Minor tweaks to the Tangent Element default layout.</li>
+				<li>Tangent panels now show the correct value on the display when moving knobs and wheels.</li>
+				<li>Added a temporary settings panel in Preferences to open the settings folder. We will add proper import/export support in a future release.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 62:</h2>
+				<ul><li>CommandPost Beta 62 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Added buttons to the top of the Final Cut Pro Console to allow for faster and easier filtering of a section.</li>
+				<li>Added actions for "Save Timeline Index to CSV" and "Save Browser Contents to CSV".</li>
+				<li>CommandPost will now automatically switch spaces if you have the Preferences panel already open on another space when opening Preferences via the menubar or shortcut key.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 61:</h2>
+				<ul><li>CommandPost Beta 61 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li><strong>IMPORTANT CHANGE:</strong> We've removed the "Global", "FCP: Video" and "FCP: Board" Tangent modes, and CommandPost now only ships with a default "FCP: Wheels" mode. Rather than using "modes" on the Tangent Element & Wave default layouts, we've decided to use "banks" instead. These default layouts are still very much a work-in-progress, and we'd love your feedback. As always, you can customise your layouts however you want in the Tangent Mapper - so this change will only affect users that have already customised their layouts using these modes.</li>
+				<li>Fixed a bug which prevented user-created Workspaces from appearing in the Console.</li>
+				<li>Added actions to "Show Horizon" in both the Viewer and Event Viewer.</li>
+				<li>Added "Show Horizon" buttons to Tangent Mapper.</li>
+				<li>Added a Tangent Knob for Audio Pan Amount.</li>
+				<li>The Tangent display now shows the correct value when resetting knobs.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 60:</h2>
+				<ul><li>CommandPost Beta 60 supports Final Cut Pro 10.4.4 or later (including 10.4.6).</li>
+				<li>Fixed a bug in Timeline Batch Export when using dual screens.</li>
+				<li>User supplied Touch Bar icons are now scaled down so they have consistent padding to match native Touch Bar icons.</li>
+				<li>Added Tangent buttons for “Show Video Inspector”, “Create Storyline”, “Overwrite to Primary Storyline”, “Lift from Storyline” and “Select Next/Previous/Above/Below”.</li>
+				<li>Fixed a bug when using certain Tangent knobs that control popup menus in Final Cut Pro (such as Blend Modes).</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 59:</h2>
+				<ul><li>CommandPost Beta 58 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.6 yet).</li>
+				<li>You can now control almost every parameter in the Final Cut Pro Inspector, Browser and Viewer via any Tangent Panel or the Tangent iOS & Android App. The options available in the Tangent Mapper are now extremely extensive and flexible. We haven’t updated the default Tangent layouts yet, so please customise to your liking, and share your layouts with the CommandPost community.</li>
+				<li>Added an action to show the HUD Search Panel.</li>
+				<li>Fixed a bug that would cause certain CommandPost features to fail if your system’s decimal number separator was set to "," instead of ".".</li>
+				<li>Fixed a bug where certain CommandPost features would fail if you were using dual screens, with your timeline on the secondary screen.</li>
+				<li>Fixed a bug where showing the event viewer on the primary display would fail if your Final Cut Pro language was set to German.</li>
+				<li>Fixed a bug in the "Ignore Inserted Camera Cards" feature.</li>
+				<li>Fixed a bug when displaying a Watch Folder error message.</li>
+				<li>Fixed a bug in the "Move to Playhead" action.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 58:</h2>
+				<ul><li>CommandPost Beta 58 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Fixed a bug that could cause CommandPost to freeze if you changed the Preferences Panels really quickly.</li>
+				<li>Added Final Cut Pro Blend Mode actions to Tangent Panels, so you can select the blend mode via a knob, wheel or button.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 57:</h2>
+				<ul><li>CommandPost Beta 57 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Saturation & Brightness values are now correctly displayed on Tangent Panels.</li>
+				<li>RGB values are now displayed on the Tangent Element when controlling the colour wheels. Tangent Hub 1.5.3 or later is required to show the red value on the Tangent  Element-Tk panel.</li>
+				<li>The performance of the Timeline Zoom control for Tangent panels has been improved and is now included as a knob on the default Tangent Element Layout in the Video Mode.</li>
+				<li>A link to the User Guide explaining why we removed "Moveable Markers" has been added to the Final Cut Pro Preferences window.</li>
+				<li>Added a "Search Entire Library" option to the HUD Search Panel.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 56:</h2>
+				<ul><li>CommandPost Beta 56 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Fixed a bug in the HUD Search Panel where a search could fail without any warnings if you didn't have "group by" enabled or if you have a collection/event selected which only had clips and no projects (or vice versa).</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 55:</h2>
+				<ul><li>CommandPost Beta 55 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>General Improvements to the HUD Search Panel.</li>
+				<li>Renamed "Match Words" to "Exact Match" to make it clearer.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 54:</h2>
+				<ul><li>CommandPost Beta 54 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>General Improvements to the HUD Search Panel.</li>
+				<li>We've added new options such as "Match Words", "Whole Words", and "Filter Browser Before Search".</li>
+				<li>We've fixed a bug so you can now press "return" on a HUD Search Panel popup without it accidentally triggering the search again.</li>
+				<li>We've changed the "All" column option to "All Visible Columns".</li>
+				<li>Search now takes into account the position of the currently selected row.</li>
+				<li>We now only open disclosed rows when needed, rather than all at once when "Find" is initially clicked.</li>
+				<li>The search now aborts after searching through 500 cells.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 53:</h2>
+				<ul><li>CommandPost Beta 53 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Various improvements and bug fixes for the HUD Search Panel. Also added new features such as a search history, option to "Loop Search", ability to search "All" columns, ability to search the "Name" column and option to "Open Project After Find".</li>
+				<li>Fixed a bug which prevented the "Launch Final Cut Pro" action from working on Tangent Panels.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 52:</h2>
+				<ul><li>CommandPost Beta 52 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Fixed a bug that prevented any action that used "Open in Angle Editor" from working, such as "Reveal Multicam Clip in Angle Editor".</li>
+				<li>Fixed a bug that prevented "Paste Markers to Selected Clip in Browser from Pasteboard" from working correctly.</li>
+				<li>Added a new action called "Add Markers to Selected Clip in Browser from Frame.io CSV".</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 51:</h2>
+				<ul><li>CommandPost Beta 51 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Improved the HUD Search Panel performance.</li>
+				<li>The HUD Search Panel now triggers "Find" if you press return whilst in the search text box.</li>
+				<li>Added "Match Case" and "Play After Find" options to the HUD Search Panel.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 50:</h2>
+				<ul><li>CommandPost Beta 50 supports Final Cut Pro 10.4.4 or later (as it seems there's still a lot of users who haven't updated to 10.4.5 yet).</li>
+				<li>Added a new Search panel to the HUD that allows you to search all the Final Cut Pro Browser Columns. This is useful if you have Notes on keyword ranges (i.e. when using Simon Says).</li>
+				<li>Fixed a bug that could cause the Browser Layout functions to fail.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 49:</h2>
+				<ul><li>CommandPost Beta 49 supports Final Cut Pro 10.4.5 or later.</li>
+				<li>Fixed a bug that prevented "Enable Rendering During Playback" from working correctly.</li>
+				<li>Added "Go To Share Inspector" Action.</li>
+				<li>Tweaked the Console icons.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 48:</h2>
+				<ul><li>Added icons for different sections to the Console.</li>
+				<li>Moved the auto-mount hard drives features to a new Finder Preferences panel.</li>
+				<li>Added an option to disable the power chime sound when you connect power to a laptop.</li>
+				<li>Brought back the command line interface. You can now enable/disable it via the Scripting Preferences panel.</li>
+				<li>AppleScript support is now off by default. You can enable/disable it via the Scripting Preferences panel.</li>
+				<li>Fixed a bug which caused HUD panel sizes to be incorrect if you changed the toolbar size.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 47:</h2>
+				<ul><li>Added a “Go To Generator Inspector” action.</li>
+				<li>Added actions for Rolling Shutter controls.</li>
+				<li>Added actions for Video Layer Blend Modes.</li>
+				<li>Improved the Stabilisation actions.</li>
+				<li>Fixed a bug where plugins would fail to populate the Console if you have a plugin installed without a name.</li>
+				<li>Fixed a bug where the Notes HUD panel would not scroll correctly.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 46:</h2>
+				<ul><li>General improvements and bug fixes for the HUD. The "Find" shortcut now works correctly. We've added a "Clear" button to the Pasteboard & FCPXML Panels. We've disabled dragging and dropping to the code editor on the Pasteboard & FCPXML Panels to avoid confusion.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 45:</h2>
+				<ul><li>We've completely rewritten the HUD. It now uses a panel system, so that we can add additional functionality to it over time. Like Final Cut Pro Workflow Extensions, the HUD now remembers its position per Workspace, and also has window snapping. We've added lots more buttons - there's a panel with 10, 12 and 24 customisable buttons (just right click on them to assign an action or rename them). We've also added a FCPXML and Pasteboard editor, as well as a system and per-library notes system, so that your notes travel with your Final Cut Pro library. Enjoy!</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 44:</h2>
+				<ul><li>General improvements and bug fixes for Browser Layouts.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 43:</h2>
+				<ul><li>Fixed a bug that prevents the HUD from loading (introduced in Beta 39).</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 42:</h2>
+				<ul><li>Fixed a bug which would generate errors if you're using Final Cut Pro 10.4.4 or earlier.</li>
+				<li>Fixed a bug which would generate an unnecessary beep when using "Restore Browser Layout for Selected Collection" if you click the library or an event.</li>
+				<li>Improved the error handling of the column popup in the browser when using Browser Layouts.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 41:</h2>
+				<ul><li>Added a “Backup Internal” and “Backup Minimum Duration” preference for Final Cut Pro (was removed in a previous beta).</li></ul>
+
+				<h2>New Actions:</h2>
+				<ul><li>Solo Clip in Browser</li>
+				<li>Set Browser Duration</li>
+				<li>Browser Clip Height Increase/Decrease</li>
+				<li>Browser Duration Increase/Decrease</li>
+				<li>Type Date & Time (in the "YYYYMMDD HHMM" format)</li>
+				<li>Save/Restore Browser Layout to Memory</li>
+				<li>Save/Restore/Reset Browser Layout for Selected Collection</li></ul>
+
+				<h2>New Touch Bar Widgets:</h2>
+				<ul><li>Browser Duration Slider</li>
+				<li>Browser Height Slider</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed bug where Final Cut Pro would load the Info Inspector instead of the Video inspector when switching to Video mode on a Tangent Panel.</li>
+				<li>Noise Reduction is now correctly listed in the Console.</li>
+				<li>Batch Export tool now ensures that you’re in the HH:MM:SS:FF Time Display.</li>
+				<li>We now force garbage collection every 60sec in an effort to try and get around a strange memory leak issue some users have reported.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 40:</h2>
+				<ul><li>General performance and usability improvements to CommandPost Preferences window.</li>
+				<li>Added Final Cut Pro Viewer Overlay options to system menubar.</li>
+				<li>Minor interface improvements to Batch Export window.</li>
+				<li>Added buttons to easily rearrange Touch Bar items in Preferences.</li>
+				<li>You can now add a text label to Touch Bar banks.</li>
+				<li>Increased MIDI & Touch Bar banks from 5 to 9.</li>
+				<li>Added actions to allow you to switch Touch Bar banks.</li>
+				<li>Removed the Advanced Preferences panel.</li>
+				<li>Removed the Command Line helper tool.</li>
+				<li>Removed MIDI MTC & MMC functionality.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 39:</h2>
+				<ul><li>Added actions for opening the Info, Audio, Title, Text and Video Inspectors.</li>
+				<li>Added action for "Rename Clip" in the Final Cut Pro timeline.</li>
+				<li>Added support for the Final Cut Pro Trial version.</li>
+				<li>Compressor Watch Folders now supports the new <code>.compressorsetting</code> file extension.</li>
+				<li>Added menu items to send Apple feedback on Motion & Compressor.</li>
+				<li>Removed Shared XMLs, Voice Commands, WebApp, and Stream Deck features.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 38:</h2>
+				<ul><li>Fixed a bug where the Timeline Batch Export could fail if your timeline is a frame rate with a decimal place in it (i.e. 23.976fps).</li>
+				<li>Fixed a bug where CommandPost would stall when scanning for Final Cut Pro plugins if the <code>~/Movies/Motion Templates.localized</code> folder didn't exist.</li>
+				<li>Fixed a bug in Automatic Script Reloading.</li>
+				<li>Removed "Moveable Markers" functionality to comply with sandboxing rules.</li>
+				<li>Moved the "Waveform Drawing", "Rendering During Playback" and "Timeline in Player" features from the menubar to Final Cut Pro Preferences Panel.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 37:</h2>
+				<ul><li>Colour wheels now work correctly in Final Cut Pro 10.4.4 with Tangent panels and MIDI devices.</li>
+				<li>Fixed bug in Tangent Favourites.</li>
+				<li>Fixed the "Play" voice command.</li>
+				<li>The Final Cut Pro feedback forms now correctly select macOS Mojave releases and the correct MacBook Pro model.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 36:</h2>
+				<ul><li>Fixed Touch Bar support on macOS Mojave.</li>
+				<li>Removed eGPU Preference, as it's now built-in to Mojave.</li>
+				<li>Added ability to show/hide the secret FCPXML import/export settings.</li>
+				<li>Fixed a crash that happened when the setup window was closed.</li>
+				<li>CommandPost now comes to front when you click the update menubar item.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 35:</h2>
+				<ul><li>CommandPost now only supports the latest version of Final Cut Pro (10.4.4).</li>
+				<li>Removed Timecode Overlays & Batch Export from Browser as this functionality is now native to Final Cut Pro 10.4.4.</li>
+				<li>Fixed a bug in Batch Export destinations.</li>
+				<li>Added ability to ignore invalid captions when Batch Exporting from the timeline.</li>
+				<li>Renamed "Single Match Frame and Highlight" to "Reveal Single Clip in Browser & Highlight" to be consistent with the Final Cut Pro naming.</li></ul>
+			]]>
+			</description>
+			<pubDate>Fri,  8 Nov 2019 16:19:02 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.91/CommandPost_1.0.0-beta.91.dmg"
+				sparkle:version="5679"
+                sparkle:shortVersionString="1.0.0-beta.91"
+				sparkle:dsaSignature="MC4CFQDGZ9RCUSp7SdDEBVhRk+wYq/ZN9QIVAOV+O6pBQHhAc3/wfE69HlJa3OrD"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.90</title>
 			<description><![CDATA[
 				<h2>New in Beta 90:</h2>
@@ -10285,7 +10862,6 @@
 			/>
 			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
 		</item>
-
 		<item>
 			<title>Version 1.0.0-beta.67</title>
 			<description><![CDATA[
