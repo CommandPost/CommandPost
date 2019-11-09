@@ -23,7 +23,7 @@
 				<li>Fixed a bug where Snippets assigned as an action (i.e. as a keyboard shortcut) would not trigger the latest Snippet code if the Snippet was updated in the Preferences panel after being assigned. Thanks for reporting Stefan Benz!</li></ul>
 
 				<h3>New Additions:</h3>
-				<ul><li>Added Polish Translation. Thanks Robert!</li><ul>
+				<ul><li>Added Polish Translation. Thanks Robert!</li></ul>
 
 				<hr />
 
