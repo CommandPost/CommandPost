@@ -53,22 +53,28 @@
 --- and "Xsend Motion" from your Final Cut Pro destinations preferences, they'll come
 --- back after you restart FCPX.
 
+----------------------------------------------------------------------------------
+-- TODO: This code currently doesn't work with hs.plist, which is why we're still
+--       using cp.plist. Will re-investigate once we have hs.plist.readString()
+----------------------------------------------------------------------------------
+
 local require = require
 
 --local log               = require "hs.logger".new "destinations"
 
 local fs                = require "hs.fs"
-local plist             = require "hs.plist"
 
 local archiver          = require "cp.plist.archiver"
 local fcpApp            = require "cp.apple.finalcutpro.app"
 local fcpStrings        = require "cp.apple.finalcutpro.strings"
+local plist             = require "cp.plist"
 local tools             = require "cp.tools"
 
 local moses             = require "moses"
 
 local detect            = moses.detect
 local doesFileExist     = tools.doesFileExist
+local fileToTable       = plist.fileToTable
 local spairs            = tools.spairs
 local tableContains     = tools.tableContains
 
@@ -108,7 +114,7 @@ end
 --  * A table of unarchived property list data.
 local function readDestinationFile(path)
     local destinations = {}
-    local destinationsPlist = plist.read(path)
+    local destinationsPlist = fileToTable(path)
     if destinationsPlist and destinationsPlist.FFShareDestinationsKey then
         local data = archiver.unarchiveBase64(destinationsPlist.FFShareDestinationsKey)
         if data and data.root then
