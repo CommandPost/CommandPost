@@ -260,10 +260,13 @@ function plugin.init(deps, env)
             end
         end)
         :onExecute(function(action)
-            local code = action.code
-            local successful, message = pcall(load(code))
-            if not successful then
-                blockAlert(i18n("snippetExecuteError"), message, i18n("ok"))
+            local snippets = mod.snippets()
+            local code = snippets[action.id] and snippets[action.id].code
+            if code then
+                local successful, message = pcall(load(code))
+                if not successful then
+                    blockAlert(i18n("snippetExecuteError"), message, i18n("ok"))
+                end
             end
         end)
         :onActionId(function(params)
