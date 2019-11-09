@@ -307,7 +307,7 @@ function wait_for_notarization() {
             echo -n "."
         else
             echo ""
-            fail "Unknown output: ${OUTPUT}"
+            #fail "Unknown output: ${OUTPUT}"
         fi
         sleep 60
     done
