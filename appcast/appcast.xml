@@ -6,6 +6,48 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.1</title>
+			<description><![CDATA[
+				<h2>Woohoo! 🎉</h2>
+				<p>After 78 releases of FCPX Hacks and 91 beta releases of CommandPost, we're extremely excited to announce that we're finally removing the beta from CommandPost. With over 3300 active monthly users and over 1208 users in our Facebook Community, we're very happy with the progress CommandPost has made over the last 3 years and we can't wait to show you what we have in-store for future releases!</p>
+				<p>Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.</p>
+				<p>Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!</p>
+				<p><i>Chris Hocking & David Peterson</i></p>
+
+				<hr />
+
+				<h2>New in 1.0.1:</h2>
+
+				<h3>Bug Fixes:</h3>
+				<ul><li>Fixed a bug where the Timeline Batch Export feature would not list all the installed Destination Presets. Thanks for reporting Edgar Davis!</li>
+				<li>Fixed a bug where Snippets assigned as an action (i.e. as a keyboard shortcut) would not trigger the latest Snippet code if the Snippet was updated in the Preferences panel after being assigned. Thanks for reporting Stefan Benz!</li></ul>
+
+				<h3>New Additions:</h3>
+				<ul><li>Added Polish Translation. Thanks Robert!</li><ul>
+
+				<hr />
+
+				<h2>New in Beta 91:</h2>
+
+				<ul><li>CommandPost Beta 91 supports Final Cut Pro 10.4.4 or later (including 10.4.7).</li>
+				<li>The Loupedeck+ Preferences panel now offers additional banks with a "Fn" suffix which allow you to have different actions when you hold down the "Fn" key (similar to the native Loupedeck+ application). You can still use the Fn key as a standalone button if desired.</li>
+				<li>Fixed bug which prevented any Final Cut Pro Menu Actions with "delete" in the name to work correctly.</li>
+				<li>Improved Performance of Command Editor Shortcut Actions, so they don't feel laggy on MIDI Devices (for example).</li>
+				<li>Added actions for "Go to Next/Previous Frame (with muted audio)". This temporarily mutes your speaker so that you can go frame by frame without sound.</li>
+				<li>Optimised various plugins to improve startup time.</li>
+				<li>Replaced "Paypal Donation to Developers" with "Sponsor CommandPost", which now points to the main CommandPost website.</li></ul>
+			]]>
+			</description>
+			<pubDate>Sun, 10 Nov 2019 00:06:24 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.1/CommandPost_1.0.1.dmg"
+				sparkle:version="5683"
+                sparkle:shortVersionString="1.0.1"
+				sparkle:dsaSignature="MC4CFQC1HwIGQsvMT3vaQCHZb0CWUcM/AQIVANmJGOSozqqCnwU2veku8QkJOmB6"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0</title>
 			<description><![CDATA[
 				<h2>Woohoo! 🎉</h2>
