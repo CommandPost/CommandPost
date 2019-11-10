@@ -23,50 +23,52 @@ local plugin = {
 function plugin.init(deps)
     deps.fcpxCmds
         :add("goToAudioInspector")
-        :whenActivated(fcp:inspector():audio():doShow())
+        :whenActivated(function() fcp:inspector():audio():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("audio") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToInfoInspector")
-        :whenActivated(fcp:inspector():info():doShow())
+        :whenActivated(function() fcp:inspector():info():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("info") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToTitleInspector")
-        :whenActivated(fcp:inspector():title():doShow())
+        :whenActivated(function() fcp:inspector():title():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("title") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToTextInspector")
-        :whenActivated(fcp:inspector():text():doShow())
+        :whenActivated(function() fcp:inspector():text():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("text") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToVideoInspector")
-        :whenActivated(fcp:inspector():video():doShow())
+        :whenActivated(function() fcp:inspector():video():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("video") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToGeneratorInspector")
-        :whenActivated(fcp:inspector():generator():doShow())
+        :whenActivated(function() fcp:inspector():generator():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("generator") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToShareInspector")
-        :whenActivated(fcp:inspector():share():doShow())
+        :whenActivated(function() fcp:inspector():share():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("share") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("goToTransitionInspector")
-        :whenActivated(fcp:inspector():transition():doShow())
+        :whenActivated(function() fcp:inspector():transition():doShow():Now() end)
         :titled(i18n("goTo") .. " " .. i18n("transition") .. " " .. i18n("inspector"))
 
     deps.fcpxCmds
         :add("modifyProject")
-        :whenActivated(Do(fcp:inspector():projectInfo():doShow())
-            :Then(fcp:inspector():projectInfo():modify():doPress())
-            :Label("plugins.finalcutpro.inspector.show.modifyProject")
-        )
+        :whenActivated(function()
+            Do(fcp:inspector():projectInfo():doShow())
+                :Then(fcp:inspector():projectInfo():modify():doPress())
+                :Label("plugins.finalcutpro.inspector.show.modifyProject")
+                :Now()
+        end)
         :titled(i18n("modifyProject"))
 end
 

@@ -92,7 +92,7 @@ end
 
 --- plugins.core.tangent.manager.named:nameX(value) -> string | self
 --- Method
---- Sets the name `X`, where `X` is a number as defined when the `named` was creted.
+--- Sets the name `X`, where `X` is a number as defined when the `named` was created.
 ---
 --- Parameters:
 --- * value - The new name value.

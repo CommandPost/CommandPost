@@ -8,33 +8,33 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
-local require = require
+local require           = require
 
-local log                                       = require("hs.logger").new("tangentMan")
+local log               = require "hs.logger".new "tangentMan"
 
-local application                               = require("hs.application")
-local fs                                        = require("hs.fs")
-local inspect                                   = require("hs.inspect")
-local tangent                                   = require("hs.tangent")
-local timer                                     = require("hs.timer")
+local application       = require "hs.application"
+local fs                = require "hs.fs"
+local inspect           = require "hs.inspect"
+local tangent           = require "hs.tangent"
+local timer             = require "hs.timer"
 
-local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local is                                        = require("cp.is")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
-local x                                         = require("cp.web.xml")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local is                = require "cp.is"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local x                 = require "cp.web.xml"
 
-local action                                    = require("action")
-local controls                                  = require("controls")
-local menu                                      = require("menu")
-local mode                                      = require("mode")
-local parameter                                 = require("parameter")
+local action            = require "action"
+local controls          = require "controls"
+local menu              = require "menu"
+local mode              = require "mode"
+local parameter         = require "parameter"
 
-local doAfter                                   = timer.doAfter
-local format                                    = string.format
-local insert, sort                              = table.insert, table.sort
-
+local doAfter           = timer.doAfter
+local format            = string.format
+local insert            = table.insert
+local sort              = table.sort
 
 local mod = {}
 
@@ -678,7 +678,6 @@ end
 function mod._test(...)
     return require("all_tests")(...)
 end
-
 
 local plugin = {
     id          = "core.tangent.manager",

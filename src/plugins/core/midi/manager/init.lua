@@ -33,6 +33,11 @@ mod.DEFAULT_GROUP = "global"
 --- The default MIDI controls, so that the user has a starting point.
 mod.DEFAULT_MIDI_CONTROLS = default
 
+--- plugins.core.midi.manager.loupedeckFnPressed -> boolean
+--- Variable
+--- Is the Fn key on the Loupedeck+ pressed?
+mod.loupedeckFnPressed = false
+
 -- midiActions -> table
 -- Variable
 -- A table of all the MIDI actions.
@@ -646,6 +651,12 @@ end
 ---  * None
 function mod.forceLoupedeckGroupChange(combinedGroupAndSubGroupID, notify)
     if combinedGroupAndSubGroupID then
+        --------------------------------------------------------------------------------
+        -- Remove the "fn" from the end of the group if it exists:
+        --------------------------------------------------------------------------------
+        if string.sub(combinedGroupAndSubGroupID, -2) == "fn" then
+            combinedGroupAndSubGroupID = string.sub(combinedGroupAndSubGroupID, 1, -3)
+        end
         local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
         local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
         if group and subGroup then
@@ -826,7 +837,24 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
     local group = cachedActiveGroupAndSubgroup
 
     if deviceName == "Loupedeck+" then
+        --------------------------------------------------------------------------------
+        -- Get the group from the cache for faster lookup:
+        --------------------------------------------------------------------------------
         group = cachedLoupedeckActiveGroupAndSubgroup
+
+        --------------------------------------------------------------------------------
+        -- Treat the "Fn" key as a modifier and adjust the group accordingly:
+        --------------------------------------------------------------------------------
+        if metadata.note and metadata.note == 110 and metadata.channel and metadata.channel == 0 then
+            if commandType == "noteOn" then
+                mod.loupedeckFnPressed = true
+            elseif commandType == "noteOff" then
+                mod.loupedeckFnPressed = false
+            end
+        end
+        if mod.loupedeckFnPressed then
+            group = group .. "fn"
+        end
     end
 
     local channel = metadata.channel

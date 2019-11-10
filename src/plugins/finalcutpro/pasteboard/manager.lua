@@ -737,7 +737,7 @@ function plugin.init(deps)
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
         :add("cpCopyWithCustomLabel")
-        :whenActivated(mod.copyWithCustomClipName)
+        :whenActivated(function() mod.copyWithCustomClipName() end)
 
     --------------------------------------------------------------------------------
     -- Pasteboard Buffer:
@@ -746,12 +746,12 @@ function plugin.init(deps)
         fcpxCmds
             :add("saveToPasteboardBuffer" .. tostring(id))
             :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(mod.doSaveToBuffer(id))
+            :whenActivated(function() mod.doSaveToBuffer(id):Now() end)
 
         fcpxCmds
             :add("restoreFromPasteboardBuffer" .. tostring(id))
             :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(mod.doRestoreFromBuffer(id))
+            :whenActivated(function() mod.doRestoreFromBuffer(id):Now() end)
     end
 
     return mod

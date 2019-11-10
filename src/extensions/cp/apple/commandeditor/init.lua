@@ -3,14 +3,15 @@
 --- Functions to control and manage Apple's Command Editor - used in Final Cut Pro,
 --- Motion and Compressor.
 
-local require               = require
-local log										= require("hs.logger").new("cmdEditor")
+local require           = require
+local log               = require "hs.logger".new "cmdEditor"
 
-local fnutils               = require("hs.fnutils")
+local fnutils           = require "hs.fnutils"
 
-local shortcut						  = require("cp.commands.shortcut")
-local tools									= require("cp.tools")
+local shortcut          = require "cp.commands.shortcut"
+local tools             = require "cp.tools"
 
+local contains          = fnutils.contains
 
 local mod = {}
 
@@ -122,16 +123,14 @@ end
 --- Notes:
 ---  * This function only takes into account 'ctrl', 'alt', 'cmd', 'shift'.
 function mod.modifierMatch(inputA, inputB)
-
     local match = true
 
-    if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-    if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-    if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-    if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
+    if contains(inputA, "ctrl") and not contains(inputB, "ctrl") then match = false end
+    if contains(inputA, "alt") and not contains(inputB, "alt") then match = false end
+    if contains(inputA, "cmd") and not contains(inputB, "cmd") then match = false end
+    if contains(inputA, "shift") and not contains(inputB, "shift") then match = false end
 
     return match
-
 end
 
 --- cp.apple.commandeditor.modifierMaskToModifiers() -> table
@@ -144,7 +143,6 @@ end
 --- Returns:
 ---  * A table of modifier strings.
 function mod.modifierMaskToModifiers(value)
-
     local modifiers = {
         ["alphashift"]  = 1 << 16,
         ["shift"]       = 1 << 17,
@@ -165,7 +163,6 @@ function mod.modifierMaskToModifiers(value)
     end
 
     return answer
-
 end
 
 --- cp.apple.commandeditor.shortcutsFromCommandSet(id, commandSet) -> table
@@ -179,7 +176,6 @@ end
 --- Returns:
 ---  * A table of shortcuts for a specific command.
 function mod.shortcutsFromCommandSet(id, commandSet)
-
     if not id then
         log.ef("Shortcuts from Command Set is missing an ID: %s", id)
         return nil
@@ -237,7 +233,6 @@ function mod.shortcutsFromCommandSet(id, commandSet)
     end
 
     return shortcuts
-
 end
 
 return mod
