@@ -21,8 +21,6 @@ local text                              = require "cp.web.text"
 local tools                             = require "cp.tools"
 
 local Do                                = require "cp.rx.go.Do"
-local If                                = require "cp.rx.go.If"
-local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
 local concat                            = table.concat
 local contentsInsideBrackets            = tools.contentsInsideBrackets
