@@ -43,12 +43,12 @@ mod.visibility = config.prop("virtualTouchBarVisibility", mod.VISIBILITY_FCP)
 --  * None
 function mod._checkVisibility(active)
     if mod.visibility() == mod.VISIBILITY_ALWAYS then
-        mod._manager.show()
+        mod._virtual.show()
     else
         if active then
-            mod._manager.show()
+            mod._virtual.show()
         else
-            mod._manager.hide()
+            mod._virtual.hide()
         end
     end
 end
@@ -73,7 +73,7 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
     --------------------------------------------------------------------------------
     -- Check for compatibility:
     --------------------------------------------------------------------------------
-    if enabled and not mod._manager.supported() then
+    if enabled and not mod._virtual.supported() then
         dialog.displayMessage(i18n("touchBarError"))
         mod.enabled(false)
     end
@@ -82,9 +82,9 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Add Callbacks to Control Location:
         --------------------------------------------------------------------------------
-        mod.updateLocationCallback = mod._manager.updateLocationCallback:new("fcp", function()
+        mod.updateLocationCallback = mod._virtual.updateLocationCallback:new("fcp", function()
 
-            local displayVirtualTouchBarLocation = mod._manager.location()
+            local displayVirtualTouchBarLocation = mod._virtual.location()
 
             --------------------------------------------------------------------------------
             -- Show Touch Bar at Top Centre of Timeline:
@@ -96,18 +96,18 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
                 --------------------------------------------------------------------------------
                 local viewFrame = timeline:contents():viewFrame()
                 if viewFrame then
-                    if mod._manager._touchBar then
-                        local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._manager._touchBar:getFrame().w/2, y = viewFrame.y + 20}
-                        mod._manager._touchBar:topLeft(topLeft)
+                    if mod._virtual._touchBar then
+                        local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._virtual._touchBar:getFrame().w/2, y = viewFrame.y + 20}
+                        mod._virtual._touchBar:topLeft(topLeft)
                     end
                 end
-            elseif displayVirtualTouchBarLocation == mod._manager.LOCATION_MOUSE then
+            elseif displayVirtualTouchBarLocation == mod._virtual.LOCATION_MOUSE then
 
                 --------------------------------------------------------------------------------
                 -- Position Touch Bar to Mouse Pointer Location:
                 --------------------------------------------------------------------------------
-                if mod._manager._touchBar then
-                    mod._manager._touchBar:atMousePosition()
+                if mod._virtual._touchBar then
+                    mod._virtual._touchBar:atMousePosition()
                 end
 
             end
@@ -129,24 +129,24 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
         --------------------------------------------------------------------------------
-        fcp:primaryWindow().frame:watch(mod._manager.updateLocation)
-        fcp:secondaryWindow().frame:watch(mod._manager.updateLocation)
+        fcp:primaryWindow().frame:watch(mod._virtual.updateLocation)
+        fcp:secondaryWindow().frame:watch(mod._virtual.updateLocation)
 
         --------------------------------------------------------------------------------
         -- Start the Virtual Touch Bar:
         --------------------------------------------------------------------------------
-        mod._manager.start()
+        mod._virtual.start()
 
         --------------------------------------------------------------------------------
         -- Update the visibility:
         --------------------------------------------------------------------------------
         if mod.visibility() == mod.VISIBILITY_ALWAYS then
-            mod._manager.show()
+            mod._virtual.show()
         else
             if fcp.isFrontmost() then
-                mod._manager.show()
+                mod._virtual.show()
             else
-                mod._manager.hide()
+                mod._virtual.hide()
             end
         end
 
@@ -162,11 +162,11 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
             mod.isActive = nil
         end
         if mod._fcpPrimaryWindowWatcher then
-            mod._fcpPrimaryWindowWatcher:unwatch(mod._manager.updateLocation)
+            mod._fcpPrimaryWindowWatcher:unwatch(mod._virtual.updateLocation)
             mod._fcpPrimaryWindowWatcher = nil
         end
         if mod._fcpSecondaryWindowWatcher then
-            fcp:secondaryWindow().frame:unwatch(mod._manager.updateLocation)
+            fcp:secondaryWindow().frame:unwatch(mod._virtual.updateLocation)
             mod._fcpSecondaryWindowWatcher = nil
         end
         if mod.updateLocationCallback then
@@ -177,7 +177,7 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Stop the Virtual Touch Bar:
         --------------------------------------------------------------------------------
-        mod._manager.stop()
+        mod._virtual.stop()
     end
 end)
 
@@ -197,13 +197,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Connect to Manager:
     --------------------------------------------------------------------------------
-    mod._manager = deps.manager
+    mod._virtual = deps.manager
     mod._tbManager = deps.tbManager
 
     --------------------------------------------------------------------------------
     -- Add Commands if Supported:
     --------------------------------------------------------------------------------
-    if mod._manager.supported() then
+    if mod._virtual.supported() then
         --------------------------------------------------------------------------------
         -- Final Cut Pro Command:
         --------------------------------------------------------------------------------

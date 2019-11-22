@@ -4,18 +4,20 @@
 
 local require = require
 
-local log                                       = require("hs.logger").new("tbVirtual")
+local log                                       = require "hs.logger" .new "tbVirtual"
 
-local eventtap                                  = require("hs.eventtap")
+local eventtap                                  = require "hs.eventtap"
 
-local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
-local i18n                                      = require("cp.i18n")
-local prop                                      = require("cp.prop")
+local config                                    = require "cp.config"
+local dialog                                    = require "cp.dialog"
+local i18n                                      = require "cp.i18n"
+local prop                                      = require "cp.prop"
+local tools                                     = require "cp.tools"
 
-local touchbar                                  = require("hs._asm.undocumented.touchbar")
+local semver                                    = require "semver"
 
-local location                                  = require("location")
+
+local location                                  = require "location"
 
 
 local mod = {}
@@ -50,10 +52,40 @@ mod.location = config.prop("displayVirtualTouchBarLocation", mod.LOCATION_DEFAUL
 --- Update Location Callback
 mod.updateLocationCallback = location
 
+mod.macOSVersionSupported = prop(function()
+    local osVersion = semver(tools.macOSVersion())
+    return osVersion <= semver("10.13")
+end)
+
 --- plugins.core.touchbar.virtual.supported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the Touch Bar is supported on this version of macOS.
-mod.supported = prop(function() return touchbar.supported() end)
+mod.supported = mod.macOSVersionSupported:AND(prop(function()
+    local touchbar = mod.touchbar()
+    return touchbar and touchbar.supported()
+end))
+
+--- plugins.core.touchbar.virtual.touchbar() -> none
+--- Function
+--- Returns the `hs._asm.undocumented.touchbar` object if it exists.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `hs._asm.undocumented.touchbar`
+function mod.touchbar()
+    if not mod._touchbar then
+        if mod.macOSVersionSupported() then
+            mod._touchbar = require "hs._asm.undocumented.touchbar"
+        else
+            mod._touchbar = {
+                supported = function() return false end,
+            }
+        end
+    end
+    return mod._touchbar
+end
 
 --- plugins.core.touchbar.virtual.enabled <cp.prop: boolean>
 --- Field
@@ -93,6 +125,11 @@ end)
 ---  * None
 function mod.start()
     if mod.supported() and not mod._touchBar then
+        local touchbar = mod.touchbar()
+        if not touchbar then
+            log.ef("The Touch Bar is not supported on this system.")
+            return
+        end
 
         --------------------------------------------------------------------------------
         -- Set up Touch Bar:

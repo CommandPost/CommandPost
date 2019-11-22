@@ -403,10 +403,12 @@ mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(functio
         dialog.displayMessage(i18n("touchBarError"))
         mod.enabled(false)
     end
-    if enabled then
-        mod._virtual.start()
-    else
-        mod._virtual.stop()
+    if mod._virtual then
+        if enabled then
+            mod._virtual.start()
+        else
+            mod._virtual.stop()
+        end
     end
 end)
 
