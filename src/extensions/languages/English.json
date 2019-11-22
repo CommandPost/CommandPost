@@ -1094,6 +1094,7 @@
         "menubarPanelLabel": "Menubar",
         "menubarPanelTooltip": "Menubar Preferences",
         "menuChoiceSubText": "Menu: %{path}",
+        "menuItemCouldNotBeTriggeredSuccessfully": "The menu item could not be triggered successfully.",
         "method": "Method",
         "methods": "Methods",
         "middle": "Middle",
