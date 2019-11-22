@@ -13,14 +13,18 @@ local image                             = require "hs.image"
 
 local config                            = require "cp.config"
 local destinations                      = require "cp.apple.finalcutpro.export.destinations"
+local dialog                            = require "cp.dialog"
 local fcp                               = require "cp.apple.finalcutpro"
 local i18n                              = require "cp.i18n"
 local localeID                          = require "cp.i18n.localeID"
 local text                              = require "cp.web.text"
 local tools                             = require "cp.tools"
 
+local Do                                = require "cp.rx.go.Do"
+
 local concat                            = table.concat
 local contentsInsideBrackets            = tools.contentsInsideBrackets
+local displayMessage                    = dialog.displayMessage
 local findCommonWordWithinTwoStrings    = tools.findCommonWordWithinTwoStrings
 local imageFromPath                     = image.imageFromPath
 local insert                            = table.insert
@@ -210,6 +214,11 @@ local function compareLegacyVersusNew(choices) -- luacheck: ignore
     end
     log.df("%s", result)
 end
+
+-- overrideFunctions -> table
+-- Variable
+-- A table of pre-functions for menu workarounds.
+local overrideFunctions = {}
 
 -- applyMenuWorkarounds(choices) -> table
 -- Function
@@ -992,6 +1001,7 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     -- WORKAROUNDS FOR MENU ITEMS THAT WERE IN THE NIB:
     --
     --------------------------------------------------------------------------------
+    local changeDurationString  = fcp:string("FFInfoToolChangeDuration")
     local closeLibraryString    = fcp:string("FFCloseLibrary")
     local consolidateString     = fcp:string("FFInspectorModuleLibraryPropertiesConsolidateButtonTitle")
     local copyToLibraryString   = fcp:string("FFCopy to Library…")
@@ -1001,6 +1011,36 @@ local function applyMenuWorkarounds(choices, currentLocaleCode)
     local openString            = fcp:string("FFLibraryBackupChooser_OpenButton")
 
     for i, v in pairs(choices) do
+        --------------------------------------------------------------------------------
+        -- Change Duration (Modify > Change Duration)
+        --------------------------------------------------------------------------------
+        if v.text and string.match(v.text, changeDurationString .. ".*") then
+            local uuid = host.uuid()
+            v.params.overrideFunction = uuid
+            overrideFunctions[uuid] = function()
+                --------------------------------------------------------------------------------
+                -- The "Change Duration" menu item only works if the Browser or Timeline is
+                -- active, so if you trigger this action from the Search Console, this
+                -- can cause the timeline to loose focus, and the menu item will be disabled.
+                -- This workaround tries triggering the menu item, then if it fails, it will
+                -- make sure the timeline is active, then trigger the Change Duration shortcut
+                -- key, which seems a bit more reliable:
+                --------------------------------------------------------------------------------
+                Do(
+                    fcp:doSelectMenu({"Modify", "Change Duration.*"})
+                )
+                    :Catch(
+                        Do(
+                            fcp:doSelectMenu({"Window", "Go To", "Timeline"})
+                        )
+                        :Then(
+                            fcp:doShortcut("ShowTimecodeEntryDuration")
+                        )
+                    )
+                    :Now()
+            end
+        end
+
         --------------------------------------------------------------------------------
         -- 360 (View > Show in Viewer)
         -- 360 (View > Show in Event Viewer)
@@ -1193,6 +1233,9 @@ function mod.init(actionmanager)
 
     mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
         :onChoices(function(choices)
+
+            overrideFunctions = {} -- Reset overrideFunctions
+
             local menu = fcp:menu():getMenuTitles()
             local currentLocaleCode = fcp:currentLocale().code
             local result = processMenu(menu, currentLocaleCode)
@@ -1214,7 +1257,32 @@ function mod.init(actionmanager)
         end)
         :onExecute(function(action)
             if action and action.path then
-                fcp:launch():menu():doSelectMenu(action.path, {plain=action.plain, locale=action.locale}):Now()
+                if action.overrideFunction and overrideFunctions[action.overrideFunction] then
+                    --------------------------------------------------------------------------------
+                    -- Trigger the override function:
+                    --------------------------------------------------------------------------------
+                    Do(
+                        fcp:doShow()
+                    )
+                    :Then(function()
+                        overrideFunctions[action.overrideFunction]()
+                    end)
+                    :Now()
+                else
+                    --------------------------------------------------------------------------------
+                    -- Trigger the menu item:
+                    --------------------------------------------------------------------------------
+                    Do(
+                        fcp:doShow()
+                    )
+                    :Then(
+                        fcp:doSelectMenu(action.path, {plain=action.plain, locale=action.locale, pressAll=action.pressAll})
+                    )
+                    :Catch(function()
+                        displayMessage(i18n("menuItemCouldNotBeTriggeredSuccessfully") .. "\n\n" .. i18n("pleaseTryAgain"))
+                    end)
+                    :Now()
+                end
             end
         end)
         :onActionId(function(params)
