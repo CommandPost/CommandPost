@@ -86,10 +86,10 @@ local nameCache = {}
 -- Gets the name from a Compressor Settings file.
 --
 -- Parameters:
----  * path - The path to the settings file.
----
---- Returns:
----  * A string containing the name of the settings file.
+--  * path - The path to the settings file.
+--
+-- Returns:
+--  * A string containing the name of the settings file.
 local function getNameFromSettingsFile(path)
     if nameCache[path] then
         return nameCache[path]
