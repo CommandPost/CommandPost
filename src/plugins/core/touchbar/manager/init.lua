@@ -95,7 +95,7 @@ mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME
 
 mod.macOSVersionSupported = prop(function()
     local osVersion = semver(tools.macOSVersion())
-    return osVersion <= semver("10.13")
+    return osVersion < semver("10.15")
 end)
 
 --- plugins.core.touchbar.manager.supported <cp.prop: boolean; read-only>

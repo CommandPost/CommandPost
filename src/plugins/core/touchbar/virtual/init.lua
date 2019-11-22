@@ -54,7 +54,7 @@ mod.updateLocationCallback = location
 
 mod.macOSVersionSupported = prop(function()
     local osVersion = semver(tools.macOSVersion())
-    return osVersion <= semver("10.13")
+    return osVersion < semver("10.15")
 end)
 
 --- plugins.core.touchbar.virtual.supported <cp.prop: boolean; read-only>
