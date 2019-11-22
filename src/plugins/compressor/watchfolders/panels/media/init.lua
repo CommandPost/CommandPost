@@ -27,11 +27,9 @@ local xml                       = require "hs._asm.xml"
 
 local doesFileExist             = tools.doesFileExist
 local doEvery                   = timer.doEvery
-local getFileExtensionFromPath  = tools.getFileExtensionFromPath
+
 local getFilenameFromPath       = tools.getFilenameFromPath
-local incrementFilename         = tools.incrementFilename
 local incrementFilenameInPath   = tools.incrementFilenameInPath
-local removeFilenameFromPath    = tools.removeFilenameFromPath
 local tableContains             = tools.tableContains
 local unescape                  = tools.unescape
 local uuid                      = host.uuid
@@ -508,7 +506,7 @@ function mod.addFilesToCompressor(files)
         local filename = getFilenameFromPath(file, true)
 
         local usedFiles = {}
-        for i, item in pairs(presets) do
+        for _, item in pairs(presets) do
 
             local exportFile = item.destinationPath .. filename
 
