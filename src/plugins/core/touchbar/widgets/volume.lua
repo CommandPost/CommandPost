@@ -6,8 +6,6 @@ local require = require
 
 local audiodevice		= require("hs.audiodevice")
 local image				  = require("hs.image")
-local touchbar 			= require("hs._asm.undocumented.touchbar")
-
 
 local mod = {}
 
@@ -27,7 +25,7 @@ local ID = "volume"
 ---  * A `hs._asm.undocumented.touchbar.item`
 function mod.widget()
 
-    mod.item = touchbar.item.newSlider(ID)
+    mod.item = mod._manager.touchbar().item.newSlider(ID)
         :sliderMin(0)
         :sliderMax(100)
         :sliderMinImage(image.imageFromName(image.systemImageNames.TouchBarVolumeDownTemplate))
@@ -50,7 +48,8 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init(deps)
+function mod.init(manager)
+    mod._manager = manager
 
     --------------------------------------------------------------------------------
     -- Watch for volume changes:
@@ -73,12 +72,11 @@ function mod.init(deps)
         subText = "Adds a volume slider to the Touch Bar",
         item = mod.widget,
     }
-    deps.manager.widgets:new(id, params)
+    manager.widgets:new(id, params)
 
     return mod
 
 end
-
 
 local plugin = {
     id				= "core.touchbar.widgets.volume",
@@ -89,8 +87,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    if touchbar.supported() then
-        return mod.init(deps)
+    local manager = deps.manager
+    if manager.supported() then
+        return mod.init(manager)
     end
 end
 
