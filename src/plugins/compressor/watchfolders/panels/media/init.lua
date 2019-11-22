@@ -1,30 +1,40 @@
 --- === plugins.compressor.watchfolders.panels.media ===
 ---
---- Final Cut Pro Media Watch Folder Plugin.
+--- Compressor Watch Folder Plugin.
 
 local require = require
 
-local fnutils       = require("hs.fnutils")
-local host          = require("hs.host")
-local image         = require("hs.image")
-local notify        = require("hs.notify")
-local pathwatcher   = require("hs.pathwatcher")
-local task          = require("hs.task")
-local timer         = require("hs.timer")
+local log                       = require "hs.logger".new "compressorWatchFolder"
 
-local compressor    = require("cp.apple.compressor")
-local config        = require("cp.config")
-local dialog        = require("cp.dialog")
-local Do            = require("cp.rx.go.Do")
-local html          = require("cp.web.html")
-local i18n          = require("cp.i18n")
-local tools         = require("cp.tools")
-local ui            = require("cp.web.ui")
+local fnutils                   = require "hs.fnutils"
+local host                      = require "hs.host"
+local image                     = require "hs.image"
+local notify                    = require "hs.notify"
+local pathwatcher               = require "hs.pathwatcher"
+local task                      = require "hs.task"
+local timer                     = require "hs.timer"
 
-local uuid          = host.uuid
+local compressor                = require "cp.apple.compressor"
+local config                    = require "cp.config"
+local dialog                    = require "cp.dialog"
+local Do                        = require "cp.rx.go.Do"
+local html                      = require "cp.web.html"
+local i18n                      = require "cp.i18n"
+local tools                     = require "cp.tools"
+local ui                        = require "cp.web.ui"
 
-local doEvery       = timer.doEvery
+local xml                       = require "hs._asm.xml"
 
+local doesFileExist             = tools.doesFileExist
+local doEvery                   = timer.doEvery
+local getFileExtensionFromPath  = tools.getFileExtensionFromPath
+local getFilenameFromPath       = tools.getFilenameFromPath
+local incrementFilename         = tools.incrementFilename
+local incrementFilenameInPath   = tools.incrementFilenameInPath
+local removeFilenameFromPath    = tools.removeFilenameFromPath
+local tableContains             = tools.tableContains
+local unescape                  = tools.unescape
+local uuid                      = host.uuid
 
 local mod = {}
 
@@ -48,30 +58,56 @@ mod.pathwatchers = {}
 --- Table of Notifications
 mod.notifications = {}
 
+--- plugins.compressor.watchfolders.panels.media.tasks -> table
+--- Variable
+--- Table of Tasks
+mod.tasks = {}
+
 --- plugins.compressor.watchfolders.panels.media.disableImport -> boolean
 --- Variable
 --- When `true` Notifications will no longer be triggered.
 mod.disableImport = false
-
---- plugins.compressor.watchfolders.panels.media.automaticallyImport <cp.prop: boolean>
---- Variable
---- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
-mod.automaticallyImport = config.prop("compressor.watchFolders.automaticallyImport", false)
 
 --- plugins.compressor.watchfolders.panels.media.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
 mod.savedNotifications = config.prop("compressor.watchFolders.savedNotifications", {})
 
---- plugins.compressor.watchfolders.panels.media.deleteAfterImport <cp.prop: boolean>
---- Variable
---- Boolean that sets whether or not you want to delete file after they've been imported.
-mod.deleteAfterImport = config.prop("compressor.watchFolders.deleteAfterImport", false)
-
 --- plugins.compressor.watchfolders.panels.media.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
-mod.watchFolders = config.prop("compressor.watchFolders", {})
+mod.watchFolders = config.prop("compressor.watchFolders.v2", {}) -- Added v2 when added support to have multiple Compressor presets for same folder.
+
+-- nameCache -> table
+-- Variable
+-- Table of cached Compressor Settings names.
+local nameCache = {}
+
+-- getNameFromSettingsFile -> string
+-- Function
+-- Gets the name from a Compressor Settings file.
+--
+-- Parameters:
+---  * path - The path to the settings file.
+---
+--- Returns:
+---  * A string containing the name of the settings file.
+local function getNameFromSettingsFile(path)
+    if nameCache[path] then
+        return nameCache[path]
+    end
+    local data = xml.open(path)
+    if data then
+        local children = data:children()
+        if children and children[1] then
+            local name = children[1]:attribute("name")
+            if name then
+                nameCache[path] = unescape(name)
+                return unescape(name)
+            end
+        end
+    end
+end
 
 --- plugins.compressor.watchfolders.panels.media.generateTable() -> string
 --- Function
@@ -87,30 +123,33 @@ function mod.generateTable()
     local watchFoldersHTML = ""
     local watchFolders =  mod.watchFolders()
 
-    for i, v in pairs(watchFolders) do
-        local uniqueUUID = string.gsub(uuid(), "-", "")
-        watchFoldersHTML = watchFoldersHTML .. [[
-                <tr>
-                    <td class="compressorRowPath">]] .. i .. [[</td>
-                    <td class="compressorRowDestination">]] .. v.destinationPath .. [[ </td>
-                    <td class="compressorRowSetting">]] .. string.sub(tools.getFilenameFromPath(v.settingFile), 1, -10) .. [[</td>
-                    <td class="compressorRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
-                </tr>
-        ]]
-        mod.manager.injectScript([[
-            function remove]] .. uniqueUUID .. [[() {
-                try {
-                    var p = {};
-                    p["action"] = "remove";
-                    p["path"] = "]] .. i .. [[";
-                    var result = { id: "]] .. uniqueUUID .. [[", params: p };
-                    webkit.messageHandlers.watchfolders.postMessage(result);
-                } catch(err) {
-                    alert('An error has occurred. Does the controller exist yet?');
+    for path, presets in pairs(watchFolders) do
+        for _, v in pairs(presets) do
+            local uniqueUUID = string.gsub(uuid(), "-", "")
+            watchFoldersHTML = watchFoldersHTML .. [[
+                    <tr>
+                        <td class="compressorRowPath">]] .. path .. [[</td>
+                        <td class="compressorRowDestination">]] .. v.destinationPath .. [[ </td>
+                        <td class="compressorRowSetting">]] .. getNameFromSettingsFile(v.settingFile) .. [[</td>
+                        <td class="compressorRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
+                    </tr>
+            ]]
+            mod.manager.injectScript([[
+                function remove]] .. uniqueUUID .. [[() {
+                    try {
+                        var p = {};
+                        p["action"] = "remove";
+                        p["path"] = "]] .. path .. [[";
+                        p["settingFile"] = "]] .. v.settingFile .. [[";
+                        var result = { id: "]] .. uniqueUUID .. [[", params: p };
+                        webkit.messageHandlers.watchfolders.postMessage(result);
+                    } catch(err) {
+                        alert('An error has occurred. Does the controller exist yet?');
+                    }
                 }
-            }
-        ]])
-        mod.manager.addHandler(uniqueUUID, mod.controllerCallback)
+            ]])
+            mod.manager.addHandler(uniqueUUID, mod.controllerCallback)
+        end
     end
 
     if watchFoldersHTML == "" then
@@ -181,14 +220,19 @@ end
 ---  * None
 function mod.controllerCallback(_, params)
     if params and params.action and params.action == "remove" then
-
         local watchFolders = mod.watchFolders()
         if watchFolders[params.path] then
-            watchFolders[params.path] = nil
+            for i, item in pairs(watchFolders[params.path]) do
+                if item.settingFile == params.settingFile then
+                    table.remove(watchFolders[params.path], i)
+                end
+            end
+            if not next(watchFolders[params.path]) then
+                watchFolders[params.path] = nil
+                mod.removeWatcher(params.path)
+            end
         end
         mod.watchFolders(watchFolders)
-
-        mod.removeWatcher(params.path)
         mod.refreshTable()
     elseif params and params.action and params.action == "refresh" then
         mod.refreshTable()
@@ -279,10 +323,6 @@ function mod.styleSheet()
             font-size: 10px;
         }
 
-        .compressorWatchfolders tbody tr:nth-child(even) {
-            background-color: #f5f5f5
-        }
-
         .compressorWatchfolders tbody tr:hover {
             background-color: #006dd4;
             color: white;
@@ -316,11 +356,16 @@ end
 --- Returns:
 ---  * None
 mod.statusTimer = {}
+mod.statusTasks = {}
 function mod.watchCompressorStatus(jobID, file, destinationPath)
+    local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
     --log.df("Lets track the status of: %s", jobID)
     mod.statusTimer[jobID] = doEvery(5, function()
-        local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
-        local compressorStatusTask = task.new(compressorPath, nil, function(_, stdOut)
+        if mod.statusTasks[jobID] and mod.statusTasks[jobID]:isRunning() == true then
+            --log.df("status task already running")
+            return
+        end
+        mod.statusTasks[jobID] = task.new(compressorPath, nil, function(_, stdOut)
             if stdOut and string.match(stdOut, [[status="([^%s]+)"]]) then
                 local status = string.match(stdOut, [[status="([^%s]+)"]])
                 --log.df("Status: %s", status)
@@ -335,6 +380,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                     -------------------------------------------------------------------------------
                     -- Show Notification:
                     --------------------------------------------------------------------------------
+                    --log.df("SUCCESSFUL: %s", file)
                     if mod.notifications[file] then
                         mod.notifications[file]:withdraw()
                         mod.notifications[file] = nil
@@ -343,26 +389,26 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                         os.execute([[open "]] .. destinationPath .. [["]])
                     end)
                         :title(i18n("renderComplete"))
-                        :subTitle(tools.getFilenameFromPath(file))
+                        :subTitle(getFilenameFromPath(file))
                         :hasActionButton(true)
                         :actionButtonTitle(i18n("show"))
                         :withdrawAfter(0)
                         :send()
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
-                --elseif status and status == "Processing" then
+                elseif status and status == "Processing" then -- luacheck:ignore
                     --log.df("Compressor is processing the following file: %s", file)
                 else
-                    --log.df("Unknown Status from Compressor: %s", status)
+                    log.ef("Unknown Status from Compressor: %s", status)
                     if mod.statusTimer[jobID] then
                         mod.statusTimer[jobID]:stop()
                         mod.statusTimer[jobID] = nil
                     end
                 end
+                mod.statusTasks[jobID] = nil
             end
             return true
-        end, { "-monitor", "-jobid", jobID })
-        compressorStatusTask:start()
+        end, { "-monitor", "-jobid", jobID }):start()
     end)
 end
 
@@ -449,85 +495,108 @@ function mod.addFilesToCompressor(files)
         -- Support/Compressor/Settings/Apple\ Devices\ HD\ \
         -- (Custom\).cmprstng -locationpath ~/Movies/MyOutput.m4v
 
-        -------------------------------------------------------------------------------
-        -- Show Notification:
-        --------------------------------------------------------------------------------
-        if mod.notifications[file] then
-            mod.notifications[file]:withdraw()
-            mod.notifications[file] = nil
-        end
-        mod.notifications[file] = notify.new(function()
-            compressor:launch()
-        end)
-            :title(i18n("addedToCompressor"))
-            :subTitle(tools.getFilenameFromPath(file))
-            :hasActionButton(true)
-            :actionButtonTitle(i18n("monitor"))
-            :withdrawAfter(0)
-            :send()
-
-        local selectedFile = nil
+        local presets = nil
         local watchFolders = mod.watchFolders()
         for i, v in pairs(watchFolders) do
             if i == string.sub(file, 1, string.len(i)) then
-                selectedFile = v
+                presets = v
             end
         end
 
         local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
 
-        local filename = tools.getFilenameFromPath(file, true)
+        local filename = getFilenameFromPath(file, true)
 
-        local compressorTask = task.new(compressorPath, function(exitCode)
-            if exitCode ~= 0 then
-                --------------------------------------------------------------------------------
-                -- Compressor Failed:
-                --------------------------------------------------------------------------------
-                if mod.notifications[file] then
-                    mod.notifications[file]:withdraw()
-                    mod.notifications[file] = nil
+        local usedFiles = {}
+        for i, item in pairs(presets) do
+
+            local exportFile = item.destinationPath .. filename
+
+            repeat
+                if doesFileExist(exportFile) or tableContains(usedFiles, exportFile) then
+                    exportFile = incrementFilenameInPath(exportFile)
                 end
+            until(doesFileExist(exportFile) == false and tableContains(usedFiles, exportFile) == false)
+            table.insert(usedFiles, exportFile)
 
-                --------------------------------------------------------------------------------
-                -- Show Failed Notification:
-                --------------------------------------------------------------------------------
-                notify.new(function() compressor:launch() end)
-                    :title("Compressor Failed:")
-                    :subTitle(tools.getFilenameFromPath(file))
-                    :hasActionButton(true)
-                    :actionButtonTitle(i18n("monitor"))
-                    :withdrawAfter(0)
-                    :send()
-            end
-        end,
-        function(_, _, stdErr)
-            local jobID = nil
-            local jobIDPattern = "jobID ([^%s]+)"
-            if stdErr and string.find(stdErr, jobIDPattern) then
-                jobID = string.match(stdErr, jobIDPattern)
-            end
-            if jobID then
-                --------------------------------------------------------------------------------
-                -- Watch the Compressor Status:
-                --------------------------------------------------------------------------------
-                mod.watchCompressorStatus(jobID, file, selectedFile.destinationPath)
+            local id = exportFile
 
-                --------------------------------------------------------------------------------
-                -- We only want to trigger the streamCallbackFn for the jobID:
-                --------------------------------------------------------------------------------
-                return false
+            -------------------------------------------------------------------------------
+            -- Show Notification:
+            --------------------------------------------------------------------------------
+            if mod.notifications[id] then
+                mod.notifications[id]:withdraw()
+                mod.notifications[id] = nil
             end
-            return true
-        end, { "-batchname", "CommandPost Watch Folder", "-jobpath", file, "-settingpath", selectedFile.settingFile, "-locationpath", selectedFile.destinationPath .. filename } ):start()
+            mod.notifications[id] = notify.new(function()
+                compressor:launch()
+            end)
+                :title(i18n("addedToCompressor"))
+                :subTitle(getFilenameFromPath(file))
+                :informativeText(getNameFromSettingsFile(item.settingFile))
+                :hasActionButton(true)
+                :actionButtonTitle(i18n("monitor"))
+                :withdrawAfter(0)
+                :send()
 
-        if not compressorTask then
-            if mod.notifications[file] then
-                mod.notifications[file]:withdraw()
-                mod.notifications[file] = nil
+            mod.tasks[exportFile] = task.new(compressorPath, function(exitCode)
+                if exitCode ~= 0 then
+                    --------------------------------------------------------------------------------
+                    -- Compressor Failed:
+                    --------------------------------------------------------------------------------
+                    if mod.notifications[id] then
+                        mod.notifications[id]:withdraw()
+                        mod.notifications[id] = nil
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Show Failed Notification:
+                    --------------------------------------------------------------------------------
+                    notify.new(function() compressor:launch() end)
+                        :title("Compressor Failed:")
+                        :subTitle(getFilenameFromPath(file))
+                        :informativeText(getNameFromSettingsFile(item.settingFile))
+                        :hasActionButton(true)
+                        :actionButtonTitle(i18n("monitor"))
+                        :withdrawAfter(0)
+                        :send()
+                end
+                --------------------------------------------------------------------------------
+                -- Remove the task:
+                --------------------------------------------------------------------------------
+                if mod.tasks[exportFile] then
+                    --log.df("Removing task: %s", id)
+                    mod.tasks[id] = nil
+                end
+            end,
+            function(_, _, stdErr)
+                local jobID = nil
+                local jobIDPattern = "jobID ([^%s]+)"
+                if stdErr and string.find(stdErr, jobIDPattern) then
+                    jobID = string.match(stdErr, jobIDPattern)
+                end
+                if jobID then
+                    --------------------------------------------------------------------------------
+                    -- Watch the Compressor Status:
+                    --------------------------------------------------------------------------------
+                    mod.watchCompressorStatus(jobID, exportFile, item.destinationPath)
+
+                    --------------------------------------------------------------------------------
+                    -- We only want to trigger the streamCallbackFn for the jobID:
+                    --------------------------------------------------------------------------------
+                    return false
+                end
+                return true
+            end, { "-batchname", "CommandPost Watch Folder", "-jobpath", file, "-settingpath", item.settingFile, "-locationpath", exportFile } ):start()
+
+            if not mod.tasks[exportFile] then
+                if mod.notifications[id] then
+                    mod.notifications[id]:withdraw()
+                    mod.notifications[id] = nil
+                end
+                dialog.displayErrorMessage(i18n("compressorError"))
             end
-            dialog.displayErrorMessage(i18n("compressorError"))
         end
-
     end
 
     --------------------------------------------------------------------------------
@@ -593,7 +662,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                         --------------------------------------------------------------------------------
                         mod.notifications[file] = notify.new()
                             :title(i18n("incomingFile"))
-                            :subTitle(tools.getFilenameFromPath(file))
+                            :subTitle(getFilenameFromPath(file))
                             :hasActionButton(false)
                             :withdrawAfter(0)
                             :send()
@@ -677,11 +746,6 @@ function mod.addWatchFolder()
         if not path then
             return
         end
-        local watchFolders = mod.watchFolders()
-        if tools.tableContains(watchFolders, path) then
-            dialog.displayMessage(i18n("alreadyWatched"))
-            return
-        end
 
         --------------------------------------------------------------------------------
         -- Select Setting File:
@@ -707,7 +771,11 @@ function mod.addWatchFolder()
         --------------------------------------------------------------------------------
         -- Update Settings:
         --------------------------------------------------------------------------------
-        watchFolders[path] = {settingFile=settingFile, destinationPath=destinationPath }
+        local watchFolders = mod.watchFolders()
+        if not watchFolders[path] then
+            watchFolders[path] = {}
+        end
+        table.insert(watchFolders[path], {settingFile=settingFile, destinationPath=destinationPath })
         mod.watchFolders(watchFolders)
 
         --------------------------------------------------------------------------------
@@ -751,9 +819,9 @@ end
 function mod.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Ignore Panel if Compressor isn't installed.
+    -- Ignore Panel if Compressor isn't supported.
     --------------------------------------------------------------------------------
-    if not compressor:isInstalled() then
+    if not compressor:isSupported() then
         return nil
     end
 
@@ -817,7 +885,6 @@ function mod.init(deps)
     return mod
 
 end
-
 
 local plugin = {
     id = "compressor.watchfolders.panels.media",

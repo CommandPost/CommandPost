@@ -208,14 +208,10 @@ local function windowCallback(action, wv, frame)
             for _, v in ipairs(mod._panels) do
                 if v.id == id then
                     --------------------------------------------------------------------------------
-                    -- Wait until the Webview has loaded before triggering individual panels
-                    -- functions:
+                    -- Previously we waited until the webview loaded before trigging individual
+                    -- panels functions, but this was causing issues, so have removed:
                     --------------------------------------------------------------------------------
-                    if just.doUntil(function() return not wv:loading() end) then
-                        v.loadFn()
-                    else
-                        log.ef("Failed to trigger Watch Folder Load Function via manager.windowCallback.")
-                    end
+                    v.loadFn()
                 end
             end
         end
