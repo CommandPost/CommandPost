@@ -4,14 +4,13 @@
 
 local require = require
 
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
 
-local MediaFolder       = require("MediaFolder")
-local panel             = require("panel")
+local MediaFolder       = require "MediaFolder"
+local panel             = require "panel"
 
 local insert            = table.insert
-
 
 local mod = {}
 
@@ -142,7 +141,6 @@ function mod.init(deps)
 
     return mod
 end
-
 
 local plugin = {
     id = "finalcutpro.watchfolders.media",

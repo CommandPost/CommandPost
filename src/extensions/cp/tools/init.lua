@@ -1292,6 +1292,22 @@ function tools.getFilenameFromPath(input, removeExtension)
     end
 end
 
+--- cp.tools.getFileExtensionFromPath(input) -> string
+--- Function
+--- Gets the file extension from a path.
+---
+--- Parameters:
+---  * input - The path
+---
+--- Returns:
+---  * A string of the file extension.
+function tools.getFileExtensionFromPath(path)
+    local extension = path and string.match(path, "^.+(%..+)$")
+    if extension and extension:sub(1, 1) == "." then
+        return extension:sub(2)
+    end
+end
+
 --- cp.tools.removeFilenameFromPath(string) -> string
 --- Function
 --- Removes the filename from a path.
@@ -1368,15 +1384,39 @@ end
 --- Returns:
 ---  * A string
 function tools.incrementFilename(value)
-    if value == nil then return nil end
-    if type(value) ~= "string" then return nil end
-
-    local name, counter = string.match(value, '^(.*)%s(%d+)$')
-    if name == nil or counter == nil then
-        return value .. " 1"
+    if type(value) == "string" then
+        local name, counter = string.match(value, '^(.*)%s(%d+)$')
+        if name == nil or counter == nil then
+            return value .. " 1"
+        end
+        return name .. " " .. tostring(tonumber(counter) + 1)
     end
+end
 
-    return name .. " " .. tostring(tonumber(counter) + 1)
+--- cp.tools.incrementFilenameInPath(path) -> string
+--- Function
+--- Increments the filename as it appears in a path.
+---
+--- Parameters:
+---  * path - A path to a file.
+---
+--- Returns:
+---  * A string
+function tools.incrementFilenameInPath(value)
+    if type(value) == "string" then
+        local path = tools.removeFilenameFromPath(value)
+        local extension = tools.getFileExtensionFromPath(value)
+        local filename
+        if extension then
+            filename = tools.getFilenameFromPath(value, true)
+            extension = "." .. extension
+        else
+            extension = ""
+            filename = tools.getFilenameFromPath(value)
+        end
+        local newFilename = tools.incrementFilename(filename)
+        return path .. newFilename .. extension
+    end
 end
 
 --- cp.tools.dirFiles(path) -> table

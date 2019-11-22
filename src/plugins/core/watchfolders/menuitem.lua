@@ -2,10 +2,9 @@
 ---
 --- Adds the "Setup Watch Folders" to the menu bar.
 
-local require = require
+local require   = require
 
-local i18n = require("cp.i18n")
-
+local i18n      = require "cp.i18n"
 
 local plugin = {
     id				= "core.watchfolders.menuitem",

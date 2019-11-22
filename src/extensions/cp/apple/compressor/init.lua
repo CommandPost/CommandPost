@@ -2,15 +2,14 @@
 ---
 --- Represents the Compressor application, providing functions that allow different tasks to be accomplished.
 
-local require                 = require
+local require       = require
 
-local fnutils									= require("hs.fnutils")
+local fnutils       = require "hs.fnutils"
 
-local app                     = require("cp.apple.compressor.app")
-local prop										= require("cp.prop")
+local app           = require "cp.apple.compressor.app"
+local prop			= require "cp.prop"
 
-local v                       = require("semver")
-
+local v             = require "semver"
 
 local compressor = {
     app = app,
