@@ -1,17 +1,20 @@
 --- === plugins.finalcutpro.notifications.ifttt ===
 ---
---- ifttt Notifications Plugin.
+--- IFTTT Notifications Plugin.
+---
+--- Author: [JFtechOfficial](https://github.com/JFtechOfficial)
 
-local require = require
+local require           = require
 
 local log               = require "hs.logger".new "ifttt"
 
+local dialog            = require "hs.dialog"
 local http              = require "hs.http"
 local json              = require "hs.json"
-local dialog            = require "hs.dialog"
-local i18n              = require "cp.i18n"
 
 local config            = require "cp.config"
+local html              = require "cp.web.html"
+local i18n              = require "cp.i18n"
 local ui                = require "cp.web.ui"
 
 local mod = {}
@@ -30,7 +33,6 @@ mod.appAPIKey = config.prop("iftttAppAPIKey", nil)
 --- Field
 --- Whether or not the plugin has been enabled.
 mod.enabled = config.prop("iftttNotificationsEnabled", false):watch(function() mod.update() end)
-
 
 --- plugins.finalcutpro.notifications.ifttt.update() -> none
 --- Function
@@ -83,16 +85,14 @@ end
 ---  * success - `true` if successful otherwise `false`
 ---  * errorMessage - a string containing any error messages
 function mod.sendNotification(message, optionalTitle)
-    if not mod.userAPIKey() or not mod.appAPIKey then
+    if not mod.userAPIKey() or not mod.appAPIKey() then
         return false
     end
     local maker = "https://maker.ifttt.com/trigger/"
-    local title = http.encodeForQuery(optionalTitle) or http.encodeForQuery(string.upper(i18n("finalCutPro")))
+    local title = optionalTitle or string.upper(i18n("finalCutPro"))
+    title = http.encodeForQuery(title)
     message = http.encodeForQuery(message)
-    print(message)
-    print(title)
-    local url = maker .. mod.userAPIKey() .. "/with/key/" .. mod.appAPIKey() .. "?value1=" .. message .. "&value2=" .. title --.. "&value3=customValue"
-    print(url)
+    local url = maker .. mod.userAPIKey() .. "/with/key/" .. mod.appAPIKey() .. "?value1=" .. title .. "&value2=" .. message .. "&value3=Unused"
     local status, body = http.doRequest(url, "post")
     if status == 200 and string.match(body, [[Congratulations!]]) then
         return true
@@ -110,7 +110,6 @@ function mod.sendNotification(message, optionalTitle)
             end
         end
     end
-
 end
 
 local plugin = {
@@ -131,12 +130,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(100, ui.style ([[
-                .validateifttt {
-                    float:left;
-                    margin-bottom: 10px;
-                }
-                .sendTestNotification {
+            :addContent(1000, ui.style ([[
+                .sendIFTTTTestNotification {
                     clear: both;
                     float:left;
                     margin-top: 5px;
@@ -148,9 +143,13 @@ function plugin.init(deps)
                     margin-top: 5px;
                     margin-bottom: 10px;
                 }
-            ]]))
-            :addHeading(101, i18n("iftttNotifications"))
-            :addCheckbox(102,
+                ]]) ..
+                html.br() ..
+                html.br() ..
+                html.hr()
+            )
+            :addHeading(1001, i18n("iftttNotifications"))
+            :addCheckbox(1002,
                 {
                     label = i18n("iftttEnableNotifications"),
                     onchange = function(_, params)
@@ -160,7 +159,7 @@ function plugin.init(deps)
                     id = "iftttEnable",
                 }
             )
-            :addButton(103,
+            :addButton(1003,
                 {
                     width = 200,
                     label = i18n("sendTestNotification"),
@@ -171,10 +170,10 @@ function plugin.init(deps)
                                 dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("notificationTestFailed"), i18n("notificationTestFailedMessage") .. "\n\n" .. errorMessage, i18n("ok"))
                             end
                     end,
-                    class = "sendTestNotification",
+                    class = "sendIFTTTTestNotification",
                 }
             )
-            :addButton(104,
+            :addButton(1004,
                 {
                     width = 200,
                     label = i18n("iftttSignup"),
@@ -184,7 +183,7 @@ function plugin.init(deps)
                     class = "iftttButtons",
                 }
             )
-            :addButton(105,
+            :addButton(1005,
                 {
                     width = 200,
                     label = i18n("iftttGetAPIKey"),
@@ -194,8 +193,7 @@ function plugin.init(deps)
                     class = "iftttButtons",
                 }
             )
-
-            :addTextbox(106,
+            :addTextbox(1006,
                 {
                     label = i18n("iftttEventName") .. ":",
                     value = function() return mod.userAPIKey() end,
@@ -206,7 +204,7 @@ function plugin.init(deps)
                     end,
                 }
             )
-            :addTextbox(107,
+            :addTextbox(1007,
                 {
                     label = i18n("iftttAPIKey") .. ":",
                     value = function() return mod.appAPIKey() end,
@@ -214,7 +212,9 @@ function plugin.init(deps)
                     id = "iftttAppAPIKey",
                     onchange = function(_, params)
                         local key = params.value
-                        -- extract API key if user inputs the url
+                        --------------------------------------------------------------------------------
+                        -- Extract API key if user inputs the url:
+                        --------------------------------------------------------------------------------
                         if string.match(params.value, "https://maker.ifttt.com/use/") then
                           key = string.gsub(params.value, "https://maker.ifttt.com/use/", "")
                         end
