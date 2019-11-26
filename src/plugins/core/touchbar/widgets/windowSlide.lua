@@ -4,12 +4,9 @@
 
 local require = require
 
-local canvas   			= require("hs.canvas")
-local screen   			= require("hs.screen")
-local window   			= require("hs.window")
-
-local touchbar 			= require("hs._asm.undocumented.touchbar")
-
+local canvas   			= require "hs.canvas"
+local screen   			= require "hs.screen"
+local window   			= require "hs.window"
 
 local mod = {}
 
@@ -77,7 +74,7 @@ function mod.widget()
         end
     end)
 
-    mod.item = touchbar.item.newCanvas(widgetCanvas, ID)
+    mod.item = mod._manager.touchbar().item.newCanvas(widgetCanvas, ID)
         :canvasClickColor{ alpha = 0.0 }
 
     return mod.item
@@ -93,7 +90,8 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init(deps)
+function mod.init(manager)
+    mod._manager = manager
 
     local id = ID
     local params = {
@@ -102,7 +100,7 @@ function mod.init(deps)
         subText = "Allows you to slide window positions.",
         item = mod.widget,
     }
-    deps.manager.widgets:new(id, params)
+    manager.widgets:new(id, params)
 
     return mod
 
@@ -118,8 +116,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    if touchbar.supported() then
-        return mod.init(deps)
+    local manager = deps.manager
+    if manager.supported() then
+        return mod.init(manager)
     end
 end
 

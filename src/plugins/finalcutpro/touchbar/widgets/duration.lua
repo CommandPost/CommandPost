@@ -4,15 +4,12 @@
 
 local require           = require
 
---local log               = require("hs.logger").new("duration")
+--local log               = require "hs.logger" .new "duration"
 
-local canvas            = require("hs.canvas")
+local canvas            = require "hs.canvas"
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-
-local touchbar          = require("hs._asm.undocumented.touchbar")
-
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -99,7 +96,7 @@ function mod.widget()
             end
     end)
 
-    mod.item = touchbar.item.newCanvas(widgetCanvas, "browserDurationSlider")
+    mod.item = mod._manager.touchbar().item.newCanvas(widgetCanvas, "browserDurationSlider")
         :canvasClickColor{ alpha = 0.0 }
 
     return mod.item
@@ -115,7 +112,8 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init(deps)
+function mod.init(manager)
+    mod._manager = manager
 
     local params = {
         group = "fcpx",
@@ -123,7 +121,7 @@ function mod.init(deps)
         subText = i18n("browserDurationSliderDescription"),
         item = mod.widget,
     }
-    deps.manager.widgets:new("browserDurationSlider", params)
+    manager.widgets:new("browserDurationSlider", params)
 
     return mod
 
@@ -139,8 +137,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    if touchbar.supported() then
-        return mod.init(deps)
+    local manager = deps.manager
+    if manager.supported() then
+        return mod.init(manager)
     end
 end
 

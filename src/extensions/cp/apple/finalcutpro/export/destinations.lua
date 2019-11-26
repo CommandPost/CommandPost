@@ -191,10 +191,20 @@ function mod.names()
                 end
             end
         elseif v.name and v.name ~= "" then
-            -----------------------------------------------------
-            -- Using the 'name' value:
-            -----------------------------------------------------
-            table.insert(result, v.name)
+            if v.name:sub(1, 2) == "FF" then
+                local name = fcpStrings:find(v.name)
+                if name then
+                    -----------------------------------------------------
+                    -- Using the i18n 'name' value:
+                    -----------------------------------------------------
+                    table.insert(result, name)
+                end
+            else
+                -----------------------------------------------------
+                -- Using the 'name' value:
+                -----------------------------------------------------
+                table.insert(result, v.name)
+            end
         end
     end
 
