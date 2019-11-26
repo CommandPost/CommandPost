@@ -27,7 +27,7 @@ function plugin.init(deps)
         label       = i18n("notificationsPanelLabel"),
         image       = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/Notifications.icns"),
         tooltip     = i18n("notificationsPanelTooltip"),
-        height      = 620,
+        height      = 810,
     })
 end
 
