@@ -6,7 +6,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "ifttt"
+--local log               = require "hs.logger".new "ifttt"
 
 local dialog            = require "hs.dialog"
 local http              = require "hs.http"
