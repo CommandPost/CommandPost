@@ -578,7 +578,9 @@ function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
         local result = ""
-        if v(macOSVersion) >= v("10.14") then
+        if v(macOSVersion) >= v("10.15") then
+            result = "macOS Catalina" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.14") then
             result = "macOS Mojave" .. " " .. tostring(macOSVersion)
         elseif v(macOSVersion) >= v("10.13") then
             result = "macOS High Sierra" .. " " .. tostring(macOSVersion)

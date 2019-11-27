@@ -126,15 +126,15 @@ local function navigationCallback(action, webView)
             document.getElementById("customer_email").value = "]] .. mod.email .. [[";
             document.getElementById("feedback_type").value = "]] .. FEEDBACK_TYPE .. [[";
             document.getElementById("app_version").value = "]] .. mod.finalCutProVersion .. [[";
-            document.getElementById("osversion").value = "]] .. mod.macOSVersion .. [[";
+            document.getElementById("os_version").value = "]] .. mod.macOSVersion .. [[";
             document.getElementById("installed_ram").value = "]] .. mod.ramSize .. [[";
             document.getElementById("installed_video_ram").value = "]] .. mod.vramSize .. [[";
             document.getElementById("machine_config").value = "]] .. mod.modelName .. [[";
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
             document.getElementById("feedback_comment").value = `]] .. defaultFeedback .. [[`;
-            document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
-            document.getElementById("FinalCutPro_usage_purpose").value = "]] .. mod.fcpUsage .. [[";
-            document.getElementById("FinalCutPro_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
+            document.getElementById("finalcutpro_feedback_sent_before").value = "]] .. mod.feedback .. [[";
+            document.getElementById("finalcutpro_usage_purpose").value = "]] .. mod.fcpUsage .. [[";
+            document.getElementById("finalcutpro_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
             document.getElementById("video_output").value = "]] .. mod.videoOutput .. [[";
 
@@ -167,7 +167,7 @@ local function navigationCallback(action, webView)
             });
 
             /* FEEDBACK: */
-            var feedback = document.getElementById("feedback");
+            var feedback = document.getElementById("finalcutpro_feedback_sent_before");
             feedback.addEventListener('change', function()
             {
                 var result = {};
@@ -181,7 +181,7 @@ local function navigationCallback(action, webView)
             });
 
             /* FINAL CUT PRO USAGE: */
-            var fcpUsage = document.getElementById("FinalCutPro_usage_purpose");
+            var fcpUsage = document.getElementById("finalcutpro_usage_purpose");
             fcpUsage.addEventListener('change', function()
             {
                 var result = {};
@@ -195,7 +195,7 @@ local function navigationCallback(action, webView)
             });
 
             /* DOCUMENTATION USAGE: */
-            var documentationUsage = document.getElementById("FinalCutPro_documentation_usage_frequency");
+            var documentationUsage = document.getElementById("finalcutpro_documentation_usage_frequency");
             documentationUsage.addEventListener('change', function()
             {
                 var result = {};
