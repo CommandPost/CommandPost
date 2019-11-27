@@ -28,11 +28,11 @@ function plugin.init(deps)
             local browser = fcp:browser()
             local sidebar = libraries:sidebar()
             browser:show()
-            if not libraries:sidebar():isShowing() then
+            if not sidebar:isShowing() then
                 browser:showLibraries():press()
             end
-            libraries:sidebar():selectRowAt(1)
-            libraries:sidebar():showRowAt(1)
+            sidebar:selectRowAt(1)
+            sidebar:showRowAt(1)
         end)
         :titled(i18n("selectTopmostLibraryInBrowser"))
 
@@ -46,11 +46,10 @@ function plugin.init(deps)
             local browser = fcp:browser()
             local sidebar = libraries:sidebar()
             browser:show()
-            if not libraries:sidebar():isShowing() then
+            if not sidebar:isShowing() then
                 browser:showLibraries():press()
             end
-
-            local scrollArea = libraries:sidebar():UI()
+            local scrollArea = sidebar:UI()
             local outline = scrollArea and scrollArea[1]
             if outline and outline:attributeValue("AXRole") == "AXOutline" then
                 local children = outline:attributeValue("AXChildren")
