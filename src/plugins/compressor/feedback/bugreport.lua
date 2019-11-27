@@ -127,15 +127,15 @@ local function navigationCallback(action, webView)
             document.getElementById("customer_email").value = "]] .. mod.email .. [[";
             document.getElementById("feedback_type").value = "]] .. FEEDBACK_TYPE .. [[";
             document.getElementById("app_version").value = "]] .. mod.compressorVersion .. [[";
-            document.getElementById("osversion").value = "]] .. mod.macOSVersion .. [[";
+            document.getElementById("os_version").value = "]] .. mod.macOSVersion .. [[";
             document.getElementById("installed_ram").value = "]] .. mod.ramSize .. [[";
             document.getElementById("installed_video_ram").value = "]] .. mod.vramSize .. [[";
             document.getElementById("machine_config").value = "]] .. mod.modelName .. [[";
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
             document.getElementById("feedback_comment").value = `]] .. defaultFeedback .. [[`;
             //document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
-            document.getElementById("Compressor_usage_purpose").value = "]] .. mod.compressorUsage .. [[";
-            document.getElementById("Compressor_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
+            document.getElementById("compressor_usage_purpose").value = "]] .. mod.compressorUsage .. [[";
+            document.getElementById("compressor_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
 
             /* CUSTOMER NAME: */
@@ -182,8 +182,8 @@ local function navigationCallback(action, webView)
             });
             */
 
-            /* FINAL CUT PRO USAGE: */
-            var compressorUsage = document.getElementById("Compressor_usage_purpose");
+            /* COMPRESSOR USAGE: */
+            var compressorUsage = document.getElementById("compressor_usage_purpose");
             compressorUsage.addEventListener('change', function()
             {
                 var result = {};
@@ -197,7 +197,7 @@ local function navigationCallback(action, webView)
             });
 
             /* DOCUMENTATION USAGE: */
-            var documentationUsage = document.getElementById("Compressor_documentation_usage_frequency");
+            var documentationUsage = document.getElementById("compressor_documentation_usage_frequency");
             documentationUsage.addEventListener('change', function()
             {
                 var result = {};
