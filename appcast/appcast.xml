@@ -31,7 +31,7 @@
 				<li>Fixed bug when disabling the Custom Touch Bar on Mojave.</li></ul>
 
 				<h3>Workarounds:</h3>
-				<ul><li>The Touch Bar features are currently not working correctly on the new 16-inch MacBook Pro so we have temporarily disabled Touch Bar support on these machines until we can come up with a proper fix. If anyone has any ideas, please get in touch.</li>
+				<ul><li>The Touch Bar features are currently not working correctly on the new 16-inch MacBook Pro so we have temporarily disabled Touch Bar support on these machines until we can come up with a proper fix. If anyone has any ideas, please get in touch.</li></ul>
 
 				<h3>Translations:</h3>
 				<ul><li>Added Hungarian Translation. Thanks Gyula Hegedüs!</li></ul>
