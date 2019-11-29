@@ -6,6 +6,58 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.2</title>
+			<description><![CDATA[
+				<h2>Woohoo! 🎉</h2>
+				<p>After 78 releases of FCPX Hacks and 91 beta releases of CommandPost, we're extremely excited to announce that we're finally removing the beta label from CommandPost. With over 3300 active monthly users and over 1208 users in our Facebook Community, we're very happy with the progress CommandPost has made over the last 3 years and we can't wait to show you what we have in-store for future releases!</p>
+				<p>Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.</p>
+				<p>Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!</p>
+				<p><i>Chris Hocking & David Peterson</i></p>
+
+				<hr />
+
+				<h2>New in 1.0.2:</h2>
+
+				<h3>New Features:</h3>
+				<ul><li>You can now apply multiple Compressor presets to the same watch folder.</li>
+				<li>Added Final Cut Pro X preference for "Correct Spelling Automatically". Thanks for the suggestion Afshin Rohani!</li>
+				<li>Added support for IFTTT Notifications. Thanks @JFtechOfficial for implementing!</li>
+				<li>Added action for "Select Topmost Library in Browser" and "Select Active Library in Browser". Thanks for the suggestion Mads Larsen Nielsen!</li></ul>
+
+				<h3>Bug Fixes:</h3>
+				<li>Improved reliability of "Change Duration" menu item action. Thanks for reporting Vigneswaran Rajkumar.</li>
+				<li>Fixed the naming of destinations in Timeline Batch Export if you have a fresh install of Final Cut Pro X without any custom destinations.</li>
+				<li>Updated the Final Cut Pro, Motion & Compressor Feedback Form assistant.</li>
+				<li>Fixed bug when disabling the Custom Touch Bar on Mojave.</li></ul>
+
+				<h3>Workarounds:</h3>
+				<li>The Touch Bar features are currently not working correctly on the new 16-inch MacBook Pro so we have temporarily disabled Touch Bar support on these machines until we can come up with a proper fix. If anyone has any ideas, please get in touch.</li>
+
+				<h3>Translations:</h3>
+				<li>Added Hungarian Translation. Thanks Gyula Hegedüs!</li></ul>
+
+				<hr />
+
+				<h2>New in 1.0.1:</h2>
+
+				<h3>Bug Fixes:</h3>
+				<ul><li>Fixed a bug where the Timeline Batch Export feature would not list all the installed Destination Presets. Thanks for reporting Edgar Davis!</li>
+				<li>Fixed a bug where Snippets assigned as an action (i.e. as a keyboard shortcut) would not trigger the latest Snippet code if the Snippet was updated in the Preferences panel after being assigned. Thanks for reporting Stefan Benz!</li></ul>
+
+				<h3>New Additions:</h3>
+				<ul><li>Added Polish Translation. Thanks Robert!</li></ul>
+			]]>
+			</description>
+			<pubDate>Thu, 28 Nov 2019 15:27:16 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.2/CommandPost_1.0.2.dmg"
+				sparkle:version="5686"
+                sparkle:shortVersionString="1.0.2"
+				sparkle:dsaSignature="MC0CFDrRQPkCBWcicdG+ekp5Va7L43FhAhUA0zKO+mVRgy3i38hkYSnkdckEL3c="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.1</title>
 			<description><![CDATA[
 				<h2>Woohoo! 🎉</h2>
