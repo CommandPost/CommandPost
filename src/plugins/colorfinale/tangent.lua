@@ -2,23 +2,28 @@
 ---
 --- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
 
-local require = require
+local require           = require
 
-local application   = require("hs.application")
+--local log               = require "hs.logger".new "ColorFinale"
 
-local fcp           = require("cp.apple.finalcutpro")
-local prop          = require("cp.prop")
-local tools         = require("cp.tools")
+local application       = require "hs.application"
 
-local startsWith    = tools.startsWith
+local fcp               = require "cp.apple.finalcutpro"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
 
+local infoForBundleID   = application.infoForBundleID
+local startsWith        = tools.startsWith
 
-local mod ={}
+local mod = {}
 
 -- APP_BUNDLE_ID -> string
 -- Constant
 -- ColorFinale Bundle ID
-local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
+local APP_BUNDLE_IDS = {
+    "com.colorfinale.LUTManager",   -- Color Finale
+    "com.colorfinale.app",          -- Color Finale 2
+}
 
 -- WINDOW_TITLE -> string
 -- Constant
@@ -93,8 +98,13 @@ prop.bind(mod) {
 --- Variable
 --- Checks to see if ColorFinale is installed.
     colorFinaleInstalled = prop(function()
-        local info = application.infoForBundleID(APP_BUNDLE_ID)
-        return info ~= nil
+        for _, id in pairs(APP_BUNDLE_IDS) do
+            local info = infoForBundleID(id)
+            if info then
+                return true
+            end
+        end
+        return false
     end),
 }
 
@@ -104,7 +114,6 @@ prop.bind(mod) {
 --- Checks to see if ColorFinale is active.
     colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible),
 }
-
 
 local plugin = {
     id = "colorfinale.tangent",
