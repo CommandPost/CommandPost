@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "ColorFinale"
+--local log               = require "hs.logger".new "ColorFinale"
 
 local application       = require "hs.application"
 
@@ -99,7 +99,7 @@ prop.bind(mod) {
 --- Checks to see if ColorFinale is installed.
     colorFinaleInstalled = prop(function()
         for _, id in pairs(APP_BUNDLE_IDS) do
-            local info = application.infoForBundleID(id)
+            local info = infoForBundleID(id)
             if info then
                 return true
             end
