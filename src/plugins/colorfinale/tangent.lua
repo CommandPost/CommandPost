@@ -83,22 +83,15 @@ prop.bind(mod) {
 --- Variable
 --- Checks to see if an object is a Color Finale window.
     colorFinaleVisible = colorFinaleWindowUI:mutate(function(original)
-        local windows = original()
-        if windows then
-            for _,w in ipairs(windows) do
-                if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
-                    return true
-                end
-            end
-        end
-        return false
+        local window = original()
+        return window ~= nil and startsWith(window:attributeValue("AXTitle"), WINDOW_TITLE)
     end),
 
 --- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if ColorFinale is installed.
     colorFinaleInstalled = prop(function()
-        for _, id in pairs(APP_BUNDLE_IDS) do
+        for _, id in ipairs(APP_BUNDLE_IDS) do
             local info = infoForBundleID(id)
             if info then
                 return true
