@@ -71,13 +71,11 @@ local colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
     return nil
 end)
 
-
 prop.bind(mod) {
 --- plugins.colorfinale.tangent.colorFinaleWindowUI <cp.prop: hs._asm.axuielement; read-only>
 --- Variable
 --- Returns the `axuielement` for the ColorFinale window, if present.
     colorFinaleWindowUI = colorFinaleWindowUI,
-
 
 --- plugins.colorfinale.tangent.colorFinaleVisible <cp.prop: boolean; read-only; live>
 --- Variable
@@ -87,9 +85,9 @@ prop.bind(mod) {
         return window ~= nil and startsWith(window:attributeValue("AXTitle"), WINDOW_TITLE)
     end),
 
---- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; live>
+--- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; cached>
 --- Variable
---- Checks to see if ColorFinale is installed.
+--- Checks to see if ColorFinale is installed. This prop is cached to improve performance.
     colorFinaleInstalled = prop(function()
         for _, id in ipairs(APP_BUNDLE_IDS) do
             local info = infoForBundleID(id)
@@ -98,7 +96,7 @@ prop.bind(mod) {
             end
         end
         return false
-    end),
+    end):cached(),
 }
 
 prop.bind(mod) {
