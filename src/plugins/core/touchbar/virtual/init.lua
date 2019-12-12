@@ -16,8 +16,8 @@ local tools                                     = require "cp.tools"
 
 local semver                                    = require "semver"
 
-
 local location                                  = require "location"
+local execute                                   = hs.execute
 
 
 local mod = {}
@@ -53,8 +53,13 @@ mod.location = config.prop("displayVirtualTouchBarLocation", mod.LOCATION_DEFAUL
 mod.updateLocationCallback = location
 
 mod.macOSVersionSupported = prop(function()
+    local supportedHardware = true
+    local output = execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
+    if output and output:find("MacBookPro16,1") then
+        supportedHardware = false
+    end
     local osVersion = semver(tools.macOSVersion())
-    return osVersion < semver("10.15")
+    return supportedHardware and osVersion >= semver("10.12.1")
 end)
 
 --- plugins.core.touchbar.virtual.supported <cp.prop: boolean; read-only>
