@@ -444,8 +444,9 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-    if not mod._bar then
-        mod._bar = mod.touchbar().bar.new()
+    local tb = mod.touchbar()
+    if tb and not mod._bar then
+        mod._bar = tb.bar.new()
 
         --------------------------------------------------------------------------------
         -- Resize Icon:
