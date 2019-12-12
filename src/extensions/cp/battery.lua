@@ -127,6 +127,7 @@ local mod = {}
 local EXCLUDED = {
     ["privateBluetoothBatteryInfo"] = true,
     ["getAll"] = true,
+    ["psuSerialString"] = true,
 }
 
 --- cp.battery._watcher -> hs.battery.watcher object
