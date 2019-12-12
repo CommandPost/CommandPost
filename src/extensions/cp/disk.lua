@@ -21,18 +21,18 @@
 --- * `unmounted`       - only unmounted drives.
 ---
 --- ```lua
---- local battery = require("cp.battery")
---- local externalDrives = battery.devices({physical = true, ejectable = true})
+--- local disk = require("cp.disk")
+--- local externalDrives = disk.devices({physical = true, ejectable = true})
 --- ```
 
 local require = require
 
-local log                   = require("hs.logger").new("disk")
+local log                   = require "hs.logger" .new "disk"
 
 local execute               = hs.execute
 
-local plist                 = require("cp.plist")
-local isBlank               = require("cp.is").blank
+local plist                 = require "cp.plist"
+local isBlank               = require "cp.is" .blank
 
 
 local mod = {}
