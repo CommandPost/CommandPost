@@ -212,19 +212,6 @@ function Table.lazy.prop:isFocused()
     end)
 end
 
---- cp.ui.Table:uncached() -> Table
---- Method
---- Calling this will force the table to look up the `axuielement` on demand, rather than caching the result.
----
---- Parameters:
----  * None
----
----  * The same `Table`, now uncached..
-function Table:uncached()
-    self._uncached = true
-    return self
-end
-
 --- cp.ui.Table.matchesContent(element) -> boolean
 --- Function
 --- Checks if the `element` is a valid table content element.

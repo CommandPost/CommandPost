@@ -4,6 +4,8 @@
 
 local require       = require
 
+--local log		    = require "hs.logger".new "selectlibrary"
+
 local fcp           = require "cp.apple.finalcutpro"
 local i18n          = require "cp.i18n"
 
@@ -26,13 +28,14 @@ function plugin.init(deps)
         :whenActivated(function()
             local libraries = fcp:libraries()
             local browser = fcp:browser()
-            local sidebar = libraries:sidebar()
             browser:show()
+            local sidebar = libraries:sidebar()
             if not sidebar:isShowing() then
                 browser:showLibraries():press()
             end
             sidebar:selectRowAt(1)
             sidebar:showRowAt(1)
+            sidebar:focus()
         end)
         :titled(i18n("selectTopmostLibraryInBrowser"))
 
@@ -44,8 +47,8 @@ function plugin.init(deps)
         :whenActivated(function()
             local libraries = fcp:libraries()
             local browser = fcp:browser()
-            local sidebar = libraries:sidebar()
             browser:show()
+            local sidebar = libraries:sidebar()
             if not sidebar:isShowing() then
                 browser:showLibraries():press()
             end
@@ -63,6 +66,7 @@ function plugin.init(deps)
                         if foundSelected then
                             if child and child:attributeValue("AXDisclosureLevel") == 0 then
                                 outline:setAttributeValue("AXSelectedRows", {child})
+                                sidebar:focus()
                                 break
                             end
                         end
