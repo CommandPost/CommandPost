@@ -13,16 +13,20 @@ local timer             = require "hs.timer"
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
+local tools             = require "cp.tools"
 
+local doAfter           = timer.doAfter
 local doEvery           = timer.doEvery
 local keyStroke         = eventtap.keyStroke
+local stringMaxLength   = tools.stringMaxLength
+local trim              = tools.trim
 
 local mod = {}
 
--- HISTORY_SIZE -> number
+-- WATCHER_FREQUENCY -> number
 -- Constant
--- The number of history items to keep.
-local HISTORY_SIZE = 50
+-- How often the Pasteboard watcher should trigger
+local WATCHER_FREQUENCY = 0.5
 
 -- DISALLOWED_UTI -> table
 -- Constant
@@ -47,20 +51,176 @@ mod.cached = {}
 --- Contains the pasteboard history.
 mod.history = json.prop(config.userConfigRootPath, "Pasteboard History", "Text Pasteboard History.cpPasteboard", {})
 
+--- plugins.finder.pasteboard.history.historySize <cp.prop: number>
+--- Field
+--- Maximum Pasteboard History Size
+mod.historySize = config.prop("finder.pasteboard.history.size", 5)
+
+-- plugins.finder.pasteboard.history._alreadyInProgress -> boolean
+-- Variable
+-- Are we in the process of pasting something from the history?
+mod._alreadyInProgress = false
+
+--- plugins.finder.pasteboard.history.enabled <cp.prop: boolean>
+--- Field
+--- Is Text Pasteboard History Enabled?
+mod.enabled = config.prop("finder.pasteboard.history.enabled", false):watch(function(value)
+    if value then
+        mod._lastChange = pasteboard.changeCount()
+        --------------------------------------------------------------------------------
+        -- Create the timer:
+        --------------------------------------------------------------------------------
+        mod.timer = doEvery(WATCHER_FREQUENCY, function()
+            local currentChange = pasteboard.changeCount()
+            if (currentChange > mod._lastChange) and not mod._alreadyInProgress then
+                --------------------------------------------------------------------------------
+                -- Get pasteboard contents:
+                --------------------------------------------------------------------------------
+                local contents = pasteboard.readString()
+
+                --------------------------------------------------------------------------------
+                -- Don't process if Pasteboard contents isn't a string:
+                --------------------------------------------------------------------------------
+                if not contents then
+                    mod._lastChange = currentChange
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Disallow certain UTI's:
+                --------------------------------------------------------------------------------
+                local currentTypes = pasteboard.allContentTypes()[1]
+                for _,aType in pairs(currentTypes) do
+                    for _,uti in pairs(DISALLOWED_UTI) do
+                        if uti == aType then
+                            mod._lastChange = currentChange
+                            return
+                        end
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if already in the history:
+                --------------------------------------------------------------------------------
+                for _, v in pairs(mod.cached) do
+                    if v.text == contents then
+                        mod._lastChange = currentChange
+                        return
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Add item to cache:
+                --------------------------------------------------------------------------------
+                local item = {}
+                item["text"] = contents
+                table.insert(mod.cached, item)
+
+                --------------------------------------------------------------------------------
+                -- Limit the history size:
+                --------------------------------------------------------------------------------
+                while #mod.cached > mod.historySize() do
+                    table.remove(mod.cached, 1)
+                end
+
+                --------------------------------------------------------------------------------
+                -- Save to disk:
+                --------------------------------------------------------------------------------
+                mod.history(mod.cached)
+
+                --------------------------------------------------------------------------------
+                -- Reset handler:
+                --------------------------------------------------------------------------------
+                mod._handler:reset(true)
+            end
+            mod._lastChange = currentChange
+        end):start()
+
+        --------------------------------------------------------------------------------
+        -- Populate Cache & Reset Handler:
+        --------------------------------------------------------------------------------
+        mod.cached = mod.history()
+        mod._handler:reset(true)
+    else
+        --------------------------------------------------------------------------------
+        -- Destroy the timer:
+        --------------------------------------------------------------------------------
+        if mod.timer then
+            mod.timer:stop()
+            mod.timer = nil
+        end
+
+        --------------------------------------------------------------------------------
+        -- Clear Cache & Reset Handler:
+        --------------------------------------------------------------------------------
+        mod.cached = {}
+        mod._handler:reset(true)
+    end
+end)
+
 local plugin = {
     id              = "finder.pasteboard.history",
     group           = "finder",
     dependencies    = {
         ["core.action.manager"] = "actionmanager",
+        ["finder.preferences.panel"] = "panel",
     }
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Restore history from JSON:
     --------------------------------------------------------------------------------
     mod.cached = mod.history()
+
+    --------------------------------------------------------------------------------
+    -- Preferences:
+    --------------------------------------------------------------------------------
+    local panel = deps.panel
+    panel
+        :addHeading(501, i18n("textPasteboardHistory"))
+        :addCheckbox(502,
+            {
+                label = i18n("enable") .. " " .. i18n("textPasteboardHistory"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = mod.enabled,
+            }
+        )
+        :addSelect(503,
+            {
+                label       =   i18n("historySize"),
+                width       =   100,
+                value       =   function()
+                                    return tostring(mod.historySize())
+                                end,
+                options     =   function()
+                                    local options = {}
+                                    for i=1, 50 do
+                                        options[i] = {
+                                            value = tostring(i),
+                                            label = tostring(i),
+                                        }
+                                    end
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    --------------------------------------------------------------------------------
+                                    -- Update the history size:
+                                    --------------------------------------------------------------------------------
+                                    mod.historySize(tonumber(params.value))
+
+                                    --------------------------------------------------------------------------------
+                                    -- If the History Size has been decreased, delete any excess items
+                                    -- from the history and save the changes to disk:
+                                    --------------------------------------------------------------------------------
+                                    while #mod.cached > mod.historySize() do
+                                        table.remove(mod.cached, 1)
+                                    end
+                                    mod.history(mod.cached)
+                                end,
+            }
+        )
 
     --------------------------------------------------------------------------------
     -- Setup Handler:
@@ -71,7 +231,7 @@ function plugin.init(deps)
             for _, item in pairs(mod.cached) do
                 if item.text then
                     choices
-                        :add(item.text)
+                        :add(stringMaxLength(trim(item.text), 80, "…"))
                         :subText(i18n("pasteboardHistory"))
                         :params({
                             text = item.text,
@@ -81,9 +241,12 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
+            mod._alreadyInProgress = true
             pasteboard.setContents(action.text)
-            timer.doAfter(0.1, function()
+            doAfter(0.1, function()
                 keyStroke({"cmd"}, "v")
+                mod._alreadyInProgress = false
+                mod._lastChange = pasteboard.changeCount()
             end)
         end)
         :onActionId(function(params)
@@ -91,68 +254,9 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
-    -- Setup Pasteboard Timer:
+    -- Setup watcher if enabled:
     --------------------------------------------------------------------------------
-    mod.timer = doEvery(1, function()
-        --------------------------------------------------------------------------------
-        -- Get pasteboard contents:
-        --------------------------------------------------------------------------------
-        local contents = pasteboard.getContents()
-
-        --------------------------------------------------------------------------------
-        -- Don't process if nothing's changed:
-        --------------------------------------------------------------------------------
-        if not contents or contents == mod.lastContents then
-            return
-        end
-        mod.lastContents = contents
-
-        --------------------------------------------------------------------------------
-        -- Disallow certain UTI's:
-        --------------------------------------------------------------------------------
-        local currentTypes = pasteboard.allContentTypes()[1]
-        for _,aType in pairs(currentTypes) do
-            for _,uti in pairs(DISALLOWED_UTI) do
-                if uti == aType then
-                    return
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Ignore if already in the history:
-        --------------------------------------------------------------------------------
-        for _, v in pairs(mod.cached) do
-            if v.text == contents then
-                return
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Add item to cache:
-        --------------------------------------------------------------------------------
-        local item = {}
-        item["text"] = contents
-        item["uti"] = currentTypes[1]
-        table.insert(mod.cached, item)
-
-        --------------------------------------------------------------------------------
-        -- Limit the history size:
-        --------------------------------------------------------------------------------
-        if #mod.cached > HISTORY_SIZE then
-            table.remove(mod.cached, 1)
-        end
-
-        --------------------------------------------------------------------------------
-        -- Save to disk:
-        --------------------------------------------------------------------------------
-        mod.history(mod.cached)
-
-        --------------------------------------------------------------------------------
-        -- Reset handler:
-        --------------------------------------------------------------------------------
-        mod._handler:reset(true)
-    end):start()
+    mod.enabled:update()
 
     return mod
 end
