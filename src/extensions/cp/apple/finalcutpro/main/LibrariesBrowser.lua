@@ -18,6 +18,7 @@ local LibrariesList				= require "cp.apple.finalcutpro.main.LibrariesList"
 
 local Button					= require "cp.ui.Button"
 local PopUpButton               = require "cp.ui.PopUpButton"
+local SplitGroup                = require "cp.ui.SplitGroup"
 local Table						= require "cp.ui.Table"
 local TextField					= require "cp.ui.TextField"
 
@@ -68,7 +69,7 @@ function LibrariesBrowser.lazy.prop:mainGroupUI()
         return cache(self, "_mainGroup", function()
             local ui = original()
             return ui and childWithRole(ui, "AXSplitGroup")
-        end)
+        end, SplitGroup.matches)
     end)
 end
 
@@ -284,13 +285,19 @@ function LibrariesBrowser.lazy.method:list()
     return LibrariesList.new(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.ui.Table>
---- Field
+--- cp.apple.finalcutpro.main.LibrariesBrowser:sidebar() -> cp.ui.Table
+--- Method
 --- Get Libraries sidebar [Table](cp.ui.Table.md).
-function LibrariesBrowser.lazy.value:sidebar()
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The sidebar table.
+function LibrariesBrowser:sidebar()
     return Table(self, function()
         return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
-    end):uncached()
+    end)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
@@ -304,6 +311,8 @@ end
 ---  * `true` if there's a match, otherwise `false`.
 function LibrariesBrowser.matchesSidebar(element)
     return element and element:attributeValue("AXRole") == "AXScrollArea"
+    and element:attributeValueCount("AXChildren") >= 1
+    and element:attributeValue("AXChildren")[1]:attributeValueCount("AXChildren") ~= 0
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table
