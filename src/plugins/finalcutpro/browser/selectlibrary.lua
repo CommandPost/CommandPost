@@ -26,16 +26,10 @@ function plugin.init(deps)
     fcpxCmds
         :add("selectTopmostLibraryInBrowser")
         :whenActivated(function()
-            local libraries = fcp:libraries()
-            local browser = fcp:browser()
-            browser:show()
-            local sidebar = libraries:sidebar()
-            if not sidebar:isShowing() then
-                browser:showLibraries():press()
-            end
-            sidebar:selectRowAt(1)
-            sidebar:showRowAt(1)
-            sidebar:focus()
+            fcp.libraries.sidebar:show()
+            fcp.libraries.sidebar:selectRowAt(1)
+            fcp.libraries.sidebar:showRowAt(1)
+            fcp.libraries.sidebar:focus()
         end)
         :titled(i18n("selectTopmostLibraryInBrowser"))
 
@@ -45,37 +39,11 @@ function plugin.init(deps)
     fcpxCmds
         :add("selectActiveLibraryInBrowser")
         :whenActivated(function()
-            local libraries = fcp:libraries()
-            local browser = fcp:browser()
-            browser:show()
-            local sidebar = libraries:sidebar()
-            if not sidebar:isShowing() then
-                browser:showLibraries():press()
-            end
-            local scrollArea = sidebar:UI()
-            local outline = scrollArea and scrollArea[1]
-            if outline and outline:attributeValue("AXRole") == "AXOutline" then
-                local children = outline:attributeValue("AXChildren")
-                if children then
-                    local foundSelected = false
-                    for i=#children, 1, -1 do
-                        local child = children[i]
-                        if child and child:attributeValue("AXSelected") then
-                            foundSelected = true
-                        end
-                        if foundSelected then
-                            if child and child:attributeValue("AXDisclosureLevel") == 0 then
-                                outline:setAttributeValue("AXSelectedRows", {child})
-                                sidebar:focus()
-                                break
-                            end
-                        end
-                    end
-                end
-            end
+            fcp.libraries.sidebar:show()
+            fcp.libraries.sidebar:selectActiveLibrary()
+            fcp.libraries.sidebar:focus()
         end)
         :titled(i18n("selectActiveLibraryInBrowser"))
-
 end
 
 return plugin
