@@ -29,12 +29,18 @@ function plugin.init(deps)
     --       Sorry David!
     --------------------------------------------------------------------------------
 
+    --------------------------------------------------------------------------------
+    -- Define Ranges:
+    --------------------------------------------------------------------------------
+    local KEY_PRESS             = ColorWell.KEY_PRESS
+    local MIX_RANGES            = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
+    local SATURATION_RANGES     = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
+    local BRIGHTNESS_RANGES     = {0.01, 0.02, 0.03, 0.04, 0.05, 0.1}
+    local TINT_RANGES           = {0.1, 0.2, 0.3, 0.4, 0.5, 1, 5, 10}
+    local TEMPERATURE_RANGES    = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200}
+
     local fcpxCmds = deps.fcpxCmds
-
-    local KEY_PRESS = ColorWell.KEY_PRESS
-
     local colorWheels = fcp:inspector():color():colorWheels()
-
     --------------------------------------------------------------------------------
     -- Reset Master Color Wheel Color:
     --------------------------------------------------------------------------------
@@ -279,23 +285,25 @@ function plugin.init(deps)
         colorWheelMasterSaturationValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelMasterSaturationUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMasterSaturationValue = colorWheelMasterSaturationValue - 0.01
-            updateColorWheelMasterSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(SATURATION_RANGES) do
+        fcpxCmds
+            :add("colorWheelMasterSaturationUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMasterSaturationValue = colorWheelMasterSaturationValue - v
+                updateColorWheelMasterSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelMasterSaturationDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMasterSaturationValue = colorWheelMasterSaturationValue + 0.01
-            updateColorWheelMasterSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelMasterSaturationDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMasterSaturationValue = colorWheelMasterSaturationValue + v
+                updateColorWheelMasterSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelMasterSaturationReset")
@@ -316,23 +324,25 @@ function plugin.init(deps)
         colorWheelMasterBrightnessValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelMasterBrightnessUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue - 0.01
-            updateColorWheelMasterBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(BRIGHTNESS_RANGES) do
+        fcpxCmds
+            :add("colorWheelMasterBrightnessUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue - v
+                updateColorWheelMasterBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelMasterBrightnessDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue + 0.01
-            updateColorWheelMasterBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelMasterBrightnessDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMasterBrightnessValue = colorWheelMasterBrightnessValue + v
+                updateColorWheelMasterBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelMasterBrightnessReset")
@@ -410,23 +420,25 @@ function plugin.init(deps)
         colorWheelShadowsSaturationValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelShadowsSaturationUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue - 0.01
-            updateColorWheelShadowsSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(SATURATION_RANGES) do
+        fcpxCmds
+            :add("colorWheelShadowsSaturationUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue - v
+                updateColorWheelShadowsSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelShadowsSaturationDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue + 0.01
-            updateColorWheelShadowsSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelShadowsSaturationDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelShadowsSaturationValue = colorWheelShadowsSaturationValue + v
+                updateColorWheelShadowsSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelShadowsSaturationReset")
@@ -447,23 +459,25 @@ function plugin.init(deps)
         colorWheelShadowsBrightnessValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelShadowsBrightnessUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue - 0.01
-            updateColorWheelShadowsBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(BRIGHTNESS_RANGES) do
+        fcpxCmds
+            :add("colorWheelShadowsBrightnessUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue - v
+                updateColorWheelShadowsBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelShadowsBrightnessDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue + 0.01
-            updateColorWheelShadowsBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelShadowsBrightnessDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelShadowsBrightnessValue = colorWheelShadowsBrightnessValue + v
+                updateColorWheelShadowsBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelShadowsBrightnessReset")
@@ -541,23 +555,25 @@ function plugin.init(deps)
         colorWheelMidtonesSaturationValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelMidtonesSaturationUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue - 0.01
-            updateColorWheelMidtonesSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(SATURATION_RANGES) do
+        fcpxCmds
+            :add("colorWheelMidtonesSaturationUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue - v
+                updateColorWheelMidtonesSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelMidtonesSaturationDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue + 0.01
-            updateColorWheelMidtonesSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelMidtonesSaturationDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMidtonesSaturationValue = colorWheelMidtonesSaturationValue + v
+                updateColorWheelMidtonesSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelMidtonesSaturationReset")
@@ -578,23 +594,25 @@ function plugin.init(deps)
         colorWheelMidtonesBrightnessValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelMidtonesBrightnessUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue - 0.01
-            updateColorWheelMidtonesBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(BRIGHTNESS_RANGES) do
+        fcpxCmds
+            :add("colorWheelMidtonesBrightnessUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue - v
+                updateColorWheelMidtonesBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelMidtonesBrightnessDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue + 0.01
-            updateColorWheelMidtonesBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelMidtonesBrightnessDown")
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue + 0.01
+                updateColorWheelMidtonesBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelMidtonesBrightnessReset")
@@ -672,23 +690,25 @@ function plugin.init(deps)
         colorWheelHighlightsSaturationValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelHighlightsSaturationUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue - 0.01
-            updateColorWheelHighlightsSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(SATURATION_RANGES) do
+        fcpxCmds
+            :add("colorWheelHighlightsSaturationUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue - v
+                updateColorWheelHighlightsSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelHighlightsSaturationDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue + 0.01
-            updateColorWheelHighlightsSaturation()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelHighlightsSaturationDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHighlightsSaturationValue = colorWheelHighlightsSaturationValue + v
+                updateColorWheelHighlightsSaturation()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelHighlightsSaturationReset")
@@ -709,23 +729,25 @@ function plugin.init(deps)
         colorWheelHighlightsBrightnessValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelHighlightsBrightnessUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue - 0.01
-            updateColorWheelHighlightsBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(BRIGHTNESS_RANGES) do
+        fcpxCmds
+            :add("colorWheelHighlightsBrightnessUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue - v
+                updateColorWheelHighlightsBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelHighlightsBrightnessDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue + 0.01
-            updateColorWheelHighlightsBrightness()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelHighlightsBrightnessDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelHighlightsBrightnessValue = colorWheelHighlightsBrightnessValue + v
+                updateColorWheelHighlightsBrightness()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelHighlightsBrightnessReset")
@@ -746,23 +768,25 @@ function plugin.init(deps)
         colorWheelTemperatureValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelTemperatureUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelTemperatureValue = colorWheelTemperatureValue - 5
-            updateColorWheelTemperature()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(TEMPERATURE_RANGES) do
+        fcpxCmds
+            :add("colorWheelTemperatureUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelTemperatureValue = colorWheelTemperatureValue - v
+                updateColorWheelTemperature()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " ..  v)
 
-    fcpxCmds
-        :add("colorWheelTemperatureDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelTemperatureValue = colorWheelTemperatureValue + 5
-            updateColorWheelTemperature()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelTemperatureDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelTemperatureValue = colorWheelTemperatureValue + v
+                updateColorWheelTemperature()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelTemperatureReset")
@@ -784,23 +808,25 @@ function plugin.init(deps)
         colorWheelTintValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelTintUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelTintValue = colorWheelTintValue + 1
-            updateColorWheelTint()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(TINT_RANGES) do
+        fcpxCmds
+            :add("colorWheelTintUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelTintValue = colorWheelTintValue + v
+                updateColorWheelTint()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelTintDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelTintValue = colorWheelTintValue - 1
-            updateColorWheelTint()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelTintDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelTintValue = colorWheelTintValue - v
+                updateColorWheelTint()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("tint") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelTintReset")
@@ -822,23 +848,25 @@ function plugin.init(deps)
         colorWheelMixValue = 0
     end)
 
-    fcpxCmds
-        :add("colorWheelMixUp")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMixValue = colorWheelMixValue + 0.1
-            updateColorWheelMix()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("up"))
+    for _, v in pairs(MIX_RANGES) do
+        fcpxCmds
+            :add("colorWheelMixUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMixValue = colorWheelMixValue + v
+                updateColorWheelMix()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
-    fcpxCmds
-        :add("colorWheelMixDown")
-        :groupedBy("colorWheels")
-        :whenActivated(function()
-            colorWheelMixValue = colorWheelMixValue - 0.1
-            updateColorWheelMix()
-        end)
-        :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("down"))
+        fcpxCmds
+            :add("colorWheelMixDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelMixValue = colorWheelMixValue - v
+                updateColorWheelMix()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("mix") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
 
     fcpxCmds
         :add("colorWheelMixReset")
