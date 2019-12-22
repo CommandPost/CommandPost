@@ -68,7 +68,7 @@ function mod.show()
         local handlerIds = mod.actionmanager.handlerIds()
         for _,id in pairs(handlerIds) do
             local handlerTable = tools.split(id, "_")
-            if handlerTable[2]~= "widgets" and handlerTable[1] == "global" then
+            if handlerTable[2]~= "widgets" and handlerTable[1] == "global" and id ~= "global_shortcuts" then
                 table.insert(allowedHandlers, id)
             end
         end
