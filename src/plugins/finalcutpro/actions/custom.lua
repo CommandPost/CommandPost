@@ -110,6 +110,7 @@ function mod.assign(id, completionFn)
     local handlerIds = mod._actionmanager.handlerIds()
     local allowedHandlers = removeFromTable(handlerIds, "fcpx_cmds")
     allowedHandlers = removeFromTable(allowedHandlers, "global_menuactions")
+    allowedHandlers = removeFromTable(allowedHandlers, "global_shortcuts")
     activator:allowHandlers(table.unpack(allowedHandlers))
 
     --------------------------------------------------------------------------------
