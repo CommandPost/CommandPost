@@ -74,7 +74,7 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
-            eventtap.keyStroke(action.modifiers, action.character)
+            keyStroke(action.modifiers, action.character)
         end)
         :onActionId(function(params)
             return "global_shortcuts_" .. params.id
