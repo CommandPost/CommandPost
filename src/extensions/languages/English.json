@@ -615,6 +615,7 @@
         "enableShortcutsDuringFullscreen": "Enable Shortcuts During Fullscreen Playback",
         "enableStreamDeck": "Enable Stream Deck",
         "enableTangentPanelSupport": "Enable Tangent Panel Support",
+        "enableViewerContextualMenu": "Enable Viewer Contextual Menu",
         "enableVirtualTouchBar": "Enable Virtual Touch Bar",
         "enableWaveformDrawing": "Enable Waveform Drawing",
         "end": "End",
