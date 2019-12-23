@@ -1083,9 +1083,9 @@ function mod.update()
             -- Destroy any Mouse Move Trackers:
             --------------------------------------------------------------------------------
             if mod._mouseMoveTracker then
-                for _, v in pairs(mod._mouseMoveTracker) do
-                    v:stop()
-                    v = nil
+                for i, _ in pairs(mod._mouseMoveTracker) do
+                    mod._mouseMoveTracker[i]:stop()
+                    mod._mouseMoveTracker[i] = nil
                 end
             end
         end
