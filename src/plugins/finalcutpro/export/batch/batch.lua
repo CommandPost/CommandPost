@@ -155,7 +155,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
     end
     local sortFn = function(t,a,b)
         if t and t[a] and t[b] and t[a].attributeValue and t[b].attributeValue then
-            return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription")
+            return (t[a]:attributeValue("AXValueDescription") or "") < (t[b]:attributeValue("AXValueDescription") or "")
         end
     end
     local playhead = fcp:timeline():playhead()
