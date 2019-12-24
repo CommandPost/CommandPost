@@ -7,6 +7,11 @@ return {
         local modpath, _, _, configdir, docstringspath, _, autoload_extensions = ...
         local tostring, pack, tconcat, sformat = tostring, table.pack, table.concat, string.format
         local crashLog = require("hs.crash").crashLog
+        local fnutils = require("hs.fnutils")
+        local hsmath = require("hs.math")
+
+        -- seed RNG before we do anything else
+        math.randomseed(hsmath.randomFloat()*100000000)
 
         -- setup core functions
 
@@ -265,12 +270,39 @@ return {
         ---  * This function will load the Spoon and call its `:init()` method if it has one. If you do not wish this to happen, or wish to use a Spoon that somehow doesn't fit with the behaviours of this function, you can also simply `require('name')` to load the Spoon
         ---  * If the Spoon provides documentation, it will be loaded by made available in hs.docs
         ---  * To learn how to distribute your own code as a Spoon, see https://github.com/Hammerspoon/hammerspoon/blob/master/SPOON.md
-        hs.loadSpoon = function(name, global)
-            print("-- Loading Spoon: " .. name)
+        hs.loadSpoon = function (name, global)
+            print("-- Loading Spoon: "..name)
+
+            -- First, find the full path of the Spoon
+            local spoonFile = package.searchpath(name, package.path)
+            if spoonFile == nil then
+                hs.showError("Unable to load Spoon: "..name)
+                return
+            end
+            local spoonPath = spoonFile:match("(.*/)")
+
+            -- Check if the Spoon contains a meta.json
+            local metaData = {}
+            local mf = io.open(spoonPath.."meta.json", "r")
+            if mf then
+                local fileData = mf:read("*a")
+                mf:close()
+                local json = require("hs.json")
+                local metaDataTmp = json.decode(fileData)
+                if metaDataTmp then
+                    metaData = metaDataTmp
+                end
+            end
+
             -- Load the Spoon code
             local obj = require(name)
 
             if obj then
+            -- Inject the full path of the Spoon
+                obj.spoonPath = spoonPath
+                -- Inject the Spoon's metadata
+                obj.spoonMeta = metaData
+
                 -- If the Spoon has an init method, call it
                 if obj.init then
                     obj:init()
@@ -286,10 +318,11 @@ return {
 
                 -- If the Spoon has docs, load them
                 if obj.spoonPath then
-                    require("hs.fs")
-                    local docsPath = obj.spoonPath .. "/docs.json"
-                    if hs.fs.attributes(docsPath) then
-                        require("hs.doc").registerJSONFile(docsPath, true)
+                    local docsPath = obj.spoonPath.."/docs.json"
+                    local fs = require("hs.fs")
+                    if fs.attributes(docsPath) then
+                        local doc = require("hs.doc")
+                        doc.registerJSONFile(docsPath, true)
                     end
                 end
             end
@@ -498,7 +531,7 @@ return {
         end
 
         local function filterForRemnant(table, remnant)
-            return hs.fnutils.ifilter(
+            return fnutils.ifilter(
                 table,
                 function(item)
                     return string.find(item, "^" .. remnant)
@@ -511,7 +544,7 @@ return {
                 return {}
             end
             return filterForRemnant(
-                hs.fnutils.imap(
+                fnutils.imap(
                     tableKeys(table),
                     function(item)
                         return typeWithSuffix(item, table)
@@ -543,7 +576,7 @@ return {
             local mod = string.match(completionWord, "(.*)[%.:]") or ""
             local remnant = string.gsub(completionWord, mod, "")
             remnant = string.gsub(remnant, "[%.:](.*)", "%1")
-            local parents = hs.fnutils.split(mod, "%.")
+            local parents = fnutils.split(mod, "%.")
             local src = _G
 
             --print(string.format("completionWord: %s", completionWord))
@@ -585,7 +618,7 @@ return {
                 end
             end
 
-            return hs.fnutils.map(
+            return fnutils.map(
                 completions,
                 function(item)
                     return mod .. mapJoiner .. item .. mapEnder
