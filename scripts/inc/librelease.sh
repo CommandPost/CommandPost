@@ -394,7 +394,7 @@ function generate_appcast() {
 
   SPARKLE_DSA_SIGNATURE="$(../CommandPost/scripts/inc/sign_update "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "../dsa_priv.pem")"
 
-  local BUILD_NUMBER=$(xcodebuild -target Hammerspoon -configuration Release -showBuildSettings 2>/dev/null | grep CURRENT_PROJECT_VERSION | awk '{ print $3 }')
+  local BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Hammerspoon/CommandPost-Info.plist)
 
   touch "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
   echo "
