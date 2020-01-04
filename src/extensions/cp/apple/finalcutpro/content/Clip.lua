@@ -85,12 +85,16 @@ function Clip.mt:setTitle(title)
         local cell = self._element[colIndex]
         local textfield = cell and childWithRole(cell, "AXTextField")
         if textfield then
+            textfield:setAttributeValue("AXFocused", true)
             textfield:setAttributeValue("AXValue", title)
+            textfield:performAction("AXConfirm")
         end
     else
         local textfield = self._element and childWithRole(self._element, "AXTextField")
         if textfield then
+            textfield:setAttributeValue("AXFocused", true)
             textfield:setAttributeValue("AXValue", title)
+            textfield:performAction("AXConfirm")
         end
     end
 end
