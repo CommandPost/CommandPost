@@ -2,15 +2,14 @@
 ---
 --- Accessibility Plugin.
 
-local require = require
+local require           = require
 
-local application           = require("hs.application")
+local application       = require "hs.application"
 
-local config                = require("cp.config")
-local prop                  = require("cp.prop")
-local tools                 = require("cp.tools")
-local i18n                  = require("cp.i18n")
-
+local config            = require "cp.config"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -91,7 +90,7 @@ function mod.init(setup)
         :addIcon(tools.iconFallback("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns"))
         :addParagraph(i18n("accessibilityNote"), false)
         :addButton({
-            label       = i18n("enableAccessibility"),
+            label       = i18n("allowAccessibility"),
             onclick     = function()
                 local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
                 if systemPrefs and next(systemPrefs) ~= nil then
@@ -119,7 +118,6 @@ function mod.init(setup)
 
     return mod
 end
-
 
 local plugin = {
     id              = "core.accessibility",

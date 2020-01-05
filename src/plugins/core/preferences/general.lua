@@ -30,8 +30,8 @@ mod.uploadCrashData = prop.new(
 
 --- plugins.core.preferences.general.dockIcon <cp.prop: boolean>
 --- Field
---- Controls if CommandPost will automatically upload crash data to the developer.
-mod.dockIcon = config.prop("dockIcon", true):watch(function(value)
+--- Controls whether or not CommandPost should show a dock icon.
+mod.dockIcon = config.prop("dockIcon", false):watch(function(value)
     hs.dockIcon(value)
 end)
 

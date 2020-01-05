@@ -33,7 +33,7 @@ mod.dockIconEnabled = prop(
         --------------------------------------------------------------------------------
         -- Ignore if the Dock Icon is already hidden:
         --------------------------------------------------------------------------------
-        if not config.get("dockIcon", true) then return end
+        if not config.get("dockIcon", false) then return end
 
         --------------------------------------------------------------------------------
         -- Ignore if we're mid-change:

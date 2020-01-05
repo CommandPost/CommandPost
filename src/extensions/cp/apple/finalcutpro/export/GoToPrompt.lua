@@ -2,14 +2,17 @@
 ---
 --- Go To Prompt.
 
-local require                       = require
+local require               = require
 
-local eventtap                      = require("hs.eventtap")
+local eventtap              = require "hs.eventtap"
 
-local axutils                       = require("cp.ui.axutils")
-local just                          = require("cp.just")
-local prop                          = require("cp.prop")
+local axutils               = require "cp.ui.axutils"
+local just                  = require "cp.just"
+local prop                  = require "cp.prop"
 
+local Button				= require "cp.ui.Button"
+
+local childFromLeft			= axutils.childFromLeft
 
 local GoToPrompt = {}
 
@@ -136,7 +139,7 @@ end
 function GoToPrompt:pressCancel()
     local ui = self:UI()
     if ui then
-        local btn = ui:cancelButton()
+        local btn = childFromLeft(ui, 1, Button.matches)
         if btn then
             btn:doPress()
             just.doWhile(function() return self:isShowing() end)
@@ -179,7 +182,7 @@ end
 function GoToPrompt:pressDefault()
     local ui = self:UI()
     if ui then
-        local btn = ui:defaultButton()
+        local btn = childFromLeft(ui, 2, Button.matches)
         if btn and btn:enabled() then
             btn:doPress()
             just.doWhile(function() return self:isShowing() end)

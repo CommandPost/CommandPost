@@ -4,14 +4,14 @@
 
 local require = require
 
---local log           = require("hs.logger").new("axutils")
+local log           = require "hs.logger".new "axutils"
 
-local canvas        = require("hs.canvas")
-local fnutils       = require("hs.fnutils")
-local geometry      = require("hs.geometry")
+local canvas        = require "hs.canvas"
+local fnutils       = require "hs.fnutils"
+local geometry      = require "hs.geometry"
 
-local is            = require("cp.is")
-local prop          = require("cp.prop")
+local is            = require "cp.is"
+local prop          = require "cp.prop"
 
 local sort          = table.sort
 
@@ -737,6 +737,12 @@ function axutils.snapshot(element, filename, elementFrame)
         if window then
             local hsWindow = window:asHSWindow()
             local windowSnap = hsWindow:snapshot()
+
+            if not windowSnap then
+                log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting.")
+                return
+            end
+
             local windowFrame = window:frame()
             local shotSize = windowSnap:size()
 

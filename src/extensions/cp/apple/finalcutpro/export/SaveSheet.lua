@@ -2,14 +2,18 @@
 ---
 --- Save Sheet
 
-local require                       = require
+local require               = require
 
-local axutils                       = require("cp.ui.axutils")
-local GoToPrompt                    = require("cp.apple.finalcutpro.export.GoToPrompt")
-local prop                          = require("cp.prop")
-local ReplaceAlert                  = require("cp.apple.finalcutpro.export.ReplaceAlert")
-local TextField                     = require("cp.ui.TextField")
+local axutils               = require "cp.ui.axutils"
+local prop                  = require "cp.prop"
 
+local GoToPrompt            = require "cp.apple.finalcutpro.export.GoToPrompt"
+local ReplaceAlert          = require "cp.apple.finalcutpro.export.ReplaceAlert"
+
+local TextField             = require "cp.ui.TextField"
+local Button				= require "cp.ui.Button"
+
+local childFromRight	    = axutils.childFromRight
 
 local SaveSheet = {}
 
@@ -117,7 +121,7 @@ end
 function SaveSheet:pressCancel()
     local ui = self:UI()
     if ui then
-        local btn = ui:cancelButton()
+        local btn = childFromRight(ui, 2, Button.matches)
         if btn then
             btn:doPress()
         end
@@ -137,7 +141,7 @@ end
 function SaveSheet:pressSave()
     local ui = self:UI()
     if ui then
-        local btn = ui:defaultButton()
+        local btn = childFromRight(ui, 1, Button.matches)
         if btn and btn:enabled() then
             btn:doPress()
         end

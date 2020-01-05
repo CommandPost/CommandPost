@@ -57,7 +57,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Show Dock Icon:
     --------------------------------------------------------------------------------
-    if config.get("dockIcon", true) then
+    if config.get("dockIcon", false) then
         hs.dockIcon(true)
     end
 
