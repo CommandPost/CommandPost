@@ -231,6 +231,12 @@ function ControlBar.lazy.prop:isPlaying()
                 if window then
                     local hsWindow = window:asHSWindow()
                     local windowSnap = hsWindow:snapshot()
+
+                    if not windowSnap then
+                        log.ef("[cp.apple.finalcutpro.main.ControlBar.isPlaying] Snapshot could not be captured, so aborting.")
+                        return
+                    end
+
                     local windowFrame = window:frame()
                     local shotSize = windowSnap:size()
 

@@ -2,7 +2,7 @@
     "en": {
         "above": "Above",
         "absolute": "Absolute",
-        "accessibilityNote": "CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
+        "accessibilityNote": "CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Allow Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
         "action": "Action",
         "actionHiddenText": "%{text} [Hidden]",
         "actionMismatchError": "Expected '%{expected}' action type but got '%{actual}.",
@@ -37,6 +37,8 @@
         "all": "All",
         "allCaps": "All Caps",
         "allClips": "All Clips",
+        "allowAccessibility": "Allow Accessibility",
+        "allowScreenRecording": "Allow Screen Recording",
         "allowZoomingWithModifierKey": "Enable Timeline Zooming with Mouse Scroll & Modifier Key",
         "allVisibleColumns": "All Visible Columns",
         "alphaAdd": "Alpha Add",
@@ -590,7 +592,6 @@
         "emailResponse": "If you want an email response you will need to enter your email address:",
         "empty": "Empty",
         "enable": "Enable",
-        "enableAccessibility": "Enable Accessibility",
         "enableAppleScriptSupport": "Enable AppleScript Support",
         "enableBackgroundRender": {
             "one": "Enable Background Render (%{count} sec)",
@@ -1420,6 +1421,7 @@
         "scanningInProgress": "Scanning in progress",
         "screen": "Screen",
         "screen9": "Screen",
+        "screenRecordingNote": "CommandPost requires <strong>Screen Recording</strong> permission on macOS Catalina to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to optionally share screenshots when submitting feedback.<br /><br />To continue, please press <strong>Allow Screen Recording</strong>, which will open System Preferences allowing you to grant CommandPost Screen Recording permission. CommandPost will automatically restart once granted permission.",
         "scripting": "Scripting",
         "scriptingTools": "Scripting Tools",
         "scrollingTimelineActivated": "Scrolling Timeline Activated",

@@ -737,6 +737,12 @@ function axutils.snapshot(element, filename, elementFrame)
         if window then
             local hsWindow = window:asHSWindow()
             local windowSnap = hsWindow:snapshot()
+
+            if not windowSnap then
+                log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting.")
+                return
+            end
+
             local windowFrame = window:frame()
             local shotSize = windowSnap:size()
 
