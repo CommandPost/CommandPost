@@ -13,7 +13,7 @@ local ReplaceAlert          = require "cp.apple.finalcutpro.export.ReplaceAlert"
 local TextField             = require "cp.ui.TextField"
 local Button				= require "cp.ui.Button"
 
-local childFromLeft			= axutils.childFromLeft
+local childFromBottom	    = axutils.childFromBottom
 
 local SaveSheet = {}
 
@@ -121,7 +121,7 @@ end
 function SaveSheet:pressCancel()
     local ui = self:UI()
     if ui then
-        local btn = childFromLeft(ui, 1, Button.matches)
+        local btn = childFromBottom(ui, 2, Button.matches)
         if btn then
             btn:doPress()
         end
@@ -141,7 +141,7 @@ end
 function SaveSheet:pressSave()
     local ui = self:UI()
     if ui then
-        local btn = childFromLeft(ui, 2, Button.matches)
+        local btn = childFromBottom(ui, 1, Button.matches)
         if btn and btn:enabled() then
             btn:doPress()
         end
