@@ -4,14 +4,14 @@
 
 local require = require
 
---local log           = require("hs.logger").new("axutils")
+local log           = require "hs.logger".new "axutils"
 
-local canvas        = require("hs.canvas")
-local fnutils       = require("hs.fnutils")
-local geometry      = require("hs.geometry")
+local canvas        = require "hs.canvas"
+local fnutils       = require "hs.fnutils"
+local geometry      = require "hs.geometry"
 
-local is            = require("cp.is")
-local prop          = require("cp.prop")
+local is            = require "cp.is"
+local prop          = require "cp.prop"
 
 local sort          = table.sort
 

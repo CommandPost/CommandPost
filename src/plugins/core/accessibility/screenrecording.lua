@@ -15,7 +15,7 @@ local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
-local doAfter			= timer.doAfter
+local doAfter           = timer.doAfter
 local doEvery           = timer.doEvery
 local execute           = hs.execute
 
@@ -40,9 +40,9 @@ function plugin.init(deps)
             onclick     = function()
                 hs.screenRecordingState(true)
                 doAfter(3, function()
-	                if not application.get("System Preferences") then
-		                execute([[open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"]])
-	                end
+                    if not application.get("System Preferences") then
+                        execute([[open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"]])
+                    end
                 end)
             end,
         })
@@ -59,9 +59,9 @@ function plugin.init(deps)
                 -- Screen recording was disabled, but now it's enabled,
                 -- so we need to restart CommandPost:
                 --------------------------------------------------------------------------------
-            	doAfter(3, function()
-            		hs.relaunch()
-            	end)
+                doAfter(3, function()
+                    hs.relaunch()
+                end)
             end
         end)
     end
