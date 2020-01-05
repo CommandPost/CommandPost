@@ -300,7 +300,6 @@ function mod.new()
         --------------------------------------------------------------------------------
         mod.webview:show()
         mod.visible:update()
-        --mod.focus()
     end
 end
 
@@ -384,19 +383,11 @@ end
 ---  * None
 function mod.focus()
     if mod.webview then
-        mod.webview:bringToFront()
+    	local w = mod.webview:hswindow()
+    	if w then
+	    	w:focus()
+	    end
     end
-    --[[
-    mod.visible:update()
-    if mod.webview then
-        timer.doAfter(0.1, function()
-            mod.webview:hswindow():focus()
-        end)
-        mod.webview:bringToFront()
-        return true
-    end
-    return false
-    --]]
 end
 
 --- plugins.core.setup.nextPanel() -> boolean
@@ -415,7 +406,6 @@ function mod.nextPanel()
         table.remove(mod._panelQueue, 1)
         mod._processedPanels = mod._processedPanels+1
         mod.update()
-        --mod.focus()
         return true
     else
         mod.delete()
