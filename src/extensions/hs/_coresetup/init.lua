@@ -384,8 +384,8 @@ return {
         ---  * See `hs.doc.hsdocs` for more information about the available settings for the documentation browser.
         ---  * This function provides documentation for Hammerspoon modules, functions, and methods similar to the Hammerspoon Dash docset, but does not require any additional software.
         ---  * This currently only provides documentation for the built in Hammerspoon modules, functions, and methods.  The Lua documentation and third-party modules are not presently supported, but may be added in a future release.
-        -- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
-        --[[
+-- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
+--[[
         local hsdocsMetatable
         hsdocsMetatable = {
             __index = function(self, key)
@@ -415,7 +415,7 @@ return {
             },
             hsdocsMetatable
         )
-        --]]
+--]]
 
         --setup lazy loading
         if autoload_extensions then
