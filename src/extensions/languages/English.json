@@ -1421,7 +1421,7 @@
         "scanningInProgress": "Scanning in progress",
         "screen": "Screen",
         "screen9": "Screen",
-        "screenRecordingNote": "CommandPost requires <strong>Screen Recording</strong> permission on macOS Catalina to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to optionally share screenshots when submitting feedback.<br /><br />To continue, please press <strong>Allow Screen Recording</strong>, which will open System Preferences allowing you to grant CommandPost Screen Recording permission. CommandPost will automatically restart once granted permission.",
+        "screenRecordingNote": "CommandPost requires <strong>Screen Recording</strong> permission on macOS Catalina to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to <strong>optionally</strong> share screenshots when submitting feedback.<br /><br />To continue, please press <strong>Allow Screen Recording</strong>, which will open System Preferences allowing you to grant CommandPost Screen Recording permission. CommandPost will automatically restart once granted permission.",
         "scripting": "Scripting",
         "scriptingTools": "Scripting Tools",
         "scrollingTimelineActivated": "Scrolling Timeline Activated",
