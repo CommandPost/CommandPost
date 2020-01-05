@@ -383,10 +383,10 @@ end
 ---  * None
 function mod.focus()
     if mod.webview then
-    	local w = mod.webview:hswindow()
-    	if w then
-	    	w:focus()
-	    end
+        local w = mod.webview:hswindow()
+        if w then
+            w:focus()
+        end
     end
 end
 
