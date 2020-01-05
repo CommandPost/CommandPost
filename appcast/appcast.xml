@@ -6,13 +6,44 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.0.4</title>
+			<title>Version 1.0.5</title>
 			<description><![CDATA[
 				<h2>Woohoo! 🎉</h2>
 				<p>After 78 releases of FCPX Hacks and 91 beta releases of CommandPost, we're extremely excited to announce that we're finally removing the beta label from CommandPost. With over 3300 active monthly users and over 1253 users in our Facebook Community, we're very happy with the progress CommandPost has made over the last 3 years and we can't wait to show you what we have in-store for future releases!</p>
 				<p>Whilst CommandPost will always remain free and open source, we would love you to sponsor CommandPost via GitHub. Sponsorship will enable us to prioritise more time towards CommandPost development, letting us add new features, improve efficiency and reliability, and add new software and hardware support. GitHub will kindly match user contributions up to USD$5,000 until November 2020, as well as cover all transaction costs, so 100% of your contribution hits our bank account. You can learn more on our <a href="https://commandpost.io/#sponsor">website</a>.</p>
 				<p>Thanks so much to the entire CommandPost community for all your help and support over the last 3 years!</p>
 				<p><i>Chris Hocking & David Peterson</i></p>
+
+				<hr />
+
+				<h2>New in 1.0.5:</h2>
+
+				<h3>New Features:</h3>
+				<ul>
+					<li>Added additional Colour Wheel actions for different increments. For example, you can now increase or decrease the Tint by 0.1, 0.2, 0.3, 0.4, 0.5, 1, 5 or 10. This applies to Saturation, Brightness, Tint, & Temperature. Thanks for suggesting Rafa Alejandro!</li>
+					<li>Added actions to trigger custom keyboard shortcuts (for example COMMAND+C).</li>
+				</ul>
+
+				<h3>Changes:</h3>
+				<ul>
+					<li>CommandPost will now prompt for Screen Recording permissions on macOS Catalina, and will not start until those permissions are granted. CommandPost requires Screen Recording permission on macOS Catalina to detect the state of various user interface elements - for example, to detect when Final Cut Pro is playing or stopped. We also allow users to optionally share screenshots when submitting feedback.</li>
+					<li>The CommandPost Dock Item is now disabled by default. You can change this in CommandPost's General Preferences panel if required.</li>
+					<li>The contextual menu that appears when you right-click on the top of the Final Cut Pro Viewer is now disabled by default. You now have to click "Enable Viewer Contextual Menu" from the CommandPost menubar to enable it.</li>
+					<li>The Uninstall tool now removes all of CommandPost's permissions in macOS Catalina.</li>
+				</ul>
+
+				<h3>Bug Fixes:</h3>
+				<ul>
+					<li>Fixed a bug that prevented Timeline Batch Export from working correctly in macOS Catalina. Thanks for reporting Chris Walton!</li>
+					<li>Fixed a bug that prevented the Batch Name Tool in the HUD from permanently renaming items in the browser. Thanks for reporting Vigneswaran Rajkumar!</li>
+					<li>Fixed bug in Timeline Batch Export. Thanks for reporting Rima H. Bassil!</li>
+					<li>Fixed a bug which prevented the "Reveal Multicam Clip in Browser" action from working correctly.</li>
+				</ul>
+
+				<h3>Translations:</h3>
+				<ul>
+					<li>Added Danish Translation. Thanks for adding Patrick Fust!</li>
+				</ul>
 
 				<hr />
 
@@ -70,11 +101,11 @@
 				<ul><li>Added Polish Translation. Thanks Robert!</li></ul>
 			]]>
 			</description>
-			<pubDate>Tue, 17 Dec 2019 13:16:46 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.4/CommandPost_1.0.4.dmg"
-				sparkle:version="5698"
-                sparkle:shortVersionString="1.0.4"
-				sparkle:dsaSignature="MC0CFQCriG/VYhdOTA+MU3jnoPCffxxIGgIUfOEgWJKu2k9w+pAjIjxejE4T7oE="
+			<pubDate>Mon,  6 Jan 2020 00:19:23 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.5/CommandPost_1.0.5.dmg"
+				sparkle:version="5722"
+                sparkle:shortVersionString="1.0.5"
+				sparkle:dsaSignature="MC0CFDwwXFoP245Wg3TJsewsb22k4CbUAhUAyh9jBf4+D7TvRa/HtFpAMhPqLWg="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
