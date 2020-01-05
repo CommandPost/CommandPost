@@ -59,6 +59,22 @@ function plugin.init(deps)
                 and keycode ~= "alt" and keycode ~= "rightalt"
                 and keycode ~= "ctrl" and keycode ~= "rightctrl"
                 then
+                    --------------------------------------------------------------------------------
+                    -- No Modifier:
+                    --------------------------------------------------------------------------------
+                    choices
+                        :add(pressLabel .. " " .. string.upper(keycode))
+                        :subText(description)
+                        :params({
+                            character = keycode,
+                            modifiers = {},
+                            id = keycode,
+                        })
+                        :id("global_shortcuts_" .. keycode)
+
+                    --------------------------------------------------------------------------------
+                    -- With Modifier(s):
+                    --------------------------------------------------------------------------------
                     for _, modifier in pairs(modifiers) do
                         choices
                             :add(pressLabel .. " " .. modifier.label .. " " .. andLabel .. " " .. string.upper(keycode))
@@ -74,7 +90,7 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
-            keyStroke(action.modifiers, action.character)
+            keyStroke(action.modifiers, action.character, 0)
         end)
         :onActionId(function(params)
             return "global_shortcuts_" .. params.id
