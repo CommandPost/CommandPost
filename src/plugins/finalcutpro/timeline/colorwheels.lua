@@ -605,10 +605,10 @@ function plugin.init(deps)
             :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
 
         fcpxCmds
-            :add("colorWheelMidtonesBrightnessDown")
+            :add("colorWheelMidtonesBrightnessDown" .. v)
             :groupedBy("colorWheels")
             :whenActivated(function()
-                colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue + 0.01
+                colorWheelMidtonesBrightnessValue = colorWheelMidtonesBrightnessValue + v
                 updateColorWheelMidtonesBrightness()
             end)
             :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
