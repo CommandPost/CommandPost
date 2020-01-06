@@ -16,6 +16,20 @@
 
 				<hr />
 
+				<h2>New in 1.0.6:</h2>
+
+				<h3>New Feature:</h3>
+				<ul>
+					<li>Improved the Batch Rename HUD. You can now add sequential numbers to clip names. Thanks for the suggestion Vigneswaran Rajkumar! You can also process clip names with custom Lua code, giving you the ultimate renaming freedom.</li>
+				</ul>
+
+				<h3>Bug Fix:</h3>
+				<ul>
+					<li>Fixed bug in "Color Wheel - Midtones - Brightness - Down" actions. Thanks for reporting Valerio D'Andrassi!</li>
+				</ul>
+
+				<hr />
+
 				<h2>New in 1.0.5:</h2>
 
 				<h3>New Features:</h3>
@@ -101,11 +115,11 @@
 				<ul><li>Added Polish Translation. Thanks Robert!</li></ul>
 			]]>
 			</description>
-			<pubDate>Mon,  6 Jan 2020 00:19:23 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.5/CommandPost_1.0.5.dmg"
-				sparkle:version="5722"
-                sparkle:shortVersionString="1.0.5"
-				sparkle:dsaSignature="MC0CFDwwXFoP245Wg3TJsewsb22k4CbUAhUAyh9jBf4+D7TvRa/HtFpAMhPqLWg="
+			<pubDate>Mon,  6 Jan 2020 23:14:34 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.6/CommandPost_1.0.6.dmg"
+				sparkle:version="5724"
+                sparkle:shortVersionString="1.0.6"
+				sparkle:dsaSignature="MC0CFE8RV5xWCpf7uAsCmXyRoDqrLlc0AhUA+QeCXK0ghPt/nAgXiCIChKeYnE4="
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
