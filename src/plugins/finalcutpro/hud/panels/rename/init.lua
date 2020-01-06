@@ -6,6 +6,7 @@ local require                   = require
 
 --local log                       = require "hs.logger".new "hudButton"
 
+local base64                    = require "hs.base64"
 local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 
@@ -16,6 +17,7 @@ local tools                     = require "cp.tools"
 local just                      = require "cp.just"
 
 local doUntil                   = just.doUntil
+local encode                    = base64.encode
 local iconFallback              = tools.iconFallback
 local imageFromPath             = image.imageFromPath
 local replace                   = tools.replace
@@ -23,30 +25,66 @@ local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
+local DEFAULT_CODE = [[return function(value)
+    -- Do whatever you want to value here.
+    -- For example:
+    return "PREFIX" .. value .. "SUFFIX" .. os.date()
+end]]
+
 --- plugins.finalcutpro.hud.panels.rename.prefix <cp.prop: string>
 --- Variable
---- Last Value
+--- Prefix Preference
 mod.prefix = config.prop("hud.rename.prefix", "")
 
 --- plugins.finalcutpro.hud.panels.rename.suffix <cp.prop: string>
 --- Variable
---- Last Value
+--- Suffix Preference
 mod.suffix = config.prop("hud.rename.suffix", "")
 
 --- plugins.finalcutpro.hud.panels.rename.find <cp.prop: string>
 --- Variable
---- Last Value
+--- Find Preference
 mod.find = config.prop("hud.rename.find", "")
 
 --- plugins.finalcutpro.hud.panels.rename.replace <cp.prop: string>
 --- Variable
---- Last Value
+--- Replace Preference
 mod.replace = config.prop("hud.rename.replace", "")
 
 --- plugins.finalcutpro.hud.panels.rename.keepOriginal <cp.prop: boolean>
 --- Variable
---- Match Case
+--- Keep Original Preference
 mod.keepOriginal = config.prop("hud.rename.keepOriginal", true)
+
+--- plugins.finalcutpro.hud.panels.rename.sequence <cp.prop: string>
+--- Variable
+--- Sequence mode
+mod.sequence = config.prop("hud.rename.sequence", "disabled")
+
+--- plugins.finalcutpro.hud.panels.rename.startWith <cp.prop: number>
+--- Variable
+--- Start with
+mod.startWith = config.prop("hud.rename.startWith", 1)
+
+--- plugins.finalcutpro.hud.panels.rename.stepValue <cp.prop: number>
+--- Variable
+--- Start with
+mod.stepValue = config.prop("hud.rename.stepValue", 1)
+
+--- plugins.finalcutpro.hud.panels.rename.padding <cp.prop: number>
+--- Variable
+--- Padding
+mod.padding = config.prop("hud.rename.padding", 1)
+
+--- plugins.finalcutpro.hud.panels.rename.codeProcessing <cp.prop: boolean>
+--- Variable
+--- Code Processing
+mod.codeProcessing = config.prop("hud.rename.codeProcessing", false)
+
+--- plugins.finalcutpro.hud.panels.rename.code <cp.prop: string>
+--- Variable
+--- Code
+mod.code = config.prop("hud.rename.code", DEFAULT_CODE)
 
 -- popupMessage(a, b) -> none
 -- Function
@@ -80,6 +118,15 @@ local function updateInfo()
     script = script .. [[changeValueByID("find", "]] .. mod.find() .. [[");]] .. "\n"
     script = script .. [[changeValueByID("replace", "]] .. mod.replace() .. [[");]] .. "\n"
     script = script .. [[changeCheckedByID('keepOriginal', ]] .. tostring(mod.keepOriginal()) .. [[);]] .. "\n"
+
+    script = script .. [[changeValueByID("sequence", "]] .. mod.sequence() .. [[");]] .. "\n"
+    script = script .. [[changeValueByID("startWith", "]] .. mod.startWith() .. [[");]] .. "\n"
+    script = script .. [[changeValueByID("stepValue", "]] .. mod.stepValue() .. [[");]] .. "\n"
+    script = script .. [[changeValueByID("padding", "]] .. mod.padding() .. [[");]] .. "\n"
+    script = script .. [[changeCheckedByID('codeProcessing', ]] .. tostring(mod.codeProcessing()) .. [[);]] .. "\n"
+
+    script = script .. [[setCode("]] .. encode(mod.code()) .. [[");]] .. "\n"
+
     mod._manager.injectScript(script)
 end
 
@@ -101,6 +148,14 @@ local function batchRename()
     local f             = mod.find()
     local r             = mod.replace()
     local keepOriginal  = mod.keepOriginal()
+
+    local sequence      = mod.sequence()
+    local startWith     = mod.startWith()
+    local stepValue     = mod.stepValue()
+    local padding       = mod.padding()
+
+    local code          = mod.code()
+    local codeProcessing = mod.codeProcessing()
 
     --------------------------------------------------------------------------------
     -- Make sure we're in list view:
@@ -126,6 +181,7 @@ local function batchRename()
     --------------------------------------------------------------------------------
     -- Batch Rename:
     --------------------------------------------------------------------------------
+    local i = startWith
     for _, clip in pairs(selectedClips) do
         --------------------------------------------------------------------------------
         -- Get original title:
@@ -148,9 +204,46 @@ local function batchRename()
         end
 
         --------------------------------------------------------------------------------
+        -- Sequence Enabled:
+        --------------------------------------------------------------------------------
+        local sequenceValue = ""
+        if sequence ~= "disabled" then
+            sequenceValue = string.format("%0" .. padding .. "d", i)
+            i = i + stepValue
+        end
+
+        --------------------------------------------------------------------------------
         -- Add Prefix & Suffix:
         --------------------------------------------------------------------------------
-        newTitle = prefix .. newTitle .. suffix
+        if sequence == "beforePrefix" then
+            newTitle = sequenceValue .. prefix .. newTitle .. suffix
+        elseif sequence == "afterPrefix" then
+            newTitle = prefix .. sequenceValue .. newTitle .. suffix
+        elseif sequence == "afterSuffix" then
+            newTitle = prefix .. newTitle .. suffix .. sequenceValue
+        else
+            newTitle = prefix .. newTitle .. suffix
+        end
+
+        --------------------------------------------------------------------------------
+        -- Code:
+        --------------------------------------------------------------------------------
+        if codeProcessing then
+            local successful, fn = pcall(load(code))
+            if not successful then
+                popupMessage(i18n("luaCodeCouldNotBeProcessed"), fn)
+                return
+            elseif successful and type(fn) ~= "function" then
+                popupMessage(i18n("luaCodeCouldNotBeProcessed"), i18n("codeNeedsToReturnAFunction"))
+                return
+            end
+            local success, result = pcall(function() return fn(newTitle) end)
+            if not success then
+                popupMessage(i18n("luaCodeCouldNotBeProcessed"), result)
+                return
+            end
+            newTitle = result
+        end
 
         --------------------------------------------------------------------------------
         -- Set Title:
@@ -181,7 +274,7 @@ function plugin.init(deps, env)
             label       = i18n("batchRename"),
             tooltip     = i18n("batchRename"),
             image       = imageFromPath(iconFallback(env:pathToAbsolute("/images/rename.png"))),
-            height      = 300,
+            height      = 570,
             loadedFn    = updateInfo,
         })
 
@@ -203,6 +296,11 @@ function plugin.init(deps, env)
                 mod.find(params["find"])
                 mod.replace(params["replace"])
                 mod.keepOriginal(params["keepOriginal"])
+                mod.sequence(params["sequence"])
+                mod.startWith(params["startWith"])
+                mod.stepValue(params["stepValue"])
+                mod.padding(params["padding"])
+                mod.codeProcessing(params["codeProcessing"])
             elseif params["type"] == "rename" then
                 batchRename()
             elseif params["type"] == "reset" then
@@ -210,8 +308,16 @@ function plugin.init(deps, env)
                 mod.suffix("")
                 mod.find("")
                 mod.replace("")
+                mod.sequence("disabled")
+                mod.startWith("1")
+                mod.stepValue("1")
+                mod.padding("1")
+                mod.codeProcessing(false)
+                mod.code(DEFAULT_CODE)
                 mod.keepOriginal(true)
                 updateInfo()
+            elseif params["type"] == "updateCode" then
+                mod.code(params["code"])
             end
         end
         deps.manager.addHandler("renameHandler", controllerCallback)
