@@ -2,10 +2,9 @@
 ---
 --- Types the date and time in the "YYYYMMDD HHMM" format.
 
-local require = require
+local require       = require
 
-local eventtap = require("hs.eventtap")
-
+local eventtap      = require "hs.eventtap"
 
 local plugin = {
     id              = "finder.dateandtime",

@@ -5,13 +5,15 @@
 local require = require
 local log                   = require "hs.logger".new"shortcut"
 
-local eventtap              = require "hs.eventtap"
 local hotkey                = require "hs.hotkey"
 local keycodes              = require "hs.keycodes"
 
 local englishKeyCodes       = require "cp.commands.englishKeyCodes"
-
 local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
+
+local keyStroke             = tools.keyStroke
+local map                   = keycodes.map
 
 -- The shortcut class
 local shortcut = {}
@@ -38,7 +40,7 @@ hotkey.setLogLevel("error")
 function shortcut.textToKeyCode(input)
     local result = englishKeyCodes[input]
     if not result then
-        result = keycodes.map[input]
+        result = map[input]
         if not result then
             result = ""
         end
@@ -249,8 +251,9 @@ end
 --- Returns:
 ---  * `self`
 function shortcut.mt:trigger()
-    local keyCode = shortcut.textToKeyCode(self:getKeyCode())
-    eventtap.keyStroke(self._modifiers, keyCode, 0)
+    local character = shortcut.textToKeyCode(self:getKeyCode())
+    local modifiers = self._modifiers or {}
+    keyStroke(modifiers, character)
     return self
 end
 

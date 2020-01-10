@@ -47,6 +47,7 @@ local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
 local insert                    = table.insert
+local keyStroke                 = tools.keyStroke
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
 local tableFilter               = tools.tableFilter
@@ -204,6 +205,21 @@ end
 ---  * The Bundle ID.
 function app:bundleID()
     return self._bundleID
+end
+
+--- cp.app:keyStroke(modifiers, character) -> none
+--- Method
+--- Generates and emits a single keystroke event pair for the supplied keyboard
+--- modifiers and character to the application.
+---
+--- Parameters:
+---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
+---  * character - A string containing a character to be emitted
+---
+--- Returns:
+---  * None
+function app:keyStroke(modifiers, character)
+    keyStroke(modifiers, character, self._hsApplication)
 end
 
 --- cp.app.preferences <cp.app.prefs>

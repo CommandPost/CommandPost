@@ -6,8 +6,6 @@ local require = require
 
 --local log                   = require "hs.logger".new "clearNotes"
 
-local eventtap              = require "hs.eventtap"
-
 local axutils               = require "cp.ui.axutils"
 local fcp                   = require "cp.apple.finalcutpro"
 local tools                 = require "cp.tools"
@@ -95,7 +93,8 @@ function plugin.init(deps)
 
                 selectedNotesField:setAttributeValue("AXFocused", true)
                 selectedNotesField:setAttributeValue("AXValue", "")
-                eventtap.keyStroke({}, "return") -- List view requires an "return" key press
+                selectedNotesField:performAction("AXConfirm")
+                selectedNotesField:setAttributeValue("AXFocused", false)
             end
 
             --------------------------------------------------------------------------------

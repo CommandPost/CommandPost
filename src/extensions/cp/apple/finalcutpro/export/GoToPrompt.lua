@@ -4,15 +4,16 @@
 
 local require               = require
 
-local eventtap              = require "hs.eventtap"
-
 local axutils               = require "cp.ui.axutils"
 local just                  = require "cp.just"
 local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
 local Button				= require "cp.ui.Button"
 
 local childFromLeft			= axutils.childFromLeft
+local keyStroke             = tools.keyStroke
+local doUntil               = just.doUntil
 
 local GoToPrompt = {}
 
@@ -108,8 +109,11 @@ end):bind(GoToPrompt)
 ---  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
 function GoToPrompt:show()
     if self:parent():isShowing() then
-        eventtap.keyStroke({"cmd", "shift"}, "g")
-        just.doUntil(function() return self:isShowing() end)
+        --------------------------------------------------------------------------------
+        -- NOTE: I tried sending the keyStroke directly to FCPX, but it didn't work.
+        --------------------------------------------------------------------------------
+        keyStroke({"cmd", "shift"}, "g")
+        doUntil(function() return self:isShowing() end)
     end
     return self
 end
