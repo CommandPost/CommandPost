@@ -20,7 +20,6 @@ local applicationwatcher        = require "hs.application.watcher"
 local ax                        = require "hs._asm.axuielement"
 local fs                        = require "hs.fs"
 local inspect                   = require "hs.inspect"
-local keycodes                  = require "hs.keycodes"
 local task                      = require "hs.task"
 local timer                     = require "hs.timer"
 

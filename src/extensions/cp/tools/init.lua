@@ -107,15 +107,15 @@ end
 function tools.keyStroke(modifiers, character, app)
     modifiers = modifiers or {}
 
-    for _, v in pairs(modifiers) do
-        newKeyEvent(map[v], true):post(app)
+    for _, m in pairs(modifiers) do
+        newKeyEvent(map[m], true):post(app)
     end
 
     newKeyEvent(character, true):post(app)
     newKeyEvent(character, false):post(app)
 
-    for _, v in pairs(modifiers) do
-        newKeyEvent(map[v], false):post(app)
+    for _, m in pairs(modifiers) do
+        newKeyEvent(map[m], false):post(app)
     end
 end
 
