@@ -6,7 +6,6 @@
 local log               = require "hs.logger" .new "ViewerCB"
 
 local canvas            = require "hs.canvas"
-local eventtap          = require "hs.eventtap"
 local geometry          = require "hs.geometry"
 local pasteboard        = require "hs.pasteboard"
 
@@ -168,7 +167,7 @@ function ControlBar.lazy.prop:timecode()
                         -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
                         -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
                         --------------------------------------------------------------------------------
-                        eventtap.keyStroke({"cmd"}, "v")
+                        self:app():keyStroke({"cmd"}, "v")
 
                         --------------------------------------------------------------------------------
                         -- Wait until we see the timecode in the viewer:
@@ -186,7 +185,7 @@ function ControlBar.lazy.prop:timecode()
                             log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.viewer.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
                             return
                         else
-                            eventtap.keyStroke({}, 'return')
+                            self:app():keyStroke({}, 'return')
                         end
                     end
 

@@ -116,12 +116,12 @@ function mod.ninjaKeyStroke(whichModifier, whichKey)
     --------------------------------------------------------------------------------
     -- Press 'Escape':
     --------------------------------------------------------------------------------
-    eventtap.keyStroke({""}, "escape")
+    fcp:keyStroke({}, "escape")
 
     --------------------------------------------------------------------------------
     -- Perform Keystroke:
     --------------------------------------------------------------------------------
-    eventtap.keyStroke(whichModifier, whichKey)
+    fcp:keyStroke(whichModifier, whichKey)
 
     --------------------------------------------------------------------------------
     -- Go back to Full Screen Playback:

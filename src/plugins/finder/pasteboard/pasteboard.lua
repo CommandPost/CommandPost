@@ -2,15 +2,18 @@
 ---
 --- Handy text tools.
 
-local require = require
+local require           = require
 
-local log                   = require("hs.logger").new("textTools")
+local log               = require "hs.logger".new "textTools"
 
-local eventtap              = require("hs.eventtap")
-local pasteboard            = require("hs.pasteboard")
+local eventtap          = require "hs.eventtap"
+local pasteboard        = require "hs.pasteboard"
 
-local tools                 = require("cp.tools")
+local tools             = require "cp.tools"
 
+local keyStroke         = tools.keyStroke
+local keyStrokes        = eventtap.keyStrokes
+local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
@@ -26,7 +29,7 @@ local mod = {}
 ---  * None
 function mod.processText(value, copyAndPaste)
     if copyAndPaste then
-        eventtap.keyStroke({"command"}, "c")
+        keyStroke({"command"}, "c")
     end
     local contents = pasteboard.getContents()
     if contents and type(contents) == "string" then
@@ -40,13 +43,12 @@ function mod.processText(value, copyAndPaste)
         end
         pasteboard.setContents(result)
         if copyAndPaste then
-            eventtap.keyStroke({"command"}, "v")
+            keyStroke({"command"}, "v")
         end
     else
         log.ef("Pasteboard Contents is invalid: %s", contents)
     end
 end
-
 
 local plugin = {
     id              = "finder.pasteboard",
@@ -88,9 +90,9 @@ function plugin.init(deps)
         :whenActivated(function()
             local pasteboardContents = pasteboard.getContents()
             if pasteboardContents then
-                eventtap.keyStrokes(pasteboardContents)
+                keyStrokes(pasteboardContents)
             else
-                tools.playErrorSound()
+                playErrorSound()
             end
         end)
 

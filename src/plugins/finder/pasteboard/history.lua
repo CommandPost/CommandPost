@@ -6,7 +6,6 @@ local require           = require
 
 --local log               = require "hs.logger".new "pbHistory"
 
-local eventtap          = require "hs.eventtap"
 local pasteboard        = require "hs.pasteboard"
 local timer             = require "hs.timer"
 
@@ -17,7 +16,7 @@ local tools             = require "cp.tools"
 
 local doAfter           = timer.doAfter
 local doEvery           = timer.doEvery
-local keyStroke         = eventtap.keyStroke
+local keyStroke         = tools.keyStroke
 local stringMaxLength   = tools.stringMaxLength
 local trim              = tools.trim
 

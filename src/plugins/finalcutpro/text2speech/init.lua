@@ -566,10 +566,8 @@ function mod._completeProcess()
         local selectedNotesField = selectedClip[notesFieldID][1]
         selectedNotesField:setAttributeValue("AXFocused", true)
         selectedNotesField:setAttributeValue("AXValue", mod._lastTextToSpeak)
+        selectedNotesField:performAction("AXConfirm")
         selectedNotesField:setAttributeValue("AXFocused", false)
-        if not filmstripView then
-            eventtap.keyStroke({}, "return") -- List view requires an "return" key press
-        end
 
         --------------------------------------------------------------------------------
         -- Restore Filmstrip View:

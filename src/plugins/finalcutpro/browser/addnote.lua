@@ -8,7 +8,6 @@ local require                   = require
 
 local chooser                   = require "hs.chooser"
 local drawing                   = require "hs.drawing"
-local eventtap                  = require "hs.eventtap"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 local screen                    = require "hs.screen"
@@ -273,10 +272,8 @@ function mod.addNoteToSelectedClips()
                     local clipNotesField = selected[notesFieldID][1]
                     clipNotesField:setAttributeValue("AXFocused", true)
                     clipNotesField:setAttributeValue("AXValue", result["text"])
+                    clipNotesField:performAction("AXConfirm")
                     clipNotesField:setAttributeValue("AXFocused", false)
-                    if not filmstripView then
-                        eventtap.keyStroke({}, "return") -- List view requires an "return" key press
-                    end
 
                     --------------------------------------------------------------------------------
                     -- First clip complete:
@@ -291,10 +288,8 @@ function mod.addNoteToSelectedClips()
                     local clipNotesField = clip[notesFieldID][1]
                     clipNotesField:setAttributeValue("AXFocused", true)
                     clipNotesField:setAttributeValue("AXValue", result["text"])
+                    clipNotesField:performAction("AXConfirm")
                     clipNotesField:setAttributeValue("AXFocused", false)
-                    if not filmstripView then
-                        eventtap.keyStroke({}, "return") -- List view requires an "return" key press
-                    end
                 end
             end
 

@@ -13,6 +13,7 @@ local fs                = require "hs.fs"
 local geometry          = require "hs.geometry"
 local host              = require "hs.host"
 local inspect           = require "hs.inspect"
+local keycodes          = require "hs.keycodes"
 local mouse             = require "hs.mouse"
 local osascript         = require "hs.osascript"
 local screen            = require "hs.screen"
@@ -24,8 +25,11 @@ local config            = require "cp.config"
 
 local v                 = require "semver"
 
+local event             = eventtap.event
 local insert            = table.insert
 local locale            = host.locale
+local map               = keycodes.map
+local newKeyEvent       = event.newKeyEvent
 local usleep            = timer.usleep
 
 local tools = {}
@@ -33,27 +37,27 @@ local tools = {}
 -- LEFT_MOUSE_DOWN -> number
 -- Constant
 -- Left Mouse Down ID.
-local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
+local LEFT_MOUSE_DOWN = event.types["leftMouseDown"]
 
 -- LEFT_MOUSE_UP -> number
 -- Constant
 -- Left Mouse Up ID.
-local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
+local LEFT_MOUSE_UP = event.types["leftMouseUp"]
 
 -- RIGHT_MOUSE_DOWN -> number
 -- Constant
 -- Right Mouse Down ID.
-local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+local RIGHT_MOUSE_DOWN = event.types["rightMouseDown"]
 
 -- RIGHT_MOUSE_UP -> number
 -- Constant
 -- Right Mouse Up ID.
-local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+local RIGHT_MOUSE_UP = event.types["rightMouseUp"]
 
 -- CLICK_STATE -> number
 -- Constant
 -- Click State ID.
-local CLICK_STATE = eventtap.event.properties.mouseEventClickState
+local CLICK_STATE = event.properties.mouseEventClickState
 
 -- DEFAULT_DELAY -> number
 -- Constant
@@ -86,6 +90,33 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.keyStroke(modifiers, character, app) -> none
+--- Method
+--- Generates and emits a single keystroke event pair for the supplied keyboard
+--- modifiers and character to the application.
+---
+--- Parameters:
+---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
+---  * character - A string containing a character to be emitted
+---  * app - The optional `hs.application` you want to target
+---
+--- Returns:
+---  * None
+function tools.keyStroke(modifiers, character, app)
+    modifiers = modifiers or {}
+
+    for _, v in pairs(modifiers) do
+        newKeyEvent(map[v], true):post(app)
+    end
+
+    newKeyEvent(character, true):post(app)
+    newKeyEvent(character, false):post(app)
+
+    for _, v in pairs(modifiers) do
+        newKeyEvent(map[v], false):post(app)
+    end
 end
 
 --- cp.tools.shiftPressed() -> boolean
@@ -1065,9 +1096,9 @@ end
 function tools.leftClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then usleep(delay) end
-    eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.rightClick(point[, delay, clickNumber]) -> none
@@ -1084,9 +1115,9 @@ end
 function tools.rightClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then usleep(delay) end
-    eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
