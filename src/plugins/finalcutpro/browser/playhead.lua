@@ -16,6 +16,7 @@ local tools             = require "cp.tools"
 local ui                = require "cp.web.ui"
 
 local doAfter           = timer.doAfter
+local doEvery           = timer.doEvery
 
 local mod = {}
 
@@ -234,13 +235,11 @@ function mod.highlightFrame(frame)
     --------------------------------------------------------------------------------
     -- Highlight the FCPX Browser Playhead:
     --------------------------------------------------------------------------------
-    if displayHighlightShape == "Rectangle" then
+    if displayHighlightShape == SHAPE_RECTANGLE then
         mod.browserHighlight = drawing.rectangle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
-    end
-    if displayHighlightShape == "Circle" then
+    elseif displayHighlightShape == SHAPE_CIRCLE then
         mod.browserHighlight = drawing.circle(geometry.rect((frame.x-(frame.h/2)+10), frame.y, frame.h-12,frame.h-12))
-    end
-    if displayHighlightShape == "Diamond" then
+    elseif displayHighlightShape == SHAPE_DIAMOND then
         mod.browserHighlight = drawing.circle(geometry.rect(frame.x, frame.y, frame.w, frame.h - 12))
     end
     mod.browserHighlight:setStrokeColor(displayHighlightColour)
@@ -248,6 +247,22 @@ function mod.highlightFrame(frame)
                         :setStrokeWidth(5)
                         :bringToFront(true)
                         :show()
+
+    --------------------------------------------------------------------------------
+    -- Update the Highlight position every 0.01 seconds:
+    --------------------------------------------------------------------------------
+    mod.updateTimer = doEvery(0.01, function()
+        local f = fcp:libraries():playhead():frame()
+        if mod.browserHighlight then
+            if displayHighlightShape == SHAPE_RECTANGLE then
+                mod.browserHighlight:setFrame(geometry.rect(f.x, f.y, f.w, f.h - 12))
+            elseif displayHighlightShape == SHAPE_CIRCLE then
+                mod.browserHighlight:setFrame(geometry.rect((f.x-(f.h/2)+10), f.y, f.h-12,f.h-12))
+            elseif displayHighlightShape == SHAPE_DIAMOND then
+                mod.browserHighlight:setFrame(geometry.rect(f.x, f.y, f.w, f.h - 12))
+            end
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Set a timer to delete the circle after the configured time:
@@ -265,13 +280,17 @@ end
 --- Returns:
 ---  * None
 function mod.deleteHighlight()
-    if mod.browserHighlight ~= nil then
+    if mod.updateTimer then
+        mod.updateTimer:stop()
+        mod.updateTimer = nil
+    end
+    if mod.browserHighlightTimer then
+        mod.browserHighlightTimer:stop()
+        mod.browserHighlightTimer = nil
+    end
+    if mod.browserHighlight then
         mod.browserHighlight:delete()
         mod.browserHighlight = nil
-        if mod.browserHighlightTimer then
-            mod.browserHighlightTimer:stop()
-            mod.browserHighlightTimer = nil
-        end
     end
 end
 
