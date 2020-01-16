@@ -24,12 +24,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Set Speed Rate
-    -- Slow 25% Slow 75% Fast X3 X5 X10 X30 X40 X50 X75 X100 Please! :)
+    -- Set Speed Rate:
     --------------------------------------------------------------------------------
     local speedPopover = fcp:timeline():speedPopover()
     local fcpxCmds = deps.fcpxCmds
-    local presets = {-25, -75, -300, -1000, -3000, -4000, -5000, -7500, -10000, 25, 75, 300, 1000, 3000, 4000, 5000, 7500, 10000}
+    local presets = {-25, -40, -50, -75, -200, -300, -1000, -3000, -4000, -5000, -7500, -10000, 25, 40, 50, 75, 200, 300, 1000, 3000, 4000, 5000, 7500, 10000}
     for _, speed in pairs(presets) do
         fcpxCmds
             :add("setSpeedRateTo" .. speed)
