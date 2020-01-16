@@ -18,6 +18,7 @@ local webview       = require "hs.webview"
 
 local app           = require "cp.app"
 local config        = require "cp.config"
+local deferred      = require "cp.deferred"
 local dialog        = require "cp.dialog"
 local fcp           = require "cp.apple.finalcutpro"
 local i18n          = require "cp.i18n"
@@ -854,6 +855,8 @@ local function showOrHideHUD()
     mod.hide()
 end
 
+local deferredUpdateVisibility = deferred.new(0.01):action(showOrHideHUD)
+
 --- plugins.finalcutpro.hud.manager.updateVisibility() -> none
 --- Function
 --- Update the visibility of the HUD.
@@ -864,9 +867,9 @@ end
 --- Returns:
 ---  * None
 function mod.updateVisibility()
-    doAfter(0.000000000001, function()
-        showOrHideHUD()
-        doAfter(0.5, showOrHideHUD)
+    deferredUpdateVisibility()
+    doAfter(0.2, function()
+        deferredUpdateVisibility()
     end)
 end
 
@@ -897,6 +900,7 @@ function mod.updatePosition()
             end
         end
     end
+    doAfter(0.2, mod.updatePosition)
 end
 
 --- plugins.finalcutpro.hud.manager.update() -> none
@@ -925,6 +929,8 @@ function mod.update()
 
         fcp.selectedWorkspace:watch(mod.updatePosition)
 
+        fcp.viewer.frame:watch(mod.updatePosition)
+
         --------------------------------------------------------------------------------
         -- Update Visibility:
         --------------------------------------------------------------------------------
@@ -944,6 +950,8 @@ function mod.update()
         cpApp.showing:unwatch(mod.updateVisibility)
 
         fcp.selectedWorkspace:unwatch(mod.updatePosition)
+
+        fcp.viewer.frame:unwatch(mod.updatePosition)
 
         --------------------------------------------------------------------------------
         -- Destroy the HUD:
