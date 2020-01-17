@@ -188,7 +188,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             timelineContents:selectClip(clip)
-            local selectedClips = timelineContents:selectedClipsUI()
+            local selectedClips = timelineContents:selectedClipsUI(true)
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
         end, 5, 0.1) then
             displayErrorMessage("Failed to select clip." .. errorFunction)
@@ -684,7 +684,7 @@ function mod.batchExport()
     -- Check if we have any currently-selected clips:
     --------------------------------------------------------------------------------
     local timelineContents = fcp:timeline():contents()
-    local selectedClips = timelineContents:selectedClipsUI()
+    local selectedClips = timelineContents:selectedClipsUI(true)
 
     if not selectedClips or #selectedClips == 0 then
         displayMessage(i18n("noSelectedClipsInTimeline"))
