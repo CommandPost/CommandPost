@@ -147,48 +147,15 @@ end
 local function initaliseDevice()
     send(fromHex("130e013da81c9ba72a8c87d4f6a135a289066c")) -- Starting background loop
     send(fromHex("131c0261f1392a8e936ba66e992daedb40f65f")) -- Getting device information?
-    send(fromHex("030703")) -- Request Serial Number
-    send(fromHex("030d04")) -- Request MCU ID
-    send(fromHex("030405")) -- Request Self Tests
+    mod.requestSerialNumber()
+    mod.requestMCUID()
+    mod.requestSelfTest()
     send(fromHex("041a0700")) -- Register 0
     send(fromHex("041a0801")) -- Register 1
     send(fromHex("041a0902")) -- Register 2
     send(fromHex("041e0a00")) -- Wheel sensitivity: 4 ???
     send(fromHex("04090b03")) -- Reset Device???
-
-    --------------------------------------------------------------------------------
-    -- COMMAND: 07 02 FA 00 00 00 00
-    --                            ^
-    --                ^  ^  ^  ^  blue
-    --                ^  ^  ^  green
-    --                ^  ^  red
-    --                ^  button id
-    --                callback id
-    --------------------------------------------------------------------------------
-    -- Reset all the buttons to black.
-    for i=12, 31 do
-        callbackRegister[i] = function() -- Do nothing end
-    end
-    send(fromHex("07020c07000000"))
-    send(fromHex("07020d08000000"))
-    send(fromHex("07020e09000000"))
-    send(fromHex("07020f0a000000"))
-    send(fromHex("0702100b000000"))
-    send(fromHex("0702110c000000"))
-    send(fromHex("0702120d000000"))
-    send(fromHex("0702130e000000"))
-    send(fromHex("0702140f000000"))
-    send(fromHex("07021510000000"))
-    send(fromHex("07021611000000"))
-    send(fromHex("07021712000000"))
-    send(fromHex("07021813000000"))
-    send(fromHex("07021914000000"))
-    send(fromHex("07021a15000000"))
-    send(fromHex("07021b16000000"))
-    send(fromHex("07021c17000000"))
-    send(fromHex("07021d18000000"))
-    send(fromHex("07021e19000000"))
-    send(fromHex("07021f1a000000"))
+    mod.allButtonColor(drawing.color.hammerspoon.black)
 end
 
 --- hs.loupedeckct.callback() -> boolean
@@ -513,7 +480,7 @@ local function websocketCallback(event, message)
             if subchar == 0x02 then
                 local id = message:byte(3)
                 if id == 0x00 then
-                    log.df("Button Message Confirmation with no callback assigned.")
+                    --log.df("Button Message Confirmation with no callback assigned.")
                 else
                     if callbackRegister[id] then
                         --log.df("Triggering callback with ID: %s", id)
@@ -785,6 +752,16 @@ function mod.allButtonColor(colorObject)
     for i=7, 26 do
         mod.buttonColor(i, colorObject)
     end
+end
+
+function mod.demo()
+    log.df("Making everything green...")
+    local green = drawing.color.hammerspoon.green
+    mod.allButtonColor(green)
+    mod.leftScreenColor(green)
+    mod.middleScreenColor(green)
+    mod.rightScreenColor(green)
+    mod.wheelScreenColor(green)
 end
 
 --------------------------------------------------------------------------------
