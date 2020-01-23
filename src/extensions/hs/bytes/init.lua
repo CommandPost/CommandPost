@@ -512,8 +512,8 @@ end
 local function doInt(value, index, bits, read, write)
     if type(value) == "string" then
         index = index or 1
-        if value:len() < index + bits-1 then
-            error(format("not enough bytes in value after %d", index), 3)
+        if value:len() < index + bits-1 then -- TODO: Fix this bug.
+            --error(format("not enough bytes in value after %d", index), 3)
         end
         return read(value, index)
     elseif type(value) == "number" then
