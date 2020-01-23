@@ -4,18 +4,17 @@
 
 local require = require
 
-local is                = require("cp.is")
-local named             = require("named")
-local prop              = require("cp.prop")
-local x                 = require("cp.web.xml")
+local is                = require "cp.is"
+local prop              = require "cp.prop"
+local x                 = require "cp.web.xml"
+
+local named             = require "named"
 
 local format            = string.format
 
+local action = named:subclass "core.tangent.manager.action"
 
-local action = {}
-action.mt = named({})
-
---- plugins.core.tangent.manager.action.new(id[, name[, parent[, localActive]]]) -> action
+--- plugins.core.tangent.manager.action(id[, name[, parent[, localActive]]]) -> action
 --- Constructor
 --- Creates a new `Action` instance.
 ---
@@ -27,33 +26,25 @@ action.mt = named({})
 ---
 --- Returns:
 --- * the new `action`.
-function action.new(id, name, parent, localActive)
-    local o = prop.extend({
-        id = id,
-        _parent = parent,
+function action:initialize(id, name, parent, localActive)
+    named.initialize(self, id, name, parent)
+    self._localActive = localActive
+end
 
-        --- plugins.core.tangent.manager.action.enabled <cp.prop: boolean>
-        --- Field
-        --- Indicates if the action is enabled.
-        enabled = prop.TRUE(),
+--- plugins.core.tangent.manager.action.localActive <cp.prop: boolean>
+--- Field
+--- Indicates if the action should ignore the parent's `enabled` state when determining if the action is active.
+function action.lazy.prop:localActive()
+    return prop.THIS(self._localActive == true)
+end
 
-        --- plugins.core.tangent.manager.action.localActive <cp.prop: boolean>
-        --- Field
-        --- Indicates if the action should ignore the parent's `enabled` state when determining if the action is active.
-        localActive = prop.THIS(localActive == true),
-    }, action.mt)
-
-    prop.bind(o) {
-        --- plugin.core.tangent.manager.action.active <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the action is active. It will only be active if
-        --- the current action is `enabled` and if the parent group (if present) is `active`.
-        active = parent and prop.AND(o.localActive:OR(parent.active), o.enabled) or o.enabled:IMMUTABLE()
-    }
-
-    o:name(name)
-
-    return o
+--- plugin.core.tangent.manager.action.active <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the action is active. It will only be active if
+--- the current action is `enabled` and if the parent group (if present) is `active`.
+function action.lazy.prop:active()
+    local parent = self:parent()
+    return parent and prop.AND(self.localActive:OR(parent.active), self.enabled) or self.enabled:IMMUTABLE()
 end
 
 --- plugins.core.tangent.manager.action.is() -> boolean
@@ -65,38 +56,8 @@ end
 ---
 --- Returns:
 --- * `true` if the object is an action otherwise `false`.
-function action.is(otherThing)
-    return is.table(otherThing) and getmetatable(otherThing) == action.mt
-end
-
---- plugins.core.tangent.manager.action:parent() -> group | controls
---- Method
---- Returns the `group` or `controls` that contains this action.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The action's parent.
-function action.mt:parent()
-    return self._parent
-end
-
---- plugins.core.tangent.manager.action:controls()
---- Method
---- Returns the `controls` the action belongs to.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `controls`, or `nil` if not specified.
-function action.mt:controls()
-    local parent = self:parent()
-    if parent then
-        return parent:controls()
-    end
-    return nil
+function action.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(action)
 end
 
 --- plugins.core.tangent.manager.action:onPress(pressFn) -> self
@@ -111,7 +72,7 @@ end
 ---
 --- Returns:
 --- * The `parameter` instance.
-function action.mt:onPress(pressFn)
+function action:onPress(pressFn)
     if is.nt.callable(pressFn) then
         error(format("Please provide a function: %s", type(pressFn)))
     end
@@ -128,7 +89,7 @@ end
 ---
 --- Returns:
 --- * `nil`
-function action.mt:press()
+function action:press()
     if self._press and self:active() then
         self._press()
     end
@@ -146,7 +107,7 @@ end
 ---
 --- Returns:
 --- * The `parameter` instance.
-function action.mt:onRelease(releaseFn)
+function action:onRelease(releaseFn)
     if is.nt.fn(releaseFn) then
         error("Please provide a function: %s", type(releaseFn))
     end
@@ -163,7 +124,7 @@ end
 ---
 --- Returns:
 --- * `nil`
-function action.mt:release()
+function action:release()
     if self._release and self:active() then
         self._release()
     end
@@ -178,13 +139,13 @@ end
 ---
 --- Returns:
 --- * The `xml` for the Action.
-function action.mt:xml()
+function action:xml()
     return x.Action { id=format("%#010x", self.id) } (
         named.xml(self)
     )
 end
 
-function action.mt:__tostring()
+function action:__tostring()
     return format("action: %s (%#010x)", self:name(), self.id)
 end
 

@@ -5,24 +5,25 @@
 
 local require = require
 
-local is                = require("cp.is")
-local prop              = require("cp.prop")
-local tools             = require("cp.tools")
-local x                 = require("cp.web.xml")
+local class             = require "middleclass"
+local lazy              = require "cp.lazy"
+local is                = require "cp.is"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local x                 = require "cp.web.xml"
 
-local action            = require("action")
-local parameter         = require("parameter")
-local menu              = require("menu")
-local binding           = require("binding")
+local action            = require "action"
+local parameter         = require "parameter"
+local menu              = require "menu"
+local binding           = require "binding"
 
 local insert            = table.insert
 local format            = string.format
 
 
-local group = {}
-group.mt = {}
+local group = class "core.tangent.manager.group" :include(lazy)
 
---- plugins.core.tangent.manager.group.new(name[, parent[, localActive]])
+--- plugins.core.tangent.manager.group(name[, parent[, localActive]])
 --- Constructor
 --- Creates a new `Group` instance.
 ---
@@ -30,47 +31,50 @@ group.mt = {}
 ---  * name      - The name of the group.
 ---  * parent    - The parent group.
 ---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
-function group.new(name, parent, localActive)
+function group:initialized(name, parent, localActive)
     if is.blank(name) then
         error("Group names cannot be empty")
     end
-    local o = prop.extend({
-        name = name,
-        _parent = parent,
 
-        --- plugins.core.tangent.manager.group.enabled <cp.prop: boolean>
-        --- Field
-        --- Indicates if the group is enabled.
-        enabled = prop.TRUE(),
-
-        --- plugins.core.tangent.manager.group.localActive <cp.prop: boolean>
-        --- Field
-        --- Indicates if the group should ignore the parent's `enabled` state when determining if the group is active.
-        localActive = prop.THIS(localActive == true)
-    }, group.mt)
-
-    prop.bind(o) {
-        --- plugin.core.tangent.manager.group.active <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the group is active. It will only be active if
-        --- the current group is `enabled` and if the parent group (if present) is `active`.
-        active = parent and prop.AND(o.localActive:OR(parent.active), o.enabled) or o.enabled:IMMUTABLE(),
-    }
-
-    return o
+    self.name = name
+    self._parent = parent
+    self._localActive = localActive
 end
 
---- plugins.core.tangent.manager.group.is(otherThing) -> boolean
+--- plugins.core.tangent.manager.group.enabled <cp.prop: boolean>
+--- Field
+--- Indicates if the group is enabled.
+function group.lazy.prop.enabled()
+    return prop.TRUE()
+end
+
+--- plugins.core.tangent.manager.group.localActive <cp.prop: boolean>
+--- Field
+--- Indicates if the group should ignore the parent's `enabled` state when determining if the group is active.
+function group.lazy.prop:localActive()
+    return prop.THIS(self._localActive == true)
+end
+
+--- plugin.core.tangent.manager.group.active <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the group is active. It will only be active if
+--- the current group is `enabled` and if the parent group (if present) is `active`.
+function group.lazy.prop:active()
+    local parent = self:parent()
+    return parent and prop.AND(self.localActive:OR(parent.active), self.enabled) or self.enabled:IMMUTABLE()
+end
+
+--- plugins.core.tangent.manager.group.is(thing) -> boolean
 --- Function
---- Checks if the `otherThing` is a `group`.
+--- Checks if the `thing` is a `group`.
 ---
 --- Parameters:
----  * otherThing    - The thing to check.
+---  * thing    - The thing to check.
 ---
 --- Returns:
 ---  * `true` if it is a `group`, `false` otherwise.
-function group.is(otherThing)
-    return is.table(otherThing) and getmetatable(otherThing) == group.mt
+function group.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(group)
 end
 
 --- plugins.core.tangent.manager.group:parent() -> group | controls
@@ -82,7 +86,7 @@ end
 ---
 --- Returns:
 ---  * The group's parents.
-function group.mt:parent()
+function group:parent()
     return self._parent
 end
 
@@ -95,7 +99,7 @@ end
 ---
 --- Returns:
 ---  * The `controls`, or `nil`.
-function group.mt:controls()
+function group:controls()
     local parent = self:parent()
     if group.is(parent) then
         return parent:controls()
@@ -114,34 +118,34 @@ end
 ---
 --- Returns:
 ---  * The new `group`
-function group.mt:group(name, localActive)
+function group:group(name, localActive)
     local groups = self._groups
     if not groups then
         groups = {}
         self._groups = groups
     end
 
-    local g = group.new(name, self, localActive)
+    local g = group(name, self, localActive)
     insert(groups, g)
 
     return g
 end
 
-function group.mt:_register(control)
+function group:_register(control)
     local controls = self:controls()
     if controls then
         controls:register(control)
     end
 end
 
-function group.mt:_unregister(control)
+function group:_unregister(control)
     local controls = self:controls()
     if controls then
         controls:unregister(control)
     end
 end
 
-function group.mt:_unregisterAll(controlList)
+function group:_unregisterAll(controlList)
     if controlList then
         for _,c in ipairs(controlList) do
             self:_unregister(c)
@@ -160,14 +164,14 @@ end
 ---
 --- Returns:
 ---  * The new `action`
-function group.mt:action(id, name, localActive)
+function group:action(id, name, localActive)
     local actions = self._actions
     if not actions then
         actions = {}
         self._actions = actions
     end
 
-    local a = action.new(id, name, self, localActive)
+    local a = action(id, name, self, localActive)
     insert(actions, a)
 
     self:_register(a)
@@ -185,14 +189,14 @@ end
 ---
 --- Returns:
 ---  * The new `parameter`
-function group.mt:parameter(id, name)
+function group:parameter(id, name)
     local parameters = self._parameters
     if not parameters then
         parameters = {}
         self._parameters = parameters
     end
 
-    local a = parameter.new(id, name, self)
+    local a = parameter(id, name, self)
     insert(parameters, a)
 
     self:_register(a)
@@ -210,14 +214,14 @@ end
 ---
 --- Returns:
 ---  * The new `menu`
-function group.mt:menu(id, name)
+function group:menu(id, name)
     local menus = self._menus
     if not menus then
         menus = {}
         self._menus = menus
     end
 
-    local a = menu.new(id, name, self)
+    local a = menu(id, name, self)
     insert(menus, a)
 
     self:_register(a)
@@ -235,14 +239,14 @@ end
 ---
 --- Returns:
 ---  * The new `binding`
-function group.mt:binding(name)
+function group:binding(name)
     local bindings = self._bindings
     if not bindings then
         bindings = {}
         self._bindings = bindings
     end
 
-    local a = binding.new(name, self)
+    local a = binding(name, self)
     insert(bindings, a)
 
     return a
@@ -258,7 +262,7 @@ end
 ---
 --- Returns:
 ---  * The `group` instance.
-function group.mt:reset()
+function group:reset()
     self:_unregisterAll(self._actions)
     self:_unregisterAll(self._parameters)
     self:_unregisterAll(self._menus)
@@ -277,7 +281,7 @@ end
 ---
 --- Returns:
 ---  * The `xml` for the Group.
-function group.mt:xml()
+function group:xml()
     return x.Group { name=self.name } (
         function()
             local result = x()
@@ -313,7 +317,7 @@ function group.mt:xml()
     )
 end
 
-function group.mt:__tostring()
+function group:__tostring()
     return format("group: %s", self.name)
 end
 

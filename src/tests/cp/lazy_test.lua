@@ -3,7 +3,8 @@ local class         = require "middleclass"
 local lazy          = require "cp.lazy"
 local prop          = require "cp.prop"
 
--- local log           = require "hs.logger" .new "lazy_test"
+local log           = require "hs.logger" .new "lazy_test"
+local inspect       = require "hs.inspect"
 
 return test.suite("cp.lazy"):with {
     test("statics", function()
@@ -154,5 +155,26 @@ return test.suite("cp.lazy"):with {
         local a = Alpha("x")
 
         ok(eq(a.something, "ax"))
+    end),
+
+    test("__index", function()
+        local Alpha = class("Alpha"):include(lazy)
+
+        function Alpha.lazy.value.id()
+            return "a"
+        end
+
+        function Alpha.__index(_, key)
+            if key == "beta" then
+                return "b"
+            end
+        end
+
+        local a = Alpha()
+
+        log.df("Alpha: %s", inspect(Alpha, {depth = 2}))
+
+        ok(eq(a.id, "a"))
+        ok(eq(a.beta, "b"))
     end),
 }

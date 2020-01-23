@@ -4,17 +4,16 @@
 
 local require = require
 
-local prop              = require("cp.prop")
-local x                 = require("cp.web.xml")
-local is                = require("cp.is")
+local class             = require "middleclass"
+local x                 = require "cp.web.xml"
+local is                = require "cp.is"
 
 local format            = string.format
 
 
-local mode = {}
-mode.mt = {}
+local mode = class "core.tangent.manager.mode"
 
---- plugins.core.tangent.manager.mode.new(id, name)
+--- plugins.core.tangent.manager.mode(id, name)
 --- Constructor
 --- Creates a new `Mode` instance.
 ---
@@ -24,27 +23,23 @@ mode.mt = {}
 ---
 --- Returns:
 ---  *
-function mode.new(id, name, manager)
-    local o = prop.extend({
-        id = id,
-        name = name,
-        manager = manager,
-    }, mode.mt)
-
-    return o
+function mode:initialize(id, name, manager)
+    self.fid = id
+    self.name = name
+    self.manager = manager
 end
 
---- plugins.core.tangent.manager.mode.is(other) -> boolean
+--- plugins.core.tangent.manager.mode.is(thing) -> boolean
 --- Function
---- Checks to see if other is a mode or not.
+--- Checks to see if `thing` is a `mode` or not.
 ---
 --- Parameters:
----  * other - The item to check
+---  * thing - The item to check
 ---
 --- Returns:
 ---  * `true` if is a mode otherwise `false`
-function mode.is(other)
-    return is.table(other) and getmetatable(other) == mode.mt
+function mode.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(mode)
 end
 
 --- plugins.core.tangent.manager.mode:onActivate(activateFn) -> self
@@ -61,7 +56,7 @@ end
 ---
 --- Returns:
 ---  * The `parameter` instance.
-function mode.mt:onActivate(activateFn)
+function mode:onActivate(activateFn)
     if is.nt.fn(activateFn) then
         error("Please provide a function: %s", type(activateFn))
     end
@@ -78,7 +73,7 @@ end
 ---
 --- Returns:
 ---  * `nil`
-function mode.mt:activate()
+function mode:activate()
     self.manager.activeMode(self)
 end
 
@@ -94,7 +89,7 @@ end
 ---
 --- Returns:
 ---  * The `parameter` instance.
-function mode.mt:onDeactivate(deactivateFn)
+function mode:onDeactivate(deactivateFn)
     if is.nt.fn(deactivateFn) then
         error("Please provide a function: %s", type(deactivateFn))
     end
@@ -111,13 +106,13 @@ end
 ---
 --- Returns:
 ---  * The `xml` for the Mode.
-function mode.mt:xml()
+function mode:xml()
     return x.Mode { id=format("%#010x", self.id) } (
         x.Name (self.name)
     )
 end
 
-function mode.mt:__tostring()
+function mode:__tostring()
     return format("mode: %s (%#010x)", self.name, self.id)
 end
 
