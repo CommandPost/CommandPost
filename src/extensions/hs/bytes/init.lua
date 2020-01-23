@@ -21,6 +21,7 @@
 
 local concat        = table.concat
 local char          = string.char
+local byte          = string.byte
 local format        = string.format
 
 local bytes = {}
@@ -512,17 +513,17 @@ end
 local function doInt(value, index, bits, read, write)
     if type(value) == "string" then
         index = index or 1
-        if value:len() < index + bits-1 then -- TODO: Fix this bug.
-            --error(format("not enough bytes in value after %d", index), 3)
+        if value:len() < (index + (bits/8) - 1) then
+            error(format("need %d bytes but %d are available from index %d", bits/8, value:len()-index+1, index), 2)
         end
         return read(value, index)
     elseif type(value) == "number" then
         if value & intMask(bits) ~= value then
-            error(format("value is larger than %d bits: %04x", bits, value), 3)
+            error(format("value is larger than %d bits: 0x%04X", bits, value), 2)
         end
         return char(write(value))
     else
-        error(format("unsupported value type: %s", type(value)), 3)
+        error(format("unsupported value type: %s", type(value)), 2)
     end
 end
 
@@ -740,6 +741,173 @@ function bytes.exactly(size)
         end
         return value:sub(index, size)
     end
+end
+
+-----------------------------------------------------
+-- Hexadecimal conversion functions.
+-----------------------------------------------------
+
+-- ASCII values for "0", "9", "A", "Z", "a", "z"
+local ZERO, NINE, A_UPPER, Z_UPPER, A_LOWER, Z_LOWER = 48, 57, 65, 70, 97, 102
+
+--- hs.bytes.hexToInt4(str[, index]) -> value: number, nextIndex: number
+--- Function
+--- Converts a single hex character at the specified index into a 4-bit integer between `0` and `15` (aka `F`).
+--- Supports upper and lower-case characters for values from A-F.
+---
+--- Parameters:
+---  * str       - the string containing the hex character.
+---  * index     - the index of the hex character in the string (defaults to `1`)
+---
+--- Returns:
+---  * The 4-bit `number` value of the specified hex string.
+---  * The index value for the next character in the string.
+function bytes.hexToInt4(str, index, errorLevel)
+    local b = byte(str, index or 1)
+    if b >= ZERO and b <= NINE then
+        return b - ZERO, index+1
+    elseif b >= A_UPPER and b <= Z_UPPER then
+        return b - A_UPPER + 10, index+1
+    elseif b >= A_LOWER and b <= Z_LOWER then
+        return b - A_LOWER + 10, index+1
+    end
+    error(format("expected '0' to 'F' at %d but got '%s'", index, char(b)), (errorLevel or 1)+1)
+end
+
+--- hs.bytes.hexToInt8(str[, index]) -> value: number, nextIndex: number
+--- Function
+--- Converts two hex characters (eg. `"FF"`), starting at the specified index, into a number between 0 and 255.
+--- Supports upper and lower-case characters for values from A-F.
+---
+--- Parameters:
+--- * str - The string containing two hex digits ("0" to "F")
+--- * index - The index of the first hex character in the string (defaults to `1`)
+---
+--- Returns:
+---  * value        - the 8-bit `number` value of the specified hex string.
+---  * nextIndex    - the index value for the next character in the string.
+function bytes.hexToInt8(str, index, errorLevel)
+    index = index or 1
+    errorLevel = (errorLevel or 1) + 1
+   return (bytes.hexToInt4(str, index, errorLevel) << 4) + bytes.hexToInt4(str, index+1, errorLevel), index+2
+end
+
+--- hexToBytes(str[, spacer]) -> string
+--- Function
+--- Converts a hex string representation to hex data.
+---
+--- Parameters:
+---  * str      - the string to process.
+---  * spacer   - the spacer character (defaults to ' ')
+---
+--- Returns:
+---  * A string
+function bytes.hexToBytes(str, spacer)
+    local spacerByte = (spacer or ' '):byte(1)
+    local out = {}
+    local j = 1
+    local b
+    for i=1,#str,2 do
+        if str:byte(i) ~= spacerByte then
+            b = bytes.hexToInt8(str, i, 2)
+            out[j] = string.char(b)
+            j = j+1
+        end
+    end
+    return concat(out)
+end
+
+-- int4ToHexChar(value[, lowerCase]) -> number
+-- Function
+-- Converts an integer value between 0 and 15 into a single hex character from "0" to "F".
+--
+-- Parameters:
+--  * value        - the number to convert, between 0-15.
+--  * lowerCase    - if `true`, the characters will be lower-case (defaults to `false`)
+--
+-- Returns:
+--  * A number representing the character byte value.
+local function int4ToHexChar(value, lowerCase)
+    if value >= 0 and value <= 9 then
+        return value + ZERO
+    elseif value >= 10 and value <= 15 then
+        return value - 10 + (lowerCase and A_LOWER or A_UPPER)
+    end
+    error("int value must be between 0 and 15, but was " .. tostring(value), 3)
+end
+
+-- int8ToHexChar(value[, lowerCase]) -> number
+-- Function
+-- Converts an integer value between 0 and 255 into a two hex characters from "0" to "F".
+--
+-- Parameters:
+--  * value        - the number to convert, between 0-255.
+--  * lowerCase    - if `true`, the characters will be lower-case (defaults to `false`)
+--
+-- Returns:
+--  * A number representing the character byte value.
+local function int8ToHexChars(value, lowerCase)
+    return int4ToHexChar(value >> 4, lowerCase), int4ToHexChar(value & 0xF, lowerCase)
+end
+
+--- hs.bytes.int4ToHex(value[, lowerCase]) -> number
+--- Function
+--- Converts an integer value between 0 and 15 into a single hex character from "0" to "F".
+---
+--- Parameters:
+---  * byteString   - the string of bytes to output as hex characters
+---  * lowerCase    - if `true`, the characters will be lower-case (defaults to `false`)
+---
+--- Returns:
+---  * A single character representing the byte value.
+function bytes.int4ToHex(value, lowerCase)
+    return char(int4ToHexChar(value, lowerCase))
+end
+
+--- hs.bytes.int4ToHex(value[, lowerCase]) -> number
+--- Function
+--- Converts an integer value between 0 and 15 into a single hex character from "0" to "F".
+---
+--- Parameters:
+---  * byteString   - the string of bytes to output as hex characters
+---  * lowerCase    - if `true`, the characters will be lower-case (defaults to `false`)
+---
+--- Returns:
+---  * A single character representing the byte value.
+function bytes.int8ToHex(value, lowerCase)
+    return char(int8ToHexChars(value, lowerCase))
+end
+
+--- hs.bytes.bytesToHex(byteString[, lowerCase][, spacer]) -> string
+--- Function
+--- Converts a string of binary data into a hexadecimal representation of the data.
+---
+--- Parameters:
+---  * byteString   - the byte string.
+---  * lowerCase    - if `true`, the ouput hex values will be lower-case (defaults to `false`)
+---  * spacer       - if provided, each byte is separated by the first character in the spacer.
+function bytes.bytesToHex(byteString, lowerCase, spacer)
+    if type(lowerCase) == "string" then
+        spacer = lowerCase
+        lowerCase = false
+    end
+
+    local spacerByte
+    if spacer then
+        spacerByte = spacer:byte(1)
+    end
+
+    local out = {}
+    local b
+    for i=1,#byteString do
+        b = byte(byteString, i)
+        if spacerByte and i ~= 1 then
+            out[i] = char(spacerByte, int8ToHexChars(b, lowerCase))
+        else
+            out[i] = char(int8ToHexChars(b, lowerCase))
+        end
+    end
+    return concat(out)
 end
 
 setmetatable(bytes, {

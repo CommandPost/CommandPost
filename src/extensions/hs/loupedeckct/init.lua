@@ -14,14 +14,15 @@ local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
 local websocket         = require "hs.websocket"
 
-local hexDump           = utf8.hexDump
-local randomFromRange   = hsmath.randomFromRange
-local concat            = table.concat
-
 local byte              = string.byte
 local char              = string.char
+local concat            = table.concat
 local format            = string.format
+local hexDump           = utf8.hexDump
+local randomFromRange   = hsmath.randomFromRange
 
+local bytesToHex        = bytes.bytesToHex
+local hexToBytes        = bytes.hexToBytes
 local int16be           = bytes.int16be
 local int24be           = bytes.int24be
 local int32be           = bytes.int32be
@@ -30,7 +31,7 @@ local remainder         = bytes.remainder
 
 local mod               = {}
 
-local callbackRegister  = {}
+local callbackRegister = {}
 
 -- registerCallback(callbackFn) -> number
 -- Function
@@ -76,83 +77,6 @@ local function getCallback(id, preserve)
         callbackRegister[id] = nil
     end
     return callback
-end
-
--- ASCII values for "0", "9", "A", "Z", "a", "z"
-local ZERO, NINE, A_UPPER, Z_UPPER, A_LOWER, Z_LOWER = 48, 57, 65, 70, 97, 102
-
--- hexToInt4(str, index) -> number
--- Function
--- Converts a single hex character at the specified index into a 4-bit integer between `0` and `15` (aka `F`).
--- Supports upper and lower-case characters for values from A-F.
-local function hexToInt4(str, index)
-    local b = byte(str, index)
-    if b >= ZERO and b <= NINE then
-        return b - ZERO
-    elseif b >= A_UPPER and b <= Z_UPPER then
-        return b - A_UPPER + 10
-    elseif b >= A_LOWER and b <= Z_LOWER then
-        return b - A_LOWER + 10
-    end
-    error(format("Invalid hex character at %d: %s", index, char(b)))
-end
-
--- hexToInt8(str[, index]) -> number
--- Function
--- Converts two hex characters (eg. `"FF"`), starting at the specified index, into a number between 0 and 255.
--- Supports upper and lower-case characters for values from A-F.
---
--- Parameters:
--- * str - The string of hex digits ("0" to "F")
--- * index - The index to start retrieving values from
-local function hexToInt8(str, index)
-    index = index or 1
-   return (hexToInt4(str, index) << 4) + hexToInt4(str, index+1)
-end
-
--- hexToBytes(str) -> string
--- Function
--- Converts a hex string representation to hex data
---
--- Parameters:
---  * str - The string to process
---
--- Returns:
---  * A string
-local function hexToBytes(str)
-    local out = {}
-    local b
-    for i=1,#str,2 do
-        b = hexToInt8(str, i)
-        out[i+1/2] = string.char(b)
-    end
-    return concat(out)
-end
-
--- int4ToHex(value) -> number
--- Function
--- Converts an integer value between 0 and 15 into a single hex character from "0" to "F".
-local function int4ToHex(value)
-    if value >= 0 and value <= 9 then
-        return value + ZERO
-    elseif value >= 10 and value <= 15 then
-        return value - 10 + A_UPPER
-    end
-    error("int value must be between 0 and 15, but was " .. tostring(value))
-end
-
--- bytesToHex(str) -> string
--- Function
--- Converts a a string of binary data into a hexadecimal representation of the data.
-local function bytesToHex(str)
-    local out = {}
-    local b
-    for i=1,#str do
-        b = byte(str, i)
-        -- convert top 4 bits then bottom 4 bits to 0-F
-        out[i] = char(int4ToHex(b >> 4), int4ToHex(b & 15))
-    end
-    return concat(out)
 end
 
 -- rgbToInt16(r, g, b) -> number
@@ -486,7 +410,7 @@ local events = {
     end,
 
     --------------------------------------------------------------------------------
-    -- WEBSOCKET RECIEVED PONG:
+    -- WEBSOCKET RECEIVED PONG:
     --------------------------------------------------------------------------------
     pong = function()
         log.df("PONG RECEIVED!")
@@ -499,9 +423,6 @@ local events = {
     -- WEBSOCKET RECEIVED MESSAGE:
     --------------------------------------------------------------------------------
     received = function(message)
-
-        log.df("message: %s", hexDump(message))
-
         -- read the command ID, callback ID and the remainder of the message...
         local id, callbackID, data = bytes.read(message,
             int16be, int8, remainder
