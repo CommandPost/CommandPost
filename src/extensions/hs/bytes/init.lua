@@ -96,7 +96,7 @@ function bytes.mt:write(...)
         if vType == "string" then
             data[len+i] = v
         else
-            error("invalid data type at #%d: %s", i, vType, 2)
+            error(format("invalid data type at #%d: %s", i, vType, 2))
         end
     end
     return self
@@ -833,7 +833,7 @@ local function int4ToHexChar(value, lowerCase)
     elseif value >= 10 and value <= 15 then
         return value - 10 + (lowerCase and A_LOWER or A_UPPER)
     end
-    error("int value must be between 0 and 15, but was " .. tostring(value), 3)
+    error(format("int value must be between 0 and 15, but was " .. tostring(value), 3))
 end
 
 -- int8ToHexChar(value[, lowerCase]) -> number
