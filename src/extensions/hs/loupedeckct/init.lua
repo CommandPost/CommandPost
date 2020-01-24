@@ -896,7 +896,7 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
     --          ^    callback id?
     --          command id
     --------------------------------------------------------------------------------
-    if type("imageBytes") == "userdata" then
+    if type(imageBytes) == "userdata" then
         imageBytes = imageBytes:getLoupedeckArray()
     end
 
