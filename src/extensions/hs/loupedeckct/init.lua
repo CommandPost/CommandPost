@@ -17,6 +17,7 @@ local websocket         = require "hs.websocket"
 local byte              = string.byte
 local char              = string.char
 local concat            = table.concat
+local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
 local randomFromRange   = hsmath.randomFromRange
@@ -105,7 +106,10 @@ end
 -- * The 16-bit integer for the colour value.
 local function colorToInt16(colorTable)
     local rgb = drawing.color.asRGB(colorTable)
-    return rgbToInt16(rgb.red, rgb.green, rgb.blue)
+    local r = floor(rgb.red * 255)
+    local g = floor(rgb.green * 255)
+    local b = floor(rgb.blue * 255)
+    return rgbToInt16(r, g, b)
 end
 
 -- toInt16Color(color) -> number
@@ -116,7 +120,6 @@ end
 -- * color - Either a `hs.drawing.color` table, a 16-bit color value, or 24-bit hex strings (e.g. "FFFFFF")
 local function toInt16Color(color)
     local colorType = type(color)
-
     if colorType == "string" then
         return colorToInt16({hex=color, alpha=1.0})
     elseif colorType == "table" then
@@ -154,9 +157,9 @@ end
 -- * The 24-bit integer for the colour value.
 local function colorToInt24(colorTable)
     local rgb = drawing.color.asRGB(colorTable)
-    local r = math.floor(rgb.red * 255)
-    local g = math.floor(rgb.green * 255)
-    local b = math.floor(rgb.blue * 255)
+    local r = floor(rgb.red * 255)
+    local g = floor(rgb.green * 255)
+    local b = floor(rgb.blue * 255)
     return rgbToInt24(r, g, b)
 end
 
@@ -168,7 +171,6 @@ end
 -- * color - Either a `hs.drawing.color` table, a 24-bit color value, or 24-bit hex strings (e.g. "FFFFFF")
 local function toInt24Color(color)
     local colorType = type(color)
-
     if colorType == "string" then
         return colorToInt24({hex=color, alpha=1.0})
     elseif colorType == "table" then
@@ -233,7 +235,7 @@ end
 local function send(message)
     if connected() then
         local data = type(message) == "table" and concat(message) or tostring(message)
-        log.df("Sending: %s", hexDump(data))
+        --log.df("Sending: %s", hexDump(data))
         mod._websocket:send(data)
         return true
     end
@@ -416,7 +418,6 @@ local events = {
     -- WEBSOCKET RECEIVED PONG:
     --------------------------------------------------------------------------------
     pong = function()
-        log.df("PONG RECEIVED!")
         triggerCallback {
             action = "pong",
         }
@@ -836,8 +837,6 @@ mod.screens = {
     },
 }
 
-local updateScreenImagePadding = "\0\0"
-
 --- hs.loupedeckct.refreshScreen(screen[, callbackFn]) -> boolean
 --- Function
 --- Sends a request to the Loupedeck CT asking it to reset the device.
@@ -876,7 +875,7 @@ end
 ---
 --- Parameters:
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
----  * imageBytes   - the byte string for the image, in the custom Loupedeck 16-bit RGB format.
+---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
 ---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
@@ -887,10 +886,6 @@ end
 --- * the `success` value is a boolean, `true` or `false`.
 function mod.updateScreenImage(screen, imageBytes, callbackFn)
     --------------------------------------------------------------------------------
-
-             -- FF10 23 004C 00 00 00 00 003C 010E                < old code
-             -- FF10 CE 004C 00 00 00 00 003C 010E 00 00 00       < what we're sending
-
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
     --          ^    ^  ^    ^           ^    ^    ^
     --          ^    ^  ^    ^           ^    ^    16-bit pixel values
@@ -901,9 +896,11 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
     --          ^    callback id?
     --          command id
     --------------------------------------------------------------------------------
-    local imageSuccess = false
+    if type("imageBytes") == "userdata" then
+        imageBytes = imageBytes:getLoupedeckArray()
+    end
 
-    log.df("imageBytes: %s", imageBytes)
+    local imageSuccess = false
 
     if sendCommand(
         0xFF10,
@@ -911,14 +908,12 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
             imageSuccess = bytes.read(response.data, int8) == 0x01
         end,
         int16be(screen.id),
-        --updateScreenImagePadding, -- unknown bytes
         int16be(0),
         int16be(0),
         int16be(screen.width),
         int16be(screen.height),
         imageBytes
     ) then
-        log.df("refresh screen!")
         return mod.refreshScreen(screen, callbackFn and function(response)
             response.success = imageSuccess and (bytes.read(response.data, int8) == 0x01)
         end)
