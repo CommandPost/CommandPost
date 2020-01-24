@@ -248,7 +248,7 @@ end
 -- * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
 local function sendCommand(commandID, callbackFn, ...)
     return send(
-        bytes.new(int16be(commandID), int8(registerCallback(callbackFn)), ...):bytes()
+        bytes(int16be(commandID), int8(registerCallback(callbackFn)), ...):bytes()
     )
 end
 
@@ -627,7 +627,7 @@ function mod.requestDeviceInfo(callbackFn)
     --------------------------------------------------------------------------------
 
     -- TODO: figure out what these bytes mean...
-    return sendCommand(0x131C, callbackFn, {hexToBytes("61f1392a8e936ba66e992daedb40f65f")})
+    return sendCommand(0x131C, callbackFn, hexToBytes("61f1392a8e936ba66e992daedb40f65f"))
 end
 
 --- hs.loupedeckct.requestFirmwareVersion([callbackFn]) -> boolean
