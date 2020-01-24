@@ -467,7 +467,7 @@ local events = {
                     return
                 end
             else
-                log.ef("Unsupported command: id: %04x; callback: %02x; data:\n%s", id, callbackID, response.data and hexDump(response.data))
+                log.ef("Unsupported command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
                 return
             end
         end
@@ -493,14 +493,33 @@ mod.event = {
     WHEEL_RELEASED = 0x0972,
     SCREEN_PRESSED = 0x094D,
     SCREEN_RELEASED = 0x096D,
+    BUTTON_CONFIRMATION = 0x0302,
+    SCREEN_CONFIRMATION = 0x040f,
 }
 
 -- set of response handlers for device-generated events.
 mod.responseHandler = {
+
+    -- Button Confirmation
+    [mod.event.BUTTON_CONFIRMATION] = function(response)
+        triggerCallback {
+            action = "button_confirmation",
+        }
+    end,
+
+    -- Screen Confirmation
+    [mod.event.SCREEN_CONFIRMATION] = function(response)
+        local success = bytes(response.data):read(int8)
+
+        triggerCallback {
+            action = "screen_confirmation",
+            success = success == 1,
+        }
+    end,
+
     -- Button Press/Release
     [mod.event.BUTTON_PRESS] = function(response)
         local id, dirByte = bytes(response.data):read(int8, int8)
-
         local direction
         if dirByte == 0x00 then
             direction = "down"
@@ -540,47 +559,45 @@ mod.responseHandler = {
 
     -- Big Wheel Pressed
     [mod.event.WHEEL_PRESSED] = function(response)
-        -- TODO: figure out what is at byte 1
-        local x, y = bytes.read(response.data, 2, int16be, int16be)
-
+        local eventID, x, y = bytes.read(response.data, int8, int16be, int16be)
         triggerCallback {
             action = "wheel_pressed",
             x = x,
             y = y,
+            eventID = eventID, -- Always 0
         }
     end,
 
     -- Big Wheel Released
     [mod.event.WHEEL_RELEASED] = function(response)
-        -- TODO: figure out what is at byte 1
-        local x, y = bytes.read(response.data, 2, int16be, int16be)
-
+        local eventID, x, y = bytes.read(response.data, int8, int16be, int16be)
         triggerCallback {
             action = "wheel_released",
             x = x,
             y = y,
+            eventID = eventID, -- Always 0
         }
     end,
 
     [mod.event.SCREEN_PRESSED] = function(response)
-        local x, y, eventID = bytes.read(response.data, int16be, int16be, int16be)
-
+        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "screen_pressed",
             x = x,
             y = y,
             eventID = eventID,
+            unknown = unknown, -- Always 0
         })
     end,
 
     [mod.event.SCREEN_RELEASED] = function(response)
-        local x, y, eventID = bytes.read(response.data, int16be, int16be, int16be)
-
+        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "screen_released",
             x = x,
             y = y,
             eventID = eventID,
+            unknown = unknown, -- Always 0
         })
     end,
 }
@@ -1145,40 +1162,33 @@ end
 function mod.test()
     timer.doAfter(0, function()
         local color = drawing.color.hammerspoon.red
-
         for id, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color, function() end)
         end
-
         for id, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color, function() end)
         end
     end)
     timer.doAfter(5, function()
         local color = drawing.color.hammerspoon.green
-
         for id, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color, function() end)
         end
-
         for id, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color, function() end)
         end
     end)
     timer.doAfter(10, function()
         local color = drawing.color.hammerspoon.blue
-
         for id, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color, function() end)
         end
-
         for id, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color, function() end)
         end
     end)
     timer.doAfter(15, function()
         local color = drawing.color.hammerspoon.black
-
         for id, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color, function() end)
         end
@@ -1189,9 +1199,15 @@ function mod.test()
         mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"), function() end)
     end)
     timer.doAfter(20, function()
+        local color = drawing.color.hammerspoon.red
+        for id, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color, function() end)
+        end
+        mod.updateScreenColor(mod.screens.left, color, function() end)
+        mod.updateScreenColor(mod.screens.right, color, function() end)
         for x=0, 3 do
             for y=0, 2 do
-                mod.updateScreenImage(ct.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), nil, {x=x*90, y=y*90, w=90,h=90})
+                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), nil, {x=x*90, y=y*90, w=90,h=90})
             end
         end
     end)
