@@ -5,6 +5,7 @@
 local log               = require "hs.logger".new("loupedeckct", 5)
 
 local bytes             = require "hs.bytes"
+local canvas            = require "hs.canvas"
 local drawing           = require "hs.drawing"
 local hsmath            = require "hs.math"
 local inspect           = require "hs.inspect"
@@ -323,13 +324,22 @@ local function initaliseDevice()
         log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
     end)
 
-    -- Reset all the buttons to black.
+    -- Reset all the buttons to black:
     local black = 0x000000
     for _,id in pairs(mod.buttonID) do
         mod.buttonColor(id, black, function(response)
-            log.df("button %d set to black: %s", id, tostring(response.success))
+            log.df("Button %d set to black: %s", id, tostring(response.success))
         end)
     end
+
+    -- Reset all the screens to black:
+    local b = drawing.color.hammerspoon.black
+    for id, screen in pairs(mod.screens) do
+        mod.updateScreenColor(screen, b, function()
+            log.df("Screen %s set to black.", id)
+        end)
+    end
+
 end
 
 --- hs.loupedeckct.callback() -> boolean
@@ -455,8 +465,7 @@ local events = {
                     return
                 end
             else
-                --log.ef("Unsupported command: id: %04x; callback: %02x; data:\n%s", id, callbackID, response.data and hexDump(response.data))
-                log.ef("Unsupported command")
+                log.ef("Unsupported command: id: %04x; callback: %02x; data:\n%s", id, callbackID, response.data and hexDump(response.data))
                 return
             end
         end
@@ -900,6 +909,13 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
         imageBytes = imageBytes:getLoupedeckArray()
     end
 
+    -- TODO: This is the current workaround for the wheel screen.
+    --       Why we need this... I have no idea.
+    if screen.id == mod.screens.wheel.id then
+        imageBytes = int8(0) .. imageBytes
+        imageBytes = imageBytes:sub(1, -28)
+    end
+
     local imageSuccess = false
 
     if sendCommand(
@@ -1117,20 +1133,51 @@ end
 --- Returns:
 ---  * None
 function mod.test()
-    local red = drawing.color.hammerspoon.red
+    timer.doAfter(0, function()
+        local color = drawing.color.hammerspoon.red
 
-    log.df("BUTTONS TEST:")
-    for id, button in pairs(mod.buttonID) do
-        log.df(" - Requesting button '%s' be set to red", id)
-        log.df("button: %s", button)
-        mod.buttonColor(button, red, function() log.df("making button %s red", id) end)
-    end
+        for id, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color, function() end)
+        end
 
-    log.df("SCREEN TEST:")
-    for id, screen in pairs(mod.screens) do
-        log.df(" - Requesting screen '%s' be set to red", id)
-        mod.updateScreenColor(screen, red, function() log.df("making screen %s red", id) end)
-    end
+        for id, screen in pairs(mod.screens) do
+            mod.updateScreenColor(screen, color, function() end)
+        end
+    end)
+    timer.doAfter(5, function()
+        local color = drawing.color.hammerspoon.green
+
+        for id, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color, function() end)
+        end
+
+        for id, screen in pairs(mod.screens) do
+            mod.updateScreenColor(screen, color, function() end)
+        end
+    end)
+    timer.doAfter(10, function()
+        local color = drawing.color.hammerspoon.blue
+
+        for id, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color, function() end)
+        end
+
+        for id, screen in pairs(mod.screens) do
+            mod.updateScreenColor(screen, color, function() end)
+        end
+    end)
+    timer.doAfter(15, function()
+        local color = drawing.color.hammerspoon.black
+
+        for id, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color, function() end)
+        end
+        mod.updateScreenColor(mod.screens.left, color, function() end)
+        mod.updateScreenColor(mod.screens.right, color, function() end)
+
+        mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/middle.png"), function() end)
+        mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"), function() end)
+    end)
 end
 
 return mod
