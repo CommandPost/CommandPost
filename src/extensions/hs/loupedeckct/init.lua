@@ -1188,24 +1188,13 @@ function mod.test()
         mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/middle.png"), function() end)
         mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"), function() end)
     end)
-end
-
---- hs.loupedeckct.testScreenButtons() -> none
---- Function
---- Sends an icon to the individual "buttons" on the middle screen for testing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.testScreenButtons()
-    -- TODO: This works, but some of the "buttons" show compression/corruption artefacts. Not sure why?
-    for x=0, 3 do
-        for y=0, 2 do
-            mod.updateScreenImage(ct.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), nil, {x=x*90, y=y*90, w=90,h=90})
+    timer.doAfter(20, function()
+        for x=0, 3 do
+            for y=0, 2 do
+                mod.updateScreenImage(ct.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), nil, {x=x*90, y=y*90, w=90,h=90})
+            end
         end
-    end
+    end)
 end
 
 return mod
