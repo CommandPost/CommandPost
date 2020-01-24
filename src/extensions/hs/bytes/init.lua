@@ -98,11 +98,11 @@ function bytes.mt:write(...)
 
     for i=1,#arguments do
         local v = arguments[i]
-        if type(v) == "table" then
-            v = v[1]
+        if bytes.is(v) then
+            v = v:bytes()
         end
         if type(v) == "string" then
-            self._data[len+i] = v
+            data[len+i] = v
         else
             error(format("invalid data type at #%d: %s", i, type(v), 2))
         end
