@@ -744,10 +744,11 @@ end
 function bytes.exactly(size)
     return function(value, index)
         index = index or 1
-        if value:len() < index + size - 1 then
+        local last = index + size -1
+        if value:len() < last then
             error(format("requested exactly %d bytes but only %d are available", size, value:len()-index+1), 2)
         end
-        return value:sub(index, size)
+        return value:sub(index, last), index + size
     end
 end
 

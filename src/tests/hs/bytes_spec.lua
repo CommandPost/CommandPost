@@ -143,5 +143,24 @@ return describe "hs.bytes" {
             expect(y):is(2)
             expect(z):is(3)
         end),
+
+        it "reads multiple types of values from a string"
+        :doing(function()
+            local a, b, c, d, e, f, g, exactly, remainder = bytes.read(
+                "\1\0\2\3\0\0\0\0\4\5\0\0\0\0\0\0\0\0\0\0\6\7\0\0\0\0\0\0\0exactlyremainder",
+                bytes.int8, bytes.int16be, bytes.int16le, bytes.int32be, bytes.int32le, bytes.int64be, bytes.int64le,
+                bytes.exactly(7), bytes.remainder
+            )
+
+            expect(a):is(1)
+            expect(b):is(2)
+            expect(c):is(3)
+            expect(d):is(4)
+            expect(e):is(5)
+            expect(f):is(6)
+            expect(g):is(7)
+            expect(exactly):is("exactly")
+            expect(remainder):is("remainder")
+        end)
     }
 }
