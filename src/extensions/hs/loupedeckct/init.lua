@@ -604,12 +604,12 @@ function mod.startBackgroundLoop(callbackFn)
     local echo = hexToBytes("3da81c9ba72a8c87d4f6a135a289066c")
     return sendCommand(
         0x130E,
-        function(data)
-            if data.data ~= echo then
-                log.ef("Received different result from loopback confirmation: %s", data.data)
+        function(response)
+            if response.data ~= echo then
+                log.ef("Received different result from loopback confirmation: %s", response.data)
             end
             if callbackFn then
-                callbackFn(data)
+                callbackFn(response)
             end
         end,
         echo
