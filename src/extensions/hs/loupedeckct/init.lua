@@ -104,7 +104,7 @@ end
 -- Returns:
 -- * The 16-bit integer for the colour value.
 local function colorToInt16(colorTable)
-    local rgb = drawing.color.toRGB(colorTable)
+    local rgb = drawing.color.asRGB(colorTable)
     return rgbToInt16(rgb.red, rgb.green, rgb.blue)
 end
 
@@ -153,7 +153,7 @@ end
 -- Returns:
 -- * The 24-bit integer for the colour value.
 local function colorToInt24(colorTable)
-    local rgb = drawing.color.toRGB(colorTable)
+    local rgb = drawing.color.asRGB(colorTable)
     return rgbToInt24(rgb.red, rgb.green, rgb.blue)
 end
 
@@ -229,8 +229,9 @@ end
 --  * `true` if sent.
 local function send(message)
     if connected() then
-        --log.df("Sending: %s", message)
+        --log.df("Sending: %s (%s)", message, type(message))
         local data = type(message) == "table" and concat(message) or tostring(message)
+        --log.df("Sending: %s", hexDump(data))
         mod._websocket:send(data)
         return true
     end
@@ -247,7 +248,7 @@ end
 -- * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
 local function sendCommand(commandID, callbackFn, ...)
     return send(
-        bytes(int16be(commandID), int8(registerCallback(callbackFn)), ...)
+        bytes.new(int16be(commandID), int8(registerCallback(callbackFn)), ...):bytes()
     )
 end
 
@@ -315,7 +316,7 @@ local function initaliseDevice()
     end)
 
     mod.resetDevice(function(data)
-        log.df("Reset Device: id: %04x; data: %s", data.command, utf8.hexDump(data.message))
+        log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
     end)
 
     -- Reset all the buttons to black.
@@ -439,6 +440,7 @@ local events = {
             local ok, res = xpcall(function() return callback(response) end, debug.traceback)
             if not ok then
                 log.ef("Error executing callback for %04x: %s", response.id, res)
+                return
             end
         else
             -- if not, see if there is a handler.
@@ -447,9 +449,12 @@ local events = {
                 local ok, res = xpcall(function() return handler(response) end, debug.traceback)
                 if not ok then
                     log.ef("Error executing callback for %04x: %s", response.id, res)
+                    return
                 end
             else
-                log.ef("Unsupported command: id: %04x; callback: %02x; data:\n%s", id, callbackID, hexDump(response.data))
+                --log.ef("Unsupported command: id: %04x; callback: %02x; data:\n%s", id, callbackID, response.data and hexDump(response.data))
+                log.ef("Unsupported command")
+                return
             end
         end
     end
@@ -600,8 +605,8 @@ function mod.startBackgroundLoop(callbackFn)
     return sendCommand(
         0x130E,
         function(data)
-            if data.message ~= echo then
-                log.ef("Received different result from loopback confirmation: %d", hexDump(data.message))
+            if data.data ~= echo then
+                log.ef("Received different result from loopback confirmation: %s", data.data)
             end
             if callbackFn then
                 callbackFn(data)
@@ -714,7 +719,7 @@ function mod.requestSelfTest(callbackFn)
         -- Message received (7): (7) 07-04-05-BF-00-3F-00
         -- Self-tests: 0x003F00BF
         -- for some reason, the result is read back in little-endian. Testing which way the OS works?
-        response.selfTests = bytes.read(response.data, bytes.int32le)
+        response.selfTest = bytes.read(response.data, bytes.int32le)
         callbackFn(response)
     end)
 end
@@ -795,7 +800,7 @@ function mod.resetDevice(callbackFn)
     return sendCommand(
         0x0409,
         callbackFn and function(response)
-            response.success = byte.read(response.data, int8) == 0x01
+            response.success = bytes.read(response.data, int8) == 0x01
             callbackFn(response)
         end,
         int8(9) -- not sure why we're sending 9? type of reset?
@@ -1094,6 +1099,22 @@ function mod.disconnect()
     if mod._websocket then
         mod._websocket:close()
         mod._websocket = nil
+    end
+end
+
+--- hs.loupedeckct.test() -> none
+--- Function
+--- Sends data to all the screens and buttons for testing.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.test()
+    local red = drawing.color.hammerspoon.red
+    for id, v in pairs(mod.buttonID) do
+        mod.buttonColor(v, red, function() log.df("making button %s red", id) end)
     end
 end
 

@@ -83,7 +83,7 @@ end
 ---  * For example:
 ---    * ```lua
 ---      local result = hs.bytes():write(hs.bytes.int8(1), hs.bytes.int16be(2), hs.bytes.int32le(3)) -- result: 01 00 02 03 00 00 00
----
+---      print(hs.utf8.hexDump(result:bytes()))
 ---      ```
 function bytes.mt:write(...)
     local arguments = {...}
@@ -98,14 +98,13 @@ function bytes.mt:write(...)
 
     for i=1,#arguments do
         local v = arguments[i]
-        if bytes.is(v) then
-            v = bytes:bytes()
+        if type(v) == "table" then
+            v = v[1]
         end
-        local vType = type(v)
-        if vType == "string" then
+        if type(v) == "string" then
             self._data[len+i] = v
         else
-            error(format("invalid data type at #%d: %s", i, vType, 2))
+            error(format("invalid data type at #%d: %s", i, type(v), 2))
         end
     end
     return self
