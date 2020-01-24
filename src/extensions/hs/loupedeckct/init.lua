@@ -886,6 +886,7 @@ end
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
 ---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---  * frame        - (optional) An optional `hs.geometry.rect` object
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -893,18 +894,22 @@ end
 --- Notes:
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenImage(screen, imageBytes, callbackFn)
+function mod.updateScreenImage(screen, imageBytes, callbackFn, frame)
     --------------------------------------------------------------------------------
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
-    --          ^    ^  ^    ^           ^    ^    ^
-    --          ^    ^  ^    ^           ^    ^    16-bit pixel values
-    --          ^    ^  ^    ^           ^    height (pixels)
-    --          ^    ^  ^    ^           width (pixels)
-    --          ^    ^  ^    [unknown] x/y offset?
+    --          ^    ^  ^    ^     ^     ^    ^    ^
+    --          ^    ^  ^    ^     ^     ^    ^    16-bit pixel values
+    --          ^    ^  ^    ^     ^     ^    height (pixels)
+    --          ^    ^  ^    ^     ^     width (pixels)
+    --          ^    ^  ^    ^     y offset (pixels)
+    --          ^    ^  ^    x offset (pixels)
     --          ^    ^  screen id
     --          ^    callback id?
     --          command id
     --------------------------------------------------------------------------------
+
+    frame = frame or {}
+
     if type(imageBytes) == "userdata" then
         imageBytes = imageBytes:getLoupedeckArray()
     end
@@ -924,10 +929,10 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
             imageSuccess = bytes.read(response.data, int8) == 0x01
         end,
         int16be(screen.id),
-        int16be(0),
-        int16be(0),
-        int16be(screen.width),
-        int16be(screen.height),
+        int16be(frame.x or 0),
+        int16be(frame.y or 0),
+        int16be(frame.w or screen.width),
+        int16be(frame.h or screen.height),
         imageBytes
     ) then
         return mod.refreshScreen(screen, callbackFn and function(response)
@@ -966,6 +971,7 @@ end
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
 ---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---  * frame        - (optional) An optional `hs.geometry.rect` object
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -973,11 +979,13 @@ end
 --- Notes:
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenColor(screen, color, callbackFn)
+function mod.updateScreenColor(screen, color, callbackFn, frame)
+    frame = frame or {}
     return mod.updateScreenImage(
         screen,
-        solidColorBytes(screen.width, screen.height, color),
-        callbackFn
+        solidColorBytes(frame.w or screen.width, frame.h or screen.height, color),
+        callbackFn,
+        frame
     )
 end
 
