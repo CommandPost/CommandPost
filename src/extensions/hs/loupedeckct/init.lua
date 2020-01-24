@@ -1,8 +1,10 @@
 --- === hs.loupedeckct ===
 ---
 --- Adds Loupedeck CT Support
+---
+--- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 
-local log               = require "hs.logger".new("loupedeckct", 5)
+local log               = require "hs.logger".new("loupedeckct")
 
 local bytes             = require "hs.bytes"
 local canvas            = require "hs.canvas"
