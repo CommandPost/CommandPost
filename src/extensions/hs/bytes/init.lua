@@ -205,8 +205,8 @@ end
 function bytes.mt:bytes()
     local data = self._data
     if data[2] then -- got more than one chunk. consolidate!
-        data = concat(data)
-        data = {data}
+        data = {concat(data)}
+        self._data = data
     end
     return data[1]
 end
@@ -920,8 +920,8 @@ function bytes.bytesToHex(byteString, lowerCase, spacer)
 end
 
 setmetatable(bytes, {
-    __call = function(_, contents)
-        return bytes.new(contents)
+    __call = function(_, ...)
+        return bytes.new(...)
     end
 })
 
