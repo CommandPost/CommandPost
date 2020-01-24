@@ -98,9 +98,6 @@ function bytes.mt:write(...)
 
     for i=1,#arguments do
         local v = arguments[i]
-        if type(v) == "table" then
-            v = v[1]
-        end
         if type(v) == "string" then
             self._data[len+i] = v
         else
