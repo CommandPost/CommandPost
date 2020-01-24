@@ -49,7 +49,7 @@ local function registerCallback(callbackFn)
     end
 
     if type(callbackFn) ~= "function" then
-        error("expected a callback function, but got a %s", type(callbackFn), 3)
+        error(format("expected a callback function, but got a %s", type(callbackFn), 3))
     end
 
     local id = randomFromRange(1, 255)
@@ -124,7 +124,7 @@ local function toInt16Color(color)
     elseif colorType == "number" then
         return color
     else
-        error("Unexpected color value: ", inspect(color))
+        error(format("Unexpected color value: ", inspect(color)))
     end
 end
 
@@ -154,7 +154,10 @@ end
 -- * The 24-bit integer for the colour value.
 local function colorToInt24(colorTable)
     local rgb = drawing.color.asRGB(colorTable)
-    return rgbToInt24(rgb.red, rgb.green, rgb.blue)
+    local r = math.floor(rgb.red * 255)
+    local g = math.floor(rgb.green * 255)
+    local b = math.floor(rgb.blue * 255)
+    return rgbToInt24(r, g, b)
 end
 
 -- toInt24Color(color) -> number
@@ -173,7 +176,7 @@ local function toInt24Color(color)
     elseif colorType == "number" then
         return color
     else
-        error("Unexpected color value: ", inspect(color))
+        error(format("Unexpected color value: ", inspect(color)))
     end
 end
 
@@ -229,9 +232,8 @@ end
 --  * `true` if sent.
 local function send(message)
     if connected() then
-        --log.df("Sending: %s (%s)", message, type(message))
         local data = type(message) == "table" and concat(message) or tostring(message)
-        --log.df("Sending: %s", hexDump(data))
+        log.df("Sending: %s", hexDump(data))
         mod._websocket:send(data)
         return true
     end
@@ -834,7 +836,7 @@ mod.screens = {
     },
 }
 
-local updateScreenImagePadding = [[\0\0\0\0]]
+local updateScreenImagePadding = "\0\0"
 
 --- hs.loupedeckct.refreshScreen(screen[, callbackFn]) -> boolean
 --- Function
@@ -858,7 +860,6 @@ function mod.refreshScreen(screen, callbackFn)
     --          ^    callback ID (8-bit int)
     --          command ID
     --------------------------------------------------------------------------------
-
     return sendCommand(
         0x050F,
         callbackFn and function(response)
@@ -886,6 +887,10 @@ end
 --- * the `success` value is a boolean, `true` or `false`.
 function mod.updateScreenImage(screen, imageBytes, callbackFn)
     --------------------------------------------------------------------------------
+
+             -- FF10 23 004C 00 00 00 00 003C 010E                < old code
+             -- FF10 CE 004C 00 00 00 00 003C 010E 00 00 00       < what we're sending
+
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
     --          ^    ^  ^    ^           ^    ^    ^
     --          ^    ^  ^    ^           ^    ^    16-bit pixel values
@@ -898,17 +903,22 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
     --------------------------------------------------------------------------------
     local imageSuccess = false
 
+    log.df("imageBytes: %s", imageBytes)
+
     if sendCommand(
         0xFF10,
         function(response)
             imageSuccess = bytes.read(response.data, int8) == 0x01
         end,
         int16be(screen.id),
-        updateScreenImagePadding, -- unknown bytes
+        --updateScreenImagePadding, -- unknown bytes
+        int16be(0),
+        int16be(0),
         int16be(screen.width),
         int16be(screen.height),
         imageBytes
     ) then
+        log.df("refresh screen!")
         return mod.refreshScreen(screen, callbackFn and function(response)
             response.success = imageSuccess and (bytes.read(response.data, int8) == 0x01)
         end)
@@ -1113,8 +1123,18 @@ end
 ---  * None
 function mod.test()
     local red = drawing.color.hammerspoon.red
-    for id, v in pairs(mod.buttonID) do
-        mod.buttonColor(v, red, function() log.df("making button %s red", id) end)
+
+    log.df("BUTTONS TEST:")
+    for id, button in pairs(mod.buttonID) do
+        log.df(" - Requesting button '%s' be set to red", id)
+        log.df("button: %s", button)
+        mod.buttonColor(button, red, function() log.df("making button %s red", id) end)
+    end
+
+    log.df("SCREEN TEST:")
+    for id, screen in pairs(mod.screens) do
+        log.df(" - Requesting screen '%s' be set to red", id)
+        mod.updateScreenColor(screen, red, function() log.df("making screen %s red", id) end)
     end
 end
 
