@@ -17,6 +17,7 @@ local utf8              = require "hs.utf8"
 local websocket         = require "hs.websocket"
 
 local concat            = table.concat
+local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
@@ -337,7 +338,7 @@ local function initaliseDevice()
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
     for id, screen in pairs(mod.screens) do
-        mod.updateScreenColor(screen, b, function()
+        mod.updateScreenColor(screen, b, nil, function()
             log.df("Screen %s set to black.", id)
         end)
     end
@@ -1203,54 +1204,54 @@ end
 --- Returns:
 ---  * None
 function mod.test()
-    timer.doAfter(0, function()
+    doAfter(0, function()
         local color = drawing.color.hammerspoon.red
         for id, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color, function() end)
+            mod.buttonColor(button, color)
         end
         for id, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color, function() end)
+            mod.updateScreenColor(screen, color)
         end
     end)
-    timer.doAfter(5, function()
+    doAfter(5, function()
         local color = drawing.color.hammerspoon.green
         for id, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color, function() end)
+            mod.buttonColor(button, color)
         end
         for id, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color, function() end)
+            mod.updateScreenColor(screen, color)
         end
     end)
-    timer.doAfter(10, function()
+    doAfter(10, function()
         local color = drawing.color.hammerspoon.blue
         for id, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color, function() end)
+            mod.buttonColor(button, color)
         end
         for id, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color, function() end)
+            mod.updateScreenColor(screen, color)
         end
     end)
-    timer.doAfter(15, function()
+    doAfter(15, function()
         local color = drawing.color.hammerspoon.black
         for id, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color, function() end)
+            mod.buttonColor(button, color)
         end
-        mod.updateScreenColor(mod.screens.left, color, function() end)
-        mod.updateScreenColor(mod.screens.right, color, function() end)
+        mod.updateScreenColor(mod.screens.left, color)
+        mod.updateScreenColor(mod.screens.right, color)
 
-        mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/middle.png"), function() end)
-        mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"), function() end)
+        mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/middle.png"))
+        mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"))
     end)
-    timer.doAfter(20, function()
+    doAfter(20, function()
         local color = drawing.color.hammerspoon.red
         for id, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color, function() end)
+            mod.buttonColor(button, color)
         end
-        mod.updateScreenColor(mod.screens.left, color, function() end)
-        mod.updateScreenColor(mod.screens.right, color, function() end)
+        mod.updateScreenColor(mod.screens.left, color)
+        mod.updateScreenColor(mod.screens.right, color)
         for x=0, 3 do
             for y=0, 2 do
-                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90}, nil)
+                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90})
             end
         end
     end)
