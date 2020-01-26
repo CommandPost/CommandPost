@@ -1207,7 +1207,7 @@ function mod.vibrate(callbackFn)
             response.success = int8(response.data) == 0x01
             callbackFn(response)
         end,
-        int8(mod._vibraWaveformIndex)
+        int8(0x19)
     )
 end
 
