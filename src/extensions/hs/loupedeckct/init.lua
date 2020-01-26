@@ -902,7 +902,7 @@ function mod.refreshScreen(screen, callbackFn)
     )
 end
 
---- hs.loupedeckct.updateScreenImage(screen, imageBytes[, callbackFn]) -> boolean
+--- hs.loupedeckct.updateScreenImage(screen, imageBytes[, frame][, callbackFn]) -> boolean
 --- Function
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
@@ -918,7 +918,7 @@ end
 --- Notes:
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenImage(screen, imageBytes, callbackFn, frame)
+function mod.(screen, imageBytes, frame, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
     --          ^    ^  ^    ^     ^     ^    ^    ^
@@ -931,6 +931,11 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn, frame)
     --          ^    callback id?
     --          command id
     --------------------------------------------------------------------------------
+
+    if type(frame) == "function" then
+        callbackFn = frame
+        frame = nil
+    end
 
     frame = frame or {}
 
@@ -984,7 +989,7 @@ local function solidColorBytes(width, height, color)
     return concat(result)
 end
 
---- hs.loupedeckct.updateScreenImage(screen, color[, callbackFn]) -> boolean
+--- hs.loupedeckct.updateScreenColor(screen, color[, callbackFn]) -> boolean
 --- Function
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
@@ -1000,13 +1005,13 @@ end
 --- Notes:
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenColor(screen, color, callbackFn, frame)
+function mod.updateScreenColor(screen, color, frame, callbackFn)
     frame = frame or {}
     return mod.updateScreenImage(
         screen,
         solidColorBytes(frame.w or screen.width, frame.h or screen.height, color),
-        callbackFn,
-        frame
+        frame,
+        callbackFn
     )
 end
 
@@ -1209,7 +1214,7 @@ function mod.test()
         mod.updateScreenColor(mod.screens.right, color, function() end)
         for x=0, 3 do
             for y=0, 2 do
-                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), nil, {x=x*90, y=y*90, w=90,h=90})
+                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90}, nil)
             end
         end
     end)
