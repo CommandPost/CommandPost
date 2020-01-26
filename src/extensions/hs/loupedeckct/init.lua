@@ -7,7 +7,6 @@
 local log               = require "hs.logger".new("loupedeckct")
 
 local bytes             = require "hs.bytes"
-local canvas            = require "hs.canvas"
 local drawing           = require "hs.drawing"
 local hsmath            = require "hs.math"
 local inspect           = require "hs.inspect"
@@ -17,8 +16,6 @@ local usb               = require "hs.usb"
 local utf8              = require "hs.utf8"
 local websocket         = require "hs.websocket"
 
-local byte              = string.byte
-local char              = string.char
 local concat            = table.concat
 local floor             = math.floor
 local format            = string.format
@@ -316,6 +313,9 @@ local function initaliseDevice()
         log.df("Register 2 value: %08X", response.value)
         log.df("Vibra waveform index: %d", response.vibraWaveformIndex)
         log.df("Backlight level: %d", response.backlightLevel)
+
+        mod._vibraWaveformIndex = response.vibraWaveformIndex
+        mod._backlightLevel = response.backlightLevel
     end)
 
     mod.requestWheelSensitivity(0, function(data)
@@ -494,7 +494,7 @@ mod.event = {
     SCREEN_PRESSED = 0x094D,
     SCREEN_RELEASED = 0x096D,
     BUTTON_CONFIRMATION = 0x0302,
-    SCREEN_CONFIRMATION = 0x040f,
+    SCREEN_CONFIRMATION = 0x040F,
 }
 
 -- set of response handlers for device-generated events.
@@ -1067,7 +1067,7 @@ mod.buttonID = {
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
 function mod.buttonColor(buttonID, color, callbackFn)
---------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
     -- COMMAND: 07 02 FA 00 00 00 00
     --                ^  ^  ^  ^  ^
     --                ^  ^  ^  ^  blue
@@ -1086,6 +1086,42 @@ function mod.buttonColor(buttonID, color, callbackFn)
         end,
         int8(buttonID),
         int24be(color)
+    )
+end
+
+--- hs.loupedeckct.vibrate([callbackFn]) -> boolean
+--- Function
+--- Requests the Loupedeck to vibrate.
+---
+--- Parameters:
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+--- * the `response` contains the `id`, `data`, `success`.
+--- * the `success` value is a boolean, `true` or `false`.
+function mod.vibrate(callbackFn)
+    -- Sending message (4): (4) 04-1B-6B-19
+    -- Message sent (4): (4) 04-1B-6B-19
+    -- Message received (4): (4) 04-1B-6B-01
+
+    --------------------------------------------------------------------------------
+    -- COMMAND: 04 1B 6B 19
+    --          ^     ^  ^
+    --          ^     ^  Vibra waveform index?
+    --          ^     Callback ID
+    --          Command ID
+    --------------------------------------------------------------------------------
+
+    return sendCommand(
+        0x041B,
+        callbackFn and function(response)
+            response.success = int8(response.data) == 0x01
+            callbackFn(response)
+        end,
+        int8(mod._vibraWaveformIndex)
     )
 end
 
@@ -1125,7 +1161,7 @@ function mod.autoConnect(enabled)
             if data.productName == "LOUPEDECK device" then
                 if data.eventType == "added" then
                     log.df("Loupedeck CT Connected")
-                    doAfter(2, function()
+                    timer.doAfter(2, function()
                         mod.connect()
                     end)
                 elseif data.eventType == "removed" then
