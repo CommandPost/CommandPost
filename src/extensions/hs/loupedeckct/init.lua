@@ -923,9 +923,7 @@ mod.screens = {
         id = 0x0057,
         width = 240, height = 240,
         prepareImage = function(_, imageBytes)
-            -- TODO: This is the current workaround for the wheel screen.
-            --       Why we need this... I have no idea.
-            return int8(0) .. imageBytes:sub(1, -28)
+            return int8(0x0) .. imageBytes
         end,
     },
 }
