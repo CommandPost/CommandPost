@@ -494,31 +494,60 @@ mod.event = {
     WHEEL_RELEASED = 0x0972,
     SCREEN_PRESSED = 0x094D,
     SCREEN_RELEASED = 0x096D,
-    BUTTON_CONFIRMATION = 0x0302,
+    BUTTON_LED_CONFIRMATION = 0x0302,
     SCREEN_CONFIRMATION = 0x040F,
+    VIBRATE_CONFIRMATION = 0x041B,
 }
 
 -- set of response handlers for device-generated events.
 mod.responseHandler = {
 
-    -- Button Confirmation
-    [mod.event.BUTTON_CONFIRMATION] = function(response)
+    --------------------------------------------------------------------------------
+    -- Vibration Confirmation:
+    --
+    -- Example:
+    -- 01
+    --------------------------------------------------------------------------------
+    [mod.event.VIBRATE_CONFIRMATION] = function(response)
+        local success = bytes(response.data):read(int8)
         triggerCallback {
-            action = "button_confirmation",
+            action = "vibrate_confirmation",
+            success = success == 1,
         }
     end,
 
-    -- Screen Confirmation
+    --------------------------------------------------------------------------------
+    -- Button Confirmation:
+    --
+    -- No response data.
+    --------------------------------------------------------------------------------
+    [mod.event.BUTTON_LED_CONFIRMATION] = function(response)
+        triggerCallback {
+            action = "button_led_confirmation",
+        }
+    end,
+
+    --------------------------------------------------------------------------------
+    -- Screen Confirmation:
+    --
+    -- Example:
+    -- 01
+    --------------------------------------------------------------------------------
     [mod.event.SCREEN_CONFIRMATION] = function(response)
         local success = bytes(response.data):read(int8)
-
         triggerCallback {
             action = "screen_confirmation",
             success = success == 1,
         }
     end,
 
-    -- Button Press/Release
+    --------------------------------------------------------------------------------
+    -- Button Press/Release:
+    --
+    -- Examples:
+    -- 07 00        Down
+    -- 07 01        Up
+    --------------------------------------------------------------------------------
     [mod.event.BUTTON_PRESS] = function(response)
         local id, dirByte = bytes(response.data):read(int8, int8)
         local direction
@@ -538,7 +567,13 @@ mod.responseHandler = {
         end
     end,
 
-    -- Encoder rotation
+    --------------------------------------------------------------------------------
+    -- Encoder rotation:
+    --
+    -- Examples:
+    -- 01 01    Right
+    -- 01 FF    Left
+    --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
         local id, dirByte = bytes.read(response.data, int8, int8)
         local direction
@@ -558,28 +593,46 @@ mod.responseHandler = {
         end
     end,
 
-    -- Big Wheel Pressed
+    --------------------------------------------------------------------------------
+    -- Big Wheel Pressed:
+    --
+    -- Example:
+    -- 00 00 7E 00 76 00
+    --------------------------------------------------------------------------------
     [mod.event.WHEEL_PRESSED] = function(response)
-        local eventID, x, y = bytes.read(response.data, int8, int16be, int16be)
-        triggerCallback {
+        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        triggerCallback({
             action = "wheel_pressed",
             x = x,
             y = y,
             eventID = eventID, -- Always 0
-        }
+            unknown = unknown, -- Always 0
+        })
     end,
 
-    -- Big Wheel Released
+    --------------------------------------------------------------------------------
+    -- Big Wheel Released:
+    --
+    -- Example:
+    -- 00 00 7B 00 94 00
+    --------------------------------------------------------------------------------
     [mod.event.WHEEL_RELEASED] = function(response)
-        local eventID, x, y = bytes.read(response.data, int8, int16be, int16be)
-        triggerCallback {
+        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        triggerCallback({
             action = "wheel_released",
             x = x,
             y = y,
             eventID = eventID, -- Always 0
-        }
+            unknown = unknown, -- Always 0
+        })
     end,
 
+    --------------------------------------------------------------------------------
+    -- Screen Pressed:
+    --
+    -- Example:
+    -- 00 01 C9 00 9A 27
+    --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
         local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
@@ -591,6 +644,12 @@ mod.responseHandler = {
         })
     end,
 
+    --------------------------------------------------------------------------------
+    -- Screen Released:
+    --
+    -- Example:
+    -- 00 01 BC 00 BE 25
+    --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
         local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
