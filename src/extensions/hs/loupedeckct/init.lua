@@ -35,6 +35,9 @@ local remainder         = bytes.remainder
 
 local mod               = {}
 
+-- callbackRegister -> table
+-- Variable
+-- A table of registered callbacks
 local callbackRegister = {}
 
 -- registerCallback(callbackFn) -> number
@@ -283,12 +286,29 @@ local function findIPAddress()
     return ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
 end
 
+-- initaliseDevice() -> None
+-- Function
+-- Starts the background loop, performs self-test and resets screens and buttons.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function initaliseDevice()
     mod.startBackgroundLoop(function(response)
+        --------------------------------------------------------------------------------
+        -- Example:
+        -- 3D A8 1C 9B A7 2A 8C 87 D4 F6 A1 35 A2 89 06 6C
+        --------------------------------------------------------------------------------
         log.df("Start Background Loop: id: %d; message:\n%s", response.id, hexDump(response.data))
     end)
 
     mod.requestDeviceInfo(function(response)
+        --------------------------------------------------------------------------------
+        -- Example:
+        -- 3B 47 B9 65 23 4E 6D 81 3F 65 A0 AC F0 8E A1 7C
+        --------------------------------------------------------------------------------
         log.df("Device Info: id: %d; message:\n%s", response.id, hexDump(response.data))
     end)
 
@@ -390,19 +410,17 @@ local function triggerCallback(data)
     end
 end
 
--- WEBSOCKET EVENTS
+-- events -> table
+-- Constant
+-- A table containing functions triggered by websocket events.
 local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
     open = function()
-        mod._connected = true
-
-        -- Initialise the big screen:
         initaliseDevice()
-
         triggerCallback {
-            action = "open",
+            action = "websocket_open",
         }
     end,
 
@@ -410,10 +428,8 @@ local events = {
     -- WEBSOCKET CLOSED:
     --------------------------------------------------------------------------------
     closed = function()
-        mod._connected = false
-
         triggerCallback {
-            action = "closed",
+            action = "websocket_closed",
         }
     end,
 
@@ -421,10 +437,8 @@ local events = {
     -- WEBSOCKET FAILED:
     --------------------------------------------------------------------------------
     fail = function(message)
-        mod._connected = false
-
         triggerCallback({
-            action = "fail",
+            action = "websocket_fail",
             error = message,
         })
     end,
@@ -434,7 +448,7 @@ local events = {
     --------------------------------------------------------------------------------
     pong = function()
         triggerCallback {
-            action = "pong",
+            action = "websocket_pong",
         }
     end,
 
@@ -489,6 +503,9 @@ local events = {
 ---    * WHEEL_RELEASED - occurs when the wheel is released.
 ---    * SCREEN_PRESSED - occurs when the main screen is pressed.
 ---    * SCREEN_RELEASED - occurs when the main screen is released.
+---    * BUTTON_LED_CONFIRMATION - occurs when a button color changed has successfully occurred.
+---    * SCREEN_CONFIRMATION - occurs when a screen update has successfully occurred.
+---    * VIBRATE_CONFIRMATION - occurs when a vibration command has successfully occurred.
 mod.event = {
     BUTTON_PRESS = 0x0500,
     ENCODER_MOVE = 0x0501,
@@ -501,11 +518,12 @@ mod.event = {
     VIBRATE_CONFIRMATION = 0x041B,
 }
 
--- set of response handlers for device-generated events.
+--- hs.loupedeckct.responseHandler -> table
+--- Constant
+--- Set of response handlers for device-generated events.
 mod.responseHandler = {
-
     --------------------------------------------------------------------------------
-    -- Vibration Confirmation:
+    -- VIBRATION CONFIRMATION:
     --
     -- Example:
     -- 01
@@ -519,7 +537,7 @@ mod.responseHandler = {
     end,
 
     --------------------------------------------------------------------------------
-    -- Button Confirmation:
+    -- BUTTON CONFIRMATION:
     --
     -- No response data.
     --------------------------------------------------------------------------------
@@ -530,7 +548,7 @@ mod.responseHandler = {
     end,
 
     --------------------------------------------------------------------------------
-    -- Screen Confirmation:
+    -- SCREEN CONFIRMATION:
     --
     -- Example:
     -- 01
@@ -544,7 +562,7 @@ mod.responseHandler = {
     end,
 
     --------------------------------------------------------------------------------
-    -- Button Press/Release:
+    -- BUTTON PRESS/RELEASE:
     --
     -- Examples:
     -- 07 00        Down
@@ -570,7 +588,7 @@ mod.responseHandler = {
     end,
 
     --------------------------------------------------------------------------------
-    -- Encoder rotation:
+    -- ENCODER ROTATION:
     --
     -- Examples:
     -- 01 01    Right
@@ -596,70 +614,74 @@ mod.responseHandler = {
     end,
 
     --------------------------------------------------------------------------------
-    -- Big Wheel Pressed:
+    -- WHEEL PRESSED:
     --
     -- Example:
     -- 00 00 7E 00 76 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_PRESSED] = function(response)
-        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        local multitouch, x, y, unknown = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "wheel_pressed",
             x = x,
             y = y,
-            eventID = eventID, -- Always 0
             unknown = unknown, -- Always 0
+            multitouch = multitouch == 1,
         })
     end,
 
     --------------------------------------------------------------------------------
-    -- Big Wheel Released:
+    -- WHEEL RELEASED:
     --
     -- Example:
     -- 00 00 7B 00 94 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_RELEASED] = function(response)
-        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        local multitouch, x, y, unknown = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "wheel_released",
             x = x,
             y = y,
-            eventID = eventID, -- Always 0
             unknown = unknown, -- Always 0
+            multitouch = multitouch == 1,
         })
     end,
 
     --------------------------------------------------------------------------------
-    -- Screen Pressed:
+    -- SCREEN PRESSED:
     --
     -- Example:
     -- 00 01 C9 00 9A 27
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
-        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        local multitouch, x, y, pressure = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "screen_pressed",
             x = x,
             y = y,
-            eventID = eventID,
-            unknown = unknown, -- Always 0
+            pressure = pressure,
+            multitouch = multitouch,
         })
+        -- Vibrate if enabled:
+        if mod._vibrations then
+            mod.vibrate()
+        end
     end,
 
     --------------------------------------------------------------------------------
-    -- Screen Released:
+    -- SCREEN RELEASED:
     --
     -- Example:
     -- 00 01 BC 00 BE 25
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
-        local unknown, x, y, eventID = bytes.read(response.data, int8, int16be, int16be, int8)
+        local multitouch, x, y, pressure = bytes.read(response.data, int8, int16be, int16be, int8)
         triggerCallback({
             action = "screen_released",
             x = x,
             y = y,
-            eventID = eventID,
-            unknown = unknown, -- Always 0
+            pressure = pressure,
+            multitouch = multitouch,
         })
     end,
 }
@@ -688,10 +710,10 @@ end
 --- Kicks off the background listening loop on the device.
 ---
 --- Parameters:
---- * callbackFn - Optional function to call when the device responds, receiving a data table containing `id` and `message`.
+---  * callbackFn - Optional function to call when the device responds, receiving a data table containing `id` and `message`.
 ---
 --- Returns:
---- * `true` if the device is connected and the message was sent.
+---  * `true` if the device is connected and the message was sent.
 function mod.startBackgroundLoop(callbackFn)
     -- TODO: currently no idea what the trailing bytes represent. Possibly local data specific to the current machine?
     local echo = hexToBytes("3da81c9ba72a8c87d4f6a135a289066c")
@@ -734,7 +756,7 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`,
+---  * the `response` contains the `id`, `data`,
 function mod.requestFirmwareVersion(callbackFn)
     --------------------------------------------------------------------------------
     -- FIRMWARE VERSION:
@@ -765,7 +787,7 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, and `serialNumber`
+---  * the `response` contains the `id`, `data`, and `serialNumber`
 function mod.requestSerialNumber(callbackFn)
     return sendCommand(0x0303, callbackFn and function(response)
         response.serialNumber = response.data
@@ -784,7 +806,7 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, and `mcuid`
+---  * the `response` contains the `id`, `data`, and `mcuid`
 function mod.requestMCUID(callbackFn)
     return sendCommand(0x030D, callbackFn and function(response)
         response.mcuid = bytesToHex(response.data)
@@ -803,19 +825,101 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, and `selfTest`.
---- * The `selfTest` value is the `data` read as a 32-bit big-endian integer.
+---  * the `response` contains the `id`, `data`, and `selfTest`.
+---  * The `selfTest` value is the `data` read as a 32-bit big-endian integer.
 function mod.requestSelfTest(callbackFn)
     return sendCommand(0x0304, callbackFn and function(response)
+        --------------------------------------------------------------------------------
         -- Sending message (3): (3) 03-04-05
         -- Message sent (3): (3) 03-04-05
         -- Message received (7): (7) 07-04-05-BF-00-3F-00
         -- Self-tests: 0x003F00BF
-        -- for some reason, the result is read back in little-endian. Testing which way the OS works?
+        --
+        -- for some reason, the result is read back in little-endian.
+        -- Testing which way the OS works?
+        --------------------------------------------------------------------------------
         response.selfTest = bytes.read(response.data, bytes.int32le)
         callbackFn(response)
     end)
 end
+
+--- hs.loupedeckct.flashDrive(enabled[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to enable or disable the Flash Drive.
+---
+--- Parameters:
+---  * enabled - `true` to enable otherwise `false`
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
+function mod.flashDrive(enabled, callbackFn)
+    --------------------------------------------------------------------------------
+    -- ENABLE/DISABLE FLASH DRIVE:
+    --
+    -- Example:
+    -- 08-19-58-00-00-00-00-02
+    --------------------------------------------------------------------------------
+    return sendCommand(
+        0x0819,
+        callbackFn and function(response)
+            --------------------------------------------------------------------------------
+            -- FLASH DRIVE STATUS:
+            --
+            -- 00 00 00 00 03       flash disabled
+            -- 00 00 00 00 02       flash enabled
+            --------------------------------------------------------------------------------
+            local _,_,_,_,flashDriveEnabled  = bytes.read(response.data, int8, int8, int8, int8, int8)
+            response.flashDriveEnabled = flashDriveEnabled == 2
+            callbackFn(response)
+        end,
+        int8(0),
+        int8(0),
+        int8(0),
+        int8(0),
+        enabled and int8(0x02) or int8(0x03)
+    )
+end
+
+--function mod.vibraWaveformIndex()
+    --------------------------------------------------------------------------------
+    -- VIBRA WAVEFORM INDEX:
+    --
+    -- Message sent (8): (8) 08-19-55-02-03-00-09-19
+    -- Message received (8): (8) 08-19-55-02-03-00-09-19
+    -- Message 'SetDeviceVibraWaveformIndex' responded in 16 ms
+    -- WebSocket response (69) '{
+    --   "id": 15,
+    --   "name": "SetDeviceVibraWaveformIndex",
+    --   "data": 25
+    -- }'
+    --------------------------------------------------------------------------------
+--end
+
+--function mod.bluetooth()
+    --------------------------------------------------------------------------------
+    -- BLUETOOTH:
+    --
+    -- Message received (4): (4) 04-10-97-01
+    -- Message received (4): (4) 04-0F-98-01
+    -- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
+    -- Message 'IsBluetoothEnabled' responded in 0 ms
+    -- WebSocket response (63) '{
+    --   "id": 15,
+    --   "name": "IsBluetoothEnabled",
+    --   "data": false
+    -- }'
+    -- Message received (4): (4) 04-10-99-01
+    -- Message received (4): (4) 04-0F-9A-01
+    -- Message received (4): (4) 04-10-9B-01
+    -- Message received (4): (4) 04-0F-9C-01
+    -- Message received (4): (4) 04-10-9D-01
+    -- Message received (4): (4) 04-0F-9E-01
+    --------------------------------------------------------------------------------
+--end
 
 --- hs.loupedeckct.requestRegister(registerID[, callbackFn]) -> boolean
 --- Function
@@ -829,26 +933,46 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `registerID`, and `value`.
---- * the `registerID` should be the same value as the `registerID` parameter you passed in.
---- * the `value` value is the `data` read as a 32-bit big-endian integer.
---- * if requesting register `2`, it will also have the `backlightLevel` and `vibraWaveformIndex` values.
+---  * the `response` contains the `id`, `data`, `registerID`, and `value`.
+---  * the `registerID` should be the same value as the `registerID` parameter you passed in.
+---  * the `value` value is the `data` read as a 32-bit big-endian integer.
+---  * if requesting register `2`, it will also have the `backlightLevel` and `vibraWaveformIndex` values.
 function mod.requestRegister(registerID, callbackFn)
+    --------------------------------------------------------------------------------
     -- 04 1A 01 01
     -- ^     ^  ^
     -- ^     ^  register number
     -- ^     callback ID
     -- command ID
+    --------------------------------------------------------------------------------
     return sendCommand(
         0x041A,
         callbackFn and function(response)
             response.registerID, response.value = bytes.read(response.data, int8, int32be)
-
-            if registerID == 2 then
+            if registerID == 0 then
+                --------------------------------------------------------------------------------
+                -- FLASH DRIVE STATUS:
+                --
+                -- 00 00 00 00 03       flash disabled
+                -- 00 00 00 00 02       flash enabled
+                --------------------------------------------------------------------------------
+                local _,_,_,_,flashDriveEnabled  = bytes.read(response.data, int8, int8, int8, int8, int8)
+                response.flashDriveEnabled = flashDriveEnabled == 2
+            --elseif registerID == 1 then
+                --------------------------------------------------------------------------------
+                -- TODO: FIND OUT WHAT THIS IS:
+                --
+                -- 01 00 01 00 00
+                --------------------------------------------------------------------------------
+            elseif registerID == 2 then
+                --------------------------------------------------------------------------------
+                -- VIBRA WAVEFORM INDEX & BACKLIGHT LEVEL:
+                --
                 -- Message received (8): (8) 08-1A-09-02-03-00-09-19
                 -- Register 2: 0x03000919
                 -- Vibra waveform index: 25 (last byte)
                 -- Backlight level: 9 (second-last byte)
+                --------------------------------------------------------------------------------
                 response.backlightLevel, response.vibraWaveformIndex = bytes.read(response.data, 4, int8, int8)
             end
             callbackFn(response)
@@ -868,7 +992,7 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `wheelSensitivity`.
+---  * the `response` contains the `id`, `data`, `wheelSensitivity`.
 function mod.requestWheelSensitivity(callbackFn)
     return sendCommand(0x041E, callbackFn and function(response)
         response.wheelSensitivity = int8(response.data)
@@ -887,8 +1011,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.resetDevice(callbackFn)
     return sendCommand(
         0x0409,
@@ -905,9 +1029,9 @@ end
 --- The set of screens available: `left`, `right`, `middle`, and `wheel`.
 ---
 --- Notes:
---- * each screen has an `id`, a `width`, and a `height` value.
---- * the `id` is how the Loupedeck CT identifies the screen.
---- * the `width` and `height` are in pixels.
+---  * each screen has an `id`, a `width`, and a `height` value.
+---  * the `id` is how the Loupedeck CT identifies the screen.
+---  * the `width` and `height` are in pixels.
 mod.screens = {
     left = {
         id = 0x004C,
@@ -940,8 +1064,8 @@ mod.screens = {
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.refreshScreen(screen, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 050F XX 004C
@@ -974,8 +1098,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E (00) FFFF FFFF ....
@@ -1059,8 +1183,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.updateScreenColor(screen, color, frame, callbackFn)
     frame = frame or {}
     return mod.updateScreenImage(
@@ -1120,8 +1244,8 @@ mod.buttonID = {
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.buttonColor(buttonID, color, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 07 02 FA 00 00 00 00
@@ -1156,8 +1280,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
---- * the `response` contains the `id`, `data`, `success`.
---- * the `success` value is a boolean, `true` or `false`.
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
 function mod.vibrate(callbackFn)
     -- Sending message (4): (4) 04-1B-6B-19
     -- Message sent (4): (4) 04-1B-6B-19
@@ -1181,56 +1305,90 @@ function mod.vibrate(callbackFn)
     )
 end
 
---- hs.loupedeckct.connect() -> boolean, errorMessage
---- Function
---- Connects to a Loupedeck CT.
----
---- Parameters:
----  * None
----
---- Returns:
----  * success - `true` on success, otherwise `nil`
----  * errorMessage - The error messages as a string or `nil` if `success` is `true`.
-function mod.connect()
-    local ip = findIPAddress()
-    if not ip then
-        return false, "Failed to find Loupedeck Network Interface."
-    end
-
-    local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to websocket: %s", url)
-    mod._websocket = websocket.new(url, websocketCallback)
-end
-
---- hs.loupedeckct.autoConnect(enabled) -> None
---- Function
---- Automatically connect to the Loupedeck CT when connected.
----
---- Parameters:
----  * enabled - `true` or `false`
----
---- Returns:
----  * None
-function mod.autoConnect(enabled)
+local function updateWatcher(enabled)
     if enabled then
-        mod._usbWatcher = usb.watcher.new(function(data)
-            if data.productName == "LOUPEDECK device" then
-                if data.eventType == "added" then
-                    log.df("Loupedeck CT Connected")
-                    timer.doAfter(2, function()
-                        mod.connect()
-                    end)
-                elseif data.eventType == "removed" then
-                    log.df("Loupedeck CT Disconnected")
+        log.df("Setting up USB watcher")
+        if not mod._usbWatcher then
+            mod._usbWatcher = usb.watcher.new(function(data)
+                if data.productName == "LOUPEDECK device" then
+                    if data.eventType == "added" then
+                        log.df("Loupedeck CT Connected")
+                        doAfter(4, function()
+                            mod.connect(true)
+                        end)
+                    elseif data.eventType == "removed" then
+                        log.df("Loupedeck CT Disconnected")
+                    end
                 end
-            end
-        end):start()
+            end):start()
+        end
     else
+        log.df("Destroying USB watcher")
         if mod._usbWatcher then
             mod._usbWatcher:stop()
             mod._usbWatcher = nil
         end
     end
+end
+
+--- hs.loupedeckct.vibrations(enabled) -> boolean
+--- Function
+--- Gets or sets vibrations on button presses.
+---
+--- Parameters:
+---  * enabled - An optional boolean which sets whether or not vibrations are enabled
+---
+--- Returns:
+---  * `true` if enabled, otherwise `false`
+function mod.vibrations(enabled)
+    if type(enabled) ~= nil then
+        mod._vibrations = enabled == true or false
+    end
+    return mod._vibrations
+end
+
+--- hs.loupedeckct.connect(retry) -> boolean, errorMessage
+--- Function
+--- Connects to a Loupedeck CT.
+---
+--- Parameters:
+---  * retry - `true` if you want to keep trying to connect, otherwise `false`
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * The callback with an action of "failed_to_find_device" will trigger
+---    if the device cannot be connected to.
+function mod.connect(retry)
+    --------------------------------------------------------------------------------
+    -- Setup retry watchers:
+    --------------------------------------------------------------------------------
+    updateWatcher(retry)
+
+    --------------------------------------------------------------------------------
+    -- Find the Loupedeck CT Device:
+    --------------------------------------------------------------------------------
+    log.df("Trying to find device...")
+    local ip = findIPAddress()
+    if not ip then
+        triggerCallback {
+            action = "failed_to_find_device",
+        }
+        if retry then
+            doAfter(2, function()
+                mod.connect(true)
+            end)
+        end
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Attempt to connect:
+    --------------------------------------------------------------------------------
+    local url = "ws://" .. ip .. ":80/"
+    log.df("Connecting to websocket: %s", url)
+    mod._websocket = websocket.new(url, websocketCallback)
 end
 
 --- hs.loupedeckct.disconnect() -> none
@@ -1246,6 +1404,9 @@ function mod.disconnect()
     if mod._websocket then
         mod._websocket:close()
         mod._websocket = nil
+
+        -- Destroy any watchers:
+        updateWatcher()
     end
 end
 
