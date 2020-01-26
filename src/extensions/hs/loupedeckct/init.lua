@@ -843,6 +843,11 @@ mod.screens = {
     wheel = {
         id = 0x0057,
         width = 240, height = 240,
+        prepareImage = function(_, imageBytes)
+            -- TODO: This is the current workaround for the wheel screen.
+            --       Why we need this... I have no idea.
+            return int8(0) .. imageBytes:sub(1, -28)
+        end,
     },
 }
 
@@ -909,11 +914,8 @@ function mod.updateScreenImage(screen, imageBytes, callbackFn)
         imageBytes = imageBytes:getLoupedeckArray()
     end
 
-    -- TODO: This is the current workaround for the wheel screen.
-    --       Why we need this... I have no idea.
-    if screen.id == mod.screens.wheel.id then
-        imageBytes = int8(0) .. imageBytes
-        imageBytes = imageBytes:sub(1, -28)
+    if screen.prepareImage then
+        imageBytes = screen:prepareImage(imageBytes)
     end
 
     local imageSuccess = false
