@@ -367,7 +367,7 @@ local function initaliseDevice()
 
 end
 
---- hs.loupedeckct.callback() -> boolean
+--- hs.loupedeckct.callback([callbackFn]) -> boolean
 --- Function
 --- Sets a callback when new messages are received.
 ---
@@ -483,8 +483,8 @@ local events = {
                     log.ef("Error executing callback for %04x: %s", response.id, res)
                     return
                 end
-            else
-                log.ef("Unsupported command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
+            elseif not mod.ignoreResponses[id] then
+                log.df("Unexpected command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
                 return
             end
         end
@@ -503,9 +503,6 @@ local events = {
 ---    * WHEEL_RELEASED - occurs when the wheel is released.
 ---    * SCREEN_PRESSED - occurs when the main screen is pressed.
 ---    * SCREEN_RELEASED - occurs when the main screen is released.
----    * BUTTON_LED_CONFIRMATION - occurs when a button color changed has successfully occurred.
----    * SCREEN_CONFIRMATION - occurs when a screen update has successfully occurred.
----    * VIBRATE_CONFIRMATION - occurs when a vibration command has successfully occurred.
 mod.event = {
     BUTTON_PRESS = 0x0500,
     ENCODER_MOVE = 0x0501,
@@ -518,49 +515,16 @@ mod.event = {
     VIBRATE_CONFIRMATION = 0x041B,
 }
 
+mod.ignoreResponses = {
+    0x0302 = true, -- Button Color confirmation
+    0x040F = true, -- Screen Image Update confirmation
+    0x041B = true, -- Vibration confirmation
+}
+
 --- hs.loupedeckct.responseHandler -> table
 --- Constant
 --- Set of response handlers for device-generated events.
 mod.responseHandler = {
-    --------------------------------------------------------------------------------
-    -- VIBRATION CONFIRMATION:
-    --
-    -- Example:
-    -- 01
-    --------------------------------------------------------------------------------
-    [mod.event.VIBRATE_CONFIRMATION] = function(response)
-        local success = bytes(response.data):read(int8)
-        triggerCallback {
-            action = "vibrate_confirmation",
-            success = success == 1,
-        }
-    end,
-
-    --------------------------------------------------------------------------------
-    -- BUTTON CONFIRMATION:
-    --
-    -- No response data.
-    --------------------------------------------------------------------------------
-    [mod.event.BUTTON_LED_CONFIRMATION] = function()
-        triggerCallback {
-            action = "button_led_confirmation",
-        }
-    end,
-
-    --------------------------------------------------------------------------------
-    -- SCREEN CONFIRMATION:
-    --
-    -- Example:
-    -- 01
-    --------------------------------------------------------------------------------
-    [mod.event.SCREEN_CONFIRMATION] = function(response)
-        local success = bytes(response.data):read(int8)
-        triggerCallback {
-            action = "screen_confirmation",
-            success = success == 1,
-        }
-    end,
-
     --------------------------------------------------------------------------------
     -- BUTTON PRESS/RELEASE:
     --
@@ -572,19 +536,15 @@ mod.responseHandler = {
         local id, dirByte = bytes(response.data):read(int8, int8)
         local direction
         if dirByte == 0x00 then
-            direction = "down"
+            response.direction = "down"
         elseif dirByte == 0x01 then
-            direction = "up"
+            response.direction = "up"
         else
             log.ef("Invalid Button Direction: %02x", dirByte)
+            return
         end
-        if direction then
-            triggerCallback {
-                action = "button_press",
-                id = id,
-                direction = direction,
-            }
-        end
+        response.buttonID = id
+        triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -596,21 +556,17 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
         local id, dirByte = bytes.read(response.data, int8, int8)
-        local direction
+        local directionf
         if dirByte == 0xFF then
-            direction = "left"
+            response.direction = "left"
         elseif dirByte == 0x01 then
-            direction = "right"
+            response.direction = "right"
         else
             log.ef("Invalid Encoder Direction: %02x", dirByte)
+            return
         end
-        if direction then
-            triggerCallback({
-                action = "encoder_step",
-                id = id,
-                direction = direction,
-            })
-        end
+        response.buttonID = id
+        triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -620,14 +576,9 @@ mod.responseHandler = {
     -- 00 00 7E 00 76 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_PRESSED] = function(response)
-        local multitouch, x, y, unknown = bytes.read(response.data, int8, int16be, int16be, int8)
-        triggerCallback({
-            action = "wheel_pressed",
-            x = x,
-            y = y,
-            unknown = unknown, -- Always 0
-            multitouch = multitouch == 1,
-        })
+        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch = response.multitouch == 0x01
+        triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -637,14 +588,9 @@ mod.responseHandler = {
     -- 00 00 7B 00 94 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_RELEASED] = function(response)
-        local multitouch, x, y, unknown = bytes.read(response.data, int8, int16be, int16be, int8)
-        triggerCallback({
-            action = "wheel_released",
-            x = x,
-            y = y,
-            unknown = unknown, -- Always 0
-            multitouch = multitouch == 1,
-        })
+        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch = response.multitouch == 0x01
+        triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -654,14 +600,9 @@ mod.responseHandler = {
     -- 00 01 C9 00 9A 27
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
-        local multitouch, x, y, pressure = bytes.read(response.data, int8, int16be, int16be, int8)
-        triggerCallback({
-            action = "screen_pressed",
-            x = x,
-            y = y,
-            pressure = pressure,
-            multitouch = multitouch,
-        })
+        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch = response.multitouch == 0x01
+        triggerCallback(response)
         -- Vibrate if enabled:
         if mod._vibrations then
             mod.vibrate()
@@ -675,14 +616,8 @@ mod.responseHandler = {
     -- 00 01 BC 00 BE 25
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
-        local multitouch, x, y, pressure = bytes.read(response.data, int8, int16be, int16be, int8)
-        triggerCallback({
-            action = "screen_released",
-            x = x,
-            y = y,
-            pressure = pressure,
-            multitouch = multitouch,
-        })
+        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+        triggerCallback(response)
     end,
 }
 
