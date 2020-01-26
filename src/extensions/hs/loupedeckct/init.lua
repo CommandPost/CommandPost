@@ -9,6 +9,7 @@ local log               = require "hs.logger".new("loupedeckct")
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
 local hsmath            = require "hs.math"
+local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
 local timer             = require "hs.timer"
@@ -21,6 +22,7 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
+local imageFromPath     = image.imageFromPath
 local randomFromRange   = hsmath.randomFromRange
 
 local bytesToHex        = bytes.bytesToHex
@@ -521,7 +523,7 @@ mod.responseHandler = {
     --
     -- No response data.
     --------------------------------------------------------------------------------
-    [mod.event.BUTTON_LED_CONFIRMATION] = function(response)
+    [mod.event.BUTTON_LED_CONFIRMATION] = function()
         triggerCallback {
             action = "button_led_confirmation",
         }
@@ -922,9 +924,7 @@ mod.screens = {
     wheel = {
         id = 0x0057,
         width = 240, height = 240,
-        prepareImage = function(_, imageBytes)
-            return int8(0x0) .. imageBytes
-        end,
+        circular = true,
     },
 }
 
@@ -1001,10 +1001,6 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
         imageBytes = imageBytes:getLoupedeckArray()
     end
 
-    if screen.prepareImage then
-        imageBytes = screen:prepareImage(imageBytes)
-    end
-
     local imageSuccess = false
 
     if sendCommand(
@@ -1017,6 +1013,7 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
         int16be(frame.y or 0),
         int16be(frame.w or screen.width),
         int16be(frame.h or screen.height),
+        screen.circular and int8(0) or "",
         imageBytes
     ) then
         return mod.refreshScreen(screen, callbackFn and function(response)
@@ -1263,53 +1260,62 @@ end
 function mod.test()
     doAfter(0, function()
         local color = drawing.color.hammerspoon.red
-        for id, button in pairs(mod.buttonID) do
+        for _, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color)
         end
-        for id, screen in pairs(mod.screens) do
+        for _, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color)
         end
     end)
-    doAfter(5, function()
+    doAfter(2, function()
         local color = drawing.color.hammerspoon.green
-        for id, button in pairs(mod.buttonID) do
+        for _, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color)
         end
-        for id, screen in pairs(mod.screens) do
+        for _, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color)
         end
     end)
-    doAfter(10, function()
+    doAfter(4, function()
         local color = drawing.color.hammerspoon.blue
-        for id, button in pairs(mod.buttonID) do
+        for _, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color)
         end
-        for id, screen in pairs(mod.screens) do
+        for _, screen in pairs(mod.screens) do
             mod.updateScreenColor(screen, color)
         end
     end)
-    doAfter(15, function()
+    doAfter(6, function()
         local color = drawing.color.hammerspoon.black
-        for id, button in pairs(mod.buttonID) do
+        for _, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color)
         end
         mod.updateScreenColor(mod.screens.left, color)
         mod.updateScreenColor(mod.screens.right, color)
 
-        mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/middle.png"))
-        mod.updateScreenImage(mod.screens.wheel, hs.image.imageFromPath(cp.config.assetsPath .. "/wheel.png"))
+        mod.updateScreenImage(mod.screens.middle, imageFromPath(cp.config.assetsPath .. "/middle.png"))
+        mod.updateScreenImage(mod.screens.wheel, imageFromPath(cp.config.assetsPath .. "/wheel.png"))
     end)
-    doAfter(20, function()
+    doAfter(8, function()
         local color = drawing.color.hammerspoon.red
-        for id, button in pairs(mod.buttonID) do
+        for _, button in pairs(mod.buttonID) do
             mod.buttonColor(button, color)
         end
         mod.updateScreenColor(mod.screens.left, color)
         mod.updateScreenColor(mod.screens.right, color)
         for x=0, 3 do
             for y=0, 2 do
-                mod.updateScreenImage(mod.screens.middle, hs.image.imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90})
+                mod.updateScreenImage(mod.screens.middle, imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90})
             end
+        end
+    end)
+    doAfter(10, function()
+        local color = drawing.color.hammerspoon.black
+        for _, button in pairs(mod.buttonID) do
+            mod.buttonColor(button, color)
+        end
+        for _, screen in pairs(mod.screens) do
+            mod.updateScreenColor(screen, color)
         end
     end)
 end
