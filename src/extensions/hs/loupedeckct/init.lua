@@ -296,73 +296,19 @@ end
 -- Returns:
 --  * None
 local function initaliseDevice()
-    mod.startBackgroundLoop(function(response)
-        --------------------------------------------------------------------------------
-        -- Example:
-        -- 3D A8 1C 9B A7 2A 8C 87 D4 F6 A1 35 A2 89 06 6C
-        --------------------------------------------------------------------------------
-        log.df("Start Background Loop: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-    mod.requestDeviceInfo(function(response)
-        --------------------------------------------------------------------------------
-        -- Example:
-        -- 3B 47 B9 65 23 4E 6D 81 3F 65 A0 AC F0 8E A1 7C
-        --------------------------------------------------------------------------------
-        log.df("Device Info: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-    mod.requestSerialNumber(function(response)
-        log.df("Serial Number: %s", response.serialNumber)
-    end)
-
-    mod.requestMCUID(function(response)
-        log.df("MCU ID: %s", response.mcuid)
-    end)
-
-    mod.requestSelfTest(function(response)
-        log.df("Self-Test: %08X", response.selfTest)
-    end)
-
-    mod.requestRegister(0, function(response)
-        log.df("Register 0 value: %08X", response.value)
-    end)
-
-    mod.requestRegister(1, function(response)
-        log.df("Register 1 value: %08X", response.value)
-    end)
-
-    mod.requestRegister(2, function(response)
-        log.df("Register 2 value: %08X", response.value)
-        log.df("Vibra waveform index: %d", response.vibraWaveformIndex)
-        log.df("Backlight level: %d", response.backlightLevel)
-
-        mod._vibraWaveformIndex = response.vibraWaveformIndex
-        mod._backlightLevel = response.backlightLevel
-    end)
-
-    mod.requestWheelSensitivity(0, function(data)
-        log.df("Wheel Sensitivity: id: %04x; data: %s", data.command, utf8.hexDump(data.message))
-    end)
-
-    mod.resetDevice(function(data)
-        log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
-    end)
+    -- This must be executed before writing to the main Touch Screen:
+    mod.resetDevice()
 
     -- Reset all the buttons to black:
     local black = 0x000000
     for _,id in pairs(mod.buttonID) do
-        mod.buttonColor(id, black, function(response)
-            log.df("Button %d set to black: %s", id, tostring(response.success))
-        end)
+        mod.buttonColor(id, black)
     end
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
     for id, screen in pairs(mod.screens) do
-        mod.updateScreenColor(screen, b, nil, function()
-            log.df("Screen %s set to black.", id)
-        end)
+        mod.updateScreenColor(screen, b)
     end
 
 end
@@ -510,9 +456,6 @@ mod.event = {
     WHEEL_RELEASED = 0x0972,
     SCREEN_PRESSED = 0x094D,
     SCREEN_RELEASED = 0x096D,
-    BUTTON_LED_CONFIRMATION = 0x0302,
-    SCREEN_CONFIRMATION = 0x040F,
-    VIBRATE_CONFIRMATION = 0x041B,
 }
 
 mod.ignoreResponses = {
@@ -1236,7 +1179,7 @@ function mod.vibrate(callbackFn)
             response.success = int8(response.data) == 0x01
             callbackFn(response)
         end,
-        int8(mod._vibraWaveformIndex)
+        int8(0x19)
     )
 end
 
@@ -1355,6 +1298,67 @@ end
 --- Returns:
 ---  * None
 function mod.test()
+
+    mod.startBackgroundLoop(function(response)
+        --------------------------------------------------------------------------------
+        -- BACKGROUND LOOP
+        --
+        -- Example:
+        -- 3D A8 1C 9B A7 2A 8C 87 D4 F6 A1 35 A2 89 06 6C
+        --------------------------------------------------------------------------------
+
+        -- TODO: Work out what all this data is.
+
+        log.df("Start Background Loop: id: %d; message:\n%s", response.id, hexDump(response.data))
+    end)
+
+    mod.requestDeviceInfo(function(response)
+        --------------------------------------------------------------------------------
+        -- Example:
+        -- 3B 47 B9 65 23 4E 6D 81 3F 65 A0 AC F0 8E A1 7C
+        --------------------------------------------------------------------------------
+
+        -- TODO: Work out what all this data is.
+
+        log.df("Device Info: id: %d; message:\n%s", response.id, hexDump(response.data))
+    end)
+
+
+    mod.requestSerialNumber(function(response)
+        log.df("Serial Number: %s", response.serialNumber)
+    end)
+
+    mod.requestMCUID(function(response)
+        log.df("MCU ID: %s", response.mcuid)
+    end)
+
+    mod.requestSelfTest(function(response)
+        log.df("Self-Test: %08X", response.selfTest)
+    end)
+
+
+    mod.requestRegister(0, function(response)
+        log.df("Register 0 value: %08X", response.value)
+    end)
+
+    mod.requestRegister(1, function(response)
+        log.df("Register 1 value: %08X", response.value)
+    end)
+
+    mod.requestRegister(2, function(response)
+        log.df("Register 2 value: %08X", response.value)
+        log.df("Vibra waveform index: %d", response.vibraWaveformIndex)
+        log.df("Backlight level: %d", response.backlightLevel)
+    end)
+
+    mod.requestWheelSensitivity(0, function(data)
+        log.df("Wheel Sensitivity: id: %04x; data: %s", data.command, utf8.hexDump(data.message))
+    end)
+
+    mod.resetDevice(function(data)
+        log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
+    end)
+
     doAfter(0, function()
         local color = drawing.color.hammerspoon.red
         for _, button in pairs(mod.buttonID) do

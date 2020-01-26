@@ -1,6 +1,6 @@
---- === plugins.core.loupedeck.prefs ===
+--- === plugins.core.loupedeckplus.prefs ===
 ---
---- Loupedeck Preferences Panel
+--- Loupedeck+ Preferences Panel
 
 local require = require
 
@@ -27,27 +27,27 @@ local mod = {}
 --- The default MIDI controls, so that the user has a starting point.
 mod.DEFAULT_CONTROLS = default
 
---- plugins.core.loupedeck.prefs.lastGroup <cp.prop: string>
+--- plugins.core.loupedeckplus.prefs.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("loupedeck.preferences.lastGroup", nil)
 
---- plugins.core.loupedeck.prefs.lastNote <cp.prop: string>
+--- plugins.core.loupedeckplus.prefs.lastNote <cp.prop: string>
 --- Field
 --- Last note used in the Preferences panel.
 mod.lastNote = config.prop("loupedeck.preferences.lastNote", "95")
 
---- plugins.core.loupedeck.prefs.lastIsButton <cp.prop: boolean>
+--- plugins.core.loupedeckplus.prefs.lastIsButton <cp.prop: boolean>
 --- Field
 --- Whether or not the last selected item in the Preferences was a button.
 mod.lastIsButton = config.prop("loupedeck.preferences.lastIsButton", true)
 
---- plugins.core.loupedeck.prefs.lastLabel <cp.prop: string>
+--- plugins.core.loupedeckplus.prefs.lastLabel <cp.prop: string>
 --- Field
 --- Last label used in the Preferences panel.
 mod.lastLabel = config.prop("loupedeck.preferences.lastLabel", "Undo")
 
---- plugins.core.loupedeck.prefs.updateAction(button, group, actionTitle, handlerID, action) -> none
+--- plugins.core.loupedeckplus.prefs.updateAction(button, group, actionTitle, handlerID, action) -> none
 --- Function
 --- Updates a Loupedeck action.
 ---
@@ -463,7 +463,7 @@ local function loupedeckPanelCallback(id, params)
     end
 end
 
--- plugins.core.loupedeck.prefs._displayBooleanToString(value) -> none
+-- plugins.core.loupedeckplus.prefs._displayBooleanToString(value) -> none
 -- Function
 -- Converts a boolean to a string for use in the CSS block style value.
 --
@@ -480,7 +480,7 @@ function mod._displayBooleanToString(value)
     end
 end
 
---- plugins.core.loupedeck.prefs.init(deps, env) -> module
+--- plugins.core.loupedeckplus.prefs.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
 ---
@@ -515,9 +515,9 @@ function mod.init(deps, env)
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033,
         id              = panelID,
-        label           = "Loupedeck",
+        label           = i18n("loupedeckPlus"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
-        tooltip         = "Loupedeck",
+        tooltip         = i18n("loupedeckPlus"),
         height          = 720,
     })
         :addHeading(6, "Loupedeck+")
@@ -564,7 +564,7 @@ function mod.init(deps, env)
 end
 
 local plugin = {
-    id              = "core.loupedeck.prefs",
+    id              = "core.loupedeckplus.prefs",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]        = "manager",
