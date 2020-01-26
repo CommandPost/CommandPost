@@ -12,15 +12,46 @@
 ---
 --- For example:
 ---
-
--- TODO: Review this example, and make sure it actually works:
-
 --- ```lua
---- local bytes = require "hs.bytes"
---- local data = [[\0\1\2\3\4\5]]
+--- bytes = require "hs.bytes"
+--- data = "\0\1\2\3\4\5"
 --- local a, b, c, d = bytes.read(data, bytes.int8, bytes.int16be, bytes.int8, bytes.int16le)
---- print(string.format("a: %02X; b: %04X; c: %%02X, d: %04X)) -- a: 00; b: 0102; c: 03; d: 0504
+--- print(string.format("a: %02X; b: %04X; c: %02X, d: %04X", a, b, c, d)) -- a: 00; b: 0102; c: 03; d: 0504
 --- ```
+---
+--- Each of the values after `data` is a "conversion function". Basically, the function should receive two arguments - the data string and an offset
+--- - and return two values - the converted value and the index for the next byte in the string to read.
+---
+--- For example, let's say that we're sending a date as 3 bytes: 1 for the year after 2000 (eg, 2020 would be `20`), 1 each for month then day. You could write that like so:
+---
+--- ```lua
+--- local function date(data, index)
+---     local year, month, day = date:byte(index), date:byte(index+1), date:byte(index+2)
+---     return {year = 2000+year, month = month, day = day}, index+3
+--- end
+--- ```
+---
+--- The date `table` will be added to the list of values returned, and the `index+3` will be passed on to the next conversion function as its `index`.
+---
+--- There are several "type conversion" functions available, including [int8](#int8), [int16be](#int16be), [exactly](#exactly), and [remainder](#remainder).
+--- Many of these will convert in both directions - that is, if you pass `int8` a `number`, it will return a `string`, and if you pass it a `string`, it will return a `number` and the `offset` for the next character.
+---
+--- You can also read from a `bytes` instance if you prefer. This can be useful if you are combining multiple data streams before reading. For example:
+---
+--- ```lua
+--- bytes = require "hs.bytes"
+--- chunk1 = "\0\1"
+--- chunk2 = "\2\3\4\5"
+--- local a, b, c, d = bytes(chunk1, chunk2):read(bytes.int8, bytes.int16be, bytes.int8, bytes.int16le)
+--- print(string.format("a: %02X; b: %04X; c: %02X, d: %04X", a, b, c, d)) -- a: 00; b: 0102; c: 03; d: 0504
+--- ```
+---
+--- If dealing
+---
+--- ## Writing
+---
+--- You can concatenate `string`s using the syntax `a .. b`, which is fine for short string values. But concatenating multiple larger values
+--- can be both memory and processor intensive, since each `..` creates a new string value in memory.
 
 --local log           = require "hs.logger".new("bytes")
 
@@ -451,7 +482,9 @@ end
 -- Returns:
 -- * four 8-bit numbers, highest to lowest significance.
 local function writeInt32be(value)
-    return writeInt16be(value >> 16), writeInt16be(value)
+    local h1, h2 = writeInt16be(value >> 16)
+    local l1, l2 = writeInt16be(value)
+    return h1, h2, l1, l2
 end
 
 -- writeInt32le(value) -> number, number, number, number
@@ -464,7 +497,9 @@ end
 -- Returns:
 -- * four 8-bit numbers, lowest to highest significance.
 local function writeInt32le(value)
-    return writeInt16le(value), writeInt16le(value >> 16)
+    local l1, l2 = writeInt16be(value)
+    local h1, h2 = writeInt16be(value >> 16)
+    return l2, l1, h2, h1
 end
 
 -- writeInt64be(value) -> number, number, number, number, number, number, number, number
@@ -477,7 +512,9 @@ end
 -- Returns:
 -- * eight 8-bit numbers, highest to lowest significance.
 local function writeInt64be(value)
-    return writeInt32be(value >> 32), writeInt32be(value)
+    local h1, h2, h3, h4 = writeInt32be(value >> 32)
+    local l1, l2, l3, l4 = writeInt32be(value)
+    return h1, h2, h3, h4, l1, l2, l3, l4
 end
 
 -- writeInt64le(value) -> number, number, number, number, number, number, number, number
@@ -490,7 +527,9 @@ end
 -- Returns:
 -- * eight 8-bit numbers, lowest to highest significance.
 local function writeInt64le(value)
-    return writeInt32le(value), writeInt32le(value >> 32)
+    local l1, l2, l3, l4 = writeInt32be(value)
+    local h1, h2, h3, h4 = writeInt32be(value >> 32)
+    return l4, l3, l2, l1, h4, h3, h2, h1
 end
 
 -- intMask(bits) -> number

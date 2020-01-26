@@ -21,7 +21,7 @@ return describe "hs.bytes" {
     },
 
     context "int8" {
-        it "returns ${output:q} when given `${value:02X}`"
+        it "returns ${output:q} when given `0x${value:02X}`"
         :doing(function(this)
             local output = bytes.int8(this.value)
             expect(output):is(this.output)
@@ -63,20 +63,20 @@ return describe "hs.bytes" {
     },
 
     context "int16be" {
-        it "returns ${output:q} when given `${value:02X}`"
+        it "returns ${output:q} when given `0x${value:02X}`"
         :doing(function(this)
             local output = bytes.int16be(this.value)
             expect(output):is(this.output)
         end)
         :where {
             { "value",  "output"    },
-            { 0x00,     "\0\0"      },
-            { 0xFF,     "\0\255"    },
-            { 0x12,     "\0\18"     },
+            { 0x0000,   "\0\0"      },
+            { 0x00FF,   "\0\255"    },
+            { 0x0102,   "\01\02"    },
             { 0xFFFF,   "\255\255"  },
         },
 
-        it "fails when given a number larger than 0xFF"
+        it "fails when given a number larger than 0xFFFF"
         :doing(function(this)
             this:expectAbort("value is larger than 16 bits: 0xFFFFF")
             bytes.int16be(0xFFFFF)
@@ -102,6 +102,213 @@ return describe "hs.bytes" {
             this:expectAbort("need 1 bytes but only 0 are available from index 2")
             -- NOTE: this currently fails due to a bug in cp.spec, not bytes
             bytes.int16be("12", 2)
+        end),
+    },
+
+    context "int16le" {
+        it "returns ${output:q} when given `0x${value:02X}`"
+        :doing(function(this)
+            local output = bytes.int16le(this.value)
+            expect(output):is(this.output)
+        end)
+        :where {
+            { "value",  "output"    },
+            { 0x0000,   "\0\0"      },
+            { 0x00FF,   "\255\0"    },
+            { 0x0102,   "\02\01"    },
+            { 0xFFFF,   "\255\255"  },
+        },
+
+        it "fails when given a number larger than 0xFFFF"
+        :doing(function(this)
+            this:expectAbort("value is larger than 16 bits: 0xFFFFF")
+            bytes.int16le(0xFFFFF)
+        end),
+
+        it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
+        :doing(function(this)
+            local output, offset = bytes.int16le(this.value, this.index)
+            expect(output):is(this.output)
+            expect(offset):is(this.offset)
+        end)
+        :where {
+            { "value",      "index",    "output",   "offset",   },
+            { "\1\0",       nil,        0x01,       3,          },
+            { "\255\255",   nil,        0xFFFF,     3,          },
+            { "\1\2\3",     nil,        0x0201,     3,          },
+            { "\1\2\3",     1,          0x0201,     3,          },
+            { "\1\2\3",     2,          0x0302,     4,          },
+        },
+
+        it "fails when the index is larger than the length of the data"
+        :doing(function(this)
+            this:expectAbort("need 1 bytes but only 0 are available from index 2")
+            -- NOTE: this currently fails due to a bug in cp.spec, not bytes
+            bytes.int16le("12", 2)
+        end),
+    },
+
+    context "int32be" {
+        it "returns ${output:q} when given `0x${value:04X}`"
+        :doing(function(this)
+            local output = bytes.int32be(this.value)
+            expect(output):is(this.output)
+        end)
+        :where {
+            { "value",      "output"            },
+            { 0x00,         "\0\0\0\0"          },
+            { 0xFF,         "\0\0\0\255"        },
+            { 0x0102,       "\0\0\1\2"          },
+            { 0xFFFFFFFF,   "\255\255\255\255"  },
+        },
+
+        it "fails when given a number larger than 0xFFFFFFFF"
+        :doing(function(this)
+            this:expectAbort("value is larger than 32 bits: 0xFFFFFFFFF")
+            bytes.int32be(0xFFFFFFFFF)
+        end),
+
+        it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
+        :doing(function(this)
+            local output, offset = bytes.int32be(this.value, this.index)
+            expect(output):is(this.output)
+            expect(offset):is(this.offset)
+        end)
+        :where {
+            { "value",              "index",    "output",       "offset",   },
+            { "\0\0\0\0",           nil,        0x00,           5,          },
+            { "\0\0\0\1",           nil,        0x01,           5,          },
+            { "\255\255\255\255",   nil,        0xFFFFFFFF,     5,          },
+            { "\1\2\3\4\5\6",       nil,        0x01020304,     5,          },
+            { "\1\2\3\4\5\6",       1,          0x01020304,     5,          },
+            { "\1\2\3\4\5\6",       3,          0x03040506,     7,          },
+        },
+
+        it "fails when the index is larger than the length of the data"
+        :doing(function(this)
+            this:expectAbort("need 1 bytes but only 0 are available from index 2")
+            -- NOTE: this currently fails due to a bug in cp.spec, not bytes
+            bytes.int32be("1234", 2)
+        end),
+    },
+
+    context "int32le" {
+        it "returns ${output:q} when given `0x${value:04X}`"
+        :doing(function(this)
+            local output = bytes.int32le(this.value)
+            expect(output):is(this.output)
+        end)
+        :where {
+            { "value",      "output"            },
+            { 0x00,         "\0\0\0\0"          },
+            { 0xFF,         "\255\0\0\0"        },
+            { 0x0102,       "\2\1\0\0"          },
+            { 0xFFFFFFFF,   "\255\255\255\255"  },
+        },
+
+        it "fails when given a number larger than 0xFFFFFFFF"
+        :doing(function(this)
+            this:expectAbort("value is larger than 32 bits: 0xFFFFFFFFF")
+            bytes.int32le(0xFFFFFFFFF)
+        end),
+
+        it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
+        :doing(function(this)
+            local output, offset = bytes.int32le(this.value, this.index)
+            expect(output):is(this.output)
+            expect(offset):is(this.offset)
+        end)
+        :where {
+            { "value",              "index",    "output",       "offset",   },
+            { "\0\0\0\0",           nil,        0x00000000,     5,          },
+            { "\0\0\0\1",           nil,        0x01000000,     5,          },
+            { "\255\255\255\255",   nil,        0xFFFFFFFF,     5,          },
+            { "\1\2\3\4\5\6",       nil,        0x04030201,     5,          },
+            { "\1\2\3\4\5\6",       1,          0x04030201,     5,          },
+            { "\1\2\3\4\5\6",       3,          0x06050403,     7,          },
+        },
+
+        it "fails when the index is larger than the length of the data"
+        :doing(function(this)
+            this:expectAbort("need 4 bytes but only 3 are available from index 2")
+            -- NOTE: this currently fails due to a bug in cp.spec, not bytes
+            bytes.int32le("1234", 2)
+        end),
+    },
+
+    context "int64be" {
+        it "returns ${output:q} when given `${value:04X}`"
+        :doing(function(this)
+            local output = bytes.int64be(this.value)
+            expect(output):is(this.output)
+        end)
+        :where {
+            { "value",              "output"                            },
+            { 0x00,                 "\0\0\0\0\0\0\0\0"                  },
+            { 0x00FF00FF,           "\0\0\0\0\0\255\0\255"              },
+            { 0x0102,               "\0\0\0\0\0\0\1\2"                  },
+            { 0xFFFFFFFFFFFFFFFF,   "\255\255\255\255\255\255\255\255"  },
+        },
+
+        it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
+        :doing(function(this)
+            local output, offset = bytes.int64be(this.value, this.index)
+            expect(output):is(this.output)
+            expect(offset):is(this.offset)
+        end)
+        :where {
+            { "value",                              "index",    "output",           "offset",   },
+            { "\0\0\0\0\0\0\0\0",                   nil,        0x00,               9,          },
+            { "\0\0\0\0\0\0\0\1",                   nil,        0x01,               9,          },
+            { "\255\255\255\255\255\255\255\255",   nil,        0xFFFFFFFFFFFFFFFF, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              nil,        0x0102030405060708, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              1,          0x0102030405060708, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              3,          0x030405060708090A, 11,         },
+        },
+
+        it "fails when the index is larger than the length of the data"
+        :doing(function(this)
+            this:expectAbort("need 8 bytes but only 3 are available from index 2")
+            -- NOTE: this currently fails due to a bug in cp.spec, not bytes
+            bytes.int64be("12345678", 2)
+        end),
+    },
+
+    context "int64le" {
+        it "returns ${output:q} when given `${value:08X}`"
+        :doing(function(this)
+            local output = bytes.int64le(this.value)
+            expect(output):is(this.output)
+        end)
+        :where {
+            { "value",              "output"                            },
+            { 0x00,                 "\0\0\0\0\0\0\0\0"                  },
+            { 0x0000000000FF00FF,   "\255\0\255\0\0\0\0\0"              },
+            { 0x0000000000000102,   "\2\1\0\0\0\0\0\0"                  },
+            { 0xFFFFFFFFFFFFFFFF,   "\255\255\255\255\255\255\255\255"  },
+        },
+
+        it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
+        :doing(function(this)
+            local output, offset = bytes.int64le(this.value, this.index)
+            expect(output):is(this.output)
+            expect(offset):is(this.offset)
+        end)
+        :where {
+            { "value",                              "index",    "output",           "offset",   },
+            { "\0\0\0\0\0\0\0\0",                   nil,        0x00,               9,          },
+            { "\1\0\0\0\0\0\0\0",                   nil,        0x01,               9,          },
+            { "\255\255\255\255\255\255\255\255",   nil,        0xFFFFFFFFFFFFFFFF, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              nil,        0x0807060504030201, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              1,          0x0807060504030201, 9,          },
+            { "\1\2\3\4\5\6\7\8\9\10",              3,          0x0A09080706050403, 11,         },
+        },
+
+        it "fails when the index is larger than the length of the data"
+        :doing(function(this)
+            this:expectAbort("need 8 bytes but only 3 are available from index 2")
+            -- NOTE: this currently fails due to a bug in cp.spec, not bytes
+            bytes.int64le("12345678", 2)
         end),
     },
 
