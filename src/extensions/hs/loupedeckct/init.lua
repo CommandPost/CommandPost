@@ -918,7 +918,7 @@ end
 --- Notes:
 --- * the `response` contains the `id`, `data`, `success`.
 --- * the `success` value is a boolean, `true` or `false`.
-function mod.(screen, imageBytes, frame, callbackFn)
+function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
     --          ^    ^  ^    ^     ^     ^    ^    ^
