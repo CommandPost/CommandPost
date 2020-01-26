@@ -12,6 +12,7 @@ local inspect       = require "hs.inspect"
 
 local commands      = require "cp.commands"
 local config        = require "cp.config"
+local ct            = require "hs.loupedeckct"
 local i18n          = require "cp.i18n"
 local tools         = require "cp.tools"
 
@@ -21,6 +22,24 @@ local default       = require "default"
 local webviewAlert  = dialog.webviewAlert
 
 local mod = {}
+
+ct.callback(function(data)
+    print(string.format("data: %s", hs.inspect(data)))
+end)
+
+mod.vibrations = config.prop("loupedeckct.vibrations", true):watch(function(enabled)
+    ct.vibrations(enabled)
+end)
+
+mod.enabled = config.prop("loupedeckct.enabled", true):watch(function(enabled)
+    if enabled then
+        log.df("Connecting to Loupedeck CT")
+        ct.connect(true)
+    else
+        log.df("Disconnecting from Loupedeck CT")
+        ct.disconnect()
+    end
+end)
 
 --- plugins.core.midi.manager.DEFAULT_CONTROLS -> table
 --- Constant
@@ -574,6 +593,7 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+	mod.enabled:update()
     return mod.init(deps, env)
 end
 

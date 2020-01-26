@@ -458,10 +458,14 @@ mod.event = {
     SCREEN_RELEASED = 0x096D,
 }
 
+--- hs.loupedeckct.ignoreResponses -> table
+--- Constant
+--- A table of responses to ignore.
 mod.ignoreResponses = {
-    0x0302 = true, -- Button Color confirmation
-    0x040F = true, -- Screen Image Update confirmation
-    0x041B = true, -- Vibration confirmation
+    [0x0302] = true, -- Button Color confirmation
+    [0x040F] = true, -- Screen Image Update confirmation
+    [0x041B] = true, -- Vibration confirmation
+    [0x0409] = true, -- Reset Device
 }
 
 --- hs.loupedeckct.responseHandler -> table
@@ -499,7 +503,7 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
         local id, dirByte = bytes.read(response.data, int8, int8)
-        local directionf
+        local direction
         if dirByte == 0xFF then
             response.direction = "left"
         elseif dirByte == 0x01 then
@@ -544,7 +548,6 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
-        response.multitouch = response.multitouch == 0x01
         triggerCallback(response)
         -- Vibrate if enabled:
         if mod._vibrations then
