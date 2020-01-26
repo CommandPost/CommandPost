@@ -1,0 +1,255 @@
+.loupedeckDropdown {
+	width: 180px;
+	float: left;
+}
+
+.loupedeck {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.loupedeck td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.loupedeckButtonLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 190px;
+}
+
+.loupedeckLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
+.loupedeckRowAction {
+	width: 240px;
+}
+.loupedeckRowActionButton {
+	width: 50px;
+}
+.loupedeckRowDevice {
+	width: 120px;
+}
+loupedeckRowType {
+	width: 120px;
+}
+.loupedeckRowNumber {
+	width: 70px;
+}
+.loupedeckRowChannel {
+	width: 70px;
+}
+
+.loupedeckRowValue {
+	width: 75px;
+}
+.loupedeckRowLearn {
+	width: 120px;
+}
+
+.loupedeck thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.loupedeck thead tr, .loupedeck tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.loupedeck thead tr {
+	width: calc( 100% - 8px);
+}
+
+.loupedeck tbody {
+	display:block;
+	height: 65px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.loupedeck tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+
+.openAudioLoupedeckSetup {
+	margin: 0px 0px 5px;
+	float: left;
+	width: 180px;
+}
+
+.refreshLoupedeck {
+	margin: 0px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.applyTopDeviceToAll {
+	margin: 10px 0px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.loupedeckResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: right;
+	float: right;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.loupedeckControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+
+.loupedeckActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 230px;
+}
+
+.loupedeckActionButton {
+	padding: 5px 5px !important;
+}
+
+#loupedeckController {
+	font-weight: bold;
+}
+
+#loupedeckGroupControls {
+	/* min-height: 295px; */
+}
+
+#loupedeckGroupControls .loupedeckGroup {
+	display: none;
+}
+
+#loupedeckGroupControls .loupedeckGroup.selected {
+	display: block;
+}
+
+.loupedeckGroupSelect {
+	float: right;
+}
+
+/* ICON DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 50px;
+  margin: 7.5px auto;
+  text-align: center;
+  width: 50px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 2.5px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  border-radius: 2.5px;
+  vertical-align: middle;
+  max-width: 95%;
+  max-height: 95%;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

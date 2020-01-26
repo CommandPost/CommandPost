@@ -1,4 +1,4 @@
---- === plugins.core.loupedeck.banks ===
+--- === plugins.core.loupedeckplus.banks ===
 ---
 --- Loupedeck+ Bank Actions.
 
@@ -10,7 +10,7 @@ local i18n                  = require "cp.i18n"
 local displayNotification   = dialog.displayNotification
 
 local plugin = {
-    id              = "core.loupedeck.banks",
+    id              = "core.loupedeckplus.banks",
     group           = "core",
     dependencies    = {
         ["core.midi.manager"]   = "manager",
