@@ -978,9 +978,10 @@ end
 --- * the `success` value is a boolean, `true` or `false`.
 function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     --------------------------------------------------------------------------------
-    -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E FFFF FFFF ....
-    --          ^    ^  ^    ^     ^     ^    ^    ^
-    --          ^    ^  ^    ^     ^     ^    ^    16-bit pixel values
+    -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E (00) FFFF FFFF ....
+    --          ^    ^  ^    ^     ^     ^    ^    ^    ^
+    --          ^    ^  ^    ^     ^     ^    ^    ^    16-bit pixel values
+    --          ^    ^  ^    ^     ^     ^    ^    Unknown, only present for circular displays.
     --          ^    ^  ^    ^     ^     ^    height (pixels)
     --          ^    ^  ^    ^     ^     width (pixels)
     --          ^    ^  ^    ^     y offset (pixels)
