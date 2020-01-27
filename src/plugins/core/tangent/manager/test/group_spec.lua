@@ -14,10 +14,6 @@ return describe "group" {
     :doing(function()
         local o = group "Foo"
 
-        log.df("o: %s", inspect(o, {depth = 2}))
-
-        log.df("o.class__declaredMethods: %s", inspect(o.class.class__declaredMethods, {depth = 2}))
-
         expect(o):isNot(nil)
         expect(o:name()):is "Foo"
     end),

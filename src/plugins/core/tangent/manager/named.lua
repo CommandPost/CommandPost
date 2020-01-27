@@ -197,13 +197,14 @@ end
 function named:xml()
     return x(function()
         local result = x()
-        local names = getNames(self)
 
+        local theName = makeStringTangentFriendly(self:name())
+        if theName then
+            result(x.Name(theName))
+        end
+
+        local names = getNames(self)
         if names then
-            local theName = makeStringTangentFriendly(self:name())
-            if theName then
-                result(x.Name(theName))
-            end
             for i,v in pairs(names) do
                 if type(i) == "number" and v then
                     theName = makeStringTangentFriendly(v)
