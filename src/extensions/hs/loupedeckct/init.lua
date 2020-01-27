@@ -307,7 +307,7 @@ local function initaliseDevice()
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
-    for id, screen in pairs(mod.screens) do
+    for _, screen in pairs(mod.screens) do
         mod.updateScreenColor(screen, b)
     end
 
@@ -481,7 +481,6 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.BUTTON_PRESS] = function(response)
         local id, dirByte = bytes(response.data):read(int8, int8)
-        local direction
         if dirByte == 0x00 then
             response.direction = "down"
         elseif dirByte == 0x01 then
