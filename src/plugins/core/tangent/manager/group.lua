@@ -297,12 +297,12 @@ end
 --- Returns:
 ---  * The `xml` for the Group.
 function group:xml()
-    return x.Group { name=self._name } (
+    return x.Group { name=self:name() } (
         function()
             local result = x()
 
             if self._groups then
-                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b]._name > t[a]._name end) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
@@ -322,7 +322,7 @@ function group:xml()
                 end
             end
             if self._bindings then
-                for _,v in tools.spairs(self._bindings, function(t,a,b) return t[b].name > t[a].name end) do
+                for _,v in tools.spairs(self._bindings, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
