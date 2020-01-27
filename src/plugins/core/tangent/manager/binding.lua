@@ -25,8 +25,21 @@ local binding = class "core.tangent.manager.binding"
 --- Returns:
 --- * the new `binding`.
 function binding:initialize(name)
-    self.name = name
+    self._name = name
     self._members = {}
+end
+
+--- plugins.core.tangent.manager.binding:name() -> string
+--- Method
+--- Returns the `name` of this binding.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---  * The name.
+function binding:name()
+    return self._name
 end
 
 --- plugins.core.tangent.manager.binding:member(parameter) -> self
@@ -71,7 +84,7 @@ end
 --- Returns:
 --- * The `xml` for the Binding.
 function binding:xml()
-    return x.Binding { name=self.name } (
+    return x.Binding { name = self:name() } (
         function()
             local result = x()
             for _,member in ipairs(self._members) do

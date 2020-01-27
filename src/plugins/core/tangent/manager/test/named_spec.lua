@@ -38,7 +38,7 @@ return describe "named" {
 
         expect(o:active()):is(false)
 
-        local bar = o:named(0x04, "Bar")
+        local bar = named(0x04, "Bar", o)
         expect(bar:enabled()):is(true)
         expect(bar:active()):is(false)
 

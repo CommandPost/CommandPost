@@ -1,5 +1,5 @@
--- local log		= require("hs.logger").new("t_binding")
--- local inspect	= require("hs.inspect")
+local log		= require("hs.logger").new("t_binding")
+local inspect	= require("hs.inspect")
 
 local require = require
 
@@ -14,16 +14,28 @@ return describe "group" {
     :doing(function()
         local o = group "Foo"
 
+        log.df("o: %s", inspect(o, {depth = 2}))
+
+        log.df("o.class__declaredMethods: %s", inspect(o.class.class__declaredMethods, {depth = 2}))
+
         expect(o):isNot(nil)
-        expect(o.name):is "Foo"
+        expect(o:name()):is "Foo"
+    end),
+
+    it "is constructed with no name"
+    :doing(function(this)
+        this:expectAbort("Group names cannot be empty")
+        group:new()
     end),
 
     it "has a parameter"
     :doing(function()
         local o = group "Foo"
+        expect(tostring(o:xml())):is [[<Group name="Foo"></Group>]]
+
         o:parameter(0x01):name "Bar"
 
-        expect(o.name):is "Foo"
+        expect(o:name()):is "Foo"
         expect(tostring(o:xml())):is [[<Group name="Foo"><Parameter id="0x00000001"><Name>Bar</Name></Parameter></Group>]]
     end),
 
@@ -32,7 +44,7 @@ return describe "group" {
         local o = group("Foo")
         o:group "Bar"
 
-        expect(o.name):is "Foo"
+        expect(o:name()):is "Foo"
 
         expect(tostring(o:xml())):is [[<Group name="Foo"><Group name="Bar"></Group></Group>]]
     end),

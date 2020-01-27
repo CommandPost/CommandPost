@@ -3,6 +3,8 @@
 --- Represents a Tangent Group. Groups can also be used to enable/disable multiple
 --- Parameters/Actions/Menus by enabling/disabling the containing group.
 
+local log               = require "hs.logger" .new "group"
+
 local require = require
 
 local class             = require "middleclass"
@@ -31,12 +33,12 @@ local group = class "core.tangent.manager.group" :include(lazy)
 ---  * name      - The name of the group.
 ---  * parent    - The parent group.
 ---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
-function group:initialized(name, parent, localActive)
+function group:initialize(name, parent, localActive)
     if is.blank(name) then
         error("Group names cannot be empty")
     end
 
-    self.name = name
+    self._name = name
     self._parent = parent
     self._localActive = localActive
 end
@@ -75,6 +77,19 @@ end
 ---  * `true` if it is a `group`, `false` otherwise.
 function group.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(group)
+end
+
+--- plugin.core.tangent.manager.group:name() -> string
+--- Method
+--- Returns the `name` given to the group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The name.
+function group:name()
+    return self._name
 end
 
 --- plugins.core.tangent.manager.group:parent() -> group | controls
@@ -282,12 +297,12 @@ end
 --- Returns:
 ---  * The `xml` for the Group.
 function group:xml()
-    return x.Group { name=self.name } (
+    return x.Group { name=self._name } (
         function()
             local result = x()
 
             if self._groups then
-                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b].name > t[a].name end) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b]._name > t[a]._name end) do
                     result = result .. v:xml()
                 end
             end
@@ -318,7 +333,7 @@ function group:xml()
 end
 
 function group:__tostring()
-    return format("group: %s", self.name)
+    return format("group: %s", self._name)
 end
 
 return group
