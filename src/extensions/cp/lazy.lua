@@ -115,7 +115,7 @@ local function _initLazyStatics(klass, superLazy)
     local function checkKey(key)
         for k,v in pairs(lzy) do
             if rawget(v, key) then
-                error(format("There is already a lazy %s value factory for %q", k, key))
+                error(format("There is already a lazy %s factory for %q", k, key))
             end
         end
     end
@@ -160,7 +160,7 @@ end
 -- * The value or `function`, depending on the factory type.
 local function _getLazyResults(instance, name)
     local klass = instance.class
-    local lzy = instance and klass.lazy
+    local lzy = klass and klass.lazy
     local value
     if lzy.value[name] then
         value = lzy.value[name](instance, name)
@@ -190,10 +190,10 @@ end
 -- Creates a wrapper function around the previous `__index` metatable function which adds lazy lookups.
 --
 -- Parameters:
--- * prevIndex  - The previous `__index` function or table.
+--  * prevIndex  - The previous `__index` function or table.
 --
 -- Returns:
--- * The new `__index` `function`.
+--  * The new `__index` `function`.
 local function _getNewInstanceIndex(prevIndex)
     if type(prevIndex) == 'function' then
         return function(instance, name) return prevIndex(instance, name) or _getLazyResults(instance, name) end
@@ -211,12 +211,32 @@ local function _modifyInstanceIndex(klass)
     klass.__instanceDict.__index = _getNewInstanceIndex(klass.__instanceDict.__index)
 end
 
+-- _modifyInstanceNewindes(klass)
+-- Function
+-- Updates the `__newindex` function to wrap any declarations of `__index`.
+--
+-- Parameters:
+--  * klass     - The middlclass `class` instance to modify.
+local function _modifyInstanceNewindex(klass)
+    local mt = getmetatable(klass)
+    local oldNewindex = mt.__newindex
+    mt.__newindex = function(aClass, name, f)
+        if name == "__index" then
+            f = _getNewInstanceIndex(f)
+        end
+        oldNewindex(aClass, name, f)
+    end
+end
+
 -- _newSublassMethod(prevSubclass) -> function
 -- Function
 -- Creates a wrapper function to replace the existing `subclass` method to pass on lazy configurations.
 --
 -- Parameters:
--- * prevSubclass       - The previous `subclass` function/method
+--  * prevSubclass       - The previous `subclass` function/method
+--
+-- Returns:
+--  * The new subclass `function`
 local function _getNewSubclassMethod(prevSubclass)
     return function(klass, name)
         local subclass = prevSubclass(klass, name)
@@ -237,6 +257,7 @@ end
 function lazy:included(klass) -- luacheck: ignore
     _initLazyStatics(klass)
     _modifyInstanceIndex(klass)
+    _modifyInstanceNewindex(klass)
     _modifySubclassMethod(klass)
 end
 
