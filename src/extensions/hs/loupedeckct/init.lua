@@ -1295,7 +1295,6 @@ end
 
 local function updateWatcher(enabled)
     if enabled then
-        log.df("Setting up USB watcher")
         if not mod._usbWatcher then
             mod._usbWatcher = usb.watcher.new(function(data)
                 if data.productName == "LOUPEDECK device" then
@@ -1311,7 +1310,6 @@ local function updateWatcher(enabled)
             end):start()
         end
     else
-        log.df("Destroying USB watcher")
         if mod._usbWatcher then
             mod._usbWatcher:stop()
             mod._usbWatcher = nil
@@ -1357,12 +1355,8 @@ function mod.connect(retry)
     --------------------------------------------------------------------------------
     -- Find the Loupedeck CT Device:
     --------------------------------------------------------------------------------
-    log.df("Trying to find device...")
     local ip = findIPAddress()
     if not ip then
-        triggerCallback {
-            action = "failed_to_find_device",
-        }
         if retry then
             doAfter(2, function()
                 mod.connect(true)
@@ -1375,7 +1369,7 @@ function mod.connect(retry)
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to websocket: %s", url)
+    log.df("Connecting to Loupedeck CT: %s", url)
     mod._websocket = websocket.new(url, websocketCallback)
 end
 
@@ -1396,139 +1390,6 @@ function mod.disconnect()
         -- Destroy any watchers:
         updateWatcher()
     end
-end
-
---- hs.loupedeckct.test() -> none
---- Function
---- Sends data to all the screens and buttons for testing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.test()
-
-    mod.startBackgroundLoop(function(response)
-        --------------------------------------------------------------------------------
-        -- BACKGROUND LOOP
-        --
-        -- Example:
-        -- 3D A8 1C 9B A7 2A 8C 87 D4 F6 A1 35 A2 89 06 6C
-        --------------------------------------------------------------------------------
-
-        -- TODO: Work out what all this data is.
-
-        log.df("Start Background Loop: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-    mod.requestDeviceInfo(function(response)
-        --------------------------------------------------------------------------------
-        -- Example:
-        -- 3B 47 B9 65 23 4E 6D 81 3F 65 A0 AC F0 8E A1 7C
-        --------------------------------------------------------------------------------
-
-        -- TODO: Work out what all this data is.
-
-        log.df("Device Info: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-
-    mod.requestSerialNumber(function(response)
-        log.df("Serial Number: %s", response.serialNumber)
-    end)
-
-    mod.requestMCUID(function(response)
-        log.df("MCU ID: %s", response.mcuid)
-    end)
-
-    mod.requestSelfTest(function(response)
-        log.df("Self-Test: %08X", response.selfTest)
-    end)
-
-
-    mod.requestRegister(0, function(response)
-        log.df("Register 0 value: %08X", response.value)
-    end)
-
-    mod.requestRegister(1, function(response)
-        log.df("Register 1 value: %08X", response.value)
-    end)
-
-    mod.requestRegister(2, function(response)
-        log.df("Register 2 value: %08X", response.value)
-        log.df("Vibra waveform index: %d", response.vibraWaveformIndex)
-        log.df("Backlight level: %d", response.backlightLevel)
-    end)
-
-    mod.requestWheelSensitivity(0, function(data)
-        log.df("Wheel Sensitivity: id: %04x; data: %s", data.command, utf8.hexDump(data.message))
-    end)
-
-    mod.resetDevice(function(data)
-        log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
-    end)
-
-    doAfter(0, function()
-        local color = drawing.color.hammerspoon.red
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        for _, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(2, function()
-        local color = drawing.color.hammerspoon.green
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        for _, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(4, function()
-        local color = drawing.color.hammerspoon.blue
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        for _, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(6, function()
-        local color = drawing.color.hammerspoon.black
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        mod.updateScreenColor(mod.screens.left, color)
-        mod.updateScreenColor(mod.screens.right, color)
-
-        mod.updateScreenImage(mod.screens.middle, imageFromPath(cp.config.assetsPath .. "/middle.png"))
-        mod.updateScreenImage(mod.screens.wheel, imageFromPath(cp.config.assetsPath .. "/wheel.png"))
-    end)
-    doAfter(8, function()
-        local color = drawing.color.hammerspoon.red
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        mod.updateScreenColor(mod.screens.left, color)
-        mod.updateScreenColor(mod.screens.right, color)
-        for x=0, 3 do
-            for y=0, 2 do
-                mod.updateScreenImage(mod.screens.middle, imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90})
-            end
-        end
-    end)
-    doAfter(10, function()
-        local color = drawing.color.hammerspoon.black
-        for _, button in pairs(mod.buttonID) do
-            mod.buttonColor(button, color)
-        end
-        for _, screen in pairs(mod.screens) do
-            mod.updateScreenColor(screen, color)
-        end
-    end)
 end
 
 return mod
