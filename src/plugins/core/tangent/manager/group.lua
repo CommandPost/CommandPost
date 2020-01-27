@@ -3,7 +3,7 @@
 --- Represents a Tangent Group. Groups can also be used to enable/disable multiple
 --- Parameters/Actions/Menus by enabling/disabling the containing group.
 
-local log               = require "hs.logger" .new "group"
+-- local log               = require "hs.logger" .new "group"
 
 local require = require
 

@@ -106,7 +106,7 @@ return describe "hs.bytes" {
 
     context "bytes:write" {
         it "doesn't concatenate until bytes are retrieved"
-        :doing(function(this)
+        :doing(function()
             local data = bytes()
 
             data:write("one", "two", "three")

@@ -1,5 +1,5 @@
-local log		= require("hs.logger").new("t_binding")
-local inspect	= require("hs.inspect")
+-- local log		= require("hs.logger").new("t_group")
+-- local inspect	= require("hs.inspect")
 
 local require = require
 
