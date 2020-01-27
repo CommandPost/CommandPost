@@ -503,7 +503,6 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
         local id, dirByte = bytes.read(response.data, int8, int8)
-        local direction
         if dirByte == 0xFF then
             response.direction = "left"
         elseif dirByte == 0x01 then
@@ -724,47 +723,6 @@ function mod.requestSelfTest(callbackFn)
     end)
 end
 
---- hs.loupedeckct.flashDrive(enabled[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to enable or disable the Flash Drive.
----
---- Parameters:
----  * enabled - `true` to enable otherwise `false`
----  * callbackFn - (optional) Function called with a `response` table as the first parameter
----
---- Returns:
----  * `true` if the device is connected and the message was sent.
----
---- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.flashDrive(enabled, callbackFn)
-    --------------------------------------------------------------------------------
-    -- ENABLE/DISABLE FLASH DRIVE:
-    --
-    -- Example:
-    -- 08-19-58-00-00-00-00-02
-    --------------------------------------------------------------------------------
-    return sendCommand(
-        0x0819,
-        callbackFn and function(response)
-            --------------------------------------------------------------------------------
-            -- FLASH DRIVE STATUS:
-            --
-            -- 00 00 00 00 03       flash disabled
-            -- 00 00 00 00 02       flash enabled
-            --------------------------------------------------------------------------------
-            local _,_,_,_,flashDriveEnabled  = bytes.read(response.data, int8, int8, int8, int8, int8)
-            response.flashDriveEnabled = flashDriveEnabled == 2
-            callbackFn(response)
-        end,
-        int8(0),
-        int8(0),
-        int8(0),
-        int8(0),
-        enabled and int8(0x02) or int8(0x03)
-    )
-end
-
 --function mod.vibraWaveformIndex()
     --------------------------------------------------------------------------------
     -- VIBRA WAVEFORM INDEX:
@@ -802,6 +760,51 @@ end
     --------------------------------------------------------------------------------
 --end
 
+-- function processRegisterResponse(response) -> nil
+-- function
+-- Receives the raw value of a register and interprets it, adding properties to the `response` table.
+--
+-- Parameters:
+--  * response - the response from the websocket call.
+--
+-- Returns:
+--  * the updated `response` table.
+--
+-- Notes:
+--  * Adds `flashDriveEnabled` for register `0` responses.
+--  * Adds `vibraWaveformIndex` and `backlightLevel` for register `2` responses.
+local function processRegisterResponse(response)
+    response.registerID, response.value = bytes.read(response.data, int8, int32be)
+    if response.registerID == 0 then
+        --------------------------------------------------------------------------------
+        -- 00 00 00 00 03       flash disabled
+        -- ^  ^        ^
+        -- ^  ^        flash status (03 disabled/02 enabled)
+        -- ^  unknown
+        -- register id
+        --------------------------------------------------------------------------------
+        response.flashDriveEnabled = (response.value & 0x01) ~= 0x01
+    --elseif registerID == 1 then
+        --------------------------------------------------------------------------------
+        -- TODO: FIND OUT WHAT THIS IS:
+        --
+        -- 01 00 01 00 00
+        --------------------------------------------------------------------------------
+    elseif response.registerID == 2 then
+        --------------------------------------------------------------------------------
+        -- 03 00 09 19
+        -- ^  ^  ^  ^
+        -- ^  ^  ^  vibra waveform index: 25 (0x19)
+        -- ^  ^  backlight level: 9 (0x09)
+        -- ^  unknown
+        -- unknown
+        --------------------------------------------------------------------------------
+        response.vibraWaveformIndex = response.value & 0xFF
+        response.backlightLevel = (response.value >> 8) & 0xFF
+    end
+    return response
+end
+
 --- hs.loupedeckct.requestRegister(registerID[, callbackFn]) -> boolean
 --- Function
 --- Sends a request to the Loupedeck CT asking it to send the specified register number.
@@ -829,37 +832,142 @@ function mod.requestRegister(registerID, callbackFn)
     return sendCommand(
         0x041A,
         callbackFn and function(response)
-            response.registerID, response.value = bytes.read(response.data, int8, int32be)
-            if registerID == 0 then
-                --------------------------------------------------------------------------------
-                -- FLASH DRIVE STATUS:
-                --
-                -- 00 00 00 00 03       flash disabled
-                -- 00 00 00 00 02       flash enabled
-                --------------------------------------------------------------------------------
-                local _,_,_,_,flashDriveEnabled  = bytes.read(response.data, int8, int8, int8, int8, int8)
-                response.flashDriveEnabled = flashDriveEnabled == 2
-            --elseif registerID == 1 then
-                --------------------------------------------------------------------------------
-                -- TODO: FIND OUT WHAT THIS IS:
-                --
-                -- 01 00 01 00 00
-                --------------------------------------------------------------------------------
-            elseif registerID == 2 then
-                --------------------------------------------------------------------------------
-                -- VIBRA WAVEFORM INDEX & BACKLIGHT LEVEL:
-                --
-                -- Message received (8): (8) 08-1A-09-02-03-00-09-19
-                -- Register 2: 0x03000919
-                -- Vibra waveform index: 25 (last byte)
-                -- Backlight level: 9 (second-last byte)
-                --------------------------------------------------------------------------------
-                response.backlightLevel, response.vibraWaveformIndex = bytes.read(response.data, 4, int8, int8)
-            end
+            processRegisterResponse(response)
             callbackFn(response)
         end,
         int8(registerID)
     )
+end
+
+--- hs.loupedeckct.updateRegister(registerID, value[, callbackFn]) -> boolean
+--- Function
+--- Sends a new value to the Loupedeck CT for the specified register value.
+---
+--- Parameters:
+---  * registerID - The register to update (0/1/2)
+---  * value      - a 32-bit integer value for the register
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
+function mod.updateRegister(registerID, value, callbackFn)
+    if registerID < 0 or registerID > 2 then
+        error(format("expected registerID of 0/1/2 but got %d", registerID), 2)
+    end
+    if type(value) ~= "number" then
+        error(format("expected value to be a number, but was %s", type(value)))
+    end
+    --------------------------------------------------------------------------------
+    -- UPDATE REGISTER 0/1/2:
+    --
+    -- Example:
+    -- 08 19 58 00 00 00 00 02
+    -- ^     ^  ^  ^
+    -- ^     ^  ^  new int32be value for the register
+    -- ^     ^  the register number (0/1/2)
+    -- ^     the callback ID
+    -- the command ID
+    --------------------------------------------------------------------------------
+    return sendCommand(
+        0x0819,
+        callbackFn and function(response)
+            processRegisterResponse(response)
+            callbackFn(response)
+        end,
+        int8(registerID),
+        int32be(value)
+    )
+end
+
+--- hs.loupedeckct.updateFlashDrive(enabled[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to enable or disable the Flash Drive.
+---
+--- Parameters:
+---  * enabled - `true` to enable otherwise `false`
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
+function mod.updateFlashDrive(enabled, callbackFn)
+    --------------------------------------------------------------------------------
+    -- FLASH DRIVE STATUS:
+    --
+    -- 00 00 00 00 03       flash disabled
+    -- 00 00 00 00 02       flash enabled
+    --
+    -- Note: best guess is that the last bit (0x01) is the flash enabled/disabled value
+    -- while the second last bit (0x02) is for something else.
+    --------------------------------------------------------------------------------
+
+    return mod.requestRegister(0, function(response)
+        processRegisterResponse(response)
+        if response.flashDriveEnabled ~= enabled then
+            local value = response.value
+            value = enabled and (value - 0x01) or (value + 0x01)
+            mod.updateRegister(0, value, callbackFn)
+        elseif callbackFn then
+            callbackFn(response)
+        end
+    end)
+end
+
+--- hs.loupedeckct.updateVibraWaveformIndex(value[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to update the Vibra waveform index.
+---
+--- Parameters:
+---  * value - an 8-bit number with the new vibra waveform index.
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
+function mod.updateVibraWaveformIndex(value, callbackFn)
+    return mod.requestRegister(2, function(response)
+        processRegisterResponse(response)
+        if response.vibraWaveformIndex ~= value then
+            local mask = 0xFFFFFF00
+            local newValue = (response.value & mask) + value
+            mod.updateRegister(2, newValue, callbackFn)
+        elseif callbackFn then
+            callbackFn(response)
+        end
+    end)
+end
+
+--- hs.loupedeckct.updateBacklightLevel(value[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to update the Vibra waveform index.
+---
+--- Parameters:
+---  * value - an 8-bit number with the new backlight level.
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
+function mod.updateBacklightLevel(value, callbackFn)
+    return mod.requestRegister(2, function(response)
+        processRegisterResponse(response)
+        if response.backlightLevel ~= value then
+            local mask = 0xFFFF00FF
+            local newValue = (response.value & mask) + (value << 8)
+            mod.updateRegister(2, newValue, callbackFn)
+        elseif callbackFn then
+            callbackFn(response)
+        end
+    end)
 end
 
 --- hs.loupedeckct.requestWheelSensitivity([callbackFn]) -> boolean
