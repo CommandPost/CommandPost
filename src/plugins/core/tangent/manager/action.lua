@@ -73,8 +73,8 @@ end
 --- Returns:
 --- * The `parameter` instance.
 function action:onPress(pressFn)
-    if is.nt.callable(pressFn) then
-        error(format("Please provide a function: %s", type(pressFn)))
+    if pressFn and is.nt.callable(pressFn) then
+        error(format("Please provide a function: %s", type(pressFn)), 2)
     end
     self._press = pressFn
     return self
@@ -108,8 +108,8 @@ end
 --- Returns:
 --- * The `parameter` instance.
 function action:onRelease(releaseFn)
-    if is.nt.fn(releaseFn) then
-        error("Please provide a function: %s", type(releaseFn))
+    if releaseFn and is.nt.fn(releaseFn) then
+        error(format("Please provide a function: %s", type(releaseFn)), 2)
     end
     self._release = releaseFn
     return self
