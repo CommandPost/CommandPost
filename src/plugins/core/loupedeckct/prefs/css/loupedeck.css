@@ -1,3 +1,16 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
 .loupedeckDropdown {
 	width: 180px;
 	float: left;
@@ -100,7 +113,7 @@ loupedeckRowType {
 
 .loupedeck tbody {
 	display:block;
-	height: 65px;
+	/* height: 65px; */
 	font-weight: normal;
 	font-size: 10px;
 	width: 100%;
@@ -109,10 +122,12 @@ loupedeckRowType {
 	overflow-y: scroll;
 }
 
+/*
 .loupedeck tbody tr:hover {
 	background-color: #006dd4;
 	color: white;
 }
+*/
 
 .openAudioLoupedeckSetup {
 	margin: 0px 0px 5px;
@@ -178,7 +193,7 @@ loupedeckRowType {
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 230px;
+	width: 186px;
 }
 
 .loupedeckActionButton {
@@ -214,7 +229,7 @@ loupedeckRowType {
   color: white;
   font: bold 12px/50px arial;
   height: 50px;
-  margin: 7.5px auto;
+  /* margin: 7.5px auto; */
   text-align: center;
   width: 50px;
 }

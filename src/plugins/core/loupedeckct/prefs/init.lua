@@ -12,6 +12,8 @@ local inspect       = require "hs.inspect"
 
 local commands      = require "cp.commands"
 local config        = require "cp.config"
+local json          = require "cp.json"
+
 
 local i18n          = require "cp.i18n"
 local tools         = require "cp.tools"
@@ -23,89 +25,38 @@ local webviewAlert  = dialog.webviewAlert
 
 local mod = {}
 
---- plugins.core.midi.manager.DEFAULT_CONTROLS -> table
---- Constant
---- The default MIDI controls, so that the user has a starting point.
-mod.DEFAULT_CONTROLS = default
 
---- plugins.core.loupedeckct.prefs.lastGroup <cp.prop: string>
+
+
+
+-- Hardcoded for now:
+local apps = {
+    ["com.apple.finder"] = "Finder",
+    ["com.apple.FinalCut"] = "Final Cut Pro",
+}
+
+
+
+
+
+--- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
---- Last group used in the Preferences Drop Down.
-mod.lastGroup = config.prop("loupedeckct.preferences.lastGroup", nil)
+--- Last Application used in the Preferences Panel.
+mod.lastApplication = config.prop("loupedeckct.preferences.lastApplication", "com.apple.FinalCut")
 
---- plugins.core.loupedeck.prefs.lastNote <cp.prop: string>
+--- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
---- Last note used in the Preferences panel.
-mod.lastNote = config.prop("loupedeckct.preferences.lastNote", "95")
+--- Last Bank used in the Preferences Panel.
+mod.lastBank = config.prop("loupedeckct.preferences.lastBank", "1")
 
---- plugins.core.loupedeckct.prefs.lastIsButton <cp.prop: boolean>
+--- plugins.core.loupedeckct.prefs.lastSelectedControl <cp.prop: string>
 --- Field
---- Whether or not the last selected item in the Preferences was a button.
-mod.lastIsButton = config.prop("loupedeckct.preferences.lastIsButton", true)
+--- Last Selected Control used in the Preferences Panel.
+mod.lastSelectedControl = config.prop("loupedeckct.preferences.lastSelectedControl", "1")
 
---- plugins.core.loupedeckct.prefs.lastLabel <cp.prop: string>
---- Field
---- Last label used in the Preferences panel.
-mod.lastLabel = config.prop("loupedeckct.preferences.lastLabel", "Undo")
 
---- plugins.core.loupedeckct.prefs.updateAction(button, group, actionTitle, handlerID, action) -> none
---- Function
---- Updates a Loupedeck action.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----  * actionTitle - Action Title as string
----  * handlerID - Handler ID as string
----  * action - Action in a table
----
---- Returns:
----  * None
-function mod.updateAction(button, group, actionTitle, handlerID, action)
-    local items = mod.items()
 
-    button = tostring(button)
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
 
-    --------------------------------------------------------------------------------
-    -- Process Stylised Text:
-    --------------------------------------------------------------------------------
-    if actionTitle and type(actionTitle) == "userdata" then
-        actionTitle = actionTitle:convert("text")
-    end
-
-    items[group][button]["actionTitle"] = actionTitle
-    items[group][button]["handlerID"] = handlerID
-    items[group][button]["action"] = action
-
-    mod.items(items)
-end
-
--- setBankLabel(group, label) -> none
--- Function
--- Sets a Loupedeck Bank Label.
---
--- Parameters:
---  * group - Group ID as string
---  * label - Label as string
---
--- Returns:
---  * None
-local function setBankLabel(group, label)
-    local items = mod.items()
-
-    if not items[group] then
-        items[group] = {}
-    end
-    items[group]["bankLabel"] = label
-
-    mod.items(items)
-end
 
 -- resetEverything() -> none
 -- Function
@@ -119,13 +70,13 @@ end
 local function resetEverything()
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
-            mod.items(mod.DEFAULT_CONTROLS)
+            items({})
             mod._manager.refresh()
         end
     end, i18n("loupedeckResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- resetEverythingGroup() -> none
+-- resetApplication() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
 --
@@ -134,7 +85,7 @@ end
 --
 -- Returns:
 --  * None
-local function resetEverythingGroup()
+local function resetApplication()
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
@@ -150,7 +101,7 @@ local function resetEverythingGroup()
     end, i18n("loupedeckResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- resetEverythingSubGroup() -> none
+-- resetBank() -> none
 -- Function
 -- Prompts to reset shortcuts to default for the selected sub-group.
 --
@@ -159,7 +110,7 @@ end
 --
 -- Returns:
 --  * None
-local function resetEverythingSubGroup()
+local function resetBank()
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
@@ -170,6 +121,12 @@ local function resetEverythingSubGroup()
         end
     end, i18n("loupedeckResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
+
+
+
+
+
+
 
 -- renderPanel(context) -> none
 -- Function
@@ -202,53 +159,45 @@ end
 --  * HTML content as string
 local function generateContent()
     --------------------------------------------------------------------------------
-    -- The Group Select:
-    --------------------------------------------------------------------------------
-    local groups = {}
-    local groupLabels = {}
-    local defaultGroup
-    local numberOfSubGroups = mod._midi.numberOfSubGroups
-    if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
-    for _,id in ipairs(commands.groupIds()) do
-        table.insert(groupLabels, {
-            value = id,
-            label = i18n("shortcut_group_" .. id, {default = id}),
-        })
-        for subGroupID=1, numberOfSubGroups do
-            defaultGroup = defaultGroup or id .. subGroupID
-            groups[#groups + 1] = id .. subGroupID
-        end
-    end
-    table.sort(groupLabels, function(a, b) return a.label < b.label end)
-
-    --------------------------------------------------------------------------------
     -- Get last values to populate the UI when it first loads:
     --------------------------------------------------------------------------------
-    local groupID = defaultGroup
-    local note = mod.lastNote()
-    local items = mod.items()
+    local lastApplication = mod.lastApplication()
+    local lastBank = mod.lastBank()
+    local lastSelectedControl = mod.lastSelectedControl()
 
-    local pressValue = i18n("none")
-    local leftValue = i18n("none")
-    local rightValue = i18n("none")
+    local lastBankLabel = ""
+    local lastPressValue = ""
+    local lastLeftValue = ""
+    local lastRightValue = ""
+    local lastColorValue = "FFFFFF"
 
-    local bankLabel
-
-    if items[groupID] then
-        bankLabel = items[groupID]["bankLabel"]
-        if items[groupID][note .. "Press"] then
-            if items[groupID][note .. "Press"]["actionTitle"] then
-                pressValue = items[groupID][note .. "Press"]["actionTitle"]
-            end
+    if mod.items[lastApplication] and mod.items[lastApplication][lastBank] then
+        if mod.items[lastApplication][lastBank]["bankLabel"] then
+           lastBankLabel = mod.items[lastApplication][lastBank]["bankLabel"]
         end
-        if items[groupID][note .. "Left"] then
-            if items[groupID][note .. "Left"]["actionTitle"] then
-                leftValue = items[groupID][note .. "Left"]["actionTitle"]
+
+        if mod.items[lastApplication][lastBank][lastSelectedControl] then
+
+            if mod.items[lastApplication][lastBank][lastSelectedControl]["Left"] then
+                if mod.items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"] then
+                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"]
+                end
             end
-        end
-        if items[groupID][note .. "Right"] then
-            if items[groupID][note .. "Right"]["actionTitle"] then
-                rightValue = items[groupID][note .. "Right"]["actionTitle"]
+
+            if mod.items[lastApplication][lastBank][lastSelectedControl]["Right"] then
+                if mod.items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"] then
+                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"]
+                end
+            end
+
+            if mod.items[lastApplication][lastBank][lastSelectedControl]["Press"] then
+                if mod.items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"] then
+                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"]
+                end
+            end
+
+            if mod.items[lastApplication][lastBank][lastSelectedControl]["LED"] then
+                lastColorValue = mod.items[lastApplication][lastBank][lastSelectedControl]["LED"]
             end
         end
     end
@@ -257,27 +206,29 @@ local function generateContent()
     -- Setup the context:
     --------------------------------------------------------------------------------
     local context = {
-        _                           = moses,
-        numberOfSubGroups           = numberOfSubGroups,
-        groupLabels                 = groupLabels,
-        groups                      = groups,
-        defaultGroup                = defaultGroup,
-        bankLabel                   = bankLabel,
+        apps                        = apps,
+
+        numberOfSubGroups           = 9,
         i18n                        = i18n,
 
-        lastNote                    = mod.lastNote(),
-        lastIsButton                = mod.lastIsButton(),
-        lastLabel                   = mod.lastLabel(),
-
-        lastPressValue              = pressValue,
-        lastLeftValue               = leftValue,
-        lastRightValue              = rightValue,
+        lastApplication             = lastApplication,
+        lastBank                    = lastBank,
+        lastSelectedControl         = lastSelectedControl,
+        lastBankLabel               = lastBankLabel,
+        lastPressValue              = lastPressValue,
+        lastLeftValue               = lastLeftValue,
+        lastRightValue              = lastRightValue,
+        lastColorValue              = lastColorValue,
     }
 
     return renderPanel(context)
 end
 
--- loupedeckPanelCallback() -> none
+local translateGroupID = {
+    ["com.apple.FinalCut"] = "fcpx"
+}
+
+-- loupedeckCTPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
 --
@@ -287,10 +238,11 @@ end
 --
 -- Returns:
 --  * None
-local function loupedeckPanelCallback(id, params)
+local function loupedeckCTPanelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
+
         if callbackType == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
@@ -298,11 +250,11 @@ local function loupedeckPanelCallback(id, params)
             if not mod.activator then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
-                for _,groupID in ipairs(commands.groupIds()) do
+                for groupID,_ in pairs(apps) do
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
                     --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckPreferences" .. groupID)
+                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
 
                     --------------------------------------------------------------------------------
                     -- Restrict Allowed Handlers for Activator to current group (and global):
@@ -310,7 +262,7 @@ local function loupedeckPanelCallback(id, params)
                     local allowedHandlers = {}
                     for _,v in pairs(handlerIds) do
                         local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                        if handlerTable[1] == groupID or handlerTable[1] == translateGroupID[groupID] or handlerTable[1] == "global" then
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
@@ -326,7 +278,7 @@ local function loupedeckPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Allow specific toolbar icons in the Console:
                     --------------------------------------------------------------------------------
-                    if groupID == "fcpx" then
+                    if groupID == "com.apple.FinalCut" then
                         local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
                         local toolbarIcons = {
                             fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
@@ -346,18 +298,7 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local groupID = params["groupID"]
-
-            local activatorID
-            if string.sub(groupID, -2) == "fn" then
-                --------------------------------------------------------------------------------
-                -- Remove the "fn":
-                --------------------------------------------------------------------------------
-                activatorID = groupID:sub(1, -4)
-            else
-                activatorID = groupID:sub(1, -2)
-            end
-
+            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
@@ -371,7 +312,23 @@ local function loupedeckPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Update the preferences file:
                 --------------------------------------------------------------------------------
-                mod.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                local a = params["application"]
+                local b = params["bank"]
+                local c = params["selectedControl"]
+                local d = params["buttonType"]
+
+                local items = mod.items()
+
+                if not items[a] then items[a] = {} end
+                if not items[a][b] then items[a][b] = {} end
+                if not items[a][b][c] then items[a][b][c] = {} end
+                if not items[a][b][c][d] then items[a][b][c][d] = {} end
+
+                items[a][b][c][d]["actionTitle"] = actionTitle
+                items[a][b][c][d]["handlerID"] = handlerID
+                items[a][b][c][d]["action"] = action
+
+                mod.items(items)
 
                 --------------------------------------------------------------------------------
                 -- Update the webview:
@@ -393,71 +350,106 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Clear an action:
             --------------------------------------------------------------------------------
-            mod.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
+            local a = params["application"]
+            local b = params["bank"]
+            local c = params["selectedControl"]
+            local d = params["buttonType"]
 
-            if params["buttonType"] == "Press" then
-                injectScript("changeValueByID('press_action', '" .. i18n("none") .. "');")
-            elseif params["buttonType"] == "Left" then
-                injectScript("changeValueByID('left_action', '" .. i18n("none") .. "');")
-            elseif params["buttonType"] == "Right" then
-                injectScript("changeValueByID('right_action', '" .. i18n("none") .. "');")
-            end
-        elseif callbackType == "updateUI" then
-            --------------------------------------------------------------------------------
-            -- Update the webview UI:
-            --------------------------------------------------------------------------------
-            local groupID = params["groupID"]
-            local note = params["note"]
             local items = mod.items()
 
-            local pressValue = i18n("none")
-            local leftValue = i18n("none")
-            local rightValue = i18n("none")
-
-            if items[groupID] then
-                if items[groupID][note .. "Press"] then
-                    if items[groupID][note .. "Press"]["actionTitle"] then
-                        pressValue = items[groupID][note .. "Press"]["actionTitle"]
-                    end
-                end
-                if items[groupID][note .. "Left"] then
-                    if items[groupID][note .. "Left"]["actionTitle"] then
-                        leftValue = items[groupID][note .. "Left"]["actionTitle"]
-                    end
-                end
-                if items[groupID][note .. "Right"] then
-                    if items[groupID][note .. "Right"]["actionTitle"] then
-                        rightValue = items[groupID][note .. "Right"]["actionTitle"]
-                    end
-                end
+            if items[a] and items[a][b] and items[a][b][c] and items[a][b][c][d] then
+                items[a][b][c][d] = nil
             end
 
-            mod.lastNote(note)
-            mod.lastIsButton(params["isButton"])
-            mod.lastLabel(params["label"])
+            mod.items(items)
+        elseif callbackType == "updateApplicationAndBank" then
+            mod.lastApplication(params["application"])
+            mod.lastBank(params["bank"])
+            mod._manager.refresh()
+        elseif callbackType == "updateUI" then
+            --------------------------------------------------------------------------------
+            -- Update UI:
+            --------------------------------------------------------------------------------
+            local a = params["application"]
+            local b = params["bank"]
+            local c = params["selectedControl"]
+
+            mod.lastSelectedControl(c)
+
+            local pressValue = ""
+            local leftValue = ""
+            local rightValue = ""
+            local colorValue = "FFFFFF"
+
+            local items = mod.items()
+
+            if items[a] and items[a][b] and items[a][b][c] then
+                if items[a][b][c]["Left"] then
+                    if items[a][b][c]["Left"]["actionTitle"] then
+                        leftValue = items[a][b][c]["Left"]["actionTitle"]
+                    end
+                end
+
+                if items[a][b][c]["Right"] then
+                    if items[a][b][c]["Right"]["actionTitle"] then
+                        rightValue = items[a][b][c]["Right"]["actionTitle"]
+                    end
+                end
+
+                if items[a][b][c]["Press"] then
+                    if items[a][b][c]["Press"]["actionTitle"] then
+                        pressValue = items[a][b][c]["Press"]["actionTitle"]
+                    end
+                end
+
+                if items[a][b][c]["LED"] then
+                    colorValue = items[a][b][c]["LED"]
+                end
+            end
 
             injectScript([[
                 changeValueByID('press_action', ']] .. pressValue .. [[');
                 changeValueByID('left_action', ']] .. leftValue .. [[');
                 changeValueByID('right_action', ']] .. rightValue .. [[');
+                changeColor(']] .. colorValue .. [[');
             ]])
-        elseif callbackType == "updateGroup" then
+        elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
-            -- Update Group:
-            -- Change the Loupedeck+ Bank as you change the group drop down:
+            -- Update Color:
             --------------------------------------------------------------------------------
-            mod._midi.forceLoupedeckGroupChange(params["groupID"], mod.enabled())
-            mod.lastGroup(params["groupID"])
-            mod._manager.refresh()
+            local a = params["application"]
+            local b = params["bank"]
+            local c = params["selectedControl"]
+            local v = params["value"]
+
+            local items = mod.items()
+
+            if not items[a] then items[a] = {} end
+            if not items[a][b] then items[a][b] = {} end
+            if not items[a][b][c] then items[a][b][c] = {} end
+
+            items[a][b][c]["LED"] = v
+
+            mod.items(items)
         elseif callbackType == "updateBankLabel" then
-            local groupID = params["groupID"]
-            local bankLabel = params["bankLabel"]
-            setBankLabel(groupID, bankLabel)
+            --------------------------------------------------------------------------------
+            -- Update Bank Label:
+            --------------------------------------------------------------------------------
+            local a = params["application"]
+            local b = params["bank"]
+
+            local items = mod.items()
+
+            if not items[a] then items[a] = {} end
+            if not items[a][b] then items[a][b] = {} end
+            items[a][b]["bankLabel"] = params["bankLabel"]
+
+            mod.items(items)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Loupedeck+ Preferences Panel:")
+            log.df("Unknown Callback in Loupedeck CT Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
@@ -501,13 +493,13 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._midi           = deps.midi
     mod._manager        = deps.manager
     mod._webviewLabel   = deps.manager.getLabel()
     mod._actionmanager  = deps.actionmanager
     mod._env            = env
 
-    mod.items           = mod._midi._loupedeckItems
+    mod._ctmanager      = deps.ctmanager
+    mod.items           = deps.ctmanager.items
     mod.enabled         = deps.ctmanager.enabled
 
     --------------------------------------------------------------------------------
@@ -543,14 +535,14 @@ function mod.init(deps, env)
         :addButton(14,
             {
                 label       = i18n("resetApplication"),
-                onclick     = resetEverythingGroup,
+                onclick     = resetApplication,
                 class       = "loupedeckResetGroup",
             }
         )
         :addButton(15,
             {
                 label       = i18n("resetBank"),
-                onclick     = resetEverythingSubGroup,
+                onclick     = resetBank,
                 class       = "loupedeckResetGroup",
             }
         )
@@ -558,7 +550,7 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
-    mod._panel:addHandler("onchange", "loupedeckPanelCallback", loupedeckPanelCallback)
+    mod._panel:addHandler("onchange", "loupedeckCTPanelCallback", loupedeckCTPanelCallback)
 
     return mod
 
@@ -569,7 +561,6 @@ local plugin = {
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]        = "manager",
-        ["core.midi.manager"]               = "midi",
         ["core.action.manager"]             = "actionmanager",
         ["core.loupedeckct.manager"]        = "ctmanager",
     }

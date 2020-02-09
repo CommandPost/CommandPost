@@ -904,7 +904,6 @@ function mod.updateFlashDrive(enabled, callbackFn)
     -- Note: best guess is that the last bit (0x01) is the flash enabled/disabled value
     -- while the second last bit (0x02) is for something else.
     --------------------------------------------------------------------------------
-
     return mod.requestRegister(0, function(response)
         processRegisterResponse(response)
         if response.flashDriveEnabled ~= enabled then
@@ -1189,7 +1188,7 @@ end
 ---
 --- Notes:
 ---  * The buttonID's are as follows:
----   * `B0`-`B8`   - 0-8 buttons
+---   * `B1`-`B8`   - 1-8 buttons
 ---   * `UNDO`      - Undo button
 ---   * `KEYBOARD`  - Keyboard button
 ---   * `RETURN`    - Return button
@@ -1201,22 +1200,31 @@ end
 ---   * `C`         - C button
 ---   * `D`         - D button
 ---   * `E`         - E button
-
+---   * `O`         - O button
 mod.buttonID = {
-    -- buttons 0-8
-    B0 = 15, B1 = 7, B2 = 8, B3 = 9, B4 = 10, B5 = 11, B6 = 12, B7 = 13, B8 = 14,
+    B1 = 7,
+    B2 = 8,
+    B3 = 9,
+    B4 = 10,
+    B5 = 11,
+    B6 = 12,
+    B7 = 13,
+    B8 = 14,
 
     UNDO = 16,
     KEYBOARD = 17,
     RETURN = 18,
     SAVE = 19,
+
     LEFT_FN = 20,
     RIGHT_FN = 23,
+
     A = 21,
     B = 24,
     C = 22,
     D = 25,
     E = 26,
+    O = 15,
 }
 
 --- hs.loupedeckct.buttonColor(buttonID, color[, callbackFn]) -> boolean
