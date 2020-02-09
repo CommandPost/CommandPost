@@ -108,6 +108,7 @@
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					selectedControl: label,
+					controlType: controlType,
 				},
 			}
 			postMessage(result);
@@ -247,7 +248,7 @@
 			<th style="text-align:top;">
 
 				<p style="text-align: left; padding-left:20px; font-size:16px; margin: 0px;">
-					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">1</span>
+					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">{{ lastSelectedControl }}</span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
 					<table class="loupedeck" id="knob" style="height: 380px;">
@@ -255,11 +256,11 @@
 						<!-- PRESS ACTION & LED COLOR: -->
 						<tr>
 							<th width="229px">Press Action:</th>
-							<th width="229px" id="ledColorA">LED Color:</th>
+							<th width="229px" id="ledColorA" {* (lastControlType == "led-button" and "") or [[style="display: none;"]] *}>LED Color:</th>
 						</tr>
 						<tr>
 							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="{{ lastPressValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px" id="ledColorB">
+							<td width="229px" id="ledColorB" {* (lastControlType == "led-button" and "") or [[style="display: none;"]] *}>
 								<div>
 									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="{{ lastColorValue }}">
 								</div>
@@ -278,15 +279,15 @@
 						</tr>
 
 						<!-- KNOB LEFT & RIGHT: -->
-						<tr id="knobA">
+						<tr id="knobA" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
 							<th width="229px">Turn Left Action:</th>
 							<th width="229px">Turn Right Action:</th>
 						</tr>
-						<tr id="knobB">
+						<tr id="knobB" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
 							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
 							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
-						<tr id="knobC">
+						<tr id="knobC" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
 							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Left')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Left')">{{ i18n("clear") }}</a></td>
 							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Right')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Right')">{{ i18n("clear") }}</a></td>
 						</tr>
@@ -299,10 +300,10 @@
 						</tr>
 
 						<!-- ICON: -->
-						<tr id="iconA">
+						<tr id="iconA" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
 							<th width="229px">Image:</th>
 						</tr>
-						<tr id="iconB">
+						<tr id="iconB" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
 							<td width="229px">
 								<div id="iconDropZone" class="dropzone{{ class }}" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
 									<div id="iconDropZonePreview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">

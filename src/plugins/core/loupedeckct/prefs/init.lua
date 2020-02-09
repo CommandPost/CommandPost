@@ -54,6 +54,11 @@ mod.lastBank = config.prop("loupedeckct.preferences.lastBank", "1")
 --- Last Selected Control used in the Preferences Panel.
 mod.lastSelectedControl = config.prop("loupedeckct.preferences.lastSelectedControl", "1")
 
+--- plugins.core.loupedeckct.prefs.lastControlType <cp.prop: string>
+--- Field
+--- Last Selected Control Type used in the Preferences Panel.
+mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "1")
+
 
 
 
@@ -164,6 +169,7 @@ local function generateContent()
     local lastApplication = mod.lastApplication()
     local lastBank = mod.lastBank()
     local lastSelectedControl = mod.lastSelectedControl()
+    local lastControlType = mod.lastControlType()
 
     local lastBankLabel = ""
     local lastPressValue = ""
@@ -171,33 +177,35 @@ local function generateContent()
     local lastRightValue = ""
     local lastColorValue = "FFFFFF"
 
-    if mod.items[lastApplication] and mod.items[lastApplication][lastBank] then
-        if mod.items[lastApplication][lastBank]["bankLabel"] then
-           lastBankLabel = mod.items[lastApplication][lastBank]["bankLabel"]
+    local items = mod.items()
+
+    if items[lastApplication] and items[lastApplication][lastBank] then
+        if items[lastApplication][lastBank]["bankLabel"] then
+           lastBankLabel = items[lastApplication][lastBank]["bankLabel"]
         end
 
-        if mod.items[lastApplication][lastBank][lastSelectedControl] then
+        if items[lastApplication][lastBank][lastSelectedControl] then
 
-            if mod.items[lastApplication][lastBank][lastSelectedControl]["Left"] then
-                if mod.items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"] then
-                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"]
+            if items[lastApplication][lastBank][lastSelectedControl]["Left"] then
+                if items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"] then
+                    lastLeftValue = items[lastApplication][lastBank][lastSelectedControl]["Left"]["actionTitle"]
                 end
             end
 
-            if mod.items[lastApplication][lastBank][lastSelectedControl]["Right"] then
-                if mod.items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"] then
-                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"]
+            if items[lastApplication][lastBank][lastSelectedControl]["Right"] then
+                if items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"] then
+                    lastRightValue = items[lastApplication][lastBank][lastSelectedControl]["Right"]["actionTitle"]
                 end
             end
 
-            if mod.items[lastApplication][lastBank][lastSelectedControl]["Press"] then
-                if mod.items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"] then
-                    lastLeftValue = mod.items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"]
+            if items[lastApplication][lastBank][lastSelectedControl]["Press"] then
+                if items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"] then
+                    lastPressValue = items[lastApplication][lastBank][lastSelectedControl]["Press"]["actionTitle"]
                 end
             end
 
-            if mod.items[lastApplication][lastBank][lastSelectedControl]["LED"] then
-                lastColorValue = mod.items[lastApplication][lastBank][lastSelectedControl]["LED"]
+            if items[lastApplication][lastBank][lastSelectedControl]["LED"] then
+                lastColorValue = items[lastApplication][lastBank][lastSelectedControl]["LED"]
             end
         end
     end
@@ -219,6 +227,7 @@ local function generateContent()
         lastLeftValue               = lastLeftValue,
         lastRightValue              = lastRightValue,
         lastColorValue              = lastColorValue,
+        lastControlType             = lastControlType,
     }
 
     return renderPanel(context)
@@ -373,8 +382,10 @@ local function loupedeckCTPanelCallback(id, params)
             local a = params["application"]
             local b = params["bank"]
             local c = params["selectedControl"]
+            local d = params["controlType"]
 
             mod.lastSelectedControl(c)
+            mod.lastControlType(d)
 
             local pressValue = ""
             local leftValue = ""
