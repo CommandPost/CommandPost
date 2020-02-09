@@ -24,7 +24,7 @@ local mode = class "core.tangent.manager.mode"
 --- Returns:
 ---  *
 function mode:initialize(id, name, manager)
-    self.fid = id
+    self.id = id
     self.name = name
     self.manager = manager
 end

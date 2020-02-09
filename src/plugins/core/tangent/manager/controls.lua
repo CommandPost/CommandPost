@@ -232,7 +232,7 @@ function controls:xml()
             local result = x()
 
             if self._groups then
-                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b].name > t[a].name end) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
