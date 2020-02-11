@@ -1235,48 +1235,18 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     return false
 end
 
+-- convertButtonIDtoXYCoordinates() -> buttonID
+-- Function
+-- Gets the X and Y coordinates of a specific button on the middle touch screen.
+--
+-- Parameters:
+--  * buttonID - A number between 1 and 12 (left to right, top to bottom).
+--
+-- Returns:
+--  * x - The x coordinates of the screen for the specific button as a number
+--  * y - The y coordinates of the screen for the specific button as a number
 local function convertButtonIDtoXYCoordinates(buttonID)
-    -- Sorry David. I'm being lazy/mathematically challenged.
-    local x
-    local y
-    if buttonID == 1 then
-        x = 0
-        y = 0
-    elseif buttonID == 2 then
-        x = 90
-        y = 0
-    elseif buttonID == 3 then
-        x = 90 * 2
-        y = 0
-    elseif buttonID == 4 then
-        x = 90 * 3
-        y = 0
-    elseif buttonID == 5 then
-        x = 0
-        y = 90
-    elseif buttonID == 6 then
-        x = 90
-        y = 90
-    elseif buttonID == 7 then
-        x = 90 * 2
-        y = 90
-    elseif buttonID == 8 then
-        x = 90 * 3
-        y = 90
-    elseif buttonID == 9 then
-        x = 0
-        y = 90 * 2
-    elseif buttonID == 10 then
-        x = 90
-        y = 90 * 2
-    elseif buttonID == 11 then
-        x = 90 * 2
-        y = 90 * 2
-    elseif buttonID == 12 then
-        x = 90 * 3
-        y = 90 * 2
-    end
-    return x, y
+    return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
 end
 
 --- hs.loupedeckct.updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
