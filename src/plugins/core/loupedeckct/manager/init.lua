@@ -20,6 +20,8 @@ local json            = require "cp.json"
 local doAfter         = timer.doAfter
 local hexDump         = utf8.hexDump
 local imageFromPath   = image.imageFromPath
+local imageFromURL    = image.imageFromURL
+local black           = drawing.color.hammerspoon.black
 
 local mod = {}
 
@@ -107,6 +109,9 @@ function mod.refresh()
     local activeBanks = mod.activeBanks()
     local bank = activeBanks[bundleID] or "1"
 
+    --------------------------------------------------------------------------------
+    -- SET LED BUTTON COLOURS:
+    --------------------------------------------------------------------------------
     for id, realID in pairs(buttonsWithLEDs) do
         if items[bundleID] and items[bundleID][bank] and items[bundleID][bank][id] and items[bundleID][bank][id]["LED"] then
             ct.buttonColor(realID, {hex="#" .. items[bundleID][bank][id]["LED"]})
@@ -114,144 +119,51 @@ function mod.refresh()
             ct.buttonColor(realID, {hex="#000000"})
         end
     end
-end
 
---- plugins.core.loupedeckct.manager.test() -> none
---- Function
---- Sends data to all the screens and buttons for testing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.test()
-
-    ct.startBackgroundLoop(function(response)
-        --------------------------------------------------------------------------------
-        -- BACKGROUND LOOP
-        --
-        -- Example:
-        -- 3D A8 1C 9B A7 2A 8C 87 D4 F6 A1 35 A2 89 06 6C
-        --------------------------------------------------------------------------------
-
-        -- TODO: Work out what all this data is.
-
-        log.df("Start Background Loop: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-    ct.requestDeviceInfo(function(response)
-        --------------------------------------------------------------------------------
-        -- Example:
-        -- 3B 47 B9 65 23 4E 6D 81 3F 65 A0 AC F0 8E A1 7C
-        --------------------------------------------------------------------------------
-
-        -- TODO: Work out what all this data is.
-
-        log.df("Device Info: id: %d; message:\n%s", response.id, hexDump(response.data))
-    end)
-
-
-    ct.requestSerialNumber(function(response)
-        log.df("Serial Number: %s", response.serialNumber)
-    end)
-
-    ct.requestMCUID(function(response)
-        log.df("MCU ID: %s", response.mcuid)
-    end)
-
-    ct.requestSelfTest(function(response)
-        log.df("Self-Test: %08X", response.selfTest)
-    end)
-
-
-    ct.requestRegister(0, function(response)
-        log.df("Register 0 value: %08X", response.value)
-    end)
-
-    ct.requestRegister(1, function(response)
-        log.df("Register 1 value: %08X", response.value)
-    end)
-
-    ct.requestRegister(2, function(response)
-        log.df("Register 2 value: %08X", response.value)
-        log.df("Vibra waveform index: %d", response.vibraWaveformIndex)
-        log.df("Backlight level: %d", response.backlightLevel)
-    end)
-
-    ct.requestWheelSensitivity(0, function(data)
-        log.df("Wheel Sensitivity: id: %04x; data: %s", data.command, utf8.hexDump(data.message))
-    end)
-
-    ct.resetDevice(function(data)
-        log.df("Reset Device: id: %04x; success: %s", data.id, data.success)
-    end)
-
-    doAfter(0, function()
-        local color = drawing.color.hammerspoon.red
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        for _, screen in pairs(ct.screens) do
-            ct.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(2, function()
-        local color = drawing.color.hammerspoon.green
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        for _, screen in pairs(ct.screens) do
-            ct.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(4, function()
-        local color = drawing.color.hammerspoon.blue
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        for _, screen in pairs(ct.screens) do
-            ct.updateScreenColor(screen, color)
-        end
-    end)
-    doAfter(6, function()
-        local color = drawing.color.hammerspoon.black
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        ct.updateScreenColor(ct.screens.left, color)
-        ct.updateScreenColor(ct.screens.right, color)
-
-        ct.updateScreenImage(ct.screens.middle, imageFromPath(cp.config.assetsPath .. "/middle.png"))
-        ct.updateScreenImage(ct.screens.wheel, imageFromPath(cp.config.assetsPath .. "/wheel.png"))
-    end)
-    doAfter(8, function()
-        local color = drawing.color.hammerspoon.red
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        ct.updateScreenColor(ct.screens.left, color)
-        ct.updateScreenColor(ct.screens.right, color)
-        for x=0, 3 do
-            for y=0, 2 do
-                ct.updateScreenImage(ct.screens.middle, imageFromPath(cp.config.assetsPath .. "/button.png"), {x=x*90, y=y*90, w=90,h=90})
+    --------------------------------------------------------------------------------
+    -- SET TOUCH SCREEN BUTTON IMAGES:
+    --------------------------------------------------------------------------------
+    ct.updateScreenColor(ct.screens.middle, black)
+    if items[bundleID] and items[bundleID][bank] and items[bundleID][bank] then
+        for label, v in pairs(items[bundleID][bank]) do
+            if label and label:sub(1, 7) == "Button " then
+                local buttonID = tonumber(label:sub(8))
+                local encodedIcon = v["encodedIcon"]
+                local success = false
+                if encodedIcon then
+                    local decodedImage = imageFromURL(encodedIcon)
+                    if decodedImage then
+                        ct.updateScreenButtonImage(buttonID, decodedImage)
+                        success = true
+                    end
+                end
+                if not success then
+                    log.df("blacking out")
+                    ct.updateScreenButtonColor(buttonID, black)
+                end
             end
         end
-    end)
-    doAfter(10, function()
-        local color = drawing.color.hammerspoon.black
-        for _, button in pairs(ct.buttonID) do
-            ct.buttonColor(button, color)
-        end
-        for _, screen in pairs(ct.screens) do
-            ct.updateScreenColor(screen, color)
-        end
-    end)
+    end
+
+    --------------------------------------------------------------------------------
+    -- TEMPORARY PLACEHOLDER:
+    --------------------------------------------------------------------------------
+    ct.updateScreenImage(ct.screens.wheel, imageFromPath(config.assetsPath .. "/wheel.png"))
+    ct.updateScreenColor(ct.screens.left, drawing.color.hammerspoon.red)
+    ct.updateScreenColor(ct.screens.right, drawing.color.hammerspoon.red)
+
 end
 
-
 local function callback(data)
-    log.df("ct data: %s", hs.inspect(data))
+    --log.df("ct data: %s", hs.inspect(data))
+
+    --------------------------------------------------------------------------------
+    -- REFRESH ON INITIAL LOAD:
+    --------------------------------------------------------------------------------
+    if data.action == "websocket_open" then
+        mod.refresh()
+        return
+    end
 
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -304,9 +216,20 @@ local function callback(data)
                 end
             end
         elseif data.id == ct.event.WHEEL_PRESSED then
-
+            log.df("Wheel not yet implimented: %s", hs.inspect(data))
         elseif data.id == ct.event.SCREEN_PRESSED then
-
+            --------------------------------------------------------------------------------
+            -- TOUCH SCREEN BUTTON PRESS:
+            --------------------------------------------------------------------------------
+            local button = data.buttonID
+            if button and items[bundleID][bank]["Button " .. button] and items[bundleID][bank]["Button " .. button]["Press"] then
+                local handlerID = items[bundleID][bank]["Button " .. button]["Press"]["handlerID"]
+                local action = items[bundleID][bank]["Button " .. button]["Press"]["action"]
+                if handlerID and action then
+                    local handler = mod._actionmanager.getHandler(handlerID)
+                    handler:execute(action)
+                end
+            end
         end
 
     end

@@ -86,16 +86,30 @@
 		// -------------------------------------------------
 		// WHEEL:
 		// -------------------------------------------------
-		if (controlType == "wheel") {
+		if (controlType == "wheel" || controlType == "screen") {
+			document.getElementById("pressActionA").style.display = "none";
+			document.getElementById("pressActionB").style.display = "none";
+			document.getElementById("pressActionC").style.display = "none";
 		} else {
+			document.getElementById("pressActionA").style.display = "table";
+			document.getElementById("pressActionB").style.display = "table";
+			document.getElementById("pressActionC").style.display = "table";
 		}
 
 		// -------------------------------------------------
 		// SCREEN:
 		// -------------------------------------------------
+		/*
 		if (controlType == "screen") {
+			document.getElementById("pressActionA").style.display = "none";
+			document.getElementById("pressActionB").style.display = "none";
+			document.getElementById("pressActionC").style.display = "none";
 		} else {
+			document.getElementById("pressActionA").style.display = "table";
+			document.getElementById("pressActionB").style.display = "table";
+			document.getElementById("pressActionC").style.display = "table";
 		}
+		*/
 
 		// Save the selectedControl in a hidden field:
 		document.getElementById("selectedControl").value = label;
@@ -179,6 +193,90 @@
 			alertErrorMessage(err);
 		}
 	}
+
+	function setIcon(encodedIcon) {
+		if (encodedIcon != "") {
+			document.getElementById("iconDropZonePreview").innerHTML = "<img src='" + encodedIcon + "'>";
+    		document.getElementById("iconDropZone").className = "dropzone dropped";
+    	} else {
+			document.getElementById("iconDropZonePreview").innerHTML = "icon";
+			document.getElementById("iconDropZone").className = "dropzone";
+    	}
+	}
+
+	function pressIconDropZone(groupID, buttonID) {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "iconClicked",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeIconDropZone(element) {
+		var file = element.files[0];
+
+		element.classList.remove("hover");
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		element.classList.add("dropped");
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+			document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "updateIcon",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						selectedControl: document.getElementById("selectedControl").value,
+						icon: data,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
+
+
+
+
+
 </script>
 <table style="width: 700px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px">
 	<tr>
@@ -194,6 +292,8 @@
 					%}
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{% end %}
+					<option disabled>──────────</option>
+					<option disabled>Add Application</option>
 				</select>
 			</span>
 		</th>
@@ -217,7 +317,7 @@
 							selected = [[selected=""]]
 						end
 					%}
-					<option {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
+					<option disabled {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
 					{% end %}
 					<option disabled>──────────</option>
 					{%
@@ -227,7 +327,7 @@
 							selected = [[selected=""]]
 						end
 					%}
-					<option {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
+					<option disabled {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
 					{% end %}
 				</select>
 			</span>
@@ -254,11 +354,11 @@
 					<table class="loupedeck" id="knob" style="height: 380px;">
 
 						<!-- PRESS ACTION & LED COLOR: -->
-						<tr>
+						<tr id="pressActionA">
 							<th width="229px">Press Action:</th>
 							<th width="229px" id="ledColorA" {* (lastControlType == "led-button" and "") or [[style="display: none;"]] *}>LED Color:</th>
 						</tr>
-						<tr>
+						<tr id="pressActionB">
 							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="{{ lastPressValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
 							<td width="229px" id="ledColorB" {* (lastControlType == "led-button" and "") or [[style="display: none;"]] *}>
 								<div>
@@ -266,7 +366,7 @@
 								</div>
 							</td>
 						</tr>
-						<tr>
+						<tr id="pressActionC">
 							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Press')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Press')">{{ i18n("clear") }}</a></td>
 							<td width="229px"></td>
 						</tr>
@@ -301,7 +401,7 @@
 
 						<!-- ICON: -->
 						<tr id="iconA" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
-							<th width="229px">Image:</th>
+							<th width="229px">Image (90 x 90px):</th>
 						</tr>
 						<tr id="iconB" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
 							<td width="229px">
@@ -309,9 +409,9 @@
 									<div id="iconDropZonePreview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
 										{%
 
-											if result then
+											if lastEncodedIcon then
 										%}
-										<img src="{{ result }}" />
+										<img src="{{ lastEncodedIcon }}" />
 										{%
 											else
 										%}
@@ -320,7 +420,7 @@
 											end
 										%}
 									</div>
-									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeStreamDeckDropZone('{{ groupID }}', '{{ i }}', this)" onclick="pressStreamDeckDropZone('{{ groupID }}', '{{ i }}')" />
+									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
 								</div>
 							</td>
 							<td width="229px"></td>
@@ -355,14 +455,14 @@
     <area 		alt="Button 10" 		title="Button 10" 		href="#" 			coords="458,413,565,521" 	shape="rect" 		onclick="changeControl(this.title, 'touch-button');">
     <area 		alt="Button 11" 		title="Button 11" 		href="#" 			coords="577,413,684,520" 	shape="rect" 		onclick="changeControl(this.title, 'touch-button');">
     <area 		alt="Button 12" 		title="Button 12" 		href="#" 			coords="696,413,802,521" 	shape="rect" 		onclick="changeControl(this.title, 'touch-button');">
-    <area 		alt="1" 				title="1" 				href="#" 			coords="107,590,194,676" 	shape="rect" 		onclick="changeControl(this.title, 'button', 7);">
-    <area 		alt="2" 				title="2" 				href="#" 			coords="228,591,316,676" 	shape="rect" 		onclick="changeControl(this.title, 'button', 8);">
-    <area 		alt="3" 				title="3" 				href="#" 			coords="349,590,436,677" 	shape="rect" 		onclick="changeControl(this.title, 'button', 9);">
-    <area 		alt="4" 				title="4" 				href="#" 			coords="470,590,555,677" 	shape="rect" 		onclick="changeControl(this.title, 'button', 10);">
-    <area 		alt="5" 				title="5" 				href="#" 			coords="589,590,676,677" 	shape="rect" 		onclick="changeControl(this.title, 'button', 11);">
-    <area 		alt="6" 				title="6" 				href="#" 			coords="710,590,796,676" 	shape="rect" 		onclick="changeControl(this.title, 'button', 12);">
-    <area 		alt="7" 				title="7" 				href="#" 			coords="831,591,917,676" 	shape="rect" 		onclick="changeControl(this.title, 'button', 13);">
-    <area 		alt="8" 				title="8" 				href="#" 			coords="951,591,1038,677" 	shape="rect" 		onclick="changeControl(this.title, 'button', 14);">
+    <area 		alt="1" 				title="1" 				href="#" 			coords="107,590,194,676" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 7);">
+    <area 		alt="2" 				title="2" 				href="#" 			coords="228,591,316,676" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 8);">
+    <area 		alt="3" 				title="3" 				href="#" 			coords="349,590,436,677" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 9);">
+    <area 		alt="4" 				title="4" 				href="#" 			coords="470,590,555,677" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 10);">
+    <area 		alt="5" 				title="5" 				href="#" 			coords="589,590,676,677" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 11);">
+    <area 		alt="6" 				title="6" 				href="#" 			coords="710,590,796,676" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 12);">
+    <area 		alt="7" 				title="7" 				href="#" 			coords="831,591,917,676" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 13);">
+    <area 		alt="8" 				title="8" 				href="#" 			coords="951,591,1038,677" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 14);">
     <area 		alt="O" 				title="O" 				href="#" 			coords="98,727,216,845" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 15);">
     <area 		alt="Undo" 				title="Undo" 			href="#" 			coords="98,850,216,968" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 16);">
     <area 		alt="Keyboard" 			title="Keyboard" 		href="#" 			coords="98,973,216,1092" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 17);">

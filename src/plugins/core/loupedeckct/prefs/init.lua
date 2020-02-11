@@ -6,16 +6,15 @@ local require = require
 
 local log           = require "hs.logger".new "prefsLoupedeckCT"
 
+local canvas        = require "hs.canvas"
 local dialog        = require "hs.dialog"
 local image         = require "hs.image"
 local inspect       = require "hs.inspect"
 
 local commands      = require "cp.commands"
 local config        = require "cp.config"
-local json          = require "cp.json"
-
-
 local i18n          = require "cp.i18n"
+local json          = require "cp.json"
 local tools         = require "cp.tools"
 
 local moses         = require "moses"
@@ -25,19 +24,23 @@ local webviewAlert  = dialog.webviewAlert
 
 local mod = {}
 
-
-
-
-
--- Hardcoded for now:
+-- Hardcoded for now as a temporary solution:
 local apps = {
+    ["com.blackmagic-design.DaVinciResolve"] = "DaVinci Resolve",
     ["com.apple.finder"] = "Finder",
     ["com.apple.FinalCut"] = "Final Cut Pro",
+    ["org.latenitefilms.CommandPost"] = "CommandPost",
 }
 
+--- plugins.core.loupedeckct.prefs.supportedExtensions -> string
+--- Variable
+--- Table of supported extensions for Icons.
+mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 
-
-
+--- plugins.core.loupedeckct.prefs.defaultIconPath -> string
+--- Variable
+--- Default Path where built-in icons are stored
+mod.defaultIconPath = config.assetsPath .. "/icons/"
 
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -59,10 +62,6 @@ mod.lastSelectedControl = config.prop("loupedeckct.preferences.lastSelectedContr
 --- Last Selected Control Type used in the Preferences Panel.
 mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "1")
 
-
-
-
-
 -- resetEverything() -> none
 -- Function
 -- Prompts to reset shortcuts to default for all groups.
@@ -73,12 +72,14 @@ mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "1"
 -- Returns:
 --  * None
 local function resetEverything()
+    --[[
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             items({})
             mod._manager.refresh()
         end
     end, i18n("loupedeckResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    --]]
 end
 
 -- resetApplication() -> none
@@ -91,6 +92,7 @@ end
 -- Returns:
 --  * None
 local function resetApplication()
+    --[[
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
@@ -104,6 +106,7 @@ local function resetApplication()
             mod._manager.refresh()
         end
     end, i18n("loupedeckResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    --]]
 end
 
 -- resetBank() -> none
@@ -116,6 +119,7 @@ end
 -- Returns:
 --  * None
 local function resetBank()
+    --[[
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod.items()
@@ -125,6 +129,7 @@ local function resetBank()
             mod._manager.refresh()
         end
     end, i18n("loupedeckResetSubGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    --]]
 end
 
 
@@ -207,6 +212,11 @@ local function generateContent()
             if items[lastApplication][lastBank][lastSelectedControl]["LED"] then
                 lastColorValue = items[lastApplication][lastBank][lastSelectedControl]["LED"]
             end
+
+            if items[lastApplication][lastBank][lastSelectedControl]["encodedIcon"] then
+                lastEncodedIcon = items[lastApplication][lastBank][lastSelectedControl]["encodedIcon"]
+            end
+
         end
     end
 
@@ -228,6 +238,7 @@ local function generateContent()
         lastRightValue              = lastRightValue,
         lastColorValue              = lastColorValue,
         lastControlType             = lastControlType,
+        lastEncodedIcon             = lastEncodedIcon,
     }
 
     return renderPanel(context)
@@ -391,6 +402,7 @@ local function loupedeckCTPanelCallback(id, params)
             local leftValue = ""
             local rightValue = ""
             local colorValue = "FFFFFF"
+            local encodedIcon = ""
 
             local items = mod.items()
 
@@ -416,6 +428,10 @@ local function loupedeckCTPanelCallback(id, params)
                 if items[a][b][c]["LED"] then
                     colorValue = items[a][b][c]["LED"]
                 end
+
+                if items[a][b][c]["encodedIcon"] then
+                    encodedIcon = items[a][b][c]["encodedIcon"]
+                end
             end
 
             injectScript([[
@@ -423,6 +439,7 @@ local function loupedeckCTPanelCallback(id, params)
                 changeValueByID('left_action', ']] .. leftValue .. [[');
                 changeValueByID('right_action', ']] .. rightValue .. [[');
                 changeColor(']] .. colorValue .. [[');
+                setIcon("]] .. encodedIcon .. [[")
             ]])
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
@@ -442,6 +459,11 @@ local function loupedeckCTPanelCallback(id, params)
             items[a][b][c]["LED"] = v
 
             mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
         elseif callbackType == "updateBankLabel" then
             --------------------------------------------------------------------------------
             -- Update Bank Label:
@@ -456,6 +478,133 @@ local function loupedeckCTPanelCallback(id, params)
             items[a][b]["bankLabel"] = params["bankLabel"]
 
             mod.items(items)
+        elseif callbackType == "iconClicked" then
+            --------------------------------------------------------------------------------
+            -- Icon Clicked:
+            --------------------------------------------------------------------------------
+            local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
+            local failed = false
+            if result and result["1"] then
+                local path = result["1"]
+                local icon = image.imageFromPath(path)
+                if icon then
+
+
+                    local width
+                    local height
+                    local selectedControl = params["selectedControl"]
+
+                    --------------------------------------------------------------------------------
+                    -- Touch Screen Button (90x90):
+                    --------------------------------------------------------------------------------
+                    if selectedControl and selectedControl:sub(1, 6) == "Button" then
+                        width = 90
+                        height = 90
+                    end
+
+                    local a = canvas.new{x = 0, y = 0, w = width, h = height }
+                    a[1] = {
+                        --------------------------------------------------------------------------------
+                        -- Force Black background:
+                        --------------------------------------------------------------------------------
+                        frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                        fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                        type = "rectangle",
+                    }
+                    a[2] = {
+                      type="image",
+                      image = icon,
+                      frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                    }
+                    local newImage = a:imageFromCanvas()
+
+                    local encodedIcon = newImage:encodeAsURLString(true)
+                    if encodedIcon then
+                        --------------------------------------------------------------------------------
+                        -- Save Icon to file:
+                        --------------------------------------------------------------------------------
+                        local a = params["application"]
+                        local b = params["bank"]
+                        local c = params["selectedControl"]
+
+                        local items = mod.items()
+
+                        if not items[a] then items[a] = {} end
+                        if not items[a][b] then items[a][b] = {} end
+                        if not items[a][b][c] then items[a][b][c] = {} end
+
+                        items[a][b][c]["encodedIcon"] = encodedIcon
+
+                        mod.items(items)
+
+                        injectScript([[setIcon("]] .. encodedIcon .. [[")]])
+
+                        --------------------------------------------------------------------------------
+                        -- Refresh the hardware:
+                        --------------------------------------------------------------------------------
+                        mod._ctmanager.refresh()
+                    else
+                        failed = true
+                    end
+                else
+                    failed = true
+                end
+                if failed then
+                    dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Clear Icon:
+                --------------------------------------------------------------------------------
+                local a = params["application"]
+                local b = params["bank"]
+                local c = params["selectedControl"]
+
+                local items = mod.items()
+
+                if not items[a] then items[a] = {} end
+                if not items[a][b] then items[a][b] = {} end
+                if not items[a][b][c] then items[a][b][c] = {} end
+
+                items[a][b][c]["encodedIcon"] = nil
+
+                mod.items(items)
+
+                injectScript([[setIcon("")]])
+
+                --------------------------------------------------------------------------------
+                -- Refresh the hardware:
+                --------------------------------------------------------------------------------
+                mod._ctmanager.refresh()
+            end
+        elseif callbackType == "badExtension" then
+            --------------------------------------------------------------------------------
+            -- Bad Icon File Extension:
+            --------------------------------------------------------------------------------
+            dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badStreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+        elseif callbackType == "updateIcon" then
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            local a = params["application"]
+            local b = params["bank"]
+            local c = params["selectedControl"]
+            local encodedIcon = params["icon"]
+
+            local items = mod.items()
+
+            if not items[a] then items[a] = {} end
+            if not items[a][b] then items[a][b] = {} end
+            if not items[a][b][c] then items[a][b][c] = {} end
+
+            items[a][b][c]["encodedIcon"] = encodedIcon
+
+            mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:

@@ -430,7 +430,7 @@ local events = {
                     return
                 end
             elseif not mod.ignoreResponses[id] then
-                log.df("Unexpected command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
+                log.ef("Unexpected command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
                 return
             end
         end
@@ -467,6 +467,92 @@ mod.ignoreResponses = {
     [0x041B] = true, -- Vibration confirmation
     [0x0409] = true, -- Reset Device
 }
+
+-- convertXandYtoButtonID(x, y) -> number
+-- Function
+-- Converts X and Y coordinates into a button ID for the middle touch screen.
+--
+-- Parameters:
+--  * x - The x-axis as a number
+--  * y - The y-axis as a number
+--
+-- Returns:
+--  * A button ID as a number. Left to right, top to bottom.
+local function convertXandYtoButtonID(x, y)
+    local button = 0
+    -- First Row:
+    if x >= 60 and x <= 140 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 1
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 5
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 9
+        end
+    end
+
+    -- Second Row:
+    if x >= 160 and x <= 230 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 2
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 6
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 10
+        end
+    end
+
+    -- Third Row:
+    if x >= 240 and x <= 320 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 3
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 7
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 11
+        end
+    end
+
+    -- Fourth Row:
+    if x >= 340 and x <= 390 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 4
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 8
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 12
+        end
+    end
+    return button
+end
 
 --- hs.loupedeckct.responseHandler -> table
 --- Constant
@@ -546,6 +632,13 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+
+        -- Get button ID:
+        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
         -- Vibrate if enabled:
         if mod._vibrations then
@@ -561,6 +654,13 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+
+        -- Get button ID:
+        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
     end,
 }
@@ -1078,8 +1178,8 @@ end
 --- Parameters:
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
----  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---  * frame        - (optional) An optional `hs.geometry.rect` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -1135,6 +1235,70 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     return false
 end
 
+local function convertButtonIDtoXYCoordinates(buttonID)
+    -- Sorry David. I'm being lazy/mathematically challenged.
+    local x
+    local y
+    if buttonID == 1 then
+        x = 0
+        y = 0
+    elseif buttonID == 2 then
+        x = 90
+        y = 0
+    elseif buttonID == 3 then
+        x = 90 * 2
+        y = 0
+    elseif buttonID == 4 then
+        x = 90 * 3
+        y = 0
+    elseif buttonID == 5 then
+        x = 0
+        y = 90
+    elseif buttonID == 6 then
+        x = 90
+        y = 90
+    elseif buttonID == 7 then
+        x = 90 * 2
+        y = 90
+    elseif buttonID == 8 then
+        x = 90 * 3
+        y = 90
+    elseif buttonID == 9 then
+        x = 0
+        y = 90 * 2
+    elseif buttonID == 10 then
+        x = 90
+        y = 90 * 2
+    elseif buttonID == 11 then
+        x = 90 * 2
+        y = 90 * 2
+    elseif buttonID == 12 then
+        x = 90 * 3
+        y = 90 * 2
+    end
+    return x, y
+end
+
+--- hs.loupedeckct.updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
+--- Function
+--- Sends an image to the specified button on the middle screen.
+---
+--- Parameters:
+---  * buttonID     - The button number (left to right, top to bottom)
+---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.updateScreenButtonImage(buttonID, imageBytes, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID)
+    mod.updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+end
+
 -- solidColorImage(width, height, color) -> string
 -- Function
 -- Creates a solid-color image for the specified screen with the specified RGB value.
@@ -1163,8 +1327,8 @@ end
 --- Parameters:
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
----  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---  * frame        - (optional) An optional `hs.geometry.rect` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -1180,6 +1344,26 @@ function mod.updateScreenColor(screen, color, frame, callbackFn)
         frame,
         callbackFn
     )
+end
+
+--- hs.loupedeckct.updateScreenButtonColor(buttonID, color[, callbackFn]) -> boolean
+--- Function
+--- Sends an image to the specified screen and refreshes the specified screen.
+---
+--- Parameters:
+---  * buttonID     - The button number (left to right, top to bottom)
+---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.updateScreenButtonColor(buttonID, color, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID)
+    mod.updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
 --- hs.loupdeckct.buttonID -> table
@@ -1307,12 +1491,12 @@ local function updateWatcher(enabled)
             mod._usbWatcher = usb.watcher.new(function(data)
                 if data.productName == "LOUPEDECK device" then
                     if data.eventType == "added" then
-                        log.df("Loupedeck CT Connected")
+                        --log.df("Loupedeck CT Connected")
                         doAfter(4, function()
                             mod.connect(true)
                         end)
                     elseif data.eventType == "removed" then
-                        log.df("Loupedeck CT Disconnected")
+                        --log.df("Loupedeck CT Disconnected")
                     end
                 end
             end):start()
@@ -1377,7 +1561,7 @@ function mod.connect(retry)
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to Loupedeck CT: %s", url)
+    --log.df("Connecting to Loupedeck CT: %s", url)
     mod._websocket = websocket.new(url, websocketCallback)
 end
 
