@@ -2,6 +2,28 @@
 ---
 --- Loupedeck CT Manager Plugin.
 
+--[[
+
+TODO LIST:
+
+    [x] Fix bug when dragging and dropping icon
+    [ ] Rework code so that we don't have to use lookup tables (for performance)
+    [ ] Rework code so that we only send data to the screens if we need to update it
+    [ ] "Choose Icon" chooser should remember last path
+    [ ] Implement Reset buttons
+    [ ] Add controls for Touch Wheel (left/right/up/down)
+    [x] Add controls for Jog Wheel (left/right)
+    [ ] Add controls for left and right screens
+    [ ] Add controls for vibration
+    [ ] Add actions for bank controls
+    [ ] Add support for Fn keys as modifiers
+    [ ] Add support for custom applications
+    [ ] Add checkbox to enable/disable the hard drive support
+    [ ] Add button to apply the same action of selected control to all banks
+    [ ] Right click on image drop zone to show popup with a list of recent imported images
+
+--]]
+
 local require         = require
 
 local log             = require "hs.logger".new "ldCT"
@@ -31,11 +53,11 @@ end)
 
 mod.enabled = config.prop("loupedeckct.enabled", true):watch(function(enabled)
     if enabled then
-        log.df("Connecting to Loupedeck CT")
+        --log.df("Connecting to Loupedeck CT")
         ct.connect(true)
         mod._appWatcher:start()
     else
-        log.df("Disconnecting from Loupedeck CT")
+        --log.df("Disconnecting from Loupedeck CT")
         ct.disconnect()
         mod._appWatcher:stop()
     end
@@ -49,6 +71,7 @@ mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoup
 mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 
 local translateButtons = {
+    [0]                         = "Jog Wheel",
     [1]                         = "Knob 1",
     [2]                         = "Knob 2",
     [3]                         = "Knob 3",
@@ -138,7 +161,6 @@ function mod.refresh()
                     end
                 end
                 if not success then
-                    log.df("blacking out")
                     ct.updateScreenButtonColor(buttonID, black)
                 end
             end

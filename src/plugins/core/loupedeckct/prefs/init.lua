@@ -590,6 +590,7 @@ local function loupedeckCTPanelCallback(id, params)
             local b = params["bank"]
             local c = params["selectedControl"]
             local encodedIcon = params["icon"]
+            local selectedControl = params["selectedControl"]
 
             local items = mod.items()
 
@@ -597,7 +598,34 @@ local function loupedeckCTPanelCallback(id, params)
             if not items[a][b] then items[a][b] = {} end
             if not items[a][b][c] then items[a][b][c] = {} end
 
-            items[a][b][c]["encodedIcon"] = encodedIcon
+            --------------------------------------------------------------------------------
+            -- Process the Icon to remove transparency:
+            --------------------------------------------------------------------------------
+            local width
+            local height
+            if selectedControl and selectedControl:sub(1, 6) == "Button" then
+                width = 90
+                height = 90
+            end
+            local newImage = image.imageFromURL(encodedIcon)
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+            v[2] = {
+              type="image",
+              image = newImage,
+              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+            }
+            local fixedImage = v:imageFromCanvas()
+            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+            items[a][b][c]["encodedIcon"] = fixedEncodedIcon
 
             mod.items(items)
 

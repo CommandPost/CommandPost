@@ -45,73 +45,196 @@
 		// KNOB:
 		// -------------------------------------------------
 		if (controlType == "knob") {
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "none";
+			document.getElementById("spacerD").style.display = "none";
+
 			document.getElementById("knobA").style.display = "block";
 			document.getElementById("knobB").style.display = "block";
 			document.getElementById("knobC").style.display = "block";
-		} else {
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
-		}
 
-		// -------------------------------------------------
-		// BUTTON:
-		// -------------------------------------------------
-		if (controlType == "button") {
-		} else {
+			document.getElementById("touchWheelA").style.display = "none";
+			document.getElementById("touchWheelB").style.display = "none";
+			document.getElementById("touchWheelC").style.display = "none";
+			document.getElementById("touchWheelD").style.display = "none";
+			document.getElementById("touchWheelE").style.display = "none";
+			document.getElementById("touchWheelF").style.display = "none";
+
+			document.getElementById("pressActionA").style.display = "none";
+			document.getElementById("pressActionB").style.display = "none";
+			document.getElementById("pressActionC").style.display = "none";
+
+			document.getElementById("iconA").style.display = "none";
+			document.getElementById("iconB").style.display = "none";
+			document.getElementById("iconC").style.display = "none";
+
+			document.getElementById("ledColorA").style.display = "none";
+			document.getElementById("ledColorB").style.display = "none";
 		}
 
 		// -------------------------------------------------
 		// TOUCH BUTTON:
 		// -------------------------------------------------
 		if (controlType == "touch-button") {
+			document.getElementById("spacerA").style.display = "block";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "none";
+			document.getElementById("spacerD").style.display = "none";
+
+			document.getElementById("knobA").style.display = "none";
+			document.getElementById("knobB").style.display = "none";
+			document.getElementById("knobC").style.display = "none";
+
+			document.getElementById("touchWheelA").style.display = "none";
+			document.getElementById("touchWheelB").style.display = "none";
+			document.getElementById("touchWheelC").style.display = "none";
+			document.getElementById("touchWheelD").style.display = "none";
+			document.getElementById("touchWheelE").style.display = "none";
+			document.getElementById("touchWheelF").style.display = "none";
+
+			document.getElementById("pressActionA").style.display = "table";
+			document.getElementById("pressActionB").style.display = "table";
+			document.getElementById("pressActionC").style.display = "table";
+
 			document.getElementById("iconA").style.display = "block";
 			document.getElementById("iconB").style.display = "block";
-		} else {
-			document.getElementById("iconA").style.display = "none";
-			document.getElementById("iconB").style.display = "none";
+
+			document.getElementById("ledColorA").style.display = "none";
+			document.getElementById("ledColorB").style.display = "none";
 		}
 
 		// -------------------------------------------------
 		// LED BUTTON:
 		// -------------------------------------------------
 		if (controlType == "led-button") {
+			document.getElementById("spacerA").style.display = "block";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "none";
+			document.getElementById("spacerD").style.display = "none";
+
+			document.getElementById("knobA").style.display = "none";
+			document.getElementById("knobB").style.display = "none";
+			document.getElementById("knobC").style.display = "none";
+
+			document.getElementById("touchWheelA").style.display = "none";
+			document.getElementById("touchWheelB").style.display = "none";
+			document.getElementById("touchWheelC").style.display = "none";
+			document.getElementById("touchWheelD").style.display = "none";
+			document.getElementById("touchWheelE").style.display = "none";
+			document.getElementById("touchWheelF").style.display = "none";
+
+			document.getElementById("pressActionA").style.display = "table";
+			document.getElementById("pressActionB").style.display = "table";
+			document.getElementById("pressActionC").style.display = "table";
+
+			document.getElementById("iconA").style.display = "none";
+			document.getElementById("iconB").style.display = "none";
+			document.getElementById("iconC").style.display = "none";
+
 			document.getElementById("ledColorA").style.display = "block";
 			document.getElementById("ledColorB").style.display = "block";
-		} else {
+		}
+
+		// -------------------------------------------------
+		// LEFT/RIGHT SCREENS:
+		// -------------------------------------------------
+		if (controlType == "screen") {
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "none";
+			document.getElementById("spacerD").style.display = "none";
+
+			document.getElementById("knobA").style.display = "none";
+			document.getElementById("knobB").style.display = "none";
+			document.getElementById("knobC").style.display = "none";
+
+			document.getElementById("touchWheelA").style.display = "none";
+			document.getElementById("touchWheelB").style.display = "none";
+			document.getElementById("touchWheelC").style.display = "none";
+			document.getElementById("touchWheelD").style.display = "none";
+			document.getElementById("touchWheelE").style.display = "none";
+			document.getElementById("touchWheelF").style.display = "none";
+
+			document.getElementById("pressActionA").style.display = "none";
+			document.getElementById("pressActionB").style.display = "none";
+			document.getElementById("pressActionC").style.display = "none";
+
+			document.getElementById("iconA").style.display = "block";
+			document.getElementById("iconB").style.display = "block";
+			document.getElementById("iconC").style.display = "block";
+
 			document.getElementById("ledColorA").style.display = "none";
 			document.getElementById("ledColorB").style.display = "none";
 		}
 
 		// -------------------------------------------------
-		// WHEEL:
+		// JOG WHEEL:
 		// -------------------------------------------------
-		if (controlType == "wheel" || controlType == "screen") {
+		if (controlType == "jog-wheel") {
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "none";
+			document.getElementById("spacerD").style.display = "none";
+
+			document.getElementById("knobA").style.display = "block";
+			document.getElementById("knobB").style.display = "block";
+			document.getElementById("knobC").style.display = "block";
+
+			document.getElementById("touchWheelA").style.display = "none";
+			document.getElementById("touchWheelB").style.display = "none";
+			document.getElementById("touchWheelC").style.display = "none";
+			document.getElementById("touchWheelD").style.display = "none";
+			document.getElementById("touchWheelE").style.display = "none";
+			document.getElementById("touchWheelF").style.display = "none";
+
 			document.getElementById("pressActionA").style.display = "none";
 			document.getElementById("pressActionB").style.display = "none";
 			document.getElementById("pressActionC").style.display = "none";
-		} else {
-			document.getElementById("pressActionA").style.display = "table";
-			document.getElementById("pressActionB").style.display = "table";
-			document.getElementById("pressActionC").style.display = "table";
+
+			document.getElementById("iconA").style.display = "none";
+			document.getElementById("iconB").style.display = "none";
+			document.getElementById("iconC").style.display = "none";
+
+			document.getElementById("ledColorA").style.display = "none";
+			document.getElementById("ledColorB").style.display = "none";
 		}
 
 		// -------------------------------------------------
-		// SCREEN:
+		// WHEEL SCREEN:
 		// -------------------------------------------------
-		/*
-		if (controlType == "screen") {
+		if (controlType == "wheel-screen") {
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("spacerD").style.display = "block";
+
+			document.getElementById("knobA").style.display = "none";
+			document.getElementById("knobB").style.display = "none";
+			document.getElementById("knobC").style.display = "none";
+
+			document.getElementById("touchWheelA").style.display = "block";
+			document.getElementById("touchWheelB").style.display = "block";
+			document.getElementById("touchWheelC").style.display = "block";
+			document.getElementById("touchWheelD").style.display = "block";
+			document.getElementById("touchWheelE").style.display = "block";
+			document.getElementById("touchWheelF").style.display = "block";
+
 			document.getElementById("pressActionA").style.display = "none";
 			document.getElementById("pressActionB").style.display = "none";
 			document.getElementById("pressActionC").style.display = "none";
-		} else {
-			document.getElementById("pressActionA").style.display = "table";
-			document.getElementById("pressActionB").style.display = "table";
-			document.getElementById("pressActionC").style.display = "table";
-		}
-		*/
 
+			document.getElementById("iconA").style.display = "block";
+			document.getElementById("iconB").style.display = "block";
+			document.getElementById("iconC").style.display = "block";
+
+			document.getElementById("ledColorA").style.display = "none";
+			document.getElementById("ledColorB").style.display = "none";
+		}
+
+		// -------------------------------------------------
 		// Save the selectedControl in a hidden field:
+		// -------------------------------------------------
 		document.getElementById("selectedControl").value = label;
 
 		try {
@@ -372,7 +495,7 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr>
+						<tr id="spacerA">
 							<td>
 								</br>
 							</td>
@@ -393,7 +516,49 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr>
+						<tr id="spacerB">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- TOUCH WHEEL UP & DOWN : -->
+						<tr id="touchWheelA" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<th width="229px">Push Up Action:</th>
+							<th width="229px">Push Down Action:</th>
+						</tr>
+						<tr id="touchWheelB" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="touchWheelC" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Left')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Left')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Right')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Right')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerC">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- TOUCH WHEEL LEFT & RIGHT : -->
+						<tr id="touchWheelD" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<th width="229px">Push Left Action:</th>
+							<th width="229px">Push Right Action:</th>
+						</tr>
+						<tr id="touchWheelE" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="touchWheelF" {* (lastControlType == "knob" and "") or [[style="display: none;"]] *}>
+							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Left')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Left')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a id="right_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Right')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Right')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerD">
 							<td>
 								</br>
 							</td>
@@ -401,7 +566,7 @@
 
 						<!-- ICON: -->
 						<tr id="iconA" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
-							<th width="229px">Image (90 x 90px):</th>
+							<th width="229px">Image Drop Zone:</th>
 						</tr>
 						<tr id="iconB" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
 							<td width="229px">
@@ -423,7 +588,12 @@
 									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
 								</div>
 							</td>
-							<td width="229px"></td>
+							<td width="229px">
+
+							</td>
+						</tr>
+						<tr id="iconC" {* (lastControlType == "touch-button" and "") or [[style="display: none;"]] *}>
+							<th width="229px"><i style="color: #FFFFFF; padding-left: 14px;">90 x 90 pixels</i></th>
 						</tr>
 
 
@@ -475,7 +645,8 @@
     <area 		alt="D" 				title="D" 				href="#" 			coords="928,849,1047,969" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 25);">
     <area 		alt="E" 				title="E" 				href="#" 			coords="929,974,1047,1092" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 26);">
     <area 		alt="Fn (Right)" 		title="Fn (Right)" 		href="#"			coords="805,973,922,1093" 	shape="rect" 		onclick="changeControl(this.title, 'led-button', 23);">
-    <area 		alt="Wheel" 			title="Wheel" 			href="#" 			coords="399,735,749,1084" 	shape="rect" 		onclick="changeControl(this.title, 'wheel');">
+    <area 		alt="Wheel Screen" 		title="Wheel Screen"    href="#" 			coords="479,1023,665,794"   shape="rect"        onclick="changeControl(this.title, 'wheel-screen');">
+    <area 		alt="Jog Wheel" 		title="Jog Wheel" 		href="#" 			coords="399,735,749,1084" 	shape="rect" 		onclick="changeControl(this.title, 'jog-wheel');">
     <area 		alt="Left Screen" 		title="Left Screen" 	href="#" 			coords="260,174,326,521" 	shape="rect" 		onclick="changeControl(this.title, 'screen');">
     <area 		alt="Right Screen" 		title="Right Screen" 	href="#" 			coords="819,175,886,524" 	shape="rect" 		onclick="changeControl(this.title, 'screen');">
 </map>

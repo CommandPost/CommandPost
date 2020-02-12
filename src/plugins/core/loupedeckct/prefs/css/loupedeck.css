@@ -228,10 +228,10 @@ loupedeckRowType {
   border-radius: 5px;
   color: white;
   font: bold 12px/50px arial;
-  height: 50px;
+  height: 95px;
   /* margin: 7.5px auto; */
   text-align: center;
-  width: 50px;
+  width: 95px;
 }
 
 .dropzone.hover {
