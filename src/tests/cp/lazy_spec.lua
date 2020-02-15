@@ -1,21 +1,29 @@
-local test          = require "cp.test"
+local require = require
+
+local spec      = require "cp.spec"
+local expect    = require "cp.spec.expect"
+
+local describe, it  = spec.describe, spec.it
+
 local class         = require "middleclass"
 local lazy          = require "cp.lazy"
 local prop          = require "cp.prop"
 
--- local log           = require "hs.logger" .new "lazy_test"
+-- local log           = require "hs.logger" .new "s_lazy"
 -- local inspect       = require "hs.inspect"
 
-return test.suite("cp.lazy"):with {
-    test("statics", function()
+return describe "cp.lazy" {
+    it "will has a static `lazy` table"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
-        ok(eq(type(Alpha.static.lazy), "table"))
-        ok(eq(type(Alpha.lazy), "table"))
-        ok(eq(Alpha.lazy, Alpha.static.lazy))
+        expect(type(Alpha.static.lazy)):is("table")
+        expect(type(Alpha.lazy)):is("table")
+        expect(Alpha.lazy):is(Alpha.static.lazy)
     end),
 
-    test("value", function()
+    it "can have lazy values"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
@@ -27,13 +35,19 @@ return test.suite("cp.lazy"):with {
         local a = Alpha()
         local b = Alpha()
 
-        ok(eq(a.id, 1))
-        ok(eq(a.id, 1))
-        ok(eq(b.id, 2))
-        ok(eq(b.id, 2))
+        expect(a.id):is(1)
+        expect(count):is(1)
+        expect(a.id):is(1)
+        expect(count):is(1)
+
+        expect(b.id):is(2)
+        expect(count):is(2)
+        expect(b.id):is(2)
+        expect(count):is(2)
     end),
 
-    test("method", function()
+    it "can have lazy methods"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
@@ -45,13 +59,19 @@ return test.suite("cp.lazy"):with {
         local a = Alpha()
         local b = Alpha()
 
-        ok(eq(a:id(), 1))
-        ok(eq(a:id(), 1))
-        ok(eq(b:id(), 2))
-        ok(eq(b:id(), 2))
+        expect(a:id()):is(1)
+        expect(count):is(1)
+        expect(a:id()):is(1)
+        expect(count):is(1)
+
+        expect(b:id()):is(2)
+        expect(count):is(2)
+        expect(b:id()):is(2)
+        expect(count):is(2)
     end),
 
-    test("prop", function()
+    it " can have lazy props"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
@@ -63,22 +83,23 @@ return test.suite("cp.lazy"):with {
         local a = Alpha()
         local b = Alpha()
 
-        ok(eq(a:id(), 1))
-        ok(eq(a:id(), 1))
-        ok(eq(b:id(), 2))
-        ok(eq(b:id(), 2))
+        expect(a:id()):is(1)
+        expect(a:id()):is(1)
+        expect(b:id()):is(2)
+        expect(b:id()):is(2)
 
-        ok(prop.is(a.id), true)
-        ok(prop.is(b.id), true)
+        expect(prop.is(a.id)):is(true)
+        expect(prop.is(b.id)):is(true)
 
-        ok(eq(a.id:owner(), a))
-        ok(eq(b.id:owner(), b))
+        expect(a.id:owner()):is(a)
+        expect(b.id:owner()):is(b)
 
-        ok(eq(a.id:label(), "id"))
-        ok(eq(b.id:label(), "id"))
+        expect(a.id:label()):is("id")
+        expect(b.id:label()):is("id")
     end),
 
-    test("override", function()
+    it "will not override a defined method"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         function Alpha.a()
@@ -99,12 +120,13 @@ return test.suite("cp.lazy"):with {
 
         local a = Alpha()
 
-        ok(eq(a:a(), "a"))
-        ok(eq(a:b(), "b"), "lazy methods should not override 'real' methods")
-        ok(eq(a:c(), "cc"))
+        expect(a:a()):is("a")
+        expect.given("lazy methods should not override 'real' methods"):that(a:b()):is("b")
+        expect(a:c()):is("cc")
     end),
 
-    test("subclass", function()
+    it "will pass on lazy properties to subclasses"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
@@ -130,18 +152,19 @@ return test.suite("cp.lazy"):with {
         local a = Alpha()
         local b = Beta()
 
-        ok(eq(a:id(), 1))
-        ok(eq(a:id(), 1))
-        ok(eq(b:id(), 2))
-        ok(eq(b:id(), 2))
+        expect(a:id()):is(1)
+        expect(a:id()):is(1)
+        expect(b:id()):is(2)
+        expect(b:id()):is(2)
 
-        ok(eq(a:a(), "a"))
-        ok(eq(a:b(), "b"))
-        ok(eq(b:a(), "a"))
-        ok(eq(b:b(), "bb"))
+        expect(a:a()):is("a")
+        expect(a:b()):is("b")
+        expect(b:a()):is("a")
+        expect(b:b()):is("bb")
     end),
 
-    test("in initialize", function()
+    it "is available in initialize"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         function Alpha.lazy.value.id()
@@ -154,10 +177,11 @@ return test.suite("cp.lazy"):with {
 
         local a = Alpha("x")
 
-        ok(eq(a.something, "ax"))
+        expect(a.something):is("ax")
     end),
 
-    test("__index", function()
+    it "works if __index is defined on the class directly"
+    :doing(function()
         local Alpha = class("Alpha"):include(lazy)
 
         function Alpha.lazy.value.id()
@@ -172,9 +196,7 @@ return test.suite("cp.lazy"):with {
 
         local a = Alpha()
 
-        -- log.df("Alpha: %s", inspect(Alpha, {depth = 2}))
-
-        ok(eq(a.id, "a"))
-        ok(eq(a.beta, "b"))
+        expect(a.id):is("a")
+        expect(a.beta):is("b")
     end),
 }

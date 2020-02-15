@@ -1,26 +1,23 @@
 --- === plugins.core.tangent.manager.parameter ===
 ---
---- Represents a Tangent Parameter
+--- Represents a Tangent Parameter control.
 
 local require = require
 
-local log               = require("hs.logger").new("tng_param")
+local log               = require "hs.logger" .new "tng_param"
 
-local tangent           = require("hs.tangent")
+local tangent           = require "hs.tangent"
 
-local prop              = require("cp.prop")
-local x                 = require("cp.web.xml")
-local is                = require("cp.is")
+local x                 = require "cp.web.xml"
+local is                = require "cp.is"
 
-local named             = require("named")
+local named             = require "named"
 
 local format            = string.format
 
+local parameter = named:subclass "core.tangent.manager.parameter"
 
-local parameter = {}
-parameter.mt = named({})
-
---- plugins.core.tangent.manager.parameter.new(id[, name[, parent]) -> parameter
+--- plugins.core.tangent.manager.parameter(id[, name[, parent]) -> parameter
 --- Constructor
 --- Creates a new `Parameter` instance.
 ---
@@ -31,71 +28,21 @@ parameter.mt = named({})
 ---
 --- Returns:
 ---  * the new `parameter`.
-function parameter.new(id, name, parent)
-    local o = prop.extend({
-        id = id,
-        _parent = parent,
-
-        --- plugins.core.tangent.manager.parameter.enabled <cp.prop: boolean>
-        --- Field
-        --- Indicates if the parameter is enabled.
-        enabled = prop.TRUE(),
-    }, parameter.mt)
-
-    prop.bind(o) {
-        --- plugin.core.tangent.manager.parameter.active <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the parameter is active. It will only be active if
-        --- the current parameter is `enabled` and if the parent group (if present) is `active`.
-        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE()
-    }
-
-    o:name(name)
-
-    return o
+function parameter:initialize(id, name, parent)
+    named.initialize(self, id, name, parent)
 end
 
---- plugins.core.tangent.manager.parameter.is(other) -> boolean
+--- plugins.core.tangent.manager.parameter.is(thing) -> boolean
 --- Function
---- Checks if the `other` is a `parameter` instance.
+--- Checks if the `thing` is a `parameter` instance.
 ---
 --- Parameters:
----  * other     - The other object to test.
+---  * thing     - The other object to test.
 ---
 --- Returns:
 ---  * `true` if it is a `parameter`, `false` if not.
-function parameter.is(other)
-    return type(other) == "table" and getmetatable(other) == parameter.mt
-end
-
---- plugins.core.tangent.manager.parameter:parent() -> group | controls
---- Method
---- Returns the `group` or `controls` that contains this parameter.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent.
-function parameter.mt:parent()
-    return self._parent
-end
-
---- plugins.core.tangent.manager.parameter:controls()
---- Method
---- Returns the `controls` the parameter belongs to.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `controls`, or `nil` if not specified.
-function parameter.mt:controls()
-    local parent = self:parent()
-    if parent then
-        return parent:controls()
-    end
-    return nil
+function parameter.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(parameter)
 end
 
 --- plugins.core.tangent.manager.parameter:minValue([value]) -> number | self
@@ -107,7 +54,7 @@ end
 ---
 --- Returns:
 ---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
-function parameter.mt:minValue(value)
+function parameter:minValue(value)
     if value ~= nil then
         self._minValue = value
         return self
@@ -125,7 +72,7 @@ end
 ---
 --- Returns:
 ---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
-function parameter.mt:maxValue(value)
+function parameter:maxValue(value)
     if value ~= nil then
         self._maxValue = value
         return self
@@ -143,7 +90,7 @@ end
 ---
 --- Returns:
 ---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
-function parameter.mt:stepSize(value)
+function parameter:stepSize(value)
     if value ~= nil then
         self._stepSize = value
         return self
@@ -164,7 +111,7 @@ end
 ---
 --- Returns:
 ---  * The `parameter` instance.
-function parameter.mt:onGet(getFn)
+function parameter:onGet(getFn)
     if is.nt.callable(getFn) then
         error("Please provide a `get` function: %s", type(getFn))
     end
@@ -182,7 +129,7 @@ end
 ---
 --- Returns:
 ---  * The current value, or `nil` if it can't be accessed.
-function parameter.mt:get()
+function parameter:get()
     if self._get and self:active() then
         return self._get()
     end
@@ -203,7 +150,7 @@ end
 ---
 --- Returns:
 ---  * The `parameter` instance.
-function parameter.mt:onChange(changeFn)
+function parameter:onChange(changeFn)
     if is.nt.callable(changeFn) then
         error("Please provide a `change` function: %s", type(changeFn))
     end
@@ -221,7 +168,7 @@ end
 ---
 --- Returns:
 ---  * The current value, or `nil` if it can't be accessed.
-function parameter.mt:change(amount)
+function parameter:change(amount)
     if self._change and self:active() then
         local ok, result = xpcall(function() self._change(amount) end, debug.traceback)
         if not ok then
@@ -245,7 +192,7 @@ end
 ---
 --- Returns:
 ---  * The `parameter` instance.
-function parameter.mt:onReset(resetFn)
+function parameter:onReset(resetFn)
     if is.nt.callable(resetFn) then
         error(format("Please provide a `reset` function: %s", type(resetFn)))
     end
@@ -262,14 +209,23 @@ end
 ---
 --- Returns:
 ---  * The current value, or `nil` if it can't be accessed.
-function parameter.mt:reset()
+function parameter:reset()
     if self._reset and self:active() then
         self._reset()
     end
     return self:get()
 end
 
-function parameter.mt:update()
+--- plugins.core.tangent.manager.parameter:update()
+--- Function
+--- Updates the Tangent with the current value of the parameter.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing.
+function parameter:update()
     if self:active() and tangent.connected() then
         local value = self:get()
         if value ~= nil then
@@ -287,7 +243,7 @@ end
 ---
 --- Returns:
 ---  * The `xml` for the Parameter.
-function parameter.mt:xml()
+function parameter:xml()
     return x.Parameter { id=format("%#010x", self.id) } (
         function()
             local result = named.xml(self)
@@ -305,7 +261,7 @@ function parameter.mt:xml()
     )
 end
 
-function parameter.mt:__tostring()
+function parameter:__tostring()
     return format("parameter: %s (%#010x)", self:name(), self.id)
 end
 
