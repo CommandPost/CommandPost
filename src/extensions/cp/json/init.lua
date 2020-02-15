@@ -59,7 +59,7 @@ function mod.write(path, data)
         log.ef("Path is required for `cp.json.write`.")
         return false
     end
-    return json.write(data, path, false, true)
+    return json.write(data, path, true, true)
 end
 
 --- cp.json.encode(val[, prettyprint]) -> string
