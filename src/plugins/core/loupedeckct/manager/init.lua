@@ -31,7 +31,7 @@ TO-DO:
 
 local require         = require
 
-local log             = require "hs.logger".new "ldCT"
+--local log             = require "hs.logger".new "ldCT"
 
 local application     = require "hs.application"
 local appWatcher      = require "hs.application.watcher"
@@ -124,7 +124,7 @@ mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
-    local success = false
+    local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
