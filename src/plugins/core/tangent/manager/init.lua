@@ -79,7 +79,7 @@ mod._connectionConfirmed = false
 --- plugins.core.tangent.manager.controls
 --- Constant
 --- The set of controls currently registered.
-mod.controls = controls.new()
+mod.controls = controls()
 
 local controlsXML
 
@@ -221,7 +221,7 @@ end
 --- Returns:
 --- * The new `mode`
 function mod.addMode(id, name)
-    local m = mode.new(id, name, mod)
+    local m = mode(id, name, mod)
     insert(mod._modes, m)
     sort(mod._modes, function(a,b) return a.id < b.id end)
     return m
@@ -711,8 +711,15 @@ end
 --
 -- Returns:
 --  * The result from the test.
-function mod._test(...)
-    return require("all_tests")(...)
+function mod._spec(name)
+    local ok, result = xpcall(function() return require(name .. "_spec") end, debug.traceback)
+    if not ok then
+        ok, result = xpcall(function() return require(name .. "_test") end, debug.traceback)
+        if not ok then
+            error(result)
+        end
+    end
+    return result
 end
 
 local plugin = {

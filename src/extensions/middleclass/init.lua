@@ -74,9 +74,11 @@ local function _createClass(name, super)
   local dict = {}
   dict.__index = dict
 
-  local aClass = { name = name, super = super, static = {},
-                   __instanceDict = dict, __declaredMethods = {},
-                   subclasses = setmetatable({}, {__mode='k'})  }
+  local aClass = {
+    static = { super = super, name = name,
+    subclasses = setmetatable({}, {__mode='k'}) },
+    __instanceDict = dict, __declaredMethods = {},
+  }
 
   if super then
     setmetatable(aClass.static, {
@@ -163,6 +165,11 @@ local DefaultMixin = {
       return type(other)      == 'table' and
              type(self.super) == 'table' and
              ( self.super == other or self.super:isSubclassOf(other) )
+    end,
+
+    isClassFor = function(self, instance)
+      assert(type(self) == 'table', "Make sure that you are using 'Class:isClassFor' instead of 'Class.isClassFor'")
+      return type(instance) == "table" and instance.isInstanceOf and instance:isInstanceOf(self)
     end,
 
     include = function(self, ...)

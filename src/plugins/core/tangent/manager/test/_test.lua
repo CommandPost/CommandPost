@@ -1,5 +1,5 @@
 local require       = require
-local test 		    = require("cp.test")
+local test 		    = require "cp.test"
 
 return test.suite("cp") :with {
     require "named_test",
