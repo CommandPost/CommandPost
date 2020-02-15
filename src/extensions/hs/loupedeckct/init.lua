@@ -4,12 +4,34 @@
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 
+-- TODO:
+--  [ ] Add control to enable/disable Bluetooth
+
+--------------------------------------------------------------------------------
+-- BLUETOOTH:
+--
+-- Message received (4): (4) 04-10-97-01
+-- Message received (4): (4) 04-0F-98-01
+-- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
+-- Message 'IsBluetoothEnabled' responded in 0 ms
+-- WebSocket response (63) '{
+--   "id": 15,
+--   "name": "IsBluetoothEnabled",
+--   "data": false
+-- }'
+-- Message received (4): (4) 04-10-99-01
+-- Message received (4): (4) 04-0F-9A-01
+-- Message received (4): (4) 04-10-9B-01
+-- Message received (4): (4) 04-0F-9C-01
+-- Message received (4): (4) 04-10-9D-01
+-- Message received (4): (4) 04-0F-9E-01
+--------------------------------------------------------------------------------
+
 local log               = require "hs.logger".new("loupedeckct")
 
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
 local hsmath            = require "hs.math"
-local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
 local timer             = require "hs.timer"
@@ -22,7 +44,6 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
-local imageFromPath     = image.imageFromPath
 local randomFromRange   = hsmath.randomFromRange
 
 local bytesToHex        = bytes.bytesToHex
@@ -822,43 +843,6 @@ function mod.requestSelfTest(callbackFn)
     end)
 end
 
---function mod.vibraWaveformIndex()
-    --------------------------------------------------------------------------------
-    -- VIBRA WAVEFORM INDEX:
-    --
-    -- Message sent (8): (8) 08-19-55-02-03-00-09-19
-    -- Message received (8): (8) 08-19-55-02-03-00-09-19
-    -- Message 'SetDeviceVibraWaveformIndex' responded in 16 ms
-    -- WebSocket response (69) '{
-    --   "id": 15,
-    --   "name": "SetDeviceVibraWaveformIndex",
-    --   "data": 25
-    -- }'
-    --------------------------------------------------------------------------------
---end
-
---function mod.bluetooth()
-    --------------------------------------------------------------------------------
-    -- BLUETOOTH:
-    --
-    -- Message received (4): (4) 04-10-97-01
-    -- Message received (4): (4) 04-0F-98-01
-    -- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
-    -- Message 'IsBluetoothEnabled' responded in 0 ms
-    -- WebSocket response (63) '{
-    --   "id": 15,
-    --   "name": "IsBluetoothEnabled",
-    --   "data": false
-    -- }'
-    -- Message received (4): (4) 04-10-99-01
-    -- Message received (4): (4) 04-0F-9A-01
-    -- Message received (4): (4) 04-10-9B-01
-    -- Message received (4): (4) 04-0F-9C-01
-    -- Message received (4): (4) 04-10-9D-01
-    -- Message received (4): (4) 04-0F-9E-01
-    --------------------------------------------------------------------------------
---end
-
 -- function processRegisterResponse(response) -> nil
 -- function
 -- Receives the raw value of a register and interprets it, adding properties to the `response` table.
@@ -1465,7 +1449,7 @@ local function updateWatcher(enabled)
                         doAfter(4, function()
                             mod.connect(true)
                         end)
-                    elseif data.eventType == "removed" then
+                    --elseif data.eventType == "removed" then
                         --log.df("Loupedeck CT Disconnected")
                     end
                 end

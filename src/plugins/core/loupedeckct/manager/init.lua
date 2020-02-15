@@ -14,13 +14,13 @@ DONE:
     [x] Implement Reset buttons
     [x] "Choose Icon" chooser should remember last path
     [x] Add controls for Touch Wheel (left/right/up/down)
+    [x] Add support for Fn keys as modifiers
 
 TO-DO:
 
-    [ ] Improve Left/Right/Up/Down Touch Screen Action Performance
+    [ ] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
     [ ] Add controls for vibration
     [ ] Add actions for bank controls
-    [ ] Add support for Fn keys as modifiers
     [ ] Add support for custom applications
     [ ] Add checkbox to enable/disable the hard drive support
     [ ] Add button to apply the same action of selected control to all banks
@@ -49,6 +49,16 @@ local doAfter         = timer.doAfter
 local imageFromURL    = image.imageFromURL
 
 local mod = {}
+
+-- leftFnPressed -> boolean
+-- Variable
+-- Is the left Function button pressed?
+local leftFnPressed = false
+
+-- rightFnPressed -> boolean
+-- Variable
+-- Is the right Function button pressed?
+local rightFnPressed = false
 
 -- cachedLEDButtonValues -> table
 -- Variable
@@ -114,7 +124,7 @@ mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
-
+    local success = false
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
@@ -134,7 +144,14 @@ function mod.refresh(dueToAppChange)
     local activeBanks = mod.activeBanks()
     local bank = activeBanks[bundleID] or "1"
 
-    local success
+    --------------------------------------------------------------------------------
+    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
+    --------------------------------------------------------------------------------
+    if leftFnPressed then
+        bank = bank .. "_LeftFn"
+    elseif rightFnPressed then
+        bank = bank .. "_RightFn"
+    end
 
     --------------------------------------------------------------------------------
     -- SET LED BUTTON COLOURS:
@@ -376,7 +393,7 @@ local function callback(data)
     --log.df("ct data: %s", hs.inspect(data))
 
     --------------------------------------------------------------------------------
-    -- REFRESH ON INITIAL LOAD:
+    -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_open" then
         doAfter(0.5, mod.refresh)
@@ -392,6 +409,38 @@ local function callback(data)
     local bank = activeBanks[bundleID] or "1"
 
     local buttonID = tostring(data.buttonID)
+
+    --------------------------------------------------------------------------------
+    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
+    --------------------------------------------------------------------------------
+    if data.id == ct.event.BUTTON_PRESS then
+        if data.direction == "up" then
+            if data.buttonID == ct.buttonID.LEFT_FN then
+                leftFnPressed = false
+                mod.refresh()
+            elseif data.buttonID == ct.buttonID.RIGHT_FN then
+                rightFnPressed = false
+                mod.refresh()
+            end
+        elseif data.direction == "down" then
+            if data.buttonID == ct.buttonID.LEFT_FN then
+                leftFnPressed = true
+                mod.refresh()
+            elseif data.buttonID == ct.buttonID.RIGHT_FN then
+                rightFnPressed = true
+                mod.refresh()
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- HANDLE FUNCTION KEYS AS MODIFIERS:
+    --------------------------------------------------------------------------------
+    if leftFnPressed then
+        bank = bank .. "_LeftFn"
+    elseif rightFnPressed then
+        bank = bank .. "_RightFn"
+    end
 
     if items[bundleID] and items[bundleID][bank] then
         if data.id == ct.event.BUTTON_PRESS and data.direction == "down" then

@@ -11,14 +11,9 @@ local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
-local commands                  = require "cp.commands"
 local config                    = require "cp.config"
 local i18n                      = require "cp.i18n"
-local json                      = require "cp.json"
 local tools                     = require "cp.tools"
-
-local moses                     = require "moses"
-local default                   = require "default"
 
 local doesDirectoryExist        = tools.doesDirectoryExist
 local removeFilenameFromPath    = tools.removeFilenameFromPath
@@ -111,7 +106,6 @@ local function resetApplication()
         if result == i18n("yes") then
             local items = mod.items()
             local app = mod.lastApplication()
-            local bank = mod.lastBank()
             items[app] = nil
             mod.items(items)
             mod._manager.refresh()
@@ -192,16 +186,17 @@ local function generateContent()
     local lastID = mod.lastID()
     local lastControlType = mod.lastControlType()
 
+    local lastEncodedIcon = ""
     local lastBankLabel = ""
     local lastPressValue = ""
     local lastLeftValue = ""
     local lastRightValue = ""
     local lastColorValue = "FFFFFF"
 
-    local lastTouchUpValue
-    local lastTouchDownValue
-    local lastTouchLeftValue
-    local lastTouchRightValue
+    local lastTouchUpValue = ""
+    local lastTouchDownValue = ""
+    local lastTouchLeftValue = ""
+    local lastTouchRightValue = ""
 
     local items = mod.items()
 
@@ -215,12 +210,14 @@ local function generateContent()
             if items[lastApplication][lastBank][lastControlType][lastID]["leftAction"] then
                 if items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"] then
                     lastLeftValue = items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"]
+                    lastTouchLeftValue = items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"]
                 end
             end
 
             if items[lastApplication][lastBank][lastControlType][lastID]["rightAction"] then
                 if items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"] then
                     lastRightValue = items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"]
+                    lastTouchRightValue = items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"]
                 end
             end
 
@@ -233,12 +230,14 @@ local function generateContent()
             if items[lastApplication][lastBank][lastControlType][lastID]["upAction"] then
                 if items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"] then
                     lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
+                    lastTouchUpValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
                 end
             end
 
             if items[lastApplication][lastBank][lastControlType][lastID]["downAction"] then
                 if items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"] then
                     lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"]
+                    lastTouchDownValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
                 end
             end
 
@@ -410,7 +409,7 @@ local function loupedeckCTPanelCallback(id, params)
                 local app = params["application"]
                 local bank = params["bank"]
                 local controlType = params["controlType"]
-                local id = params["id"]
+                local bid = params["id"]
                 local buttonType = params["buttonType"]
 
                 local result = {
@@ -419,7 +418,7 @@ local function loupedeckCTPanelCallback(id, params)
                     ["action"] = action,
                 }
 
-                setItem(app, bank, controlType, id, buttonType, result)
+                setItem(app, bank, controlType, bid, buttonType, result)
 
                 --------------------------------------------------------------------------------
                 -- Update the webview:
@@ -450,14 +449,14 @@ local function loupedeckCTPanelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local controlType = params["controlType"]
-            local id = params["id"]
+            local bid = params["id"]
             local buttonType = params["buttonType"]
 
             local result = {
                 [buttonType] = nil
             }
 
-            setItem(app, bank, controlType, id, result)
+            setItem(app, bank, controlType, bid, result)
         elseif callbackType == "updateApplicationAndBank" then
             mod.lastApplication(params["application"])
             mod.lastBank(params["bank"])
@@ -469,12 +468,12 @@ local function loupedeckCTPanelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local controlType = params["controlType"]
-            local id = params["id"]
+            local bid = params["id"]
 
             local selectedControl = params["selectedControl"]
 
             mod.lastSelectedControl(selectedControl)
-            mod.lastID(id)
+            mod.lastID(bid)
             mod.lastControlType(controlType)
 
             local pressValue = ""
@@ -487,8 +486,8 @@ local function loupedeckCTPanelCallback(id, params)
 
             local items = mod.items()
 
-            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][id] then
-                local item = items[app][bank][controlType][id]
+            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                local item = items[app][bank][controlType][bid]
                 if item["leftAction"] and item["leftAction"]["actionTitle"] then
                     leftValue = item["leftAction"]["actionTitle"]
                 end
@@ -536,10 +535,10 @@ local function loupedeckCTPanelCallback(id, params)
             local app = params["application"]
             local bank = params["bank"]
             local controlType = params["controlType"]
-            local id = params["id"]
+            local bid = params["id"]
             local value = params["value"]
 
-            setItem(app, bank, controlType, id, "led", value)
+            setItem(app, bank, controlType, bid, "led", value)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -608,10 +607,9 @@ local function loupedeckCTPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         local app = params["application"]
                         local bank = params["bank"]
-                        local controlType = params["controlType"]
-                        local id = params["id"]
+                        local bid = params["id"]
 
-                        setItem(app, bank, controlType, id, {["encodedIcon"] = encodedIcon})
+                        setItem(app, bank, controlType, bid, {["encodedIcon"] = encodedIcon})
 
                         injectScript([[setIcon("]] .. encodedIcon .. [[")]])
 
@@ -635,9 +633,9 @@ local function loupedeckCTPanelCallback(id, params)
                 local app = params["application"]
                 local bank = params["bank"]
                 local controlType = params["controlType"]
-                local id = params["id"]
+                local bid = params["id"]
 
-                setItem(app, bank, controlType, id, "encodedIcon", nil)
+                setItem(app, bank, controlType, bid, "encodedIcon", nil)
 
                 injectScript([[setIcon("")]])
 
@@ -689,9 +687,9 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local app = params["application"]
             local bank = params["bank"]
-            local id = params["id"]
+            local bid = params["id"]
 
-            setItem(app, bank, controlType, id, {["encodedIcon"] = fixedEncodedIcon})
+            setItem(app, bank, controlType, bid, {["encodedIcon"] = fixedEncodedIcon})
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
