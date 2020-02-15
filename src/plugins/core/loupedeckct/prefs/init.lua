@@ -258,7 +258,7 @@ local function generateContent()
     local context = {
         apps                        = apps,
 
-        numberOfSubGroups           = 9,
+        numberOfBanks               = mod._ctmanager.numberOfBanks,
         i18n                        = i18n,
 
         lastApplication             = lastApplication,

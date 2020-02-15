@@ -1094,6 +1094,8 @@
         "loudness": "Loudness",
         "loudness9": "Loudness",
         "loupedeckBankDescription": "Changes the Loupedeck+ Bank",
+        "loupedeckCT": "Loupedeck CT",
+        "loupedeckCTBankDescription": "Changes the Loupedeck CT Bank",
         "loupedeckCTResetAllConfirmation": "This will reset all Loupedeck CT items across all applications to the default values.",
         "loupedeckCTResetApplicationConfirmation": "This will reset all Loupedeck CT items in the current application to the default values.",
         "loupedeckCTResetBankConfirmation": "This will reset all Loupedeck CT items in the current bank to the default values.",

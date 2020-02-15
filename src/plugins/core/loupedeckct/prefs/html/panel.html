@@ -449,7 +449,7 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
 				<select id="bank" style="width: 100px;" onchange="updateApplicationAndBank()">
 					{%
-					for i=1, numberOfSubGroups do
+					for i=1, numberOfBanks do
 						local selected = ""
 						if lastBank == tostring(i) then
 							selected = [[selected=""]]
@@ -459,7 +459,7 @@
 					{% end %}
 					<option disabled>──────────</option>
 					{%
-					for i=1, numberOfSubGroups do
+					for i=1, numberOfBanks do
 						local selected = ""
 						if lastBank == tostring(i) .. "_LeftFn" then
 							selected = [[selected=""]]
@@ -469,7 +469,7 @@
 					{% end %}
 					<option disabled>──────────</option>
 					{%
-					for i=1, numberOfSubGroups do
+					for i=1, numberOfBanks do
 						local selected = ""
 						if lastBank == tostring(i) .. "_RightFn" then
 							selected = [[selected=""]]

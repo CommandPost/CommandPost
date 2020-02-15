@@ -15,38 +15,45 @@ DONE:
     [x] "Choose Icon" chooser should remember last path
     [x] Add controls for Touch Wheel (left/right/up/down)
     [x] Add support for Fn keys as modifiers
+    [x] Add actions for bank controls
 
 TO-DO:
 
-    [ ] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
     [ ] Add controls for vibration
-    [ ] Add actions for bank controls
+    [ ] Add Touch Wheel action for two finger tap (or just double tap?)
+
+    [ ] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
+
     [ ] Add support for custom applications
-    [ ] Add checkbox to enable/disable the hard drive support
+
     [ ] Add button to apply the same action of selected control to all banks
     [ ] Right click on image drop zone to show popup with a list of recent imported images
-    [ ] Add Touch Wheel action for two finger tap
 
+    [ ] Add checkbox to enable/disable the hard drive support
+    [ ] Add checkbox to enable/disable Bluetooth support
 --]]
 
-local require         = require
+local require               = require
 
---local log             = require "hs.logger".new "ldCT"
+--local log                   = require "hs.logger".new "ldCT"
 
-local application     = require "hs.application"
-local appWatcher      = require "hs.application.watcher"
-local ct              = require "hs.loupedeckct"
-local drawing         = require "hs.drawing"
-local image           = require "hs.image"
-local timer           = require "hs.timer"
+local application           = require "hs.application"
+local appWatcher            = require "hs.application.watcher"
+local ct                    = require "hs.loupedeckct"
+local drawing               = require "hs.drawing"
+local image                 = require "hs.image"
+local timer                 = require "hs.timer"
 
-local config          = require "cp.config"
-local deferred        = require "cp.deferred"
-local json            = require "cp.json"
+local config                = require "cp.config"
+local deferred              = require "cp.deferred"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local json                  = require "cp.json"
 
-local black           = drawing.color.hammerspoon.black
-local doAfter         = timer.doAfter
-local imageFromURL    = image.imageFromURL
+local black                 = drawing.color.hammerspoon.black
+local displayNotification   = dialog.displayNotification
+local doAfter               = timer.doAfter
+local imageFromURL          = image.imageFromURL
 
 local mod = {}
 
@@ -89,6 +96,11 @@ local cachedRightSideScreen = ""
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
+
+--- plugins.core.loupedeckct.manager.numberOfBanks -> number
+--- Field
+--- Number of banks
+mod.numberOfBanks = 9
 
 --- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
 --- Field
@@ -727,6 +739,71 @@ function plugin.init(deps)
     -- Connect to the Loupedeck CT:
     --------------------------------------------------------------------------------
     mod.enabled:update()
+
+    --------------------------------------------------------------------------------
+    -- Setup Bank Actions:
+    --------------------------------------------------------------------------------
+    local actionmanager = deps.actionmanager
+    actionmanager.addHandler("global_loupedeckct_banks")
+        :onChoices(function(choices)
+            for i=1, mod.numberOfBanks do
+                choices:add(i18n("loupedeckCT") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("loupedeckCTBankDescription"))
+                    :params({ id = i })
+                    :id(i)
+            end
+
+            choices:add(i18n("next") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckCTBankDescription"))
+                :params({ id = "next" })
+                :id("next")
+
+            choices:add(i18n("previous") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckCTBankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+                local activeBanks = mod.activeBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == mod.numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(mod.numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                mod.activeBanks(activeBanks)
+
+                mod.refresh()
+
+                local items = mod.items()
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+
+                displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
 
     return mod
 end
