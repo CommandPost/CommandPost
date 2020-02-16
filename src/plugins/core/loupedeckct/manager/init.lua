@@ -17,23 +17,27 @@ DONE:
     [x] Add support for Fn keys as modifiers
     [x] Add actions for bank controls
     [x] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
+    [x] Add button to apply the same action of selected control to all banks
+    [x] Add controls for vibration
+    [x] Add default Loupedeck CT layout
 
 TO-DO:
 
-    [ ] Add default Loupedeck CT layout
     [ ] Add ability to save the Loupedeck CT settings on the device
-    [ ] Add controls for vibration
     [ ] Add Touch Wheel action for two finger tap (or just double tap?)
     [ ] Add support for custom applications
-    [ ] Add button to apply the same action of selected control to all banks
+
     [ ] Right click on image drop zone to show popup with a list of recent imported images
+
     [ ] Add checkbox to enable/disable the hard drive support
     [ ] Add checkbox to enable/disable Bluetooth support
+    [ ] i18n-ify everything
+
 --]]
 
 local require               = require
 
---local log                   = require "hs.logger".new "ldCT"
+local log                   = require "hs.logger".new "ldCT"
 
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
@@ -120,15 +124,45 @@ mod.enabled = config.prop("loupedeckct.enabled", true):watch(function(enabled)
     end
 end)
 
+--- plugins.core.loupedeckct.manager.vibrations <cp.prop: boolean>
+--- Field
+--- Enable or disable Touch Bar vibrations.
+mod.vibrations = config.prop("loupedeckct.vibrations", true):watch(function(enabled)
+    ct.vibrations(enabled)
+end)
+
+-- defaultLayoutPath -> string
+-- Variable
+-- Default Layout Path
+local defaultLayoutPath = config.basePath .. "/plugins/core/loupedeckct/default/Default.cpLoupedeckCT"
+
+-- defaultLayout -> table
+-- Variable
+-- Default Loupedeck CT Layout
+local defaultLayout = json.read(defaultLayoutPath)
+
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
 --- Contains all the saved Loupedeck CT layouts.
-mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", {})
+mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
 
 --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
+
+--- plugins.core.loupedeckct.manager.reset()
+--- Function
+--- Resets the config back to the default layout.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.reset()
+    mod.items(defaultLayout)
+end
 
 --- plugins.core.loupedeckct.manager.refresh()
 --- Function
@@ -395,6 +429,7 @@ local function callback(data)
             clearCache()
             mod.refresh()
             hasLoaded = true
+            mod.vibrations:update()
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------

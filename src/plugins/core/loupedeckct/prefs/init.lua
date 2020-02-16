@@ -10,6 +10,7 @@ local canvas                    = require "hs.canvas"
 local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
+local loupedeckct               = require "hs.loupedeckct"
 
 local config                    = require "cp.config"
 local i18n                      = require "cp.i18n"
@@ -81,12 +82,8 @@ mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "1"
 local function resetEverything()
     webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
-            mod.items({})
+            mod._ctmanager.reset()
             mod._manager.refresh()
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
         end
     end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
@@ -145,6 +142,51 @@ local function resetBank()
             mod._ctmanager.refresh()
         end
     end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
+-- copyControlToAllBanks() -> none
+-- Function
+-- Copy's the currently selected control to all banks.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function copyControlToAllBanks()
+    local items = mod.items()
+    local app = mod.lastApplication()
+    local bank = mod.lastBank()
+    local controlType = mod.lastControlType()
+    local id = mod.lastID()
+
+    local data = items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][id]
+
+    local suffix = ""
+    if bank:sub(-7) == "_LeftFn" then
+        suffix = "_LeftFn"
+    elseif bank:sub(-8) == "_RightFn" then
+        suffix = "_RightFn"
+    end
+
+    if data then
+        for b=1, mod._ctmanager.numberOfBanks do
+            b = tostring(b) .. suffix
+            if not items[app] then items[app] = {} end
+            if not items[app][b] then items[app][b] = {} end
+            if not items[app][b][controlType] then items[app][b][controlType] = {} end
+            if not items[app][b][controlType][id] then items[app][b][controlType][id] = {} end
+            if type(data) == "table" then
+                for i, v in pairs(data) do
+                    items[app][b][controlType][id][i] = v
+                end
+            else
+                items[app][b][controlType][id][i] = {}
+            end
+        end
+    end
+
+    mod.items(items)
 end
 
 -- renderPanel(context) -> none
@@ -258,6 +300,8 @@ local function generateContent()
     local context = {
         apps                        = apps,
 
+        spairs                      = tools.spairs,
+
         numberOfBanks               = mod._ctmanager.numberOfBanks,
         i18n                        = i18n,
 
@@ -299,10 +343,10 @@ local translateGroupID = {
 local function setItem(app, bank, controlType, id, valueA, valueB)
     local items = mod.items()
 
-    if not items[app] then items[app] = {} end
-    if not items[app][bank] then items[app][bank] = {} end
-    if not items[app][bank][controlType] then items[app][bank][controlType] = {} end
-    if not items[app][bank][controlType][id] then items[app][bank][controlType][id] = {} end
+    if type(items[app]) ~= "table" then items[app] = {} end
+    if type(items[app][bank]) ~= "table" then items[app][bank] = {} end
+    if type(items[app][bank][controlType]) ~= "table" then items[app][bank][controlType] = {} end
+    if type(items[app][bank][controlType][id]) ~= "table" then items[app][bank][controlType][id] = {} end
 
     if valueB then
         if not items[app][bank][controlType][id][valueA] then items[app][bank][controlType][id][valueA] = {} end
@@ -468,6 +512,8 @@ local function loupedeckCTPanelCallback(id, params)
             }
 
             setItem(app, bank, controlType, bid, result)
+
+            mod._manager.refresh()
         elseif callbackType == "updateApplicationAndBank" then
             mod.lastApplication(params["application"])
             mod.lastBank(params["bank"])
@@ -762,6 +808,7 @@ function mod.init(deps, env)
     mod._ctmanager      = deps.ctmanager
     mod.items           = deps.ctmanager.items
     mod.enabled         = deps.ctmanager.enabled
+    mod.vibrations      = deps.ctmanager.vibrations
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -772,7 +819,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 730,
+        height          = 750,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
@@ -781,6 +828,15 @@ function mod.init(deps, env)
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(7,
+            {
+                label       = "Vibrate when pressing Touch Buttons",
+                checked     = mod.vibrations,
+                onchange    = function(_, params)
+                    mod.vibrations(params.checked)
                 end,
             }
         )
@@ -807,7 +863,13 @@ function mod.init(deps, env)
                 class       = "loupedeckResetGroup",
             }
         )
-
+        :addButton(16,
+            {
+                label       = "Copy Control to All Banks",
+                onclick     = copyControlToAllBanks,
+                class       = "loupedeckResetGroup",
+            }
+        )
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------

@@ -432,7 +432,7 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
 					{%
-					for id, label in pairs(apps) do
+					for id, label in spairs(apps, function(t,a,b) return t[a] < t[b] end) do
 						local selected = ""
 						if lastApplication == id then
 							selected = [[selected=""]]

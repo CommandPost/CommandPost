@@ -674,7 +674,7 @@ mod.responseHandler = {
 
         triggerCallback(response)
         -- Vibrate if enabled:
-        if mod._vibrations then
+        if mod._vibrations and response.screenID == mod.screens.middle.id then
             mod.vibrate()
         end
     end,
@@ -1479,7 +1479,7 @@ end
 
 --- hs.loupedeckct.vibrations(enabled) -> boolean
 --- Function
---- Gets or sets vibrations on button presses.
+--- Gets or sets vibrations on Touch Screen button presses.
 ---
 --- Parameters:
 ---  * enabled - An optional boolean which sets whether or not vibrations are enabled
