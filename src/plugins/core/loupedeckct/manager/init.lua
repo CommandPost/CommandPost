@@ -294,6 +294,8 @@ end
 --------------------------------------------------------------------------------
 -- WHEEL:
 --------------------------------------------------------------------------------
+local dragMinimumDiff = 5
+
 local cacheWheelYAxis = nil
 local cacheWheelXAxis = nil
 
@@ -428,9 +430,9 @@ local function callback(data)
                     if cacheLeftScreenYAxis ~= nil then
                         -- already dragging. Which way?
                         local yDiff = data.y - cacheLeftScreenYAxis
-                        if yDiff < 0 then
+                        if yDiff < 0-dragMinimumDiff then
                             executeAction(thisSideScreen.upAction)
-                        elseif yDiff > 0 then
+                        elseif yDiff > 0+dragMinimumDiff then
                             executeAction(thisSideScreen.downAction)
                         end
                     end
@@ -447,9 +449,9 @@ local function callback(data)
                     if cacheRightScreenYAxis ~= nil then
                         -- already dragging. Which way?
                         local yDiff = data.y - cacheRightScreenYAxis
-                        if yDiff < 0 then
+                        if yDiff < 0-dragMinimumDiff then
                             executeAction(thisSideScreen.upAction)
-                        elseif yDiff > 0 then
+                        elseif yDiff > 0+dragMinimumDiff then
                             executeAction(thisSideScreen.downAction)
                         end
                     end
@@ -467,15 +469,15 @@ local function callback(data)
                     -- we're already dragging. Which way?
                     local xDiff, yDiff = data.x - cacheWheelXAxis, data.y - cacheWheelYAxis
                     -- dragging horizontally
-                    if xDiff < 0 then
+                    if xDiff < 0-dragMinimumDiff then
                         executeAction(wheelScreen.leftAction)
-                    elseif xDiff > 0 then
+                    elseif xDiff > 0+dragMinimumDiff then
                         executeAction(wheelScreen.rightAction)
                     end
                     -- dragging vertically
-                    if yDiff < 0 then
+                    if yDiff < 0-dragMinimumDiff then
                         executeAction(wheelScreen.upAction)
-                    elseif yDiff > 0 then
+                    elseif yDiff > 0+dragMinimumDiff then
                         executeAction(wheelScreen.downAction)
                     end
                 end
