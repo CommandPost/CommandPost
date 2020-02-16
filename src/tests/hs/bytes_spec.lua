@@ -28,8 +28,9 @@ return describe "hs.bytes" {
         end)
         :where {
             { "value",  "output"    },
-            { 0x00,     "\0"        },
-            { 0xFF,     "\255"      },
+            { 0,        "\0"        },
+            { -1,       "\255"      },
+            { 1,        "\1"        },
         },
 
         it "fails when given a number larger than 0xFF"
@@ -103,13 +104,13 @@ return describe "hs.bytes" {
             { 0x0000,   "\0\0"      },
             { 0x00FF,   "\0\255"    },
             { 0x0102,   "\01\02"    },
-            { 0xFFFF,   "\255\255"  },
+            { -1,       "\255\255"  },
         },
 
         it "fails when given a number larger than 0xFFFF"
         :doing(function(this)
             this:expectAbort("value is larger than 16 bits: 0xFFFFF")
-            bytes.int16be(0xFFFFF)
+            bytes.int16be(0xFFFF)
         end),
 
         it "returns ${output}, ${offset}, when given ${value:q} and an index of ${index}"
@@ -146,7 +147,7 @@ return describe "hs.bytes" {
             { 0x0000,   "\0\0"      },
             { 0x00FF,   "\255\0"    },
             { 0x0102,   "\02\01"    },
-            { 0xFFFF,   "\255\255"  },
+            { -1,       "\255\255"  },
         },
 
         it "fails when given a number larger than 0xFFFF"
@@ -189,7 +190,7 @@ return describe "hs.bytes" {
             { 0x00,         "\0\0\0\0"          },
             { 0xFF,         "\0\0\0\255"        },
             { 0x0102,       "\0\0\1\2"          },
-            { 0xFFFFFFFF,   "\255\255\255\255"  },
+            { -1,           "\255\255\255\255"  },
         },
 
         it "fails when given a number larger than 0xFFFFFFFF"
@@ -233,7 +234,7 @@ return describe "hs.bytes" {
             { 0x00,         "\0\0\0\0"          },
             { 0xFF,         "\255\0\0\0"        },
             { 0x0102,       "\2\1\0\0"          },
-            { 0xFFFFFFFF,   "\255\255\255\255"  },
+            { -1,           "\255\255\255\255"  },
         },
 
         it "fails when given a number larger than 0xFFFFFFFF"

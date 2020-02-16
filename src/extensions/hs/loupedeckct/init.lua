@@ -49,9 +49,12 @@ local randomFromRange   = hsmath.randomFromRange
 local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
 local int16be           = bytes.int16be
-local int24be           = bytes.int24be
-local int32be           = bytes.int32be
 local int8              = bytes.int8
+local uint16be          = bytes.uint16be
+local uint24be          = bytes.uint24be
+local uint32be          = bytes.uint32be
+local uint8              = bytes.uint8
+
 local remainder         = bytes.remainder
 
 local mod               = {}
@@ -279,7 +282,7 @@ end
 -- * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
 local function sendCommand(commandID, callbackFn, ...)
     return send(
-        bytes(int16be(commandID), int8(registerCallback(callbackFn)), ...):bytes()
+        bytes(uint16be(commandID), uint8(registerCallback(callbackFn)), ...):bytes()
     )
 end
 
@@ -425,7 +428,7 @@ local events = {
     received = function(message)
         -- read the command ID, callback ID and the remainder of the message...
         local id, callbackID, data = bytes.read(message,
-            int16be, int8, remainder
+            uint16be, uint8, remainder
         )
 
         local response = {
@@ -608,7 +611,7 @@ mod.responseHandler = {
     -- 01 FF    Left
     --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
-        local id, dirByte = bytes.read(response.data, int8, int8)
+        local id, dirByte = bytes.read(response.data, uint8, int8)
         if dirByte == -1 then
             response.direction = "left"
         elseif dirByte == 1 then
@@ -628,7 +631,7 @@ mod.responseHandler = {
     -- 00 00 7E 00 76 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_PRESSED] = function(response)
-        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
         triggerCallback(response)
     end,
@@ -640,7 +643,7 @@ mod.responseHandler = {
     -- 00 00 7B 00 94 00
     --------------------------------------------------------------------------------
     [mod.event.WHEEL_RELEASED] = function(response)
-        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
         triggerCallback(response)
     end,
@@ -652,7 +655,7 @@ mod.responseHandler = {
     -- 00 01 C9 00 9A 27
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
-        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
         local buttonID = convertXandYtoButtonID(response.x, response.y)
@@ -674,7 +677,7 @@ mod.responseHandler = {
     -- 00 01 BC 00 BE 25
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
-        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+        response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
         local buttonID = convertXandYtoButtonID(response.x, response.y)
@@ -857,7 +860,7 @@ end
 --  * Adds `flashDriveEnabled` for register `0` responses.
 --  * Adds `vibraWaveformIndex` and `backlightLevel` for register `2` responses.
 local function processRegisterResponse(response)
-    response.registerID, response.value = bytes.read(response.data, int8, int32be)
+    response.registerID, response.value = bytes.read(response.data, uint8, uint32be)
     if response.registerID == 0 then
         --------------------------------------------------------------------------------
         -- 00 00 00 00 03       flash disabled
@@ -918,7 +921,7 @@ function mod.requestRegister(registerID, callbackFn)
             processRegisterResponse(response)
             callbackFn(response)
         end,
-        int8(registerID)
+        uint8(registerID)
     )
 end
 
@@ -949,7 +952,7 @@ function mod.updateRegister(registerID, value, callbackFn)
     -- Example:
     -- 08 19 58 00 00 00 00 02
     -- ^     ^  ^  ^
-    -- ^     ^  ^  new int32be value for the register
+    -- ^     ^  ^  new uint32be value for the register
     -- ^     ^  the register number (0/1/2)
     -- ^     the callback ID
     -- the command ID
@@ -960,8 +963,8 @@ function mod.updateRegister(registerID, value, callbackFn)
             processRegisterResponse(response)
             callbackFn(response)
         end,
-        int8(registerID),
-        int32be(value)
+        uint8(registerID),
+        uint32be(value)
     )
 end
 
@@ -1065,10 +1068,12 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `wheelSensitivity`.
 function mod.requestWheelSensitivity(callbackFn)
-    return sendCommand(0x041E, callbackFn and function(response)
-        response.wheelSensitivity = int8(response.data)
-        callbackFn(response)
-    end)
+    return sendCommand(
+        0x041E,
+        callbackFn and function(response)
+            response.wheelSensitivity = uint8(response.data)
+            callbackFn(response)
+        end)
 end
 
 --- hs.loupedeckct.resetDevice([callbackFn]) -> boolean
@@ -1088,10 +1093,10 @@ function mod.resetDevice(callbackFn)
     return sendCommand(
         0x0409,
         callbackFn and function(response)
-            response.success = bytes.read(response.data, int8) == 0x01
+            response.success = bytes.read(response.data, uint8) == 0x01
             callbackFn(response)
         end,
-        int8(9) -- not sure why we're sending 9? type of reset?
+        uint8(9) -- not sure why we're sending 9? type of reset?
     )
 end
 
@@ -1148,10 +1153,10 @@ function mod.refreshScreen(screen, callbackFn)
     return sendCommand(
         0x050F,
         callbackFn and function(response)
-            response.success = bytes.read(response.data, int8) == 0x01
+            response.success = bytes.read(response.data, uint8) == 0x01
             callbackFn(response)
         end,
-        int16be(screen.id)
+        uint16be(screen.id)
     )
 end
 
@@ -1202,18 +1207,18 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     if sendCommand(
         0xFF10,
         function(response)
-            imageSuccess = bytes.read(response.data, int8) == 0x01
+            imageSuccess = bytes.read(response.data, uint8) == 0x01
         end,
-        int16be(screen.id),
+        uint16be(screen.id),
         int16be(frame.x or 0),
         int16be(frame.y or 0),
         int16be(frame.w or screen.width),
         int16be(frame.h or screen.height),
-        screen.circular and int8(0) or "",
+        screen.circular and uint8(0) or "",
         imageBytes
     ) then
         return mod.refreshScreen(screen, callbackFn and function(response)
-            response.success = imageSuccess and (bytes.read(response.data, int8) == 0x01)
+            response.success = imageSuccess and (bytes.read(response.data, uint8) == 0x01)
         end)
     end
     return false
@@ -1266,7 +1271,7 @@ end
 -- * A byte string containing the image data for the provided with/height
 local function solidColorBytes(width, height, color)
     local color16 = toInt16Color(color)
-    local colorBytes = int16be(color16)
+    local colorBytes = uint16be(color16)
     local result = {}
     for i=1,width*height do
         result[i] = colorBytes
@@ -1398,8 +1403,8 @@ function mod.buttonColor(buttonID, color, callbackFn)
             response.success = response.id == 0x0302
             callbackFn(response)
         end,
-        int8(buttonID),
-        int24be(color)
+        uint8(buttonID),
+        uint24be(color)
     )
 end
 
@@ -1432,10 +1437,10 @@ function mod.vibrate(callbackFn)
     return sendCommand(
         0x041B,
         callbackFn and function(response)
-            response.success = int8(response.data) == 0x01
+            response.success = uint8(response.data) == 0x01
             callbackFn(response)
         end,
-        int8(0x19)
+        uint8(0x19)
     )
 end
 

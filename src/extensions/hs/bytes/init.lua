@@ -573,8 +573,14 @@ local function doInt(value, index, bits, unsigned, read, write)
         end
         return int, offset
     elseif type(value) == "number" then
-        if value & intMask(bits) ~= value then
-            error(format("value is larger than %d bits: 0x%04X", bits, value), 2)
+        if unsigned and value & intMask(bits) ~= value then
+            error(format("value is larger than %d unsigned bits: 0x%04X", bits, value), 2)
+        elseif not unsigned then
+            local negativeBits = intMask(64) << (bits-1)
+            local signBit = 1 << (bits-1)
+            if (value & negativeBits) ~= negativeBits and (value & signBit) == signBit then
+                error(format("value is larger than %d signed bits: 0x%04X", bits, value), 2)
+            end
         end
         return char(write(value))
     else
