@@ -663,6 +663,15 @@ mod.responseHandler = {
             response.buttonID = buttonID
         end
 
+        -- Get screen ID:
+        if response.x <= mod.screens.left.width then
+            response.screenID = mod.screens.left.id
+        elseif response.x >= (mod.screens.left.width + mod.screens.middle.width) then
+            response.screenID = mod.screens.right.id
+        else
+            response.screenID = mod.screens.middle.id
+        end
+
         triggerCallback(response)
         -- Vibrate if enabled:
         if mod._vibrations then

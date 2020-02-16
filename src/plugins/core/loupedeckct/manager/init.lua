@@ -16,19 +16,17 @@ DONE:
     [x] Add controls for Touch Wheel (left/right/up/down)
     [x] Add support for Fn keys as modifiers
     [x] Add actions for bank controls
+    [x] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
 
 TO-DO:
 
+    [ ] Add default Loupedeck CT layout
+    [ ] Add ability to save the Loupedeck CT settings on the device
     [ ] Add controls for vibration
     [ ] Add Touch Wheel action for two finger tap (or just double tap?)
-
-    [ ] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
-
     [ ] Add support for custom applications
-
     [ ] Add button to apply the same action of selected control to all banks
     [ ] Right click on image drop zone to show popup with a list of recent imported images
-
     [ ] Add checkbox to enable/disable the hard drive support
     [ ] Add checkbox to enable/disable Bluetooth support
 --]]
@@ -54,8 +52,15 @@ local imageFromURL          = image.imageFromURL
 
 local mod = {}
 
--- default panel color (black)
+-- defaultColor -> string
+-- Variable
+-- Default panel color (black)
 local defaultColor = "000000"
+
+-- hasLoaded -> boolean
+-- Variable
+-- Has the Loupedeck CT loaded?
+local hasLoaded = false
 
 -- leftFnPressed -> boolean
 -- Variable
@@ -136,6 +141,7 @@ mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
+
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -197,7 +203,9 @@ function mod.refresh(dueToAppChange)
         --------------------------------------------------------------------------------
         -- Only update if the screen has changed to save bandwidth:
         --------------------------------------------------------------------------------
-        if encodedIcon and cachedTouchScreenButtonValues[id] ~= encodedIcon then
+        if encodedIcon and cachedTouchScreenButtonValues[id] == encodedIcon then
+            success = true
+        elseif encodedIcon and cachedTouchScreenButtonValues[id] ~= encodedIcon then
             cachedTouchScreenButtonValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             if decodedImage then
@@ -205,6 +213,7 @@ function mod.refresh(dueToAppChange)
                 success = true
             end
         end
+
         if not success and cachedTouchScreenButtonValues[id] ~= defaultColor then
             --------------------------------------------------------------------------------
             -- Only update if the screen has changed to save bandwidth:
@@ -223,7 +232,9 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- Only update if the screen has changed to save bandwidth:
     --------------------------------------------------------------------------------
-    if encodedIcon and cachedWheelScreen ~= encodedIcon then
+    if encodedIcon and cachedWheelScreen == encodedIcon then
+        success = true
+    elseif encodedIcon and cachedWheelScreen ~= encodedIcon then
         cachedWheelScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
@@ -246,7 +257,9 @@ function mod.refresh(dueToAppChange)
     success = false
     local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
     encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-    if encodedIcon and cachedLeftSideScreen ~= encodedIcon then
+    if encodedIcon and cachedLeftSideScreen == encodedIcon then
+        success = true
+    elseif encodedIcon and cachedLeftSideScreen ~= encodedIcon then
         cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
@@ -257,6 +270,7 @@ function mod.refresh(dueToAppChange)
             success = true
         end
     end
+
     --------------------------------------------------------------------------------
     -- Only update if the screen has changed to save bandwidth:
     --------------------------------------------------------------------------------
@@ -271,7 +285,9 @@ function mod.refresh(dueToAppChange)
     success = false
     thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
     encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-    if encodedIcon and cachedRightSideScreen ~= encodedIcon then
+    if encodedIcon and cachedRightSideScreen == encodedIcon then
+        success = true
+    elseif encodedIcon and cachedRightSideScreen ~= encodedIcon then
         cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
@@ -282,6 +298,7 @@ function mod.refresh(dueToAppChange)
             success = true
         end
     end
+
     --------------------------------------------------------------------------------
     -- Only update if the screen has changed to save bandwidth:
     --------------------------------------------------------------------------------
@@ -289,12 +306,14 @@ function mod.refresh(dueToAppChange)
         ct.updateScreenColor(ct.screens.right, {hex="#"..defaultColor})
         cachedRightSideScreen = defaultColor
     end
+
+    alreadyRefreshing = false
 end
 
 --------------------------------------------------------------------------------
 -- WHEEL:
 --------------------------------------------------------------------------------
-local dragMinimumDiff = 5
+local dragMinimumDiff = 3
 
 local cacheWheelYAxis = nil
 local cacheWheelXAxis = nil
@@ -305,6 +324,15 @@ local cacheWheelXAxis = nil
 local cacheRightScreenYAxis = nil
 local cacheLeftScreenYAxis = nil
 
+-- executeAction(thisAction) -> boolean
+-- Function
+-- Executes an action.
+--
+-- Parameters:
+--  * thisAction - The action to execute
+--
+-- Returns:
+--  * `true` if successful otherwise `false`
 local function executeAction(thisAction)
     if thisAction then
         local handlerID = thisAction.handlerID
@@ -317,6 +345,35 @@ local function executeAction(thisAction)
 
     end
     return false
+end
+
+-- clearCache() -> none
+-- Function
+-- Clears the cache.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function clearCache()
+    cacheWheelYAxis = nil
+    cacheWheelXAxis = nil
+
+    cacheRightScreenYAxis = nil
+    cacheLeftScreenYAxis = nil
+
+    leftFnPressed = false
+    rightFnPressed = false
+
+    cachedLEDButtonValues = {}
+    cachedTouchScreenButtonValues = {}
+
+    cachedWheelScreen = ""
+    cachedLeftSideScreen = ""
+    cachedRightSideScreen = ""
+
+    hasLoaded = false
 end
 
 -- callback(data) -> none
@@ -335,8 +392,15 @@ local function callback(data)
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_open" then
-        doAfter(0.5, mod.refresh)
+            clearCache()
+            mod.refresh()
+            hasLoaded = true
         return
+    elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
+        --------------------------------------------------------------------------------
+        -- If the websocket disconnects or fails, then trash all the caches:
+        --------------------------------------------------------------------------------
+        clearCache()
     end
 
     local frontmostApplication = application.frontmostApplication()
@@ -420,8 +484,7 @@ local function callback(data)
                 return
             end
 
-
-            if data.x < 50 then
+            if data.screenID == ct.screens.left.id then
                 --------------------------------------------------------------------------------
                 -- LEFT TOUCH SCREEN TOUCH SLIDE UP/DOWN:
                 --------------------------------------------------------------------------------
@@ -440,7 +503,7 @@ local function callback(data)
                 end
             end
 
-            if data.x > 400 then
+            if data.screenID == ct.screens.right.id then
                 --------------------------------------------------------------------------------
                 -- RIGHT TOUCH SCREEN TOUCH UP:
                 --------------------------------------------------------------------------------
@@ -515,8 +578,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup watch to refresh the Loupedeck CT when apps change focus:
     --------------------------------------------------------------------------------
-    mod._appWatcher = appWatcher.new(function()
-        mod.refresh(true)
+    mod._appWatcher = appWatcher.new(function(_, event)
+        if hasLoaded and event == appWatcher.activated then
+            mod.refresh(true)
+        end
     end)
 
     --------------------------------------------------------------------------------

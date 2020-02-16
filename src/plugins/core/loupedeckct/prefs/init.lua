@@ -285,6 +285,17 @@ local translateGroupID = {
     ["com.apple.FinalCut"] = "fcpx"
 }
 
+-- setItem(app, bank, controlType, id, valueA, valueB) -> none
+-- Function
+-- Update the Loupedeck CT layout file.
+--
+-- Parameters:
+--  * app - The application bundle ID as a string
+--  * bank - The bank ID as a string
+--  * controlType - The control type as a string
+--  * id - The ID of the item as a string
+--  * valueA - The value of the item as a string
+--  * valueB - An optional value
 local function setItem(app, bank, controlType, id, valueA, valueB)
     local items = mod.items()
 
@@ -609,7 +620,7 @@ local function loupedeckCTPanelCallback(id, params)
                         local bank = params["bank"]
                         local bid = params["id"]
 
-                        setItem(app, bank, controlType, bid, {["encodedIcon"] = encodedIcon})
+                        setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
                         injectScript([[setIcon("]] .. encodedIcon .. [[")]])
 
