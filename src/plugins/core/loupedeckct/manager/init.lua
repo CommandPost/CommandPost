@@ -466,20 +466,17 @@ local function callback(data)
                 if cacheWheelXAxis ~= nil and cacheWheelYAxis ~= nil then
                     -- we're already dragging. Which way?
                     local xDiff, yDiff = data.x - cacheWheelXAxis, data.y - cacheWheelYAxis
-                    if math.abs(xDiff) > math.abs(yDiff) then
-                        -- dragging horizontally
-                        if xDiff < 0 then
-                            executeAction(wheelScreen.leftAction)
-                        else
-                            executeAction(wheelScreen.rightAction)
-                        end
-                    elseif yDiff ~= 0 then
-                        -- dragging vertically
-                        if yDiff < 0 then
-                            executeAction(wheelScreen.upAction)
-                        else
-                            executeAction(wheelScreen.downAction)
-                        end
+                    -- dragging horizontally
+                    if xDiff < 0 then
+                        executeAction(wheelScreen.leftAction)
+                    elseif xDiff > 0 then
+                        executeAction(wheelScreen.rightAction)
+                    end
+                    -- dragging vertically
+                    if yDiff < 0 then
+                        executeAction(wheelScreen.upAction)
+                    elseif yDiff > 0 then
+                        executeAction(wheelScreen.downAction)
                     end
                 end
                 cacheWheelXAxis = data.x
