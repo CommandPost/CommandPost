@@ -609,9 +609,9 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.ENCODER_MOVE] = function(response)
         local id, dirByte = bytes.read(response.data, int8, int8)
-        if dirByte == 0xFF then
+        if dirByte == -1 then
             response.direction = "left"
-        elseif dirByte == 0x01 then
+        elseif dirByte == 1 then
             response.direction = "right"
         else
             log.ef("Invalid Encoder Direction: %02x", dirByte)
