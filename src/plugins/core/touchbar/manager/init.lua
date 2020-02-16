@@ -97,17 +97,7 @@ end)
 mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 mod.macOSVersionSupported = prop(function()
-    --------------------------------------------------------------------------------
-    -- Temporarily disable Touch Bar support on the 16-inch MacBook Pro until
-    -- we fix `hs._asm.undocumented.touchbar` in issue #2139.
-    --------------------------------------------------------------------------------
-    local supportedHardware = true
-    local output = execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
-    if output and output:find("MacBookPro16,1") then
-        supportedHardware = false
-    end
-    local osVersion = semver(tools.macOSVersion())
-    return supportedHardware and osVersion >= semver("10.12.1")
+    return semver(tools.macOSVersion()) >= semver("10.12.1")
 end)
 
 --- plugins.core.touchbar.manager.supported <cp.prop: boolean; read-only>

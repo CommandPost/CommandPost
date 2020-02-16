@@ -4,45 +4,43 @@
 
 local require = require
 
-local prop              = require("cp.prop")
-local tools             = require("cp.tools")
-local x                 = require("cp.web.xml")
+local class             = require "middleclass"
+local lazy              = require "cp.lazy"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local x                 = require "cp.web.xml"
 
-local action            = require("action")
-local group             = require("group")
-local menu              = require("menu")
-local parameter         = require("parameter")
+local action            = require "action"
+local group             = require "group"
+local menu              = require "menu"
+local parameter         = require "parameter"
 
 local insert            = table.insert
 
+local controls = class "core.tangent.manager.controls" :include(lazy)
 
-local controls = {}
-controls.mt = {}
-
---- plugins.core.tangent.manager.controls.new(id, name)
+--- plugins.core.tangent.manager.controls(id, name)
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
 --- * name      - The name of the controls.
-function controls.new()
-    local o = prop.extend({
-        ids = {},
+function controls:initialize()
+    self.ids = {}
+end
 
         --- plugins.core.tangent.controls.enabled <cp.prop: boolean>
         --- Field
         --- Indicates if the controls are enabled.
-        enabled = prop.TRUE(),
-    }, controls.mt)
+function controls.lazy.prop.enabled()
+    return prop.TRUE()
+end
 
-    prop.bind(o) {
-        --- plugins.core.tangent.controls.active <cp.prop: boolean; read-only>
-        --- Field
-        --- Indicates if the controls are active. They will be active if `enabled` is `true`.
-        active = o.enabled:IMMUTABLE()
-    }
-
-    return o
+--- plugins.core.tangent.controls.active <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the controls are active. They will be active if `enabled` is `true`.
+function controls.lazy.prop:active()
+    return self.enabled:IMMUTABLE()
 end
 
 --- plugins.core.tangent.manager.controls:parent() -> nil
@@ -54,7 +52,7 @@ end
 ---
 --- Returns:
 --- * `nil`.
-function controls.mt.parent()
+function controls.parent()
     return nil
 end
 
@@ -67,7 +65,7 @@ end
 ---
 --- Returns:
 --- * The `controls instance.
-function controls.mt:controls()
+function controls:controls()
     return self
 end
 
@@ -82,7 +80,7 @@ end
 ---
 --- Returns:
 --- * self
-function controls.mt:register(control)
+function controls:register(control)
     if control.id == nil then
         error("The control must have an ID")
     end
@@ -102,7 +100,7 @@ end
 ---
 --- Returns:
 --- * self
-function controls.mt:unregister(control)
+function controls:unregister(control)
     if control.id == nil then
         error("The control must have an ID")
     end
@@ -121,7 +119,7 @@ end
 ---
 --- Returns:
 --- * The control, or `nil` if not found.
-function controls.mt:findByID(id)
+function controls:findByID(id)
     return self.ids[id]
 end
 
@@ -134,14 +132,14 @@ end
 ---
 --- Returns:
 --- * The new `group`
-function controls.mt:group(name)
+function controls:group(name)
     local groups = self._groups
     if not groups then
         groups = {}
         self._groups = groups
     end
 
-    local g = group.new(name, self)
+    local g = group(name, self)
     insert(groups, g)
 
     return g
@@ -157,14 +155,14 @@ end
 ---
 --- Returns:
 --- * The new `action`
-function controls.mt:action(id, name)
+function controls:action(id, name)
     local actions = self._actions
     if not actions then
         actions = {}
         self._actions = actions
     end
 
-    local a = action.new(id, name, self)
+    local a = action(id, name, self)
     insert(actions, a)
     self:register(a)
 
@@ -181,14 +179,14 @@ end
 ---
 --- Returns:
 --- * The new `parameter`
-function controls.mt:parameter(id, name)
+function controls:parameter(id, name)
     local parameters = self._parameters
     if not parameters then
         parameters = {}
         self._parameters = parameters
     end
 
-    local a = parameter.new(id, name, self)
+    local a = parameter(id, name, self)
     insert(parameters, a)
     self:register(a)
 
@@ -205,14 +203,14 @@ end
 ---
 --- Returns:
 --- * The new `menu`
-function controls.mt:menu(id, name)
+function controls:menu(id, name)
     local menus = self._menus
     if not menus then
         menus = {}
         self._menus = menus
     end
 
-    local a = menu.new(id, name, self)
+    local a = menu(id, name, self)
     insert(menus, a)
     self:register(a)
 
@@ -228,13 +226,13 @@ end
 ---
 --- Returns:
 --- * The `xml` for the Group.
-function controls.mt:xml()
+function controls:xml()
     return x.Controls (
         function()
             local result = x()
 
             if self._groups then
-                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b].name > t[a].name end) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end

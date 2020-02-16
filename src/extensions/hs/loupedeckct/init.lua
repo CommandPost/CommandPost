@@ -4,12 +4,34 @@
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 
+-- TODO:
+--  [ ] Add control to enable/disable Bluetooth
+
+--------------------------------------------------------------------------------
+-- BLUETOOTH:
+--
+-- Message received (4): (4) 04-10-97-01
+-- Message received (4): (4) 04-0F-98-01
+-- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
+-- Message 'IsBluetoothEnabled' responded in 0 ms
+-- WebSocket response (63) '{
+--   "id": 15,
+--   "name": "IsBluetoothEnabled",
+--   "data": false
+-- }'
+-- Message received (4): (4) 04-10-99-01
+-- Message received (4): (4) 04-0F-9A-01
+-- Message received (4): (4) 04-10-9B-01
+-- Message received (4): (4) 04-0F-9C-01
+-- Message received (4): (4) 04-10-9D-01
+-- Message received (4): (4) 04-0F-9E-01
+--------------------------------------------------------------------------------
+
 local log               = require "hs.logger".new("loupedeckct")
 
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
 local hsmath            = require "hs.math"
-local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
 local timer             = require "hs.timer"
@@ -22,7 +44,6 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
-local imageFromPath     = image.imageFromPath
 local randomFromRange   = hsmath.randomFromRange
 
 local bytesToHex        = bytes.bytesToHex
@@ -430,7 +451,7 @@ local events = {
                     return
                 end
             elseif not mod.ignoreResponses[id] then
-                log.df("Unexpected command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
+                log.ef("Unexpected command: id: %04x; callback: %02x; message:\n%s", id, callbackID, hexDump(message))
                 return
             end
         end
@@ -467,6 +488,92 @@ mod.ignoreResponses = {
     [0x041B] = true, -- Vibration confirmation
     [0x0409] = true, -- Reset Device
 }
+
+-- convertXandYtoButtonID(x, y) -> number
+-- Function
+-- Converts X and Y coordinates into a button ID for the middle touch screen.
+--
+-- Parameters:
+--  * x - The x-axis as a number
+--  * y - The y-axis as a number
+--
+-- Returns:
+--  * A button ID as a number. Left to right, top to bottom.
+local function convertXandYtoButtonID(x, y)
+    local button = 0
+    -- First Row:
+    if x >= 60 and x <= 140 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 1
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 5
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 9
+        end
+    end
+
+    -- Second Row:
+    if x >= 160 and x <= 230 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 2
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 6
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 10
+        end
+    end
+
+    -- Third Row:
+    if x >= 240 and x <= 320 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 3
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 7
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 11
+        end
+    end
+
+    -- Fourth Row:
+    if x >= 340 and x <= 390 then
+        -- Top Row:
+        if y >= 0 and y <= 100 then
+            button = 4
+        end
+
+        -- Middle Row:
+        if y >= 110 and y <= 170 then
+            button = 8
+        end
+
+        -- Bottom Row:
+        if y >= 200 and y <= 260 then
+            button = 12
+        end
+    end
+    return button
+end
 
 --- hs.loupedeckct.responseHandler -> table
 --- Constant
@@ -546,6 +653,13 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_PRESSED] = function(response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+
+        -- Get button ID:
+        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
         -- Vibrate if enabled:
         if mod._vibrations then
@@ -561,6 +675,13 @@ mod.responseHandler = {
     --------------------------------------------------------------------------------
     [mod.event.SCREEN_RELEASED] = function(response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, int8, int16be, int16be, int8)
+
+        -- Get button ID:
+        local buttonID = convertXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
     end,
 }
@@ -722,43 +843,6 @@ function mod.requestSelfTest(callbackFn)
     end)
 end
 
---function mod.vibraWaveformIndex()
-    --------------------------------------------------------------------------------
-    -- VIBRA WAVEFORM INDEX:
-    --
-    -- Message sent (8): (8) 08-19-55-02-03-00-09-19
-    -- Message received (8): (8) 08-19-55-02-03-00-09-19
-    -- Message 'SetDeviceVibraWaveformIndex' responded in 16 ms
-    -- WebSocket response (69) '{
-    --   "id": 15,
-    --   "name": "SetDeviceVibraWaveformIndex",
-    --   "data": 25
-    -- }'
-    --------------------------------------------------------------------------------
---end
-
---function mod.bluetooth()
-    --------------------------------------------------------------------------------
-    -- BLUETOOTH:
-    --
-    -- Message received (4): (4) 04-10-97-01
-    -- Message received (4): (4) 04-0F-98-01
-    -- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
-    -- Message 'IsBluetoothEnabled' responded in 0 ms
-    -- WebSocket response (63) '{
-    --   "id": 15,
-    --   "name": "IsBluetoothEnabled",
-    --   "data": false
-    -- }'
-    -- Message received (4): (4) 04-10-99-01
-    -- Message received (4): (4) 04-0F-9A-01
-    -- Message received (4): (4) 04-10-9B-01
-    -- Message received (4): (4) 04-0F-9C-01
-    -- Message received (4): (4) 04-10-9D-01
-    -- Message received (4): (4) 04-0F-9E-01
-    --------------------------------------------------------------------------------
---end
-
 -- function processRegisterResponse(response) -> nil
 -- function
 -- Receives the raw value of a register and interprets it, adding properties to the `response` table.
@@ -904,7 +988,6 @@ function mod.updateFlashDrive(enabled, callbackFn)
     -- Note: best guess is that the last bit (0x01) is the flash enabled/disabled value
     -- while the second last bit (0x02) is for something else.
     --------------------------------------------------------------------------------
-
     return mod.requestRegister(0, function(response)
         processRegisterResponse(response)
         if response.flashDriveEnabled ~= enabled then
@@ -1079,8 +1162,8 @@ end
 --- Parameters:
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
----  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---  * frame        - (optional) An optional `hs.geometry.rect` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -1136,6 +1219,40 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
     return false
 end
 
+-- convertButtonIDtoXYCoordinates() -> buttonID
+-- Function
+-- Gets the X and Y coordinates of a specific button on the middle touch screen.
+--
+-- Parameters:
+--  * buttonID - A number between 1 and 12 (left to right, top to bottom).
+--
+-- Returns:
+--  * x - The x coordinates of the screen for the specific button as a number
+--  * y - The y coordinates of the screen for the specific button as a number
+local function convertButtonIDtoXYCoordinates(buttonID)
+    return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
+end
+
+--- hs.loupedeckct.updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
+--- Function
+--- Sends an image to the specified button on the middle screen.
+---
+--- Parameters:
+---  * buttonID     - The button number (left to right, top to bottom)
+---  * imageBytes   - the byte string for the image in the custom Loupedeck 16-bit RGB format or a `hs.image` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.updateScreenButtonImage(buttonID, imageBytes, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID)
+    mod.updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+end
+
 -- solidColorImage(width, height, color) -> string
 -- Function
 -- Creates a solid-color image for the specified screen with the specified RGB value.
@@ -1164,8 +1281,8 @@ end
 --- Parameters:
 ---  * screen       - the `screen` to update, from [hs.loupedeck.screens](#screens) (eg `hs.loupedeck.screens.left`)
 ---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
----  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---  * frame        - (optional) An optional `hs.geometry.rect` object
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
@@ -1183,13 +1300,33 @@ function mod.updateScreenColor(screen, color, frame, callbackFn)
     )
 end
 
+--- hs.loupedeckct.updateScreenButtonColor(buttonID, color[, callbackFn]) -> boolean
+--- Function
+--- Sends an image to the specified screen and refreshes the specified screen.
+---
+--- Parameters:
+---  * buttonID     - The button number (left to right, top to bottom)
+---  * color        - either a 16-bit RGB integer or an `hs.drawing.color
+---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`, `success`.
+---  * the `success` value is a boolean, `true` or `false`.
+function mod.updateScreenButtonColor(buttonID, color, callbackFn)
+    local x, y = convertButtonIDtoXYCoordinates(buttonID)
+    mod.updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+end
+
 --- hs.loupdeckct.buttonID -> table
 --- Constant
 --- Contains IDs for the various buttons on the Loupdeck CT.
 ---
 --- Notes:
 ---  * The buttonID's are as follows:
----   * `B0`-`B8`   - 0-8 buttons
+---   * `B1`-`B8`   - 1-8 buttons
 ---   * `UNDO`      - Undo button
 ---   * `KEYBOARD`  - Keyboard button
 ---   * `RETURN`    - Return button
@@ -1201,22 +1338,31 @@ end
 ---   * `C`         - C button
 ---   * `D`         - D button
 ---   * `E`         - E button
-
+---   * `O`         - O button
 mod.buttonID = {
-    -- buttons 0-8
-    B0 = 15, B1 = 7, B2 = 8, B3 = 9, B4 = 10, B5 = 11, B6 = 12, B7 = 13, B8 = 14,
+    B1 = 7,
+    B2 = 8,
+    B3 = 9,
+    B4 = 10,
+    B5 = 11,
+    B6 = 12,
+    B7 = 13,
+    B8 = 14,
 
     UNDO = 16,
     KEYBOARD = 17,
     RETURN = 18,
     SAVE = 19,
+
     LEFT_FN = 20,
     RIGHT_FN = 23,
+
     A = 21,
     B = 24,
     C = 22,
     D = 25,
     E = 26,
+    O = 15,
 }
 
 --- hs.loupedeckct.buttonColor(buttonID, color[, callbackFn]) -> boolean
@@ -1299,12 +1445,12 @@ local function updateWatcher(enabled)
             mod._usbWatcher = usb.watcher.new(function(data)
                 if data.productName == "LOUPEDECK device" then
                     if data.eventType == "added" then
-                        log.df("Loupedeck CT Connected")
+                        --log.df("Loupedeck CT Connected")
                         doAfter(4, function()
                             mod.connect(true)
                         end)
-                    elseif data.eventType == "removed" then
-                        log.df("Loupedeck CT Disconnected")
+                    --elseif data.eventType == "removed" then
+                        --log.df("Loupedeck CT Disconnected")
                     end
                 end
             end):start()
@@ -1369,7 +1515,7 @@ function mod.connect(retry)
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to Loupedeck CT: %s", url)
+    --log.df("Connecting to Loupedeck CT: %s", url)
     mod._websocket = websocket.new(url, websocketCallback)
 end
 

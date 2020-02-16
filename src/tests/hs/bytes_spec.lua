@@ -1,7 +1,7 @@
 -- it cases for `hs.bytes`
 local spec                  = require "cp.spec"
 local expect                = require "cp.spec.expect"
-local bytes                    = require "hs.bytes"
+local bytes                 = require "hs.bytes"
 
 local describe, it, context = spec.describe, spec.it, spec.context
 

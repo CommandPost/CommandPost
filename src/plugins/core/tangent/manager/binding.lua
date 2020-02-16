@@ -4,18 +4,17 @@
 
 local require = require
 
-local prop              = require("cp.prop")
-local x                 = require("cp.web.xml")
-local parameter         = require("parameter")
+local class             = require "middleclass"
+local x                 = require "cp.web.xml"
+local parameter         = require "parameter"
 
 local format            = string.format
 local insert            = table.insert
 
 
-local binding = {}
-binding.mt = {}
+local binding = class "core.tangent.manager.binding"
 
---- plugins.core.tangent.manager.binding.new(id[, name]) -> binding
+--- plugins.core.tangent.manager.binding(id[, name]) -> binding
 --- Constructor
 --- Creates a new `Binding` instance.
 ---
@@ -25,13 +24,22 @@ binding.mt = {}
 ---
 --- Returns:
 --- * the new `binding`.
-function binding.new(name)
-    local o = prop.extend({
-        name = name,
-        _members = {},
-    }, binding.mt)
+function binding:initialize(name)
+    self._name = name
+    self._members = {}
+end
 
-    return o
+--- plugins.core.tangent.manager.binding:name() -> string
+--- Method
+--- Returns the `name` of this binding.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---  * The name.
+function binding:name()
+    return self._name
 end
 
 --- plugins.core.tangent.manager.binding:member(parameter) -> self
@@ -44,7 +52,7 @@ end
 ---
 --- Returns:
 --- * The `binding` instance.
-function binding.mt:member(param)
+function binding:member(param)
     assert(parameter.is(param))
     insert(self._members, param)
     return self
@@ -59,7 +67,7 @@ end
 ---
 --- Returns:
 --- * The `binding` instance.
-function binding.mt:members(...)
+function binding:members(...)
     for i = 1,select("#", ...) do
         self:member(select(i, ...))
     end
@@ -75,8 +83,8 @@ end
 ---
 --- Returns:
 --- * The `xml` for the Binding.
-function binding.mt:xml()
-    return x.Binding { name=self.name } (
+function binding:xml()
+    return x.Binding { name = self:name() } (
         function()
             local result = x()
             for _,member in ipairs(self._members) do

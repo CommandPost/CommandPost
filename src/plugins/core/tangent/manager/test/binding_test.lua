@@ -12,7 +12,7 @@ return test.suite("binding"):with {
         local o = binding("Foo")
 
         ok(o ~= nil)
-        ok(eq(o.name, "Foo"))
+        ok(eq(o:name(), "Foo"))
     end),
 
     test("member", function()
@@ -23,7 +23,7 @@ return test.suite("binding"):with {
         o:member(p1)
         o:member(p2)
 
-        ok(eq(o.name, "Foo"))
+        ok(eq(o:name(), "Foo"))
         ok(eq(o._members, {p1, p2}))
 
         ok(eq(tostring(o:xml()), [[<Binding name="Foo"><Member id="0x00000001"/><Member id="0x00000002"/></Binding>]]))
@@ -36,7 +36,7 @@ return test.suite("binding"):with {
         local o = binding("Foo")
         o:members(p1, p2)
 
-        ok(eq(o.name, "Foo"))
+        ok(eq(o:name(), "Foo"))
         ok(eq(o._members, {p1, p2}))
 
         ok(eq(tostring(o:xml()), [[<Binding name="Foo"><Member id="0x00000001"/><Member id="0x00000002"/></Binding>]]))

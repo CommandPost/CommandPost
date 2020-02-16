@@ -19,7 +19,6 @@ local semver                                    = require "semver"
 local location                                  = require "location"
 local execute                                   = hs.execute
 
-
 local mod = {}
 
 --- plugins.core.touchbar.virtual.LOCATION_DRAGGABLE -> string
@@ -139,7 +138,7 @@ function mod.start()
         --------------------------------------------------------------------------------
         -- Set up Touch Bar:
         --------------------------------------------------------------------------------
-        mod._touchBar = touchbar.new()
+        mod._touchBar = touchbar.virtual.new()
 
         if mod._touchBar == nil then
             log.ef("There was an error initialising the Touch Bar.")
