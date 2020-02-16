@@ -156,25 +156,25 @@ function mod.refresh(dueToAppChange)
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
 
-    local item = items[bundleID]
-    local bank = item and item[bankID]
-
     --------------------------------------------------------------------------------
     -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
     if leftFnPressed then
-        bank = bank .. "_LeftFn"
+        bankID = bankID .. "_LeftFn"
     elseif rightFnPressed then
-        bank = bank .. "_RightFn"
+        bankID = bankID .. "_RightFn"
     end
+
+    local item = items[bundleID]
+    local bank = item and item[bankID]
 
     --------------------------------------------------------------------------------
     -- SET LED BUTTON COLOURS:
     --------------------------------------------------------------------------------
-    local ledButton = bank.ledButton
+    local ledButton = bank and bank.ledButton
     for i=7, 26 do
         local id = tostring(i)
-        local ledColor = ledButton[id] and bank.ledButton[id].led or defaultColor
+        local ledColor = ledButton and ledButton[id] and ledButton[id].led or defaultColor
         if cachedLEDButtonValues[id] ~= ledColor then
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
@@ -187,7 +187,7 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- SET TOUCH SCREEN BUTTON IMAGES:
     --------------------------------------------------------------------------------
-    local touchButton = bank.touchButton
+    local touchButton = bank and bank.touchButton
     for i=1, 12 do
         local id = tostring(i)
         success = false
@@ -218,7 +218,7 @@ function mod.refresh(dueToAppChange)
     -- SET WHEEL SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    local thisWheel = bank.wheelScreen and bank.wheelScreen["1"]
+    local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
     local encodedIcon = thisWheel and thisWheel.encodedIcon
     --------------------------------------------------------------------------------
     -- Only update if the screen has changed to save bandwidth:
@@ -244,7 +244,7 @@ function mod.refresh(dueToAppChange)
     -- SET LEFT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    local thisSideScreen = bank.sideScreen and bank.sideScreen["1"]
+    local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
     encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
     if encodedIcon and cachedLeftSideScreen ~= encodedIcon then
         cachedLeftSideScreen = encodedIcon
@@ -269,7 +269,7 @@ function mod.refresh(dueToAppChange)
     -- SET RIGHT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
+    thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
     encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
     if encodedIcon and cachedRightSideScreen ~= encodedIcon then
         cachedRightSideScreen = encodedIcon
