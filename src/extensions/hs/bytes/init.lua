@@ -543,7 +543,7 @@ local function intMask(bits)
     return result
 end
 
--- doInt(value, index, bits, read, write) -> number, number | string
+-- doInt(value, index, bits, unsigned, read, write) -> number, number | string
 -- Function
 -- Converts a byte `string` value to an integer of the specified `bits` in length, or a `number` to a `string` of the specified bit size.
 --
@@ -551,19 +551,27 @@ end
 -- * value      - either a `string` to retrieve an integer from, or a `number` to convert to a byte string.
 -- * index      - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
 -- * bits       - the number of bits in the integer. Typically 8/16/32/64.
+-- * unsigned   - if `true`, the integer is unsigned.
 -- * read       - the function which will read the bytes from the string.
 -- * write      - the function which will output a series of number bytes to combine into a string.
 --
 -- Returns:
 ---  * if `value` is a `string`, returns the integer provided by the `read` function, followed by the next index.
 ---  * if `value` is a `number`, returns a `string` containing the integer value in the order provided by the `write` function.
-local function doInt(value, index, bits, read, write)
+local function doInt(value, index, bits, unsigned, read, write)
     if type(value) == "string" then
         index = index or 1
         if value:len() < (index + (bits/8) - 1) then
             error(format("need %d bytes but %d are available from index %d", bits/8, value:len()-index+1, index), 2)
         end
-        return read(value, index)
+        local int, offset = read(value, index)
+        if int and not unsigned then
+            local marker = 1 << (bits - 1)
+            if int & marker == marker then
+                int = (intMask(64) << bits) | int
+            end
+        end
+        return int, offset
     elseif type(value) == "number" then
         if value & intMask(bits) ~= value then
             error(format("value is larger than %d bits: 0x%04X", bits, value), 2)
@@ -576,7 +584,7 @@ end
 
 --- hs.bytes.int8(value[, index]) -> number, number | string
 --- Function
---- Converts a byte `string` value to an 8-bit integer or a `number` to a 1-byte `string`.
+--- Converts a byte `string` value to a signed 8-bit integer or a `number` to a 1-byte `string`.
 ---
 --- Parameters:
 ---  * value     - either a `string` to retrieve an 8-bit int from, or a `number` to convert to a byte string.
@@ -590,7 +598,26 @@ end
 ---  * if the `value` `number` is larger than can fit in an 8-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int8(value, index)
-    return doInt(value, index, 8, readInt8, writeInt8)
+    return doInt(value, index, 8, false, readInt8, writeInt8)
+end
+
+--- hs.bytes.uint8(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 8-bit integer or a `number` to a 1-byte `string`.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an 8-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the 8-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 1-byte `string` containing the integer value.
+---
+--- Notes:
+---  * if the `value` `number` is larger than can fit in an 8-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint8(value, index)
+    return doInt(value, index, 8, true, readInt8, writeInt8)
 end
 
 --- hs.bytes.int16be(value[, index]) -> number, number | string
@@ -610,7 +637,7 @@ end
 ---  * if the `value` `number` is larger than can fit in a 16-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int16be(value, index)
-    return doInt(value, index, 16, readInt16be, writeInt16be)
+    return doInt(value, index, 16, false, readInt16be, writeInt16be)
 end
 
 --- hs.bytes.int16le(value[, index]) -> number, number | string
@@ -630,7 +657,47 @@ end
 ---  * if the `value` `number` is larger than can fit in a 16-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int16le(value, index)
-    return doInt(value, index, 16, readInt16le, writeInt16le)
+    return doInt(value, index, 16, false, readInt16le, writeInt16le)
+end
+
+--- hs.bytes.uint16be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 16-bit integer or a `number` to a 2-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 16-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 16-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 2-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 16-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint16be(value, index)
+    return doInt(value, index, 16, true, readInt16be, writeInt16be)
+end
+
+--- hs.bytes.uint16le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 16-bit integer or a `number` to a 2-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 16-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 16-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 2-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'little-endian', so the less significant byte is read/written first, then the more significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 16-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint16le(value, index)
+    return doInt(value, index, 16, true, readInt16le, writeInt16le)
 end
 
 --- hs.bytes.int24be(value[, index]) -> number, number | string
@@ -650,7 +717,7 @@ end
 ---  * if the `value` `number` is larger than can fit in a 24-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int24be(value, index)
-    return doInt(value, index, 24, readInt24be, writeInt24be)
+    return doInt(value, index, 24, false, readInt24be, writeInt24be)
 end
 
 --- hs.bytes.int24le(value[, index]) -> number, number | string
@@ -670,7 +737,47 @@ end
 ---  * if the `value` `number` is larger than can fit in a 24-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int24le(value, index)
-    return doInt(value, index, 24, readInt24le, writeInt24le)
+    return doInt(value, index, 24, false, readInt24le, writeInt24le)
+end
+
+--- hs.bytes.uint24be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 24-bit integer or a `number` to a 3-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 24-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 24-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 3-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 24-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint24be(value, index)
+    return doInt(value, index, 24, true, readInt24be, writeInt24be)
+end
+
+--- hs.bytes.uint24le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 24-bit integer or a `number` to a 3-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 24-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 24-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 3-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'little-endian', so the less significant byte is read/written first, then the more significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 24-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint24le(value, index)
+    return doInt(value, index, 24, true, readInt24le, writeInt24le)
 end
 
 --- hs.bytes.int32be(value[, index]) -> number, number | string
@@ -690,7 +797,7 @@ end
 ---  * if the `value` `number` is larger than can fit in a 32-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int32be(value, index)
-    return doInt(value, index, 32, readInt32be, writeInt32be)
+    return doInt(value, index, 32, false, readInt32be, writeInt32be)
 end
 
 --- hs.bytes.int32le(value[, index]) -> number, number | string
@@ -710,7 +817,47 @@ end
 ---  * if the `value` `number` is larger than can fit in a 32-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int32le(value, index)
-    return doInt(value, index, 32, readInt32le, writeInt32le)
+    return doInt(value, index, 32, false, readInt32le, writeInt32le)
+end
+
+--- hs.bytes.uint32be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 32-bit integer or a `number` to a 4-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 32-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 32-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 4-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 32-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint32be(value, index)
+    return doInt(value, index, 32, true, readInt32be, writeInt32be)
+end
+
+--- hs.bytes.uint32le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 32-bit integer or a `number` to a 4-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 32-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 32-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 4-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in a unsigned 32-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.int32le(value, index)
+    return doInt(value, index, 32, false, readInt32le, writeInt32le)
 end
 
 --- hs.bytes.int64be(value[, index]) -> number, number | string
@@ -730,7 +877,7 @@ end
 ---  * if the `value` `number` is larger than can fit in a 64-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int64be(value, index)
-    return doInt(value, index, 64, readInt64be, writeInt64be)
+    return doInt(value, index, 64, false, readInt64be, writeInt64be)
 end
 
 --- hs.bytes.int64le(value[, index]) -> number, number | string
@@ -738,19 +885,59 @@ end
 --- Converts a byte `string` value to a 64-bit integer or a `number` to a 4-byte `string`, using little-endian encoding.
 ---
 --- Parameters:
----  * value     - either a `string` to retrieve a 32-bit int from, or a `number` to convert to a byte string.
+---  * value     - either a `string` to retrieve a 64-bit int from, or a `number` to convert to a byte string.
 ---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
 ---
 --- Returns:
----  * if `value` is a `string`, returns the 32-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `string`, returns the 64-bit integer at the `index`, followed by the next index.
 ---  * if `value` is a `number`, returns a 4-byte `string` containing the integer value.
 ---
 --- Notes:
 ---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
----  * if the `value` `number` is larger than can fit in a 32-bit int, an error is thrown.
+---  * if the `value` `number` is larger than can fit in a 64-bit int, an error is thrown.
 ---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
 function bytes.int64le(value, index)
-    return doInt(value, index, 64, readInt64le, writeInt64le)
+    return doInt(value, index, 64, false, readInt64le, writeInt64le)
+end
+
+--- hs.bytes.uint64be(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 64-bit integer or a `number` to an 8-byte `string`, using big-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 64-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 64-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 8-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 64-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint64be(value, index)
+    return doInt(value, index, 64, true, readInt64be, writeInt64be)
+end
+
+--- hs.bytes.uint64le(value[, index]) -> number, number | string
+--- Function
+--- Converts a byte `string` value to an unsigned 64-bit integer or a `number` to a 4-byte `string`, using little-endian encoding.
+---
+--- Parameters:
+---  * value     - either a `string` to retrieve an unsigned 64-bit int from, or a `number` to convert to a byte string.
+---  * index     - (optional) if `value` is a `string`, indicates the byte number to start reading from. Defaults to `1`.
+---
+--- Returns:
+---  * if `value` is a `string`, returns the unsigned 64-bit integer at the `index`, followed by the next index.
+---  * if `value` is a `number`, returns a 4-byte `string` containing the integer value.
+---
+--- Notes:
+---  * this function reads/writes as 'big-endian', so the more significant byte is read/written first, then the less significant byte.
+---  * if the `value` `number` is larger than can fit in an unsigned 64-bit int, an error is thrown.
+---  * if the `value` is a `string` and the `index` is larger than the length of the `string`, an error is thrown.
+function bytes.uint64le(value, index)
+    return doInt(value, index, 64, true, readInt64le, writeInt64le)
 end
 
 --- hs.bytes.remainder(value[, index]) -> string
