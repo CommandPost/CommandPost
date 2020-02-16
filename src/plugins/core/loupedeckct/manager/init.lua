@@ -23,12 +23,11 @@ DONE:
 
 TO-DO:
 
+    [ ] Fix UI bug when you load Loupedeck CT Preferences for first time after installing CommandPost
     [ ] Add ability to save the Loupedeck CT settings on the device
     [ ] Add Touch Wheel action for two finger tap (or just double tap?)
     [ ] Add support for custom applications
-
     [ ] Right click on image drop zone to show popup with a list of recent imported images
-
     [ ] Add checkbox to enable/disable the hard drive support
     [ ] Add checkbox to enable/disable Bluetooth support
     [ ] i18n-ify everything
