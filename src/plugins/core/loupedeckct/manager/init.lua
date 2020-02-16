@@ -55,7 +55,7 @@ local imageFromURL          = image.imageFromURL
 local mod = {}
 
 -- default panel color (black)
-local defaultColor = "FFFFFF"
+local defaultColor = "000000"
 
 -- leftFnPressed -> boolean
 -- Variable
