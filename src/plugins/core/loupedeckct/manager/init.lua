@@ -40,22 +40,22 @@ local require               = require
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
 local ct                    = require "hs.loupedeckct"
-local drawing               = require "hs.drawing"
 local image                 = require "hs.image"
 local timer                 = require "hs.timer"
 
 local config                = require "cp.config"
-local deferred              = require "cp.deferred"
 local dialog                = require "cp.dialog"
 local i18n                  = require "cp.i18n"
 local json                  = require "cp.json"
 
-local black                 = drawing.color.hammerspoon.black
 local displayNotification   = dialog.displayNotification
 local doAfter               = timer.doAfter
 local imageFromURL          = image.imageFromURL
 
 local mod = {}
+
+-- default panel color (black)
+local defaultColor = "FFFFFF"
 
 -- leftFnPressed -> boolean
 -- Variable
@@ -154,7 +154,10 @@ function mod.refresh(dueToAppChange)
     local items = mod.items()
 
     local activeBanks = mod.activeBanks()
-    local bank = activeBanks[bundleID] or "1"
+    local bankID = activeBanks[bundleID] or "1"
+
+    local item = items[bundleID]
+    local bank = item and item[bankID]
 
     --------------------------------------------------------------------------------
     -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
@@ -168,58 +171,46 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- SET LED BUTTON COLOURS:
     --------------------------------------------------------------------------------
+    local ledButton = bank.ledButton
     for i=7, 26 do
         local id = tostring(i)
-        if items[bundleID] and items[bundleID][bank] and items[bundleID][bank]["ledButton"] and items[bundleID][bank]["ledButton"][id] and items[bundleID][bank]["ledButton"][id]["led"] then
-            local value = items[bundleID][bank]["ledButton"][id]["led"]
-            if cachedLEDButtonValues[id] ~= value then
-                --------------------------------------------------------------------------------
-                -- Only update if the colour has changed to save bandwidth:
-                --------------------------------------------------------------------------------
-                ct.buttonColor(i, {hex="#" .. value})
-            end
-            cachedLEDButtonValues[id] = value
-        else
-            if cachedLEDButtonValues[id] ~= "black" then
-                --------------------------------------------------------------------------------
-                -- Only update if the colour has changed to save bandwidth:
-                --------------------------------------------------------------------------------
-                ct.buttonColor(i, black)
-            end
-            cachedLEDButtonValues[id] = "black"
+        local ledColor = ledButton[id] and bank.ledButton[id].led or defaultColor
+        if cachedLEDButtonValues[id] ~= ledColor then
+            --------------------------------------------------------------------------------
+            -- Only update if the colour has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            ct.buttonColor(i, {hex="#" .. ledColor})
         end
+        cachedLEDButtonValues[id] = ledColor
     end
 
     --------------------------------------------------------------------------------
     -- SET TOUCH SCREEN BUTTON IMAGES:
     --------------------------------------------------------------------------------
+    local touchButton = bank.touchButton
     for i=1, 12 do
         local id = tostring(i)
         success = false
-        if items[bundleID] and items[bundleID][bank] and items[bundleID][bank]["touchButton"] and items[bundleID][bank]["touchButton"][id] and items[bundleID][bank]["touchButton"][id]["encodedIcon"] then
-            local encodedIcon = items[bundleID][bank]["touchButton"][id]["encodedIcon"]
-            if encodedIcon then
-                local decodedImage = imageFromURL(encodedIcon)
-                if decodedImage then
-                    --------------------------------------------------------------------------------
-                    -- Only update if the screen has changed to save bandwidth:
-                    --------------------------------------------------------------------------------
-                    if cachedTouchScreenButtonValues[id] ~= decodedImage then
-                        ct.updateScreenButtonImage(i, decodedImage)
-                    end
-                    success = true
-                    cachedTouchScreenButtonValues[id] = decodedImage
-                end
+        local thisButton = touchButton and touchButton[id]
+        local encodedIcon = thisButton and thisButton.encodedIcon
+
+        --------------------------------------------------------------------------------
+        -- Only update if the screen has changed to save bandwidth:
+        --------------------------------------------------------------------------------
+        if encodedIcon and cachedTouchScreenButtonValues[id] ~= encodedIcon then
+            cachedTouchScreenButtonValues[id] = encodedIcon
+            local decodedImage = imageFromURL(encodedIcon)
+            if decodedImage then
+                ct.updateScreenButtonImage(i, decodedImage)
+                success = true
             end
         end
-        if not success then
+        if not success and cachedTouchScreenButtonValues[id] ~= defaultColor then
             --------------------------------------------------------------------------------
             -- Only update if the screen has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            if cachedTouchScreenButtonValues[id] ~= "black" then
-                ct.updateScreenButtonColor(i, black)
-            end
-            cachedTouchScreenButtonValues[id] = "black"
+            ct.updateScreenButtonColor(i, {hex="#"..defaultColor})
+            cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
 
@@ -227,170 +218,104 @@ function mod.refresh(dueToAppChange)
     -- SET WHEEL SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    if items[bundleID] and items[bundleID][bank] and items[bundleID][bank]["wheelScreen"] and items[bundleID][bank]["wheelScreen"]["1"] and items[bundleID][bank]["wheelScreen"]["1"]["encodedIcon"] then
-        local encodedIcon = items[bundleID][bank]["wheelScreen"]["1"]["encodedIcon"]
-        if encodedIcon then
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                --------------------------------------------------------------------------------
-                -- Only update if the screen has changed to save bandwidth:
-                --------------------------------------------------------------------------------
-                if cachedWheelScreen ~= decodedImage then
-                    ct.updateScreenImage(ct.screens.wheel, decodedImage)
-                end
-                success = true
-                cachedWheelScreen = decodedImage
-            end
+    local thisWheel = bank.wheelScreen and bank.wheelScreen["1"]
+    local encodedIcon = thisWheel and thisWheel.encodedIcon
+    --------------------------------------------------------------------------------
+    -- Only update if the screen has changed to save bandwidth:
+    --------------------------------------------------------------------------------
+    if encodedIcon and cachedWheelScreen ~= encodedIcon then
+        cachedWheelScreen = encodedIcon
+        local decodedImage = imageFromURL(encodedIcon)
+        if decodedImage then
+            ct.updateScreenImage(ct.screens.wheel, decodedImage)
         end
+        success = true
     end
-    if not success then
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if cachedWheelScreen ~= "black" then
-            ct.updateScreenColor(ct.screens.wheel, black)
-        end
-        cachedWheelScreen = "black"
+
+    --------------------------------------------------------------------------------
+    -- Only update if the screen has changed to save bandwidth:
+    --------------------------------------------------------------------------------
+    if not success and cachedWheelScreen ~= defaultColor then
+        ct.updateScreenColor(ct.screens.wheel, {hex="#"..defaultColor})
+        cachedWheelScreen = defaultColor
     end
 
     --------------------------------------------------------------------------------
     -- SET LEFT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    if items[bundleID] and items[bundleID][bank] and items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["1"] and items[bundleID][bank]["sideScreen"]["1"]["encodedIcon"] then
-        local encodedIcon = items[bundleID][bank]["sideScreen"]["1"]["encodedIcon"]
-        if encodedIcon then
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                --------------------------------------------------------------------------------
-                -- Only update if the screen has changed to save bandwidth:
-                --------------------------------------------------------------------------------
-                if cachedLeftSideScreen ~= decodedImage then
-                    ct.updateScreenImage(ct.screens.left, decodedImage)
-                end
-                success = true
-                cachedLeftSideScreen = decodedImage
-            end
+    local thisSideScreen = bank.sideScreen and bank.sideScreen["1"]
+    encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+    if encodedIcon and cachedLeftSideScreen ~= encodedIcon then
+        cachedLeftSideScreen = encodedIcon
+        local decodedImage = imageFromURL(encodedIcon)
+        if decodedImage then
+            --------------------------------------------------------------------------------
+            -- Only update if the screen has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            ct.updateScreenImage(ct.screens.left, decodedImage)
+            success = true
         end
     end
-    if not success then
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if cachedLeftSideScreen ~= "black" then
-            ct.updateScreenColor(ct.screens.left, black)
-        end
-        cachedLeftSideScreen = "black"
+    --------------------------------------------------------------------------------
+    -- Only update if the screen has changed to save bandwidth:
+    --------------------------------------------------------------------------------
+    if not success and cachedLeftSideScreen ~= defaultColor then
+        ct.updateScreenColor(ct.screens.left, {hex="#"..defaultColor})
+        cachedLeftSideScreen = defaultColor
     end
 
     --------------------------------------------------------------------------------
     -- SET RIGHT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
-    if items[bundleID] and items[bundleID][bank] and items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["2"] and items[bundleID][bank]["sideScreen"]["2"]["encodedIcon"] then
-        local encodedIcon = items[bundleID][bank]["sideScreen"]["2"]["encodedIcon"]
-        if encodedIcon then
-            local decodedImage = imageFromURL(encodedIcon)
-            if decodedImage then
-                --------------------------------------------------------------------------------
-                -- Only update if the screen has changed to save bandwidth:
-                --------------------------------------------------------------------------------
-                if cachedRightSideScreen ~= decodedImage then
-                    ct.updateScreenImage(ct.screens.right, decodedImage)
-                end
-                success = true
-                cachedRightSideScreen = decodedImage
-            end
+    thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
+    encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+    if encodedIcon and cachedRightSideScreen ~= encodedIcon then
+        cachedRightSideScreen = encodedIcon
+        local decodedImage = imageFromURL(encodedIcon)
+        if decodedImage then
+            --------------------------------------------------------------------------------
+            -- Only update if the screen has changed to save bandwidth:
+            --------------------------------------------------------------------------------
+            ct.updateScreenImage(ct.screens.right, decodedImage)
+            success = true
         end
     end
-    if not success then
-        --------------------------------------------------------------------------------
-        -- Only update if the screen has changed to save bandwidth:
-        --------------------------------------------------------------------------------
-        if cachedRightSideScreen ~= "black" then
-            ct.updateScreenColor(ct.screens.right, black)
-        end
-        cachedRightSideScreen = "black"
+    --------------------------------------------------------------------------------
+    -- Only update if the screen has changed to save bandwidth:
+    --------------------------------------------------------------------------------
+    if not success and cachedRightSideScreen ~= defaultColor then
+        ct.updateScreenColor(ct.screens.right, {hex="#"..defaultColor})
+        cachedRightSideScreen = defaultColor
     end
 end
 
 --------------------------------------------------------------------------------
 -- WHEEL:
 --------------------------------------------------------------------------------
-local cacheWheelYAxis = 0
-local lastCacheWheelYAxis = 0
-
-local cacheWheelXAxis = 0
-local lastCacheWheelXAxis = 0
-
-local wheelTouchUpAction = function() end
-local wheelTouchDownAction = function() end
-
-local wheelTouchLeftAction = function() end
-local wheelTouchRightAction = function() end
-
-local touchWheel = deferred.new(0.001):action(function()
-    if lastCacheWheelYAxis > cacheWheelYAxis then
-        wheelTouchUpAction()
-    else
-        wheelTouchDownAction()
-    end
-
-    if lastCacheWheelXAxis > cacheWheelXAxis then
-        wheelTouchLeftAction()
-    else
-        wheelTouchRightAction()
-    end
-
-    lastCacheWheelYAxis = cacheWheelYAxis
-    lastCacheWheelXAxis = cacheWheelXAxis
-end)
-
---------------------------------------------------------------------------------
--- LEFT TOUCH SCREEN:
---------------------------------------------------------------------------------
-local cacheLeftScreenYAxis = 0
-local lastCacheLeftScreenYAxis = 0
-
-local leftTouchScreenUpAction = function() end
-local leftTouchScreenDownAction = function() end
-
-local leftTouchScreen = deferred.new(0.001):action(function()
-    if lastCacheLeftScreenYAxis == 0 then
-        lastCacheLeftScreenYAxis = cacheLeftScreenYAxis
-        return
-    end
-
-    if lastCacheLeftScreenYAxis > cacheLeftScreenYAxis then
-        leftTouchScreenUpAction()
-    else
-        leftTouchScreenDownAction()
-    end
-    lastCacheLeftScreenYAxis = cacheLeftScreenYAxis
-end)
+local cacheWheelYAxis = nil
+local cacheWheelXAxis = nil
 
 --------------------------------------------------------------------------------
 -- RIGHT TOUCH SCREEN:
 --------------------------------------------------------------------------------
-local cacheRightScreenYAxis = 0
-local lastCacheRightScreenYAxis = 0
+local cacheRightScreenYAxis = nil
+local cacheLeftScreenYAxis = nil
 
-local rightTouchScreenUpAction = function() end
-local rightTouchScreenDownAction = function() end
+local function executeAction(thisAction)
+    if thisAction then
+        local handlerID = thisAction.handlerID
+        local action = thisAction.action
+        if handlerID and action then
+            local handler = mod._actionmanager.getHandler(handlerID)
+            handler:execute(action)
+            return true
+        end
 
-local rightTouchScreen = deferred.new(0.001):action(function()
-    if lastCacheRightScreenYAxis == 0 then
-        lastCacheRightScreenYAxis = cacheRightScreenYAxis
-        return
     end
-
-    if lastCacheRightScreenYAxis > cacheRightScreenYAxis then
-        rightTouchScreenUpAction()
-    else
-        rightTouchScreenDownAction()
-    end
-    lastCacheRightScreenYAxis = cacheRightScreenYAxis
-end)
+    return false
+end
 
 -- callback(data) -> none
 -- Function
@@ -418,7 +343,7 @@ local function callback(data)
     local items = mod.items()
 
     local activeBanks = mod.activeBanks()
-    local bank = activeBanks[bundleID] or "1"
+    local bankID = activeBanks[bundleID] or "1"
 
     local buttonID = tostring(data.buttonID)
 
@@ -449,147 +374,67 @@ local function callback(data)
     -- HANDLE FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
     if leftFnPressed then
-        bank = bank .. "_LeftFn"
+        bankID = bankID .. "_LeftFn"
     elseif rightFnPressed then
-        bank = bank .. "_RightFn"
+        bankID = bankID .. "_RightFn"
     end
 
-    if items[bundleID] and items[bundleID][bank] then
+    local item = items[bundleID]
+    local bank = item and item[bankID]
+
+    if bank then
         if data.id == ct.event.BUTTON_PRESS and data.direction == "down" then
             --------------------------------------------------------------------------------
             -- LED BUTTON PRESS:
             --------------------------------------------------------------------------------
-            if items[bundleID][bank]["ledButton"] and items[bundleID][bank]["ledButton"][buttonID] and items[bundleID][bank]["ledButton"][buttonID]["pressAction"] then
-                local item = items[bundleID][bank]["ledButton"][buttonID]["pressAction"]
-                local handlerID = item["handlerID"]
-                local action = item["action"]
-                if handlerID and action then
-                    local handler = mod._actionmanager.getHandler(handlerID)
-                    handler:execute(action)
-                    return
-                end
+            local thisButton = bank.ledButton and bank.ledButton[buttonID]
+            if thisButton and executeAction(thisButton.pressAction) then
+                return
             end
 
             --------------------------------------------------------------------------------
             -- KNOB BUTTON PRESS:
             --------------------------------------------------------------------------------
-            if items[bundleID][bank]["knob"] and items[bundleID][bank]["knob"][buttonID] and items[bundleID][bank]["knob"][buttonID]["pressAction"] then
-                local item = items[bundleID][bank]["knob"][buttonID]["pressAction"]
-                local handlerID = item["handlerID"]
-                local action = item["action"]
-                if handlerID and action then
-                    local handler = mod._actionmanager.getHandler(handlerID)
-                    handler:execute(action)
-                    return
-                end
+            local thisKnob = bank.knob and bank.knob[buttonID]
+            if thisKnob and executeAction(thisKnob.pressAction) then
+                return
             end
         elseif data.id == ct.event.ENCODER_MOVE then
-            if data.direction == "left" then
-                --------------------------------------------------------------------------------
-                -- TURN KNOB LEFT:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["knob"] and items[bundleID][bank]["knob"][buttonID] and items[bundleID][bank]["knob"][buttonID]["leftAction"] then
-                    local item = items[bundleID][bank]["knob"][buttonID]["leftAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                        return
-                    end
-                end
+            local thisKnob = bank.knob and bank.knob[buttonID]
+            if thisKnob and executeAction(thisKnob[data.direction.."Action"]) then
+                return
+            end
 
-                --------------------------------------------------------------------------------
-                -- TURN JOG WHEEL LEFT:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["jogWheel"] and items[bundleID][bank]["jogWheel"]["1"] and items[bundleID][bank]["jogWheel"]["1"]["leftAction"] then
-                    local item = items[bundleID][bank]["jogWheel"]["1"]["leftAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                        return
-                    end
-                end
-            elseif data.direction == "right" then
-                --------------------------------------------------------------------------------
-                -- TURN KNOB RIGHT:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["knob"] and items[bundleID][bank]["knob"][buttonID] and items[bundleID][bank]["knob"][buttonID]["rightAction"] then
-                    local item = items[bundleID][bank]["knob"][buttonID]["rightAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                        return
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- TURN JOG WHEEL RIGHT:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["jogWheel"] and items[bundleID][bank]["jogWheel"]["1"] and items[bundleID][bank]["jogWheel"]["1"]["rightAction"] then
-                    local item = items[bundleID][bank]["jogWheel"]["1"]["rightAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                        return
-                    end
-                end
+            local thisJogWheel = bank.jogWheel and bank.jogWheel["1"]
+            if thisJogWheel and executeAction(thisJogWheel[data.direction.."Action"]) then
+                return
             end
         elseif data.id == ct.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
             -- TOUCH SCREEN BUTTON PRESS:
             --------------------------------------------------------------------------------
-            if items[bundleID][bank]["touchButton"] and items[bundleID][bank]["touchButton"][buttonID] and items[bundleID][bank]["touchButton"][buttonID]["pressAction"] then
-                local item = items[bundleID][bank]["touchButton"][buttonID]["pressAction"]
-                local handlerID = item["handlerID"]
-                local action = item["action"]
-                if handlerID and action then
-                    local handler = mod._actionmanager.getHandler(handlerID)
-                    handler:execute(action)
-                    return
-                end
+            local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
+            if thisTouchButton and executeAction(thisTouchButton.pressAction) then
+                return
             end
 
 
             if data.x < 50 then
                 --------------------------------------------------------------------------------
-                -- LEFT TOUCH SCREEN TOUCH UP:
+                -- LEFT TOUCH SCREEN TOUCH SLIDE UP/DOWN:
                 --------------------------------------------------------------------------------
-                if items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["1"] and items[bundleID][bank]["sideScreen"]["1"]["upAction"] then
-                    leftTouchScreenUpAction = function()
-                        local item = items[bundleID][bank]["sideScreen"]["1"]["upAction"]
-                        local handlerID = item["handlerID"]
-                        local action = item["action"]
-                        if handlerID and action then
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
+                local thisSideScreen = bank.sideScreen and bank.sideScreen["1"]
+                if thisSideScreen then
+                    if cacheLeftScreenYAxis ~= nil then
+                        -- already dragging. Which way?
+                        local yDiff = data.y - cacheLeftScreenYAxis
+                        if yDiff < 0 then
+                            executeAction(thisSideScreen.upAction)
+                        elseif yDiff > 0 then
+                            executeAction(thisSideScreen.downAction)
                         end
                     end
                     cacheLeftScreenYAxis = data.y
-                    leftTouchScreen()
-                end
-
-                --------------------------------------------------------------------------------
-                -- LEFT TOUCH SCREEN TOUCH DOWN:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["1"] and items[bundleID][bank]["sideScreen"]["1"]["downAction"] then
-                    leftTouchScreenDownAction = function()
-                        local item = items[bundleID][bank]["sideScreen"]["1"]["downAction"]
-                        local handlerID = item["handlerID"]
-                        local action = item["action"]
-                        if handlerID and action then
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
-                        end
-                    end
-                    cacheLeftScreenYAxis = data.y
-                    leftTouchScreen()
                 end
             end
 
@@ -597,112 +442,52 @@ local function callback(data)
                 --------------------------------------------------------------------------------
                 -- RIGHT TOUCH SCREEN TOUCH UP:
                 --------------------------------------------------------------------------------
-                if items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["2"] and items[bundleID][bank]["sideScreen"]["2"]["upAction"] then
-                    rightTouchScreenUpAction = function()
-                        local item = items[bundleID][bank]["sideScreen"]["2"]["upAction"]
-                        local handlerID = item["handlerID"]
-                        local action = item["action"]
-                        if handlerID and action then
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
+                local thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
+                if thisSideScreen then
+                    if cacheRightScreenYAxis ~= nil then
+                        -- already dragging. Which way?
+                        local yDiff = data.y - cacheRightScreenYAxis
+                        if yDiff < 0 then
+                            executeAction(thisSideScreen.upAction)
+                        elseif yDiff > 0 then
+                            executeAction(thisSideScreen.downAction)
                         end
                     end
                     cacheRightScreenYAxis = data.y
-                    rightTouchScreen()
-                end
-
-                --------------------------------------------------------------------------------
-                -- RIGHT TOUCH SCREEN TOUCH DOWN:
-                --------------------------------------------------------------------------------
-                if items[bundleID][bank]["sideScreen"] and items[bundleID][bank]["sideScreen"]["2"] and items[bundleID][bank]["sideScreen"]["2"]["downAction"] then
-                    rightTouchScreenDownAction = function()
-                        local item = items[bundleID][bank]["sideScreen"]["2"]["downAction"]
-                        local handlerID = item["handlerID"]
-                        local action = item["action"]
-                        if handlerID and action then
-                            local handler = mod._actionmanager.getHandler(handlerID)
-                            handler:execute(action)
-                        end
-                    end
-                    cacheRightScreenYAxis = data.y
-                    rightTouchScreen()
                 end
             end
         elseif data.id == ct.event.SCREEN_RELEASED then
-            cacheLeftScreenYAxis = 0
-            cacheRightScreenYAxis = 0
+            cacheLeftScreenYAxis = nil
+            cacheRightScreenYAxis = nil
         elseif data.id == ct.event.WHEEL_PRESSED then
-            --------------------------------------------------------------------------------
-            -- WHEEL TOUCH UP:
-            --------------------------------------------------------------------------------
-            if items[bundleID][bank]["wheelScreen"] and items[bundleID][bank]["wheelScreen"]["1"] and items[bundleID][bank]["wheelScreen"]["1"]["upAction"] then
-                wheelTouchUpAction = function()
-                    local item = items[bundleID][bank]["wheelScreen"]["1"]["upAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                    end
-                end
-                cacheWheelYAxis = data.y
-                touchWheel()
-            end
+            local wheelScreen = bank.wheelScreen and bank.wheelScreen["1"]
 
-            --------------------------------------------------------------------------------
-            -- WHEEL TOUCH DOWN:
-            --------------------------------------------------------------------------------
-            if items[bundleID][bank]["wheelScreen"] and items[bundleID][bank]["wheelScreen"]["1"] and items[bundleID][bank]["wheelScreen"]["1"]["downAction"] then
-                wheelTouchDownAction = function()
-                    local item = items[bundleID][bank]["wheelScreen"]["1"]["downAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                    end
-                end
-                cacheWheelYAxis = data.y
-                touchWheel()
-            end
-
-
-            --------------------------------------------------------------------------------
-            -- WHEEL TOUCH LEFT:
-            --------------------------------------------------------------------------------
-            if items[bundleID][bank]["wheelScreen"] and items[bundleID][bank]["wheelScreen"]["1"] and items[bundleID][bank]["wheelScreen"]["1"]["leftAction"] then
-                wheelTouchLeftAction = function()
-                    local item = items[bundleID][bank]["wheelScreen"]["1"]["leftAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
+            if wheelScreen then
+                if cacheWheelXAxis ~= nil and cacheWheelYAxis ~= nil then
+                    -- we're already dragging. Which way?
+                    local xDiff, yDiff = data.x - cacheWheelXAxis, data.y - cacheWheelYAxis
+                    if math.abs(xDiff) > math.abs(yDiff) then
+                        -- dragging horizontally
+                        if xDiff < 0 then
+                            executeAction(wheelScreen.leftAction)
+                        else
+                            executeAction(wheelScreen.rightAction)
+                        end
+                    elseif yDiff ~= 0 then
+                        -- dragging vertically
+                        if yDiff < 0 then
+                            executeAction(wheelScreen.upAction)
+                        else
+                            executeAction(wheelScreen.downAction)
+                        end
                     end
                 end
                 cacheWheelXAxis = data.x
-                touchWheel()
-            end
-
-            --------------------------------------------------------------------------------
-            -- WHEEL TOUCH RIGHT:
-            --------------------------------------------------------------------------------
-            if items[bundleID][bank]["wheelScreen"] and items[bundleID][bank]["wheelScreen"]["1"] and items[bundleID][bank]["wheelScreen"]["1"]["rightAction"] then
-                wheelTouchRightAction = function()
-                    local item = items[bundleID][bank]["wheelScreen"]["1"]["rightAction"]
-                    local handlerID = item["handlerID"]
-                    local action = item["action"]
-                    if handlerID and action then
-                        local handler = mod._actionmanager.getHandler(handlerID)
-                        handler:execute(action)
-                    end
-                end
-                cacheWheelXAxis = data.x
-                touchWheel()
+                cacheWheelYAxis = data.y
             end
         elseif data.id == ct.event.WHEEL_RELEASED then
-            cacheWheelYAxis = 0
-            cacheWheelXAxis = 0
+            cacheWheelYAxis = nil
+            cacheWheelXAxis = nil
         end
 
     end
