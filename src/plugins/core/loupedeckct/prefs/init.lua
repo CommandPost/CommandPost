@@ -68,7 +68,7 @@ mod.lastID = config.prop("loupedeckct.preferences.lastID", "7")
 --- plugins.core.loupedeckct.prefs.lastControlType <cp.prop: string>
 --- Field
 --- Last Selected Control Type used in the Preferences Panel.
-mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "1")
+mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "ledButton")
 
 -- resetEverything() -> none
 -- Function
