@@ -800,15 +800,16 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._manager        = deps.manager
-    mod._webviewLabel   = deps.manager.getLabel()
-    mod._actionmanager  = deps.actionmanager
-    mod._env            = env
+    mod._manager                = deps.manager
+    mod._webviewLabel           = deps.manager.getLabel()
+    mod._actionmanager          = deps.actionmanager
+    mod._env                    = env
 
-    mod._ctmanager      = deps.ctmanager
-    mod.items           = deps.ctmanager.items
-    mod.enabled         = deps.ctmanager.enabled
-    mod.vibrations      = deps.ctmanager.vibrations
+    mod._ctmanager              = deps.ctmanager
+    mod.items                   = deps.ctmanager.items
+    mod.enabled                 = deps.ctmanager.enabled
+    mod.vibrations              = deps.ctmanager.vibrations
+    mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -819,7 +820,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 750,
+        height          = 770,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
@@ -831,7 +832,16 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addCheckbox(7,
+        :addCheckbox(8,
+            {
+                label       = "Store settings on Loupedeck CT Flash Drive",
+                checked     = mod.loadSettingsFromDevice,
+                onchange    = function(_, params)
+                    mod.loadSettingsFromDevice(params.checked)
+                end,
+            }
+        )
+        :addCheckbox(9,
             {
                 label       = "Vibrate when pressing Touch Buttons",
                 checked     = mod.vibrations,

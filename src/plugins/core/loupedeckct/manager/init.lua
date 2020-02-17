@@ -20,13 +20,14 @@ DONE:
     [x] Add button to apply the same action of selected control to all banks
     [x] Add controls for vibration
     [x] Add default Loupedeck CT layout
+    [x] Fix UI bug when you load Loupedeck CT Preferences for first time after installing CommandPost
+    [x] Add ability to save the Loupedeck CT settings on the device
 
 TO-DO:
 
-    [ ] Fix UI bug when you load Loupedeck CT Preferences for first time after installing CommandPost
-    [ ] Add ability to save the Loupedeck CT settings on the device
     [ ] Add Touch Wheel action for two finger tap (or just double tap?)
     [ ] Add support for custom applications
+    [ ] Make sure color board controls work well
     [ ] Right click on image drop zone to show popup with a list of recent imported images
     [ ] Add checkbox to enable/disable the hard drive support
     [ ] Add checkbox to enable/disable Bluetooth support
@@ -36,12 +37,16 @@ TO-DO:
 
 local require               = require
 
+local hs                    = hs
+
 local log                   = require "hs.logger".new "ldCT"
 
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
 local ct                    = require "hs.loupedeckct"
+local fs                    = require "hs.fs"
 local image                 = require "hs.image"
+local plist                 = require "hs.plist"
 local timer                 = require "hs.timer"
 
 local config                = require "cp.config"
@@ -51,7 +56,9 @@ local json                  = require "cp.json"
 
 local displayNotification   = dialog.displayNotification
 local doAfter               = timer.doAfter
+local execute               = hs.execute
 local imageFromURL          = image.imageFromURL
+local readString            = plist.readString
 
 local mod = {}
 
@@ -117,9 +124,11 @@ mod.enabled = config.prop("loupedeckct.enabled", true):watch(function(enabled)
     if enabled then
         ct.connect(true)
         mod._appWatcher:start()
+        mod._driveWatcher:start()
     else
         ct.disconnect()
         mod._appWatcher:stop()
+        mod._driveWatcher:stop()
     end
 end)
 
@@ -140,10 +149,56 @@ local defaultLayoutPath = config.basePath .. "/plugins/core/loupedeckct/default/
 -- Default Loupedeck CT Layout
 local defaultLayout = json.read(defaultLayoutPath)
 
---- plugins.core.loupedeckct.manager.items <cp.prop: table>
+--- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
 --- Field
---- Contains all the saved Loupedeck CT layouts.
-mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
+--- Load settings from device.
+mod.loadSettingsFromDevice = config.prop("loupedeckct.loadSettingsFromDevice", false)
+
+-- getFlashDrivePath() -> string
+-- Function
+-- Gets the Loupedeck CT Flash Drive path.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The Loupedeck CT Flash Drive path as a string
+function getFlashDrivePath()
+    local storage = execute("system_profiler SPStorageDataType -xml")
+    local storagePlist = storage and readString(storage)
+    local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
+    for _, data in pairs(drives) do
+        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == "LD-CT CT Media" then
+            return data.mount_point
+        end
+    end
+end
+
+-- refreshItems() -> none
+-- Function
+-- Refreshes mod.items to either
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function refreshItems()
+    local flashDrivePath = getFlashDrivePath()
+    if mod.loadSettingsFromDevice() and flashDrivePath then
+        mod.localItems = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
+
+        --- plugins.core.loupedeckct.manager.items <cp.prop: table>
+        --- Field
+        --- Contains all the saved Loupedeck CT layouts.
+        mod.items = json.prop(flashDrivePath .. "/", "CommandPost", "Default.cpLoupedeckCT", defaultLayout):watch(function()
+            mod.localItems(mod.items())
+        end)
+
+    else
+        mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
+    end
+end
 
 --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
 --- Field
@@ -435,6 +490,7 @@ local function callback(data)
         -- If the websocket disconnects or fails, then trash all the caches:
         --------------------------------------------------------------------------------
         clearCache()
+        return
     end
 
     local frontmostApplication = application.frontmostApplication()
@@ -600,6 +656,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Refresh mod.items:
+    --------------------------------------------------------------------------------
+    refreshItems()
+
+    --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
     mod._actionmanager = deps.actionmanager
@@ -616,6 +677,13 @@ function plugin.init(deps)
         if hasLoaded and event == appWatcher.activated then
             mod.refresh(true)
         end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Watch for drive changes:
+    --------------------------------------------------------------------------------
+    mod._driveWatcher = fs.volume.new(function(event, result)
+        refreshItems()
     end)
 
     --------------------------------------------------------------------------------
