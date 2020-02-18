@@ -1612,6 +1612,9 @@ end
 --- Returns:
 ---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
 function tools.ensureDirectoryExists(rootPath, ...)
+    if not tools.doesDirectoryExist(rootPath) then
+        return
+    end
     local fullPath = rootPath
     for _,path in ipairs(table.pack(...)) do
         fullPath = fullPath .. "/" .. path

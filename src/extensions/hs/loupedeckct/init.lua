@@ -490,6 +490,7 @@ mod.ignoreResponses = {
     [0x040F] = true, -- Screen Image Update confirmation
     [0x041B] = true, -- Vibration confirmation
     [0x0409] = true, -- Reset Device
+    [0x0819] = true, -- Flash Drive confirmation
 }
 
 -- convertXandYtoButtonID(x, y) -> number

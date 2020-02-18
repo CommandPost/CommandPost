@@ -22,11 +22,12 @@ DONE:
     [x] Add default Loupedeck CT layout
     [x] Fix UI bug when you load Loupedeck CT Preferences for first time after installing CommandPost
     [x] Add ability to save the Loupedeck CT settings on the device
+    [x] Add Touch Wheel action for two finger tap (or just double tap?)
 
 TO-DO:
 
-    [ ] Add Touch Wheel action for two finger tap (or just double tap?)
     [ ] Add support for custom applications
+
     [ ] Make sure color board controls work well
     [ ] Right click on image drop zone to show popup with a list of recent imported images
     [ ] Add checkbox to enable/disable the hard drive support
@@ -53,9 +54,11 @@ local config                = require "cp.config"
 local dialog                = require "cp.dialog"
 local i18n                  = require "cp.i18n"
 local json                  = require "cp.json"
+local tools                 = require "cp.tools"
 
 local displayNotification   = dialog.displayNotification
 local doAfter               = timer.doAfter
+local doesDirectoryExist    = tools.doesDirectoryExist
 local execute               = hs.execute
 local imageFromURL          = image.imageFromURL
 local readString            = plist.readString
@@ -66,6 +69,16 @@ local mod = {}
 -- Variable
 -- Default panel color (black)
 local defaultColor = "000000"
+
+-- doubleTapTimeout -> number
+-- Variable
+-- Double Tap Timeout.
+local doubleTapTimeout = 0.2
+
+-- dragMinimumDiff -> number
+-- Variable
+-- Drag minimum difference.
+local dragMinimumDiff = 3
 
 -- hasLoaded -> boolean
 -- Variable
@@ -111,6 +124,41 @@ local cachedRightSideScreen = ""
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
+
+-- cacheWheelYAxis -> number
+-- Variable
+-- Wheel Y Axis Cache
+local cacheWheelYAxis = nil
+
+-- cacheWheelXAxis -> number
+-- Variable
+-- Wheel X Axis Cache
+local cacheWheelXAxis = nil
+
+-- cacheLeftScreenYAxis -> number
+-- Variable
+-- Right Screen Y Axis Cache
+local cacheLeftScreenYAxis = nil
+
+-- cacheRightScreenYAxis -> number
+-- Variable
+-- Right Screen Y Axis Cache
+local cacheRightScreenYAxis = nil
+
+-- wheelScreenDoubleTapTriggered -> boolean
+-- Variable
+-- Has the wheel screen been tapped once?
+local wheelScreenDoubleTapTriggered = false
+
+-- leftScreenDoubleTapTriggered -> boolean
+-- Variable
+-- Has the wheel screen been tapped once?
+local leftScreenDoubleTapTriggered = false
+
+-- rightScreenDoubleTapTriggered -> boolean
+-- Variable
+-- Has the wheel screen been tapped once?
+local rightScreenDoubleTapTriggered = false
 
 --- plugins.core.loupedeckct.manager.numberOfBanks -> number
 --- Field
@@ -163,16 +211,30 @@ mod.loadSettingsFromDevice = config.prop("loupedeckct.loadSettingsFromDevice", f
 --
 -- Returns:
 --  * The Loupedeck CT Flash Drive path as a string
-function getFlashDrivePath()
+local function getFlashDrivePath()
     local storage = execute("system_profiler SPStorageDataType -xml")
     local storagePlist = storage and readString(storage)
     local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
     for _, data in pairs(drives) do
         if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == "LD-CT CT Media" then
-            return data.mount_point
+            local path = data.mount_point
+            return doesDirectoryExist(path) and path
         end
     end
 end
+
+--- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
+--- Field
+--- Enable or disable the Loupedeck CT Flash Drive.
+mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(function(enabled)
+    ct.updateFlashDrive(enabled)
+    if not enabled then
+        local path = getFlashDrivePath()
+        if path then
+            fs.volume.eject(path)
+        end
+    end
+end)
 
 -- refreshItems() -> none
 -- Function
@@ -191,7 +253,7 @@ local function refreshItems()
         --- plugins.core.loupedeckct.manager.items <cp.prop: table>
         --- Field
         --- Contains all the saved Loupedeck CT layouts.
-        mod.items = json.prop(flashDrivePath .. "/", "CommandPost", "Default.cpLoupedeckCT", defaultLayout):watch(function()
+        mod.items = json.prop(flashDrivePath, "CommandPost", "Default.cpLoupedeckCT", defaultLayout, refreshItems):watch(function()
             mod.localItems(mod.items())
         end)
 
@@ -229,7 +291,6 @@ end
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
-
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -398,20 +459,6 @@ function mod.refresh(dueToAppChange)
     alreadyRefreshing = false
 end
 
---------------------------------------------------------------------------------
--- WHEEL:
---------------------------------------------------------------------------------
-local dragMinimumDiff = 3
-
-local cacheWheelYAxis = nil
-local cacheWheelXAxis = nil
-
---------------------------------------------------------------------------------
--- RIGHT TOUCH SCREEN:
---------------------------------------------------------------------------------
-local cacheRightScreenYAxis = nil
-local cacheLeftScreenYAxis = nil
-
 -- executeAction(thisAction) -> boolean
 -- Function
 -- Executes an action.
@@ -464,6 +511,10 @@ local function clearCache()
     hasLoaded = false
 end
 
+local tookFingerOffLeftScreen = false
+local tookFingerOffRightScreen = false
+local tookFingerOffWheelScreen = false
+
 -- callback(data) -> none
 -- Function
 -- The Loupedeck CT callback.
@@ -484,6 +535,7 @@ local function callback(data)
             mod.refresh()
             hasLoaded = true
             mod.vibrations:update()
+            mod.enableFlashDrive:update()
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
@@ -561,7 +613,7 @@ local function callback(data)
                 return
             end
 
-            local thisJogWheel = bank.jogWheel and bank.jogWheel["1"]
+            local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
             if thisJogWheel and executeAction(thisJogWheel[data.direction.."Action"]) then
                 return
             end
@@ -574,12 +626,15 @@ local function callback(data)
                 return
             end
 
+            --------------------------------------------------------------------------------
+            -- LEFT TOUCH SCREEN:
+            --------------------------------------------------------------------------------
             if data.screenID == ct.screens.left.id then
-                --------------------------------------------------------------------------------
-                -- LEFT TOUCH SCREEN TOUCH SLIDE UP/DOWN:
-                --------------------------------------------------------------------------------
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["1"]
                 if thisSideScreen then
+                    --------------------------------------------------------------------------------
+                    -- SLIDE UP/DOWN:
+                    --------------------------------------------------------------------------------
                     if cacheLeftScreenYAxis ~= nil then
                         -- already dragging. Which way?
                         local yDiff = data.y - cacheLeftScreenYAxis
@@ -590,12 +645,38 @@ local function callback(data)
                         end
                     end
                     cacheLeftScreenYAxis = data.y
+
+                    --------------------------------------------------------------------------------
+                    -- DOUBLE TAP:
+                    --------------------------------------------------------------------------------
+                    if data.multitouch == 0 and thisSideScreen.doubleTapAction then
+                        if leftScreenDoubleTapTriggered and tookFingerOffLeftScreen then
+                            executeAction(thisSideScreen.doubleTapAction)
+                        else
+                            leftScreenDoubleTapTriggered = true
+                            doAfter(doubleTapTimeout, function()
+                                leftScreenDoubleTapTriggered = false
+                                tookFingerOffLeftScreen = false
+                            end)
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- TWO FINGER TAP:
+                    --------------------------------------------------------------------------------
+                    if data.multitouch == 1 then
+                        executeAction(thisSideScreen.twoFingerTapAction)
+                    end
                 end
             end
 
+
+            --------------------------------------------------------------------------------
+            -- RIGHT TOUCH SCREEN:
+            --------------------------------------------------------------------------------
             if data.screenID == ct.screens.right.id then
                 --------------------------------------------------------------------------------
-                -- RIGHT TOUCH SCREEN TOUCH UP:
+                -- SLIDE UP/DOWN:
                 --------------------------------------------------------------------------------
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
                 if thisSideScreen then
@@ -609,15 +690,41 @@ local function callback(data)
                         end
                     end
                     cacheRightScreenYAxis = data.y
+
+                    --------------------------------------------------------------------------------
+                    -- DOUBLE TAP:
+                    --------------------------------------------------------------------------------
+                    if data.multitouch == 0 and thisSideScreen.doubleTapAction then
+                        if rightScreenDoubleTapTriggered and tookFingerOffRightScreen then
+                            executeAction(thisSideScreen.doubleTapAction)
+                        else
+                            rightScreenDoubleTapTriggered = true
+                            doAfter(doubleTapTimeout, function()
+                                rightScreenDoubleTapTriggered = false
+                                tookFingerOffRightScreen = false
+                            end)
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- TWO FINGER TAP:
+                    --------------------------------------------------------------------------------
+                    if data.multitouch == 1 then
+                        executeAction(thisSideScreen.twoFingerTapAction)
+                    end
                 end
             end
         elseif data.id == ct.event.SCREEN_RELEASED then
             cacheLeftScreenYAxis = nil
             cacheRightScreenYAxis = nil
+            tookFingerOffLeftScreen = true
+            tookFingerOffRightScreen = true
         elseif data.id == ct.event.WHEEL_PRESSED then
             local wheelScreen = bank.wheelScreen and bank.wheelScreen["1"]
-
             if wheelScreen then
+                --------------------------------------------------------------------------------
+                -- DRAG WHEEL:
+                --------------------------------------------------------------------------------
                 if cacheWheelXAxis ~= nil and cacheWheelYAxis ~= nil then
                     -- we're already dragging. Which way?
                     local xDiff, yDiff = data.x - cacheWheelXAxis, data.y - cacheWheelYAxis
@@ -636,10 +743,33 @@ local function callback(data)
                 end
                 cacheWheelXAxis = data.x
                 cacheWheelYAxis = data.y
+
+                --------------------------------------------------------------------------------
+                -- DOUBLE TAP:
+                --------------------------------------------------------------------------------
+                if not data.multitouch and wheelScreen.doubleTapAction then
+                    if wheelScreenDoubleTapTriggered and tookFingerOffWheelScreen then
+                        executeAction(wheelScreen.doubleTapAction)
+                    else
+                        wheelScreenDoubleTapTriggered = true
+                        doAfter(doubleTapTimeout, function()
+                            wheelScreenDoubleTapTriggered = false
+                            tookFingerOffWheelScreen = false
+                        end)
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- TWO FINGER TAP:
+                --------------------------------------------------------------------------------
+                if data.multitouch then
+                    executeAction(wheelScreen.twoFingerTapAction)
+                end
             end
         elseif data.id == ct.event.WHEEL_RELEASED then
             cacheWheelYAxis = nil
             cacheWheelXAxis = nil
+            tookFingerOffWheelScreen = true
         end
 
     end

@@ -6,6 +6,7 @@ local require                   = require
 
 local log                       = require "hs.logger".new "prefsLoupedeckCT"
 
+local application               = require "hs.application"
 local canvas                    = require "hs.canvas"
 local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
@@ -16,8 +17,11 @@ local config                    = require "cp.config"
 local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
+local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
+local infoForBundlePath         = application.infoForBundlePath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
@@ -240,6 +244,9 @@ local function generateContent()
     local lastTouchLeftValue = ""
     local lastTouchRightValue = ""
 
+    local lastTouchDoubleTapValue = ""
+    local lastTouchTwoFingerValue = ""
+
     local items = mod.items()
 
     if items[lastApplication] and items[lastApplication][lastBank] then
@@ -279,7 +286,19 @@ local function generateContent()
             if items[lastApplication][lastBank][lastControlType][lastID]["downAction"] then
                 if items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"] then
                     lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"]
-                    lastTouchDownValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
+                    lastTouchDownValue = items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"]
+                end
+            end
+
+            if items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"] then
+                if items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"]["actionTitle"] then
+                    lastTouchDoubleTapValue = items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"]["actionTitle"]
+                end
+            end
+
+            if items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"] then
+                if items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"]["actionTitle"] then
+                    lastTouchTwoFingerValue = items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"]["actionTitle"]
                 end
             end
 
@@ -295,10 +314,20 @@ local function generateContent()
     end
 
     --------------------------------------------------------------------------------
+    -- Get any custom apps:
+    --------------------------------------------------------------------------------
+    local allApps = apps
+    for bundleID, v in pairs(items) do
+        if v.displayName then
+            allApps[bundleID] = v.displayName
+        end
+    end
+
+    --------------------------------------------------------------------------------
     -- Setup the context:
     --------------------------------------------------------------------------------
     local context = {
-        apps                        = apps,
+        apps                        = allApps,
 
         spairs                      = tools.spairs,
 
@@ -320,6 +349,8 @@ local function generateContent()
         lastTouchDownValue          = lastTouchDownValue,
         lastTouchLeftValue          = lastTouchLeftValue,
         lastTouchRightValue         = lastTouchRightValue,
+        lastTouchDoubleTapValue     = lastTouchDoubleTapValue,
+        lastTouchTwoFingerValue     = lastTouchTwoFingerValue,
     }
 
     return renderPanel(context)
@@ -490,6 +521,10 @@ local function loupedeckCTPanelCallback(id, params)
                     injectScript("changeValueByID('up_touch_action', '" .. actionTitle .. "');")
                 elseif params["buttonType"] == "downAction" then
                     injectScript("changeValueByID('down_touch_action', '" .. actionTitle .. "');")
+                elseif params["buttonType"] == "doubleTapAction" then
+                    injectScript("changeValueByID('double_tap_touch_action', '" .. actionTitle .. "');")
+                elseif params["buttonType"] == "twoFingerTapAction" then
+                    injectScript("changeValueByID('two_finger_touch_action', '" .. actionTitle .. "');")
                 end
             end)
 
@@ -507,17 +542,46 @@ local function loupedeckCTPanelCallback(id, params)
             local bid = params["id"]
             local buttonType = params["buttonType"]
 
-            local result = {
-                [buttonType] = nil
-            }
-
-            setItem(app, bank, controlType, bid, result)
+            setItem(app, bank, controlType, bid, buttonType, {})
 
             mod._manager.refresh()
         elseif callbackType == "updateApplicationAndBank" then
-            mod.lastApplication(params["application"])
-            mod.lastBank(params["bank"])
-            mod._manager.refresh()
+            if params["application"] == "Add Application" then
+                injectScript([[
+                    changeValueByID('application', ']] .. mod.lastApplication() .. [[');
+                ]])
+                local files = chooseFileOrFolder("Please select an application:", "/Applications", true, false, false, {"app"}, false)
+                if files then
+                    local path = files["1"]
+                    local info = path and infoForBundlePath(path)
+                    local displayName = info and info.CFBundleDisplayName or info.CFBundleName
+                    local bundleID = info and info.CFBundleIdentifier
+                    if displayName and bundleID then
+                        local items = mod.items()
+
+                        --------------------------------------------------------------------------------
+                        -- Prevent duplicates:
+                        --------------------------------------------------------------------------------
+                        for i, v in pairs(items) do
+                            if i == bundleID or tableContains(apps, bundleID) then
+                                return
+                            end
+                        end
+
+                        items[bundleID] = {
+                            ["displayName"] = displayName,
+                        }
+                        mod.items(items)
+                    else
+                        log.ef("Something went wrong trying to add a custom application. bundleID: %s, displayName: %s", bundleID, displayName)
+                    end
+                    mod._manager.refresh()
+                end
+            else
+                mod.lastApplication(params["application"])
+                mod.lastBank(params["bank"])
+                mod._manager.refresh()
+            end
         elseif callbackType == "updateUI" then
             --------------------------------------------------------------------------------
             -- Update UI:
@@ -540,6 +604,8 @@ local function loupedeckCTPanelCallback(id, params)
             local encodedIcon = ""
             local upValue = ""
             local downValue = ""
+            local twoFingerTapValue = ""
+            local doubleTapValue = ""
 
             local items = mod.items()
 
@@ -565,6 +631,14 @@ local function loupedeckCTPanelCallback(id, params)
                     downValue = item["downAction"]["actionTitle"]
                 end
 
+                if item["doubleTapAction"] and item["doubleTapAction"]["actionTitle"] then
+                    doubleTapValue = item["doubleTapAction"]["actionTitle"]
+                end
+
+                if item["twoFingerTapAction"] and item["twoFingerTapAction"]["actionTitle"] then
+                    twoFingerTapValue = item["twoFingerTapAction"]["actionTitle"]
+                end
+
                 if item["led"] then
                     colorValue = item["led"]
                 end
@@ -582,6 +656,8 @@ local function loupedeckCTPanelCallback(id, params)
                 changeValueByID('down_touch_action', ']] .. downValue .. [[');
                 changeValueByID('left_touch_action', ']] .. leftValue .. [[');
                 changeValueByID('right_touch_action', ']] .. rightValue .. [[');
+                changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
+                changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
                 changeColor(']] .. colorValue .. [[');
                 setIcon("]] .. encodedIcon .. [[")
             ]])
@@ -810,6 +886,7 @@ function mod.init(deps, env)
     mod.enabled                 = deps.ctmanager.enabled
     mod.vibrations              = deps.ctmanager.vibrations
     mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
+    mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -820,7 +897,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 770,
+        height          = 850,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
@@ -834,23 +911,36 @@ function mod.init(deps, env)
         )
         :addCheckbox(8,
             {
-                label       = "Store settings on Loupedeck CT Flash Drive",
+                label       = "Enable Flash Drive",
+                checked     = mod.enableFlashDrive,
+                onchange    = function(_, params)
+                    if params.checked then
+                        webviewAlert(mod._manager.getWebview(), function() end, "Please disconnect and reconnect your Loupedeck CT.", "To enable the Flash drive you need to restart your device by disconnecting it from your computer and reconnecting it.", i18n("ok"))
+                    end
+                    mod.enableFlashDrive(params.checked)
+                end,
+            }
+        )
+
+        :addCheckbox(9,
+            {
+                label       = "Store settings on Flash Drive",
                 checked     = mod.loadSettingsFromDevice,
                 onchange    = function(_, params)
                     mod.loadSettingsFromDevice(params.checked)
                 end,
             }
         )
-        :addCheckbox(9,
+        :addCheckbox(10,
             {
-                label       = "Vibrate when pressing Touch Buttons",
+                label       = "Vibrate when pressing Screen Buttons",
                 checked     = mod.vibrations,
                 onchange    = function(_, params)
                     mod.vibrations(params.checked)
                 end,
             }
         )
-        :addContent(10, generateContent, false)
+        :addContent(11, generateContent, false)
 
         :addButton(13,
             {
