@@ -147,7 +147,7 @@ mod.numberOfBanks = 9
 --- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
 --- Field
 --- Is Loupedeck CT support enabled?
-mod.enabled = config.prop("loupedeckct.enabled", true):watch(function(enabled)
+mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
     if enabled then
         ct.connect(true)
         mod._appWatcher:start()
@@ -162,7 +162,7 @@ end)
 --- plugins.core.loupedeckct.manager.vibrations <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar vibrations.
-mod.vibrations = config.prop("loupedeckct.vibrations", true):watch(function(enabled)
+mod.vibrations = config.prop("loupedeckct.vibrations", false):watch(function(enabled)
     ct.vibrations(enabled)
 end)
 
