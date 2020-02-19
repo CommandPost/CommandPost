@@ -2,6 +2,18 @@
 ---
 --- Loupedeck CT Manager Plugin.
 
+--[[
+
+TODO LIST:
+
+    [ ] i18n everything
+    [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
+    [ ] Make sure Color Board works with knobs
+    [ ] Update default layout to be more useful
+    [ ] Clear screen when you turn of Loupedeck CT support
+
+--]]
+
 local require               = require
 
 local hs                    = hs
