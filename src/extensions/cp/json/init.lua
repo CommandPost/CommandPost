@@ -147,8 +147,6 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
                 local errorMessage = string.format("Failed to read JSON file: %s", fullFilePath)
                 if type(errorCallbackFn) == "function" then
                     errorCallbackFn(errorMessage)
-                else
-                    log.ef(errorMessage)
                 end
             end
         else
@@ -182,8 +180,6 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
             local errorMessage = string.format("Failed to create JSON folder: %s", fullPath)
             if type(errorCallbackFn) == "function" then
                 errorCallbackFn(errorMessage)
-            else
-                log.ef(errorMessage)
             end
 
         end
