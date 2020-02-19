@@ -1050,6 +1050,7 @@ function mod.init(deps, env)
                             if result == "OK" then
                                 mod.loadSettingsFromDevice(params.checked)
                                 mod._manager.refresh()
+                                mod._ctmanager.refresh()
                             else
                                 manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
                             end
@@ -1057,6 +1058,7 @@ function mod.init(deps, env)
                     else
                         mod.loadSettingsFromDevice(params.checked)
                         mod._manager.refresh()
+                        mod._ctmanager.refresh()
                     end
                 end,
             }
