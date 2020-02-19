@@ -6,7 +6,7 @@ local require               = require
 
 local hs                    = hs
 
-local log                   = require "hs.logger".new "ldCT"
+--local log                   = require "hs.logger".new "ldCT"
 
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
@@ -236,19 +236,19 @@ local function refreshItems()
         if not doesFileExist(flashDrivePreferencesPath) then
             if ensureDirectoryExists(flashDrivePath, "CommandPost") then
                 local existingSettings = json.read(macPreferencesPath) or mod.defaultLayout
-                local result = json.write(flashDrivePreferencesPath, existingSettings)
+                json.write(flashDrivePreferencesPath, existingSettings)
             end
         end
 
         --------------------------------------------------------------------------------
         -- Read preferences from Flash Drive:
         --------------------------------------------------------------------------------
-        mod.items = json.prop(flashDrivePath, "CommandPost", defaultFilename, mod.defaultLayout, function(v)
+        mod.items = json.prop(flashDrivePath, "CommandPost", defaultFilename, mod.defaultLayout, function()
             refreshItems()
         end):watch(function()
             local data = mod.items()
             local path = config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename
-            local result = json.write(path, data)
+            json.write(path, data)
         end)
         return
     else
@@ -300,7 +300,7 @@ end
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
-    local success = nil
+    local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
@@ -798,7 +798,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Watch for drive changes:
     --------------------------------------------------------------------------------
-    mod._driveWatcher = fs.volume.new(function(event, result)
+    mod._driveWatcher = fs.volume.new(function()
         refreshItems()
     end)
 

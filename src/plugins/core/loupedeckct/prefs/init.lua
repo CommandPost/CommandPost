@@ -11,7 +11,6 @@ local canvas                    = require "hs.canvas"
 local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
-local loupedeckct               = require "hs.loupedeckct"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 
@@ -201,8 +200,6 @@ local function copyControlToAllBanks()
                 for i, v in pairs(data) do
                     items[app][b][controlType][id][i] = v
                 end
-            else
-                items[app][b][controlType][id][i] = {}
             end
         end
     end
@@ -579,7 +576,7 @@ local function loupedeckCTPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Prevent duplicates:
                         --------------------------------------------------------------------------------
-                        for i, v in pairs(items) do
+                        for i, _ in pairs(items) do
                             if i == bundleID or tableContains(apps, bundleID) then
                                 return
                             end
