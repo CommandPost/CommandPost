@@ -12,15 +12,21 @@ local dialog                    = require "hs.dialog"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 local loupedeckct               = require "hs.loupedeckct"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
 
 local config                    = require "cp.config"
 local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
+local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
 
@@ -48,6 +54,11 @@ mod.defaultIconPath = config.assetsPath .. "/icons/"
 --- Field
 --- Last icon path.
 mod.lastIconPath = config.prop("loupedeckct.preferences.lastIconPath", mod.defaultIconPath)
+
+--- plugins.core.loupedeckct.prefs.iconHistory <cp.prop: table>
+--- Field
+--- Icon History
+mod.iconHistory = json.prop(config.userConfigRootPath, "Loupedeck CT", "Icon History.cpLoupedeckCT", {})
 
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -107,7 +118,10 @@ local function resetApplication()
         if result == i18n("yes") then
             local items = mod.items()
             local app = mod.lastApplication()
-            items[app] = nil
+
+            local defaultLayout = mod._ctmanager.defaultLayout
+            items[app] = defaultLayout and defaultLayout[app] or {}
+
             mod.items(items)
             mod._manager.refresh()
 
@@ -134,8 +148,11 @@ local function resetBank()
             local items = mod.items()
             local app = mod.lastApplication()
             local bank = mod.lastBank()
+
+            local defaultLayout = mod._ctmanager.defaultLayout
+
             if items[app] and items[app][bank] then
-                items[app][bank] = nil
+                items[app][bank] = defaultLayout and defaultLayout[app] and defaultLayout[app][bank] or {}
             end
             mod.items(items)
             mod._manager.refresh()
@@ -329,7 +346,7 @@ local function generateContent()
     local context = {
         apps                        = allApps,
 
-        spairs                      = tools.spairs,
+        spairs                      = spairs,
 
         numberOfBanks               = mod._ctmanager.numberOfBanks,
         i18n                        = i18n,
@@ -747,6 +764,21 @@ local function loupedeckCTPanelCallback(id, params)
                         injectScript([[setIcon("]] .. encodedIcon .. [[")]])
 
                         --------------------------------------------------------------------------------
+                        -- Write to history:
+                        --------------------------------------------------------------------------------
+                        local iconHistory = mod.iconHistory()
+
+                        while (#(iconHistory) >= 5) do
+                            table.remove(iconHistory,1)
+                        end
+
+                        local filename = getFilenameFromPath(path, true)
+
+                        table.insert(iconHistory, {filename, encodedIcon})
+
+                        mod.iconHistory(iconHistory)
+
+                        --------------------------------------------------------------------------------
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
                         mod._ctmanager.refresh()
@@ -759,23 +791,6 @@ local function loupedeckCTPanelCallback(id, params)
                 if failed then
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
                 end
-            else
-                --------------------------------------------------------------------------------
-                -- Clear Icon:
-                --------------------------------------------------------------------------------
-                local app = params["application"]
-                local bank = params["bank"]
-                local controlType = params["controlType"]
-                local bid = params["id"]
-
-                setItem(app, bank, controlType, bid, "encodedIcon", nil)
-
-                injectScript([[setIcon("")]])
-
-                --------------------------------------------------------------------------------
-                -- Refresh the hardware:
-                --------------------------------------------------------------------------------
-                mod._ctmanager.refresh()
             end
         elseif callbackType == "badExtension" then
             --------------------------------------------------------------------------------
@@ -797,7 +812,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Process the Icon to remove transparency:
             --------------------------------------------------------------------------------
-            local newImage = image.imageFromURL(encodedIcon)
+            local newImage = imageFromURL(encodedIcon)
             local v = canvas.new{x = 0, y = 0, w = width, h = height }
             v[1] = {
                 --------------------------------------------------------------------------------
@@ -828,6 +843,110 @@ local function loupedeckCTPanelCallback(id, params)
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
+        elseif callbackType == "iconHistory" then
+
+            local controlType = params["controlType"]
+
+            local menu = {}
+            local iconHistory = mod.iconHistory()
+
+            if #iconHistory > 0 then
+                for i=#iconHistory, 1, -1 do
+                    local item = iconHistory[i]
+                    table.insert(menu,
+                        {
+                            title = item[1],
+                            fn = function()
+                                local app = params["application"]
+                                local bank = params["bank"]
+                                local bid = params["id"]
+
+                                --------------------------------------------------------------------------------
+                                -- Set screen limitations:
+                                --------------------------------------------------------------------------------
+                                local width, height = getScreenSizeFromControlType(controlType)
+
+                                --------------------------------------------------------------------------------
+                                -- Process the Icon to remove transparency:
+                                --------------------------------------------------------------------------------
+                                local newImage = imageFromURL(item[2])
+                                local v = canvas.new{x = 0, y = 0, w = width, h = height }
+                                v[1] = {
+                                    --------------------------------------------------------------------------------
+                                    -- Force Black background:
+                                    --------------------------------------------------------------------------------
+                                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                                    type = "rectangle",
+                                }
+                                v[2] = {
+                                  type="image",
+                                  image = newImage,
+                                  frame = { x = 0, y = 0, h = "100%", w = "100%" },
+                                }
+                                local fixedImage = v:imageFromCanvas()
+                                local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+                                setItem(app, bank, controlType, bid, {["encodedIcon"] = fixedEncodedIcon})
+                                mod._manager.refresh()
+                                mod._ctmanager.refresh()
+                            end,
+                        })
+                end
+            end
+
+            if next(menu) == nil then
+                table.insert(menu,
+                    {
+                        title = "Empty",
+                        disabled = true,
+                    })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
+
+        elseif callbackType == "clearIcon" then
+            --------------------------------------------------------------------------------
+            -- Clear Icon:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            setItem(app, bank, controlType, bid, "encodedIcon", "")
+
+            injectScript([[setIcon("")]])
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "importSettings" then
+            --------------------------------------------------------------------------------
+            -- Import Settings:
+            --------------------------------------------------------------------------------
+            local path = dialog.chooseFileOrFolder("Please select a file to import:", "~/Desktop", true, false, false, {"cpLoupedeckCT"})
+            if path and path["1"] then
+                local data = json.read(path["1"])
+                if data then
+                    mod.items(data)
+                    mod._manager.refresh()
+                    mod._ctmanager.refresh()
+                end
+
+            end
+        elseif callbackType == "exportSettings" then
+            --------------------------------------------------------------------------------
+            -- Export Settings:
+            --------------------------------------------------------------------------------
+            local path = dialog.chooseFileOrFolder("Please select a folder to export to:", "~/Desktop", false, true, false)
+            if path and path["1"] then
+                local items = mod.items()
+                json.write(path["1"] .. "/Loupedeck CT Settings " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckCT", items)
+            end
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -897,7 +1016,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 850,
+        height          = 920,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
@@ -926,8 +1045,22 @@ function mod.init(deps, env)
             {
                 label       = "Store settings on Flash Drive",
                 checked     = mod.loadSettingsFromDevice,
+                id          = "storeSettingsOnFlashDrive",
                 onchange    = function(_, params)
-                    mod.loadSettingsFromDevice(params.checked)
+                    local manager = mod._manager
+                    if params.checked then
+                        webviewAlert(manager.getWebview(), function(result)
+                            if result == "OK" then
+                                mod.loadSettingsFromDevice(params.checked)
+                                mod._manager.refresh()
+                            else
+                                manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
+                            end
+                        end, "Are you sure you want to store your settings on the Loupedeck CT Flash Drive?", "Enabling this option will tell CommandPost to read and write the settings to and from the connected Loupedeck CT's internal Flash Drive.\n\nIf your Loupedeck CT has settings already stored on it, those settings will overwrite whatever is locally stored on your Mac. However, for safety, before they're overwritten they will be backed up with today's date and time in CommandPost's Settings Folder.\n\nIf there are no existing settings on the Loupedeck CT Flash Drive, then the settings from the Mac will be copied to the Loupedeck CT.", "OK", "Cancel", "warning")
+                    else
+                        mod.loadSettingsFromDevice(params.checked)
+                        mod._manager.refresh()
+                    end
                 end,
             }
         )
@@ -940,6 +1073,7 @@ function mod.init(deps, env)
                 end,
             }
         )
+
         :addContent(11, generateContent, false)
 
         :addButton(13,
@@ -970,6 +1104,7 @@ function mod.init(deps, env)
                 class       = "loupedeckResetGroup",
             }
         )
+
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------

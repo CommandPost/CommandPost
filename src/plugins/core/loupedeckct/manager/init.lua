@@ -2,40 +2,6 @@
 ---
 --- Loupedeck CT Manager Plugin.
 
---[[
-
-DONE:
-
-    [x] Fix bug when dragging and dropping icon
-    [x] Rework code so that we don't have to use lookup tables (for performance)
-    [x] Rework code so that we only send data to the screens if we need to update it
-    [x] Add controls for Jog Wheel (left/right)
-    [x] Add controls for left and right screens
-    [x] Implement Reset buttons
-    [x] "Choose Icon" chooser should remember last path
-    [x] Add controls for Touch Wheel (left/right/up/down)
-    [x] Add support for Fn keys as modifiers
-    [x] Add actions for bank controls
-    [x] Improve Left/Right/Up/Down Touch Screen Action Performance/Usability
-    [x] Add button to apply the same action of selected control to all banks
-    [x] Add controls for vibration
-    [x] Add default Loupedeck CT layout
-    [x] Fix UI bug when you load Loupedeck CT Preferences for first time after installing CommandPost
-    [x] Add ability to save the Loupedeck CT settings on the device
-    [x] Add Touch Wheel action for two finger tap (or just double tap?)
-
-TO-DO:
-
-    [ ] Add support for custom applications
-
-    [ ] Make sure color board controls work well
-    [ ] Right click on image drop zone to show popup with a list of recent imported images
-    [ ] Add checkbox to enable/disable the hard drive support
-    [ ] Add checkbox to enable/disable Bluetooth support
-    [ ] i18n-ify everything
-
---]]
-
 local require               = require
 
 local hs                    = hs
@@ -54,16 +20,29 @@ local config                = require "cp.config"
 local dialog                = require "cp.dialog"
 local i18n                  = require "cp.i18n"
 local json                  = require "cp.json"
+local just                  = require "cp.just"
 local tools                 = require "cp.tools"
 
 local displayNotification   = dialog.displayNotification
 local doAfter               = timer.doAfter
 local doesDirectoryExist    = tools.doesDirectoryExist
+local doesFileExist         = tools.doesFileExist
+local ensureDirectoryExists = tools.ensureDirectoryExists
 local execute               = hs.execute
 local imageFromURL          = image.imageFromURL
 local readString            = plist.readString
 
 local mod = {}
+
+-- fileExtension -> string
+-- Variable
+-- File Extension for Loupedeck CT
+local fileExtension = ".cpLoupedeckCT"
+
+-- defaultFilename -> string
+-- Variable
+-- Default Filename for Loupedeck CT Settings
+local defaultFilename = "Default" .. fileExtension
 
 -- defaultColor -> string
 -- Variable
@@ -192,15 +171,10 @@ end)
 -- Default Layout Path
 local defaultLayoutPath = config.basePath .. "/plugins/core/loupedeckct/default/Default.cpLoupedeckCT"
 
--- defaultLayout -> table
--- Variable
--- Default Loupedeck CT Layout
-local defaultLayout = json.read(defaultLayoutPath)
-
---- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
---- Field
---- Load settings from device.
-mod.loadSettingsFromDevice = config.prop("loupedeckct.loadSettingsFromDevice", false)
+--- plugins.core.loupedeckct.manager.defaultLayout -> table
+--- Variable
+--- Default Loupedeck CT Layout
+mod.defaultLayout = json.read(defaultLayoutPath)
 
 -- getFlashDrivePath() -> string
 -- Function
@@ -236,6 +210,11 @@ mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(f
     end
 end)
 
+--- plugins.core.loupedeckct.manager.items <cp.prop: table>
+--- Field
+--- Contains all the saved Loupedeck CT layouts.
+mod.items = nil
+
 -- refreshItems() -> none
 -- Function
 -- Refreshes mod.items to either
@@ -247,20 +226,50 @@ end)
 --  * None
 local function refreshItems()
     local flashDrivePath = getFlashDrivePath()
+
     if mod.loadSettingsFromDevice() and flashDrivePath then
-        mod.localItems = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
+        --------------------------------------------------------------------------------
+        -- If settings don't already exist on Loupedeck CT, copy them from Mac:
+        --------------------------------------------------------------------------------
+        local macPreferencesPath = config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename
+        local flashDrivePreferencesPath = flashDrivePath .. "/CommandPost/" .. defaultFilename
+        if not doesFileExist(flashDrivePreferencesPath) then
+            if ensureDirectoryExists(flashDrivePath, "CommandPost") then
+                local existingSettings = json.read(macPreferencesPath) or mod.defaultLayout
+                local result = json.write(flashDrivePreferencesPath, existingSettings)
+            end
+        end
 
-        --- plugins.core.loupedeckct.manager.items <cp.prop: table>
-        --- Field
-        --- Contains all the saved Loupedeck CT layouts.
-        mod.items = json.prop(flashDrivePath, "CommandPost", "Default.cpLoupedeckCT", defaultLayout, refreshItems):watch(function()
-            mod.localItems(mod.items())
+        --------------------------------------------------------------------------------
+        -- Read preferences from Flash Drive:
+        --------------------------------------------------------------------------------
+        mod.items = json.prop(flashDrivePath, "CommandPost", defaultFilename, mod.defaultLayout, function(v)
+            refreshItems()
+        end):watch(function()
+            local data = mod.items()
+            local path = config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename
+            local result = json.write(path, data)
         end)
-
+        return
     else
-        mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", "Default.cpLoupedeckCT", defaultLayout)
+        --------------------------------------------------------------------------------
+        -- Read preferences from Mac:
+        --------------------------------------------------------------------------------
+        mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", defaultFilename, mod.defaultLayout)
     end
 end
+
+--- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
+--- Field
+--- Load settings from device.
+mod.loadSettingsFromDevice = config.prop("loupedeckct.loadSettingsFromDevice", false):watch(function(enabled)
+    if enabled then
+        local existingSettings = json.read(config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename)
+        local path = config.userConfigRootPath .. "/Loupedeck CT/Backup " .. os.date("%Y%m%d %H%M") .. fileExtension
+        json.write(path, existingSettings)
+    end
+    refreshItems()
+end)
 
 --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
 --- Field
@@ -277,7 +286,7 @@ mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 --- Returns:
 ---  * None
 function mod.reset()
-    mod.items(defaultLayout)
+    mod.items(mod.defaultLayout)
 end
 
 --- plugins.core.loupedeckct.manager.refresh()
@@ -291,7 +300,7 @@ end
 --- Returns:
 ---  * None
 function mod.refresh(dueToAppChange)
-    local success
+    local success = nil
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
@@ -378,9 +387,6 @@ function mod.refresh(dueToAppChange)
     success = false
     local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
     local encodedIcon = thisWheel and thisWheel.encodedIcon
-    --------------------------------------------------------------------------------
-    -- Only update if the screen has changed to save bandwidth:
-    --------------------------------------------------------------------------------
     if encodedIcon and cachedWheelScreen == encodedIcon then
         success = true
     elseif encodedIcon and cachedWheelScreen ~= encodedIcon then
@@ -388,13 +394,9 @@ function mod.refresh(dueToAppChange)
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
             ct.updateScreenImage(ct.screens.wheel, decodedImage)
+            success = true
         end
-        success = true
     end
-
-    --------------------------------------------------------------------------------
-    -- Only update if the screen has changed to save bandwidth:
-    --------------------------------------------------------------------------------
     if not success and cachedWheelScreen ~= defaultColor then
         ct.updateScreenColor(ct.screens.wheel, {hex="#"..defaultColor})
         cachedWheelScreen = defaultColor
@@ -412,17 +414,10 @@ function mod.refresh(dueToAppChange)
         cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            --------------------------------------------------------------------------------
-            -- Only update if the screen has changed to save bandwidth:
-            --------------------------------------------------------------------------------
             ct.updateScreenImage(ct.screens.left, decodedImage)
             success = true
         end
     end
-
-    --------------------------------------------------------------------------------
-    -- Only update if the screen has changed to save bandwidth:
-    --------------------------------------------------------------------------------
     if not success and cachedLeftSideScreen ~= defaultColor then
         ct.updateScreenColor(ct.screens.left, {hex="#"..defaultColor})
         cachedLeftSideScreen = defaultColor
@@ -440,23 +435,14 @@ function mod.refresh(dueToAppChange)
         cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            --------------------------------------------------------------------------------
-            -- Only update if the screen has changed to save bandwidth:
-            --------------------------------------------------------------------------------
             ct.updateScreenImage(ct.screens.right, decodedImage)
             success = true
         end
     end
-
-    --------------------------------------------------------------------------------
-    -- Only update if the screen has changed to save bandwidth:
-    --------------------------------------------------------------------------------
     if not success and cachedRightSideScreen ~= defaultColor then
         ct.updateScreenColor(ct.screens.right, {hex="#"..defaultColor})
         cachedRightSideScreen = defaultColor
     end
-
-    alreadyRefreshing = false
 end
 
 -- executeAction(thisAction) -> boolean
@@ -885,6 +871,21 @@ function plugin.init(deps)
             end
         end)
         :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
+
+    --------------------------------------------------------------------------------
+    -- Shutdown Callback (make screen black):
+    --------------------------------------------------------------------------------
+    config.shutdownCallback:new("loupedeckCT", function()
+        if mod.enabled() then
+            for _, screen in pairs(ct.screens) do
+                ct.updateScreenColor(screen, {hex="#"..defaultColor})
+            end
+            for i=7, 26 do
+                ct.buttonColor(i, {hex="#" .. defaultColor})
+            end
+            just.wait(0.01) -- Slight delay so the websocket message has time to send.
+        end
+    end)
 
     return mod
 end

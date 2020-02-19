@@ -21,6 +21,46 @@
 		}
 	}
 
+	function iconHistory() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "iconHistory",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					value: document.getElementById('color').jscolor.toString(),
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clearIcon() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "clearIcon",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					value: document.getElementById('color').jscolor.toString(),
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function updateBankLabel() {
 		try {
 			var result = {
@@ -107,6 +147,7 @@
 
 			document.getElementById("iconA").style.display = "block";
 			document.getElementById("iconB").style.display = "block";
+			document.getElementById("iconC").style.display = "block";
 
 			document.getElementById("ledColorA").style.display = "none";
 			document.getElementById("ledColorB").style.display = "none";
@@ -437,11 +478,48 @@
 		};
 	}
 
+	function importSettings() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "importSettings",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 
-
-
+	function exportSettings() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "exportSettings",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 
 </script>
+<table>
+	<thead>
+		<tr>
+			<th style="padding-left: 20px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="importSettings()">Import Settings</a>
+			</th>
+			<th style="padding-left: 10px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">Export Settings</a>
+			</th>
+		</tr>
+	</thead>
+</table>
+<hr />
 <table style="width: 700px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px">
 	<tr>
 		<th style=text-align: left;">
@@ -515,7 +593,7 @@
 					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">{{ lastSelectedControl }}</span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
-					<table class="loupedeck" style="height: 490px;">
+					<table class="loupedeck" style="height: 500px;">
 
 						<!-- PRESS ACTION & LED COLOR: -->
 						<tr id="pressActionA">
@@ -658,6 +736,9 @@
 							<th width="229px" id="buttonResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 90 pixels</i></th>
 							<th width="229px" id="sideResolution"><i style="color: #FFFFFF; padding-left: 14px;">60 x 270 pixels</i></th>
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
+							<th width="229px">
+								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">History</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
+							</th>
 						</tr>
 					</table>
 				</div>
