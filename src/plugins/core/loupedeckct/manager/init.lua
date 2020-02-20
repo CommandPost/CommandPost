@@ -7,10 +7,14 @@
 TODO LIST:
 
     [ ] i18n everything
+    [ ] Add i18n for Loupedeck Banks section label
+    [ ] Add icons for knobs. If user assigns an icon to whole left/right screen this should override the knobs
     [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
-    [ ] Make sure Color Board works with knobs
+    [ ] Add action for enabling/disabling Loupedeck CT support
+    [ ] Add action for opening the Loupedeck official app
+    [ ] Make sure Color Board works well with knobs
     [ ] Update default layout to be more useful
-    [ ] Clear screen when you turn of Loupedeck CT support
+    [ ] Clear screen when you turn off Loupedeck CT support
 
 --]]
 
