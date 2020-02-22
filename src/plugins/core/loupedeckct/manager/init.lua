@@ -6,9 +6,12 @@
 
 TODO LIST:
 
+    [ ] Rework preferences UI show that the Loupedeck CT image actually shows what should be on the screens
+    [ ] Add action to open Spotlight search window
     [ ] i18n everything
     [ ] Add i18n for Loupedeck Banks section label
     [ ] Add icons for knobs. If user assigns an icon to whole left/right screen this should override the knobs
+    [ ] Add label attribute for screen items, that's used if an icon isn't supplied
     [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
     [ ] Add action for enabling/disabling Loupedeck CT support
     [ ] Add action for opening the Loupedeck official app
