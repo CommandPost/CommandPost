@@ -6,6 +6,7 @@
 
 TODO LIST:
 
+    [ ] Work out actions for a jog wheel using J/K/L
     [ ] Rework preferences UI show that the Loupedeck CT image actually shows what should be on the screens
     [ ] Add action to open Spotlight search window
     [ ] i18n everything

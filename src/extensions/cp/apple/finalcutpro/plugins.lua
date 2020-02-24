@@ -515,8 +515,6 @@ function mod.mt:scanUserEffectsPresets(locale)
                     log.ef("Failed to cache User Effects Presets.")
                 end
             end
-        else
-            log.ef("Failed to cache User Effects Presets.")
         end
 
     end

@@ -337,6 +337,12 @@ local function generateContent()
         end
     end
 
+    local function insertImage(path)
+        local p = mod._env:pathToAbsolute(path)
+        local i = image.imageFromPath(p)
+        return i:encodeAsURLString(false, "PNG")
+    end
+
     --------------------------------------------------------------------------------
     -- Setup the context:
     --------------------------------------------------------------------------------
@@ -365,6 +371,8 @@ local function generateContent()
         lastTouchRightValue         = lastTouchRightValue,
         lastTouchDoubleTapValue     = lastTouchDoubleTapValue,
         lastTouchTwoFingerValue     = lastTouchTwoFingerValue,
+
+        insertImage                 = insertImage,
     }
 
     return renderPanel(context)
