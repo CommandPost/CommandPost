@@ -1258,9 +1258,9 @@ function activator.mt:rightClickAction(index)
         -- Separator:
         --------------------------------------------------------------------------------
         insert(choiceMenu, { title = "-" })
-        insert(choiceMenu, { title = i18n("rememberLastQuery"),     fn=function() self.lastQueryRemembered:toggle() end, checked = self:lastQueryRemembered() })
-        insert(choiceMenu, { title = i18n("searchSubtext"),         fn=function() self.searchSubText:toggle() end, checked = self:searchSubText() })
-        insert(choiceMenu, { title = i18n("activatorShowHidden"),   fn=function() self.showHidden:toggle() end, checked = self:showHidden() })
+        insert(choiceMenu, { title = i18n("rememberLastQuery"),     fn=function() self.lastQueryRemembered:toggle(); self:refreshChooser() end, checked = self:lastQueryRemembered() })
+        insert(choiceMenu, { title = i18n("searchSubtext"),         fn=function() self.searchSubText:toggle(); theChooser:searchSubText(self:searchSubText()); self:refreshChooser(); end, checked = self:searchSubText() })
+        insert(choiceMenu, { title = i18n("activatorShowHidden"),   fn=function() self.showHidden:toggle(); self:refreshChooser() end, checked = self:showHidden() })
 
         --------------------------------------------------------------------------------
         -- The 'Sections' menu:

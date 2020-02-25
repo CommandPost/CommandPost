@@ -54,7 +54,6 @@
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					selectedControl: document.getElementById("selectedControl").value,
-					value: document.getElementById('color').jscolor.toString(),
 					id: document.getElementById("id").value,
 					controlType: document.getElementById("controlType").value,
 				},
@@ -93,7 +92,7 @@
 			document.getElementById("spacerB").style.display = "none";
 			document.getElementById("spacerC").style.display = "none";
 			document.getElementById("spacerD").style.display = "none";
-			document.getElementById("spacerE").style.display = "none";
+			document.getElementById("spacerE").style.display = "block";
 
 			document.getElementById("knobA").style.display = "table";
 			document.getElementById("knobB").style.display = "table";
@@ -113,12 +112,20 @@
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("iconA").style.display = "none";
-			document.getElementById("iconB").style.display = "none";
-			document.getElementById("iconC").style.display = "none";
+			document.getElementById("iconA").style.display = "block";
+			document.getElementById("iconB").style.display = "block";
+			document.getElementById("iconC").style.display = "block";
 
 			document.getElementById("ledColorA").style.display = "none";
 			document.getElementById("ledColorB").style.display = "none";
+
+			document.getElementById("iconLabel").style.display = "block";
+			document.getElementById("iconLabelHeading").style.display = "table-cell";
+
+			document.getElementById("buttonResolution").style.display = "none";
+			document.getElementById("sideResolution").style.display = "none";
+			document.getElementById("wheelResolution").style.display = "none";
+			document.getElementById("knobResolution").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -159,6 +166,10 @@
 			document.getElementById("buttonResolution").style.display = "block";
 			document.getElementById("sideResolution").style.display = "none";
 			document.getElementById("wheelResolution").style.display = "none";
+			document.getElementById("knobResolution").style.display = "none";
+
+			document.getElementById("iconLabel").style.display = "block";
+			document.getElementById("iconLabelHeading").style.display = "table-cell";
 		}
 
 		// -------------------------------------------------
@@ -195,6 +206,9 @@
 
 			document.getElementById("ledColorA").style.display = "block";
 			document.getElementById("ledColorB").style.display = "block";
+
+			document.getElementById("iconLabel").style.display = "none";
+			document.getElementById("iconLabelHeading").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -236,6 +250,10 @@
 			document.getElementById("buttonResolution").style.display = "none";
 			document.getElementById("sideResolution").style.display = "block";
 			document.getElementById("wheelResolution").style.display = "none";
+			document.getElementById("knobResolution").style.display = "none";
+
+			document.getElementById("iconLabel").style.display = "none";
+			document.getElementById("iconLabelHeading").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -272,6 +290,9 @@
 
 			document.getElementById("ledColorA").style.display = "none";
 			document.getElementById("ledColorB").style.display = "none";
+
+			document.getElementById("iconLabel").style.display = "none";
+			document.getElementById("iconLabelHeading").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -312,6 +333,10 @@
 			document.getElementById("buttonResolution").style.display = "none";
 			document.getElementById("sideResolution").style.display = "none";
 			document.getElementById("wheelResolution").style.display = "block";
+			document.getElementById("knobResolution").style.display = "none";
+
+			document.getElementById("iconLabel").style.display = "none";
+			document.getElementById("iconLabelHeading").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -678,9 +703,7 @@
 						</a>
 					</div>
 					<div id="leftScreen">
-						<a href="#" onclick="changeControl('Left Screen', 'sideScreen', '1');">
-							<img src="{{ insertImage('images/leftScreen.png') }}" width="24" height="131" style="object-fit: cover;" />
-						</a>
+						<img src="{{ insertImage('images/leftScreen.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
 					</div>
 					<div id="touchButton1">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '1')" onclick="changeControl('Button 1', 'touchButton', '1');" />
@@ -699,9 +722,7 @@
 						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" onclick="changeControl('Button 4', 'touchButton', '4');" />
 					</div>
 					<div id="rightScreen">
-						<a href="#" onclick="changeControl('Right Screen', 'sideScreen', '2');">
-							<img src="{{ insertImage('images/rightScreen.png') }}" width="24" height="131" style="object-fit: cover;" />
-						</a>
+						<img src="{{ insertImage('images/rightScreen.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
 					</div>
 					<div id="touchButton5">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '5')" onclick="changeControl('Button 5', 'touchButton', '5');" />
@@ -826,9 +847,7 @@
 						</a>
 					</div>
 					<div id="wheelScreen">
-						<a href="#" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');">
-							<img src="{{ insertImage('images/wheelScreen.png') }}" width="81" height="82" border="0" />
-						</a>
+						<img src="{{ insertImage('images/wheelScreen.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 					</div>
 					<div id="jogWheelRight">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
@@ -1002,7 +1021,7 @@
 						<!-- ICON: -->
 						<tr id="iconA">
 							<th width="229px">Image Drop Zone:</th>
-							<th width="229px">Text Label:</th>
+							<th width="229px" id="iconLabelHeading">Text Label:</th>
 						</tr>
 						<tr id="iconB">
 							<td width="229px">
@@ -1025,13 +1044,14 @@
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" rows="5" cols="5" placeholder="{{ i18n("none") }}" oninput="updateIconLabel()"></textarea>
+								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" oninput="updateIconLabel()"></textarea>
 							</td>
 						</tr>
 						<tr id="iconC">
 							<th width="229px" id="buttonResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 90 pixels</i></th>
 							<th width="229px" id="sideResolution"><i style="color: #FFFFFF; padding-left: 14px;">60 x 270 pixels</i></th>
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
+							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 10px;">90 x 60 pixels</i></th>
 							<th width="229px">
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">History</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>

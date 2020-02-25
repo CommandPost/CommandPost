@@ -6,20 +6,17 @@
 
 TODO LIST:
 
-    [ ] Add option to change Loupedeck CT orientation
-    [ ] Allow dragging and dropping of icons to the actually Loupedeck CT UI
-    [ ] Work out actions for a jog wheel using J/K/L
-    [ ] Add action to open Spotlight search window
-    [ ] i18n everything
-    [ ] Add i18n for Loupedeck Banks section label
     [ ] Add icons for knobs. If user assigns an icon to whole left/right screen this should override the knobs
-    [ ] Add label attribute for screen items, that's used if an icon isn't supplied
     [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
     [ ] Add action for enabling/disabling Loupedeck CT support
     [ ] Add action for opening the Loupedeck official app
+    [ ] Clear screen when you turn off Loupedeck CT support
+    [ ] i18n everything
+    [ ] Add option to change Loupedeck CT orientation
+    [ ] Work out actions for a jog wheel using J/K/L
+    [ ] Add action to open Spotlight search window
     [ ] Make sure Color Board works well with knobs
     [ ] Update default layout to be more useful
-    [ ] Clear screen when you turn off Loupedeck CT support
 
 --]]
 
@@ -436,6 +433,14 @@ function mod.refresh(dueToAppChange)
     success = false
     local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
     encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+
+    --------------------------------------------------------------------------------
+    -- If there's no encodedIcon, then try using the individual knobs:
+    --------------------------------------------------------------------------------
+    if not encodedIcon or (encodedIcon and encodedIcon == "") then
+        encodedIcon = thisSideScreen and thisSideScreen.encodedKnobIcon
+    end
+
     if encodedIcon and cachedLeftSideScreen == encodedIcon then
         success = true
     elseif encodedIcon and cachedLeftSideScreen ~= encodedIcon then

@@ -10,8 +10,9 @@ local eventtap          = require "hs.eventtap"
 local keycodes          = require "hs.keycodes"
 
 local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
-local keyStroke         = eventtap.keyStroke
+local keyStroke         = tools.keyStroke
 
 local mod = {}
 
@@ -46,6 +47,14 @@ function plugin.init(deps)
                 { label = "⌥", mods = {"alt"} },
                 { label = "⌃⌥", mods = {"ctrl", "alt"} },
                 { label = "⌃", mods = {"ctrl"} },
+                { label = "R⇧⌘", mods = {"rightshift", "cmd"} },
+                { label = "⌥R⇧⌘", mods = {"alt", "rightshift", "cmd"} },
+                { label = "⌃⌥R⇧⌘", mods = {"ctrl", "alt", "rightshift", "cmd"} },
+                { label = "⌃R⇧⌘", mods = {"ctrl", "rightshift", "cmd"} },
+                { label = "R⇧", mods = {"rightshift"} },
+                { label = "⌥R⇧", mods = {"alt", "rightshift"} },
+                { label = "⌃⌥R⇧", mods = {"ctrl", "alt", "rightshift"} },
+                { label = "⌃R⇧", mods = {"ctrl", "rightshift"} },
             }
             local pressLabel = i18n("press")
             local andLabel = i18n("and")
@@ -63,7 +72,7 @@ function plugin.init(deps)
                     -- No Modifier:
                     --------------------------------------------------------------------------------
                     choices
-                        :add(pressLabel .. " " .. string.upper(keycode))
+                        :add(string.upper(keycode))
                         :subText(description)
                         :params({
                             character = keycode,
@@ -77,7 +86,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     for _, modifier in pairs(modifiers) do
                         choices
-                            :add(pressLabel .. " " .. modifier.label .. " " .. andLabel .. " " .. string.upper(keycode))
+                            :add(string.upper(keycode) .. " + " .. modifier.label)
                             :subText(description)
                             :params({
                                 character = keycode,
@@ -90,7 +99,7 @@ function plugin.init(deps)
             end
         end)
         :onExecute(function(action)
-            keyStroke(action.modifiers, action.character, 0)
+            keyStroke(action.modifiers, action.character)
         end)
         :onActionId(function(params)
             return "global_shortcuts_" .. params.id
