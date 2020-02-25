@@ -275,6 +275,24 @@ loupedeckRowType {
   left: 0;
 }
 
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
 /* LOUPEDECK CT INTERFACE: */
 
 #loupedeckCT {
@@ -284,22 +302,7 @@ loupedeckRowType {
 	width:447px;
 	height:482px;
 	font-size:0px;
-}
-
-#body1 {
-	position:absolute;
-	left:0px;
-	top:0px;
-	width:447px;
-	height:52px;
-}
-
-#body2 {
-	position:absolute;
-	left:0px;
-	top:52px;
-	width:38px;
-	height:225px;
+	background-image: url({* insertImage('images/loupedeckCT.png') *});
 }
 
 #knob1 {
@@ -310,36 +313,12 @@ loupedeckRowType {
 	height:39px;
 }
 
-#body6 {
-	position:absolute;
-	left:77px;
-	top:52px;
-	width:283px;
-	height:15px;
-}
-
 #knob4 {
 	position:absolute;
 	left:360px;
 	top:52px;
 	width:39px;
 	height:39px;
-}
-
-#body30 {
-	position:absolute;
-	left:399px;
-	top:52px;
-	width:48px;
-	height:225px;
-}
-
-#body7 {
-	position:absolute;
-	left:77px;
-	top:67px;
-	width:23px;
-	height:158px;
 }
 
 #leftScreen {
@@ -350,28 +329,16 @@ loupedeckRowType {
 	height:131px;
 }
 
-#body9 {
-	position:absolute;
-	left:124px;
-	top:67px;
-	width:6px;
-	height:210px;
-}
-
 #touchButton1 {
 	position:absolute;
 	left:130px;
 	top:67px;
 	width:40px;
 	height:40px;
-}
-
-#body13 {
-	position:absolute;
-	left:170px;
-	top:67px;
-	width:5px;
-	height:213px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
 }
 
 #touchButton2 {
@@ -380,14 +347,10 @@ loupedeckRowType {
 	top:67px;
 	width:40px;
 	height:40px;
-}
-
-#body17 {
-	position:absolute;
-	left:215px;
-	top:67px;
-	width:5px;
-	height:213px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
 }
 
 #touchButton3 {
@@ -398,14 +361,6 @@ loupedeckRowType {
 	height:40px;
 }
 
-#body21 {
-	position:absolute;
-	left:260px;
-	top:67px;
-	width:6px;
-	height:213px;
-}
-
 #touchButton4 {
 	position:absolute;
 	left:266px;
@@ -414,76 +369,12 @@ loupedeckRowType {
 	height:40px;
 }
 
-#body25 {
-	position:absolute;
-	left:306px;
-	top:67px;
-	width:7px;
-	height:210px;
-}
-
 #rightScreen {
 	position:absolute;
 	left:313px;
 	top:67px;
 	width:24px;
 	height:131px;
-}
-
-#body26 {
-	position:absolute;
-	left:337px;
-	top:67px;
-	width:23px;
-	height:158px;
-}
-
-#body3 {
-	position:absolute;
-	left:38px;
-	top:91px;
-	width:39px;
-	height:23px;
-}
-
-#body27 {
-	position:absolute;
-	left:360px;
-	top:91px;
-	width:39px;
-	height:23px;
-}
-
-#body10 {
-	position:absolute;
-	left:130px;
-	top:107px;
-	width:40px;
-	height:5px;
-}
-
-#body14 {
-	position:absolute;
-	left:175px;
-	top:107px;
-	width:40px;
-	height:5px;
-}
-
-#body18 {
-	position:absolute;
-	left:220px;
-	top:107px;
-	width:40px;
-	height:5px;
-}
-
-#body22 {
-	position:absolute;
-	left:266px;
-	top:107px;
-	width:40px;
-	height:5px;
 }
 
 #touchButton5 {
@@ -534,54 +425,6 @@ loupedeckRowType {
 	height:38px;
 }
 
-#body4 {
-	position:absolute;
-	left:38px;
-	top:152px;
-	width:39px;
-	height:23px;
-}
-
-#body11 {
-	position:absolute;
-	left:130px;
-	top:152px;
-	width:40px;
-	height:6px;
-}
-
-#body15 {
-	position:absolute;
-	left:175px;
-	top:152px;
-	width:40px;
-	height:6px;
-}
-
-#body19 {
-	position:absolute;
-	left:220px;
-	top:152px;
-	width:40px;
-	height:6px;
-}
-
-#body23 {
-	position:absolute;
-	left:266px;
-	top:152px;
-	width:40px;
-	height:6px;
-}
-
-#body28 {
-	position:absolute;
-	left:360px;
-	top:152px;
-	width:39px;
-	height:23px;
-}
-
 #touchButton9 {
 	position:absolute;
 	left:130px;
@@ -630,92 +473,12 @@ loupedeckRowType {
 	height:39px;
 }
 
-#body8 {
-	position:absolute;
-	left:100px;
-	top:198px;
-	width:24px;
-	height:27px;
-}
-
-#body12 {
-	position:absolute;
-	left:130px;
-	top:198px;
-	width:40px;
-	height:27px;
-}
-
-#body16 {
-	position:absolute;
-	left:175px;
-	top:198px;
-	width:40px;
-	height:27px;
-}
-
-#body20 {
-	position:absolute;
-	left:220px;
-	top:198px;
-	width:40px;
-	height:27px;
-}
-
-#body24 {
-	position:absolute;
-	left:266px;
-	top:198px;
-	width:40px;
-	height:27px;
-}
-
-#body69 {
-	position:absolute;
-	left:313px;
-	top:198px;
-	width:24px;
-	height:27px;
-}
-
-#body5 {
-	position:absolute;
-	left:38px;
-	top:214px;
-	width:39px;
-	height:11px;
-}
-
-#body29 {
-	position:absolute;
-	left:360px;
-	top:214px;
-	width:39px;
-	height:11px;
-}
-
-#body31 {
-	position:absolute;
-	left:38px;
-	top:225px;
-	width:3px;
-	height:52px;
-}
-
 #ledButton1 {
 	position:absolute;
 	left:41px;
 	top:225px;
 	width:33px;
 	height:33px;
-}
-
-#body33 {
-	position:absolute;
-	left:74px;
-	top:225px;
-	width:13px;
-	height:52px;
 }
 
 #ledButton2 {
@@ -726,44 +489,12 @@ loupedeckRowType {
 	height:33px;
 }
 
-#body35 {
-	position:absolute;
-	left:120px;
-	top:225px;
-	width:4px;
-	height:52px;
-}
-
-#body36 {
-	position:absolute;
-	left:130px;
-	top:225px;
-	width:3px;
-	height:257px;
-}
-
 #ledButton3 {
 	position:absolute;
 	left:133px;
 	top:225px;
 	width:33px;
 	height:33px;
-}
-
-#body38 {
-	position:absolute;
-	left:166px;
-	top:225px;
-	width:4px;
-	height:55px;
-}
-
-#body39 {
-	position:absolute;
-	left:175px;
-	top:225px;
-	width:4px;
-	height:55px;
 }
 
 #ledButton4 {
@@ -774,44 +505,12 @@ loupedeckRowType {
 	height:33px;
 }
 
-#body41 {
-	position:absolute;
-	left:212px;
-	top:225px;
-	width:3px;
-	height:55px;
-}
-
-#body42 {
-	position:absolute;
-	left:220px;
-	top:225px;
-	width:5px;
-	height:55px;
-}
-
 #ledButton5 {
 	position:absolute;
 	left:225px;
 	top:225px;
 	width:33px;
 	height:33px;
-}
-
-#body44 {
-	position:absolute;
-	left:258px;
-	top:225px;
-	width:2px;
-	height:55px;
-}
-
-#body45 {
-	position:absolute;
-	left:266px;
-	top:225px;
-	width:5px;
-	height:55px;
 }
 
 #ledButton6 {
@@ -822,36 +521,12 @@ loupedeckRowType {
 	height:33px;
 }
 
-#body47 {
-	position:absolute;
-	left:304px;
-	top:225px;
-	width:2px;
-	height:257px;
-}
-
-#body48 {
-	position:absolute;
-	left:313px;
-	top:225px;
-	width:4px;
-	height:52px;
-}
-
 #ledButton7 {
 	position:absolute;
 	left:317px;
 	top:225px;
 	width:33px;
 	height:33px;
-}
-
-#body50 {
-	position:absolute;
-	left:350px;
-	top:225px;
-	width:13px;
-	height:52px;
 }
 
 #ledButton8 {
@@ -862,100 +537,12 @@ loupedeckRowType {
 	height:33px;
 }
 
-#body52 {
-	position:absolute;
-	left:396px;
-	top:225px;
-	width:3px;
-	height:52px;
-}
-
-#body32 {
-	position:absolute;
-	left:41px;
-	top:258px;
-	width:33px;
-	height:19px;
-}
-
-#body34 {
-	position:absolute;
-	left:87px;
-	top:258px;
-	width:33px;
-	height:19px;
-}
-
-#body37 {
-	position:absolute;
-	left:133px;
-	top:258px;
-	width:33px;
-	height:22px;
-}
-
-#body40 {
-	position:absolute;
-	left:179px;
-	top:258px;
-	width:33px;
-	height:22px;
-}
-
-#body43 {
-	position:absolute;
-	left:225px;
-	top:258px;
-	width:33px;
-	height:22px;
-}
-
-#body46 {
-	position:absolute;
-	left:271px;
-	top:258px;
-	width:33px;
-	height:22px;
-}
-
-#body49 {
-	position:absolute;
-	left:317px;
-	top:258px;
-	width:33px;
-	height:19px;
-}
-
-#body51 {
-	position:absolute;
-	left:363px;
-	top:258px;
-	width:33px;
-	height:19px;
-}
-
-#body53 {
-	position:absolute;
-	left:0px;
-	top:277px;
-	width:37px;
-	height:205px;
-}
-
 #ledButtonO {
 	position:absolute;
 	left:37px;
 	top:277px;
 	width:46px;
 	height:46px;
-}
-
-#body55 {
-	position:absolute;
-	left:83px;
-	top:277px;
-	width:2px;
-	height:205px;
 }
 
 #ledButtonReturn {
@@ -974,14 +561,6 @@ loupedeckRowType {
 	height:46px;
 }
 
-#body71 {
-	position:absolute;
-	left:353px;
-	top:277px;
-	width:1px;
-	height:205px;
-}
-
 #ledButtonB {
 	position:absolute;
 	left:354px;
@@ -990,23 +569,7 @@ loupedeckRowType {
 	height:46px;
 }
 
-#body70 {
-	position:absolute;
-	left:400px;
-	top:277px;
-	width:47px;
-	height:205px;
-}
-
-#body60 {
-	position:absolute;
-	left:133px;
-	top:280px;
-	width:18px;
-	height:202px;
-}
-
-#jogWheel {
+#jogWheelTop {
 	position:absolute;
 	left:151px;
 	top:280px;
@@ -1014,15 +577,7 @@ loupedeckRowType {
 	height:27px;
 }
 
-#body62 {
-	position:absolute;
-	left:286px;
-	top:280px;
-	width:18px;
-	height:202px;
-}
-
-#jogWheel093 {
+#jogWheelLeft {
 	position:absolute;
 	left:151px;
 	top:307px;
@@ -1038,44 +593,12 @@ loupedeckRowType {
 	height:82px;
 }
 
-#jogWheel095 {
+#jogWheelRight {
 	position:absolute;
 	left:260px;
 	top:307px;
 	width:26px;
 	height:107px;
-}
-
-#body54 {
-	position:absolute;
-	left:37px;
-	top:323px;
-	width:46px;
-	height:1px;
-}
-
-#body56 {
-	position:absolute;
-	left:85px;
-	top:323px;
-	width:45px;
-	height:1px;
-}
-
-#body63 {
-	position:absolute;
-	left:306px;
-	top:323px;
-	width:47px;
-	height:1px;
-}
-
-#body64 {
-	position:absolute;
-	left:354px;
-	top:323px;
-	width:46px;
-	height:1px;
 }
 
 #ledButtonUndo {
@@ -1110,38 +633,6 @@ loupedeckRowType {
 	height:46px;
 }
 
-#body56104 {
-	position:absolute;
-	left:37px;
-	top:370px;
-	width:46px;
-	height:1px;
-}
-
-#body57 {
-	position:absolute;
-	left:85px;
-	top:370px;
-	width:45px;
-	height:1px;
-}
-
-#body65 {
-	position:absolute;
-	left:306px;
-	top:370px;
-	width:47px;
-	height:1px;
-}
-
-#body66 {
-	position:absolute;
-	left:354px;
-	top:370px;
-	width:46px;
-	height:1px;
-}
-
 #ledButtonKeyboard {
 	position:absolute;
 	left:37px;
@@ -1174,50 +665,10 @@ loupedeckRowType {
 	height:46px;
 }
 
-#jogWheel112 {
+#jogWheelBottom {
 	position:absolute;
 	left:179px;
 	top:389px;
 	width:81px;
 	height:25px;
-}
-
-#body61 {
-	position:absolute;
-	left:151px;
-	top:414px;
-	width:135px;
-	height:68px;
-}
-
-#body58 {
-	position:absolute;
-	left:37px;
-	top:417px;
-	width:46px;
-	height:65px;
-}
-
-#body59 {
-	position:absolute;
-	left:85px;
-	top:417px;
-	width:45px;
-	height:65px;
-}
-
-#body67 {
-	position:absolute;
-	left:306px;
-	top:417px;
-	width:47px;
-	height:65px;
-}
-
-#body68 {
-	position:absolute;
-	left:354px;
-	top:417px;
-	width:46px;
-	height:65px;
 }

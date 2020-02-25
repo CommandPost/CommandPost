@@ -6,8 +6,9 @@
 
 TODO LIST:
 
+    [ ] Add option to change Loupedeck CT orientation
+    [ ] Allow dragging and dropping of icons to the actually Loupedeck CT UI
     [ ] Work out actions for a jog wheel using J/K/L
-    [ ] Rework preferences UI show that the Loupedeck CT image actually shows what should be on the screens
     [ ] Add action to open Spotlight search window
     [ ] i18n everything
     [ ] Add i18n for Loupedeck Banks section label
@@ -377,6 +378,13 @@ function mod.refresh(dueToAppChange)
         success = false
         local thisButton = touchButton and touchButton[id]
         local encodedIcon = thisButton and thisButton.encodedIcon
+
+        --------------------------------------------------------------------------------
+        -- If there's no encodedIcon, then try encodedIconLabel:
+        --------------------------------------------------------------------------------
+        if not encodedIcon or (encodedIcon and encodedIcon == "") then
+            encodedIcon = thisButton and thisButton.encodedIconLabel
+        end
 
         --------------------------------------------------------------------------------
         -- Only update if the screen has changed to save bandwidth:

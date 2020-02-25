@@ -227,6 +227,12 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+local function insertImage(path)
+    local p = mod._env:pathToAbsolute(path)
+    local i = image.imageFromPath(p)
+    return i:encodeAsURLString(false, "PNG")
+end
+
 -- generateContent() -> string
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -335,12 +341,6 @@ local function generateContent()
         if v.displayName then
             allApps[bundleID] = v.displayName
         end
-    end
-
-    local function insertImage(path)
-        local p = mod._env:pathToAbsolute(path)
-        local i = image.imageFromPath(p)
-        return i:encodeAsURLString(false, "PNG")
     end
 
     --------------------------------------------------------------------------------
@@ -628,6 +628,7 @@ local function loupedeckCTPanelCallback(id, params)
             local downValue = ""
             local twoFingerTapValue = ""
             local doubleTapValue = ""
+            local iconLabel = ""
 
             local items = mod.items()
 
@@ -668,7 +669,49 @@ local function loupedeckCTPanelCallback(id, params)
                 if item["encodedIcon"] then
                     encodedIcon = item["encodedIcon"]
                 end
+
+                if item["iconLabel"] then
+                    iconLabel = item["iconLabel"]
+                end
             end
+
+            local updateIconsScript = ""
+            if items[app] and items[app][bank] then
+                --------------------------------------------------------------------------------
+                -- Update Touch Buttons:
+                --------------------------------------------------------------------------------
+                for i=1, 12 do
+                    i = tostring(i)
+                    if items[app][bank]["touchButton"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["encodedIcon"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["encodedIcon"] ~= "" then
+                        updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. items[app][bank]["touchButton"][i]["encodedIcon"] .. [[")]] .. "\n"
+                    else
+                        if items[app][bank]["touchButton"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["iconLabel"] and items[app][bank]["touchButton"][i]["iconLabel"] ~= "" and items[app][bank]["touchButton"][i]["encodedIconLabel"] then
+                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. items[app][bank]["touchButton"][i]["encodedIconLabel"] .. [[")]] .. "\n"
+                        else
+                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
+                        end
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Left Screen:
+                --------------------------------------------------------------------------------
+                if items[app][bank]["sideScreen"] and items[app][bank]["sideScreen"]["1"] and items[app][bank]["sideScreen"]["1"]["encodedIcon"] then
+                    updateIconsScript = updateIconsScript .. [[changeImage("leftScreen", "]] .. items[app][bank]["sideScreen"]["1"]["encodedIcon"] .. [[")]] .. "\n"
+                else
+                    updateIconsScript = updateIconsScript .. [[changeImage("leftScreen", "]] .. insertImage("images/leftScreen.png") .. [[")]] .. "\n"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Right Screen:
+                --------------------------------------------------------------------------------
+                if items[app][bank]["sideScreen"] and items[app][bank]["sideScreen"]["2"] and items[app][bank]["sideScreen"]["2"]["encodedIcon"] then
+                    updateIconsScript = updateIconsScript .. [[changeImage("rightScreen", "]] .. items[app][bank]["sideScreen"]["2"]["encodedIcon"] .. [[")]] .. "\n"
+                else
+                    updateIconsScript = updateIconsScript .. [[changeImage("rightScreen", "]] .. insertImage("images/rightScreen.png") .. [[")]] .. "\n"
+                end
+            end
+
 
             injectScript([[
                 changeValueByID('press_action', ']] .. pressValue .. [[');
@@ -680,9 +723,11 @@ local function loupedeckCTPanelCallback(id, params)
                 changeValueByID('right_touch_action', ']] .. rightValue .. [[');
                 changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
                 changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
+                changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
                 changeColor(']] .. colorValue .. [[');
                 setIcon("]] .. encodedIcon .. [[")
-            ]])
+            ]] .. updateIconsScript)
+
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
             -- Update Color:
@@ -842,7 +887,54 @@ local function loupedeckCTPanelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
-            setItem(app, bank, controlType, bid, {["encodedIcon"] = fixedEncodedIcon})
+            setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "updateButtonIcon" then
+
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            local encodedIcon = params["icon"]
+
+            --------------------------------------------------------------------------------
+            -- Set screen limitations:
+            --------------------------------------------------------------------------------
+            local controlType = "touchButton"
+            local width, height = getScreenSizeFromControlType(controlType)
+
+            --------------------------------------------------------------------------------
+            -- Process the Icon to remove transparency:
+            --------------------------------------------------------------------------------
+            local newImage = imageFromURL(encodedIcon)
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+            v[2] = {
+              type="image",
+              image = newImage,
+              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+            }
+            local fixedImage = v:imageFromCanvas()
+            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+            --------------------------------------------------------------------------------
+            -- Write to file:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local bid = params["id"]
+
+            setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -892,7 +984,7 @@ local function loupedeckCTPanelCallback(id, params)
                                 local fixedImage = v:imageFromCanvas()
                                 local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
-                                setItem(app, bank, controlType, bid, {["encodedIcon"] = fixedEncodedIcon})
+                                setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
                                 mod._manager.refresh()
                                 mod._ctmanager.refresh()
                             end,
@@ -923,12 +1015,86 @@ local function loupedeckCTPanelCallback(id, params)
 
             setItem(app, bank, controlType, bid, "encodedIcon", "")
 
-            injectScript([[setIcon("")]])
+            local items = mod.items()
+
+            local encodedImage = insertImage("images/" .. controlType .. bid .. ".png")
+            if items and items[app] and items[app][bank] and items[app][bank]["touchButton"] and items[app][bank]["touchButton"][bid] and items[app][bank]["touchButton"][bid]["encodedIconLabel"] then
+                if items[app][bank]["touchButton"][bid]["encodedIconLabel"] ~= "" then
+                    encodedImage = items[app][bank]["touchButton"][bid]["encodedIconLabel"]
+                end
+            end
+
+            injectScript([[
+                setIcon("");
+                changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImage .. [[")
+            ]])
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
+        elseif callbackType == "updateIconLabel" then
+            --------------------------------------------------------------------------------
+            -- Write to file:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "iconLabel", value)
+
+            --------------------------------------------------------------------------------
+            -- Set screen limitations:
+            --------------------------------------------------------------------------------
+            local width, height = getScreenSizeFromControlType(controlType)
+
+            --------------------------------------------------------------------------------
+            -- Make an icon using the label:
+            --------------------------------------------------------------------------------
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+
+            v[2] = {
+                frame = { h = 100, w = 100, x = 0, y = 0 },
+                text = value,
+                textAlignment = "left",
+                textColor = { white = 1.0 },
+                textSize = 15,
+                type = "text",
+            }
+
+            local img = v:imageFromCanvas()
+            local encodedImg = img:encodeAsURLString(true)
+
+            setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
+
+            local items = mod.items()
+
+            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                if not items[app][bank][controlType][bid]["encodedIcon"] or items[app][bank][controlType][bid]["encodedIcon"] == "" then
+                    if value ~= "" then
+                        injectScript([[
+                            changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImg .. [[")
+                        ]])
+                    else
+                        injectScript([[
+                            changeImage("]] .. controlType .. bid .. [[", "]] .. insertImage("images/" .. controlType .. bid .. ".png") .. [[")
+                        ]])
+                    end
+                end
+            end
+
+            mod._ctmanager.refresh()
+
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:
@@ -941,7 +1107,6 @@ local function loupedeckCTPanelCallback(id, params)
                     mod._manager.refresh()
                     mod._ctmanager.refresh()
                 end
-
             end
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------

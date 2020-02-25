@@ -5,6 +5,10 @@
 		document.getElementById('color').jscolor.fromString(value);
 	}
 
+	function changeImage(id, data) {
+		document.getElementById(id).getElementsByTagName('img')[0].src = data;
+	}
+
 	function updateApplicationAndBank() {
 		try {
 			var result = {
@@ -355,6 +359,26 @@
 		}
 	}
 
+	function updateIconLabel() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateIconLabel",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					value: document.getElementById('iconLabel').value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
 	function selectButton(buttonType) {
 		try {
 			var result = {
@@ -478,6 +502,63 @@
 		};
 	}
 
+	function changeIconButtonDropZone(element, id) {
+		var file = element.files[0];
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+
+			// Change button icon:
+			element.parentElement.getElementsByTagName("img")[0].src = data;
+
+			// If this button is currently selected, change that too:
+			if (document.getElementById("controlType").value == "touchButton" && document.getElementById("id").value == id) {
+				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+				document.getElementById("iconDropZone").className = "dropzone dropped";
+			}
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "updateButtonIcon",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						id: id,
+						icon: data,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
+
+
 	function importSettings() {
 		try {
 			var result = {
@@ -586,446 +667,218 @@
 		<tr>
 			<th width="447px">
 				<div id="loupedeckCT">
-					<div id="body1">
-						<img src="{{ insertImage('images/body1.png') }}" width="447" height="52" alt="" />
-					</div>
-					<div id="body2">
-						<img src="{{ insertImage('images/body2.png') }}" width="38" height="225" alt="" />
-					</div>
 					<div id="knob1">
 						<a href="#" onclick="changeControl('Knob 1', 'knob', '1');">
-							<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" alt="" />
+							<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" />
 						</a>
-					</div>
-					<div id="body6">
-						<img src="{{ insertImage('images/body6.png') }}" width="283" height="15" alt="" />
 					</div>
 					<div id="knob4">
 						<a href="#" onclick="changeControl('Knob 4', 'knob', '4');">
-							<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" alt="" />
+							<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" />
 						</a>
-					</div>
-					<div id="body30">
-						<img src="{{ insertImage('images/body30.png') }}" width="48" height="225" alt="" />
-					</div>
-					<div id="body7">
-						<img src="{{ insertImage('images/body7.png') }}" width="23" height="158" alt="" />
 					</div>
 					<div id="leftScreen">
 						<a href="#" onclick="changeControl('Left Screen', 'sideScreen', '1');">
-							<img src="{{ insertImage('images/leftScreen.png') }}" width="24" height="131" alt="" />
+							<img src="{{ insertImage('images/leftScreen.png') }}" width="24" height="131" style="object-fit: cover;" />
 						</a>
-					</div>
-					<div id="body9">
-						<img src="{{ insertImage('images/body9.png') }}" width="6" height="210" alt="" />
 					</div>
 					<div id="touchButton1">
-						<a href="#" onclick="changeControl('Button 1', 'touchButton', '1');">
-							<img src="{{ insertImage('images/touchButton1.png') }}" width="40" height="40" alt="" />
-						</a>
-					</div>
-					<div id="body13">
-						<img src="{{ insertImage('images/body13.png') }}" width="5" height="213" alt="" />
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '1')" onclick="changeControl('Button 1', 'touchButton', '1');" />
+						<img src="{{ insertImage('images/touchButton1.png') }}" width="40" height="40" onclick="changeControl('Button 1', 'touchButton', '1');" />
 					</div>
 					<div id="touchButton2">
-						<a href="#" onclick="changeControl('Button 2', 'touchButton', '2');">
-							<img src="{{ insertImage('images/touchButton2.png') }}" width="40" height="40" alt="" />
-						</a>
-					</div>
-					<div id="body17">
-						<img src="{{ insertImage('images/body17.png') }}" width="5" height="213" alt="" />
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '2')" onclick="changeControl('Button 2', 'touchButton', '2');" />
+						<img src="{{ insertImage('images/touchButton2.png') }}" width="40" height="40" onclick="changeControl('Button 2', 'touchButton', '2');" />
 					</div>
 					<div id="touchButton3">
-						<a href="#" onclick="changeControl('Button 3', 'touchButton', '3');">
-							<img src="{{ insertImage('images/touchButton3.png') }}" width="40" height="40" alt="" />
-						</a>
-					</div>
-					<div id="body21">
-						<img src="{{ insertImage('images/body21.png') }}" width="6" height="213" alt="" />
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '3')" onclick="changeControl('Button 3', 'touchButton', '3');" />
+						<img src="{{ insertImage('images/touchButton3.png') }}" width="40" height="40" onclick="changeControl('Button 3', 'touchButton', '3');" />
 					</div>
 					<div id="touchButton4">
-						<a href="#" onclick="changeControl('Button 4', 'touchButton', '4');">
-							<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" alt="" />
-						</a>
-					</div>
-					<div id="body25">
-						<img src="{{ insertImage('images/body25.png') }}" width="7" height="210" alt="" />
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '4')" onclick="changeControl('Button 4', 'touchButton', '4');" />
+						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" onclick="changeControl('Button 4', 'touchButton', '4');" />
 					</div>
 					<div id="rightScreen">
 						<a href="#" onclick="changeControl('Right Screen', 'sideScreen', '2');">
-							<img src="{{ insertImage('images/rightScreen.png') }}" width="24" height="131" alt="" />
+							<img src="{{ insertImage('images/rightScreen.png') }}" width="24" height="131" style="object-fit: cover;" />
 						</a>
-					</div>
-					<div id="body26">
-						<img src="{{ insertImage('images/body26.png') }}" width="23" height="158" alt="" />
-					</div>
-					<div id="body3">
-						<img src="{{ insertImage('images/body3.png') }}" width="39" height="23" alt="" />
-					</div>
-					<div id="body27">
-						<img src="{{ insertImage('images/body27.png') }}" width="39" height="23" alt="" />
-					</div>
-					<div id="body10">
-						<img src="{{ insertImage('images/body10.png') }}" width="40" height="5" alt="" />
-					</div>
-					<div id="body14">
-						<img src="{{ insertImage('images/body14.png') }}" width="40" height="5" alt="" />
-					</div>
-					<div id="body18">
-						<img src="{{ insertImage('images/body18.png') }}" width="40" height="5" alt="" />
-					</div>
-					<div id="body22">
-						<img src="{{ insertImage('images/body22.png') }}" width="40" height="5" alt="" />
 					</div>
 					<div id="touchButton5">
-						<a href="#" onclick="changeControl('Button 5', 'touchButton', '5');">
-							<img src="{{ insertImage('images/touchButton5.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '5')" onclick="changeControl('Button 5', 'touchButton', '5');" />
+						<img src="{{ insertImage('images/touchButton5.png') }}" width="40" height="40" onclick="changeControl('Button 5', 'touchButton', '5');" />
 					</div>
 					<div id="touchButton6">
-						<a href="#" onclick="changeControl('Button 6', 'touchButton', '6');">
-							<img src="{{ insertImage('images/touchButton6.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '6')" onclick="changeControl('Button 6', 'touchButton', '6');" />
+						<img src="{{ insertImage('images/touchButton6.png') }}" width="40" height="40" onclick="changeControl('Button 6', 'touchButton', '6');" />
 					</div>
 					<div id="touchButton7">
-						<a href="#" onclick="changeControl('Button 7', 'touchButton', '7');">
-							<img src="{{ insertImage('images/touchButton7.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '7')" onclick="changeControl('Button 7', 'touchButton', '7');" />
+						<img src="{{ insertImage('images/touchButton7.png') }}" width="40" height="40" onclick="changeControl('Button 7', 'touchButton', '7');" />
 					</div>
 					<div id="touchButton8">
-						<a href="#" onclick="changeControl('Button 8', 'touchButton', '8');">
-							<img src="{{ insertImage('images/touchButton8.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '8')" onclick="changeControl('Button 8', 'touchButton', '8');" />
+						<img src="{{ insertImage('images/touchButton8.png') }}" width="40" height="40" onclick="changeControl('Button 8', 'touchButton', '8');" />
 					</div>
 					<div id="knob2">
 						<a href="#" onclick="changeControl('Knob 2', 'knob', '2');">
-							<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" alt="" />
+							<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" />
 						</a>
 					</div>
 					<div id="knob5">
 						<a href="#" onclick="changeControl('Knob 5', 'knob', '5');">
-							<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" alt="" />
+							<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" />
 						</a>
-					</div>
-					<div id="body4">
-						<img src="{{ insertImage('images/body4.png') }}" width="39" height="23" alt="" />
-					</div>
-					<div id="body11">
-						<img src="{{ insertImage('images/body11.png') }}" width="40" height="6" alt="" />
-					</div>
-					<div id="body15">
-						<img src="{{ insertImage('images/body15.png') }}" width="40" height="6" alt="" />
-					</div>
-					<div id="body19">
-						<img src="{{ insertImage('images/body19.png') }}" width="40" height="6" alt="" />
-					</div>
-					<div id="body23">
-						<img src="{{ insertImage('images/body23.png') }}" width="40" height="6" alt="" />
-					</div>
-					<div id="body28">
-						<img src="{{ insertImage('images/body28.png') }}" width="39" height="23" alt="" />
 					</div>
 					<div id="touchButton9">
-						<a href="#" onclick="changeControl('Button 9', 'touchButton', '9');">
-							<img src="{{ insertImage('images/touchButton9.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '9')" onclick="changeControl('Button 9', 'touchButton', '9');" />
+						<img src="{{ insertImage('images/touchButton9.png') }}" width="40" height="40" onclick="changeControl('Button 9', 'touchButton', '9');" />
 					</div>
 					<div id="touchButton10">
-						<a href="#" onclick="changeControl('Button 10', 'touchButton', '10');">
-							<img src="{{ insertImage('images/touchButton10.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '10')" onclick="changeControl('Button 10', 'touchButton', '10');" />
+						<img src="{{ insertImage('images/touchButton10.png') }}" width="40" height="40" onclick="changeControl('Button 10', 'touchButton', '10');" />
 					</div>
 					<div id="touchButton11">
-						<a href="#" onclick="changeControl('Button 11', 'touchButton', '11');">
-							<img src="{{ insertImage('images/touchButton11.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '11')" onclick="changeControl('Button 11', 'touchButton', '11');" />
+						<img src="{{ insertImage('images/touchButton11.png') }}" width="40" height="40" onclick="changeControl('Button 11', 'touchButton', '11');" />
 					</div>
 					<div id="touchButton12">
-						<a href="#" onclick="changeControl('Button 12', 'touchButton', '12');">
-							<img src="{{ insertImage('images/touchButton12.png') }}" width="40" height="40" alt="" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '12')" onclick="changeControl('Button 12', 'touchButton', '12');" />
+						<img src="{{ insertImage('images/touchButton12.png') }}" width="40" height="40" onclick="changeControl('Button 12', 'touchButton', '12');" />
 					</div>
 					<div id="knob3">
 						<a href="#" onclick="changeControl('Knob 3', 'knob', '3');">
-							<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" alt="" />
+							<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" />
 						</a>
 					</div>
 					<div id="knob6">
 						<a href="#" onclick="changeControl('Knob 6', 'knob', '6');">
-							<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" alt="" />
+							<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" />
 						</a>
-					</div>
-					<div id="body8">
-						<img src="{{ insertImage('images/body8.png') }}" width="24" height="27" alt="" />
-					</div>
-					<div id="body12">
-						<img src="{{ insertImage('images/body12.png') }}" width="40" height="27" alt="" />
-					</div>
-					<div id="body16">
-						<img src="{{ insertImage('images/body16.png') }}" width="40" height="27" alt="" />
-					</div>
-					<div id="body20">
-						<img src="{{ insertImage('images/body20.png') }}" width="40" height="27" alt="" />
-					</div>
-					<div id="body24">
-						<img src="{{ insertImage('images/body24.png') }}" width="40" height="27" alt="" />
-					</div>
-					<div id="body69">
-						<img src="{{ insertImage('images/body69.png') }}" width="24" height="27" alt="" />
-					</div>
-					<div id="body5">
-						<img src="{{ insertImage('images/body5.png') }}" width="39" height="11" alt="" />
-					</div>
-					<div id="body29">
-						<img src="{{ insertImage('images/body29.png') }}" width="39" height="11" alt="" />
-					</div>
-					<div id="body31">
-						<img src="{{ insertImage('images/body31.png') }}" width="3" height="52" alt="" />
 					</div>
 					<div id="ledButton1">
 						<a href="#" onclick="changeControl('1', 'ledButton', '7');">
-							<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body33">
-						<img src="{{ insertImage('images/body33.png') }}" width="13" height="52" alt="" />
 					</div>
 					<div id="ledButton2">
 						<a href="#" onclick="changeControl('2', 'ledButton', '8');">
-							<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body35">
-						<img src="{{ insertImage('images/body35.png') }}" width="4" height="52" alt="" />
-					</div>
-					<div id="body36">
-						<img src="{{ insertImage('images/body36.png') }}" width="3" height="257" alt="" />
 					</div>
 					<div id="ledButton3">
 						<a href="#" onclick="changeControl('3', 'ledButton', '9');">
-							<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body38">
-						<img src="{{ insertImage('images/body38.png') }}" width="4" height="55" alt="" />
-					</div>
-					<div id="body39">
-						<img src="{{ insertImage('images/body39.png') }}" width="4" height="55" alt="" />
 					</div>
 					<div id="ledButton4">
 						<a href="#" onclick="changeControl('4', 'ledButton', '10');">
-							<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body41">
-						<img src="{{ insertImage('images/body41.png') }}" width="3" height="55" alt="" />
-					</div>
-					<div id="body42">
-						<img src="{{ insertImage('images/body42.png') }}" width="5" height="55" alt="" />
 					</div>
 					<div id="ledButton5">
 						<a href="#" onclick="changeControl('5', 'ledButton', '11');">
-							<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body44">
-						<img src="{{ insertImage('images/body44.png') }}" width="2" height="55" alt="" />
-					</div>
-					<div id="body45">
-						<img src="{{ insertImage('images/body45.png') }}" width="5" height="55" alt="" />
 					</div>
 					<div id="ledButton6">
 						<a href="#" onclick="changeControl('6', 'ledButton', '12');">
-							<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body47">
-						<img src="{{ insertImage('images/body47.png') }}" width="2" height="257" alt="" />
-					</div>
-					<div id="body48">
-						<img src="{{ insertImage('images/body48.png') }}" width="4" height="52" alt="" />
 					</div>
 					<div id="ledButton7">
 						<a href="#" onclick="changeControl('7', 'ledButton', '13');">
-							<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body50">
-						<img src="{{ insertImage('images/body50.png') }}" width="13" height="52" alt="" />
 					</div>
 					<div id="ledButton8">
 						<a href="#" onclick="changeControl('8', 'ledButton', '14');">
-							<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" alt="" />
+							<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" />
 						</a>
-					</div>
-					<div id="body52">
-						<img src="{{ insertImage('images/body52.png') }}" width="3" height="52" alt="" />
-					</div>
-					<div id="body32">
-						<img src="{{ insertImage('images/body32.png') }}" width="33" height="19" alt="" />
-					</div>
-					<div id="body34">
-						<img src="{{ insertImage('images/body34.png') }}" width="33" height="19" alt="" />
-					</div>
-					<div id="body37">
-						<img src="{{ insertImage('images/body37.png') }}" width="33" height="22" alt="" />
-					</div>
-					<div id="body40">
-						<img src="{{ insertImage('images/body40.png') }}" width="33" height="22" alt="" />
-					</div>
-					<div id="body43">
-						<img src="{{ insertImage('images/body43.png') }}" width="33" height="22" alt="" />
-					</div>
-					<div id="body46">
-						<img src="{{ insertImage('images/body46.png') }}" width="33" height="22" alt="" />
-					</div>
-					<div id="body49">
-						<img src="{{ insertImage('images/body49.png') }}" width="33" height="19" alt="" />
-					</div>
-					<div id="body51">
-						<img src="{{ insertImage('images/body51.png') }}" width="33" height="19" alt="" />
-					</div>
-					<div id="body53">
-						<img src="{{ insertImage('images/body53.png') }}" width="37" height="205" alt="" />
 					</div>
 					<div id="ledButtonO">
 						<a href="#" onclick="changeControl('O', 'ledButton', '15');">
-							<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" />
 						</a>
-					</div>
-					<div id="body55">
-						<img src="{{ insertImage('images/body55.png') }}" width="2" height="205" alt="" />
 					</div>
 					<div id="ledButtonReturn">
 						<a href="#" onclick="changeControl('Return', 'ledButton', '18');">
-							<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonA">
 						<a href="#" onclick="changeControl('A', 'ledButton', '21');">
-							<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" />
 						</a>
-					</div>
-					<div id="body71">
-						<img src="{{ insertImage('images/body71.png') }}" width="1" height="205" alt="" />
 					</div>
 					<div id="ledButtonB">
 						<a href="#" onclick="changeControl('B', 'ledButton', '24');">
-							<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" />
 						</a>
 					</div>
-					<div id="body70">
-						<img src="{{ insertImage('images/body70.png') }}" width="47" height="205" alt="" />
-					</div>
-					<div id="body60">
-						<img src="{{ insertImage('images/body60.png') }}" width="18" height="202" alt="" />
-					</div>
-					<div id="jogWheel">
+					<div id="jogWheelTop">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheel.png') }}" width="135" height="27" alt="" />
+							<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" />
 						</a>
 					</div>
-					<div id="body62">
-						<img src="{{ insertImage('images/body62.png') }}" width="18" height="202" alt="" />
-					</div>
-					<div id="jogWheel093">
+					<div id="jogWheelLeft">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheel-93.png') }}" width="28" height="107" alt="" />
+							<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" />
 						</a>
 					</div>
 					<div id="wheelScreen">
 						<a href="#" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');">
-							<img src="{{ insertImage('images/wheelScreen.png') }}" width="81" height="82" border="0" alt="" />
+							<img src="{{ insertImage('images/wheelScreen.png') }}" width="81" height="82" border="0" />
 						</a>
 					</div>
-					<div id="jogWheel095">
+					<div id="jogWheelRight">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheel-95.png') }}" width="26" height="107" alt="" />
+							<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" />
 						</a>
-					</div>
-					<div id="body54">
-						<img src="{{ insertImage('images/body54.png') }}" width="46" height="1" alt="" />
-					</div>
-					<div id="body56">
-						<img src="{{ insertImage('images/body56.png') }}" width="45" height="1" alt="" />
-					</div>
-					<div id="body63">
-						<img src="{{ insertImage('images/body63.png') }}" width="47" height="1" alt="" />
-					</div>
-					<div id="body64">
-						<img src="{{ insertImage('images/body64.png') }}" width="46" height="1" alt="" />
 					</div>
 					<div id="ledButtonUndo">
 						<a href="#" onclick="changeControl('Undo', 'ledButton', '16');">
-							<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonSave">
 						<a href="#" onclick="changeControl('Save', 'ledButton', '19');">
-							<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonC">
 						<a href="#" onclick="changeControl('C', 'ledButton', '22');">
-							<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonD">
 						<a href="#" onclick="changeControl('D', 'ledButton', '25');">
-							<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" />
 						</a>
-					</div>
-					<div id="body56104">
-						<img src="{{ insertImage('images/body56-104.png') }}" width="46" height="1" alt="" />
-					</div>
-					<div id="body57">
-						<img src="{{ insertImage('images/body57.png') }}" width="45" height="1" alt="" />
-					</div>
-					<div id="body65">
-						<img src="{{ insertImage('images/body65.png') }}" width="47" height="1" alt="" />
-					</div>
-					<div id="body66">
-						<img src="{{ insertImage('images/body66.png') }}" width="46" height="1" alt="" />
 					</div>
 					<div id="ledButtonKeyboard">
 						<a href="#" onclick="changeControl('Keyboard', 'ledButton', '17');">
-							<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonLeftFn">
 						<a href="#" onclick="changeControl('Fn (Left)', 'ledButton', '20');">
-							<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonRightFn">
 						<a href="#" onclick="changeControl('Fn (Left)', 'ledButton', '23');">
-							<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" />
 						</a>
 					</div>
 					<div id="ledButtonE">
 						<a href="#" onclick="changeControl('E', 'ledButton', '26');">
-							<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" alt="" />
+							<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" />
 						</a>
 					</div>
-					<div id="jogWheel112">
+					<div id="jogWheelBottom">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheel-112.png') }}" width="81" height="25" alt="" />
+							<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" />
 						</a>
-					</div>
-					<div id="body61">
-						<img src="{{ insertImage('images/body61.png') }}" width="135" height="68" alt="" />
-					</div>
-					<div id="body58">
-						<img src="{{ insertImage('images/body58.png') }}" width="46" height="65" alt="" />
-					</div>
-					<div id="body59">
-						<img src="{{ insertImage('images/body59.png') }}" width="45" height="65" alt="" />
-					</div>
-					<div id="body67">
-						<img src="{{ insertImage('images/body67.png') }}" width="47" height="65" alt="" />
-					</div>
-					<div id="body68">
-						<img src="{{ insertImage('images/body68.png') }}" width="46" height="65" alt="" />
 					</div>
 				</div>
 			</th>
@@ -1149,6 +1002,7 @@
 						<!-- ICON: -->
 						<tr id="iconA">
 							<th width="229px">Image Drop Zone:</th>
+							<th width="229px">Text Label:</th>
 						</tr>
 						<tr id="iconB">
 							<td width="229px">
@@ -1170,8 +1024,8 @@
 									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
 								</div>
 							</td>
-							<td width="229px">
-
+							<td width="229px" style="vertical-align: top;">
+								<textarea id="iconLabel" class="loupedeckActionTextbox" rows="5" cols="5" placeholder="{{ i18n("none") }}" oninput="updateIconLabel()"></textarea>
 							</td>
 						</tr>
 						<tr id="iconC">
