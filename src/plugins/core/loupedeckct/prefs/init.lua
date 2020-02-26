@@ -789,7 +789,7 @@ local function loupedeckCTPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Wheel Screen:
                 --------------------------------------------------------------------------------
-                local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen[1]
+                local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
                 if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
                     updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
                 else
