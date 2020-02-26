@@ -6,11 +6,11 @@
 
 TODO LIST:
 
-    [ ] Add icons for knobs. If user assigns an icon to whole left/right screen this should override the knobs
+    [ ] If "Store settings on Flash Drive" is enabled, you shouldn't be able to edit
+        preferences if the Flash Drive isn't connected.
     [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
     [ ] Add action for enabling/disabling Loupedeck CT support
     [ ] Add action for opening the Loupedeck official app
-    [ ] Clear screen when you turn off Loupedeck CT support
     [ ] i18n everything
     [ ] Add option to change Loupedeck CT orientation
     [ ] Work out actions for a jog wheel using J/K/L
@@ -167,13 +167,31 @@ mod.numberOfBanks = 9
 --- Is Loupedeck CT support enabled?
 mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
     if enabled then
-        ct.connect(true)
         mod._appWatcher:start()
         mod._driveWatcher:start()
+        ct.connect(true)
     else
-        ct.disconnect()
+        --------------------------------------------------------------------------------
+        -- Stop all watchers:
+        --------------------------------------------------------------------------------
         mod._appWatcher:stop()
         mod._driveWatcher:stop()
+
+        --------------------------------------------------------------------------------
+        -- Make everything black:
+        --------------------------------------------------------------------------------
+        for _, screen in pairs(ct.screens) do
+                ct.updateScreenColor(screen, {hex="#"..defaultColor})
+        end
+        for i=7, 26 do
+            ct.buttonColor(i, {hex="#" .. defaultColor})
+        end
+        just.wait(0.01) -- Slight delay so the websocket message has time to send.
+
+        --------------------------------------------------------------------------------
+        -- Disconnect from the Loupedeck CT:
+        --------------------------------------------------------------------------------
+        ct.disconnect()
     end
 end)
 
@@ -351,7 +369,7 @@ function mod.refresh(dueToAppChange)
     local bank = item and item[bankID]
 
     --------------------------------------------------------------------------------
-    -- SET LED BUTTON COLOURS:
+    -- UPDATE LED BUTTON COLOURS:
     --------------------------------------------------------------------------------
     local ledButton = bank and bank.ledButton
     for i=7, 26 do
@@ -367,7 +385,7 @@ function mod.refresh(dueToAppChange)
     end
 
     --------------------------------------------------------------------------------
-    -- SET TOUCH SCREEN BUTTON IMAGES:
+    -- UPDATE TOUCH SCREEN BUTTON IMAGES:
     --------------------------------------------------------------------------------
     local touchButton = bank and bank.touchButton
     for i=1, 12 do
@@ -398,16 +416,13 @@ function mod.refresh(dueToAppChange)
         end
 
         if not success and cachedTouchScreenButtonValues[id] ~= defaultColor then
-            --------------------------------------------------------------------------------
-            -- Only update if the screen has changed to save bandwidth:
-            --------------------------------------------------------------------------------
             ct.updateScreenButtonColor(i, {hex="#"..defaultColor})
             cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
 
     --------------------------------------------------------------------------------
-    -- SET WHEEL SCREEN:
+    -- UPDATE WHEEL SCREEN:
     --------------------------------------------------------------------------------
     success = false
     local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
@@ -428,19 +443,15 @@ function mod.refresh(dueToAppChange)
     end
 
     --------------------------------------------------------------------------------
-    -- SET LEFT SIDE SCREEN:
+    -- UPDATE LEFT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
     local thisSideScreen = bank and bank.sideScreen and bank.sideScreen["1"]
-    encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
-
-    --------------------------------------------------------------------------------
-    -- If there's no encodedIcon, then try using the individual knobs:
-    --------------------------------------------------------------------------------
-    if not encodedIcon or (encodedIcon and encodedIcon == "") then
-        encodedIcon = thisSideScreen and thisSideScreen.encodedKnobIcon
+    if thisSideScreen and thisSideScreen.encodedKnobIcon and thisSideScreen.encodedKnobIcon ~= "" then
+        encodedIcon = thisSideScreen.encodedKnobIcon
+    else
+        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
     end
-
     if encodedIcon and cachedLeftSideScreen == encodedIcon then
         success = true
     elseif encodedIcon and cachedLeftSideScreen ~= encodedIcon then
@@ -457,11 +468,15 @@ function mod.refresh(dueToAppChange)
     end
 
     --------------------------------------------------------------------------------
-    -- SET RIGHT SIDE SCREEN:
+    -- UPDATE RIGHT SIDE SCREEN:
     --------------------------------------------------------------------------------
     success = false
     thisSideScreen = bank and bank.sideScreen and bank.sideScreen["2"]
-    encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+    if thisSideScreen and thisSideScreen.encodedKnobIcon and thisSideScreen.encodedKnobIcon ~= "" then
+        encodedIcon = thisSideScreen.encodedKnobIcon
+    else
+        encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
+    end
     if encodedIcon and cachedRightSideScreen == encodedIcon then
         success = true
     elseif encodedIcon and cachedRightSideScreen ~= encodedIcon then

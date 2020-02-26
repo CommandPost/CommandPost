@@ -321,7 +321,7 @@ loupedeckRowType {
 	height:39px;
 }
 
-#leftScreen {
+#sideScreen1 {
 	position:absolute;
 	left:100px;
 	top:67px;
@@ -369,7 +369,7 @@ loupedeckRowType {
 	height:40px;
 }
 
-#rightScreen {
+#sideScreen2 {
 	position:absolute;
 	left:313px;
 	top:67px;
@@ -585,7 +585,7 @@ loupedeckRowType {
 	height:107px;
 }
 
-#wheelScreen {
+#wheelScreen1 {
 	position:absolute;
 	left:179px;
 	top:307px;

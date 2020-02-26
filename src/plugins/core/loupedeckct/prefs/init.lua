@@ -27,6 +27,7 @@ local infoForBundlePath         = application.infoForBundlePath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
+local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
@@ -433,6 +434,105 @@ local function getScreenSizeFromControlType(controlType)
     end
 end
 
+-- generateKnobImages(app, bank, id) -> none
+-- Function
+-- Generates a combined image for all the knobs.
+--
+-- Parameters:
+--  * app - The application bundle ID
+--  * bank - The bank as a string
+--  * id - The ID
+--
+-- Returns:
+--  * None
+local function generateKnobImages(app, bank, bid)
+    local whichScreen = "1"
+    local kA = "1"
+    local kB = "2"
+    local kC = "3"
+
+    if bid == "4" or bid == "5" or bid == "6" then
+        whichScreen = "2"
+        kA = "4"
+        kB = "5"
+        kC = "6"
+    end
+
+    local items = mod.items()
+
+    local knobOneImage
+    local knobTwoImage
+    local knobThreeImage
+
+    local currentApp = items[app]
+    local currentBank = currentApp and currentApp[bank]
+    local currentKnob = currentBank and currentBank.knob
+
+    local currentKnobOneEncodedIcon = currentKnob and currentKnob[kA] and currentKnob[kA].encodedIcon
+    local currentKnobOneEncodedIconLabel = currentKnob and currentKnob[kA] and currentKnob[kA].encodedIconLabel
+    if currentKnobOneEncodedIcon and currentKnobOneEncodedIcon ~= "" then
+        knobOneImage = currentKnobOneEncodedIcon
+    elseif currentKnobOneEncodedIconLabel and currentKnobOneEncodedIconLabel ~= "" then
+        knobOneImage = currentKnobOneEncodedIconLabel
+    end
+
+    local currentKnobTwoEncodedIcon = currentKnob and currentKnob[kB] and currentKnob[kB].encodedIcon
+    local currentKnobTwoEncodedIconLabel = currentKnob and currentKnob[kB] and currentKnob[kB].encodedIconLabel
+    if currentKnobTwoEncodedIcon and currentKnobTwoEncodedIcon ~= "" then
+        knobTwoImage = currentKnobTwoEncodedIcon
+    elseif currentKnobTwoEncodedIconLabel and currentKnobTwoEncodedIconLabel ~= "" then
+        knobTwoImage = currentKnobTwoEncodedIconLabel
+    end
+
+    local currentKnobThreeEncodedIcon = currentKnob and currentKnob[kC] and currentKnob[kC].encodedIcon
+    local currentKnobThreeEncodedIconLabel = currentKnob and currentKnob[kC] and currentKnob[kC].encodedIconLabel
+    if currentKnobThreeEncodedIcon and currentKnobThreeEncodedIcon ~= "" then
+        knobThreeImage = currentKnobThreeEncodedIcon
+    elseif currentKnobThreeEncodedIconLabel and currentKnobThreeEncodedIconLabel ~= "" then
+        knobThreeImage = currentKnobThreeEncodedIconLabel
+    end
+
+    local encodedKnobIcon = ""
+
+    if knobOneImage or knobTwoImage or knobThreeImage then
+        local v = canvas.new{x = 0, y = 0, w = 60, h = 270 }
+        v[1] = {
+            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+            type = "rectangle",
+        }
+
+        if knobOneImage then
+            v:appendElements({
+              type="image",
+              image = imageFromURL(knobOneImage),
+              frame = { x = 0, y = 0, h = 90, w = 60 },
+            })
+        end
+
+        if knobTwoImage then
+            v:appendElements({
+              type="image",
+              image = imageFromURL(knobTwoImage),
+              frame = { x = 0, y = 90, h = 90, w = 60 },
+            })
+        end
+
+        if knobThreeImage then
+            v:appendElements({
+              type="image",
+              image = imageFromURL(knobThreeImage),
+              frame = { x = 0, y = 180, h = 90, w = 60 },
+            })
+        end
+
+        local knobImage = v:imageFromCanvas()
+        encodedKnobIcon = knobImage:encodeAsURLString(true)
+    end
+
+    setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
+end
+
 -- loupedeckCTPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
@@ -621,74 +721,41 @@ local function loupedeckCTPanelCallback(id, params)
             mod.lastID(bid)
             mod.lastControlType(controlType)
 
-            local pressValue = ""
-            local leftValue = ""
-            local rightValue = ""
-            local colorValue = "FFFFFF"
-            local encodedIcon = ""
-            local upValue = ""
-            local downValue = ""
-            local twoFingerTapValue = ""
-            local doubleTapValue = ""
-            local iconLabel = ""
-
             local items = mod.items()
 
-            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                local item = items[app][bank][controlType][bid]
-                if item["leftAction"] and item["leftAction"]["actionTitle"] then
-                    leftValue = item["leftAction"]["actionTitle"]
-                end
+            local selectedApp = items[app]
+            local selectedBank = selectedApp and selectedApp[bank]
+            local selectedControlType = selectedBank and selectedBank[controlType]
+            local selectedID = selectedControlType and selectedControlType[bid]
 
-                if item["rightAction"] and item["rightAction"]["actionTitle"] then
-                    rightValue = item["rightAction"]["actionTitle"]
-                end
-
-                if item["pressAction"] and item["pressAction"]["actionTitle"] then
-                    pressValue = item["pressAction"]["actionTitle"]
-                end
-
-                if item["upAction"] and item["upAction"]["actionTitle"] then
-                    upValue = item["upAction"]["actionTitle"]
-                end
-
-                if item["downAction"] and item["downAction"]["actionTitle"] then
-                    downValue = item["downAction"]["actionTitle"]
-                end
-
-                if item["doubleTapAction"] and item["doubleTapAction"]["actionTitle"] then
-                    doubleTapValue = item["doubleTapAction"]["actionTitle"]
-                end
-
-                if item["twoFingerTapAction"] and item["twoFingerTapAction"]["actionTitle"] then
-                    twoFingerTapValue = item["twoFingerTapAction"]["actionTitle"]
-                end
-
-                if item["led"] then
-                    colorValue = item["led"]
-                end
-
-                if item["encodedIcon"] then
-                    encodedIcon = item["encodedIcon"]
-                end
-
-                if item["iconLabel"] then
-                    iconLabel = item["iconLabel"]
-                end
-            end
+            local leftValue = selectedID and selectedID.leftAction and selectedID.leftAction.actionTitle or ""
+            local rightValue = selectedID and selectedID.rightAction and selectedID.rightAction.actionTitle or ""
+            local pressValue = selectedID and selectedID.pressAction and selectedID.pressAction.actionTitle or ""
+            local upValue = selectedID and selectedID.upAction and selectedID.upAction.actionTitle or ""
+            local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
+            local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
+            local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
+            local colorValue = selectedID and selectedID.led or "FFFFFF"
+            local encodedIcon = selectedID and selectedID.encodedIcon or ""
+            local encodedKnobIcon = selectedID and selectedID.encodedKnobIcon or ""
+            local iconLabel = selectedID and selectedID.iconLabel or ""
 
             local updateIconsScript = ""
-            if items[app] and items[app][bank] then
+
+            if selectedBank then
                 --------------------------------------------------------------------------------
                 -- Update Touch Buttons:
                 --------------------------------------------------------------------------------
                 for i=1, 12 do
                     i = tostring(i)
-                    if items[app][bank]["touchButton"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["encodedIcon"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["encodedIcon"] ~= "" then
-                        updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. items[app][bank]["touchButton"][i]["encodedIcon"] .. [[")]] .. "\n"
+                    local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
+                    local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
+                    local currentEncodedIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIconLabel
+                    if currentEncodedIcon and currentEncodedIcon ~= "" then
+                        updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIcon .. [[")]] .. "\n"
                     else
-                        if items[app][bank]["touchButton"] and items[app][bank]["touchButton"][i] and items[app][bank]["touchButton"][i]["iconLabel"] and items[app][bank]["touchButton"][i]["iconLabel"] ~= "" and items[app][bank]["touchButton"][i]["encodedIconLabel"] then
-                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. items[app][bank]["touchButton"][i]["encodedIconLabel"] .. [[")]] .. "\n"
+                        if currentIconLabel and currentIconLabel ~= "" and currentEncodedIconLabel and currentEncodedIconLabel ~= "" then
+                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIconLabel .. [[")]] .. "\n"
                         else
                             updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
                         end
@@ -698,28 +765,35 @@ local function loupedeckCTPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Left Screen:
                 --------------------------------------------------------------------------------
-                if items[app][bank]["sideScreen"] and items[app][bank]["sideScreen"]["1"] and items[app][bank]["sideScreen"]["1"]["encodedIcon"] and items[app][bank]["sideScreen"]["1"]["encodedIcon"] ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("leftScreen", "]] .. items[app][bank]["sideScreen"]["1"]["encodedIcon"] .. [[")]] .. "\n"
+                local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
+                if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
+                elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
                 else
-                    updateIconsScript = updateIconsScript .. [[changeImage("leftScreen", "]] .. insertImage("images/leftScreen.png") .. [[")]] .. "\n"
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
                 end
 
                 --------------------------------------------------------------------------------
                 -- Right Screen:
                 --------------------------------------------------------------------------------
-                if items[app][bank]["sideScreen"] and items[app][bank]["sideScreen"]["2"] and items[app][bank]["sideScreen"]["2"]["encodedIcon"] and items[app][bank]["sideScreen"]["2"]["encodedIcon"] ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("rightScreen", "]] .. items[app][bank]["sideScreen"]["2"]["encodedIcon"] .. [[")]] .. "\n"
+                local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
+                if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
+                elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
                 else
-                    updateIconsScript = updateIconsScript .. [[changeImage("rightScreen", "]] .. insertImage("images/rightScreen.png") .. [[")]] .. "\n"
+                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
                 end
 
                 --------------------------------------------------------------------------------
                 -- Wheel Screen:
                 --------------------------------------------------------------------------------
-                if items[app][bank]["wheelScreen"] and items[app][bank]["wheelScreen"]["1"] and items[app][bank]["wheelScreen"]["1"]["encodedIcon"] and items[app][bank]["wheelScreen"]["1"]["encodedIcon"] ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen", "]] .. items[app][bank]["wheelScreen"]["1"]["encodedIcon"] .. [[")]] .. "\n"
+                local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen[1]
+                if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
                 else
-                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen", "]] .. insertImage("images/wheelScreen.png") .. [[")]] .. "\n"
+                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
                 end
             end
 
@@ -821,87 +895,48 @@ local function loupedeckCTPanelCallback(id, params)
 
                         setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
 
+                        local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedIcon .. [[")]]
+
                         --------------------------------------------------------------------------------
                         -- Process knobs:
                         --------------------------------------------------------------------------------
                         if controlType == "knob" then
 
-                            local items = mod.items()
+                            generateKnobImages(app, bank, bid)
 
-                            local knobOneImage
-                            local knobTwoImage
-                            local knobThreeImage
+                            --------------------------------------------------------------------------------
+                            -- Update preferences UI:
+                            --------------------------------------------------------------------------------
+                            items = mod.items() -- Refresh items
 
-                            if items and items[app] and items[app][bank] and items[app][bank] and items[app][bank]["knob"] then
-                                if items[app][bank]["knob"] and items[app][bank]["knob"]["1"] and items[app][bank]["knob"]["1"]["encodedIcon"] and items[app][bank]["knob"]["1"]["encodedIcon"] ~= "" then
-                                    knobOneImage = items[app][bank]["knob"]["1"]["encodedIcon"]
-                                end
-                                if items[app][bank]["knob"] and items[app][bank]["knob"]["2"] and items[app][bank]["knob"]["2"]["encodedIcon"] and items[app][bank]["knob"]["2"]["encodedIcon"] ~= "" then
-                                    knobTwoImage = items[app][bank]["knob"]["2"]["encodedIcon"]
-                                end
-                                if items[app][bank]["knob"] and items[app][bank]["knob"]["3"] and items[app][bank]["knob"]["3"]["encodedIcon"] and items[app][bank]["knob"]["3"]["encodedIcon"] ~= "" then
-                                    knobThreeImage = items[app][bank]["knob"]["3"]["encodedIcon"]
-                                end
+                            local currentApp = items[app]
+                            local currentBank = currentApp and currentApp[bank]
+                            local currentSideScreen = currentBank and currentBank.sideScreen
+
+                            local sideScreenOne = currentSideScreen["1"]
+                            local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
+                            local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
+                            if encodedKnobIcon and encodedKnobIcon ~= "" then
+                                changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
+                            elseif encodedIcon and encodedIcon ~= "" then
+                                changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
                             end
 
-                            local v = canvas.new{x = 0, y = 0, w = 60, h = 270 }
-                            v[1] = {
-                                --------------------------------------------------------------------------------
-                                -- Force Black background:
-                                --------------------------------------------------------------------------------
-                                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                                type = "rectangle",
-                            }
-
-                            if knobOneImage then
-                                v[2] = {
-                                  type="image",
-                                  image = imageFromURL(knobOneImage),
-                                  frame = { x = 0, y = 0, h = 90, w = 60 },
-                                }
+                            local sideScreenTwo = currentSideScreen["2"]
+                            encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
+                            encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
+                            if encodedKnobIcon and encodedKnobIcon ~= "" then
+                                changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
+                            elseif encodedIcon and encodedIcon ~= "" then
+                                changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
                             end
-
-                            if knobTwoImage then
-                                v[3] = {
-                                  type="image",
-                                  image = imageFromURL(knobTwoImage),
-                                  frame = { x = 0, y = 90, h = 90, w = 60 },
-                                }
-                            end
-
-                            if knobThreeImage then
-                                v[4] = {
-                                  type="image",
-                                  image = imageFromURL(knobThreeImage),
-                                  frame = { x = 0, y = 180, h = 90, w = 60 },
-                                }
-                            end
-
-                            local knobImage = v:imageFromCanvas()
-                            local encodedKnobIcon = knobImage:encodeAsURLString(true)
-
-                            setItem(app, bank, "sideScreen", "1", "encodedKnobIcon", encodedKnobIcon)
 
                         end
 
-
-
-
-                        if controlType == "wheelScreen" then
-                            bid = ""
-                        elseif controlType == "sideScreen" and bid == "1" then
-                            controlType = "leftScreen"
-                            bid = ""
-                        elseif controlType == "sideScreen" and bid == "2" then
-                            controlType = "rightScreen"
-                            bid = ""
-                        end
-
-                        injectScript([[
-                            setIcon("]] .. encodedIcon .. [[")
-                            changeImage("]] .. controlType .. bid .. [[", "]] .. encodedIcon .. [[")
-                        ]])
+                        --------------------------------------------------------------------------------
+                        -- Update preference UI via JavaScript:
+                        --------------------------------------------------------------------------------
+                        injectScript([[setIcon("]] .. encodedIcon .. [[")]] .. "\n" .. changeImageScript)
 
                         --------------------------------------------------------------------------------
                         -- Write to history:
@@ -1074,7 +1109,53 @@ local function loupedeckCTPanelCallback(id, params)
                                 local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
                                 setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
-                                mod._manager.refresh()
+
+                                local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. fixedEncodedIcon .. [[")]]
+
+                                --------------------------------------------------------------------------------
+                                -- Process knobs:
+                                --------------------------------------------------------------------------------
+                                if controlType == "knob" then
+
+                                    generateKnobImages(app, bank, bid)
+
+                                    --------------------------------------------------------------------------------
+                                    -- Update preferences UI:
+                                    --------------------------------------------------------------------------------
+                                    items = mod.items() -- Refresh items
+
+                                    local currentApp = items[app]
+                                    local currentBank = currentApp and currentApp[bank]
+                                    local currentSideScreen = currentBank and currentBank.sideScreen
+
+                                    local sideScreenOne = currentSideScreen["1"]
+                                    local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
+                                    local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
+                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
+                                    elseif encodedIcon and encodedIcon ~= "" then
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
+                                    else
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
+                                    end
+
+                                    local sideScreenTwo = currentSideScreen["2"]
+                                    encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
+                                    encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
+                                    if encodedKnobIcon and encodedKnobIcon ~= "" then
+                                        changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
+                                    elseif encodedIcon and encodedIcon ~= "" then
+                                        changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
+                                    else
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
+                                    end
+                                end
+
+                                --------------------------------------------------------------------------------
+                                -- Update preference UI via JavaScript:
+                                --------------------------------------------------------------------------------
+                                injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
+
                                 mod._ctmanager.refresh()
                             end,
                         })
@@ -1105,37 +1186,55 @@ local function loupedeckCTPanelCallback(id, params)
             setItem(app, bank, controlType, bid, "encodedIcon", "")
 
             local items = mod.items()
-
-            local encodedImage
-            if controlType == "wheelScreen" then
-                encodedImage = insertImage("images/wheelScreen.png")
-            elseif controlType == "sideScreen" and bid == "1" then
-                encodedImage = insertImage("images/leftScreen.png")
-            elseif controlType == "sideScreen" and bid == "2" then
-                encodedImage = insertImage("images/rightScreen.png")
-            else
-                encodedImage = insertImage("images/" .. controlType .. bid .. ".png")
-            end
+            local encodedImage = insertImage("images/" .. controlType .. bid .. ".png")
             if items and items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] and items[app][bank][controlType][bid]["encodedIconLabel"] then
                 if items[app][bank][controlType][bid]["iconLabel"] ~= "" then
                     encodedImage = items[app][bank][controlType][bid]["encodedIconLabel"]
                 end
             end
 
-            if controlType == "wheelScreen" then
-                bid = ""
-            elseif controlType == "sideScreen" and bid == "1" then
-                controlType = "leftScreen"
-                bid = ""
-            elseif controlType == "sideScreen" and bid == "2" then
-                controlType = "rightScreen"
-                bid = ""
+            local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImage .. [[")]]
+
+            --------------------------------------------------------------------------------
+            -- Process knobs:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+
+                generateKnobImages(app, bank, bid)
+
+                --------------------------------------------------------------------------------
+                -- Update preferences UI:
+                --------------------------------------------------------------------------------
+                items = mod.items() -- Refresh items
+
+                local currentApp = items[app]
+                local currentBank = currentApp and currentApp[bank]
+                local currentSideScreen = currentBank and currentBank.sideScreen
+
+                local sideScreenOne = currentSideScreen["1"]
+                local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
+                local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
+                if encodedKnobIcon and encodedKnobIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
+                elseif encodedIcon and encodedIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
+                else
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
+                end
+
+                local sideScreenTwo = currentSideScreen["2"]
+                encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
+                encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
+                if encodedKnobIcon and encodedKnobIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
+                elseif encodedIcon and encodedIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
+                else
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
+                end
             end
 
-            injectScript([[
-                setIcon("");
-                changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImage .. [[")
-            ]])
+            injectScript([[setIcon("");]] .. "\n" .. changeImageScript)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1153,47 +1252,51 @@ local function loupedeckCTPanelCallback(id, params)
 
             setItem(app, bank, controlType, bid, "iconLabel", value)
 
-            --------------------------------------------------------------------------------
-            -- Set screen limitations:
-            --------------------------------------------------------------------------------
-            local width, height = getScreenSizeFromControlType(controlType)
+            local encodedImg = ""
+            if value and trim(value) ~= "" then
 
-            --------------------------------------------------------------------------------
-            -- Make an icon using the label:
-            --------------------------------------------------------------------------------
-            local v = canvas.new{x = 0, y = 0, w = width, h = height }
-            v[1] = {
                 --------------------------------------------------------------------------------
-                -- Force Black background:
+                -- Set screen limitations:
                 --------------------------------------------------------------------------------
-                frame = { h = "100%", w = "100%", x = 0, y = 0 },
-                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
-                type = "rectangle",
-            }
+                local width, height = getScreenSizeFromControlType(controlType)
 
-            v[2] = {
-                frame = { h = 100, w = 100, x = 0, y = 0 },
-                text = value,
-                textAlignment = "left",
-                textColor = { white = 1.0 },
-                textSize = 15,
-                type = "text",
-            }
+                --------------------------------------------------------------------------------
+                -- Make an icon using the label:
+                --------------------------------------------------------------------------------
+                local v = canvas.new{x = 0, y = 0, w = width, h = height }
+                v[1] = {
+                    --------------------------------------------------------------------------------
+                    -- Force Black background:
+                    --------------------------------------------------------------------------------
+                    frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                    fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                    type = "rectangle",
+                }
 
-            local img = v:imageFromCanvas()
-            local encodedImg = img:encodeAsURLString(true)
+                v[2] = {
+                    frame = { h = 100, w = 100, x = 0, y = 0 },
+                    text = value,
+                    textAlignment = "left",
+                    textColor = { white = 1.0 },
+                    textSize = 15,
+                    type = "text",
+                }
+
+                local img = v:imageFromCanvas()
+                encodedImg = img:encodeAsURLString(true)
+            end
 
             setItem(app, bank, controlType, bid, "encodedIconLabel", encodedImg)
 
             local items = mod.items()
 
-            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
-                if not items[app][bank][controlType][bid]["encodedIcon"] or items[app][bank][controlType][bid]["encodedIcon"] == "" then
+            local currentApp = items[app]
+            local currentBank = currentApp and currentApp[bank]
+            local currentControlType = currentBank and currentBank[controlType]
+            local currentID = currentControlType and currentControlType[bid]
 
-                    if controlType == "wheelScreen" then
-                        bid = ""
-                    end
-
+            if currentID and controlType ~= "knob" then
+                if not currentID.encodedIcon or currentID.encodedIcon == "" then
                     if value ~= "" then
                         injectScript([[
                             changeImage("]] .. controlType .. bid .. [[", "]] .. encodedImg .. [[")
@@ -1204,6 +1307,45 @@ local function loupedeckCTPanelCallback(id, params)
                         ]])
                     end
                 end
+            elseif controlType == "knob" then
+                generateKnobImages(app, bank, bid)
+
+                --------------------------------------------------------------------------------
+                -- Update preferences UI:
+                --------------------------------------------------------------------------------
+                items = mod.items() -- Refresh items
+
+                local changeImageScript
+
+                local currentApp = items[app]
+                local currentBank = currentApp and currentApp[bank]
+                local currentSideScreen = currentBank and currentBank.sideScreen
+
+                local sideScreenOne = currentSideScreen["1"]
+                local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
+                local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
+                if encodedKnobIcon and encodedKnobIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
+                elseif encodedIcon and encodedIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
+                else
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
+                end
+
+                local sideScreenTwo = currentSideScreen["2"]
+                encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
+                encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
+                if encodedKnobIcon and encodedKnobIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
+                elseif encodedIcon and encodedIcon ~= "" then
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
+                else
+                    changeImageScript = [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
+                end
+                if changeImageScript then
+                    injectScript(changeImageScript)
+                end
+
             end
 
             mod._ctmanager.refresh()

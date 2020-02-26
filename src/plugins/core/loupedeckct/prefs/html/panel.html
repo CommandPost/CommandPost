@@ -573,6 +573,7 @@
 						bank: document.getElementById("bank").value,
 						id: id,
 						icon: data,
+						controlType: document.getElementById("controlType").value,
 					},
 				}
 				postMessage(result);
@@ -702,8 +703,8 @@
 							<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" />
 						</a>
 					</div>
-					<div id="leftScreen">
-						<img src="{{ insertImage('images/leftScreen.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
+					<div id="sideScreen1">
+						<img src="{{ insertImage('images/sideScreen1.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
 					</div>
 					<div id="touchButton1">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '1')" onclick="changeControl('Button 1', 'touchButton', '1');" />
@@ -721,8 +722,8 @@
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '4')" onclick="changeControl('Button 4', 'touchButton', '4');" />
 						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" onclick="changeControl('Button 4', 'touchButton', '4');" />
 					</div>
-					<div id="rightScreen">
-						<img src="{{ insertImage('images/rightScreen.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
+					<div id="sideScreen2">
+						<img src="{{ insertImage('images/sideScreen2.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
 					</div>
 					<div id="touchButton5">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '5')" onclick="changeControl('Button 5', 'touchButton', '5');" />
@@ -846,8 +847,8 @@
 							<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" />
 						</a>
 					</div>
-					<div id="wheelScreen">
-						<img src="{{ insertImage('images/wheelScreen.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
+					<div id="wheelScreen1">
+						<img src="{{ insertImage('images/wheelScreen1.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 					</div>
 					<div id="jogWheelRight">
 						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
@@ -1051,7 +1052,7 @@
 							<th width="229px" id="buttonResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 90 pixels</i></th>
 							<th width="229px" id="sideResolution"><i style="color: #FFFFFF; padding-left: 14px;">60 x 270 pixels</i></th>
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
-							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 10px;">90 x 60 pixels</i></th>
+							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 60 pixels</i></th>
 							<th width="229px">
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">History</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
