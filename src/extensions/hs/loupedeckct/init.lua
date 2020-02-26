@@ -1418,11 +1418,12 @@ function mod.buttonColor(buttonID, color, callbackFn)
     )
 end
 
---- hs.loupedeckct.vibrate([callbackFn]) -> boolean
+--- hs.loupedeckct.vibrate([vibraWaveformIndex, callbackFn]) -> boolean
 --- Function
 --- Requests the Loupedeck to vibrate.
 ---
 --- Parameters:
+---  * vibraWaveformIndex - (optional) The vibra waveform index. Defaults to 25.
 ---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
@@ -1431,7 +1432,7 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.vibrate(callbackFn)
+function mod.vibrate(vibraWaveformIndex, callbackFn)
     -- Sending message (4): (4) 04-1B-6B-19
     -- Message sent (4): (4) 04-1B-6B-19
     -- Message received (4): (4) 04-1B-6B-01
@@ -1450,7 +1451,7 @@ function mod.vibrate(callbackFn)
             response.success = uint8(response.data) == 0x01
             callbackFn(response)
         end,
-        uint8(0x19)
+        uint8(vibraWaveformIndex or 0x19)
     )
 end
 

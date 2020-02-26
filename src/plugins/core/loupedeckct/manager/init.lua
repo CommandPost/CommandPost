@@ -6,17 +6,20 @@
 
 TODO LIST:
 
+    [ ] Add option to apply unique vibration setting to each button.
+    [ ] Add actions for controlling generic accessibility objects (like we do with MIDI).
+    [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
     [ ] If "Store settings on Flash Drive" is enabled, you shouldn't be able to edit
         preferences if the Flash Drive isn't connected.
-    [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running
-    [ ] Add action for enabling/disabling Loupedeck CT support
-    [ ] Add action for opening the Loupedeck official app
-    [ ] i18n everything
-    [ ] Add option to change Loupedeck CT orientation
-    [ ] Work out actions for a jog wheel using J/K/L
-    [ ] Add action to open Spotlight search window
-    [ ] Make sure Color Board works well with knobs
-    [ ] Update default layout to be more useful
+    [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running.
+    [ ] Add action for enabling/disabling Loupedeck CT support.
+    [ ] Add action for opening the Loupedeck official app.
+    [ ] i18n everything.
+    [ ] Add option to change Loupedeck CT orientation.
+    [ ] Work out actions for a jog wheel using J/K/L.
+    [ ] Add action to open Spotlight search window.
+    [ ] Make sure Color Board works well with knobs.
+    [ ] Update default layout to be more useful.
 
 --]]
 
