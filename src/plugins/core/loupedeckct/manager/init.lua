@@ -6,6 +6,7 @@
 
 TODO LIST:
 
+    [ ] Add visual references for LED colours in Preferences panel.
     [ ] Add option to apply unique vibration setting to each button.
     [ ] Add actions for controlling generic accessibility objects (like we do with MIDI).
     [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
