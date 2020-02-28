@@ -73,7 +73,7 @@ end
 local function updateInfo()
     local script = "clearLocations();\n"
 
-    local activeLibraryPaths = fcp.activeLibraryPaths()
+    local activeLibraryPaths = fcp:activeLibraryPaths()
     if #activeLibraryPaths >= 1 then
         for i=1, #activeLibraryPaths do
             local path = activeLibraryPaths[i]
@@ -132,7 +132,7 @@ local lastActiveLibraryPaths
 --  * None
 local function deferredUpdateInfo()
     doAfter(0, function()
-        local activeLibraryPaths = fcp.activeLibraryPaths()
+        local activeLibraryPaths = fcp:activeLibraryPaths()
         if not tableMatch(lastActiveLibraryPaths, activeLibraryPaths) then
             lastActiveLibraryPaths = activeLibraryPaths
             updater()
