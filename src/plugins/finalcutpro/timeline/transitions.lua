@@ -81,6 +81,11 @@ function mod.apply(action)
     end
 
     --------------------------------------------------------------------------------
+    -- Get original search value:
+    --------------------------------------------------------------------------------
+    local originalSearch = transitions:search():value()
+
+    --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
     transitions:search():clear()
@@ -117,6 +122,7 @@ function mod.apply(action)
 
     -- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
     doAfter(0.1, function()
+        transitions:search():setValue(originalSearch)
         transitions:loadLayout(transitionsLayout)
         if effectsLayout then effects:loadLayout(effectsLayout) end
         if not transitionsShowing then transitions:hide() end
