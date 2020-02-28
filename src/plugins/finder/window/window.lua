@@ -6,11 +6,10 @@
 
 local require = require
 
-local grid                  = require("hs.grid")
-local hints                 = require("hs.hints")
-local mouse                 = require("hs.mouse")
-local window                = require("hs.window")
-
+local grid                  = require "hs.grid"
+local hints                 = require "hs.hints"
+local mouse                 = require "hs.mouse"
+local window                = require "hs.window"
 
 local mod = {}
 

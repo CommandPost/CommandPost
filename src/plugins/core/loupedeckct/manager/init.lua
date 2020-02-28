@@ -6,10 +6,12 @@
 
 TODO LIST:
 
+    [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
+    [ ] Custom applications should have a default layout where buttons 1-8 are
+        for banks
     [ ] Add visual references for LED colours in Preferences panel.
     [ ] Add option to apply unique vibration setting to each button.
     [ ] Add actions for controlling generic accessibility objects (like we do with MIDI).
-    [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
     [ ] If "Store settings on Flash Drive" is enabled, you shouldn't be able to edit
         preferences if the Flash Drive isn't connected.
     [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running.
@@ -689,6 +691,8 @@ local function callback(data)
                     --------------------------------------------------------------------------------
                     if data.multitouch == 0 and thisSideScreen.doubleTapAction then
                         if leftScreenDoubleTapTriggered and tookFingerOffLeftScreen then
+                            leftScreenDoubleTapTriggered = false
+                            tookFingerOffLeftScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
                             leftScreenDoubleTapTriggered = true
@@ -734,6 +738,8 @@ local function callback(data)
                     --------------------------------------------------------------------------------
                     if data.multitouch == 0 and thisSideScreen.doubleTapAction then
                         if rightScreenDoubleTapTriggered and tookFingerOffRightScreen then
+                            rightScreenDoubleTapTriggered = false
+                            tookFingerOffRightScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
                             rightScreenDoubleTapTriggered = true
@@ -787,6 +793,8 @@ local function callback(data)
                 --------------------------------------------------------------------------------
                 if not data.multitouch and wheelScreen.doubleTapAction then
                     if wheelScreenDoubleTapTriggered and tookFingerOffWheelScreen then
+                        wheelScreenDoubleTapTriggered = false
+                        tookFingerOffWheelScreen = false
                         executeAction(wheelScreen.doubleTapAction)
                     else
                         wheelScreenDoubleTapTriggered = true
