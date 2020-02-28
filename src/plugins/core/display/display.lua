@@ -4,7 +4,7 @@
 
 local require                   = require
 
-local log                       = require "hs.logger".new("display")
+--local log                       = require "hs.logger".new("display")
 
 local brightness                = require "hs.brightness"
 
@@ -21,8 +21,6 @@ local plugin = {
         ["core.commands.global"] = "global",
     }
 }
-
-local lastBrightnessValue
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------

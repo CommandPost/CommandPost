@@ -737,7 +737,6 @@ local function loupedeckCTPanelCallback(id, params)
             local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
             local colorValue = selectedID and selectedID.led or "FFFFFF"
             local encodedIcon = selectedID and selectedID.encodedIcon or ""
-            local encodedKnobIcon = selectedID and selectedID.encodedKnobIcon or ""
             local iconLabel = selectedID and selectedID.iconLabel or ""
 
             local updateIconsScript = ""
@@ -884,8 +883,8 @@ local function loupedeckCTPanelCallback(id, params)
                     }
                     local newImage = a:imageFromCanvas()
 
-                    local encodedIcon = newImage:encodeAsURLString(true)
-                    if encodedIcon then
+                    local newEncodedIcon = newImage:encodeAsURLString(true)
+                    if newEncodedIcon then
                         --------------------------------------------------------------------------------
                         -- Save Icon to file:
                         --------------------------------------------------------------------------------
@@ -893,9 +892,9 @@ local function loupedeckCTPanelCallback(id, params)
                         local bank = params["bank"]
                         local bid = params["id"]
 
-                        setItem(app, bank, controlType, bid, "encodedIcon", encodedIcon)
+                        setItem(app, bank, controlType, bid, "encodedIcon", newEncodedIcon)
 
-                        local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. encodedIcon .. [[")]]
+                        local changeImageScript = [[changeImage("]] .. controlType .. bid .. [[", "]] .. newEncodedIcon .. [[")]]
 
                         --------------------------------------------------------------------------------
                         -- Process knobs:
@@ -907,7 +906,7 @@ local function loupedeckCTPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Update preferences UI:
                             --------------------------------------------------------------------------------
-                            items = mod.items() -- Refresh items
+                            local items = mod.items()
 
                             local currentApp = items[app]
                             local currentBank = currentApp and currentApp[bank]
@@ -936,7 +935,7 @@ local function loupedeckCTPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Update preference UI via JavaScript:
                         --------------------------------------------------------------------------------
-                        injectScript([[setIcon("]] .. encodedIcon .. [[")]] .. "\n" .. changeImageScript)
+                        injectScript([[setIcon("]] .. newEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
 
                         --------------------------------------------------------------------------------
                         -- Write to history:
@@ -949,7 +948,7 @@ local function loupedeckCTPanelCallback(id, params)
 
                         local filename = getFilenameFromPath(path, true)
 
-                        table.insert(iconHistory, {filename, encodedIcon})
+                        table.insert(iconHistory, {filename, newEncodedIcon})
 
                         mod.iconHistory(iconHistory)
 
@@ -1316,9 +1315,6 @@ local function loupedeckCTPanelCallback(id, params)
                 items = mod.items() -- Refresh items
 
                 local changeImageScript
-
-                local currentApp = items[app]
-                local currentBank = currentApp and currentApp[bank]
                 local currentSideScreen = currentBank and currentBank.sideScreen
 
                 local sideScreenOne = currentSideScreen["1"]
