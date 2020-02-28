@@ -262,7 +262,7 @@ function ControlBar.lazy.prop:isPlaying()
 
                     local elementSnap = c:imageFromCanvas()
                     c:delete()
-                    c = nil
+                    c = nil -- luacheck: ignore
 
                     if elementSnap then
                         elementSnap:size({h=60,w=60})
