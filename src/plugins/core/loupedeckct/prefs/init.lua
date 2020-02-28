@@ -925,9 +925,9 @@ local function loupedeckCTPanelCallback(id, params)
                             encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
                             encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
                             if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
+                                changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
                             elseif encodedIcon and encodedIcon ~= "" then
-                                changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
+                                changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
                             end
 
                         end
@@ -1131,22 +1131,22 @@ local function loupedeckCTPanelCallback(id, params)
                                     local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
                                     local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
                                     if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
                                     elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
                                     else
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] -- luacheck: ignore
+                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
                                     end
 
                                     local sideScreenTwo = currentSideScreen["2"]
                                     encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
                                     encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
                                     if encodedKnobIcon and encodedKnobIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                                        changeImageScript = changeImageScript .. "\n" ..  [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
                                     elseif encodedIcon and encodedIcon ~= "" then
-                                        changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
                                     else
-                                        changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen2.png") .. [[")]] -- luacheck: ignore
+                                        changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
                                     end
                                 end
 
@@ -1214,22 +1214,22 @@ local function loupedeckCTPanelCallback(id, params)
                 local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
                 local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
                 if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
                 elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
                 else
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
                 end
 
                 local sideScreenTwo = currentSideScreen["2"]
                 encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
                 encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
                 if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
                 elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
                 else
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen1.png") .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
                 end
             end
 
@@ -1310,6 +1310,13 @@ local function loupedeckCTPanelCallback(id, params)
                 generateKnobImages(app, bank, bid)
 
                 --------------------------------------------------------------------------------
+                -- Refresh Items:
+                --------------------------------------------------------------------------------
+                items = mod.items()
+                currentApp = items[app]
+                currentBank = currentApp and currentApp[bank]
+
+                --------------------------------------------------------------------------------
                 -- Update preferences UI:
                 --------------------------------------------------------------------------------
                 local changeImageScript
@@ -1319,22 +1326,22 @@ local function loupedeckCTPanelCallback(id, params)
                 local encodedKnobIcon = sideScreenOne and sideScreenOne.encodedKnobIcon
                 local encodedIcon = sideScreenOne and sideScreenOne.encodedIcon
                 if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedKnobIcon .. [[")]]
                 elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. encodedIcon .. [[")]]
                 else
-                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] -- luacheck: ignore
+                    changeImageScript = [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]]
                 end
 
                 local sideScreenTwo = currentSideScreen["2"]
                 encodedKnobIcon = sideScreenTwo and sideScreenTwo.encodedKnobIcon
                 encodedIcon = sideScreenTwo and sideScreenTwo.encodedIcon
                 if encodedKnobIcon and encodedKnobIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedKnobIcon .. [[")]]
                 elseif encodedIcon and encodedIcon ~= "" then
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. encodedIcon .. [[")]]
                 else
-                    changeImageScript = [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] -- luacheck: ignore
+                    changeImageScript = changeImageScript .. "\n" .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]]
                 end
                 if changeImageScript then
                     injectScript(changeImageScript)
