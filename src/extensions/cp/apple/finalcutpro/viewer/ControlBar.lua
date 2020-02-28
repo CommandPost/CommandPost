@@ -229,18 +229,20 @@ function ControlBar.lazy.prop:isPlaying()
                 local window = element:attributeValue("AXWindow")
                 if window then
                     local hsWindow = window:asHSWindow()
-                    local windowSnap = hsWindow:snapshot()
+                    local windowSnap = hsWindow and hsWindow:snapshot()
 
                     if not windowSnap then
                         log.ef("[cp.apple.finalcutpro.main.ControlBar.isPlaying] Snapshot could not be captured, so aborting.")
                         return
                     end
 
-                    local windowFrame = window:frame()
-                    local shotSize = windowSnap:size()
+                    local windowFrame = window and window:frame()
+                    local shotSize = windowSnap and windowSnap:size()
 
-                    local ratio = shotSize.h/windowFrame.h
-                    local elementFrame = element:frame()
+                    local ratio = shotSize and windowFrame and shotSize.h/windowFrame.h
+                    local elementFrame = element and element:frame()
+
+                    if not elementFrame then return end
 
                     local imageFrame = {
                         x = (windowFrame.x-elementFrame.x)*ratio,
@@ -248,10 +250,6 @@ function ControlBar.lazy.prop:isPlaying()
                         w = shotSize.w,
                         h = shotSize.h,
                     }
-
-                    --------------------------------------------------------------------------------
-                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                    --------------------------------------------------------------------------------
 
                     local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
                     c[1] = {
@@ -264,6 +262,7 @@ function ControlBar.lazy.prop:isPlaying()
 
                     local elementSnap = c:imageFromCanvas()
                     c:delete()
+                    c = nil
 
                     if elementSnap then
                         elementSnap:size({h=60,w=60})

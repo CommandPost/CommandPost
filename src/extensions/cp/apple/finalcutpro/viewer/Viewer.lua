@@ -2,37 +2,36 @@
 ---
 --- Viewer Module.
 
-local require = require
+local require                           = require
 
-local log                               = require("hs.logger").new("viewer")
+local log                               = require "hs.logger".new "viewer"
 
-local geometry                          = require("hs.geometry")
-local timer                             = require("hs.timer")
+local eventtap                          = require "hs.eventtap"
+local geometry                          = require "hs.geometry"
+local timer                             = require "hs.timer"
 
-local axutils                           = require("cp.ui.axutils")
-local Group                             = require("cp.ui.Group")
-local SplitGroup                        = require("cp.ui.SplitGroup")
-local deferred                          = require("cp.deferred")
-local notifier                          = require("cp.ui.notifier")
-local prop                              = require("cp.prop")
+local axutils                           = require "cp.ui.axutils"
+local deferred                          = require "cp.deferred"
+local go                                = require "cp.rx.go"
+local Group                             = require "cp.ui.Group"
+local notifier                          = require "cp.ui.notifier"
+local prop                              = require "cp.prop"
+local SplitGroup                        = require "cp.ui.SplitGroup"
 
-local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
-
-local ControlBar                        = require("cp.apple.finalcutpro.viewer.ControlBar")
-local InfoBar                           = require("cp.apple.finalcutpro.viewer.InfoBar")
-
-local go                                = require("cp.rx.go")
-local Do, If                            = go.Do, go.If
+local ControlBar                        = require "cp.apple.finalcutpro.viewer.ControlBar"
+local InfoBar                           = require "cp.apple.finalcutpro.viewer.InfoBar"
+local PrimaryWindow                     = require "cp.apple.finalcutpro.main.PrimaryWindow"
+local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
 
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local childWithRole                     = axutils.childWithRole
-local topToBottom                       = axutils.compareTopToBottom
 local delayedTimer                      = timer.delayed
-
+local Do                                = go.Do
+local If                                = go.If
+local topToBottom                       = axutils.compareTopToBottom
 
 local Viewer = Group:subclass("cp.apple.finalcutpro.viewer.Viewer")
 
@@ -190,8 +189,28 @@ function Viewer:initialize(app, eventViewer)
     app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXSelectedChildrenChanged"}, function()
         frameUpdater:run()
     end)
-end
 
+    -----------------------------------------------------------------------
+    -- Watch for spacebar presses to speed up isPlaying updates:
+    -----------------------------------------------------------------------
+    self._keywatcher = eventtap.new({eventtap.event.types.keyDown}, function(event)
+        if event:getKeyCode() == 49 then
+            self.isPlaying:update()
+        end
+    end)
+
+    -----------------------------------------------------------------------
+    -- Only check for spacebar presses when FCPX is frontmost:
+    -----------------------------------------------------------------------
+    self:app().isFrontmost:watch(function(frontmost)
+        if frontmost then
+            self._keywatcher:start()
+        else
+            self._keywatcher:stop()
+        end
+    end)
+
+end
 
 --- cp.apple.finalcutpro.viewer.Viewer:app() -> application
 --- Method
