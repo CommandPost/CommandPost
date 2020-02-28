@@ -6,6 +6,9 @@
 
 TODO LIST:
 
+    [ ] Add more extensible system to adding applications
+    [ ] Add Search Console section icon for keyboard shortcuts & banks
+    [ ] Allow you to add custom Search Console icons for user defined sections
     [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
     [ ] Custom applications should have a default layout where buttons 1-8 are
         for banks
