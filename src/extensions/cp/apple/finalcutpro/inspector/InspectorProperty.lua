@@ -149,11 +149,13 @@ function mod.section(labelKey, index)
                 local rowUI = row:UI()
                 if propsUI and rowUI then
                     local frame = rowUI:frame()
-                    local rowPos = frame.y + frame.h
-                    return childrenMatching(propsUI, function(child)
-                        local childFrame = child:attributeValue("AXFrame")
-                        return childFrame ~= nil and childFrame.y >= rowPos - PropertyRow.intersectBuffer
-                    end)
+                    if frame then
+                        local rowPos = frame.y + frame.h
+                        return childrenMatching(propsUI, function(child)
+                            local childFrame = child:attributeValue("AXFrame")
+                            return childFrame ~= nil and childFrame.y >= rowPos - PropertyRow.intersectBuffer
+                        end)
+                    end
                 end
                 return nil
             end))
