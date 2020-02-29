@@ -166,6 +166,16 @@ local leftScreenDoubleTapTriggered = false
 -- Has the wheel screen been tapped once?
 local rightScreenDoubleTapTriggered = false
 
+local tookFingerOffLeftScreen = false
+local tookFingerOffRightScreen = false
+local tookFingerOffWheelScreen = false
+
+local lastWheelDoubleTapX = nil
+local lastWheelDoubleTapY = nil
+
+local wheelDoubleTapXTolerance = 12
+local wheelDoubleTapYTolerance = 7
+
 --- plugins.core.loupedeckct.manager.numberOfBanks -> number
 --- Field
 --- Number of banks
@@ -551,12 +561,11 @@ local function clearCache()
     cachedLeftSideScreen = ""
     cachedRightSideScreen = ""
 
+    lastWheelDoubleTapX = nil
+    lastWheelDoubleTapY = nil
+
     hasLoaded = false
 end
-
-local tookFingerOffLeftScreen = false
-local tookFingerOffRightScreen = false
-local tookFingerOffWheelScreen = false
 
 -- callback(data) -> none
 -- Function
@@ -574,11 +583,11 @@ local function callback(data)
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_open" then
-            clearCache()
-            mod.refresh()
-            hasLoaded = true
-            mod.vibrations:update()
-            mod.enableFlashDrive:update()
+        clearCache()
+        mod.refresh()
+        hasLoaded = true
+        mod.vibrations:update()
+        mod.enableFlashDrive:update()
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
@@ -698,6 +707,8 @@ local function callback(data)
                             tookFingerOffLeftScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
+                            lastWheelX = data.x
+                            lastWheelY = data.y
                             leftScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
                                 leftScreenDoubleTapTriggered = false
@@ -788,6 +799,10 @@ local function callback(data)
                         executeAction(wheelScreen.downAction)
                     end
                 end
+
+                --------------------------------------------------------------------------------
+                -- CACHE DATA:
+                --------------------------------------------------------------------------------
                 cacheWheelXAxis = data.x
                 cacheWheelYAxis = data.y
 
@@ -795,15 +810,26 @@ local function callback(data)
                 -- DOUBLE TAP:
                 --------------------------------------------------------------------------------
                 if not data.multitouch and wheelScreen.doubleTapAction then
-                    if wheelScreenDoubleTapTriggered and tookFingerOffWheelScreen then
+
+                    local withinRange = lastWheelDoubleTapX and lastWheelDoubleTapY and
+                                        data.x >= (lastWheelDoubleTapX - wheelDoubleTapXTolerance) and data.x <= (lastWheelDoubleTapX + wheelDoubleTapXTolerance) and
+                                        data.y >= (lastWheelDoubleTapY - wheelDoubleTapYTolerance) and data.y <= (lastWheelDoubleTapY + wheelDoubleTapYTolerance)
+
+                    if wheelScreenDoubleTapTriggered and tookFingerOffWheelScreen and withinRange then
                         wheelScreenDoubleTapTriggered = false
                         tookFingerOffWheelScreen = false
+                        lastWheelDoubleTapX = nil
+                        lastWheelDoubleTapY = nil
                         executeAction(wheelScreen.doubleTapAction)
                     else
                         wheelScreenDoubleTapTriggered = true
+                        lastWheelDoubleTapX = nil
+                        lastWheelDoubleTapY = nil
                         doAfter(doubleTapTimeout, function()
                             wheelScreenDoubleTapTriggered = false
                             tookFingerOffWheelScreen = false
+                            lastWheelDoubleTapX = nil
+                            lastWheelDoubleTapY = nil
                         end)
                     end
                 end
@@ -818,6 +844,10 @@ local function callback(data)
         elseif data.id == ct.event.WHEEL_RELEASED then
             cacheWheelYAxis = nil
             cacheWheelXAxis = nil
+
+            lastWheelDoubleTapX = data.x
+            lastWheelDoubleTapY = data.y
+
             tookFingerOffWheelScreen = true
         end
 
