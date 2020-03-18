@@ -739,6 +739,8 @@
         "finalcutpro_fullscreen_shortcuts_label": "Fullscreen Shortcuts",
         "finalcutpro_fullscreen_stopped_label": "Play Full Screen & Stop",
         "finalCutPro_group": "Final Cut Pro",
+        "resolve_group": "DaVinci Resolve",
+        "daVinciResolve": "DaVinci Resolve",
         "finalcutpro_hud_label": "HUD",
         "finalcutpro_hud_manager_label": "HUD: Manager",
         "finalcutpro_hud_panels_fcpxml_label": "HUD: FCPXML Panel",
@@ -1549,6 +1551,7 @@
             "other": "Shift Scale Up by %{amount} Pixels"
         },
         "shortcut_group_fcpx": "Final Cut Pro",
+        "shortcut_group_resolve": "DaVinci Resolve",
         "shortcut_group_global": "All Applications",
         "shortcutAlreadyInUse": "This shortcut is already in use.",
         "shortcutAlreadyInUseByMacOS": "This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
