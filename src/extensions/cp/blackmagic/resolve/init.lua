@@ -4,23 +4,27 @@
 
 local require           = require
 
-local app               = require("cp.blackmagic.resolve.app")
-local prop			    = require("cp.prop")
-local lazy              = require("cp.lazy")
+local app               = require "cp.blackmagic.resolve.app"
+local prop			    = require "cp.prop"
+local lazy              = require "cp.lazy"
+local delegator         = require "cp.delegator"
 
-local PrimaryWindow     = require("cp.blackmagic.resolve.main.PrimaryWindow")
+local PrimaryWindow     = require "cp.blackmagic.resolve.main.PrimaryWindow"
 
-local Color			    = require("cp.blackmagic.resolve.color.Color")
+local Color			    = require "cp.blackmagic.resolve.color.Color"
 
-local class             = require("middleclass")
-local v                 = require("semver")
+local class             = require "middleclass"
+local v                 = require "semver"
 
-local resolve = class("resolve"):include(lazy)
+local resolve = class("cp.blackmagic.resolve")
+    :include(lazy)
+    :include(delegator)
+    :delegateTo("app")
 
 --- cp.blackmagic.resolve.EARLIEST_SUPPORTED_VERSION <semver>
 --- Constant
 --- The earliest version this API supports.
-resolve.EARLIEST_SUPPORTED_VERSION = v("15.3.1")
+resolve.EARLIEST_SUPPORTED_VERSION = v("16.2")
 
 function resolve:initialize()
 --- cp.blackmagic.resolve.app <cp.app>
@@ -34,7 +38,6 @@ function resolve:initialize()
     self.preferences = app.preferences
 
     app:update()
-
 end
 
 --------------------------------------------------------------------------------

@@ -4,6 +4,8 @@
 
 local require       = require
 
+local application   = require("hs.application")
+
 local commands      = require("cp.commands")
 local config        = require "cp.config"
 local i18n          = require("cp.i18n")
