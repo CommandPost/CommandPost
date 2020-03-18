@@ -4,17 +4,13 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "Color"
+--local log                   = require "hs.logger".new "Color"
 
 local axutils               = require "cp.ui.axutils"
 local Element               = require "cp.ui.Element"
 local CheckBox              = require "cp.ui.CheckBox"
-local prop                  = require "cp.prop"
 
-local Tracker			    = require("cp.blackmagic.resolve.color.Tracker")
-
-local Do                    = require "cp.rx.go.Do"
-local If                    = require "cp.rx.go.If"
+local Tracker               = require("cp.blackmagic.resolve.color.Tracker")
 
 local childrenWithRole      = axutils.childrenWithRole
 local childWithDescription  = axutils.childWithDescription

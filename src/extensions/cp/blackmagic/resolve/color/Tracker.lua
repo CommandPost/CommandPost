@@ -4,17 +4,13 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "Tracker"
+--local log                   = require "hs.logger".new "Tracker"
 
 local axutils               = require "cp.ui.axutils"
 local CheckBox              = require "cp.ui.CheckBox"
 local Element               = require "cp.ui.Element"
 local Group                 = require "cp.ui.Group"
 local MenuButton            = require "cp.ui.MenuButton"
-local prop                  = require "cp.prop"
-
-local Do                    = require "cp.rx.go.Do"
-local If                    = require "cp.rx.go.If"
 
 local childrenWithRole      = axutils.childrenWithRole
 local childWithDescription  = axutils.childWithDescription

@@ -5,7 +5,6 @@
 local require           = require
 
 local app               = require "cp.blackmagic.resolve.app"
-local prop			    = require "cp.prop"
 local lazy              = require "cp.lazy"
 local delegator         = require "cp.delegator"
 
