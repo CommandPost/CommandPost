@@ -4,11 +4,11 @@
 
 local require               = require
 
- local log					= require "hs.logger".new "primaryWindow"
+--local log                 = require "hs.logger".new "primaryWindow"
 
-local axutils				= require "cp.ui.axutils"
+local axutils               = require "cp.ui.axutils"
 
-local Window				= require "cp.ui.Window"
+local Window                = require "cp.ui.Window"
 
 local Do                    = require "cp.rx.go.Do"
 local If                    = require "cp.rx.go.If"
