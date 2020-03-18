@@ -6,7 +6,6 @@
 local log               = require "hs.logger" .new "ViewerCB"
 
 local canvas            = require "hs.canvas"
-local eventtap          = require "hs.eventtap"
 local geometry          = require "hs.geometry"
 local pasteboard        = require "hs.pasteboard"
 
@@ -168,7 +167,7 @@ function ControlBar.lazy.prop:timecode()
                         -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
                         -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
                         --------------------------------------------------------------------------------
-                        eventtap.keyStroke({"cmd"}, "v")
+                        self:app():keyStroke({"cmd"}, "v")
 
                         --------------------------------------------------------------------------------
                         -- Wait until we see the timecode in the viewer:
@@ -186,7 +185,7 @@ function ControlBar.lazy.prop:timecode()
                             log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.viewer.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
                             return
                         else
-                            eventtap.keyStroke({}, 'return')
+                            self:app():keyStroke({}, 'return')
                         end
                     end
 
@@ -230,12 +229,20 @@ function ControlBar.lazy.prop:isPlaying()
                 local window = element:attributeValue("AXWindow")
                 if window then
                     local hsWindow = window:asHSWindow()
-                    local windowSnap = hsWindow:snapshot()
-                    local windowFrame = window:frame()
-                    local shotSize = windowSnap:size()
+                    local windowSnap = hsWindow and hsWindow:snapshot()
 
-                    local ratio = shotSize.h/windowFrame.h
-                    local elementFrame = element:frame()
+                    if not windowSnap then
+                        log.ef("[cp.apple.finalcutpro.main.ControlBar.isPlaying] Snapshot could not be captured, so aborting.")
+                        return
+                    end
+
+                    local windowFrame = window and window:frame()
+                    local shotSize = windowSnap and windowSnap:size()
+
+                    local ratio = shotSize and windowFrame and shotSize.h/windowFrame.h
+                    local elementFrame = element and element:frame()
+
+                    if not elementFrame then return end
 
                     local imageFrame = {
                         x = (windowFrame.x-elementFrame.x)*ratio,
@@ -243,10 +250,6 @@ function ControlBar.lazy.prop:isPlaying()
                         w = shotSize.w,
                         h = shotSize.h,
                     }
-
-                    --------------------------------------------------------------------------------
-                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
-                    --------------------------------------------------------------------------------
 
                     local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
                     c[1] = {
@@ -259,6 +262,7 @@ function ControlBar.lazy.prop:isPlaying()
 
                     local elementSnap = c:imageFromCanvas()
                     c:delete()
+                    c = nil -- luacheck: ignore
 
                     if elementSnap then
                         elementSnap:size({h=60,w=60})

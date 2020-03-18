@@ -139,8 +139,8 @@ local function navigationCallback(action, webView)
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
             document.getElementById("anonymous_element_3").value = `]] .. defaultFeedback .. [[`;
             //document.getElementById("subject").value = "]] .. mod.feedback .. [[";
-            document.getElementById("Motion_usage_purpose").value = "]] .. mod.motionUsage .. [[";
-            document.getElementById("Motion_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
+            document.getElementById("motion_usage_purpose").value = "]] .. mod.motionUsage .. [[";
+            document.getElementById("motion_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
 
             /* CUSTOMER NAME: */
@@ -185,8 +185,8 @@ local function navigationCallback(action, webView)
                 }
             });
 
-            /* FINAL CUT PRO USAGE: */
-            var motionUsage = document.getElementById("Motion_usage_purpose");
+            /* MOTION USAGE: */
+            var motionUsage = document.getElementById("motion_usage_purpose");
             motionUsage.addEventListener('change', function()
             {
                 var result = {};
@@ -200,7 +200,7 @@ local function navigationCallback(action, webView)
             });
 
             /* DOCUMENTATION USAGE: */
-            var documentationUsage = document.getElementById("Motion_documentation_usage_frequency");
+            var documentationUsage = document.getElementById("motion_documentation_usage_frequency");
             documentationUsage.addEventListener('change', function()
             {
                 var result = {};

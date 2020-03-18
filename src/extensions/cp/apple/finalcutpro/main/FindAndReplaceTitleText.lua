@@ -15,12 +15,18 @@ local TextField	        = require "cp.ui.TextField"
 
 local strings           = require "cp.apple.finalcutpro.strings"
 
-local If, Given, Do     = go.If, go.Given, go.Do
+local Do                = go.Do
+local Given             = go.Given
+local If                = go.If
+
 local ninjaMouseClick	= tools.ninjaMouseClick
 
-local childFromTop, childFromLeft, childFromRight   = axutils.childFromTop, axutils.childFromLeft, axutils.childFromRight
-local childrenBelow	                        = axutils.childrenBelow
-local childMatching, cache	                = axutils.childMatching, axutils.cache
+local cache             = axutils.cache
+local childFromLeft     = axutils.childFromLeft
+local childFromRight    = axutils.childFromRight
+local childFromTop      = axutils.childFromTop
+local childMatching	    = axutils.childMatching
+local childrenBelow	    = axutils.childrenBelow
 
 local FindAndReplace = Dialog:subclass("cp.apple.finalcutpro.main.FindAndReplaceTitleText")
 

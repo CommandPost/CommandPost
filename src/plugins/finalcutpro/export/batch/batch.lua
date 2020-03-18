@@ -104,6 +104,11 @@ mod.ignoreInvalidCaptions = config.prop("batchExportIgnoreInvalidCaptions", fals
 --- Defines whether or not a Batch Export should Ignore Proxies.
 mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
 
+--- plugins.finalcutpro.export.batch.ignoreBackgroundTasks <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Background Tasks.
+mod.ignoreBackgroundTasks = config.prop("batchExportIgnoreBackgroundTasks", false)
+
 --- plugins.finalcutpro.export.batch.batchExportTimelineClips(clips) -> boolean
 --- Function
 --- Batch Export Timeline Clips
@@ -150,7 +155,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
     end
     local sortFn = function(t,a,b)
         if t and t[a] and t[b] and t[a].attributeValue and t[b].attributeValue then
-            return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription")
+            return (t[a]:attributeValue("AXValueDescription") or "") < (t[b]:attributeValue("AXValueDescription") or "")
         end
     end
     local playhead = fcp:timeline():playhead()
@@ -183,7 +188,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             timelineContents:selectClip(clip)
-            local selectedClips = timelineContents:selectedClipsUI()
+            local selectedClips = timelineContents:selectedClipsUI(true)
             return selectedClips and #selectedClips == 1 and selectedClips[1] == clip
         end, 5, 0.1) then
             displayErrorMessage("Failed to select clip." .. errorFunction)
@@ -288,6 +293,11 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             end
 
             --------------------------------------------------------------------------------
+            -- Get the file extension for later:
+            --------------------------------------------------------------------------------
+            local fileExtension = exportDialog:fileExtension():value()
+
+            --------------------------------------------------------------------------------
             -- Press 'Next':
             --------------------------------------------------------------------------------
             exportDialog:pressNext()
@@ -332,11 +342,36 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                     local useCustomFilename = mod.useCustomFilename()
                     if useCustomFilename and customFilename then
                         newFilename = customFilename
+                        --------------------------------------------------------------------------------
+                        -- Process variables:
+                        --------------------------------------------------------------------------------
+                        newFilename = string.gsub(newFilename, "{original}", clipName)
+                        newFilename = string.gsub(newFilename, "{yyyy}", os.date("%Y"))
+                        newFilename = string.gsub(newFilename, "{yy}", os.date("%y"))
+                        newFilename = string.gsub(newFilename, "{mm}", os.date("%m"))
+                        newFilename = string.gsub(newFilename, "{dd}", os.date("%d"))
+                        newFilename = string.gsub(newFilename, "{hh}", os.date("%H"))
+                        newFilename = string.gsub(newFilename, "{mm}", os.date("%M"))
+                        newFilename = string.gsub(newFilename, "{ss}", os.date("%S"))
                     end
 
+                    --------------------------------------------------------------------------------
+                    -- Increment filename is filename already exists in this batch:
+                    --------------------------------------------------------------------------------
                     while fnutils.contains(mod._existingClipNames, newFilename) do
                         newFilename = incrementFilename(newFilename)
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- Increment filename is filename already exists in the output directory:
+                    --------------------------------------------------------------------------------
+                    while tools.doesFileExist(exportPath .. "/" .. newFilename .. fileExtension) do
+                        newFilename = incrementFilename(newFilename)
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Update the filename and save it for comparison of next clip:
+                    --------------------------------------------------------------------------------
                     if filename ~= newFilename then
                         saveSheet:filename():setValue(newFilename)
                     end
@@ -370,6 +405,41 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
 
                     saveSheet:filename():setValue(newFilename)
                     saveSheet:pressSave()
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Give Final Cut Pro a chance to show the "Preparing" modal dialog:
+            --
+            -- NOTE: I tried to avoid doing this, but it seems to be the only way to
+            --       ensure the "Preparing" modal dialog actually appears. If I try and
+            --       use a just.doUntil(), it seems to block Final Cut Pro from actually
+            --       opening the "Preparing" modal dialog.
+            --------------------------------------------------------------------------------
+            wait(4)
+
+            --------------------------------------------------------------------------------
+            -- Wait until the "Preparing" modal dialog closes or the
+            -- Background Tasks Dialog opens:
+            --------------------------------------------------------------------------------
+            local backgroundTasksDialog = fcp:backgroundTasksDialog()
+            if fcp:isModalDialogOpen() then
+                doUntil(function()
+                    return backgroundTasksDialog:isShowing() or fcp:isModalDialogOpen() == false
+                end, 15)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Check for Background Tasks warning:
+            --------------------------------------------------------------------------------
+            local ignoreBackgroundTasks = mod.ignoreBackgroundTasks()
+            if backgroundTasksDialog:isShowing() then
+                if ignoreBackgroundTasks then
+                    backgroundTasksDialog:continue():press()
+                else
+                    backgroundTasksDialog:cancel():press()
+                    displayMessage(i18n("batchExportBackgroundTasksDetected"))
+                    return false
                 end
             end
         end
@@ -459,7 +529,7 @@ end
 ---  * None
 function mod.changeCustomFilename()
     Do(function()
-        local result = mod.customFilename(displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+        local result = mod.customFilename(displayTextBoxMessage(i18n("enterCustomFilename"), i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
             if value and type("value") == "string" and value ~= trim("") and safeFilename(value, value) == value then
                 return true
             else
@@ -614,7 +684,7 @@ function mod.batchExport()
     -- Check if we have any currently-selected clips:
     --------------------------------------------------------------------------------
     local timelineContents = fcp:timeline():contents()
-    local selectedClips = timelineContents:selectedClipsUI()
+    local selectedClips = timelineContents:selectedClipsUI(true)
 
     if not selectedClips or #selectedClips == 0 then
         displayMessage(i18n("noSelectedClipsInTimeline"))
@@ -739,13 +809,24 @@ function plugin.init(deps)
     -- Timeline Panel:
     --------------------------------------------------------------------------------
     mod._timelinePanel = mod._bmMan.addPanel({
-        priority    = 2,
+        priority    = 1,
         id          = "timeline",
         label       = i18n("timeline"),
         image       = imageFromPath(iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 680,
+        height      = 720,
     })
+        :addContent(nextID(), [[
+            <script>
+                document.addEventListener("keyup", function(event) {
+                    // NOTE: 13 is the "return" key on the keyboard
+                    if (event.keyCode === 13) {
+                        event.preventDefault();
+                        document.getElementById("performBatchExportButton").click();
+                    }
+                });
+            </script>
+        ]], false)
         :addHeading(nextID(), i18n("batchExportFromTimeline"))
         :addParagraph(nextID(), function()
                 local clipCount = mod._clips and #mod._clips or 0
@@ -845,10 +926,24 @@ function plugin.init(deps)
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
             {
+                label = i18n("useCustomFilename"),
+                onchange = function(_, params)
+                    mod.useCustomFilename(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the Preferences:
+                    --------------------------------------------------------------------------------
+                    mod._bmMan.refresh()
+                end,
+                checked = mod.useCustomFilename,
+            })
+        :addCheckbox(nextID(),
+            {
                 label = i18n("replaceExistingFiles"),
                 onchange = function(_, params) mod.replaceExistingFiles(params.checked) end,
                 checked = mod.replaceExistingFiles,
             })
+        :addParagraph(nextID(), html.br())
         :addCheckbox(nextID(),
             {
                 label = i18n("ignoreMissingEffects"),
@@ -869,22 +964,16 @@ function plugin.init(deps)
             })
         :addCheckbox(nextID(),
             {
-                label = i18n("useCustomFilename"),
-                onchange = function(_, params)
-                    mod.useCustomFilename(params.checked)
-
-                    --------------------------------------------------------------------------------
-                    -- Refresh the Preferences:
-                    --------------------------------------------------------------------------------
-                    mod._bmMan.refresh()
-                end,
-                checked = mod.useCustomFilename,
+                label = i18n("ignoreBackgroundTasks"),
+                onchange = function(_, params) mod.ignoreBackgroundTasks(params.checked) end,
+                checked = mod.ignoreBackgroundTasks,
             })
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
                 width = 200,
                 label = i18n("performBatchExport"),
+                id = "performBatchExportButton",
                 onclick = function() mod.performBatchExport() end,
             })
 

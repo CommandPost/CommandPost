@@ -2,23 +2,28 @@
 ---
 --- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
 
-local require = require
+local require           = require
 
-local application   = require("hs.application")
+--local log               = require "hs.logger".new "ColorFinale"
 
-local fcp           = require("cp.apple.finalcutpro")
-local prop          = require("cp.prop")
-local tools         = require("cp.tools")
+local application       = require "hs.application"
 
-local startsWith    = tools.startsWith
+local fcp               = require "cp.apple.finalcutpro"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
 
+local infoForBundleID   = application.infoForBundleID
+local startsWith        = tools.startsWith
 
-local mod ={}
+local mod = {}
 
 -- APP_BUNDLE_ID -> string
 -- Constant
 -- ColorFinale Bundle ID
-local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
+local APP_BUNDLE_IDS = {
+    "com.colorfinale.LUTManager",   -- Color Finale
+    "com.colorfinale.app",          -- Color Finale 2
+}
 
 -- WINDOW_TITLE -> string
 -- Constant
@@ -66,36 +71,32 @@ local colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
     return nil
 end)
 
-
 prop.bind(mod) {
 --- plugins.colorfinale.tangent.colorFinaleWindowUI <cp.prop: hs._asm.axuielement; read-only>
 --- Variable
 --- Returns the `axuielement` for the ColorFinale window, if present.
     colorFinaleWindowUI = colorFinaleWindowUI,
 
-
 --- plugins.colorfinale.tangent.colorFinaleVisible <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if an object is a Color Finale window.
     colorFinaleVisible = colorFinaleWindowUI:mutate(function(original)
-        local windows = original()
-        if windows then
-            for _,w in ipairs(windows) do
-                if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
-                    return true
-                end
+        local window = original()
+        return window ~= nil and startsWith(window:attributeValue("AXTitle"), WINDOW_TITLE)
+    end),
+
+--- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; cached>
+--- Variable
+--- Checks to see if ColorFinale is installed. This prop is cached to improve performance.
+    colorFinaleInstalled = prop(function()
+        for _, id in ipairs(APP_BUNDLE_IDS) do
+            local info = infoForBundleID(id)
+            if info then
+                return true
             end
         end
         return false
-    end),
-
---- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; live>
---- Variable
---- Checks to see if ColorFinale is installed.
-    colorFinaleInstalled = prop(function()
-        local info = application.infoForBundleID(APP_BUNDLE_ID)
-        return info ~= nil
-    end),
+    end):cached(),
 }
 
 prop.bind(mod) {
@@ -104,7 +105,6 @@ prop.bind(mod) {
 --- Checks to see if ColorFinale is active.
     colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible),
 }
-
 
 local plugin = {
     id = "colorfinale.tangent",

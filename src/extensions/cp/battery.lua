@@ -113,12 +113,11 @@
 
 local require = require
 
-local log           = require("hs.logger").new("cpBattery")
+local log           = require "hs.logger".new "cpBattery"
 
-local battery       = require("hs.battery")
+local battery       = require "hs.battery"
 
-local prop          = require("cp.prop")
-
+local prop          = require "cp.prop"
 
 local mod = {}
 
@@ -128,6 +127,7 @@ local mod = {}
 local EXCLUDED = {
     ["privateBluetoothBatteryInfo"] = true,
     ["getAll"] = true,
+    ["psuSerialString"] = true,
 }
 
 --- cp.battery._watcher -> hs.battery.watcher object

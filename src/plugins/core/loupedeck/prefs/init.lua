@@ -301,7 +301,7 @@ local function loupedeckPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
                     --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID)
+                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckPreferences" .. groupID)
 
                     --------------------------------------------------------------------------------
                     -- Restrict Allowed Handlers for Activator to current group (and global):
@@ -313,7 +313,7 @@ local function loupedeckPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" then
+                            if handlerTable[2] ~= "widgets" and handlerTable[2] ~= "midicontrols" and v ~= "global_menuactions" then
                                 table.insert(allowedHandlers, v)
                             end
                         end
@@ -346,7 +346,16 @@ local function loupedeckPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
-            local activatorID = groupID:sub(1, -2)
+
+            local activatorID
+            if string.sub(groupID, -2) == "fn" then
+                --------------------------------------------------------------------------------
+                -- Remove the "fn":
+                --------------------------------------------------------------------------------
+                activatorID = groupID:sub(1, -4)
+            else
+                activatorID = groupID:sub(1, -2)
+            end
 
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------

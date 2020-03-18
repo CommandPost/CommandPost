@@ -7,6 +7,8 @@ local require           = require
 local log               = require "hs.logger".new "menu"
 
 local fs                = require "hs.fs"
+local inspect           = require "hs.inspect"
+local plist             = require "hs.plist"
 
 local class             = require "middleclass"
 local lazy              = require "cp.lazy"
@@ -15,7 +17,6 @@ local archiver          = require "cp.plist.archiver"
 local axutils           = require "cp.ui.axutils"
 local go                = require "cp.rx.go"
 local localeID          = require "cp.i18n.localeID"
-local plist             = require "cp.plist"
 local rx                = require "cp.rx"
 local tools             = require "cp.tools"
 
@@ -255,7 +256,7 @@ end
 local function readStringsFile(app, locale, stringsName)
     local path = findMenuStringsPath(app, locale, stringsName)
     if path then
-        return plist.fileToTable(path)
+        return plist.read(path)
     end
 end
 
@@ -322,7 +323,7 @@ local function loadMenuTitlesFromStoryboard(app, locale, menuCache)
     end
 
     -- next, read the Storyboard's `Info.plist` to discover the menu's .nib file name.
-    local info = plist.fileToTable(storyboardPath .. "/Info.plist")
+    local info = plist.read(storyboardPath .. "/Info.plist")
     if not info then
         log.ef("Unable to find the `Info.plist` for the Storyboard at %q", storyboardPath)
         return false
@@ -847,7 +848,7 @@ function menu:findMenuUI(path, options)
     --------------------------------------------------------------------------------
     -- Step through the path:
     --------------------------------------------------------------------------------
-    for _, step in ipairs(path) do
+    for i, step in ipairs(path) do
         menuItemUI = nil
         --------------------------------------------------------------------------------
         -- Check what type of step it is:
@@ -857,7 +858,7 @@ function menu:findMenuUI(path, options)
             -- Access it by index:
             --------------------------------------------------------------------------------
             menuItemUI = menuUI[step]
-
+            menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
         elseif type(step) == "function" then
             --------------------------------------------------------------------------------
             -- Check each child against the function:
@@ -921,7 +922,11 @@ function menu:findMenuUI(path, options)
         end
 
         if menuItemUI then
+            --------------------------------------------------------------------------------
+            -- Add UI to menuPath:
+            --------------------------------------------------------------------------------
             insert(menuPath, menuItemUI)
+
             if #menuItemUI == 1 then
                 --------------------------------------------------------------------------------
                 -- Assign the contained AXMenu to the menuUI,
@@ -929,17 +934,15 @@ function menu:findMenuUI(path, options)
                 --------------------------------------------------------------------------------
                 menuUI = menuItemUI[1]
             end
-            insert(currentPath, menuItemName)
 
             --------------------------------------------------------------------------------
             -- Translate the 'menuItemName' to English for use in finders:
             --------------------------------------------------------------------------------
             local menuItemNameEn = _translateTitle(menuTitles, menuItemName, pathLocale, en)
             insert(currentPath, menuItemNameEn)
-
         else
-            --local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
-            --log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            local value = type(step) == "string" and '"' .. step .. '" (' .. pathLocale.code .. ")" or tostring(step)
+            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
             return nil
         end
     end

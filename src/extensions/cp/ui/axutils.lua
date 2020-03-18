@@ -4,14 +4,14 @@
 
 local require = require
 
---local log           = require("hs.logger").new("axutils")
+local log           = require "hs.logger".new "axutils"
 
-local canvas        = require("hs.canvas")
-local fnutils       = require("hs.fnutils")
-local geometry      = require("hs.geometry")
+local canvas        = require "hs.canvas"
+local fnutils       = require "hs.fnutils"
+local geometry      = require "hs.geometry"
 
-local is            = require("cp.is")
-local prop          = require("cp.prop")
+local is            = require "cp.is"
+local prop          = require "cp.prop"
 
 local sort          = table.sort
 
@@ -152,18 +152,18 @@ function axutils.childInColumn(element, role, startIndex, childIndex)
     return axutils.childrenInColumn(element, role, startIndex, childIndex)
 end
 
---- cp.ui.axutils.children(element[, compareFn]) -> table | nil
+--- cp.ui.axutils.children(element[, compareFn]) -> table
 --- Function
 --- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
 --- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
---- that will get called. Otherwise, the element is returned.
+--- that will get called. If no children exist, an empty table will be returned.
 ---
 --- Parameters:
 ---  * element      - The element to retrieve the children of.
 ---  * compareFn    - Optional function to use to sort the order of the returned children.
 ---
 --- Returns:
----  * the children table, or `nil`.
+---  * a table of children
 function axutils.children(element, compareFn)
     local children = element
     --------------------------------------------------------------------------------
@@ -181,10 +181,13 @@ function axutils.children(element, compareFn)
         children = element:children()
     end
 
-    if children and compareFn then
-        sort(children, compareFn)
+     if type(children) == "table" then
+        if type(compareFn) == "function" then
+            sort(children, compareFn)
+        end
+        return children
     end
-    return children
+    return {}
 end
 
 local function isBelow(a)
@@ -737,6 +740,12 @@ function axutils.snapshot(element, filename, elementFrame)
         if window then
             local hsWindow = window:asHSWindow()
             local windowSnap = hsWindow:snapshot()
+
+            if not windowSnap then
+                log.ef("[cp.ui.axutils.snapshot] Snapshot could not be captured, so aborting.")
+                return
+            end
+
             local windowFrame = window:frame()
             local shotSize = windowSnap:size()
 

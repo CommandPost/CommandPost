@@ -17,7 +17,6 @@
 --- local plistTable = plistParse(plistStr)
 --- ```
 
-
 local plp = {}
 
 function plp.nextTag(s, i)
@@ -117,7 +116,7 @@ function plp.dictionary(s, i)
 end
 
 local function plistParse(s)
-    if type(s) == "nil" then
+    if type(s) == "nil" or s == "" then
         return nil
     end
 
@@ -132,7 +131,7 @@ local function plistParse(s)
         -- BUG: Something is going funky here with complex plist's:
 
         if ni == nil then
-            print(string.format("Fatal Error: Something has gone wrong in plistParse at #%s: %s", lastIndex+1, s))
+            print(string.format("Fatal Error: Something has gone wrong in plistParse at #%s: '%s'", lastIndex+1, s))
             return nil
         else
             assert(ni)

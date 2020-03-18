@@ -47,6 +47,7 @@ local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
 local insert                    = table.insert
+local keyStroke                 = tools.keyStroke
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
 local tableFilter               = tools.tableFilter
@@ -204,6 +205,21 @@ end
 ---  * The Bundle ID.
 function app:bundleID()
     return self._bundleID
+end
+
+--- cp.app:keyStroke(modifiers, character) -> none
+--- Method
+--- Generates and emits a single keystroke event pair for the supplied keyboard
+--- modifiers and character to the application.
+---
+--- Parameters:
+---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
+---  * character - A string containing a character to be emitted
+---
+--- Returns:
+---  * None
+function app:keyStroke(modifiers, character)
+    keyStroke(modifiers, character, self._hsApplication)
 end
 
 --- cp.app.preferences <cp.app.prefs>
@@ -794,33 +810,48 @@ function app:launch(waitSeconds, path)
     return self
 end
 
---- cp.app:doLaunch() -> cp.rx.Statement <boolean>
+--- cp.app:doLaunch([waitSeconds[, path]]) -> cp.rx.Statement <boolean>
 --- Method
 --- Returns a `Statement` that can be run to launch or focus the current app.
 --- It will resolve to `true` when the app was launched.
 ---
 --- Parameters:
----  * None
+---  * waitSeconds - (optional) The number of seconds to wait for it to load. Defaults to 30 seconds.
+---  * path - (optional) The alternate path of the app to launch.
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` after the app is frontmost.
 ---
 --- Notes:
 ---  * By default the `Statement` will time out after 30 seconds, sending an error signal.
-function app.lazy.method:doLaunch()
+function app:doLaunch(waitSeconds, path)
+    waitSeconds = waitSeconds or 30
     return If(self.installed):Then(
         If(self.frontmost):Is(false):Then(
-            If(self.hsApplication):Then(function(hsApp)
-                hsApp:activate()
-                return true
-            end)
-            :Otherwise(function()
-                local ok = application.launchOrFocusByBundleID(self:bundleID())
-                if not ok then
-                    return Throw("Unable to launch %s.", self:displayName())
+            If(path ~= nil):Then(function()
+                path = path .. ".app"
+                if tools.doesDirectoryExist(path) then
+                    local ok, msg = application.open(path)
+                    if not ok then
+                        log.ef("Unable to open application at %q: msg", path, msg or "")
+                    end
+                else
+                    log.ef("Application path does not exist: %s", path)
                 end
-                return true
             end)
+            :Otherwise(
+                If(self.hsApplication):Then(function(hsApp)
+                    hsApp:activate()
+                    return true
+                end)
+                :Otherwise(function()
+                    local ok = application.launchOrFocusByBundleID(self:bundleID())
+                    if not ok then
+                        return Throw("Unable to launch %s.", self:displayName())
+                    end
+                    return true
+                end)
+            )
         )
         :Then(WaitUntil(self.frontmost))
         :Otherwise(true)
@@ -828,7 +859,7 @@ function app.lazy.method:doLaunch()
     :Otherwise(
         Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
     )
-    :TimeoutAfter(30 * 1000, format("Unable to complete launching %s within 30 seconds", self:displayName()))
+    :TimeoutAfter(waitSeconds * 1000, format("Unable to complete launching %s within %d seconds", self:displayName(), waitSeconds))
     :Label(self:bundleID()..":doLaunch")
 end
 
@@ -1236,6 +1267,7 @@ function app.static._initWatchers()
                         cpApp.hsApplication:update()
                         cpApp.running:update()
                         cpApp.frontmost:update()
+                        updateFrontmostApp(cpApp)
                     end)
                     return
                 end

@@ -7,6 +7,11 @@ return {
         local modpath, _, _, configdir, docstringspath, _, autoload_extensions = ...
         local tostring, pack, tconcat, sformat = tostring, table.pack, table.concat, string.format
         local crashLog = require("hs.crash").crashLog
+        local fnutils = require("hs.fnutils")
+        local hsmath = require("hs.math")
+
+        -- seed RNG before we do anything else
+        math.randomseed(hsmath.randomFloat()*100000000)
 
         -- setup core functions
 
@@ -59,6 +64,20 @@ return {
         ---  * If multiple files are sent, this callback will be called once for each file
         ---  * This callback will be triggered when ANY file type is dragged onto the Hammerspoon Dock Icon, however certain filetypes are also processed seperately by Hammerspoon. For example, `hs.urlevent` will be triggered when the following filetypes are dropped onto the Dock Icon: HTML Documents (.html, .htm, .shtml, .jhtml), Plain text documents (.txt, .text), Web site locations (.url), XHTML documents (.xhtml, .xht, .xhtm, .xht).
         hs.fileDroppedToDockIconCallback = nil
+
+        --- hs.relaunch()
+        --- Function
+        --- Quits and relaunches Hammerspoon.
+        ---
+        --- Parameters:
+        ---  * None
+        ---
+        --- Returns:
+        ---  * None
+        hs.relaunch = function()
+            os.execute([[ (while ps -p ]]..hs.processInfo.processID..[[ > /dev/null ; do sleep 1 ; done ; open -a "]]..hs.processInfo.bundlePath..[[" ) & ]])
+            hs._exit(true, true)
+        end
 
         --- hs.docstrings_json_file
         --- Constant
@@ -265,12 +284,39 @@ return {
         ---  * This function will load the Spoon and call its `:init()` method if it has one. If you do not wish this to happen, or wish to use a Spoon that somehow doesn't fit with the behaviours of this function, you can also simply `require('name')` to load the Spoon
         ---  * If the Spoon provides documentation, it will be loaded by made available in hs.docs
         ---  * To learn how to distribute your own code as a Spoon, see https://github.com/Hammerspoon/hammerspoon/blob/master/SPOON.md
-        hs.loadSpoon = function(name, global)
-            print("-- Loading Spoon: " .. name)
+        hs.loadSpoon = function (name, global)
+            print("-- Loading Spoon: "..name)
+
+            -- First, find the full path of the Spoon
+            local spoonFile = package.searchpath(name, package.path)
+            if spoonFile == nil then
+                hs.showError("Unable to load Spoon: "..name)
+                return
+            end
+            local spoonPath = spoonFile:match("(.*/)")
+
+            -- Check if the Spoon contains a meta.json
+            local metaData = {}
+            local mf = io.open(spoonPath.."meta.json", "r")
+            if mf then
+                local fileData = mf:read("*a")
+                mf:close()
+                local json = require("hs.json")
+                local metaDataTmp = json.decode(fileData)
+                if metaDataTmp then
+                    metaData = metaDataTmp
+                end
+            end
+
             -- Load the Spoon code
             local obj = require(name)
 
             if obj then
+            -- Inject the full path of the Spoon
+                obj.spoonPath = spoonPath
+                -- Inject the Spoon's metadata
+                obj.spoonMeta = metaData
+
                 -- If the Spoon has an init method, call it
                 if obj.init then
                     obj:init()
@@ -286,10 +332,11 @@ return {
 
                 -- If the Spoon has docs, load them
                 if obj.spoonPath then
-                    require("hs.fs")
-                    local docsPath = obj.spoonPath .. "/docs.json"
-                    if hs.fs.attributes(docsPath) then
-                        require("hs.doc").registerJSONFile(docsPath, true)
+                    local docsPath = obj.spoonPath.."/docs.json"
+                    local fs = require("hs.fs")
+                    if fs.attributes(docsPath) then
+                        local doc = require("hs.doc")
+                        doc.registerJSONFile(docsPath, true)
                     end
                 end
             end
@@ -372,65 +419,13 @@ return {
 
         --setup lazy loading
         if autoload_extensions then
-            --print("-- Lazy extension loading enabled")
-            hs._extensions = {}
+            local loader = require "hs._coresetup.loader"
 
-            -- Discover extensions in our .app bundle
-            local iter, dir_obj = require("hs.fs").dir(modpath .. "/hs")
-            local extension = iter(dir_obj)
-            while extension do
-                if (extension ~= ".") and (extension ~= "..") then
-                    hs._extensions[extension] = true
-                end
-                extension = iter(dir_obj)
-            end
-
-            -- Inject a lazy extension loader into the main HS table
-            setmetatable(
-                hs,
-                {
-                    __index = function(_, key)
-                        if hs._extensions[key] ~= nil then
-                            print("-- Loading extension: " .. key)
-                            hs[key] = require("hs." .. key)
-                            return hs[key]
-                        else
-                            return nil
-                        end
-                    end
-                }
-            )
+            loader.extend(hs, "hs", modpath .. "/hs")
 
             -- COMMANDPOST:
 
-            cp = {}
-            cp._extensions = {}
-
-            -- Discover extensions in our .app bundle
-            iter, dir_obj = require("hs.fs").dir(modpath .. "/cp")
-            extension = iter(dir_obj)
-            while extension do
-                if (extension ~= ".") and (extension ~= "..") then
-                    cp._extensions[extension] = true
-                end
-                extension = iter(dir_obj)
-            end
-
-            -- Inject a lazy extension loader into the main HS table
-            setmetatable(
-                cp,
-                {
-                    __index = function(_, key)
-                        if cp._extensions[key] ~= nil then
-                            print("-- Loading extension: " .. key)
-                            cp[key] = require("cp." .. key)
-                            return cp[key]
-                        else
-                            return nil
-                        end
-                    end
-                }
-            )
+            _G.cp = loader.new("cp", modpath .. "/cp")
         end
 
         local logger = require("hs.logger").new("LuaSkin", "info")
@@ -528,19 +523,14 @@ return {
             return res
         end
 
-        local function tablesMerge(t1, t2)
-            for i = 1, #t2 do
-                t1[#t1 + 1] = t2[i]
-            end
-            return t1
-        end
-
         local function tableKeys(t)
             local keyset = {}
             local n = 0
             for k, _ in pairs(t) do
-                n = n + 1
-                keyset[n] = k
+                if type(k) == "string" then
+                    n = n + 1
+                    keyset[n] = k
+                end
             end
             table.sort(keyset)
             return keyset
@@ -555,7 +545,7 @@ return {
         end
 
         local function filterForRemnant(table, remnant)
-            return hs.fnutils.ifilter(
+            return fnutils.ifilter(
                 table,
                 function(item)
                     return string.find(item, "^" .. remnant)
@@ -568,7 +558,7 @@ return {
                 return {}
             end
             return filterForRemnant(
-                hs.fnutils.imap(
+                fnutils.imap(
                     tableKeys(table),
                     function(item)
                         return typeWithSuffix(item, table)
@@ -591,6 +581,7 @@ return {
         --- Notes:
         ---  * Hammerspoon provides a default implementation of this function, which can complete against the global Lua namespace, the 'hs' (i.e. extension) namespace, and object metatables. You can assign a new function to the variable to replace it with your own variant.
         function hs.completionsForInputString(completionWord)
+            local loader = require "hs._coresetup.loader"
             local completions = {}
             local mapJoiner = "."
             local mapEnder = ""
@@ -599,7 +590,7 @@ return {
             local mod = string.match(completionWord, "(.*)[%.:]") or ""
             local remnant = string.gsub(completionWord, mod, "")
             remnant = string.gsub(remnant, "[%.:](.*)", "%1")
-            local parents = hs.fnutils.split(mod, "%.")
+            local parents = fnutils.split(mod, "%.")
             local src = _G
 
             --print(string.format("completionWord: %s", completionWord))
@@ -611,14 +602,10 @@ return {
                 -- Easiest case first, we have no text to work with, so just return keys from _G
                 mapJoiner = ""
                 completions = findCompletions(src, remnant)
-            elseif mod == "cp" then
-                -- We're either at the top of the 'cp' namespace, or completing the first level under it
+            elseif loader.is(src[mod]) then
+                -- We're working with a `loader`.
                 -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
-                completions = filterForRemnant(tableSet(tablesMerge(tableKeys(cp), tableKeys(cp._extensions))), remnant)
-            elseif mod == "hs" then
-                -- We're either at the top of the 'hs' namespace, or completing the first level under it
-                -- NOTE: We can't use findCompletions() here because it will inspect the tables too deeply and cause the full set of modules to be loaded
-                completions = filterForRemnant(tableSet(tablesMerge(tableKeys(hs), tableKeys(hs._extensions))), remnant)
+                completions = filterForRemnant(tableSet(loader.availableExtensions(src[mod])), remnant)
             elseif mod and string.find(completionWord, ":") then
                 -- We're trying to complete an object's methods
                 mapJoiner = ":"
@@ -633,15 +620,19 @@ return {
             elseif mod and #parents > 0 then
                 -- We're some way inside the hs. namespace, so walk our way down the ancestral chain to find the final table
                 for i = 1, #parents do
-                    src = src[parents[i]]
+                    if src then
+                        src = src[parents[i]]
+                    end
                 end
                 -- If nothing left to show, show nothing
-                if src ~= nil then
+                if loader.is(src) then
+                    completions = filterForRemnant(tableSet(loader.availableExtensions(src)), remnant)
+                elseif src ~= nil then
                     completions = findCompletions(src, remnant)
                 end
             end
 
-            return hs.fnutils.map(
+            return fnutils.map(
                 completions,
                 function(item)
                     return mod .. mapJoiner .. item .. mapEnder

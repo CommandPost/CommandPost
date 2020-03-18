@@ -1,0 +1,172 @@
+<style>
+	.button {
+		text-align: center;
+		display:block;
+		width: 150px;
+		font-family: -apple-system;
+		font-size: 12px;
+		text-decoration: none;
+		background-color: #333333;
+		color: #bfbebb;
+		padding: 2px 6px 2px 6px;
+		border-top: 1px solid #161616;
+		border-right: 1px solid #161616;
+		border-bottom: 0.5px solid #161616;
+		border-left: 1px solid #161616;
+		margin-left: auto;
+		margin-right: auto;
+		float: left;
+	}
+	table {
+		width:100%;
+		text-align:left;
+	}
+	h1 {
+		font-size: 12px;
+		font-weight: bold;
+		text-align: center;
+		margin: 0px;
+		padding: 0px;
+	}
+	th {
+		font-weight: normal;
+	}
+	.CodeMirror {
+		height: 220px !important;
+		width: 940px !important;
+	}
+</style>
+
+<script>{(js/codemirror.js)}</script>
+<style>{(css/codemirror.css)}</style>
+<script>{(js/mode/lua/lua.js)}</script>
+
+<style>{(js/addon/scroll/simplescrollbars.css)}</style>
+<script>{(js/addon/scroll/simplescrollbars.js)}</script>
+<script>{(js/addon/scroll/annotatescrollbar.js)}</script>
+
+<style>{(js/addon/dialog/dialog.css)}</style>
+<script>{(js/addon/dialog/dialog.js)}</script>
+
+<style>{(js/addon/search/matchesonscrollbar.css)}</style>
+
+<script>{(js/addon/search/searchcursor.js)}</script>
+<script>{(js/addon/search/search.js)}</script>
+<script>{(js/addon/search/matchesonscrollbar.js)}</script>
+<script>{(js/addon/search/jump-to-line.js)}</script>
+
+<script>
+	function sendMessage(action) {
+		try {
+			var result = {
+				id: "snippets",
+				params: {
+					type: action,
+					snippet: document.getElementById("snippet").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function newSnippet() {
+		var label = prompt("{{ i18n("snippetEnterLabel") }}", "");
+		if (label !== null || label !== "") {
+			try {
+				var result = {
+					id: "snippets",
+					params: {
+						type: "new",
+						label: label,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+</script>
+
+<table>
+	<tr>
+		<th>
+			<h3 class="uiItem">{{ i18n("snippets") }}</h3>
+		</th>
+	</tr>
+	<tr>
+		<th style="padding-bottom: 10px;">
+			<p class="uiItem">{* i18n("snippetsDescription") *}</p>
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th style="padding-left: 20px; width: 210px;">
+			<a style="width: 200px; padding-right: 20px;" id="new" class="button" href="#" onclick="newSnippet();">{{ i18n("new") }}</a>
+		</th>
+		<th style="width: 210px;">
+			<a style="width: 200px;" id="delete" class="button" href="#" onclick="sendMessage('delete');">{{ i18n("delete") }}</a>
+		</th>
+		<th style="width: 480px;">
+			<a style="width: 200px;" id="delete" class="button" href="#" onclick="sendMessage('examples');">{{ i18n("examples") }}</a>
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th>
+			<span class="uiItem"><strong>{{ i18n("selectedSnippet") }}:</strong></span> <select id="snippet" name="snippet" style="width: 310px;" onchange="sendMessage('change');">
+				{* getSnippetLabels() *}
+			</select>
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th style="padding-left: 20px;">
+			<form id="codeForm">
+				<textarea id="code" name="code" style="display: none;">{* getCode() *}</textarea>
+			</form>
+			<script>
+				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+					mode: "lua",
+					dragDrop: false,
+					lineNumbers: true,
+					scrollbarStyle: "simple",
+        		});
+
+				editor.on("change",function(){
+					try {
+						var result = {
+							id: "snippets",
+							params: {
+								type: "update",
+								code: editor.getValue(),
+								snippet: document.getElementById("snippet").value,
+							},
+						}
+						postMessage(result);
+					} catch(err) {
+						alertErrorMessage(err);
+					}
+				});
+
+        		function setCode(value){
+        			if (editor != null) {
+		        		editor.setValue(atob(value));
+		        	}
+        		}
+			</script>
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th style="padding-left: 20px; width: 210px;">
+			<a style="width: 200px; padding-right: 20px;" id="new" class="button" href="#" onclick="sendMessage('execute');">Execute Code</a>
+		</th>
+	</tr>
+</table>

@@ -1,34 +1,53 @@
 
 --- === hs._asm.undocumented.touchbar ===
 ---
---- A module to display an on-screen representation of the Apple Touch Bar, even on machines which do not have the touch bar.
+--- This module and its submodules provide support for manipulating the Apple Touch Bar on newer Macbook Pro laptops. For machines that do not have a touchbar, the `hs._asm.undocumented.touchbar.virtual` submodule provides a method for mimicing one on screen.
 ---
---- This code is based heavily on code found at https://github.com/bikkelbroeders/TouchBarDemoApp.  Unlike the code found at the provided link, this module only supports displaying the touch bar window on your computer screen - it does not support display on an attached iDevice.
+--- Use of this module and its submodules in conunction with other third party applications that can create the virtual touchbar has not been tested specifically, but *should* work. I have not run into any problems or issues while using [Duet Display](https://www.duetdisplay.com), but haven't performed extensive testing.
 ---
---- This module requires that you are running macOS 10.12.1 build 16B2657 or greater.  Most people who have received the 10.12.1 update have an earlier build, which you can check by selecting "About this Mac" from the Apple menu and then clicking the mouse pointer on the version number displayed in the dialog box.  If you require an update, you can find it at https://support.apple.com/kb/dl1897.
+--- This module and it's submodules require a mac that is running macOS 10.12.1 build 16B2657 or newer. If you wish to use this module in an environment where the end-user's machine may not have a new enough macOS release version, you should always check the value of [hs._asm.undocumented.touchbar.supported](#supported) before trying to create the Touch Bar and provide your own fallback or message. By supplying the argument `true` to this function, the user will be prompted to upgrade if necessary.
 ---
---- If you wish to use this module in an environment where the end-user's machine may not have the correct macOS release version, you should always check the value of `hs._asm.undocumented.touchbar.supported` before trying to create the Touch Bar and provide your own fallback or message.  Failure to do so will cause your code to break to the Hammerspoon Console when you attempt to create and use the Touch Bar.
+--- This module relies heavily on undocumented APIs in the macOS and may break with future OS updates. With minor updates and bug fixes, this module has continued to work through 10.15.2, and we hope to continue to maintain this, but no guarantees are given.
 ---
---- Image generation code found at https://github.com/steventroughtonsmith/TouchBarScreenshotter/blob/master/TouchBarScreenshotter
+--- Bug fixes and feature updates are always welcome and can be submitted at https://github.com/asmagill/hs._asm.undocumented.touchbar.
+---
+--- This module is very experimental and is still under development, so the exact functions and methods may be subject to change without notice.
+---
+--- Special thanks to @cmsj and @latenitefilms for code samples and bugfixes, and to @randomeizer, @Madd0g, and @medranocalvo for tests and reports. This is by no means a conclusive list, and if I've left anyone out, it's totally on me -- feel free to poke me with a (virtual) stick 😜.
 
 local USERDATA_TAG = "hs._asm.undocumented.touchbar"
-local wrapper      = require(USERDATA_TAG .. ".supported")
-if not wrapper.supported() then return wrapper end
+local module       = require(USERDATA_TAG .. ".internal")
 
-local module     = require(USERDATA_TAG .. ".internal")
-module.supported = wrapper.supported
+-- capture this for use when touchbar not supported, but don't leave it directly available
+local _fakeNew  = module._fakeNew
+module._fakeNew = nil
+
+if not module.supported() then
+    module.virtual = {
+        new = _fakeNew
+    }
+    return module
+end
+
+module.virtual   = require(USERDATA_TAG .. ".virtual")
 module.item      = require(USERDATA_TAG .. ".item")
 module.bar       = require(USERDATA_TAG .. ".bar")
+-- module._debug    = require(USERDATA_TAG .. ".debug")
 
+-- adds documentation (if present) in module subdir; should be removed if module moved into core
 local basePath = package.searchpath(USERDATA_TAG, package.path)
 if basePath then
     basePath = basePath:match("^(.+)/init.lua$")
     if require"hs.fs".attributes(basePath .. "/docs.json") then
         require"hs.doc".registerJSONFile(basePath .. "/docs.json")
     end
+    -- remove no longer required wrapper file -- should be removed if module moved into core or sufficient time has passed
+    if require"hs.fs".attributes(basePath .. "/supported.so") then
+        os.remove(basePath .. "/supported.so")
+    end
 end
 
-local objectMT     = hs.getObjectMetatable(USERDATA_TAG)
+local virtualMT    = hs.getObjectMetatable(USERDATA_TAG .. ".virtual")
 local itemMT       = hs.getObjectMetatable(USERDATA_TAG .. ".item")
 local barMT        = hs.getObjectMetatable(USERDATA_TAG .. ".bar")
 
@@ -43,7 +62,7 @@ require("hs.styledtext")
 
 -- Public interface ------------------------------------------------------
 
---- hs._asm.undocumented.touchbar:toggle([duration]) -> touchbarObject
+--- hs._asm.undocumented.touchbar.virtual:toggle([duration]) -> touchbarObject
 --- Method
 --- Toggle's the visibility of the touch bar window.
 ---
@@ -52,11 +71,11 @@ require("hs.styledtext")
 ---
 --- Returns:
 ---  * the touchbarObject
-objectMT.toggle = function(self, ...)
+virtualMT.toggle = function(self, ...)
     return self:isVisible() and self:hide(...) or self:show(...)
 end
 
---- hs._asm.undocumented.touchbar:atMousePosition() -> touchbarObject
+--- hs._asm.undocumented.touchbar.virtual:atMousePosition() -> touchbarObject
 --- Method
 --- Moves the touch bar window so that it is centered directly underneath the mouse pointer.
 ---
@@ -69,7 +88,7 @@ end
 --- Notes:
 ---  * This method mimics the display location as set by the sample code this module is based on.  See https://github.com/bikkelbroeders/TouchBarDemoApp for more information.
 ---  * The touch bar position will be adjusted so that it is fully visible on the screen even if this moves it left or right from the mouse's current position.
-objectMT.atMousePosition = function(self)
+virtualMT.atMousePosition = function(self)
     local origin    = mouse.getAbsolutePosition()
     local tbFrame   = self:getFrame()
     local scFrame   = mouse.getCurrentScreen():fullFrame()
@@ -85,7 +104,7 @@ objectMT.atMousePosition = function(self)
     return self:topLeft(origin)
 end
 
---- hs._asm.undocumented.touchbar:centered([top]) -> touchbarObject
+--- hs._asm.undocumented.touchbar.virtual:centered([top]) -> touchbarObject
 --- Method
 --- Moves the touch bar window to the top or bottom center of the main screen.
 ---
@@ -94,7 +113,7 @@ end
 ---
 --- Returns:
 ---  * the touchbarObject
-objectMT.centered = function(self, top)
+virtualMT.centered = function(self, top)
     top = top or false
 
     local origin    = {}

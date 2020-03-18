@@ -565,49 +565,6 @@ function MediaFolder.mt:importFiles(files)
     self:doImportNext():TimeoutAfter(30000, "Import Next took too long"):Now()
 end
 
---- plugins.finalcutpro.watchfolders.media.MediaFolder:doWriteFilesToPasteboard(files, context) -> nil
---- Method
---- Write files to the Pasteboard.
----
---- Parameters:
----  * files - a table/list of files to be imported.
----  * context - The context.
----
---- Returns:
----  * A `Statement` to execute.
-function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
-    return Do(function()
-        if files == nil or #files == 0 then
-            return Throw(i18n("fcpMediaFolder_Error_NoFiles"))
-        end
-        --------------------------------------------------------------------------------
-        -- Temporarily stop the Pasteboard Watcher:
-        --------------------------------------------------------------------------------
-        if self.mod.pasteboardManager then
-            self.mod.pasteboardManager.stopWatching()
-        end
-
-        --------------------------------------------------------------------------------
-        -- Save current Pasteboard Content:
-        --------------------------------------------------------------------------------
-        context.originalPasteboard = pasteboard.readAllData()
-
-        --------------------------------------------------------------------------------
-        -- Write URL to Pasteboard:
-        --------------------------------------------------------------------------------
-        local objects = {}
-        for _, v in pairs(files) do
-            objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
-        end
-        local result = pasteboard.writeObjects(objects)
-        if not result then
-            return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = files[1], count = #files}))
-        end
-    end)
-    :ThenYield()
-    :Label("MediaFolder:doWriteFilesToPasteboard")
-end
-
 --- plugins.finalcutpro.watchfolders.media.MediaFolder:doRestoreOriginalPasteboard(context) -> nil
 --- Method
 --- Restore original Pasteboard contents after 2 seconds.
@@ -706,17 +663,44 @@ function MediaFolder.mt:doImportNext()
 
         --------------------------------------------------------------------------------
         -- Put the media onto the pasteboard:
+        --
+        -- NOTE: This use to be it's own standalone Rx Statement, but for some
+        --       strange reason it introduced a freeze. Maybe a timing issue
+        --       or maybe related to having nested Rx Statements and the use of
+        --       ThenYield? Chris wasn't able to work out what exactly was causing it.
         --------------------------------------------------------------------------------
-        :Then(self:doWriteFilesToPasteboard(files, context))
+        :Then(function()
+            if files == nil or #files == 0 then
+                return Throw(i18n("fcpMediaFolder_Error_NoFiles"))
+            end
+            --------------------------------------------------------------------------------
+            -- Temporarily stop the Pasteboard Watcher:
+            --------------------------------------------------------------------------------
+            if self.mod.pasteboardManager then
+                self.mod.pasteboardManager.stopWatching()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Save current Pasteboard Content:
+            --------------------------------------------------------------------------------
+            context.originalPasteboard = pasteboard.readAllData()
+
+            --------------------------------------------------------------------------------
+            -- Write URL to Pasteboard:
+            --------------------------------------------------------------------------------
+            local objects = {}
+            for _, v in pairs(files) do
+                objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
+            end
+            local result = pasteboard.writeObjects(objects)
+            if not result then
+                return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = files[1], count = #files}))
+            end
+        end)
 
         --------------------------------------------------------------------------------
         -- Perform Paste:
         --------------------------------------------------------------------------------
-        -- TODO: Figure out bug where FCP menus are not working correctly after writing to the pasteboard
-        -- :Then(
-        --     fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
-        --     :TimeoutAfter(10000, "Timed out while pasting.")
-        -- )
         :Then(fcp:doShortcut("PasteAsConnected"))
 
         --------------------------------------------------------------------------------

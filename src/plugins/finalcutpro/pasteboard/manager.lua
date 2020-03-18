@@ -6,17 +6,18 @@ local require               = require
 
 local log                   = require "hs.logger".new "clipmgr"
 
+local base64                = require "hs.base64"
 local host                  = require "hs.host"
 local pasteboard            = require "hs.pasteboard"
 local timer                 = require "hs.timer"
 
 local archiver              = require "cp.plist.archiver"
-local base64                = require "hs.base64"
 local config                = require "cp.config"
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local json                  = require "cp.json"
+local just                  = require "cp.just"
 local plist                 = require "cp.plist"
 local prop                  = require "cp.prop"
 local protect               = require "cp.protect"
@@ -24,9 +25,9 @@ local Set                   = require "cp.collect.Set"
 local tools                 = require "cp.tools"
 
 local Do                    = require "cp.rx.go.Do"
-local Throw                 = require "cp.rx.go.Throw"
 local Require               = require "cp.rx.go.Require"
 local Retry                 = require "cp.rx.go.Retry"
+local Throw                 = require "cp.rx.go.Throw"
 
 local uuid                  = host.uuid
 
@@ -645,6 +646,82 @@ function mod.doRestoreFromBuffer(id)
     end)
 end
 
+--- plugins.finalcutpro.pasteboard.manager.ninjaPasteboardCopy() -> boolean, data
+--- Function
+--- Ninja Pasteboard Copy. Copies something to the pasteboard, then restores the original pasteboard item.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+---  * The pasteboard data
+function mod.ninjaPasteboardCopy()
+
+    local errorFunction = " Error occurred in plugins.finalcutpro.pasteboard.manager.ninjaPasteboardCopy()."
+
+    --------------------------------------------------------------------------------
+    -- Stop Watching Pasteboard:
+    --------------------------------------------------------------------------------
+    mod.stopWatching()
+
+    --------------------------------------------------------------------------------
+    -- Save Current Pasteboard Contents for later:
+    --------------------------------------------------------------------------------
+    local originalPasteboard = mod.readFCPXData()
+
+    --------------------------------------------------------------------------------
+    -- Trigger 'copy' from Menubar:
+    --------------------------------------------------------------------------------
+    local menuBar = fcp:menu()
+    if menuBar:isEnabled({"Edit", "Copy"}) then
+        menuBar:selectMenu({"Edit", "Copy"})
+    else
+        log.ef("Failed to select Copy from Menubar." .. errorFunction)
+        mod.startWatching()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Wait until something new is actually on the Pasteboard:
+    --------------------------------------------------------------------------------
+    local newPasteboard = nil
+    just.doUntil(function()
+        newPasteboard = mod.readFCPXData()
+        if newPasteboard ~= originalPasteboard then
+            return true
+        end
+    end, 3, 0.1)
+    if newPasteboard == nil then
+        log.ef("Failed to get new pasteboard contents." .. errorFunction)
+        mod.startWatching()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Restore Original Pasteboard Contents:
+    --------------------------------------------------------------------------------
+    if originalPasteboard ~= nil then
+        local result = mod.writeFCPXData(originalPasteboard)
+        if not result then
+            log.ef("Failed to restore original Pasteboard item." .. errorFunction)
+            mod.startWatching()
+            return false
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Start Watching Pasteboard:
+    --------------------------------------------------------------------------------
+    mod.startWatching()
+
+    --------------------------------------------------------------------------------
+    -- Return New Pasteboard:
+    --------------------------------------------------------------------------------
+    return true, newPasteboard
+
+end
+
 local plugin = {
     id              = "finalcutpro.pasteboard.manager",
     group           = "finalcutpro",
@@ -660,7 +737,7 @@ function plugin.init(deps)
     local fcpxCmds = deps.fcpxCmds
     fcpxCmds
         :add("cpCopyWithCustomLabel")
-        :whenActivated(mod.copyWithCustomClipName)
+        :whenActivated(function() mod.copyWithCustomClipName() end)
 
     --------------------------------------------------------------------------------
     -- Pasteboard Buffer:
@@ -669,12 +746,12 @@ function plugin.init(deps)
         fcpxCmds
             :add("saveToPasteboardBuffer" .. tostring(id))
             :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(mod.doSaveToBuffer(id))
+            :whenActivated(function() mod.doSaveToBuffer(id):Now() end)
 
         fcpxCmds
             :add("restoreFromPasteboardBuffer" .. tostring(id))
             :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-            :whenActivated(mod.doRestoreFromBuffer(id))
+            :whenActivated(function() mod.doRestoreFromBuffer(id):Now() end)
     end
 
     return mod

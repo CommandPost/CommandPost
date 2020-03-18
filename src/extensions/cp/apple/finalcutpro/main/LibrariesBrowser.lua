@@ -4,22 +4,24 @@
 
 local require = require
 
-local log						= require "hs.logger".new "librariesBrowser"
+local log                       = require "hs.logger".new "librariesBrowser"
 
-local axutils					= require "cp.ui.axutils"
+local axutils                   = require "cp.ui.axutils"
 local go                        = require "cp.rx.go"
 local Group                     = require "cp.ui.Group"
 local i18n                      = require "cp.i18n"
-local just						= require "cp.just"
+local just                      = require "cp.just"
 
 local AppearanceAndFiltering    = require "cp.apple.finalcutpro.browser.AppearanceAndFiltering"
-local LibrariesFilmstrip		= require "cp.apple.finalcutpro.main.LibrariesFilmstrip"
-local LibrariesList				= require "cp.apple.finalcutpro.main.LibrariesList"
+local LibrariesFilmstrip        = require "cp.apple.finalcutpro.main.LibrariesFilmstrip"
+local LibrariesList             = require "cp.apple.finalcutpro.main.LibrariesList"
+local LibrariesSidebar          = require "cp.apple.finalcutpro.main.LibrariesSidebar"
 
-local Button					= require "cp.ui.Button"
+local Button                    = require "cp.ui.Button"
 local PopUpButton               = require "cp.ui.PopUpButton"
-local Table						= require "cp.ui.Table"
-local TextField					= require "cp.ui.TextField"
+local SplitGroup                = require "cp.ui.SplitGroup"
+local Table                     = require "cp.ui.Table"
+local TextField                 = require "cp.ui.TextField"
 
 local Do                        = go.Do
 local First                     = go.First
@@ -68,7 +70,7 @@ function LibrariesBrowser.lazy.prop:mainGroupUI()
         return cache(self, "_mainGroup", function()
             local ui = original()
             return ui and childWithRole(ui, "AXSplitGroup")
-        end)
+        end, SplitGroup.matches)
     end)
 end
 
@@ -284,26 +286,11 @@ function LibrariesBrowser.lazy.method:list()
     return LibrariesList.new(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.ui.Table>
---- Field
---- Get Libraries sidebar [Table](cp.ui.Table.md).
+--- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.apple.finalcutpro.main.LibrariesSidebar>
+--- Method
+--- The  [LibrariesSidebar](cp.apple.finalcutpro.main.LibrariesSidebar.md) Table
 function LibrariesBrowser.lazy.value:sidebar()
-    return Table(self, function()
-        return childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
-    end):uncached()
-end
-
---- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
---- Function
---- Checks to see if an element matches the Sidebar type.
----
---- Parameters:
----  * element - The element to check.
----
---- Returns:
----  * `true` if there's a match, otherwise `false`.
-function LibrariesBrowser.matchesSidebar(element)
-    return element and element:attributeValue("AXRole") == "AXScrollArea"
+    return LibrariesSidebar(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table

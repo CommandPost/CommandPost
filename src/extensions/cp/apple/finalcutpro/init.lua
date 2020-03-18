@@ -71,7 +71,7 @@ local require = require
 local log										= require "hs.logger".new "fcp"
 
 local fs 										= require "hs.fs"
-local hsplist                                   = require "hs.plist"
+local plist                                     = require "hs.plist"
 local inspect									= require "hs.inspect"
 local osascript 								= require "hs.osascript"
 local pathwatcher                               = require "hs.pathwatcher"
@@ -82,7 +82,6 @@ local go                                        = require "cp.rx.go"
 local i18n                                      = require "cp.i18n"
 local just										= require "cp.just"
 local localeID                                  = require "cp.i18n.localeID"
-local plist										= require "cp.plist"
 local prop										= require "cp.prop"
 local Set                                       = require "cp.collect.Set"
 local tools                                     = require "cp.tools"
@@ -93,6 +92,7 @@ local app                                       = require "cp.apple.finalcutpro.
 local plugins									= require "cp.apple.finalcutpro.plugins"
 local strings                                   = require "cp.apple.finalcutpro.strings"
 
+local BackgroundTasksDialog                     = require "cp.apple.finalcutpro.main.BackgroundTasksDialog"
 local Browser									= require "cp.apple.finalcutpro.main.Browser"
 local FullScreenWindow							= require "cp.apple.finalcutpro.main.FullScreenWindow"
 local KeywordEditor								= require "cp.apple.finalcutpro.main.KeywordEditor"
@@ -443,7 +443,7 @@ end
 --- * A table containing any active library paths.
 function fcp:activeLibraryPaths()
     local paths = {}
-    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
     local FFActiveLibraries = fcpPlist and fcpPlist.FFActiveLibraries
     if FFActiveLibraries and #FFActiveLibraries >= 1 then
         for i=1, #FFActiveLibraries do
@@ -489,7 +489,7 @@ end
 --- * A table containing any recent library paths.
 function fcp:recentLibraryPaths()
     local paths = {}
-    local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+    local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
     local FFRecentLibraries = fcpPlist and fcpPlist.FFRecentLibraries
     if FFRecentLibraries and #FFRecentLibraries >= 1 then
         for i=1, #FFRecentLibraries do
@@ -684,7 +684,7 @@ function fcp.lazy.prop.customWorkspaces()
         if files then
             for _, file in pairs(files) do
                 if file ~= SAVED_WORKSPACE and file:sub((WORKSPACE_FILE_EXTENSION:len() + 1) * -1) == "." .. WORKSPACE_FILE_EXTENSION then
-                    local data =  hsplist.read(path .. "/" .. file)
+                    local data =  plist.read(path .. "/" .. file)
                     if data and data[DISPLAY_NAME] then
                         insert(result, data[DISPLAY_NAME])
                     end
@@ -723,7 +723,7 @@ function fcp.workflowExtensions()
                 if path then
                     if tools.doesDirectoryExist(path) then
                         local plistPath = path .. "/Contents/Info.plist"
-                        local plistData = hsplist.read(plistPath)
+                        local plistData = plist.read(plistPath)
                         if plistData and plistData.PlugInKit and plistData.PlugInKit.Protocol and plistData.PlugInKit.Protocol == "ProServiceRemoteProtocol" then
                             local pluginName = plistData.CFBundleDisplayName
                             if pluginName then
@@ -845,7 +845,7 @@ end
 --- Returns:
 ---  * The Final Cut Pro Export Dialog Box
 function fcp.lazy.method:exportDialog()
-    return ExportDialog.new(self)
+    return ExportDialog(self)
 end
 
 --- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
@@ -859,6 +859,19 @@ end
 ---  * The window.
 function fcp.lazy.method:findAndReplaceTitleText()
     return FindAndReplaceTitleText(self.app)
+end
+
+--- cp.apple.finalcutpro:backgroundTasksDialog() -> BackgroundTasksDialog
+--- Method
+--- Returns the [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The window.
+function fcp.lazy.method:backgroundTasksDialog()
+    return BackgroundTasksDialog(self.app)
 end
 
 ----------------------------------------------------------------------------------------
@@ -1096,7 +1109,7 @@ function fcp.lazy.prop:openAndSavePanelDefaultPath()
     --       future.
     ----------------------------------------------------------------------------------------
     return prop(function()
-        local fcpPlist = hsplist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
+        local fcpPlist = plist.read("~/Library/Preferences/" .. self.app:bundleID() .. ".plist")
         local bookmark = fcpPlist and fcpPlist.FFLMOpenSavePanelDefaultURL
         return bookmark and pathFromBookmark(bookmark)
     end, function(path)
@@ -1199,7 +1212,7 @@ function fcp.static.commandSet(path)
         log.ef("Invalid Command Set Path: %s", path)
         return nil
     else
-        return plist.fileToTable(path)
+        return plist.read(path)
     end
 end
 

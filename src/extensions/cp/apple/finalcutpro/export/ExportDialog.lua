@@ -8,96 +8,60 @@ local require               = require
 
 local axutils               = require "cp.ui.axutils"
 local dialog                = require "cp.dialog"
+local Dialog                = require "cp.ui.Dialog"
 local i18n                  = require "cp.i18n"
 local just                  = require "cp.just"
 local prop                  = require "cp.prop"
 local SaveSheet             = require "cp.apple.finalcutpro.export.SaveSheet"
+local StaticText            = require "cp.ui.StaticText"
 
 local v                     = require "semver"
 
+local cache                 = axutils.cache
+local childFromRight        = axutils.childFromRight
+local childMatching         = axutils.childMatching
+local childWithDescription  = axutils.childWithDescription
+
 local displayMessage        = dialog.displayMessage
+
 local doUntil               = just.doUntil
 local wait                  = just.wait
 
-local ExportDialog = {}
+local ExportDialog = Dialog:subclass("cp.apple.finalcutpro.export.ExportDialog")
 
---- cp.apple.finalcutpro.export.ExportDialog.matches(element) -> boolean
---- Function
---- Checks to see if an element matches what we think it should be.
----
---- Parameters:
----  * element - An `axuielementObject` to check.
----
---- Returns:
----  * `true` if matches otherwise `false`
-function ExportDialog.matches(element)
-    if element then
-        return element:attributeValue("AXSubrole") == "AXDialog"
-           and element:attributeValue("AXModal")
-           and axutils.childWithDescription(element, "PE Share WindowBackground") ~= nil
-    end
-    return false
+function ExportDialog.static.matches(element)
+    return element:attributeValue("AXSubrole") == "AXDialog"
+        and element:attributeValue("AXModal")
+        and childWithDescription(element, "PE Share WindowBackground") ~= nil
 end
 
---- cp.apple.finalcutpro.export.ExportDialog.new(app) -> ExportDialog
+--- cp.apple.finalcutpro.export.ExportDialogTitleText(parent)
 --- Constructor
---- Creates a new Export Dialog object.
----
---- Parameters:
----  * app - The `cp.apple.finalcutpro` object.
----
---- Returns:
----  * A new ExportDialog object.
-function ExportDialog.new(app)
-    local o = prop.extend({_app = app}, ExportDialog)
-
-    local UI = app.windowsUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
-            return axutils.childMatching(original(), ExportDialog.matches)
-        end,
-        ExportDialog.matches)
-    end)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.export.ExportDialog.UI <cp.prop: hs._asm.axuielement: read-only; live>
---- Field
---- Returns the Export Dialog `axuielement`.
-        UI = UI,
-
---- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only; live>
---- Field
---- Is the window showing?
-        isShowing = UI:ISNOT(nil),
-
---- cp.apple.finalcutpro.export.ExportDialog.title <cp.prop: string; read-only; live>
---- Field
---- The window title, or `nil` if not available.
-        title = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXTitle")
-        end),
-    }
-
-    return o
+--- Creates a new Export [Dialog](cp.ui.Dialog.md)
+function ExportDialog:initialize(parent)
+    Dialog.initialize(self, parent, parent.windowsUI:mutate(function(original)
+        return cache(self, "_window", function()
+            return childMatching(original(), ExportDialog.matches)
+        end, ExportDialog.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function ExportDialog:app()
-    return self._app
+-- isDefaultItem(menuItem) -> boolean
+-- Function
+-- Is an element the default item?
+--
+-- Parameters
+--  * element - The UI of the AXMenuItem to check.
+--
+-- Returns:
+--  * `true` if the element is the default item, otherwise `false`
+local function isDefaultItem(element)
+    return element and element:attributeValue("AXMenuItemCmdChar") ~= nil
 end
 
-local function isDefaultItem(menuItem)
-    return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-end
-
+-- destinationFormat -> string
+-- Constant
+-- Destination Format.
 local destinationFormat = "(.+)…"
 
 --- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
@@ -157,7 +121,11 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
         --------------------------------------------------------------------------------
         -- Keep trying to press the menu item until we timeout:
         --------------------------------------------------------------------------------
-        if not doUntil(function() return menuItem:doPress() end) then
+        if not doUntil(function()
+            local path = {"File", "Share", destinationSelect}
+            local options = {["pressAll"] = true}
+            return fcp:selectMenu(path, options)
+        end) then
             --------------------------------------------------------------------------------
             -- Unsuccessfully selected the share menu item:
             --------------------------------------------------------------------------------
@@ -173,19 +141,13 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             local missingMediaString = fcp:string("FFMissingMediaMessageText")
             local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")
 
-            local proxyPlaybackEnabled, missingMediaAndInvalidCaptionsString, missingMediaAndInvalidCaptions, invalidCaptionsString, invalidCaptions
-            if fcp:version() >= v("10.4.0") then
-                --------------------------------------------------------------------------------
-                -- These alerts are only available in Final Cut Pro 10.4 and later:
-                --------------------------------------------------------------------------------
-                proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
 
-                missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
-                missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
+            local missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
+            local missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
 
-                invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
-                invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
-            end
+            local invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
+            local invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
 
             local counter = 0
             while not self:isShowing() and counter < 100 do
@@ -316,6 +278,17 @@ function ExportDialog:pressNext()
         end
     end
     return self
+end
+
+--- cp.apple.finalcutpro.export.ExportDialog:fileExtension() -> cp.ui.StaticText
+--- Method
+--- The "File Extension" [StaticText](cp.ui.StaticText.md).
+function ExportDialog.lazy.method:fileExtension()
+    return StaticText(self, self.UI:mutate(function(original)
+        return cache(self, "_next", function()
+            return childFromRight(original(), 2, StaticText.matches)
+        end, StaticText.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:saveSheet() -> SaveSheet

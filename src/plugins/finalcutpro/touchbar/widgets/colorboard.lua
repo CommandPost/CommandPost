@@ -4,16 +4,14 @@
 
 local require = require
 
-local canvas            = require("hs.canvas")
-local eventtap          = require("hs.eventtap")
-local styledtext        = require("hs.styledtext")
-local timer             = require("hs.timer")
+local canvas            = require "hs.canvas"
+local eventtap          = require "hs.eventtap"
+local styledtext        = require "hs.styledtext"
+local timer             = require "hs.timer"
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
-local prop              = require("cp.prop")
-
-local touchbar          = require("hs._asm.undocumented.touchbar")
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local prop              = require "cp.prop"
 
 local abs               = math.abs
 local doAfter           = timer.doAfter
@@ -431,7 +429,7 @@ local function puckWidget(id, puck)
     --------------------------------------------------------------------------------
     -- Create new Touch Bar Item from Canvas:
     --------------------------------------------------------------------------------
-    local item = touchbar.item.newCanvas(widgetCanvas, id):canvasClickColor{ alpha = 0.0 }
+    local item = mod._manager.touchbar().item.newCanvas(widgetCanvas, id):canvasClickColor{ alpha = 0.0 }
 
     --------------------------------------------------------------------------------
     -- Add update callback to timer:
@@ -491,8 +489,8 @@ local function groupPuck(id)
     --------------------------------------------------------------------------------
     -- Setup Group:
     --------------------------------------------------------------------------------
-    local group = touchbar.item.newGroup(id):groupItems({
-        touchbar.item.newCanvas(widgetCanvas):canvasClickColor{ alpha = 0.0 },
+    local group = mod._manager.touchbar().item.newGroup(id):groupItems({
+        mod._manager.touchbar().item.newCanvas(widgetCanvas):canvasClickColor{ alpha = 0.0 },
         puckWidget("colorBoardGroup1", function() return colorBoard:current():master() end),
         puckWidget("colorBoardGroup2", function() return colorBoard:current():shadows() end),
         puckWidget("colorBoardGroup3", function() return colorBoard:current():midtones() end),
@@ -511,7 +509,9 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init(deps)
+function mod.init(manager)
+    mod._manager = manager
+
     --------------------------------------------------------------------------------
     -- Color Board Group:
     --------------------------------------------------------------------------------
@@ -522,7 +522,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardGroupedDescription"),
         item = function() return groupPuck("colorBoardGroup") end,
     }
-    deps.manager.widgets:new("colorBoardGroup", params)
+    manager.widgets:new("colorBoardGroup", params)
 
     local colorBoard = fcp:colorBoard()
 
@@ -535,7 +535,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("one")}),
         item = function() return puckWidget("colorBoardPuck1", function() return colorBoard:current():master() end) end,
     }
-    deps.manager.widgets:new("colorBoardPuck1", params)
+    manager.widgets:new("colorBoardPuck1", params)
 
     params = {
         group = "fcpx",
@@ -543,7 +543,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("two")}),
         item = function() return puckWidget("colorBoardPuck2", function() return colorBoard:current():shadows() end) end,
     }
-    deps.manager.widgets:new("colorBoardPuck2", params)
+    manager.widgets:new("colorBoardPuck2", params)
 
     params = {
         group = "fcpx",
@@ -551,7 +551,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("three")}),
         item = function() return puckWidget("colorBoardPuck3", function() return colorBoard:current():midtones() end) end,
     }
-    deps.manager.widgets:new("colorBoardPuck3", params)
+    manager.widgets:new("colorBoardPuck3", params)
 
     params = {
         group = "fcpx",
@@ -559,7 +559,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("four")}),
         item = function() return puckWidget("colorBoardPuck4", function() return colorBoard:current():highlights() end) end,
     }
-    deps.manager.widgets:new("colorBoardPuck4", params)
+    manager.widgets:new("colorBoardPuck4", params)
 
     --------------------------------------------------------------------------------
     -- Color Panel:
@@ -570,7 +570,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck1", function() return colorBoard:color():master() end) end,
     }
-    deps.manager.widgets:new("colorBoardColorPuck1", params)
+    manager.widgets:new("colorBoardColorPuck1", params)
 
     params = {
         group = "fcpx",
@@ -578,7 +578,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck2", function() return colorBoard:color():shadows() end) end,
     }
-    deps.manager.widgets:new("colorBoardColorPuck2", params)
+    manager.widgets:new("colorBoardColorPuck2", params)
 
     params = {
         group = "fcpx",
@@ -586,7 +586,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck3", function() return colorBoard:color():midtones() end) end,
     }
-    deps.manager.widgets:new("colorBoardColorPuck3", params)
+    manager.widgets:new("colorBoardColorPuck3", params)
 
     params = {
         group = "fcpx",
@@ -594,7 +594,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
         item = function() return puckWidget("colorBoardColorPuck4", function() return colorBoard:color():highlights() end) end,
     }
-    deps.manager.widgets:new("colorBoardColorPuck4", params)
+    manager.widgets:new("colorBoardColorPuck4", params)
 
     --------------------------------------------------------------------------------
     -- Saturation Panel:
@@ -605,7 +605,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck1", function() return colorBoard:saturation():master() end) end,
     }
-    deps.manager.widgets:new("colorBoardSaturationPuck1", params)
+    manager.widgets:new("colorBoardSaturationPuck1", params)
 
     params = {
         group = "fcpx",
@@ -613,7 +613,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck2", function() return colorBoard:saturation():shadows() end) end,
     }
-    deps.manager.widgets:new("colorBoardSaturationPuck2", params)
+    manager.widgets:new("colorBoardSaturationPuck2", params)
 
     params = {
         group = "fcpx",
@@ -621,7 +621,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck3", function() return colorBoard:saturation():midtones() end) end,
     }
-    deps.manager.widgets:new("colorBoardSaturationPuck3", params)
+    manager.widgets:new("colorBoardSaturationPuck3", params)
 
     params = {
         group = "fcpx",
@@ -629,7 +629,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
         item = function() return puckWidget("colorBoardSaturationPuck4", function() return colorBoard:saturation():highlights() end) end,
     }
-    deps.manager.widgets:new("colorBoardSaturationPuck4", params)
+    manager.widgets:new("colorBoardSaturationPuck4", params)
 
     --------------------------------------------------------------------------------
     -- Exposure Panel:
@@ -640,7 +640,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():master() end) end,
     }
-    deps.manager.widgets:new("colorBoardExposurePuck1", params)
+    manager.widgets:new("colorBoardExposurePuck1", params)
 
     params = {
         group = "fcpx",
@@ -648,7 +648,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck2", function() return colorBoard:exposure():shadows() end) end,
     }
-    deps.manager.widgets:new("colorBoardExposurePuck2", params)
+    manager.widgets:new("colorBoardExposurePuck2", params)
 
     params = {
         group = "fcpx",
@@ -656,7 +656,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck3", function() return colorBoard:exposure():midtones() end) end,
     }
-    deps.manager.widgets:new("colorBoardExposurePuck3", params)
+    manager.widgets:new("colorBoardExposurePuck3", params)
 
     params = {
         group = "fcpx",
@@ -664,7 +664,7 @@ function mod.init(deps)
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
         item = function() return puckWidget("colorBoardExposurePuck4", function() return colorBoard:exposure():highlights() end) end,
     }
-    deps.manager.widgets:new("colorBoardExposurePuck4", params)
+    manager.widgets:new("colorBoardExposurePuck4", params)
 
     return mod
 
@@ -696,11 +696,12 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    local manager = deps.manager
     --------------------------------------------------------------------------------
     -- Only load this plugin if the Touch Bar is supported:
     --------------------------------------------------------------------------------
-    if touchbar.supported() then
-        return mod.init(deps)
+    if manager.supported() then
+        return mod.init(manager)
     end
 end
 

@@ -31,6 +31,11 @@ local tools                 = require "cp.tools"
 --------------------------------------------------------------------------------
 require("hs.ipc")
 
+--------------------------------------------------------------------------------
+-- Set the accessibility API timeout to one second:
+--------------------------------------------------------------------------------
+window.timeout(1)
+
 local mod = {}
 
 --- cp.init()
@@ -52,7 +57,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Show Dock Icon:
     --------------------------------------------------------------------------------
-    if config.get("dockIcon", true) then
+    if config.get("dockIcon", false) then
         hs.dockIcon(true)
     end
 
@@ -62,9 +67,9 @@ function mod.init()
     hs._consoleHistory = require("cp.console.history")
 
     --------------------------------------------------------------------------------
-    -- Disable Spotlight for Name Searches:
+    -- Enable Spotlight for Name Searches (used in Search Console):
     --------------------------------------------------------------------------------
-    application.enableSpotlightForNameSearches(false)
+    application.enableSpotlightForNameSearches(true)
 
     --------------------------------------------------------------------------------
     -- Disable Window Animations:

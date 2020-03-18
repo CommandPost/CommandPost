@@ -8,33 +8,36 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
-local require = require
+local require           = require
 
-local log                                       = require("hs.logger").new("tangentMan")
+local hs                = hs
 
-local application                               = require("hs.application")
-local fs                                        = require("hs.fs")
-local inspect                                   = require("hs.inspect")
-local tangent                                   = require("hs.tangent")
-local timer                                     = require("hs.timer")
+local log               = require "hs.logger".new "tangentMan"
 
-local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local is                                        = require("cp.is")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
-local x                                         = require("cp.web.xml")
+local application       = require "hs.application"
+local fs                = require "hs.fs"
+local inspect           = require "hs.inspect"
+local tangent           = require "hs.tangent"
+local timer             = require "hs.timer"
 
-local action                                    = require("action")
-local controls                                  = require("controls")
-local menu                                      = require("menu")
-local mode                                      = require("mode")
-local parameter                                 = require("parameter")
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local is                = require "cp.is"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local x                 = require "cp.web.xml"
 
-local doAfter                                   = timer.doAfter
-local format                                    = string.format
-local insert, sort                              = table.insert, table.sort
+local action            = require "action"
+local controls          = require "controls"
+local menu              = require "menu"
+local mode              = require "mode"
+local parameter         = require "parameter"
 
+local doAfter           = timer.doAfter
+local execute           = hs.execute
+local format            = string.format
+local insert            = table.insert
+local sort              = table.sort
 
 local mod = {}
 
@@ -53,6 +56,16 @@ mod.HIDE_FILE_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/hide
 --- Final Cut Pro Keypress Apps Path for Tangent Mapper.
 mod.FCP_KEYPRESS_APPS_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro"
 
+--- plugins.core.tangent.manager.LAUNCH_AGENT_PATH -> string
+--- Constant
+--- Path to Tangent Hub's Launch Agent.
+mod.LAUNCH_AGENT_PATH = "/Library/LaunchAgents/uk.co.tangentwave.hub.plist"
+
+-- plugins.core.tangent.manager._writtenControlsXML -> boolean
+-- Variable
+-- Has CommandPost written the Controls XML file?
+mod._writtenControlsXML = false
+
 -- plugins.core.tangent.manager._modes -> table
 -- Variable
 -- Modes
@@ -66,7 +79,7 @@ mod._connectionConfirmed = false
 --- plugins.core.tangent.manager.controls
 --- Constant
 --- The set of controls currently registered.
-mod.controls = controls.new()
+mod.controls = controls()
 
 local controlsXML
 
@@ -133,38 +146,44 @@ end
 ---  * `true` if successfully created otherwise `false` if an error occurred.
 ---  * If an error occurs an error message will also be returned as a string.
 function mod.writeControlsXML()
-
-    --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    if not tools.doesDirectoryExist(mod.configPath) then
-        --log.df("Tangent Settings folder did not exist, so creating one.")
-        fs.mkdir(mod.configPath)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Copy existing XML files from Application Bundle to local Application Support:
-    --------------------------------------------------------------------------------
-    local _, status = hs.execute(format("cp -a %q/. %q/", mod._pluginPath, mod.configPath))
-    if not status then
-        log.ef("Failed to copy XML files.")
-        return false, "Failed to copy XML files."
-    end
-
-    --------------------------------------------------------------------------------
-    -- Create "controls.xml" file:
-    --------------------------------------------------------------------------------
-    local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
-    if controlsFile then
+    if not mod._writtenControlsXML then
         --------------------------------------------------------------------------------
-        -- Write to File & Close:
+        -- Create folder if it doesn't exist:
         --------------------------------------------------------------------------------
-        io.output(controlsFile)
-        io.write(tostring(mod.getControlsXML()))
-        io.close(controlsFile)
-    else
-        log.ef("Failed to open controls.xml file in write mode")
-        return false, "Failed to open controls.xml file in write mode"
+        if not tools.doesDirectoryExist(mod.configPath) then
+            --log.df("Tangent Settings folder did not exist, so creating one.")
+            fs.mkdir(mod.configPath)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Copy existing XML files from Application Bundle to local Application Support:
+        --------------------------------------------------------------------------------
+        local _, status = execute(format("cp -a %q/. %q/", mod._pluginPath, mod.configPath))
+        if not status then
+            log.ef("Failed to copy XML files.")
+            return false, "Failed to copy XML files."
+        end
+
+        --------------------------------------------------------------------------------
+        -- Create "controls.xml" file:
+        --------------------------------------------------------------------------------
+        local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
+        if controlsFile then
+            --------------------------------------------------------------------------------
+            -- Write to File & Close:
+            --------------------------------------------------------------------------------
+            io.output(controlsFile)
+            io.write(tostring(mod.getControlsXML()))
+            io.close(controlsFile)
+        else
+            log.ef("Failed to open controls.xml file in write mode")
+            return false, "Failed to open controls.xml file in write mode"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Only write the Controls XML file once per session:
+        --------------------------------------------------------------------------------
+        mod._writtenControlsXML = true
     end
 end
 
@@ -178,6 +197,14 @@ end
 --- Returns:
 ---  * None
 function mod.updateControls()
+    --------------------------------------------------------------------------------
+    -- We need to rewrite the Controls XML:
+    --------------------------------------------------------------------------------
+    mod._writtenControlsXML = false
+
+    --------------------------------------------------------------------------------
+    -- Force a disconnection:
+    --------------------------------------------------------------------------------
     if mod.connected() then
         mod.connected(false)
     end
@@ -194,7 +221,7 @@ end
 --- Returns:
 --- * The new `mode`
 function mod.addMode(id, name)
-    local m = mode.new(id, name, mod)
+    local m = mode(id, name, mod)
     insert(mod._modes, m)
     sort(mod._modes, function(a,b) return a.id < b.id end)
     return m
@@ -539,6 +566,15 @@ mod.interrupted = prop(function()
         end
     end
     return false
+end):watch(function(value)
+    if value == false then
+        --------------------------------------------------------------------------------
+        -- Force Tangent Hub to restart when an interruption is completed so that
+        -- CommandPost regains focus in Tangent Mapper:
+        --------------------------------------------------------------------------------
+        execute("launchctl unload " .. mod.LAUNCH_AGENT_PATH)
+        execute("launchctl load " .. mod.LAUNCH_AGENT_PATH)
+    end
 end)
 
 --- plugins.core.tangent.manager.interruptWhen(aProp) -> nil
@@ -675,10 +711,16 @@ end
 --
 -- Returns:
 --  * The result from the test.
-function mod._test(...)
-    return require("all_tests")(...)
+function mod._spec(name)
+    local ok, result = xpcall(function() return require(name .. "_spec") end, debug.traceback)
+    if not ok then
+        ok, result = xpcall(function() return require(name .. "_test") end, debug.traceback)
+        if not ok then
+            error(result)
+        end
+    end
+    return result
 end
-
 
 local plugin = {
     id          = "core.tangent.manager",
@@ -692,24 +734,6 @@ function plugin.init(_, env)
     --------------------------------------------------------------------------------
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
     mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
-
-    -- always switch focus to CommandPost on reconnect to reclaim Tangent Hub focus
-    local cpApps = application.applicationsForBundleID("org.latenitefilms.CommandPost")
-    local cpApp = cpApps and #cpApps > 0 and cpApps[1]
-
-    mod.connected:watch(function(value)
-        if value then
-            if cpApp then
-                local frontmostApp = application.frontmostApplication()
-                cpApp:activate()
-                if frontmostApp then
-                    doAfter(0.5, function()
-                        frontmostApp:activate()
-                    end)
-                end
-            end
-        end
-    end)
 
     --------------------------------------------------------------------------------
     -- Return Module:

@@ -2,14 +2,18 @@
 ---
 --- Go To Prompt.
 
-local require                       = require
+local require               = require
 
-local eventtap                      = require("hs.eventtap")
+local axutils               = require "cp.ui.axutils"
+local just                  = require "cp.just"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
-local axutils                       = require("cp.ui.axutils")
-local just                          = require("cp.just")
-local prop                          = require("cp.prop")
+local Button				= require "cp.ui.Button"
 
+local childFromLeft			= axutils.childFromLeft
+local keyStroke             = tools.keyStroke
+local doUntil               = just.doUntil
 
 local GoToPrompt = {}
 
@@ -105,8 +109,11 @@ end):bind(GoToPrompt)
 ---  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
 function GoToPrompt:show()
     if self:parent():isShowing() then
-        eventtap.keyStroke({"cmd", "shift"}, "g")
-        just.doUntil(function() return self:isShowing() end)
+        --------------------------------------------------------------------------------
+        -- NOTE: I tried sending the keyStroke directly to FCPX, but it didn't work.
+        --------------------------------------------------------------------------------
+        keyStroke({"cmd", "shift"}, "g")
+        doUntil(function() return self:isShowing() end)
     end
     return self
 end
@@ -136,7 +143,7 @@ end
 function GoToPrompt:pressCancel()
     local ui = self:UI()
     if ui then
-        local btn = ui:cancelButton()
+        local btn = childFromLeft(ui, 1, Button.matches)
         if btn then
             btn:doPress()
             just.doWhile(function() return self:isShowing() end)
@@ -179,7 +186,7 @@ end
 function GoToPrompt:pressDefault()
     local ui = self:UI()
     if ui then
-        local btn = ui:defaultButton()
+        local btn = childFromLeft(ui, 2, Button.matches)
         if btn and btn:enabled() then
             btn:doPress()
             just.doWhile(function() return self:isShowing() end)

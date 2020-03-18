@@ -220,6 +220,23 @@ function plugin.init(deps)
         end)
         :titled(i18n("focusOnTitleTextInInspector"))
 
+    --------------------------------------------------------------------------------
+    -- Copy Title Text Contents to Pasteboard:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("copyTitleTextContentsToPasteboard")
+        :whenActivated(function()
+            local textArea = fcp:inspector():text():textArea()
+            textArea:show()
+            local value = textArea:value()
+            if value then
+                pasteboard.writeObjects(value)
+                return
+            end
+            playErrorSound()
+        end)
+        :titled(i18n("copyTitleTextContentsToPasteboard"))
+
 end
 
 return plugin

@@ -4,8 +4,12 @@
 
 local require           = require
 
-local Table             = require("cp.ui.Table")
+--local log               = require "hs.logger".new "Clip"
 
+local axutils           = require "cp.ui.axutils"
+local Table             = require "cp.ui.Table"
+
+local childWithRole     = axutils.childWithRole
 
 local Clip = {}
 Clip.mt = {}
@@ -63,6 +67,35 @@ function Clip.mt:getTitle()
         return Table.cellTextValue(cell)
     else
         return self._element:attributeValue("AXDescription")
+    end
+end
+
+--- cp.apple.finalcutpro.content.Clip:setTitle(title) -> none
+--- Method
+--- Sets the title of a clip.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function Clip.mt:setTitle(title)
+    if self:getType() == Clip.type.row then
+        local colIndex = self._options.columnIndex
+        local cell = self._element[colIndex]
+        local textfield = cell and childWithRole(cell, "AXTextField")
+        if textfield then
+            textfield:setAttributeValue("AXFocused", true)
+            textfield:setAttributeValue("AXValue", title)
+            textfield:performAction("AXConfirm")
+        end
+    else
+        local textfield = self._element and childWithRole(self._element, "AXTextField")
+        if textfield then
+            textfield:setAttributeValue("AXFocused", true)
+            textfield:setAttributeValue("AXValue", title)
+            textfield:performAction("AXConfirm")
+        end
     end
 end
 

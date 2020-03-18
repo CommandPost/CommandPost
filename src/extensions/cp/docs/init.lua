@@ -45,6 +45,7 @@ function mod.generate()
             log.df("Documentation Updated Successfully!")
         end
     else
+        log.df("%s", output)
         log.ef("Build Documentation Script Failed.")
     end
 end

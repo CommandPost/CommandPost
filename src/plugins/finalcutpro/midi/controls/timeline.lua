@@ -6,8 +6,6 @@ local require = require
 
 --local log               = require "hs.logger".new "timeline"
 
-local eventtap          = require "hs.eventtap"
-
 local axutils		    = require "cp.ui.axutils"
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
@@ -15,7 +13,6 @@ local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
 local childWithRole     = axutils.childWithRole
-local keyStroke         = eventtap.keyStroke
 local rescale           = tools.rescale
 
 -- MAX_14BIT -> number
@@ -39,7 +36,7 @@ local MAX_7BIT  = 0x7F
 -- Returns:
 --  * None
 local function doNextFrame()
-    keyStroke({"shift"}, "right", 0)
+    fcp:keyStroke({"shift"}, "right")
 end
 
 -- doPreviousFrame() -> none
@@ -52,7 +49,7 @@ end
 -- Returns:
 --  * None
 local function doPreviousFrame()
-    keyStroke({"shift"}, "left", 0)
+    fcp:keyStroke({"shift"}, "left")
 end
 
 -- createTimelineScrub() -> function

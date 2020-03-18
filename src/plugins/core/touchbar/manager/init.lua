@@ -2,7 +2,9 @@
 ---
 --- Touch Bar Manager Plugin.
 
-local require = require
+local require           = require
+
+local hs                = hs
 
 local log               = require "hs.logger".new "tbManager"
 
@@ -19,11 +21,12 @@ local json              = require "cp.json"
 local prop              = require "cp.prop"
 local tools             = require "cp.tools"
 
-local touchbar          = require "hs._asm.undocumented.touchbar"
+local semver            = require "semver"
 
 local widgets           = require "widgets"
 
 local copy              = fnutils.copy
+local execute           = hs.execute
 
 local mod = {}
 
@@ -93,12 +96,19 @@ end)
 --- Contains all the saved Touch Bar Buttons
 mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
+mod.macOSVersionSupported = prop(function()
+    return semver(tools.macOSVersion()) >= semver("10.12.1")
+end)
+
 --- plugins.core.touchbar.manager.supported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the Touch Bar is supported on this version of macOS.
-mod.supported = prop(function() return touchbar.supported() end)
+mod.supported = mod.macOSVersionSupported:AND(prop(function()
+    local touchbar = mod.touchbar()
+    return touchbar and touchbar.supported()
+end))
 
---- plugins.core.touchbar.manager.touchBar() -> none
+--- plugins.core.touchbar.manager.touchbar() -> none
 --- Function
 --- Returns the `hs._asm.undocumented.touchbar` object if it exists.
 ---
@@ -107,8 +117,17 @@ mod.supported = prop(function() return touchbar.supported() end)
 ---
 --- Returns:
 ---  * `hs._asm.undocumented.touchbar`
-function mod.touchBar()
-    return mod._touchBar or nil
+function mod.touchbar()
+    if not mod._touchbar then
+        if mod.macOSVersionSupported() then
+            mod._touchbar = require "hs._asm.undocumented.touchbar"
+        else
+            mod._touchbar = {
+                supported = function() return false end,
+            }
+        end
+    end
+    return mod._touchbar
 end
 
 --- plugins.core.touchbar.manager.clear() -> none
@@ -415,8 +434,9 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-    if not mod._bar then
-        mod._bar = touchbar.bar.new()
+    local tb = mod.touchbar()
+    if tb and not mod._bar then
+        mod._bar = tb.bar.new()
 
         --------------------------------------------------------------------------------
         -- Resize Icon:
@@ -431,7 +451,7 @@ function mod.start()
         --------------------------------------------------------------------------------
         -- Setup System Icon:
         --------------------------------------------------------------------------------
-        mod._sysTrayIcon = touchbar.item.newButton(icon:imageFromCanvas(), "CommandPost")
+        mod._sysTrayIcon = mod.touchbar().item.newButton(icon:imageFromCanvas(), "CommandPost")
                              :callback(function()
                                 mod.incrementActiveSubGroup()
                                 mod.update()
@@ -523,9 +543,9 @@ local function addButton(icon, _, label, id)
     end
     table.insert(mod._tbItemIDs, id)
     if icon then
-        table.insert(mod._tbItems, touchbar.item.newButton(label, icon, id):callback(buttonCallback))
+        table.insert(mod._tbItems, mod.touchbar().item.newButton(label, icon, id):callback(buttonCallback))
     else
-        table.insert(mod._tbItems, touchbar.item.newButton(label, id):callback(buttonCallback))
+        table.insert(mod._tbItems, mod.touchbar().item.newButton(label, id):callback(buttonCallback))
     end
 end
 
@@ -807,7 +827,7 @@ function mod.update()
             text    = styledtext.getStyledTextFromData([[<span style="font-family: -apple-system; font-size: 10px; color: #FFFFFF; vertical-align: middle;">]] .. bankLabel .. [[</span>]]),
             frame   = { x = 0, y = 8, h = "100%", w = "100%" }
         }
-        local bankLabelCanvasItem = touchbar.item.newCanvas(bankLabelCanvas, id)
+        local bankLabelCanvasItem = mod.touchbar().item.newCanvas(bankLabelCanvas, id)
         table.insert(mod._tbItemIDs, 1, id)
         table.insert(mod._tbItems, 1, bankLabelCanvasItem)
     end

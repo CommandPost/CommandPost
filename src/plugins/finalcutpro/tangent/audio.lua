@@ -2,12 +2,12 @@
 ---
 --- Final Cut Pro Audio Inspector for Tangent
 
-local require = require
+local require       = require
 
---local log                   = require("hs.logger").new("tangentVideo")
+--local log           = require("hs.logger").new("tangentVideo")
 
-local fcp                   = require("cp.apple.finalcutpro")
-local i18n                  = require("cp.i18n")
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.audio",

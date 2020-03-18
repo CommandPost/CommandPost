@@ -1,0 +1,218 @@
+<script>{(js/codemirror.js)}</script>
+<style>{(css/codemirror.css)}</style>
+<script>{(js/mode/lua/lua.js)}</script>
+
+<style>{(js/addon/scroll/simplescrollbars.css)}</style>
+<script>{(js/addon/scroll/simplescrollbars.js)}</script>
+<script>{(js/addon/scroll/annotatescrollbar.js)}</script>
+
+<style>{(js/addon/dialog/dialog.css)}</style>
+<script>{(js/addon/dialog/dialog.js)}</script>
+
+<style>{(js/addon/search/matchesonscrollbar.css)}</style>
+
+<script>{(js/addon/search/searchcursor.js)}</script>
+<script>{(js/addon/search/search.js)}</script>
+<script>{(js/addon/search/matchesonscrollbar.js)}</script>
+<script>{(js/addon/search/jump-to-line.js)}</script>
+
+<style>
+	th {
+		font-weight: normal;
+		text-align:left !important;
+	}
+	.rename {
+		float: left;
+		-webkit-appearance: none;
+		-webkit-box-shadow: none;
+		-webkit-rtl-ordering: logical;
+		-webkit-user-select: text;
+		color: #959595;
+		background-color:#161616;
+		border-style: solid;
+		border-color: #0a0a0a;
+		border-width: 2px;
+		border-radius: 6px;
+		text-align: center;
+		font-size: 13px;
+		height: 20px;
+		margin-top: 5px;
+		margin-bottom: 5px;
+		width: 99%;
+	}
+	.CodeMirror {
+		height: 100px !important;
+		width: 460px !important;
+	}
+</style>
+<script>
+	function sendMessage(action) {
+		try {
+			var result = {
+				id: "renameHandler",
+				params: {
+					type: action,
+					prefix: document.getElementById("prefix").value,
+					suffix: document.getElementById("suffix").value,
+					sequence: document.getElementById("sequence").value,
+					startWith: document.getElementById("startWith").value,
+					stepValue: document.getElementById("stepValue").value,
+					padding: document.getElementById("padding").value,
+					find: document.getElementById("find").value,
+					replace: document.getElementById("replace").value,
+					keepOriginal: document.getElementById("keepOriginal").checked,
+					codeProcessing: document.getElementById("codeProcessing").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("prefix") }}:</span>
+		</th>
+		<th>
+			<input id="prefix" class="rename" type="text" name="prefix" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("suffix") }}:</span>
+		</th>
+		<th>
+			<input id="suffix" class="rename" type="text" name="suffix" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+</table>
+<hr />
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("sequence") }} #:</span>
+		</th>
+		<th>
+			<select id="sequence" onchange="sendMessage('update');">
+				<option value="disabled">{{ i18n("disabled") }}</option>
+				<option value="beforePrefix">{{ i18n("beforePrefix") }}</option>
+				<option value="afterPrefix">{{ i18n("afterPrefix") }}</option>
+				<option value="afterSuffix">{{ i18n("afterSuffix") }}</option>
+			</select>
+		</th>
+	</tr>
+</table>
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("startWith") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="startWith" class="rename" type="number" name="startWith" style="width: 50px" onchange="sendMessage('update');" />
+		</th>
+		<th style="width: 95px;">
+			<span class="label">{{ i18n("stepValue") }}:</span>
+		</th>
+		<th style="width: 100px">
+			<input id="stepValue" class="rename" type="number" name="stepValue" style="width: 50px" onchange="sendMessage('update');" />
+		</th>
+		<th style="width: 95px;">
+			<span class="label">{{ i18n("padding") }}:</span>
+		</th>
+		<th style="width: 50px">
+			<input id="padding" class="rename" type="number" name="padding" style="width: 50px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+</table>
+<hr />
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("find") }}:</span>
+		</th>
+		<th>
+			<input id="find" class="rename" type="text" name="find" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("replace") }}:</span>
+		</th>
+		<th>
+			<input id="replace" class="rename" type="text" name="replace" style="width: 460px" onchange="sendMessage('update');" />
+		</th>
+	</tr>
+</table>
+<hr />
+<table>
+	<tr>
+		<th style="width: 100px; vertical-align:top;">
+			<span class="label">{{ i18n("luaCode") }}:</span>
+		</th>
+		<th>
+			<form id="codeForm">
+				<textarea id="code" name="code" style="display: none;"></textarea>
+			</form>
+			<script>
+				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+					mode: "lua",
+					dragDrop: false,
+					lineNumbers: true,
+					scrollbarStyle: "simple",
+        		});
+
+				editor.on("change",function(){
+					try {
+						var result = {
+							id: "renameHandler",
+							params: {
+								type: "updateCode",
+								code: editor.getValue(),
+							},
+						}
+						postMessage(result);
+					} catch(err) {
+						alertErrorMessage(err);
+					}
+				});
+
+        		function setCode(value){
+        			if (editor != null) {
+		        		editor.setValue(atob(value));
+		        	}
+        		}
+			</script>
+		</th>
+	</tr>
+</table>
+<hr />
+<table>
+	<tr>
+		<th style="width: 100px;">
+			<span class="label">{{ i18n("options") }}:</span>
+		</th>
+		<th style="width: 200px;">
+			<label><input type="checkbox" id="keepOriginal" value="true" onchange="sendMessage('update');">{{ i18n("keepOriginalValue") }}</label>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 100px;">
+		</th>
+		<th style="width: 200px;">
+			<label><input type="checkbox" id="codeProcessing" value="true" onchange="sendMessage('update');">{{ i18n("enableLuaCodeProcessing") }}</label>
+		</th>
+	</tr>
+</table>
+<hr />
+<table style="padding-top: 5px;">
+	<tr>
+		<th>
+			<a id="rename" href="#" class="button" onclick="sendMessage('rename');">{{ i18n("batchRename") }}</a>
+		</th>
+		<th>
+			<a id="reset" href="#" class="button" onclick="sendMessage('reset');">{{ i18n("reset") }}</a>
+		</th>
+	</tr>
+</table>

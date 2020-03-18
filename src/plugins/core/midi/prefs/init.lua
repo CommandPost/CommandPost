@@ -610,7 +610,7 @@ local function midiPanelCallback(id, params)
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" then
+                            if handlerTable[2] ~= "widgets" and v ~= "global_menuactions" then
                                 table.insert(allowedHandlers, v)
                             end
                         end
@@ -860,7 +860,7 @@ function mod.init(deps, env)
         priority        = 2033,
         id              = panelID,
         label           = i18n("midi"),
-        image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
+        image           = image.imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
         tooltip         = i18n("midi"),
         height          = 750,
         closeFn         = mod._destroyMIDIWatchers,

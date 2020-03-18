@@ -297,4 +297,30 @@ return test.suite("cp.delegator"):with {
         ok(eq(a.two.alpha, false))
         ok(eq(a.two.beta, true))
     end),
+
+    test("delegate to parent class", function()
+        local Alpha = class("Alpha")
+        Alpha.static.Beta = class("Beta"):include(delegator)
+            :delegateTo("parent")
+
+        function Alpha:initialize(value)
+            self.value = value
+            self.beta = Alpha.Beta(self)
+        end
+
+        function Alpha:alphaMethod()
+            return self.value
+        end
+
+        function Alpha.Beta:initialize(parent)
+            self.parent = parent
+            self.value = parent.value .. " beta"
+        end
+
+        local a = Alpha("foo")
+
+        ok(eq(a.value, "foo"))
+        ok(eq(a.beta.value, "foo beta"))
+        ok(eq(a.beta:alphaMethod(), "foo"))
+    end),
 }

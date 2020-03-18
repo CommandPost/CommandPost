@@ -2,14 +2,13 @@
 ---
 --- Keyword Editor Module.
 
-local require = require
+local require       = require
 
-local log                               = require("hs.logger").new("keywordEditor")
+local log           = require "hs.logger".new "keywordEditor"
 
-local axutils                           = require("cp.ui.axutils")
-local just                              = require("cp.just")
-local prop                              = require("cp.prop")
-
+local axutils       = require "cp.ui.axutils"
+local just          = require "cp.just"
+local prop          = require "cp.prop"
 
 local KeywordEditor = {}
 

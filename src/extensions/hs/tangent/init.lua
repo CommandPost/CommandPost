@@ -2,7 +2,7 @@
 ---
 --- Tangent Control Surface Extension
 ---
---- **API Version:** TUBE Version 3.2 - TIPC Rev 4 (22nd February 2017)
+--- **API Version:** TUBE Version 3.8 - TIPC Rev 6 (1st March 2019)
 ---
 --- This plugin allows Hammerspoon to communicate with Tangent's range of panels, such as their Element, Virtual Element Apps, Wave, Ripple and any future panels.
 ---
@@ -54,6 +54,14 @@ local mod = {}
 ---  * `unmanagedEncoderChange`          - An encoder (dial/wheel) on an unmanaged panel changed.
 ---  * `unmanagedDisplayRefresh`         - Triggered when an unmanaged panel's display needs to update.
 ---  * `panelConnectionState`            - A panel's connection state changed.
+---  * `customParameterChange`           - Increment a parameter as defined by a custom control string.
+---  * `customParameterReset`            - Reset the specified custom parameter.
+---  * `customParameterValueRequest`     - The Hub wants the current value of the custom parameter.
+---  * `customMenuChange`                - The value of the menu has changed on the Hub.
+---  * `customMenuReset`                 - The value of the menu should be reset.
+---  * `customMenuStringRequest`         - The Hub wants the current value of the menu as a string.
+---  * `customActionOn`                  - The custom action has been turned on. Typically a button press.
+---  * `customActionOff`                 - The custom action has been turned off. Typically a button release.
 mod.fromHub = {
     --------------------------------------------------------------------------------
     -- Custom Notifications:
@@ -81,6 +89,14 @@ mod.fromHub = {
     unmanagedEncoderChange                      = 0x33,
     unmanagedDisplayRefresh                     = 0x34,
     panelConnectionState                        = 0x35,
+    customParameterChange                       = 0x36,
+    customParameterReset                        = 0x37,
+    customParameterValueRequest                 = 0x38,
+    customMenuChange                            = 0x39,
+    customMenuReset                             = 0x3A,
+    customMenuStringRequest                     = 0x3B,
+    customActionOn                              = 0x3C,
+    customActionOff                             = 0x3D,
 }
 
 --- hs.tangent.toHub -> table
@@ -93,12 +109,18 @@ mod.toHub = {
     allChange                                   = 0x84,
     modeValue                                   = 0x85,
     displayText                                 = 0x86,
+    arcDisplayText                              = 0x87,
     unmanagedPanelCapabilitiesRequest           = 0xA0,
     unmanagedDisplayWrite                       = 0xA1,
     renameControl                               = 0xA2,
     highlightControl                            = 0xA3,
     indicateControl                             = 0xA4,
     panelConnectionStatesRequest                = 0xA5,
+    customParameterValue                        = 0xA6,
+    customMenuString                            = 0xA7,
+    renameCustomControl                         = 0xA8,
+    highlightCustomControl                      = 0xA9,
+    indicateCustomControl                       = 0xAA,
 }
 
 mod.reserved = {
@@ -124,6 +146,7 @@ mod.reserved = {
 ---  * `goToKnobBank`            - goes to the specific knob bank, requiring an Argument with the bank number.
 ---  * `goToButtonBank`          - goes to the specific button bank, requiring an Argument with the bank number.
 ---  * `goToTrackerballBank`     - goes to the specific trackerball bank, requiring an Argument with the bank number.
+---  * `customAction`            - a custom action.
     action = {
         _                                       = 0x80000000,
         alt                                     = 0x80000001,
@@ -143,6 +166,7 @@ mod.reserved = {
         goToKnobBank                            = 0x80000010,
         goToButtonBank                          = 0x80000011,
         goToTrackerballBank                     = 0x80000012,
+        customAction                            = 0x80000013,
     },
 
 --- hs.tangent.reserved.parameter -> table
@@ -152,13 +176,23 @@ mod.reserved = {
 --- Notes:
 ---  * `transportRing`           - transport ring.
 ---  * `fakeKeypress`            - sends a fake keypress.
+---  * `customParameter`         - a custom parameter.
     parameter = {
         _                                       = 0x81000000,
         transportRing                           = 0x81000001,
         fakeKeypress                            = 0x81000002,
+        customParameter                         = 0x81000003,
     },
+
+--- hs.tangent.reserved.menu -> table
+--- Constant
+--- A table of reserved menu IDs.
+---
+--- Notes:
+---  * `customMenu`              - a custom menu.
     menu = {
         _                                       = 0x82000000,
+        customMenu                              = 0x82000001,
     }
 }
 
@@ -176,6 +210,9 @@ mod.panelType = {
     [0x0E]  = "Element-Kb",
     [0x0F]  = "Element-Bt",
     [0x11]  = "Ripple",
+    [0x12]  = "Arc-FCN",
+    [0x13]  = "Arc-GRD",
+    [0x14]  = "Arc-NAV",
 }
 
 -- ERROR_OFFSET -> number
@@ -324,6 +361,22 @@ end
 local function byteStringToBoolean(str, offset, numberOfBytes)
   local x = byteStringToNumber(str, offset, numberOfBytes)
   return x == 1 or false, offset + numberOfBytes
+end
+
+-- byteStringToString(str, offset, numberOfBytes) -> string, number
+-- Function
+-- Translates a Byte String into a `string`.
+--
+-- Parameters:
+--  * str - The string you want to translate
+--  * offset - An offset
+--  * numberOfBytes - Number of bytes
+--
+-- Returns:
+--  * The `string` value
+--  * The new offset
+local function byteStringToString(str, offset, numberOfBytes)
+    return str:sub(offset, offset+numberOfBytes-1), offset+numberOfBytes
 end
 
 -- numberToByteString(n) -> string
@@ -875,6 +928,178 @@ local receiveHandler = {
             return errorResponse("Error translating panelConnectionState.")
         end
     end,
+
+    --------------------------------------------------------------------------------
+    -- CustomParameterChange (0x36)
+    --  * Requests that the application increment a parameter as defined by a custom
+    --    control string. The application needs to constrain the value to remain
+    --    within its maximum and minimum values.
+    --  * On receipt the application should respond to the Hub with the new absolute
+    --    parameter value using the CustomParameterValue (0xA6) command, if the
+    --    value has changed.
+    --
+    -- Format: 0x36, <controlStrLen>, <controlStr>, <increment>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- increment: The incremental value which should be applied to the parameter (Float)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customParameterChange] = function(data, offset)
+        local controlStrLen, controlStr, increment
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        increment, offset = byteStringToFloat(data, offset)
+        return {
+            controlID = controlStr,
+            increment = increment
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomParameterReset (0x37)
+    --  * Requests that the application changes a parameter as defined by a custom
+    --    control string to its reset value.
+    --  * On receipt the application should respond to the Hub with the new absolute
+    --    parameter value using the CustomParameterValue (0xA6) command, if the
+    --    value has changed.
+    --
+    -- Format: 0x37, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customParameterReset] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomParameterValueRequest (0x38)
+    --  * Requests that the application sends a CustomParameterValue (0xA6) command
+    --    to the Hub.
+    --
+    -- Format: 0x38, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customParameterValueRequest] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomMenuChange (0x39)
+    --  * Requests the application change a custom menu index by +1 or -1.
+    --  * We recommend that menus that only have two values (e.g. on/off) should
+    --    toggle their state on receipt of either a +1 or -1 increment value. This
+    --    will allow a single button to toggle the state of such an item without the
+    --    need for separate ‘up’ and ‘down’ buttons.
+    --  * On receipt, the application should respond to the Hub with the new menu
+    --    value using the CustomMenuString (0xA7) command, if the menu has changed.
+    --
+    -- Format: 0x36, <controlStrLen>, <controlStr>, <increment>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- increment: The incremental amount by which the menu index should be changed
+    --            which will always be an integer value of +1 or -1. (Signed Int)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customMenuChange] = function(data, offset)
+        local controlStrLen, controlStr, increment
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        increment, offset = byteStringToNumber(data, offset, 4)
+        return {
+            controlID = controlStr,
+            increment = increment
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomMenuReset (0x3A)
+    --  * Requests that the application changes a custom menu to its reset value.
+    --  * On receipt the application should respond to the Hub with the new absolute
+    --    parameter value using the CustomMenuString (0xA7) command, if the
+    --    value has changed.
+    --
+    -- Format: 0x3A, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customMenuReset] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomMenuStringRequest (0x3B)
+    --  * Requests that the application sends a CustomMenuString (0xA7) command
+    --    to the Hub.
+    --
+    -- Format: 0x3B, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customMenuStringRequest] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomActionOn (0x3C)
+    --  * Requests that the application performs the specified custom action.
+    --
+    -- Format: 0x3C, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customActionOn] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
+
+    --------------------------------------------------------------------------------
+    -- CustomActionOff (0x3D)
+    --  * Requests that the application cancels the specified custom action.
+    --  * This is typically sent when a button is released.
+    --
+    -- Format: 0x3D, <controlStrLen>, <controlStr>
+    --
+    -- controlStrLen: The length of controlStr The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    --------------------------------------------------------------------------------
+    [mod.fromHub.customActionOff] = function(data, offset)
+        local controlStrLen, controlStr
+        controlStrLen, offset = byteStringToNumber(data, offset, 4)
+        controlStr, offset = byteStringToString(data, offset, controlStrLen)
+        return {
+            controlID = controlStr,
+        }, offset
+    end,
 }
 
 -- processHubCommand(data) -> none
@@ -1423,6 +1648,73 @@ function mod.sendDisplayText(messages, doubleHeight)
     return mod.send(byteString)
 end
 
+--- hs.tangent.sendArcDisplayText(message1[, message2]) -> boolean, string
+--- Function
+---  * Updates the Arc Hub with one or two character strings that will be displayed
+---   on connected panels if there is space.
+---  * Messages will be truncated to 19 characters long.
+---
+--- Example:
+---
+--- ```lua
+--- hs.tangent.sendArcDisplayText("message 1", "message 2")
+--- ```
+---
+--- Parameters:
+---  * messages1      - The first message.
+---  * message2       - The second message (optional)
+---
+--- Returns:
+---  * `true` if successful, or `false` and an error message if not.
+function mod.sendArcDisplayText(message1, message2)
+    --------------------------------------------------------------------------------
+    -- ArcDisplayText (0x87)
+    --  * Updates the Hub with a number of character strings that will be shown on
+    --    the rear displays of the Arc panels
+    --  * Strings must be a maximum of 19 characters long. They will be shown in the
+    --    order received; the first string displayed at the top of the display.
+    --  * If a textStrLen value of 0 is passed then the line will not be overwritten
+    --    with any information. In this circumstance no data should be passed for
+    --    textStr. The next byte will be the textStrLen for the next string.
+    --
+    -- Format: 0x87, < panelID >, <numStrings>, (<textStrLen>, <textStr>, <reserved>)…
+    --
+    -- panelID: The ID of the panel as reported in the InitiateComms command. (Unsigned Int)
+    -- numStrings: The number of strings to follow. Maximum of 2. (Unsigned Int)
+    -- textStrLen: The length of textStr The maximum value allowed is 19 bytes. (Unsigned Int)
+    -- textStr: A line of status text Character. (String)
+    -- reserved: Reserved for future use. (Unsigned Int)
+    --------------------------------------------------------------------------------
+    if type(message1) ~= "string" then
+        return false, format("`message1` must be a strings: %s", inspect(message1))
+    elseif message1:len() > 19 then
+        return false, format("`message1` must be at most 19 characters.")
+    end
+
+    if message2 and type(message2) ~= "string" then
+        return false, format("`message2` must be a strings: %s", inspect(message2))
+    elseif message2 and message2:len() > 19 then
+        return false, format("`message2` must be at most 19 characters.")
+    end
+
+    local byteString = numberToByteString(mod.toHub.arcDisplayText) ..
+                        numberToByteString(message2 ~= nil and 2 or 1)
+
+    byteString = byteString .. numberToByteString(message1:len())
+    if message1:len() > 0 then
+        byteString = byteString .. message1:sub(1, 19) .. numberToByteString(0)
+    end
+
+    if message2 then
+        byteString = byteString .. numberToByteString(message2:len())
+        if message2:len() > 0 then
+            byteString = byteString .. message2:sub(1, 19) .. numberToByteString(0)
+        end
+    end
+
+    return mod.send(byteString)
+end
+
 --- hs.tangent.sendUnmanagedPanelCapabilitiesRequest(panelID) -> boolean, string
 --- Function
 ---  * Only used when working in Unmanaged panel mode
@@ -1606,12 +1898,11 @@ function mod.sendIndicateControl(targetID, active)
     return mod.send(byteString)
 end
 
---- hs.tangent.sendPanelConnectionStatesRequest())
+--- hs.tangent.sendPanelConnectionStatesRequest() -> boolean, string
 --- Function
----  * Requests the Hub to respond with a sequence of PanelConnectionState
----   (0x35) commands to report the connected/disconnected status of each
----   configured panel.
----  * A single request may result in multiple state responses.
+---  Requests the Hub to respond with a sequence of PanelConnectionState
+--- (0x35) commands to report the connected/disconnected status of each
+--- configured panel. A single request may result in multiple state responses.
 ---
 --- Parameters:
 ---  * None
@@ -1623,6 +1914,175 @@ function mod.sendPanelConnectionStatesRequest()
     -- Format: 0xA5
     --------------------------------------------------------------------------------
     local byteString = numberToByteString(mod.toHub.panelConnectionStatesRequest)
+
+    return mod.send(byteString)
+end
+
+--- hs.tangent.sendCustomParameterValue(controlID, value, atDefault) -> boolean, string
+--- Function
+--- Updates the Hub with a custom parameter value. The Hub then updates the displays
+--- of any panels which are currently showing the parameter value.
+---
+--- Parameters:
+---  * controlID    - the `string` ID value of the control being sent. Maximum length 128 bytes.
+---  * value        - floating-point `number` with the current value.
+---  * atDefault    - if `true`, the value is the default for this parameter.
+---
+--- Returns:
+---  * `true` if sent successfully, `false` and an error message if not.
+function mod.sendCustomParameterValue(controlID, value, atDefault)
+    --------------------------------------------------------------------------------
+    -- Format: 0xA6, <controlStrLen>, <controlStr>, <value>, <atDefault>
+    --
+    -- controlStrLen: The length of controlStr.
+    --                The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- value: The current value of the parameter. (Float)
+    -- atDefault: True if the value represents the default. Otherwise false. (Bool)
+    --------------------------------------------------------------------------------
+    if controlID:len() > 128 then
+        error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
+    end
+    local byteString = numberToByteString(mod.toHub.customParameterValue) ..
+                        numberToByteString(#controlID) ..
+                        controlID ..
+                        floatToByteString(value) ..
+                        booleanToByteString(atDefault)
+
+    return mod.send(byteString)
+end
+
+--- hs.tangent.sendCustomMenuString(controlID, value, atDefault) -> boolean, string
+--- Function
+--- Updates the Hub with a custom menu value. The Hub then updates the displays of any panels which are
+--- currently showing the menu. If the value is `nil` or an empty string, the Hub will not attempt to
+--- display a value for the menu. However the `atDefault` flag will still be recognised.
+---
+--- Parameters:
+---  * controlID    - the `string` ID value of the control being sent. Maximum length 128 bytes.
+---  * value        - `string` representing the current value of the parameter. Max 256 bytes.
+---  * atDefault    - if `true`, the value is the default for this parameter.
+---
+--- Returns:
+---  * `true` if sent successfully, `false` and an error message if not.
+function mod.sendCustomMenuString(controlID, value, atDefault)
+    --------------------------------------------------------------------------------
+    -- Format: 0xA7, <controlStrLen>, <controlStr>, <valueStrLen>, <valueStr>, <atDefault>
+    --
+    -- controlStrLen: The length of controlStr.
+    --                The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- valueStrLen: The length of valueStr The maximum value allowed is 256 bytes. (Unsigned Int)
+    -- valueStr: The current ‘value’ of the parameter represented as a string (Character String)
+    -- atDefault: True if the value represents the default. Otherwise false. (Bool)
+    --------------------------------------------------------------------------------
+    if controlID:len() > 128 then
+        error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
+    end
+    value = value:sub(1, 256)
+    local byteString = numberToByteString(mod.toHub.customMenuString) ..
+                        numberToByteString(#controlID) ..
+                        controlID ..
+                        numberToByteString(value:len()) ..
+                        value ..
+                        booleanToByteString(atDefault)
+
+    return mod.send(byteString)
+end
+
+--- hs.tangent.sendRenameCustomControl(controlID, name) -> boolean, string
+--- Function
+--- Renames a custom control dynamically. The string supplied will replace the normal.
+--- To remove any existing replacement name set name to `nil`, this will remove
+--- any renaming and return the system to the normal display text.
+---
+--- Parameters:
+---  * controlID    - the `string` ID value of the control being sent. Maximum length 128 bytes.
+---  * value        - `string` representing the current value of the parameter. Max 256 bytes.
+---
+--- Returns:
+---  * `true` if sent successfully, `false` and an error message if not.
+function mod.sendRenameCustomControl(controlID, name)
+    --------------------------------------------------------------------------------
+    -- Format: 0xA8, <controlStrLen>, <controlStr>, <nameStrLen>, <nameStr>
+    --
+    -- controlStrLen: The length of controlStr.
+    --                The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- nameStrLen: The length of nameStr. (Unsigned Int)
+    -- nameStr: The new name string. (Character String)
+    --------------------------------------------------------------------------------
+    if controlID:len() > 128 then
+        error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
+    end
+    name = name or ""
+    local byteString = numberToByteString(mod.toHub.renameCustomControl) ..
+                        numberToByteString(#controlID) ..
+                        controlID ..
+                        numberToByteString(name:len()) ..
+                        name
+
+    return mod.send(byteString)
+end
+
+--- hs.tangent.sendHighlightCustomControl(controlID, highlighted) -> boolean, string
+--- Function
+--- Highlights the control on any panel where this feature is available.
+---
+--- Parameters:
+---  * controlID    - the `string` ID value of the control being sent. Maximum length 128 bytes.
+---  * enabled      - If `true`, the highlight will be enabled (if supported).
+---
+--- Returns:
+---  * `true` if sent successfully, `false` and an error message if not.
+function mod.sendHighlightCustomControl(controlID, enabled)
+    --------------------------------------------------------------------------------
+    -- Format: 0xA9, <controlStrLen>, <controlStr>, <state>
+    --
+    -- controlStrLen: The length of controlStr.
+    --                The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- state: The state to set. 1 for highlighted, 0 for clear. (Unsigned Int)
+    --------------------------------------------------------------------------------
+    if controlID:len() > 128 then
+        error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
+    end
+    local byteString = numberToByteString(mod.toHub.highlightCustomControl) ..
+                        numberToByteString(#controlID) ..
+                        controlID ..
+                        numberToByteString(enabled and 1 or 0)
+
+    return mod.send(byteString)
+end
+
+--- hs.tangent.sendIndicateCustomControl(controlID, enabled) -> boolean, string
+--- Function
+--- Sets the Indicator of the control on any panel where this feature is available.
+--- This indicator is driven by the atDefault argument for Parameters and Menus.
+--- This command therefore only applies to controls mapped to Actions.
+---
+--- Parameters:
+---  * controlID    - the `string` ID value of the control being sent. Maximum length 128 bytes.
+---  * enabled      - If `true`, the indicator will be enabled (if supported).
+---
+--- Returns:
+---  * `true` if sent successfully, `false` and an error message if not.
+function mod.sendIndicateCustomControl(controlID, enabled)
+    --------------------------------------------------------------------------------
+    -- Format: 0xAA, <controlStrLen>, <controlStr>, <state>
+    --
+    -- controlStrLen: The length of controlStr.
+    --                The maximum length allowed is 128 bytes. (Unsigned Int)
+    -- controlStr: A string containing the identifier for the custom control mapping. (Character String)
+    -- state: The state to set. 1 for highlighted, 0 for clear. (Unsigned Int)
+    --------------------------------------------------------------------------------
+    if controlID:len() > 128 then
+        error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
+    end
+    local byteString = numberToByteString(mod.toHub.indiateCustomControl) ..
+                        numberToByteString(#controlID) ..
+                        controlID ..
+                        numberToByteString(enabled and 1 or 0)
 
     return mod.send(byteString)
 end

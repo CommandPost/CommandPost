@@ -4,14 +4,14 @@
 
 local require = require
 
-local image         = require("hs.image")
+local image         = require "hs.image"
 
-local i18n          = require("cp.i18n")
-local tools         = require("cp.tools")
+local i18n          = require "cp.i18n"
+local tools         = require "cp.tools"
+local config        = require "cp.config"
 
 local iconFallback  = tools.iconFallback
 local imageFromPath = image.imageFromPath
-
 
 local plugin = {
     id              = "core.preferences.panels.scripting",
@@ -26,7 +26,7 @@ function plugin.init(deps)
         priority    = 2045,
         id          = "scripting",
         label       = i18n("scripting"),
-        image       = imageFromPath(iconFallback("/Applications/Utilities/Script Editor.app/Contents/Resources/SEScriptEditorX.icns")),
+        image       = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns"),
         tooltip     = i18n("scripting"),
         height      = 220,
     })

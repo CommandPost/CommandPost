@@ -605,7 +605,7 @@ function EffectsBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table(self, function()
             return axutils.childFromLeft(self:mainGroupUI(), 1, ScrollArea.matches)
-        end):uncached()
+        end)
     end
     return self._sidebar
 end

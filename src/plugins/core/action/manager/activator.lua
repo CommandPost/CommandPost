@@ -849,11 +849,11 @@ function activator.mt:chooser()
         end
 
         local executeFn = function(result)
-            self:activate(result)
             if self._eventtap then
                 self._eventtap:stop()
                 self._eventtap = nil
             end
+            self:activate(result)
         end
         local rightClickFn = function(index) self:rightClickMain(index) end
         local choicesFn = function() return self:activeChoices() end

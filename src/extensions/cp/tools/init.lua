@@ -13,6 +13,7 @@ local fs                = require "hs.fs"
 local geometry          = require "hs.geometry"
 local host              = require "hs.host"
 local inspect           = require "hs.inspect"
+local keycodes          = require "hs.keycodes"
 local mouse             = require "hs.mouse"
 local osascript         = require "hs.osascript"
 local screen            = require "hs.screen"
@@ -24,8 +25,11 @@ local config            = require "cp.config"
 
 local v                 = require "semver"
 
+local event             = eventtap.event
 local insert            = table.insert
 local locale            = host.locale
+local map               = keycodes.map
+local newKeyEvent       = event.newKeyEvent
 local usleep            = timer.usleep
 
 local tools = {}
@@ -33,27 +37,27 @@ local tools = {}
 -- LEFT_MOUSE_DOWN -> number
 -- Constant
 -- Left Mouse Down ID.
-local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
+local LEFT_MOUSE_DOWN = event.types["leftMouseDown"]
 
 -- LEFT_MOUSE_UP -> number
 -- Constant
 -- Left Mouse Up ID.
-local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
+local LEFT_MOUSE_UP = event.types["leftMouseUp"]
 
 -- RIGHT_MOUSE_DOWN -> number
 -- Constant
 -- Right Mouse Down ID.
-local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+local RIGHT_MOUSE_DOWN = event.types["rightMouseDown"]
 
 -- RIGHT_MOUSE_UP -> number
 -- Constant
 -- Right Mouse Up ID.
-local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+local RIGHT_MOUSE_UP = event.types["rightMouseUp"]
 
 -- CLICK_STATE -> number
 -- Constant
 -- Click State ID.
-local CLICK_STATE = eventtap.event.properties.mouseEventClickState
+local CLICK_STATE = event.properties.mouseEventClickState
 
 -- DEFAULT_DELAY -> number
 -- Constant
@@ -86,6 +90,33 @@ function string:split(delimiter) -- luacheck: ignore
       end
    end
    return list
+end
+
+--- cp.tools.keyStroke(modifiers, character, app) -> none
+--- Method
+--- Generates and emits a single keystroke event pair for the supplied keyboard
+--- modifiers and character to the application.
+---
+--- Parameters:
+---  * modifiers - A table containing the keyboard modifiers to apply ("fn", "ctrl", "alt", "cmd" or "shift")
+---  * character - A string containing a character to be emitted
+---  * app - The optional `hs.application` you want to target
+---
+--- Returns:
+---  * None
+function tools.keyStroke(modifiers, character, app)
+    modifiers = modifiers or {}
+
+    for _, m in pairs(modifiers) do
+        newKeyEvent(map[m], true):post(app)
+    end
+
+    newKeyEvent(character, true):post(app)
+    newKeyEvent(character, false):post(app)
+
+    for _, m in pairs(modifiers) do
+        newKeyEvent(map[m], false):post(app)
+    end
 end
 
 --- cp.tools.shiftPressed() -> boolean
@@ -578,7 +609,9 @@ function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
         local result = ""
-        if v(macOSVersion) >= v("10.14") then
+        if v(macOSVersion) >= v("10.15") then
+            result = "macOS Catalina" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.14") then
             result = "macOS Mojave" .. " " .. tostring(macOSVersion)
         elseif v(macOSVersion) >= v("10.13") then
             result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
@@ -1076,9 +1109,9 @@ end
 function tools.leftClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then usleep(delay) end
-    eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.rightClick(point[, delay, clickNumber]) -> none
@@ -1095,9 +1128,9 @@ end
 function tools.rightClick(point, delay, clickNumber)
     delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then usleep(delay) end
-    eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+    event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
@@ -1196,10 +1229,17 @@ end
 ---
 --- Returns:
 ---  * The number of items in the table.
+---
+--- Notes:
+---  * If something other than a table is supplied, this function will return 0.
 function tools.tableCount(table)
-    local count = 0
-    for _ in pairs(table) do count = count + 1 end
-    return count
+    if type(table) == "table" then
+        local count = 0
+        for _ in pairs(table) do count = count + 1 end
+        return count
+    else
+        return 0
+    end
 end
 
 --- cp.tools.tableContains(table, element) -> boolean
@@ -1298,6 +1338,22 @@ function tools.getFilenameFromPath(input, removeExtension)
     end
 end
 
+--- cp.tools.getFileExtensionFromPath(input) -> string
+--- Function
+--- Gets the file extension from a path.
+---
+--- Parameters:
+---  * input - The path
+---
+--- Returns:
+---  * A string of the file extension.
+function tools.getFileExtensionFromPath(path)
+    local extension = path and string.match(path, "^.+(%..+)$")
+    if extension and extension:sub(1, 1) == "." then
+        return extension:sub(2)
+    end
+end
+
 --- cp.tools.removeFilenameFromPath(string) -> string
 --- Function
 --- Removes the filename from a path.
@@ -1374,15 +1430,39 @@ end
 --- Returns:
 ---  * A string
 function tools.incrementFilename(value)
-    if value == nil then return nil end
-    if type(value) ~= "string" then return nil end
-
-    local name, counter = string.match(value, '^(.*)%s(%d+)$')
-    if name == nil or counter == nil then
-        return value .. " 1"
+    if type(value) == "string" then
+        local name, counter = string.match(value, '^(.*)%s(%d+)$')
+        if name == nil or counter == nil then
+            return value .. " 1"
+        end
+        return name .. " " .. tostring(tonumber(counter) + 1)
     end
+end
 
-    return name .. " " .. tostring(tonumber(counter) + 1)
+--- cp.tools.incrementFilenameInPath(path) -> string
+--- Function
+--- Increments the filename as it appears in a path.
+---
+--- Parameters:
+---  * path - A path to a file.
+---
+--- Returns:
+---  * A string
+function tools.incrementFilenameInPath(value)
+    if type(value) == "string" then
+        local path = tools.removeFilenameFromPath(value)
+        local extension = tools.getFileExtensionFromPath(value)
+        local filename
+        if extension then
+            filename = tools.getFilenameFromPath(value, true)
+            extension = "." .. extension
+        else
+            extension = ""
+            filename = tools.getFilenameFromPath(value)
+        end
+        local newFilename = tools.incrementFilename(filename)
+        return path .. newFilename .. extension
+    end
 end
 
 --- cp.tools.dirFiles(path) -> table
@@ -1735,6 +1815,27 @@ function tools.contentsInsideBrackets(a)
 
     local b = a and string.match(a, "%(.*%)")
     return b and b:sub(2, -2)
+end
+
+--- cp.tools.replace(text, old, new) -> string
+--- Function
+--- A find and replace feature that doesn't use patterns.
+---
+--- Parameters:
+---  * text - The string you want to process
+---  * old - The string you want to find
+---  * new - The new string you want to replace the old string with
+---
+--- Returns:
+---  * A new string
+function tools.replace(text, old, new)
+    local b,e = text:find(old, 1, true)
+    if b == nil then
+        return text
+    else
+        local result = text:sub(1, b - 1) .. new .. text:sub(e + 1)
+        return tools.replace(result, old, new)
+    end
 end
 
 return tools

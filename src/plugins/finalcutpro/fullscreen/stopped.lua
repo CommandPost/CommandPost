@@ -30,7 +30,7 @@ function plugin.init(deps)
                 if doUntil(function()
                     return fcp:fullScreenWindow():isShowing()
                 end, 5, 0.1) then
-                    eventtap.keyStroke({}, "space")
+                    fcp:keyStroke({}, "space")
                     return
                 end
             end

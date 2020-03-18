@@ -2,96 +2,40 @@
 ---
 --- Match Frame Tools for Final Cut Pro.
 
-local require       = require
+local require                   = require
 
-local log           = require("hs.logger").new("matchframe")
+local log                       = require "hs.logger".new "matchframe"
 
-local dialog        = require("cp.dialog")
-local fcp           = require("cp.apple.finalcutpro")
-local just          = require("cp.just")
+local chooser                   = require "hs.chooser"
+local menubar                   = require "hs.menubar"
+local mouse                     = require "hs.mouse"
+
+local axutils                   = require "cp.ui.axutils"
+local config                    = require "cp.config"
+local dialog                    = require "cp.dialog"
+local fcp                       = require "cp.apple.finalcutpro"
+local i18n                      = require "cp.i18n"
+local just                      = require "cp.just"
+local tools                     = require "cp.tools"
+
+local childIndex                = axutils.childIndex
+local displayErrorMessage       = dialog.displayErrorMessage
+local displayNotification       = dialog.displayNotification
+local playErrorSound            = tools.playErrorSound
+local sort                      = table.sort
+local tableCount                = tools.tableCount
 
 local mod = {}
 
--- ninjaPasteboardCopy() -> boolean, data
--- Function
--- Ninja Pasteboard Copy. Copies something to the pasteboard, then restores the original pasteboard item.
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if successful otherwise `false`
---  * The pasteboard data
-local function ninjaPasteboardCopy()
+--- plugins.finalcutpro.timeline.matchframe.hiddenKeywords <cp.prop: table>
+--- Variable
+--- Hidden Keywords
+mod.hiddenKeywords = config.prop("revealInKeywordCollection.hiddenKeywords", {})
 
-    local errorFunction = " Error occurred in ninjaPasteboardCopy()."
-
-    --------------------------------------------------------------------------------
-    -- Variables:
-    --------------------------------------------------------------------------------
-    local pasteboard = mod.pasteboardManager
-
-    --------------------------------------------------------------------------------
-    -- Stop Watching Pasteboard:
-    --------------------------------------------------------------------------------
-    pasteboard.stopWatching()
-
-    --------------------------------------------------------------------------------
-    -- Save Current Pasteboard Contents for later:
-    --------------------------------------------------------------------------------
-    local originalPasteboard = pasteboard.readFCPXData()
-
-    --------------------------------------------------------------------------------
-    -- Trigger 'copy' from Menubar:
-    --------------------------------------------------------------------------------
-    local menuBar = fcp:menu()
-    if menuBar:isEnabled({"Edit", "Copy"}) then
-        menuBar:selectMenu({"Edit", "Copy"})
-    else
-        log.ef("Failed to select Copy from Menubar." .. errorFunction)
-        pasteboard.startWatching()
-        return false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Wait until something new is actually on the Pasteboard:
-    --------------------------------------------------------------------------------
-    local newPasteboard = nil
-    just.doUntil(function()
-        newPasteboard = pasteboard.readFCPXData()
-        if newPasteboard ~= originalPasteboard then
-            return true
-        end
-    end, 10, 0.1)
-    if newPasteboard == nil then
-        log.ef("Failed to get new pasteboard contents." .. errorFunction)
-        pasteboard.startWatching()
-        return false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Restore Original Pasteboard Contents:
-    --------------------------------------------------------------------------------
-    if originalPasteboard ~= nil then
-        local result = pasteboard.writeFCPXData(originalPasteboard)
-        if not result then
-            log.ef("Failed to restore original Pasteboard item." .. errorFunction)
-            pasteboard.startWatching()
-            return false
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Start Watching Pasteboard:
-    --------------------------------------------------------------------------------
-    pasteboard.startWatching()
-
-    --------------------------------------------------------------------------------
-    -- Return New Pasteboard:
-    --------------------------------------------------------------------------------
-    return true, newPasteboard
-
-end
+--- plugins.finalcutpro.timeline.matchframe.hiddenKeywords <cp.prop: table>
+--- Variable
+--- Favourite Keywords
+mod.favouriteKeywords = config.prop("revealInKeywordCollection.favouriteKeywords", {})
 
 --- plugins.finalcutpro.timeline.matchframe.multicamMatchFrame(goBackToTimeline) -> none
 --- Function
@@ -152,7 +96,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
         menuBar:selectMenu({"Clip", "Open in Angle Editor"})
     else
-        dialog.displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
+        displayErrorMessage("Failed to open clip in Angle Editor.\n\nAre you sure the clip you have selected is a Multicam?" .. errorFunction)
         return false
     end
 
@@ -162,7 +106,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     if menuBar:isEnabled({"Window", "Go To", "Timeline"}) then
         menuBar:selectMenu({"Window", "Go To", "Timeline"})
     else
-        dialog.displayErrorMessage("Unable to return to timeline." .. errorFunction)
+        displayErrorMessage("Unable to return to timeline." .. errorFunction)
         return false
     end
 
@@ -187,7 +131,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
         if menuBar:isEnabled({"View", "Timeline History Back"}) then
             menuBar:selectMenu({"View", "Timeline History Back"})
         else
-            dialog.displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
+            displayErrorMessage("Unable to go back to previous timeline." .. errorFunction)
             return false
         end
     end
@@ -220,7 +164,7 @@ function mod.getMulticamAngleFromSelectedClip()
     --------------------------------------------------------------------------------
     -- Ninja Pasteboard Copy:
     --------------------------------------------------------------------------------
-    local result, pasteboardData = ninjaPasteboardCopy()
+    local result, pasteboardData = mod.pasteboardManager.ninjaPasteboardCopy()
     if not result then
         log.ef("Ninja Pasteboard Copy Failed." .. errorFunction)
         return false
@@ -283,6 +227,65 @@ function mod.getMulticamAngleFromSelectedClip()
     return false
 end
 
+-- soloClip() -> none
+-- Function
+-- Solo's a clip in the Browser.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function soloClip()
+    --------------------------------------------------------------------------------
+    -- Give FCPX time to find the clip
+    --------------------------------------------------------------------------------
+    local libraries = fcp:libraries()
+    local selectedClips = nil
+    just.doUntil(function()
+        selectedClips = libraries:selectedClipsUI()
+        return selectedClips and #selectedClips > 0
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Check that there is exactly one Selected Clip
+    --------------------------------------------------------------------------------
+    if not selectedClips or #selectedClips ~= 1 then
+        displayErrorMessage("Expected exactly 1 selected clip in the Libraries Browser.\n\nError occurred in soloClip().")
+        return nil
+    end
+
+    --------------------------------------------------------------------------------
+    -- Get Browser Playhead:
+    --------------------------------------------------------------------------------
+    local playhead = libraries:playhead()
+    if not playhead:isShowing() then
+        displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occurred in soloClip().")
+        return nil
+    end
+
+    --------------------------------------------------------------------------------
+    -- Get Clip Name from the Viewer
+    --------------------------------------------------------------------------------
+    local clipName = fcp:viewer():title()
+
+    if clipName then
+        --------------------------------------------------------------------------------
+        -- Ensure the Search Bar is visible
+        --------------------------------------------------------------------------------
+        if not libraries.search:isShowing() then
+            libraries:searchToggle()
+        end
+
+        --------------------------------------------------------------------------------
+        -- Search for the title
+        --------------------------------------------------------------------------------
+        libraries:search(clipName)
+    else
+        log.ef("Unable to find the clip title.")
+    end
+end
+
 --- plugins.finalcutpro.timeline.matchframe.matchFrame() -> none
 --- Function
 --- Performs a Single Match Frame.
@@ -318,53 +321,11 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     fcp:menu():selectMenu({"File", "Reveal in Browser"})
 
+    --------------------------------------------------------------------------------
+    -- Solo Clip:
+    --------------------------------------------------------------------------------
     if focus then
-        --------------------------------------------------------------------------------
-        -- Give FCPX time to find the clip
-        --------------------------------------------------------------------------------
-        local selectedClips = nil
-        just.doUntil(function()
-            selectedClips = libraries:selectedClipsUI()
-            return selectedClips and #selectedClips > 0
-        end)
-
-        --------------------------------------------------------------------------------
-        -- Check that there is exactly one Selected Clip
-        --------------------------------------------------------------------------------
-        if not selectedClips or #selectedClips ~= 1 then
-            dialog.displayErrorMessage("Expected exactly 1 selected clip in the Libraries Browser.\n\nError occurred in matchFrame().")
-            return nil
-        end
-
-        --------------------------------------------------------------------------------
-        -- Get Browser Playhead:
-        --------------------------------------------------------------------------------
-        local playhead = libraries:playhead()
-        if not playhead:isShowing() then
-            dialog.displayErrorMessage("Unable to find Browser Persistent Playhead.\n\nError occurred in matchFrame().")
-            return nil
-        end
-
-        --------------------------------------------------------------------------------
-        -- Get Clip Name from the Viewer
-        --------------------------------------------------------------------------------
-        local clipName = fcp:viewer():title()
-
-        if clipName then
-            --------------------------------------------------------------------------------
-            -- Ensure the Search Bar is visible
-            --------------------------------------------------------------------------------
-            if not libraries.search:isShowing() then
-                libraries:searchToggle()
-            end
-
-            --------------------------------------------------------------------------------
-            -- Search for the title
-            --------------------------------------------------------------------------------
-            libraries:search(clipName)
-        else
-            log.ef("Unable to find the clip title.")
-        end
+        soloClip()
     end
 
     --------------------------------------------------------------------------------
@@ -373,6 +334,427 @@ function mod.matchFrame(focus)
     mod.browserPlayhead.highlight()
 end
 
+-- selectKeywordCollection(keyword[, solo]) -> none
+-- Function
+-- Reveal in Keyword Collection
+--
+-- Parameters:
+--  * keyword - The keyword to select as string
+--  * solo - An optional boolean which specific whether or not to solo the clip
+--
+-- Returns:
+--  * None
+local function selectKeywordCollection(keyword, solo)
+    fcp:selectMenu({"File", "Reveal in Browser"})
+
+    local sidebar = fcp:libraries():sidebar()
+
+    local selectedRowsUI = sidebar:selectedRowsUI()
+    local selectedRowUI = selectedRowsUI and selectedRowsUI[1]
+
+    if selectedRowUI then
+        --------------------------------------------------------------------------------
+        -- Show & Disclose the Event:
+        --------------------------------------------------------------------------------
+        sidebar:showRow(selectedRowUI)
+        selectedRowUI:setAttributeValue("AXDisclosing", true)
+
+        local index = childIndex(selectedRowUI)
+        local rows = sidebar:rowsUI()
+
+        for i=index + 1, #rows do
+            local selectedRow = rows[i]
+            if selectedRow then
+                --------------------------------------------------------------------------------
+                -- This should never happen, but just in-case:
+                --------------------------------------------------------------------------------
+                if selectedRow:attributeValue("AXDisclosureLevel") == 1 then
+                    playErrorSound()
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Disclose each folder:
+                --------------------------------------------------------------------------------
+                selectedRow:setAttributeValue("AXDisclosing", true)
+
+                --------------------------------------------------------------------------------
+                -- Check to see if we have a match:
+                --------------------------------------------------------------------------------
+                local children = selectedRow:attributeValue("AXChildren")
+                local selectedValue = children and children[1] and children[1]:attributeValue("AXValue")
+                if selectedValue and string.lower(selectedValue) == keyword then -- All keywords in the Pasteboard are lowercase
+                    --------------------------------------------------------------------------------
+                    -- Select the keyword collection:
+                    --------------------------------------------------------------------------------
+                    sidebar:selectRowAt(i)
+
+                    --------------------------------------------------------------------------------
+                    -- Solo the clip if necessary:
+                    --------------------------------------------------------------------------------
+                    if solo then
+                        soloClip()
+                    end
+                    return
+                end
+            end
+        end
+    end
+    playErrorSound()
+end
+
+-- revealInKeywordCollection(solo) -> none
+-- Function
+-- Reveal in Keyword Collection
+--
+-- Parameters:
+--  * solo - An optional boolean which specific whether or not to solo the clip
+--
+-- Returns:
+--  * None
+local function revealInKeywordCollection(solo)
+    --------------------------------------------------------------------------------
+    -- Make sure the timeline is focussed:
+    --------------------------------------------------------------------------------
+    fcp:selectMenu({"Window", "Go To", "Timeline"})
+
+    --------------------------------------------------------------------------------
+    -- Ninja Pasteboard time:
+    --------------------------------------------------------------------------------
+    local manager = mod.pasteboardManager
+    local result, archivedData = manager.ninjaPasteboardCopy()
+    local data = result and manager.unarchiveFCPXData(archivedData)
+    if data and data.root and data.root.objects and data.root.objects[1] then
+        --------------------------------------------------------------------------------
+        -- Get root object:
+        --------------------------------------------------------------------------------
+        local object = data.root.objects[1]
+        local containedItems = object.containedItems
+
+        --------------------------------------------------------------------------------
+        -- Make sure only one clip is selected:
+        --------------------------------------------------------------------------------
+        local singleClipSelected = true
+        if containedItems and containedItems[1] and containedItems[1]["anchoredItems"] then
+            --------------------------------------------------------------------------------
+            -- More than one clip in primary storyline selected:
+            --------------------------------------------------------------------------------
+            if object.displayName == "__timelineContainerClip" and tableCount(containedItems) ~= 1 then
+                singleClipSelected = false
+            end
+
+            --------------------------------------------------------------------------------
+            -- More than one clip in secondary storyline groups selected:
+            --------------------------------------------------------------------------------
+            if containedItems[1]["displayName"] == "Gap" and tableCount(containedItems[1]["anchoredItems"]) ~= 1 then
+                singleClipSelected = false
+            end
+        end
+        if not singleClipSelected then
+            displayNotification(i18n("mustHaveSingleClipSelectedInTimeline"))
+            playErrorSound()
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get keywords from Pasteboard:
+        --------------------------------------------------------------------------------
+        local keywords = {}
+        for _, vv in pairs(containedItems) do
+
+            local cr = vv.clippedRange and load("return " .. vv.clippedRange)()
+
+            local clipStart = cr[1]
+            local clipEnd = cr[1] + cr[2]
+
+            local anchoredItems = vv.anchoredItems
+            if anchoredItems then
+                for _, v in pairs(anchoredItems) do
+
+                    local anchorPair = v.anchorPair and load("return " .. v.anchorPair)()
+                    local duration = v.duration and load("return " .. v.duration)()
+
+                    local aClippedRange = v.clippedRange and load("return " .. v.clippedRange)()
+                    local baseClipStart = aClippedRange and aClippedRange[1]
+                    local baseClipEnd = aClippedRange and (aClippedRange[1] + aClippedRange[2])
+
+                    --------------------------------------------------------------------------------
+                    -- If the clip is in the primary storyline:
+                    --------------------------------------------------------------------------------
+                    local metadata = v.metadata
+                    if metadata and metadata.keywords then
+                        local keywordStart = anchorPair and anchorPair[2]
+                        local keywordEnd = duration and keywordStart and (duration + keywordStart)
+
+                        --------------------------------------------------------------------------------
+                        -- If a keyword begins at the start of a multicam clip, it might not have an
+                        -- anchorPair value for some reason:
+                        --------------------------------------------------------------------------------
+                        if duration and not anchorPair then
+                            keywordStart = 0
+                            keywordEnd = duration
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the keyword is within the range of the selected clip:
+                        --------------------------------------------------------------------------------
+                        if keywordStart and keywordEnd and clipStart and clipEnd
+                        and (clipStart >= keywordStart and clipStart <= keywordEnd)
+                        or (clipEnd >= keywordStart and clipEnd <= keywordEnd)
+                        or (clipStart < keywordStart and clipEnd > keywordEnd) then
+                            for _, keyword in pairs(metadata.keywords) do
+                                local r
+                                if type(keyword) == "table" and keyword["NS.string"] then
+                                    r = keyword["NS.string"]
+                                else
+                                    r = keyword
+                                end
+                                table.insert(keywords, r)
+                            end
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If the clip is above or below the primary storyline, but not in a
+                    -- secondary storyline group:
+                    --------------------------------------------------------------------------------
+                    if v["anchoredItems"] then
+                        for _, vvv in pairs(v["anchoredItems"]) do
+                            local m = vvv.metadata
+                            if m and m.keywords then
+
+                                local sAnchorPair = vvv.anchorPair and load("return " .. vvv.anchorPair)()
+                                local sDuration = vvv.duration and load("return " .. vvv.duration)()
+
+                                local keywordStart = sAnchorPair and sAnchorPair[2]
+                                local keywordEnd = sDuration and keywordStart and (sDuration + keywordStart)
+
+                                --------------------------------------------------------------------------------
+                                -- If a keyword begins at the start of a multicam clip, it might not have an
+                                -- anchorPair value for some reason:
+                                --------------------------------------------------------------------------------
+                                if sDuration and not sAnchorPair then
+                                    keywordStart = 0
+                                    keywordEnd = sDuration
+                                end
+
+                                --------------------------------------------------------------------------------
+                                -- Make sure the keyword is within the range of the selected clip:
+                                --------------------------------------------------------------------------------
+                                if keywordStart and keywordEnd and baseClipStart and baseClipEnd
+                                and (baseClipStart >= keywordStart and baseClipStart <= keywordEnd)
+                                or (baseClipEnd >= keywordStart and baseClipEnd <= keywordEnd)
+                                or (baseClipStart < keywordStart and baseClipEnd > keywordEnd) then
+                                    for _, keyword in pairs(m.keywords) do
+                                        local r
+                                        if type(keyword) == "table" and keyword["NS.string"] then
+                                            r = keyword["NS.string"]
+                                        else
+                                            r = keyword
+                                        end
+                                        table.insert(keywords, r)
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- If the clip is within a secondary storyline:
+                    --------------------------------------------------------------------------------
+                    if v["containedItems"] then
+                        for _, c in pairs(v["containedItems"]) do
+
+                            local bClippedRange = c.clippedRange and load("return " .. c.clippedRange)()
+                            local bClipStart = bClippedRange and bClippedRange[1]
+                            local bClipEnd = bClippedRange and (bClippedRange[1] + bClippedRange[2])
+
+                            local ai = c.anchoredItems
+                            if ai then
+                                for _, a in pairs(ai) do
+                                    local mm = a and a.metadata
+                                    if mm and mm.keywords then
+
+                                        local ap = a.anchorPair and load("return " .. a.anchorPair)()
+                                        local du = a.duration and load("return " .. a.duration)()
+
+                                        local keywordStart = ap and ap[2]
+                                        local keywordEnd = du and keywordStart and (du + keywordStart)
+
+                                        --------------------------------------------------------------------------------
+                                        -- If a keyword begins at the start of a multicam clip, it might not have an
+                                        -- anchorPair value for some reason:
+                                        --------------------------------------------------------------------------------
+                                        if du and not ap then
+                                            keywordStart = 0
+                                            keywordEnd = du
+                                        end
+
+                                        --------------------------------------------------------------------------------
+                                        -- Make sure the keyword is within the range of the selected clip:
+                                        --------------------------------------------------------------------------------
+                                        if keywordStart and keywordEnd and bClipStart and bClipEnd
+                                        and (bClipStart >= keywordStart and bClipStart <= keywordEnd)
+                                        or (bClipEnd >= keywordStart and bClipEnd <= keywordEnd)
+                                        or (bClipStart < keywordStart and bClipEnd > keywordEnd) then
+                                            for _, keyword in pairs(mm.keywords) do
+                                                if type(keyword) == "table" and keyword["NS.string"] then
+                                                    table.insert(keywords, keyword["NS.string"])
+                                                else
+                                                    table.insert(keywords, keyword)
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Remove duplicate keywords:
+        --------------------------------------------------------------------------------
+        local hash = {}
+        local uniqueKeywords = {}
+        for _, v in ipairs(keywords) do
+           if not hash[v] then
+               uniqueKeywords[#uniqueKeywords+1] = v
+               hash[v] = true
+           end
+        end
+        keywords = uniqueKeywords
+
+        if #keywords == 0 then
+            --------------------------------------------------------------------------------
+            -- If no keywords on the clip, just "Reveal in Browser":
+            --------------------------------------------------------------------------------
+            fcp:menu():selectMenu({"File", "Reveal in Browser"})
+
+            --------------------------------------------------------------------------------
+            -- Solo the clip if necessary:
+            --------------------------------------------------------------------------------
+            if solo then
+                soloClip()
+            end
+
+            return
+        elseif #keywords == 1 then
+            --------------------------------------------------------------------------------
+            -- If there's only a single keyword on the clip:
+            --------------------------------------------------------------------------------
+            selectKeywordCollection(keywords[1], solo)
+            return
+        elseif #keywords > 1 then
+            --------------------------------------------------------------------------------
+            -- If there's multiple keywords on the clip, open the Search Console:
+            --------------------------------------------------------------------------------
+            if keywords then
+                mod.chooser = chooser.new(function(k)
+                    if k and k.text then
+                        selectKeywordCollection(k.text, solo)
+                    end
+                end)
+                    :choices(function()
+                        local choices = {}
+                        local hiddenKeywords = mod.hiddenKeywords()
+                        for _, keyword in ipairs(keywords) do
+                            if not hiddenKeywords[keyword] then
+                                table.insert(choices, {
+                                    ["text"] = keyword,
+                                })
+                            end
+                        end
+                        local favouriteKeywords = mod.favouriteKeywords()
+                        sort(choices, function(a, b)
+                            --------------------------------------------------------------------------------
+                            -- Prioritise Favourites First:
+                            --------------------------------------------------------------------------------
+                            if favouriteKeywords[a.text] and not favouriteKeywords[b.text] then
+                                return true
+                            elseif favouriteKeywords[b.text] and not favouriteKeywords[a.text] then
+                                return false
+                            end
+
+                            --------------------------------------------------------------------------------
+                            -- Then sort alphabetically:
+                            --------------------------------------------------------------------------------
+                            return a.text < b.text
+                        end)
+                        return choices
+                    end)
+                    :bgDark(true)
+                    :rightClickCallback(function(row)
+                        --------------------------------------------------------------------------------
+                        -- Hidden Keywords:
+                        --------------------------------------------------------------------------------
+                        local hiddenKeywords = mod.hiddenKeywords()
+                        local hiddenKeywordsMenu = {}
+                        if next(hiddenKeywords) == nil then
+                            table.insert(hiddenKeywordsMenu, { title = i18n("none"), disabled = true })
+                        else
+                            for i,_ in pairs(hiddenKeywords) do
+                                table.insert(hiddenKeywordsMenu, {title = i, fn = function()
+                                    hiddenKeywords[i] = nil
+                                    mod.hiddenKeywords(hiddenKeywords)
+                                    mod.chooser:refreshChoicesCallback(true)
+                                end})
+                            end
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Favourite Keywords:
+                        --------------------------------------------------------------------------------
+                        local favouriteKeywords = mod.favouriteKeywords()
+                        local favouriteKeywordsMenu = {}
+                        if next(favouriteKeywords) == nil then
+                            table.insert(favouriteKeywordsMenu, { title = i18n("none"), disabled = true })
+                        else
+                            for i,_ in pairs(favouriteKeywords) do
+                                table.insert(favouriteKeywordsMenu, {title = i, fn = function()
+                                    favouriteKeywords[i] = nil
+                                    mod.favouriteKeywords(favouriteKeywords)
+                                    mod.chooser:refreshChoicesCallback(true)
+                                end})
+                            end
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Setup Popup Menu:
+                        --------------------------------------------------------------------------------
+                        local menu = {
+                            { title = i18n("favouriteKeyword"), fn = function()
+                                local contents = mod.chooser:selectedRowContents(row)
+                                local fk = mod.favouriteKeywords()
+                                fk[contents.text] = true
+                                mod.favouriteKeywords(fk)
+                                mod.chooser:refreshChoicesCallback(true)
+                            end, disabled = row == 0 },
+                            { title = i18n("removeFavouriteKeyword"), menu = favouriteKeywordsMenu },
+                            { title = "-" },
+                            { title = i18n("hideKeyword"), fn = function()
+                                local contents = mod.chooser:selectedRowContents(row)
+                                local hk = mod.hiddenKeywords()
+                                hk[contents.text] = true
+                                mod.hiddenKeywords(hk)
+                                mod.chooser:refreshChoicesCallback(true)
+                            end, disabled = row == 0 },
+                            { title = i18n("restoreHiddenKeyword"), menu = hiddenKeywordsMenu }
+                        }
+
+                        menubar.new(false)
+                            :setMenu(menu)
+                            :popupMenu(mouse.getAbsolutePosition(), true)
+                    end)
+                    :show()
+            end
+        end
+    else
+        playErrorSound()
+    end
+end
 
 local plugin = {
     id = "finalcutpro.timeline.matchframe",
@@ -414,6 +796,18 @@ function plugin.init(deps)
         :add("cpSingleMatchFrameAndHighlight")
         :groupedBy("timeline")
         :whenActivated(function() mod.matchFrame(true) end)
+
+    cmds
+        :add("revealInKeywordCollection")
+        :whenActivated(revealInKeywordCollection)
+        :titled(i18n("revealInKeywordCollection"))
+        :subtitled(i18n("revealInKeywordCollectionDescription"))
+
+    cmds
+        :add("revealInKeywordCollectionAndSolo")
+        :whenActivated(function() revealInKeywordCollection(true) end)
+        :titled(i18n("revealInKeywordCollectionAndSolo"))
+        :subtitled(i18n("revealInKeywordCollectionAndSoloDescription"))
 
     return mod
 end

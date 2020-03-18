@@ -173,7 +173,7 @@ function GeneratorsBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table(self, function()
             return childWithRole(self:mainGroupUI(), "AXScrollArea")
-        end):uncached()
+        end)
     end
     return self._sidebar
 end

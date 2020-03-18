@@ -65,16 +65,22 @@ function mod.onChoices(choices)
     for _,cmd in pairs(mod._cmds:getAll()) do
         local title = cmd:getTitle()
         if title then
+            local subtext
             local group = cmd:getSubtitle()
             if not group and cmd:getGroup() then
                 group = i18n(cmd:getGroup().."_group")
+                if group then
+                    subtext = i18n("category") .. ": " .. group
+                end
             end
-            group = group or ""
+            if not subtext then
+                subtext = group
+            end
             local action = {
                 id      = cmd:id(),
             }
             choices:add(title)
-                :subText(i18n("commandChoiceSubText", {group = group}))
+                :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
         end

@@ -4,22 +4,20 @@
 
 local require = require
 
-local hswindow                      = require("hs.window")
-local class                         = require("middleclass")
+local hswindow          = require "hs.window"
+local class             = require "middleclass"
 
-local lazy                          = require("cp.lazy")
-local prop                          = require("cp.prop")
-local axutils                       = require("cp.ui.axutils")
-local notifier                      = require("cp.ui.notifier")
-local Alert                         = require("cp.ui.Alert")
-local Button                        = require("cp.ui.Button")
+local lazy              = require "cp.lazy"
+local prop              = require "cp.prop"
+local axutils           = require "cp.ui.axutils"
+local notifier          = require "cp.ui.notifier"
+local Alert             = require "cp.ui.Alert"
+local Button            = require "cp.ui.Button"
 
-local If                            = require("cp.rx.go.If")
-local WaitUntil                     = require("cp.rx.go.WaitUntil")
+local If                = require "cp.rx.go.If"
+local WaitUntil         = require "cp.rx.go.WaitUntil"
 
-
-local format                        = string.format
-
+local format            = string.format
 
 local Window = class("cp.ui.Window"):include(lazy)
 

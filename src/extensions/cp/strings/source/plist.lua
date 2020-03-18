@@ -13,10 +13,10 @@
 local require = require
 
 local fs                = require "hs.fs"
+local plist             = require "hs.plist"
 local timer             = require "hs.timer"
 
 local is                = require "cp.is"
-local plist             = require "cp.plist"
 local text              = require "cp.web.text"
 
 local moses             = require "moses"
@@ -24,11 +24,9 @@ local moses             = require "moses"
 local extend            = moses.extend
 
 local delayed           = timer.delayed
-local escapeXML         = text.escapeXML
 local find              = string.find
 local insert            = table.insert
 local len               = string.len
-local unescapeXML       = text.unescapeXML
 
 local mod = {}
 mod.mt = {}
@@ -120,7 +118,7 @@ function mod.mt:loadFile(context)
 
     self._cleanup:start()
     if langFile then
-        return plist.fileToTable(langFile)
+        return plist.read(langFile)
     end
     return nil
 end
@@ -144,7 +142,7 @@ function mod.mt:find(key, context)
         end
     end
 
-    return unescapeXML(values[escapeXML(key)])
+    return values[key]
 end
 
 --- cp.strings.source.plist:findKeys(pattern[, context]) -> table of strings
@@ -168,11 +166,10 @@ function mod.mt:findKeys(pattern, context)
 
     local keys = {}
     for k,v in pairs(values) do
-        v = unescapeXML(v)
         -- check if the pattern matches the beginning of the key value
         local s, e = find(v, pattern)
         if s == 1 and e == len(v) then
-        insert(keys, unescapeXML(k))
+        insert(keys, k)
         end
     end
     return keys

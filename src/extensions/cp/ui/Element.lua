@@ -151,6 +151,23 @@ function Element:show()
     return self
 end
 
+--- cp.ui.Element:focus() -> self
+--- Method
+--- Set the focus on an element.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function Element:focus()
+    local ui = self.UI()
+    if ui then
+        ui:setAttributeValue("AXFocused", true)
+    end
+    return self
+end
+
 --- cp.ui.Element.role <cp.prop: string; read-only>
 --- Field
 --- Returns the `AX` role name for the element.

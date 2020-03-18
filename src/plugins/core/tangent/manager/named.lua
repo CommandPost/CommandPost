@@ -5,18 +5,80 @@
 --- Tables with `named` in it's metatable chain will have `name` methods added
 --- as described below.
 
-local require = require
+local require           = require
 
-local tools             = require("cp.tools")
-local x                 = require("cp.web.xml")
+-- local log               = require "hs.logger" .new "named"
+
+local class             = require "middleclass"
+local lazy              = require "cp.lazy"
+local prop              = require "cp.prop"
+local tools             = require "cp.tools"
+local x                 = require "cp.web.xml"
 
 local match             = string.match
 
+local named = class "core.tangent.manager.named" :include(lazy)
 
-local named = {}
-named.mt = {}
+local NAMES_KEY = {}
 
-local id = {}
+--- hub.named(id, name[, parent]) -> named
+--- Constructor
+--- Creates a new `named` instance, with the specified base name.
+---
+--- Parameters:
+--- * id - the unique ID for the value.
+--- * name - The base name of the
+function named:initialize(id, name, parent)
+    self.id = id
+    self._parent = parent
+    self._name = name
+end
+
+-- --- plugins.core.tangent.manager.parameter.enabled <cp.prop: boolean>
+-- --- Field
+-- --- Indicates if the parameter is enabled.
+function named.lazy.prop.enabled()
+    return prop.TRUE()
+end
+
+-- --- plugin.core.tangent.manager.parameter.active <cp.prop: boolean; read-only>
+-- --- Field
+-- --- Indicates if the parameter is active. It will only be active if
+-- --- the current parameter is `enabled` and if the parent group (if present) is `active`.
+function named.lazy.prop:active()
+    local parent = self:parent()
+    return parent and parent.active:AND(self.enabled) or self.enabled:IMMUTABLE()
+end
+
+--- plugins.core.tangent.manager.named:parent() -> group | controls
+--- Method
+--- Returns the `group` or `controls` that contains this parameter.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent.
+function named:parent()
+    return self._parent
+end
+
+--- plugins.core.tangent.manager.named:controls()
+--- Method
+--- Returns the `controls` the parameter belongs to.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `controls`, or `nil` if not specified.
+function named:controls()
+    local parent = self:parent()
+    if parent then
+        return parent:controls()
+    end
+    return nil
+end
 
 -- makeStringTangentFriendly(value) -> none
 -- Function
@@ -51,6 +113,24 @@ local function makeStringTangentFriendly(value)
     return result
 end
 
+--- plugins.core.tangent.manager.named:name(value) -> string | self
+--- Method
+--- Gets or sets the full name.
+---
+--- Parameters:
+--- * value - The new name value.
+---
+--- Returns:
+--- * The current value, or `self` if a new value was provided.
+local function getName(self, value)
+    if value ~= nil then
+        self._name = value
+        return self
+    else
+        return self._name
+    end
+end
+
 -- getNames(self, create) -> table
 -- Function
 -- Gets a table of names.
@@ -62,62 +142,45 @@ end
 -- Returns:
 --  * Names as table.
 local function getNames(self, create)
-    local names = rawget(self, id)
+    local names = rawget(self, NAMES_KEY)
     if not names and create then
         names = {}
-        rawset(self,id, names)
+        rawset(self,NAMES_KEY, names)
     end
     return names
 end
 
---- plugins.core.tangent.manager.named:name(value) -> string | self
---- Method
---- Gets or sets the full name.
----
---- Parameters:
---- * value - The new name value.
----
---- Returns:
---- * `self`
-local function name(self, value)
-    if value ~= nil then
-        local names = getNames(self, true)
-        names.name = value
-        return self
-    else
-        local names = getNames(self)
-        return names and names.name
-    end
-end
-
 --- plugins.core.tangent.manager.named:nameX(value) -> string | self
 --- Method
---- Sets the name `X`, where `X` is a number as defined when the `named` was creted.
+--- Sets the name `X`, where `X` is a number as defined when the `named` was created.
 ---
 --- Parameters:
 --- * value - The new name value.
 ---
 --- Returns:
 --- * The current value, or `self` if a new value was provided.
-named.mt.__index = function(_, key)
+function named:__index(key)
     if key == "name" then
-        return name
-    else
-        local i = match(key, "name([0-9]+)")
-        if i then
-            i = tonumber(i)
+        return getName
+    end
+    local i = match(key, "name([0-9]+)")
+    if i then
+        i = tonumber(i)
 
-            return function(source, value)
-                if value ~= nil then
-                    local names = getNames(source, true)
-                    names[i] = value:sub(1, i)
-                    return source
-                else
-                    local names = getNames(source)
-                    return names and names[i]
-                end
+        local fn = function(source, value)
+            if value ~= nil then
+                local names = getNames(source, true)
+                names[i] = value:sub(1, i)
+                return source
+            else
+                local names = getNames(source)
+                return names and names[i]
             end
         end
+
+        -- cache it for next time.
+        self[key] = fn
+        return fn
     end
     return nil
 end
@@ -131,16 +194,17 @@ end
 ---
 --- Returns:
 --- * The `xml` for the Action.
-function named.xml(self)
+function named:xml()
     return x(function()
         local result = x()
-        local names = getNames(self)
 
+        local theName = makeStringTangentFriendly(self:name())
+        if theName then
+            result(x.Name(theName))
+        end
+
+        local names = getNames(self)
         if names then
-            local theName = makeStringTangentFriendly(names.name)
-            if theName then
-                result(x.Name(theName))
-            end
             for i,v in pairs(names) do
                 if type(i) == "number" and v then
                     theName = makeStringTangentFriendly(v)
@@ -163,24 +227,9 @@ end
 ---
 --- Returns:
 --- * `true` if it is `named.
-function named.is(thing)
-    return thing ~= nil and (thing == named.mt or named.is(getmetatable(thing)))
+function named.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(named)
 end
-
-local function assignMetatable(target)
-    local mt = getmetatable(target)
-    if not mt then
-        setmetatable(target, named.mt)
-    else
-        assignMetatable(mt)
-    end
-    return target
-end
-
-named.__call = function(_, target)
-    return assignMetatable(target or {})
-end
-setmetatable(named, named)
 
 named.names = getNames
 
