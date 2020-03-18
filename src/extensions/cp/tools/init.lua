@@ -190,7 +190,7 @@ end
 function tools.toRegionalNumber(value)
     if type(value) == "string" then
         if locale.details().decimalSeparator == "," then
-            value = value:gsub(",", ".")
+            value = value:gsub("%,", ".")
         end
     end
     value = tonumber(value)
@@ -1086,6 +1086,19 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
         log.ef("ERROR: Expected a Table or String in tools.executeWithAdministratorPrivileges()")
         return nil
     end
+end
+
+--- cp.tools.centre(frame) -> hs.geometry point
+--- Function
+--- Gets the centre point of a frame.
+---
+--- Parameters:
+---  * frame - an `hs.geometry` rect
+---
+--- Returns:
+---  * A hs.geometry point
+function tools.centre(frame)
+    return {x = frame.x + frame.w/2, y = frame.y + frame.h/2}
 end
 
 --- cp.tools.leftClick(point[, delay, clickNumber]) -> none
