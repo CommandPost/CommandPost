@@ -8,7 +8,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object roles, provided for reference.",
-        "def" : "hs._asm.axuielement.roles[]",
+        "name" : "roles",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -17,7 +17,7 @@
         "returns" : [
 
         ],
-        "name" : "roles",
+        "def" : "hs._asm.axuielement.roles[]",
         "parameters" : [
 
         ]
@@ -29,7 +29,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object subroles, provided for reference.",
-        "def" : "hs._asm.axuielement.subroles[]",
+        "name" : "subroles",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -38,7 +38,7 @@
         "returns" : [
 
         ],
-        "name" : "subroles",
+        "def" : "hs._asm.axuielement.subroles[]",
         "parameters" : [
 
         ]
@@ -61,7 +61,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object attribute names, provided for reference. The names are grouped into the following subcategories (keys):",
-        "def" : "hs._asm.axuielement.attributes[]",
+        "name" : "attributes",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive.",
           " * the category name indicates the type of accessibility object likely to contain the member elements."
@@ -71,7 +71,7 @@
         "returns" : [
 
         ],
-        "name" : "attributes",
+        "def" : "hs._asm.axuielement.attributes[]",
         "parameters" : [
 
         ]
@@ -83,7 +83,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object parameterized attribute names, provided for reference.",
-        "def" : "hs._asm.axuielement.parameterizedAttributes[]",
+        "name" : "parameterizedAttributes",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -92,7 +92,7 @@
         "returns" : [
 
         ],
-        "name" : "parameterizedAttributes",
+        "def" : "hs._asm.axuielement.parameterizedAttributes[]",
         "parameters" : [
 
         ]
@@ -104,7 +104,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object action names, provided for reference.",
-        "def" : "hs._asm.axuielement.actions[]",
+        "name" : "actions",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -113,7 +113,7 @@
         "returns" : [
 
         ],
-        "name" : "actions",
+        "def" : "hs._asm.axuielement.actions[]",
         "parameters" : [
 
         ]
@@ -125,7 +125,7 @@
           ""
         ],
         "desc" : "A table of common directions which may be specified as the value of an accessibility object property, provided for reference.",
-        "def" : "hs._asm.axuielement.directions[]",
+        "name" : "directions",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -134,7 +134,7 @@
         "returns" : [
 
         ],
-        "name" : "directions",
+        "def" : "hs._asm.axuielement.directions[]",
         "parameters" : [
 
         ]
@@ -152,10 +152,10 @@
     "stripped_doc" : [
 
     ],
+    "desc" : "This module allows you to access the accessibility objects of running applications, their windows, menus, and other user interface elements that support the OS X accessibility API.",
     "Deprecated" : [
 
     ],
-    "desc" : "This module allows you to access the accessibility objects of running applications, their windows, menus, and other user interface elements that support the OS X accessibility API.",
     "type" : "Module",
     "Constructor" : [
       {
@@ -165,7 +165,7 @@
           ""
         ],
         "desc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
-        "def" : "hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject",
+        "name" : "systemElementAtPosition",
         "notes" : [
           " * See also [hs._asm.axuielement:elementAtPosition](#elementAtPosition) -- this function is a shortcut for `hs._asm.axuielement.systemWideElement():elementAtPosition(...)`.",
           "",
@@ -177,7 +177,7 @@
           " * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.",
           ""
         ],
-        "name" : "systemElementAtPosition",
+        "def" : "hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject",
         "parameters" : [
           " * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters",
           " * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.",
@@ -191,7 +191,7 @@
           ""
         ],
         "desc" : "Returns the accessibility object for the window specified by the `hs.window` object.",
-        "def" : "hs._asm.axuielement.windowElement(windowObject) -> axuielementObject",
+        "name" : "windowElement",
         "notes" : [
 
         ],
@@ -200,7 +200,7 @@
         "returns" : [
           " * an axuielementObject for the window specified"
         ],
-        "name" : "windowElement",
+        "def" : "hs._asm.axuielement.windowElement(windowObject) -> axuielementObject",
         "parameters" : [
           " * `windowObject` - the `hs.window` object for the window.",
           ""
@@ -213,7 +213,7 @@
           ""
         ],
         "desc" : "Returns the top-level accessibility object for the application specified by the `hs.application` object.",
-        "def" : "hs._asm.axuielement.applicationElement(applicationObject) -> axuielementObject",
+        "name" : "applicationElement",
         "notes" : [
 
         ],
@@ -222,7 +222,7 @@
         "returns" : [
           " * an axuielementObject for the application specified"
         ],
-        "name" : "applicationElement",
+        "def" : "hs._asm.axuielement.applicationElement(applicationObject) -> axuielementObject",
         "parameters" : [
           " * `applicationObject` - the `hs.application` object for the Application.",
           ""
@@ -235,7 +235,7 @@
           ""
         ],
         "desc" : "Returns an accessibility object that provides access to system attributes.",
-        "def" : "hs._asm.axuielement.systemWideElement() -> axuielementObject",
+        "name" : "systemWideElement",
         "notes" : [
 
         ],
@@ -244,7 +244,7 @@
         "returns" : [
           " * the axuielementObject for the system attributes"
         ],
-        "name" : "systemWideElement",
+        "def" : "hs._asm.axuielement.systemWideElement() -> axuielementObject",
         "parameters" : [
           " * None",
           ""
@@ -257,7 +257,7 @@
           ""
         ],
         "desc" : "Returns the top-level accessibility object for the application with the specified process ID.",
-        "def" : "hs._asm.axuielement.applicationElementForPID(pid) -> axuielementObject",
+        "name" : "applicationElementForPID",
         "notes" : [
 
         ],
@@ -266,7 +266,7 @@
         "returns" : [
           " * an axuielementObject for the application specified, or nil if it cannot be determined"
         ],
-        "name" : "applicationElementForPID",
+        "def" : "hs._asm.axuielement.applicationElementForPID(pid) -> axuielementObject",
         "parameters" : [
           " * `pid` - the process ID of the application.",
           ""
@@ -274,8 +274,536 @@
       }
     ],
     "doc" : "This module allows you to access the accessibility objects of running applications, their windows, menus, and other user interface elements that support the OS X accessibility API.\n\nThis is very much a work in progress, so bugs and comments are welcome.\n\nThis module works through the use of axuielementObjects, which is the Hammerspoon representation for an accessibility object.  An accessibility object represents any object or component of an OS X application which can be manipulated through the OS X Accessibility API -- it can be an application, a window, a button, selected text, etc.  As such, it can only support those features and objects within an application that the application developers make available through the Accessibility API.\n\nThe basic methods available to determine what attributes and actions are available for a given object are described in this reference documentation.  In addition, the module will dynamically add methods for the attributes and actions appropriate to the object, but these will differ between object roles and applications -- again we are limited by what the target application developers provide us.\n\nThe dynamically generated methods will follow one of the following templates:\n * `object:*attribute*()`         - this will return the value for the specified attribute (see [hs._asm.axuielement:attributeValue](#attributeValue) for the generic function this is based on).\n * `object:set*attribute*(value)` - this will set the specified attribute to the given value (see [hs._asm.axuielement:setAttributeValue](#setAttributeValue) for the generic function this is based on).\n * `object:do*action*()`          - this request that the specified action is performed by the object (see [hs._asm.axuielement:performAction](#performAction) for the generic function this is based on).\n\nWhere *action* and *attribute* can be the formal Accessibility version of the attribute or action name (a string usually prefixed with \"AX\") or without the \"AX\" prefix.  When the prefix is left off, the first letter of the action or attribute can be uppercase or lowercase.\n\nThe module also dynamically supports treating the axuielementObject useradata as an array, to access it's children (i.e. `#object` will return a number, indicating the number of direct children the object has, and `object[1]` is equivalent to `object:children()[1]` or, more formally, `object:attributeValue(\"AXChildren\")[1]`).\n\nYou can also treat the axuielementObject userdata as a table of key-value pairs to generate a list of the dynamically generated functions: `for k, v in pairs(object) do print(k, v) end` (this is essentially what [hs._asm.axuielement:dynamicMethods](#dynamicMethods) does).\n\n\nLimited support for parameterized attributes is provided, but is not yet complete.  This is expected to see updates in the future.",
-    "Field" : [
+    "Method" : [
+      {
+        "doc" : "Returns a list of the dynamic methods (short cuts) created by this module for the object\n\nParameters:\n * `keyValueTable` - an optional boolean, default false, indicating whether or not the result should be an array or a table of key-value pairs.\n\nReturns:\n * If `keyValueTable` is true, this method returns a table of key-value pairs with each key being the name of a dynamically generated method, and the value being the corresponding function.  Otherwise, this method returns an array of the dynamically generated method names.\n\nNotes:\n * the dynamically generated methods are described more fully in the reference documentation header, but basically provide shortcuts for getting and setting attribute values as well as perform actions supported by the Accessibility object the axuielementObject represents.",
+        "stripped_doc" : [
+          "Returns a list of the dynamic methods (short cuts) created by this module for the object",
+          ""
+        ],
+        "desc" : "Returns a list of the dynamic methods (short cuts) created by this module for the object",
+        "name" : "dynamicMethods",
+        "notes" : [
+          " * the dynamically generated methods are described more fully in the reference documentation header, but basically provide shortcuts for getting and setting attribute values as well as perform actions supported by the Accessibility object the axuielementObject represents."
+        ],
+        "signature" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * If `keyValueTable` is true, this method returns a table of key-value pairs with each key being the name of a dynamically generated method, and the value being the corresponding function.  Otherwise, this method returns an array of the dynamically generated method names.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
+        "parameters" : [
+          " * `keyValueTable` - an optional boolean, default false, indicating whether or not the result should be an array or a table of key-value pairs.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns true if the axuielementObject matches the specified criteria or false if it does not.\n\nParamters:\n * `matchCriteria` - the criteria to compare against the accessibility object\n * `isPattern`     - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).\n\nReturns:\n * true if the axuielementObject matches the criteria, false if it does not.\n\nNotes:\n * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).\n * the `matchCriteria` must be one of the following:\n   * a single string, specifying the AXRole value the axuielementObject's AXRole attribute must equal for the match to return true\n   * an array of strings, specifying a list of AXRoles for which the match should return true\n   * a table of key-value pairs specifying a more complex match criteria.  This table will be evaluated as follows:\n     * each key-value pair is treated as a separate test and the object *must* match as true for all tests\n     * each key is a string specifying an attribute to evaluate.  This attribute may be specified with its formal name (e.g. \"AXRole\") or the informal version (e.g. \"role\" or \"Role\").\n     * each value may be a string, a number, a boolean, or an axuielementObject userdata object, or an array (table) of such.  If the value is an array, then the test will match as true if the object matches any of the supplied values for the attribute specified by the key.\n       * Put another way: key-value pairs are \"and'ed\" together while the values for a specific key-value pair are \"or'ed\" together.\n\n * This method is used by [hs._asm.axuielement:elementSearch](#elementSearch) to determine if the given object should be included it's result set.  As an optimization for the `elementSearch` method, the keys in the `matchCriteria` table may be provided as a function which takes one argument (the axuielementObject to query).  The return value of this function will be compared against the value(s) of the key-value pair as described above.  This is done to prevent dynamically re-creating the query for each comparison when the search set is large.",
+        "stripped_doc" : [
+          "Returns true if the axuielementObject matches the specified criteria or false if it does not.",
+          "",
+          "Paramters:",
+          " * `matchCriteria` - the criteria to compare against the accessibility object",
+          " * `isPattern`     - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).",
+          ""
+        ],
+        "desc" : "Returns true if the axuielementObject matches the specified criteria or false if it does not.",
+        "name" : "matches",
+        "notes" : [
+          " * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).",
+          " * the `matchCriteria` must be one of the following:",
+          "   * a single string, specifying the AXRole value the axuielementObject's AXRole attribute must equal for the match to return true",
+          "   * an array of strings, specifying a list of AXRoles for which the match should return true",
+          "   * a table of key-value pairs specifying a more complex match criteria.  This table will be evaluated as follows:",
+          "     * each key-value pair is treated as a separate test and the object *must* match as true for all tests",
+          "     * each key is a string specifying an attribute to evaluate.  This attribute may be specified with its formal name (e.g. \"AXRole\") or the informal version (e.g. \"role\" or \"Role\").",
+          "     * each value may be a string, a number, a boolean, or an axuielementObject userdata object, or an array (table) of such.  If the value is an array, then the test will match as true if the object matches any of the supplied values for the attribute specified by the key.",
+          "       * Put another way: key-value pairs are \"and'ed\" together while the values for a specific key-value pair are \"or'ed\" together.",
+          "",
+          " * This method is used by [hs._asm.axuielement:elementSearch](#elementSearch) to determine if the given object should be included it's result set.  As an optimization for the `elementSearch` method, the keys in the `matchCriteria` table may be provided as a function which takes one argument (the axuielementObject to query).  The return value of this function will be compared against the value(s) of the key-value pair as described above.  This is done to prevent dynamically re-creating the query for each comparison when the search set is large."
+        ],
+        "signature" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
+        "type" : "Method",
+        "returns" : [
+          " * true if the axuielementObject matches the criteria, false if it does not.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
+        "parameters" : [
 
+        ]
+      },
+      {
+        "doc" : "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.\n\nParameters:\n * `matchCriteria`  - the criteria to compare against the accessibility objects\n * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).\n * `includeParents` - an optional boolean, default false, indicating that the parent of objects should be queried as well.  If you wish to specify this parameter, you *must* also specify the `isPattern` parameter.  This parameter is ignored if the method is called on a result set from a previous invocation of this method or [hs._asm.axuielement:getAllChildElements](#getAllChildElements).\n\nReturns:\n * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.\n\nNotes:\n * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.\n\n * You can use this method to retrieve all of the current axuielementObjects for an application as follows:\n~~~\nax = require\"hs._asm.axuielement\"\nelements = ax.applicationElement(hs.application(\"Safari\")):elementSearch({})\n~~~\n * Note that if you started from the window of an application, only the children of that window would be returned; you could force it to gather all of the objects for the application by using `:elementSearch({}, false, true)`.\n * However, this method of querying for all elements can be slow -- it is highly recommended that you use [hs._asm.axuielement:getAllChildElements](#getAllChildElements) instead, and ideally with a callback function.\n~~~\nax = require\"hs._asm.axuielement\"\nax.applicationElement(hs.application(\"Safari\")):getAllChildElements(function(t)\n    elements = t\n    print(\"done with query\")\nend)\n~~~\n * Whatever option you choose, you can use this method to narrow down the result set. This example will print the frame for each button that was present in Safari when the search occurred which has a description which starts with \"min\" (e.g. \"minimize button\") or \"full\" (e.g. \"full screen button\"):\n~~~\nfor i, v in ipairs(elements:elementSearch({\n                                    role=\"AXButton\",\n                                    roleDescription = { \"^min\", \"^full\"}\n                                }, true)) do\n    print(hs.inspect(v:frame()))\nend\n~~~",
+        "stripped_doc" : [
+          "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.",
+          ""
+        ],
+        "desc" : "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.",
+        "name" : "elementSearch",
+        "notes" : [
+          " * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.",
+          "",
+          " * You can use this method to retrieve all of the current axuielementObjects for an application as follows:",
+          "~~~",
+          "ax = require\"hs._asm.axuielement\"",
+          "elements = ax.applicationElement(hs.application(\"Safari\")):elementSearch({})",
+          "~~~",
+          " * Note that if you started from the window of an application, only the children of that window would be returned; you could force it to gather all of the objects for the application by using `:elementSearch({}, false, true)`.",
+          " * However, this method of querying for all elements can be slow -- it is highly recommended that you use [hs._asm.axuielement:getAllChildElements](#getAllChildElements) instead, and ideally with a callback function.",
+          "~~~",
+          "ax = require\"hs._asm.axuielement\"",
+          "ax.applicationElement(hs.application(\"Safari\")):getAllChildElements(function(t)",
+          "    elements = t",
+          "    print(\"done with query\")",
+          "end)",
+          "~~~",
+          " * Whatever option you choose, you can use this method to narrow down the result set. This example will print the frame for each button that was present in Safari when the search occurred which has a description which starts with \"min\" (e.g. \"minimize button\") or \"full\" (e.g. \"full screen button\"):",
+          "~~~",
+          "for i, v in ipairs(elements:elementSearch({",
+          "                                    role=\"AXButton\",",
+          "                                    roleDescription = { \"^min\", \"^full\"}",
+          "                                }, true)) do",
+          "    print(hs.inspect(v:frame()))",
+          "end",
+          "~~~"
+        ],
+        "signature" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
+        "parameters" : [
+          " * `matchCriteria`  - the criteria to compare against the accessibility objects",
+          " * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).",
+          " * `includeParents` - an optional boolean, default false, indicating that the parent of objects should be queried as well.  If you wish to specify this parameter, you *must* also specify the `isPattern` parameter.  This parameter is ignored if the method is called on a result set from a previous invocation of this method or [hs._asm.axuielement:getAllChildElements](#getAllChildElements).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Return a duplicate userdata reference to the Accessibility object.\n\nParameters:\n * None\n\nReturns:\n * a new userdata object representing a new reference to the Accessibility object.\n\nNotes:\n * The new userdata will have no search state information attached to it, and is used internally by [hs._asm.axuielement:searchPath](#searchPath).",
+        "stripped_doc" : [
+          "Return a duplicate userdata reference to the Accessibility object.",
+          ""
+        ],
+        "desc" : "Return a duplicate userdata reference to the Accessibility object.",
+        "name" : "copy",
+        "notes" : [
+          " * The new userdata will have no search state information attached to it, and is used internally by [hs._asm.axuielement:searchPath](#searchPath)."
+        ],
+        "signature" : "hs._asm.axuielement:copy() -> axuielementObject",
+        "type" : "Method",
+        "returns" : [
+          " * a new userdata object representing a new reference to the Accessibility object.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:copy() -> axuielementObject",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a list of all the attributes supported by the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all attributes supported by the axuielementObject\n\nNotes:\n * Common attribute names can be found in the [hs._asm.axuielement.attributes](#attributes) tables; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table.",
+        "stripped_doc" : [
+          "Returns a list of all the attributes supported by the specified accessibility object.",
+          ""
+        ],
+        "desc" : "Returns a list of all the attributes supported by the specified accessibility object.",
+        "name" : "attributeNames",
+        "notes" : [
+          " * Common attribute names can be found in the [hs._asm.axuielement.attributes](#attributes) tables; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
+        ],
+        "signature" : "hs._asm.axuielement:attributeNames() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * an array of the names of all attributes supported by the axuielementObject",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:attributeNames() -> table",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a list of all the actions the specified accessibility object can perform.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all actions supported by the axuielementObject\n\nNotes:\n * Common action names can be found in the [hs._asm.axuielement.actions](#actions) table; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table.",
+        "stripped_doc" : [
+          "Returns a list of all the actions the specified accessibility object can perform.",
+          ""
+        ],
+        "desc" : "Returns a list of all the actions the specified accessibility object can perform.",
+        "name" : "actionNames",
+        "notes" : [
+          " * Common action names can be found in the [hs._asm.axuielement.actions](#actions) table; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
+        ],
+        "signature" : "hs._asm.axuielement:actionNames() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * an array of the names of all actions supported by the axuielementObject",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:actionNames() -> table",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a localized description of the specified accessibility object's action.\n\nParameters:\n * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).\n\nReturns:\n * a string containing a description of the object's action\n\nNotes:\n * The action descriptions are provided by the target application; as such their accuracy and usefulness rely on the target application's developers.",
+        "stripped_doc" : [
+          "Returns a localized description of the specified accessibility object's action.",
+          ""
+        ],
+        "desc" : "Returns a localized description of the specified accessibility object's action.",
+        "name" : "actionDescription",
+        "notes" : [
+          " * The action descriptions are provided by the target application; as such their accuracy and usefulness rely on the target application's developers."
+        ],
+        "signature" : "hs._asm.axuielement:actionDescription(action) -> string",
+        "type" : "Method",
+        "returns" : [
+          " * a string containing a description of the object's action",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:actionDescription(action) -> string",
+        "parameters" : [
+          " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the value of an accessibility object's attribute.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * the current value of the attribute, or nil if the attribute has no value",
+        "stripped_doc" : [
+          "Returns the value of an accessibility object's attribute.",
+          ""
+        ],
+        "desc" : "Returns the value of an accessibility object's attribute.",
+        "name" : "attributeValue",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:attributeValue(attribute) -> value",
+        "type" : "Method",
+        "returns" : [
+          " * the current value of the attribute, or nil if the attribute has no value"
+        ],
+        "def" : "hs._asm.axuielement:attributeValue(attribute) -> value",
+        "parameters" : [
+          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table containing key-value pairs for all attributes of the accessibility object.\n\nParameters:\n * `includeErrors` - an optional boolean, default false, that specifies whether attribute names which generate an error when retrieved are included in the returned results.\n\nReturns:\n * a table with key-value pairs corresponding to the attributes of the accessibility object.",
+        "stripped_doc" : [
+          "Returns a table containing key-value pairs for all attributes of the accessibility object.",
+          ""
+        ],
+        "desc" : "Returns a table containing key-value pairs for all attributes of the accessibility object.",
+        "name" : "allAttributeValues",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table with key-value pairs corresponding to the attributes of the accessibility object."
+        ],
+        "def" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
+        "parameters" : [
+          " * `includeErrors` - an optional boolean, default false, that specifies whether attribute names which generate an error when retrieved are included in the returned results.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the count of the array of an accessibility object's attribute value.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * the number of items in the value for the attribute, if it is an array, or nil if the value is not an array.",
+        "stripped_doc" : [
+          "Returns the count of the array of an accessibility object's attribute value.",
+          ""
+        ],
+        "desc" : "Returns the count of the array of an accessibility object's attribute value.",
+        "name" : "attributeValueCount",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
+        "type" : "Method",
+        "returns" : [
+          " * the number of items in the value for the attribute, if it is an array, or nil if the value is not an array."
+        ],
+        "def" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
+        "parameters" : [
+          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a list of all the parameterized attributes supported by the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all parameterized attributes supported by the axuielementObject",
+        "stripped_doc" : [
+          "Returns a list of all the parameterized attributes supported by the specified accessibility object.",
+          ""
+        ],
+        "desc" : "Returns a list of all the parameterized attributes supported by the specified accessibility object.",
+        "name" : "parameterizedAttributeNames",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * an array of the names of all parameterized attributes supported by the axuielementObject"
+        ],
+        "def" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns whether the specified accessibility object's attribute can be modified.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * a boolean value indicating whether or not the value of the parameter can be modified.",
+        "stripped_doc" : [
+          "Returns whether the specified accessibility object's attribute can be modified.",
+          ""
+        ],
+        "desc" : "Returns whether the specified accessibility object's attribute can be modified.",
+        "name" : "isAttributeSettable",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
+        "type" : "Method",
+        "returns" : [
+          " * a boolean value indicating whether or not the value of the parameter can be modified."
+        ],
+        "def" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
+        "parameters" : [
+          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns whether the specified accessibility object is still valid.\n\nParameters:\n * None\n\nReturns:\n * a boolean value indicating whether or not the accessibility object is still valid.",
+        "stripped_doc" : [
+          "Returns whether the specified accessibility object is still valid.",
+          ""
+        ],
+        "desc" : "Returns whether the specified accessibility object is still valid.",
+        "name" : "isValid",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:isValid() -> boolean",
+        "type" : "Method",
+        "returns" : [
+          " * a boolean value indicating whether or not the accessibility object is still valid."
+        ],
+        "def" : "hs._asm.axuielement:isValid() -> boolean",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the process ID associated with the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * the process ID for the application to which the accessibility object ultimately belongs.",
+        "stripped_doc" : [
+          "Returns the process ID associated with the specified accessibility object.",
+          ""
+        ],
+        "desc" : "Returns the process ID associated with the specified accessibility object.",
+        "name" : "pid",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.axuielement:pid() -> integer",
+        "type" : "Method",
+        "returns" : [
+          " * the process ID for the application to which the accessibility object ultimately belongs."
+        ],
+        "def" : "hs._asm.axuielement:pid() -> integer",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Requests that the specified accessibility object perform the specified action.\n\nParameters:\n * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).\n\nReturns:\n * if the requested action was accepted by the target, returns the axuielementObject; if the requested action was rejected, returns false, otherwise returns nil on error.\n\nNotes:\n * The return value only suggests success or failure, but is not a guarantee.  The receiving application may have internal logic which prevents the action from occurring at this time for some reason, even though this method returns success (the axuielementObject).  Contrawise, the requested action may trigger a requirement for a response from the user and thus appear to time out, causing this method to return false or nil.",
+        "stripped_doc" : [
+          "Requests that the specified accessibility object perform the specified action.",
+          ""
+        ],
+        "desc" : "Requests that the specified accessibility object perform the specified action.",
+        "name" : "performAction",
+        "notes" : [
+          " * The return value only suggests success or failure, but is not a guarantee.  The receiving application may have internal logic which prevents the action from occurring at this time for some reason, even though this method returns success (the axuielementObject).  Contrawise, the requested action may trigger a requirement for a response from the user and thus appear to time out, causing this method to return false or nil."
+        ],
+        "signature" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
+        "type" : "Method",
+        "returns" : [
+          " * if the requested action was accepted by the target, returns the axuielementObject; if the requested action was rejected, returns false, otherwise returns nil on error.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
+        "parameters" : [
+          " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.\n\nParameters:\n * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters\n * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.\n\nReturns:\n * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.\n\nNotes:\n * This method can only be called on an axuielementObject that represents an application or the system-wide element (see [hs._asm.axuielement.systemWideElement](#systemWideElement)).\n\n * This function does hit-testing based on window z-order (that is, layering). If one window is on top of another window, the returned accessibility object comes from whichever window is topmost at the specified location.\n * If this method is called on an axuielementObject representing an application, the search is restricted to the application.\n * If this method is called on an axuielementObject representing the system-wide element, the search is not restricted to any particular application.  See [hs._asm.axuielement.systemElementAtPosition](#systemElementAtPosition).",
+        "stripped_doc" : [
+          "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
+          ""
+        ],
+        "desc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
+        "name" : "elementAtPosition",
+        "notes" : [
+          " * This method can only be called on an axuielementObject that represents an application or the system-wide element (see [hs._asm.axuielement.systemWideElement](#systemWideElement)).",
+          "",
+          " * This function does hit-testing based on window z-order (that is, layering). If one window is on top of another window, the returned accessibility object comes from whichever window is topmost at the specified location.",
+          " * If this method is called on an axuielementObject representing an application, the search is restricted to the application.",
+          " * If this method is called on an axuielementObject representing the system-wide element, the search is not restricted to any particular application.  See [hs._asm.axuielement.systemElementAtPosition](#systemElementAtPosition)."
+        ],
+        "signature" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
+        "type" : "Method",
+        "returns" : [
+          " * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
+        "parameters" : [
+          " * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters",
+          " * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the value of an accessibility object's parameterized attribute.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:parameterizedAttributeNames](#parameterizedAttributeNames).\n * `parameter` - the parameter\n\nReturns:\n * the current value of the parameterized attribute, or nil if it has no value\n\nNotes:\n * Parameterized attribute support is still considered experimental and not fully supported yet.  Use with caution.",
+        "stripped_doc" : [
+          "Returns the value of an accessibility object's parameterized attribute.",
+          ""
+        ],
+        "desc" : "Returns the value of an accessibility object's parameterized attribute.",
+        "name" : "parameterizedAttributeValue",
+        "notes" : [
+          " * Parameterized attribute support is still considered experimental and not fully supported yet.  Use with caution."
+        ],
+        "signature" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
+        "type" : "Method",
+        "returns" : [
+          " * the current value of the parameterized attribute, or nil if it has no value",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
+        "parameters" : [
+          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:parameterizedAttributeNames](#parameterizedAttributeNames).",
+          " * `parameter` - the parameter",
+          ""
+        ]
+      },
+      {
+        "doc" : "Sets the accessibility object's attribute to the specified value.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n * `value`     - the value to assign to the attribute\n\nReturns:\n * the axuielementObject on success; nil if the attribute could not be set.\n\nNotes:\n * This is still somewhat experimental and needs more testing; use with caution.",
+        "stripped_doc" : [
+          "Sets the accessibility object's attribute to the specified value.",
+          ""
+        ],
+        "desc" : "Sets the accessibility object's attribute to the specified value.",
+        "name" : "setAttributeValue",
+        "notes" : [
+          " * This is still somewhat experimental and needs more testing; use with caution."
+        ],
+        "signature" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
+        "type" : "Method",
+        "returns" : [
+          " * the axuielementObject on success; nil if the attribute could not be set.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
+        "parameters" : [
+          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
+          " * `value`     - the value to assign to the attribute",
+          ""
+        ]
+      },
+      {
+        "doc" : "Query the accessibility object for all child objects (and their children...) and return them in a table.\n\nParamters:\n * `parent`   - an optional boolean, default false, indicating that the parent of objects should be queried as well.\n * `callback` - an optional function callback which will receive the results of the query.  If a function is provided, the query will be performed in a background thread, and this method will return immediately.\n\nReturns:\n * If no function callback is provided, this method will return a table containing this element, and all of the children (and optionally parents) of this element.  If a function callback is provided, this method returns the axuielementObject.\n\nNotes:\n * The table generated, either as the return value, or as the argument to the callback function, has the `hs._asm.axuielement.elementSearchTable` metatable assigned to it. See [hs._asm.axuielement:elementSearch](#elementSearch) for details on what this provides.\n\n * If `parent` is true, this method in effect provides all available accessibility objects for the application the object belongs to (or the focused application, if using the system-wide object).\n\n * If you do not provide a callback function, this method blocks Hammerspoon while it performs the query; such use is not recommended, especially if you set `parent` to true, as it can block for some time.",
+        "stripped_doc" : [
+          "Query the accessibility object for all child objects (and their children...) and return them in a table.",
+          "",
+          "Paramters:",
+          " * `parent`   - an optional boolean, default false, indicating that the parent of objects should be queried as well.",
+          " * `callback` - an optional function callback which will receive the results of the query.  If a function is provided, the query will be performed in a background thread, and this method will return immediately.",
+          ""
+        ],
+        "desc" : "Query the accessibility object for all child objects (and their children...) and return them in a table.",
+        "name" : "getAllChildElements",
+        "notes" : [
+          " * The table generated, either as the return value, or as the argument to the callback function, has the `hs._asm.axuielement.elementSearchTable` metatable assigned to it. See [hs._asm.axuielement:elementSearch](#elementSearch) for details on what this provides.",
+          "",
+          " * If `parent` is true, this method in effect provides all available accessibility objects for the application the object belongs to (or the focused application, if using the system-wide object).",
+          "",
+          " * If you do not provide a callback function, this method blocks Hammerspoon while it performs the query; such use is not recommended, especially if you set `parent` to true, as it can block for some time."
+        ],
+        "signature" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
+        "type" : "Method",
+        "returns" : [
+          " * If no function callback is provided, this method will return a table containing this element, and all of the children (and optionally parents) of this element.  If a function callback is provided, this method returns the axuielementObject.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
+        "parameters" : [
+
+        ]
+      },
+      {
+        "doc" : "If the element referes to an application, return an `hs.application` object for the element.\n\nParameters:\n * None\n\nReturns:\n * if the element refers to an application, return an `hs.application` object for the element ; otherwise return nil\n\nNotes:\n * An element is considered an application by this method if it has an AXRole of AXApplication and has a process identifier (pid).",
+        "stripped_doc" : [
+          "If the element referes to an application, return an `hs.application` object for the element.",
+          ""
+        ],
+        "desc" : "If the element referes to an application, return an `hs.application` object for the element.",
+        "name" : "asHSApplication",
+        "notes" : [
+          " * An element is considered an application by this method if it has an AXRole of AXApplication and has a process identifier (pid)."
+        ],
+        "signature" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
+        "type" : "Method",
+        "returns" : [
+          " * if the element refers to an application, return an `hs.application` object for the element ; otherwise return nil",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "If the element referes to a window, return an `hs.window` object for the element.\n\nParameters:\n * None\n\nReturns:\n * if the element refers to a window, return an `hs.window` object for the element ; otherwise return nil\n\nNotes:\n * An element is considered a window by this method if it has an AXRole of AXWindow.",
+        "stripped_doc" : [
+          "If the element referes to a window, return an `hs.window` object for the element.",
+          ""
+        ],
+        "desc" : "If the element referes to a window, return an `hs.window` object for the element.",
+        "name" : "asHSWindow",
+        "notes" : [
+          " * An element is considered a window by this method if it has an AXRole of AXWindow."
+        ],
+        "signature" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
+        "type" : "Method",
+        "returns" : [
+          " * if the element refers to a window, return an `hs.window` object for the element ; otherwise return nil",
+          ""
+        ],
+        "def" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      }
     ],
     "Command" : [
 
@@ -288,7 +816,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object action names, provided for reference.",
-        "def" : "hs._asm.axuielement.actions[]",
+        "name" : "actions",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -297,7 +825,7 @@
         "returns" : [
 
         ],
-        "name" : "actions",
+        "def" : "hs._asm.axuielement.actions[]",
         "parameters" : [
 
         ]
@@ -320,7 +848,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object attribute names, provided for reference. The names are grouped into the following subcategories (keys):",
-        "def" : "hs._asm.axuielement.attributes[]",
+        "name" : "attributes",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive.",
           " * the category name indicates the type of accessibility object likely to contain the member elements."
@@ -330,7 +858,7 @@
         "returns" : [
 
         ],
-        "name" : "attributes",
+        "def" : "hs._asm.axuielement.attributes[]",
         "parameters" : [
 
         ]
@@ -342,7 +870,7 @@
           ""
         ],
         "desc" : "A table of common directions which may be specified as the value of an accessibility object property, provided for reference.",
-        "def" : "hs._asm.axuielement.directions[]",
+        "name" : "directions",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -351,7 +879,7 @@
         "returns" : [
 
         ],
-        "name" : "directions",
+        "def" : "hs._asm.axuielement.directions[]",
         "parameters" : [
 
         ]
@@ -363,7 +891,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object parameterized attribute names, provided for reference.",
-        "def" : "hs._asm.axuielement.parameterizedAttributes[]",
+        "name" : "parameterizedAttributes",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -372,7 +900,7 @@
         "returns" : [
 
         ],
-        "name" : "parameterizedAttributes",
+        "def" : "hs._asm.axuielement.parameterizedAttributes[]",
         "parameters" : [
 
         ]
@@ -384,7 +912,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object roles, provided for reference.",
-        "def" : "hs._asm.axuielement.roles[]",
+        "name" : "roles",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -393,7 +921,7 @@
         "returns" : [
 
         ],
-        "name" : "roles",
+        "def" : "hs._asm.axuielement.roles[]",
         "parameters" : [
 
         ]
@@ -405,7 +933,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object subroles, provided for reference.",
-        "def" : "hs._asm.axuielement.subroles[]",
+        "name" : "subroles",
         "notes" : [
           " * this table is provided for reference only and is not intended to be comprehensive."
         ],
@@ -414,7 +942,7 @@
         "returns" : [
 
         ],
-        "name" : "subroles",
+        "def" : "hs._asm.axuielement.subroles[]",
         "parameters" : [
 
         ]
@@ -426,7 +954,7 @@
           ""
         ],
         "desc" : "Returns the top-level accessibility object for the application specified by the `hs.application` object.",
-        "def" : "hs._asm.axuielement.applicationElement(applicationObject) -> axuielementObject",
+        "name" : "applicationElement",
         "notes" : [
 
         ],
@@ -435,7 +963,7 @@
         "returns" : [
           " * an axuielementObject for the application specified"
         ],
-        "name" : "applicationElement",
+        "def" : "hs._asm.axuielement.applicationElement(applicationObject) -> axuielementObject",
         "parameters" : [
           " * `applicationObject` - the `hs.application` object for the Application.",
           ""
@@ -448,7 +976,7 @@
           ""
         ],
         "desc" : "Returns the top-level accessibility object for the application with the specified process ID.",
-        "def" : "hs._asm.axuielement.applicationElementForPID(pid) -> axuielementObject",
+        "name" : "applicationElementForPID",
         "notes" : [
 
         ],
@@ -457,7 +985,7 @@
         "returns" : [
           " * an axuielementObject for the application specified, or nil if it cannot be determined"
         ],
-        "name" : "applicationElementForPID",
+        "def" : "hs._asm.axuielement.applicationElementForPID(pid) -> axuielementObject",
         "parameters" : [
           " * `pid` - the process ID of the application.",
           ""
@@ -470,7 +998,7 @@
           ""
         ],
         "desc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
-        "def" : "hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject",
+        "name" : "systemElementAtPosition",
         "notes" : [
           " * See also [hs._asm.axuielement:elementAtPosition](#elementAtPosition) -- this function is a shortcut for `hs._asm.axuielement.systemWideElement():elementAtPosition(...)`.",
           "",
@@ -482,7 +1010,7 @@
           " * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.",
           ""
         ],
-        "name" : "systemElementAtPosition",
+        "def" : "hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject",
         "parameters" : [
           " * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters",
           " * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.",
@@ -496,7 +1024,7 @@
           ""
         ],
         "desc" : "Returns an accessibility object that provides access to system attributes.",
-        "def" : "hs._asm.axuielement.systemWideElement() -> axuielementObject",
+        "name" : "systemWideElement",
         "notes" : [
 
         ],
@@ -505,7 +1033,7 @@
         "returns" : [
           " * the axuielementObject for the system attributes"
         ],
-        "name" : "systemWideElement",
+        "def" : "hs._asm.axuielement.systemWideElement() -> axuielementObject",
         "parameters" : [
           " * None",
           ""
@@ -518,7 +1046,7 @@
           ""
         ],
         "desc" : "Returns the accessibility object for the window specified by the `hs.window` object.",
-        "def" : "hs._asm.axuielement.windowElement(windowObject) -> axuielementObject",
+        "name" : "windowElement",
         "notes" : [
 
         ],
@@ -527,7 +1055,7 @@
         "returns" : [
           " * an axuielementObject for the window specified"
         ],
-        "name" : "windowElement",
+        "def" : "hs._asm.axuielement.windowElement(windowObject) -> axuielementObject",
         "parameters" : [
           " * `windowObject` - the `hs.window` object for the window.",
           ""
@@ -540,7 +1068,7 @@
           ""
         ],
         "desc" : "Returns a localized description of the specified accessibility object's action.",
-        "def" : "hs._asm.axuielement:actionDescription(action) -> string",
+        "name" : "actionDescription",
         "notes" : [
           " * The action descriptions are provided by the target application; as such their accuracy and usefulness rely on the target application's developers."
         ],
@@ -550,7 +1078,7 @@
           " * a string containing a description of the object's action",
           ""
         ],
-        "name" : "actionDescription",
+        "def" : "hs._asm.axuielement:actionDescription(action) -> string",
         "parameters" : [
           " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
           ""
@@ -563,7 +1091,7 @@
           ""
         ],
         "desc" : "Returns a list of all the actions the specified accessibility object can perform.",
-        "def" : "hs._asm.axuielement:actionNames() -> table",
+        "name" : "actionNames",
         "notes" : [
           " * Common action names can be found in the [hs._asm.axuielement.actions](#actions) table; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
         ],
@@ -573,7 +1101,7 @@
           " * an array of the names of all actions supported by the axuielementObject",
           ""
         ],
-        "name" : "actionNames",
+        "def" : "hs._asm.axuielement:actionNames() -> table",
         "parameters" : [
           " * None",
           ""
@@ -586,7 +1114,7 @@
           ""
         ],
         "desc" : "Returns a table containing key-value pairs for all attributes of the accessibility object.",
-        "def" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
+        "name" : "allAttributeValues",
         "notes" : [
 
         ],
@@ -595,7 +1123,7 @@
         "returns" : [
           " * a table with key-value pairs corresponding to the attributes of the accessibility object."
         ],
-        "name" : "allAttributeValues",
+        "def" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
         "parameters" : [
           " * `includeErrors` - an optional boolean, default false, that specifies whether attribute names which generate an error when retrieved are included in the returned results.",
           ""
@@ -608,7 +1136,7 @@
           ""
         ],
         "desc" : "If the element referes to an application, return an `hs.application` object for the element.",
-        "def" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
+        "name" : "asHSApplication",
         "notes" : [
           " * An element is considered an application by this method if it has an AXRole of AXApplication and has a process identifier (pid)."
         ],
@@ -618,7 +1146,7 @@
           " * if the element refers to an application, return an `hs.application` object for the element ; otherwise return nil",
           ""
         ],
-        "name" : "asHSApplication",
+        "def" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
         "parameters" : [
           " * None",
           ""
@@ -631,7 +1159,7 @@
           ""
         ],
         "desc" : "If the element referes to a window, return an `hs.window` object for the element.",
-        "def" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
+        "name" : "asHSWindow",
         "notes" : [
           " * An element is considered a window by this method if it has an AXRole of AXWindow."
         ],
@@ -641,7 +1169,7 @@
           " * if the element refers to a window, return an `hs.window` object for the element ; otherwise return nil",
           ""
         ],
-        "name" : "asHSWindow",
+        "def" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
         "parameters" : [
           " * None",
           ""
@@ -654,7 +1182,7 @@
           ""
         ],
         "desc" : "Returns a list of all the attributes supported by the specified accessibility object.",
-        "def" : "hs._asm.axuielement:attributeNames() -> table",
+        "name" : "attributeNames",
         "notes" : [
           " * Common attribute names can be found in the [hs._asm.axuielement.attributes](#attributes) tables; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
         ],
@@ -664,7 +1192,7 @@
           " * an array of the names of all attributes supported by the axuielementObject",
           ""
         ],
-        "name" : "attributeNames",
+        "def" : "hs._asm.axuielement:attributeNames() -> table",
         "parameters" : [
           " * None",
           ""
@@ -677,7 +1205,7 @@
           ""
         ],
         "desc" : "Returns the value of an accessibility object's attribute.",
-        "def" : "hs._asm.axuielement:attributeValue(attribute) -> value",
+        "name" : "attributeValue",
         "notes" : [
 
         ],
@@ -686,7 +1214,7 @@
         "returns" : [
           " * the current value of the attribute, or nil if the attribute has no value"
         ],
-        "name" : "attributeValue",
+        "def" : "hs._asm.axuielement:attributeValue(attribute) -> value",
         "parameters" : [
           " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
           ""
@@ -699,7 +1227,7 @@
           ""
         ],
         "desc" : "Returns the count of the array of an accessibility object's attribute value.",
-        "def" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
+        "name" : "attributeValueCount",
         "notes" : [
 
         ],
@@ -708,7 +1236,7 @@
         "returns" : [
           " * the number of items in the value for the attribute, if it is an array, or nil if the value is not an array."
         ],
-        "name" : "attributeValueCount",
+        "def" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
         "parameters" : [
           " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
           ""
@@ -721,7 +1249,7 @@
           ""
         ],
         "desc" : "Return a duplicate userdata reference to the Accessibility object.",
-        "def" : "hs._asm.axuielement:copy() -> axuielementObject",
+        "name" : "copy",
         "notes" : [
           " * The new userdata will have no search state information attached to it, and is used internally by [hs._asm.axuielement:searchPath](#searchPath)."
         ],
@@ -731,7 +1259,7 @@
           " * a new userdata object representing a new reference to the Accessibility object.",
           ""
         ],
-        "name" : "copy",
+        "def" : "hs._asm.axuielement:copy() -> axuielementObject",
         "parameters" : [
           " * None",
           ""
@@ -744,7 +1272,7 @@
           ""
         ],
         "desc" : "Returns a list of the dynamic methods (short cuts) created by this module for the object",
-        "def" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
+        "name" : "dynamicMethods",
         "notes" : [
           " * the dynamically generated methods are described more fully in the reference documentation header, but basically provide shortcuts for getting and setting attribute values as well as perform actions supported by the Accessibility object the axuielementObject represents."
         ],
@@ -754,7 +1282,7 @@
           " * If `keyValueTable` is true, this method returns a table of key-value pairs with each key being the name of a dynamically generated method, and the value being the corresponding function.  Otherwise, this method returns an array of the dynamically generated method names.",
           ""
         ],
-        "name" : "dynamicMethods",
+        "def" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
         "parameters" : [
           " * `keyValueTable` - an optional boolean, default false, indicating whether or not the result should be an array or a table of key-value pairs.",
           ""
@@ -767,7 +1295,7 @@
           ""
         ],
         "desc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
-        "def" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
+        "name" : "elementAtPosition",
         "notes" : [
           " * This method can only be called on an axuielementObject that represents an application or the system-wide element (see [hs._asm.axuielement.systemWideElement](#systemWideElement)).",
           "",
@@ -781,7 +1309,7 @@
           " * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.",
           ""
         ],
-        "name" : "elementAtPosition",
+        "def" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
         "parameters" : [
           " * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters",
           " * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.",
@@ -795,7 +1323,7 @@
           ""
         ],
         "desc" : "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.",
-        "def" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
+        "name" : "elementSearch",
         "notes" : [
           " * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.",
           "",
@@ -829,7 +1357,7 @@
           " * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.",
           ""
         ],
-        "name" : "elementSearch",
+        "def" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
         "parameters" : [
           " * `matchCriteria`  - the criteria to compare against the accessibility objects",
           " * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).",
@@ -848,7 +1376,7 @@
           ""
         ],
         "desc" : "Query the accessibility object for all child objects (and their children...) and return them in a table.",
-        "def" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
+        "name" : "getAllChildElements",
         "notes" : [
           " * The table generated, either as the return value, or as the argument to the callback function, has the `hs._asm.axuielement.elementSearchTable` metatable assigned to it. See [hs._asm.axuielement:elementSearch](#elementSearch) for details on what this provides.",
           "",
@@ -862,7 +1390,7 @@
           " * If no function callback is provided, this method will return a table containing this element, and all of the children (and optionally parents) of this element.  If a function callback is provided, this method returns the axuielementObject.",
           ""
         ],
-        "name" : "getAllChildElements",
+        "def" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
         "parameters" : [
 
         ]
@@ -874,7 +1402,7 @@
           ""
         ],
         "desc" : "Returns whether the specified accessibility object's attribute can be modified.",
-        "def" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
+        "name" : "isAttributeSettable",
         "notes" : [
 
         ],
@@ -883,7 +1411,7 @@
         "returns" : [
           " * a boolean value indicating whether or not the value of the parameter can be modified."
         ],
-        "name" : "isAttributeSettable",
+        "def" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
         "parameters" : [
           " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
           ""
@@ -896,7 +1424,7 @@
           ""
         ],
         "desc" : "Returns whether the specified accessibility object is still valid.",
-        "def" : "hs._asm.axuielement:isValid() -> boolean",
+        "name" : "isValid",
         "notes" : [
 
         ],
@@ -905,7 +1433,7 @@
         "returns" : [
           " * a boolean value indicating whether or not the accessibility object is still valid."
         ],
-        "name" : "isValid",
+        "def" : "hs._asm.axuielement:isValid() -> boolean",
         "parameters" : [
           " * None",
           ""
@@ -922,7 +1450,7 @@
           ""
         ],
         "desc" : "Returns true if the axuielementObject matches the specified criteria or false if it does not.",
-        "def" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
+        "name" : "matches",
         "notes" : [
           " * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).",
           " * the `matchCriteria` must be one of the following:",
@@ -942,7 +1470,7 @@
           " * true if the axuielementObject matches the criteria, false if it does not.",
           ""
         ],
-        "name" : "matches",
+        "def" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
         "parameters" : [
 
         ]
@@ -954,7 +1482,7 @@
           ""
         ],
         "desc" : "Returns a list of all the parameterized attributes supported by the specified accessibility object.",
-        "def" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
+        "name" : "parameterizedAttributeNames",
         "notes" : [
 
         ],
@@ -963,7 +1491,7 @@
         "returns" : [
           " * an array of the names of all parameterized attributes supported by the axuielementObject"
         ],
-        "name" : "parameterizedAttributeNames",
+        "def" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
         "parameters" : [
           " * None",
           ""
@@ -976,7 +1504,7 @@
           ""
         ],
         "desc" : "Returns the value of an accessibility object's parameterized attribute.",
-        "def" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
+        "name" : "parameterizedAttributeValue",
         "notes" : [
           " * Parameterized attribute support is still considered experimental and not fully supported yet.  Use with caution."
         ],
@@ -986,7 +1514,7 @@
           " * the current value of the parameterized attribute, or nil if it has no value",
           ""
         ],
-        "name" : "parameterizedAttributeValue",
+        "def" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
         "parameters" : [
           " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:parameterizedAttributeNames](#parameterizedAttributeNames).",
           " * `parameter` - the parameter",
@@ -1000,7 +1528,7 @@
           ""
         ],
         "desc" : "Requests that the specified accessibility object perform the specified action.",
-        "def" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
+        "name" : "performAction",
         "notes" : [
           " * The return value only suggests success or failure, but is not a guarantee.  The receiving application may have internal logic which prevents the action from occurring at this time for some reason, even though this method returns success (the axuielementObject).  Contrawise, the requested action may trigger a requirement for a response from the user and thus appear to time out, causing this method to return false or nil."
         ],
@@ -1010,7 +1538,7 @@
           " * if the requested action was accepted by the target, returns the axuielementObject; if the requested action was rejected, returns false, otherwise returns nil on error.",
           ""
         ],
-        "name" : "performAction",
+        "def" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
         "parameters" : [
           " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
           ""
@@ -1023,7 +1551,7 @@
           ""
         ],
         "desc" : "Returns the process ID associated with the specified accessibility object.",
-        "def" : "hs._asm.axuielement:pid() -> integer",
+        "name" : "pid",
         "notes" : [
 
         ],
@@ -1032,7 +1560,7 @@
         "returns" : [
           " * the process ID for the application to which the accessibility object ultimately belongs."
         ],
-        "name" : "pid",
+        "def" : "hs._asm.axuielement:pid() -> integer",
         "parameters" : [
           " * None",
           ""
@@ -1045,7 +1573,7 @@
           ""
         ],
         "desc" : "Sets the accessibility object's attribute to the specified value.",
-        "def" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
+        "name" : "setAttributeValue",
         "notes" : [
           " * This is still somewhat experimental and needs more testing; use with caution."
         ],
@@ -1055,7 +1583,7 @@
           " * the axuielementObject on success; nil if the attribute could not be set.",
           ""
         ],
-        "name" : "setAttributeValue",
+        "def" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
         "parameters" : [
           " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
           " * `value`     - the value to assign to the attribute",
@@ -1063,536 +1591,8 @@
         ]
       }
     ],
-    "Method" : [
-      {
-        "doc" : "Returns a list of the dynamic methods (short cuts) created by this module for the object\n\nParameters:\n * `keyValueTable` - an optional boolean, default false, indicating whether or not the result should be an array or a table of key-value pairs.\n\nReturns:\n * If `keyValueTable` is true, this method returns a table of key-value pairs with each key being the name of a dynamically generated method, and the value being the corresponding function.  Otherwise, this method returns an array of the dynamically generated method names.\n\nNotes:\n * the dynamically generated methods are described more fully in the reference documentation header, but basically provide shortcuts for getting and setting attribute values as well as perform actions supported by the Accessibility object the axuielementObject represents.",
-        "stripped_doc" : [
-          "Returns a list of the dynamic methods (short cuts) created by this module for the object",
-          ""
-        ],
-        "desc" : "Returns a list of the dynamic methods (short cuts) created by this module for the object",
-        "def" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
-        "notes" : [
-          " * the dynamically generated methods are described more fully in the reference documentation header, but basically provide shortcuts for getting and setting attribute values as well as perform actions supported by the Accessibility object the axuielementObject represents."
-        ],
-        "signature" : "hs._asm.axuielement:dynamicMethods([keyValueTable]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * If `keyValueTable` is true, this method returns a table of key-value pairs with each key being the name of a dynamically generated method, and the value being the corresponding function.  Otherwise, this method returns an array of the dynamically generated method names.",
-          ""
-        ],
-        "name" : "dynamicMethods",
-        "parameters" : [
-          " * `keyValueTable` - an optional boolean, default false, indicating whether or not the result should be an array or a table of key-value pairs.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns true if the axuielementObject matches the specified criteria or false if it does not.\n\nParamters:\n * `matchCriteria` - the criteria to compare against the accessibility object\n * `isPattern`     - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).\n\nReturns:\n * true if the axuielementObject matches the criteria, false if it does not.\n\nNotes:\n * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).\n * the `matchCriteria` must be one of the following:\n   * a single string, specifying the AXRole value the axuielementObject's AXRole attribute must equal for the match to return true\n   * an array of strings, specifying a list of AXRoles for which the match should return true\n   * a table of key-value pairs specifying a more complex match criteria.  This table will be evaluated as follows:\n     * each key-value pair is treated as a separate test and the object *must* match as true for all tests\n     * each key is a string specifying an attribute to evaluate.  This attribute may be specified with its formal name (e.g. \"AXRole\") or the informal version (e.g. \"role\" or \"Role\").\n     * each value may be a string, a number, a boolean, or an axuielementObject userdata object, or an array (table) of such.  If the value is an array, then the test will match as true if the object matches any of the supplied values for the attribute specified by the key.\n       * Put another way: key-value pairs are \"and'ed\" together while the values for a specific key-value pair are \"or'ed\" together.\n\n * This method is used by [hs._asm.axuielement:elementSearch](#elementSearch) to determine if the given object should be included it's result set.  As an optimization for the `elementSearch` method, the keys in the `matchCriteria` table may be provided as a function which takes one argument (the axuielementObject to query).  The return value of this function will be compared against the value(s) of the key-value pair as described above.  This is done to prevent dynamically re-creating the query for each comparison when the search set is large.",
-        "stripped_doc" : [
-          "Returns true if the axuielementObject matches the specified criteria or false if it does not.",
-          "",
-          "Paramters:",
-          " * `matchCriteria` - the criteria to compare against the accessibility object",
-          " * `isPattern`     - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).",
-          ""
-        ],
-        "desc" : "Returns true if the axuielementObject matches the specified criteria or false if it does not.",
-        "def" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
-        "notes" : [
-          " * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).",
-          " * the `matchCriteria` must be one of the following:",
-          "   * a single string, specifying the AXRole value the axuielementObject's AXRole attribute must equal for the match to return true",
-          "   * an array of strings, specifying a list of AXRoles for which the match should return true",
-          "   * a table of key-value pairs specifying a more complex match criteria.  This table will be evaluated as follows:",
-          "     * each key-value pair is treated as a separate test and the object *must* match as true for all tests",
-          "     * each key is a string specifying an attribute to evaluate.  This attribute may be specified with its formal name (e.g. \"AXRole\") or the informal version (e.g. \"role\" or \"Role\").",
-          "     * each value may be a string, a number, a boolean, or an axuielementObject userdata object, or an array (table) of such.  If the value is an array, then the test will match as true if the object matches any of the supplied values for the attribute specified by the key.",
-          "       * Put another way: key-value pairs are \"and'ed\" together while the values for a specific key-value pair are \"or'ed\" together.",
-          "",
-          " * This method is used by [hs._asm.axuielement:elementSearch](#elementSearch) to determine if the given object should be included it's result set.  As an optimization for the `elementSearch` method, the keys in the `matchCriteria` table may be provided as a function which takes one argument (the axuielementObject to query).  The return value of this function will be compared against the value(s) of the key-value pair as described above.  This is done to prevent dynamically re-creating the query for each comparison when the search set is large."
-        ],
-        "signature" : "hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean",
-        "type" : "Method",
-        "returns" : [
-          " * true if the axuielementObject matches the criteria, false if it does not.",
-          ""
-        ],
-        "name" : "matches",
-        "parameters" : [
+    "Field" : [
 
-        ]
-      },
-      {
-        "doc" : "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.\n\nParameters:\n * `matchCriteria`  - the criteria to compare against the accessibility objects\n * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).\n * `includeParents` - an optional boolean, default false, indicating that the parent of objects should be queried as well.  If you wish to specify this parameter, you *must* also specify the `isPattern` parameter.  This parameter is ignored if the method is called on a result set from a previous invocation of this method or [hs._asm.axuielement:getAllChildElements](#getAllChildElements).\n\nReturns:\n * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.\n\nNotes:\n * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.\n\n * You can use this method to retrieve all of the current axuielementObjects for an application as follows:\n~~~\nax = require\"hs._asm.axuielement\"\nelements = ax.applicationElement(hs.application(\"Safari\")):elementSearch({})\n~~~\n * Note that if you started from the window of an application, only the children of that window would be returned; you could force it to gather all of the objects for the application by using `:elementSearch({}, false, true)`.\n * However, this method of querying for all elements can be slow -- it is highly recommended that you use [hs._asm.axuielement:getAllChildElements](#getAllChildElements) instead, and ideally with a callback function.\n~~~\nax = require\"hs._asm.axuielement\"\nax.applicationElement(hs.application(\"Safari\")):getAllChildElements(function(t)\n    elements = t\n    print(\"done with query\")\nend)\n~~~\n * Whatever option you choose, you can use this method to narrow down the result set. This example will print the frame for each button that was present in Safari when the search occurred which has a description which starts with \"min\" (e.g. \"minimize button\") or \"full\" (e.g. \"full screen button\"):\n~~~\nfor i, v in ipairs(elements:elementSearch({\n                                    role=\"AXButton\",\n                                    roleDescription = { \"^min\", \"^full\"}\n                                }, true)) do\n    print(hs.inspect(v:frame()))\nend\n~~~",
-        "stripped_doc" : [
-          "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.",
-          ""
-        ],
-        "desc" : "Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.",
-        "def" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
-        "notes" : [
-          " * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.",
-          "",
-          " * You can use this method to retrieve all of the current axuielementObjects for an application as follows:",
-          "~~~",
-          "ax = require\"hs._asm.axuielement\"",
-          "elements = ax.applicationElement(hs.application(\"Safari\")):elementSearch({})",
-          "~~~",
-          " * Note that if you started from the window of an application, only the children of that window would be returned; you could force it to gather all of the objects for the application by using `:elementSearch({}, false, true)`.",
-          " * However, this method of querying for all elements can be slow -- it is highly recommended that you use [hs._asm.axuielement:getAllChildElements](#getAllChildElements) instead, and ideally with a callback function.",
-          "~~~",
-          "ax = require\"hs._asm.axuielement\"",
-          "ax.applicationElement(hs.application(\"Safari\")):getAllChildElements(function(t)",
-          "    elements = t",
-          "    print(\"done with query\")",
-          "end)",
-          "~~~",
-          " * Whatever option you choose, you can use this method to narrow down the result set. This example will print the frame for each button that was present in Safari when the search occurred which has a description which starts with \"min\" (e.g. \"minimize button\") or \"full\" (e.g. \"full screen button\"):",
-          "~~~",
-          "for i, v in ipairs(elements:elementSearch({",
-          "                                    role=\"AXButton\",",
-          "                                    roleDescription = { \"^min\", \"^full\"}",
-          "                                }, true)) do",
-          "    print(hs.inspect(v:frame()))",
-          "end",
-          "~~~"
-        ],
-        "signature" : "hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.",
-          ""
-        ],
-        "name" : "elementSearch",
-        "parameters" : [
-          " * `matchCriteria`  - the criteria to compare against the accessibility objects",
-          " * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).",
-          " * `includeParents` - an optional boolean, default false, indicating that the parent of objects should be queried as well.  If you wish to specify this parameter, you *must* also specify the `isPattern` parameter.  This parameter is ignored if the method is called on a result set from a previous invocation of this method or [hs._asm.axuielement:getAllChildElements](#getAllChildElements).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Return a duplicate userdata reference to the Accessibility object.\n\nParameters:\n * None\n\nReturns:\n * a new userdata object representing a new reference to the Accessibility object.\n\nNotes:\n * The new userdata will have no search state information attached to it, and is used internally by [hs._asm.axuielement:searchPath](#searchPath).",
-        "stripped_doc" : [
-          "Return a duplicate userdata reference to the Accessibility object.",
-          ""
-        ],
-        "desc" : "Return a duplicate userdata reference to the Accessibility object.",
-        "def" : "hs._asm.axuielement:copy() -> axuielementObject",
-        "notes" : [
-          " * The new userdata will have no search state information attached to it, and is used internally by [hs._asm.axuielement:searchPath](#searchPath)."
-        ],
-        "signature" : "hs._asm.axuielement:copy() -> axuielementObject",
-        "type" : "Method",
-        "returns" : [
-          " * a new userdata object representing a new reference to the Accessibility object.",
-          ""
-        ],
-        "name" : "copy",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a list of all the attributes supported by the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all attributes supported by the axuielementObject\n\nNotes:\n * Common attribute names can be found in the [hs._asm.axuielement.attributes](#attributes) tables; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table.",
-        "stripped_doc" : [
-          "Returns a list of all the attributes supported by the specified accessibility object.",
-          ""
-        ],
-        "desc" : "Returns a list of all the attributes supported by the specified accessibility object.",
-        "def" : "hs._asm.axuielement:attributeNames() -> table",
-        "notes" : [
-          " * Common attribute names can be found in the [hs._asm.axuielement.attributes](#attributes) tables; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
-        ],
-        "signature" : "hs._asm.axuielement:attributeNames() -> table",
-        "type" : "Method",
-        "returns" : [
-          " * an array of the names of all attributes supported by the axuielementObject",
-          ""
-        ],
-        "name" : "attributeNames",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a list of all the actions the specified accessibility object can perform.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all actions supported by the axuielementObject\n\nNotes:\n * Common action names can be found in the [hs._asm.axuielement.actions](#actions) table; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table.",
-        "stripped_doc" : [
-          "Returns a list of all the actions the specified accessibility object can perform.",
-          ""
-        ],
-        "desc" : "Returns a list of all the actions the specified accessibility object can perform.",
-        "def" : "hs._asm.axuielement:actionNames() -> table",
-        "notes" : [
-          " * Common action names can be found in the [hs._asm.axuielement.actions](#actions) table; however, this method will list only those names which are supported by this object, and is not limited to just those in the referenced table."
-        ],
-        "signature" : "hs._asm.axuielement:actionNames() -> table",
-        "type" : "Method",
-        "returns" : [
-          " * an array of the names of all actions supported by the axuielementObject",
-          ""
-        ],
-        "name" : "actionNames",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a localized description of the specified accessibility object's action.\n\nParameters:\n * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).\n\nReturns:\n * a string containing a description of the object's action\n\nNotes:\n * The action descriptions are provided by the target application; as such their accuracy and usefulness rely on the target application's developers.",
-        "stripped_doc" : [
-          "Returns a localized description of the specified accessibility object's action.",
-          ""
-        ],
-        "desc" : "Returns a localized description of the specified accessibility object's action.",
-        "def" : "hs._asm.axuielement:actionDescription(action) -> string",
-        "notes" : [
-          " * The action descriptions are provided by the target application; as such their accuracy and usefulness rely on the target application's developers."
-        ],
-        "signature" : "hs._asm.axuielement:actionDescription(action) -> string",
-        "type" : "Method",
-        "returns" : [
-          " * a string containing a description of the object's action",
-          ""
-        ],
-        "name" : "actionDescription",
-        "parameters" : [
-          " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns the value of an accessibility object's attribute.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * the current value of the attribute, or nil if the attribute has no value",
-        "stripped_doc" : [
-          "Returns the value of an accessibility object's attribute.",
-          ""
-        ],
-        "desc" : "Returns the value of an accessibility object's attribute.",
-        "def" : "hs._asm.axuielement:attributeValue(attribute) -> value",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:attributeValue(attribute) -> value",
-        "type" : "Method",
-        "returns" : [
-          " * the current value of the attribute, or nil if the attribute has no value"
-        ],
-        "name" : "attributeValue",
-        "parameters" : [
-          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a table containing key-value pairs for all attributes of the accessibility object.\n\nParameters:\n * `includeErrors` - an optional boolean, default false, that specifies whether attribute names which generate an error when retrieved are included in the returned results.\n\nReturns:\n * a table with key-value pairs corresponding to the attributes of the accessibility object.",
-        "stripped_doc" : [
-          "Returns a table containing key-value pairs for all attributes of the accessibility object.",
-          ""
-        ],
-        "desc" : "Returns a table containing key-value pairs for all attributes of the accessibility object.",
-        "def" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:allAttributeValues([includeErrors]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * a table with key-value pairs corresponding to the attributes of the accessibility object."
-        ],
-        "name" : "allAttributeValues",
-        "parameters" : [
-          " * `includeErrors` - an optional boolean, default false, that specifies whether attribute names which generate an error when retrieved are included in the returned results.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns the count of the array of an accessibility object's attribute value.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * the number of items in the value for the attribute, if it is an array, or nil if the value is not an array.",
-        "stripped_doc" : [
-          "Returns the count of the array of an accessibility object's attribute value.",
-          ""
-        ],
-        "desc" : "Returns the count of the array of an accessibility object's attribute value.",
-        "def" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:attributeValueCount(attribute) -> integer",
-        "type" : "Method",
-        "returns" : [
-          " * the number of items in the value for the attribute, if it is an array, or nil if the value is not an array."
-        ],
-        "name" : "attributeValueCount",
-        "parameters" : [
-          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a list of all the parameterized attributes supported by the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * an array of the names of all parameterized attributes supported by the axuielementObject",
-        "stripped_doc" : [
-          "Returns a list of all the parameterized attributes supported by the specified accessibility object.",
-          ""
-        ],
-        "desc" : "Returns a list of all the parameterized attributes supported by the specified accessibility object.",
-        "def" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:parameterizedAttributeNames() -> table",
-        "type" : "Method",
-        "returns" : [
-          " * an array of the names of all parameterized attributes supported by the axuielementObject"
-        ],
-        "name" : "parameterizedAttributeNames",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns whether the specified accessibility object's attribute can be modified.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n\nReturns:\n * a boolean value indicating whether or not the value of the parameter can be modified.",
-        "stripped_doc" : [
-          "Returns whether the specified accessibility object's attribute can be modified.",
-          ""
-        ],
-        "desc" : "Returns whether the specified accessibility object's attribute can be modified.",
-        "def" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:isAttributeSettable(attribute) -> boolean",
-        "type" : "Method",
-        "returns" : [
-          " * a boolean value indicating whether or not the value of the parameter can be modified."
-        ],
-        "name" : "isAttributeSettable",
-        "parameters" : [
-          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns whether the specified accessibility object is still valid.\n\nParameters:\n * None\n\nReturns:\n * a boolean value indicating whether or not the accessibility object is still valid.",
-        "stripped_doc" : [
-          "Returns whether the specified accessibility object is still valid.",
-          ""
-        ],
-        "desc" : "Returns whether the specified accessibility object is still valid.",
-        "def" : "hs._asm.axuielement:isValid() -> boolean",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:isValid() -> boolean",
-        "type" : "Method",
-        "returns" : [
-          " * a boolean value indicating whether or not the accessibility object is still valid."
-        ],
-        "name" : "isValid",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns the process ID associated with the specified accessibility object.\n\nParameters:\n * None\n\nReturns:\n * the process ID for the application to which the accessibility object ultimately belongs.",
-        "stripped_doc" : [
-          "Returns the process ID associated with the specified accessibility object.",
-          ""
-        ],
-        "desc" : "Returns the process ID associated with the specified accessibility object.",
-        "def" : "hs._asm.axuielement:pid() -> integer",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.axuielement:pid() -> integer",
-        "type" : "Method",
-        "returns" : [
-          " * the process ID for the application to which the accessibility object ultimately belongs."
-        ],
-        "name" : "pid",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Requests that the specified accessibility object perform the specified action.\n\nParameters:\n * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).\n\nReturns:\n * if the requested action was accepted by the target, returns the axuielementObject; if the requested action was rejected, returns false, otherwise returns nil on error.\n\nNotes:\n * The return value only suggests success or failure, but is not a guarantee.  The receiving application may have internal logic which prevents the action from occurring at this time for some reason, even though this method returns success (the axuielementObject).  Contrawise, the requested action may trigger a requirement for a response from the user and thus appear to time out, causing this method to return false or nil.",
-        "stripped_doc" : [
-          "Requests that the specified accessibility object perform the specified action.",
-          ""
-        ],
-        "desc" : "Requests that the specified accessibility object perform the specified action.",
-        "def" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
-        "notes" : [
-          " * The return value only suggests success or failure, but is not a guarantee.  The receiving application may have internal logic which prevents the action from occurring at this time for some reason, even though this method returns success (the axuielementObject).  Contrawise, the requested action may trigger a requirement for a response from the user and thus appear to time out, causing this method to return false or nil."
-        ],
-        "signature" : "hs._asm.axuielement:performAction(action) -> axuielement | false | nil",
-        "type" : "Method",
-        "returns" : [
-          " * if the requested action was accepted by the target, returns the axuielementObject; if the requested action was rejected, returns false, otherwise returns nil on error.",
-          ""
-        ],
-        "name" : "performAction",
-        "parameters" : [
-          " * `action` - the name of the action, as specified by [hs._asm.axuielement:actionNames](#actionNames).",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.\n\nParameters:\n * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters\n * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.\n\nReturns:\n * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.\n\nNotes:\n * This method can only be called on an axuielementObject that represents an application or the system-wide element (see [hs._asm.axuielement.systemWideElement](#systemWideElement)).\n\n * This function does hit-testing based on window z-order (that is, layering). If one window is on top of another window, the returned accessibility object comes from whichever window is topmost at the specified location.\n * If this method is called on an axuielementObject representing an application, the search is restricted to the application.\n * If this method is called on an axuielementObject representing the system-wide element, the search is not restricted to any particular application.  See [hs._asm.axuielement.systemElementAtPosition](#systemElementAtPosition).",
-        "stripped_doc" : [
-          "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
-          ""
-        ],
-        "desc" : "Returns the accessibility object at the specified position in top-left relative screen coordinates.",
-        "def" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
-        "notes" : [
-          " * This method can only be called on an axuielementObject that represents an application or the system-wide element (see [hs._asm.axuielement.systemWideElement](#systemWideElement)).",
-          "",
-          " * This function does hit-testing based on window z-order (that is, layering). If one window is on top of another window, the returned accessibility object comes from whichever window is topmost at the specified location.",
-          " * If this method is called on an axuielementObject representing an application, the search is restricted to the application.",
-          " * If this method is called on an axuielementObject representing the system-wide element, the search is not restricted to any particular application.  See [hs._asm.axuielement.systemElementAtPosition](#systemElementAtPosition)."
-        ],
-        "signature" : "hs._asm.axuielement:elementAtPosition(x, y | { x, y }) -> axuielementObject",
-        "type" : "Method",
-        "returns" : [
-          " * an axuielementObject for the object at the specified coordinates, or nil if no object could be identified.",
-          ""
-        ],
-        "name" : "elementAtPosition",
-        "parameters" : [
-          " * `x`, `y`   - the x and y coordinates of the screen location to test, provided as separate parameters",
-          " * `{ x, y }` - the x and y coordinates of the screen location to test, provided as a point-table, like the one returned by `hs.mouse.getAbsolutePosition`.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns the value of an accessibility object's parameterized attribute.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:parameterizedAttributeNames](#parameterizedAttributeNames).\n * `parameter` - the parameter\n\nReturns:\n * the current value of the parameterized attribute, or nil if it has no value\n\nNotes:\n * Parameterized attribute support is still considered experimental and not fully supported yet.  Use with caution.",
-        "stripped_doc" : [
-          "Returns the value of an accessibility object's parameterized attribute.",
-          ""
-        ],
-        "desc" : "Returns the value of an accessibility object's parameterized attribute.",
-        "def" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
-        "notes" : [
-          " * Parameterized attribute support is still considered experimental and not fully supported yet.  Use with caution."
-        ],
-        "signature" : "hs._asm.axuielement:parameterizedAttributeValue(attribute, parameter) -> value",
-        "type" : "Method",
-        "returns" : [
-          " * the current value of the parameterized attribute, or nil if it has no value",
-          ""
-        ],
-        "name" : "parameterizedAttributeValue",
-        "parameters" : [
-          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:parameterizedAttributeNames](#parameterizedAttributeNames).",
-          " * `parameter` - the parameter",
-          ""
-        ]
-      },
-      {
-        "doc" : "Sets the accessibility object's attribute to the specified value.\n\nParameters:\n * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).\n * `value`     - the value to assign to the attribute\n\nReturns:\n * the axuielementObject on success; nil if the attribute could not be set.\n\nNotes:\n * This is still somewhat experimental and needs more testing; use with caution.",
-        "stripped_doc" : [
-          "Sets the accessibility object's attribute to the specified value.",
-          ""
-        ],
-        "desc" : "Sets the accessibility object's attribute to the specified value.",
-        "def" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
-        "notes" : [
-          " * This is still somewhat experimental and needs more testing; use with caution."
-        ],
-        "signature" : "hs._asm.axuielement:setAttributeValue(attribute, value) -> axuielementObject | nil",
-        "type" : "Method",
-        "returns" : [
-          " * the axuielementObject on success; nil if the attribute could not be set.",
-          ""
-        ],
-        "name" : "setAttributeValue",
-        "parameters" : [
-          " * `attribute` - the name of the attribute, as specified by [hs._asm.axuielement:attributeNames](#attributeNames).",
-          " * `value`     - the value to assign to the attribute",
-          ""
-        ]
-      },
-      {
-        "doc" : "Query the accessibility object for all child objects (and their children...) and return them in a table.\n\nParamters:\n * `parent`   - an optional boolean, default false, indicating that the parent of objects should be queried as well.\n * `callback` - an optional function callback which will receive the results of the query.  If a function is provided, the query will be performed in a background thread, and this method will return immediately.\n\nReturns:\n * If no function callback is provided, this method will return a table containing this element, and all of the children (and optionally parents) of this element.  If a function callback is provided, this method returns the axuielementObject.\n\nNotes:\n * The table generated, either as the return value, or as the argument to the callback function, has the `hs._asm.axuielement.elementSearchTable` metatable assigned to it. See [hs._asm.axuielement:elementSearch](#elementSearch) for details on what this provides.\n\n * If `parent` is true, this method in effect provides all available accessibility objects for the application the object belongs to (or the focused application, if using the system-wide object).\n\n * If you do not provide a callback function, this method blocks Hammerspoon while it performs the query; such use is not recommended, especially if you set `parent` to true, as it can block for some time.",
-        "stripped_doc" : [
-          "Query the accessibility object for all child objects (and their children...) and return them in a table.",
-          "",
-          "Paramters:",
-          " * `parent`   - an optional boolean, default false, indicating that the parent of objects should be queried as well.",
-          " * `callback` - an optional function callback which will receive the results of the query.  If a function is provided, the query will be performed in a background thread, and this method will return immediately.",
-          ""
-        ],
-        "desc" : "Query the accessibility object for all child objects (and their children...) and return them in a table.",
-        "def" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
-        "notes" : [
-          " * The table generated, either as the return value, or as the argument to the callback function, has the `hs._asm.axuielement.elementSearchTable` metatable assigned to it. See [hs._asm.axuielement:elementSearch](#elementSearch) for details on what this provides.",
-          "",
-          " * If `parent` is true, this method in effect provides all available accessibility objects for the application the object belongs to (or the focused application, if using the system-wide object).",
-          "",
-          " * If you do not provide a callback function, this method blocks Hammerspoon while it performs the query; such use is not recommended, especially if you set `parent` to true, as it can block for some time."
-        ],
-        "signature" : "hs._asm.axuielement:getAllChildElements([parent], [callback]) -> table | axuielementObject",
-        "type" : "Method",
-        "returns" : [
-          " * If no function callback is provided, this method will return a table containing this element, and all of the children (and optionally parents) of this element.  If a function callback is provided, this method returns the axuielementObject.",
-          ""
-        ],
-        "name" : "getAllChildElements",
-        "parameters" : [
-
-        ]
-      },
-      {
-        "doc" : "If the element referes to an application, return an `hs.application` object for the element.\n\nParameters:\n * None\n\nReturns:\n * if the element refers to an application, return an `hs.application` object for the element ; otherwise return nil\n\nNotes:\n * An element is considered an application by this method if it has an AXRole of AXApplication and has a process identifier (pid).",
-        "stripped_doc" : [
-          "If the element referes to an application, return an `hs.application` object for the element.",
-          ""
-        ],
-        "desc" : "If the element referes to an application, return an `hs.application` object for the element.",
-        "def" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
-        "notes" : [
-          " * An element is considered an application by this method if it has an AXRole of AXApplication and has a process identifier (pid)."
-        ],
-        "signature" : "hs._asm.axuielement:asHSApplication() -> hs.application object | nil",
-        "type" : "Method",
-        "returns" : [
-          " * if the element refers to an application, return an `hs.application` object for the element ; otherwise return nil",
-          ""
-        ],
-        "name" : "asHSApplication",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "If the element referes to a window, return an `hs.window` object for the element.\n\nParameters:\n * None\n\nReturns:\n * if the element refers to a window, return an `hs.window` object for the element ; otherwise return nil\n\nNotes:\n * An element is considered a window by this method if it has an AXRole of AXWindow.",
-        "stripped_doc" : [
-          "If the element referes to a window, return an `hs.window` object for the element.",
-          ""
-        ],
-        "desc" : "If the element referes to a window, return an `hs.window` object for the element.",
-        "def" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
-        "notes" : [
-          " * An element is considered a window by this method if it has an AXRole of AXWindow."
-        ],
-        "signature" : "hs._asm.axuielement:asHSWindow() -> hs.window object | nil",
-        "type" : "Method",
-        "returns" : [
-          " * if the element refers to a window, return an `hs.window` object for the element ; otherwise return nil",
-          ""
-        ],
-        "name" : "asHSWindow",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      }
     ],
     "name" : "hs._asm.axuielement"
   },
@@ -1605,7 +1605,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object notification names, provided for reference.",
-        "def" : "hs._asm.axuielement.observer.notifications[]",
+        "name" : "notifications",
         "notes" : [
           " * Notifications are application dependent and can be any string that the application developers choose; this list provides the suggested notification names found within the macOS Framework headers, but the list is not exhaustive nor is an application or element required to provide them."
         ],
@@ -1614,7 +1614,7 @@
         "returns" : [
 
         ],
-        "name" : "notifications",
+        "def" : "hs._asm.axuielement.observer.notifications[]",
         "parameters" : [
 
         ]
@@ -1632,10 +1632,10 @@
     "stripped_doc" : [
 
     ],
+    "desc" : "This submodule allows you to create observers for accessibility elements and be notified when they trigger notifications. Not all notifications are supported by all elements and not all elements support notifications, so some trial and error will be necessary, but for compliant applications, this can allow your code to be notified when an application's user interface changes in some way.",
     "Deprecated" : [
 
     ],
-    "desc" : "This submodule allows you to create observers for accessibility elements and be notified when they trigger notifications. Not all notifications are supported by all elements and not all elements support notifications, so some trial and error will be necessary, but for compliant applications, this can allow your code to be notified when an application's user interface changes in some way.",
     "type" : "Module",
     "Constructor" : [
       {
@@ -1645,7 +1645,7 @@
           ""
         ],
         "desc" : "Creates a new observer object for the application with the specified process ID.",
-        "def" : "hs._asm.axuielement.observer.new(pid) -> observerObject",
+        "name" : "new",
         "notes" : [
           " * If you already have the `hs.application` object for an application, you can get its process ID with `hs.application:pid()`",
           " * If you already have an `hs._asm.axuielement` from the application you wish to observe (it doesn't have to be the application axuielement object, just one belonging to the application), you can get the process ID with `hs._asm.axuielement:pid()`."
@@ -1656,7 +1656,7 @@
           " * a new observerObject; generates an error if the pid does not exist or if the object cannot be created.",
           ""
         ],
-        "name" : "new",
+        "def" : "hs._asm.axuielement.observer.new(pid) -> observerObject",
         "parameters" : [
           " * `pid` - the process ID of the application.",
           ""
@@ -1664,8 +1664,176 @@
       }
     ],
     "doc" : "This submodule allows you to create observers for accessibility elements and be notified when they trigger notifications. Not all notifications are supported by all elements and not all elements support notifications, so some trial and error will be necessary, but for compliant applications, this can allow your code to be notified when an application's user interface changes in some way.\n\nThis is very much a work in progress, so bugs and comments are welcome.",
-    "Field" : [
+    "Method" : [
+      {
+        "doc" : "Start observing the application and trigger callbacks for the elements and notifications assigned.\n\nParameters:\n * None\n\nReturns:\n * the observerObject\n\nNotes:\n * This method does nothing if the observer is already running",
+        "stripped_doc" : [
+          "Start observing the application and trigger callbacks for the elements and notifications assigned.",
+          ""
+        ],
+        "desc" : "Start observing the application and trigger callbacks for the elements and notifications assigned.",
+        "name" : "start",
+        "notes" : [
+          " * This method does nothing if the observer is already running"
+        ],
+        "signature" : "hs._asm.axuielement.observer:start() -> observerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the observerObject",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:start() -> observerObject",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Stop observing the application; no further callbacks will be generated.\n\nParameters:\n * None\n\nReturns:\n * the observerObject\n\nNotes:\n * This method does nothing if the observer is not currently running",
+        "stripped_doc" : [
+          "Stop observing the application; no further callbacks will be generated.",
+          ""
+        ],
+        "desc" : "Stop observing the application; no further callbacks will be generated.",
+        "name" : "stop",
+        "notes" : [
+          " * This method does nothing if the observer is not currently running"
+        ],
+        "signature" : "hs._asm.axuielement.observer:stop() -> observerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the observerObject",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:stop() -> observerObject",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.\n\nParameters:\n * None\n\nReturns:\n * a boolean value indicating whether or not the observer is currently active.",
+        "stripped_doc" : [
+          "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.",
+          ""
+        ],
+        "desc" : "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.",
+        "name" : "isRunning",
+        "notes" : [
 
+        ],
+        "signature" : "hs._asm.axuielement.observer:isRunning() -> boolean",
+        "type" : "Method",
+        "returns" : [
+          " * a boolean value indicating whether or not the observer is currently active."
+        ],
+        "def" : "hs._asm.axuielement.observer:isRunning() -> boolean",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the callback for the observer.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to the observer will invoke when the assigned elements generate notifications.\n\nReturns:\n * If an argument is provided, the observerObject; otherwise the current value.\n\nNotes:\n * the callback should expect 4 arguments and return none. The arguments passed to the callback will be as follows:\n   * the observerObject itself\n   * the `hs._asm.axuielement` object for the accessibility element which generated the notification\n   * a string specifying the specific notification which was received\n   * a table containing key-value pairs with more information about the notification, if the element and notification type provide it. Commonly this will be an empty table indicating that no additional detail was provided.",
+        "stripped_doc" : [
+          "Get or set the callback for the observer.",
+          ""
+        ],
+        "desc" : "Get or set the callback for the observer.",
+        "name" : "callback",
+        "notes" : [
+          " * the callback should expect 4 arguments and return none. The arguments passed to the callback will be as follows:",
+          "   * the observerObject itself",
+          "   * the `hs._asm.axuielement` object for the accessibility element which generated the notification",
+          "   * a string specifying the specific notification which was received",
+          "   * a table containing key-value pairs with more information about the notification, if the element and notification type provide it. Commonly this will be an empty table indicating that no additional detail was provided."
+        ],
+        "signature" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the observerObject; otherwise the current value.",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
+        "parameters" : [
+          " * `fn` - a function, or an explicit nil to remove, specifying the callback to the observer will invoke when the assigned elements generate notifications.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Registers the specified notification for the specified accesibility element with the observer.\n\nParameters:\n * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.\n * `notification` - a string specifying the notification.\n\nReturns:\n * the observerObject; generates an error if watcher cannot be registered\n\nNotes:\n * multiple notifications for the same accessibility element can be registered by invoking this method multiple times with the same element but different notification strings.\n * if the specified element and notification string are already registered, this method does nothing.\n * the notification string is application dependent and can be any string that the application developers choose; some common ones are found in `hs._asm.axuielement.observer.notifications`, but the list is not exhaustive nor is an application or element required to provide them.",
+        "stripped_doc" : [
+          "Registers the specified notification for the specified accesibility element with the observer.",
+          ""
+        ],
+        "desc" : "Registers the specified notification for the specified accesibility element with the observer.",
+        "name" : "addWatcher",
+        "notes" : [
+          " * multiple notifications for the same accessibility element can be registered by invoking this method multiple times with the same element but different notification strings.",
+          " * if the specified element and notification string are already registered, this method does nothing.",
+          " * the notification string is application dependent and can be any string that the application developers choose; some common ones are found in `hs._asm.axuielement.observer.notifications`, but the list is not exhaustive nor is an application or element required to provide them."
+        ],
+        "signature" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the observerObject; generates an error if watcher cannot be registered",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
+        "parameters" : [
+          " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
+          " * `notification` - a string specifying the notification.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Unregisters the specified notification for the specified accessibility element from the observer.\n\nParameters:\n * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.\n * `notification` - a string specifying the notification.\n\nReturns:\n * the observerObject; generates an error if watcher cannot be unregistered\n\nNotes:\n * if the specified element and notification string are not currently registered with the observer, this method does nothing.",
+        "stripped_doc" : [
+          "Unregisters the specified notification for the specified accessibility element from the observer.",
+          ""
+        ],
+        "desc" : "Unregisters the specified notification for the specified accessibility element from the observer.",
+        "name" : "removeWatcher",
+        "notes" : [
+          " * if the specified element and notification string are not currently registered with the observer, this method does nothing."
+        ],
+        "signature" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the observerObject; generates an error if watcher cannot be unregistered",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
+        "parameters" : [
+          " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
+          " * `notification` - a string specifying the notification.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table of the notifications currently registered with the observer.\n\nParameters:\n * `element` - an optional `hs._asm.axuielement` to return a list of registered notifications for.\n\nReturns:\n * a table containing the currently registered notifications\n\nNotes:\n * If an element is specified, then the table returned will contain a list of strings specifying the specific notifications that the observer is watching that element for.\n * If no argument is specified, then the table will contain key-value pairs in which each key will be an `hs._asm.axuielement` that is being observed and the corresponding value will be a table containing a list of strings specifying the specific notifications that the observer is watching for from from that element.",
+        "stripped_doc" : [
+          "Returns a table of the notifications currently registered with the observer.",
+          ""
+        ],
+        "desc" : "Returns a table of the notifications currently registered with the observer.",
+        "name" : "watching",
+        "notes" : [
+          " * If an element is specified, then the table returned will contain a list of strings specifying the specific notifications that the observer is watching that element for.",
+          " * If no argument is specified, then the table will contain key-value pairs in which each key will be an `hs._asm.axuielement` that is being observed and the corresponding value will be a table containing a list of strings specifying the specific notifications that the observer is watching for from from that element."
+        ],
+        "signature" : "hs._asm.axuielement.observer:watching([element]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing the currently registered notifications",
+          ""
+        ],
+        "def" : "hs._asm.axuielement.observer:watching([element]) -> table",
+        "parameters" : [
+          " * `element` - an optional `hs._asm.axuielement` to return a list of registered notifications for.",
+          ""
+        ]
+      }
     ],
     "Command" : [
 
@@ -1678,7 +1846,7 @@
           ""
         ],
         "desc" : "A table of common accessibility object notification names, provided for reference.",
-        "def" : "hs._asm.axuielement.observer.notifications[]",
+        "name" : "notifications",
         "notes" : [
           " * Notifications are application dependent and can be any string that the application developers choose; this list provides the suggested notification names found within the macOS Framework headers, but the list is not exhaustive nor is an application or element required to provide them."
         ],
@@ -1687,7 +1855,7 @@
         "returns" : [
 
         ],
-        "name" : "notifications",
+        "def" : "hs._asm.axuielement.observer.notifications[]",
         "parameters" : [
 
         ]
@@ -1699,7 +1867,7 @@
           ""
         ],
         "desc" : "Creates a new observer object for the application with the specified process ID.",
-        "def" : "hs._asm.axuielement.observer.new(pid) -> observerObject",
+        "name" : "new",
         "notes" : [
           " * If you already have the `hs.application` object for an application, you can get its process ID with `hs.application:pid()`",
           " * If you already have an `hs._asm.axuielement` from the application you wish to observe (it doesn't have to be the application axuielement object, just one belonging to the application), you can get the process ID with `hs._asm.axuielement:pid()`."
@@ -1710,7 +1878,7 @@
           " * a new observerObject; generates an error if the pid does not exist or if the object cannot be created.",
           ""
         ],
-        "name" : "new",
+        "def" : "hs._asm.axuielement.observer.new(pid) -> observerObject",
         "parameters" : [
           " * `pid` - the process ID of the application.",
           ""
@@ -1723,7 +1891,7 @@
           ""
         ],
         "desc" : "Registers the specified notification for the specified accesibility element with the observer.",
-        "def" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
+        "name" : "addWatcher",
         "notes" : [
           " * multiple notifications for the same accessibility element can be registered by invoking this method multiple times with the same element but different notification strings.",
           " * if the specified element and notification string are already registered, this method does nothing.",
@@ -1735,7 +1903,7 @@
           " * the observerObject; generates an error if watcher cannot be registered",
           ""
         ],
-        "name" : "addWatcher",
+        "def" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
         "parameters" : [
           " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
           " * `notification` - a string specifying the notification.",
@@ -1749,7 +1917,7 @@
           ""
         ],
         "desc" : "Get or set the callback for the observer.",
-        "def" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
+        "name" : "callback",
         "notes" : [
           " * the callback should expect 4 arguments and return none. The arguments passed to the callback will be as follows:",
           "   * the observerObject itself",
@@ -1763,7 +1931,7 @@
           " * If an argument is provided, the observerObject; otherwise the current value.",
           ""
         ],
-        "name" : "callback",
+        "def" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
         "parameters" : [
           " * `fn` - a function, or an explicit nil to remove, specifying the callback to the observer will invoke when the assigned elements generate notifications.",
           ""
@@ -1776,7 +1944,7 @@
           ""
         ],
         "desc" : "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.",
-        "def" : "hs._asm.axuielement.observer:isRunning() -> boolean",
+        "name" : "isRunning",
         "notes" : [
 
         ],
@@ -1785,7 +1953,7 @@
         "returns" : [
           " * a boolean value indicating whether or not the observer is currently active."
         ],
-        "name" : "isRunning",
+        "def" : "hs._asm.axuielement.observer:isRunning() -> boolean",
         "parameters" : [
           " * None",
           ""
@@ -1798,7 +1966,7 @@
           ""
         ],
         "desc" : "Unregisters the specified notification for the specified accessibility element from the observer.",
-        "def" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
+        "name" : "removeWatcher",
         "notes" : [
           " * if the specified element and notification string are not currently registered with the observer, this method does nothing."
         ],
@@ -1808,7 +1976,7 @@
           " * the observerObject; generates an error if watcher cannot be unregistered",
           ""
         ],
-        "name" : "removeWatcher",
+        "def" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
         "parameters" : [
           " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
           " * `notification` - a string specifying the notification.",
@@ -1822,7 +1990,7 @@
           ""
         ],
         "desc" : "Start observing the application and trigger callbacks for the elements and notifications assigned.",
-        "def" : "hs._asm.axuielement.observer:start() -> observerObject",
+        "name" : "start",
         "notes" : [
           " * This method does nothing if the observer is already running"
         ],
@@ -1832,7 +2000,7 @@
           " * the observerObject",
           ""
         ],
-        "name" : "start",
+        "def" : "hs._asm.axuielement.observer:start() -> observerObject",
         "parameters" : [
           " * None",
           ""
@@ -1845,7 +2013,7 @@
           ""
         ],
         "desc" : "Stop observing the application; no further callbacks will be generated.",
-        "def" : "hs._asm.axuielement.observer:stop() -> observerObject",
+        "name" : "stop",
         "notes" : [
           " * This method does nothing if the observer is not currently running"
         ],
@@ -1855,7 +2023,7 @@
           " * the observerObject",
           ""
         ],
-        "name" : "stop",
+        "def" : "hs._asm.axuielement.observer:stop() -> observerObject",
         "parameters" : [
           " * None",
           ""
@@ -1868,7 +2036,7 @@
           ""
         ],
         "desc" : "Returns a table of the notifications currently registered with the observer.",
-        "def" : "hs._asm.axuielement.observer:watching([element]) -> table",
+        "name" : "watching",
         "notes" : [
           " * If an element is specified, then the table returned will contain a list of strings specifying the specific notifications that the observer is watching that element for.",
           " * If no argument is specified, then the table will contain key-value pairs in which each key will be an `hs._asm.axuielement` that is being observed and the corresponding value will be a table containing a list of strings specifying the specific notifications that the observer is watching for from from that element."
@@ -1879,183 +2047,15 @@
           " * a table containing the currently registered notifications",
           ""
         ],
-        "name" : "watching",
+        "def" : "hs._asm.axuielement.observer:watching([element]) -> table",
         "parameters" : [
           " * `element` - an optional `hs._asm.axuielement` to return a list of registered notifications for.",
           ""
         ]
       }
     ],
-    "Method" : [
-      {
-        "doc" : "Start observing the application and trigger callbacks for the elements and notifications assigned.\n\nParameters:\n * None\n\nReturns:\n * the observerObject\n\nNotes:\n * This method does nothing if the observer is already running",
-        "stripped_doc" : [
-          "Start observing the application and trigger callbacks for the elements and notifications assigned.",
-          ""
-        ],
-        "desc" : "Start observing the application and trigger callbacks for the elements and notifications assigned.",
-        "def" : "hs._asm.axuielement.observer:start() -> observerObject",
-        "notes" : [
-          " * This method does nothing if the observer is already running"
-        ],
-        "signature" : "hs._asm.axuielement.observer:start() -> observerObject",
-        "type" : "Method",
-        "returns" : [
-          " * the observerObject",
-          ""
-        ],
-        "name" : "start",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Stop observing the application; no further callbacks will be generated.\n\nParameters:\n * None\n\nReturns:\n * the observerObject\n\nNotes:\n * This method does nothing if the observer is not currently running",
-        "stripped_doc" : [
-          "Stop observing the application; no further callbacks will be generated.",
-          ""
-        ],
-        "desc" : "Stop observing the application; no further callbacks will be generated.",
-        "def" : "hs._asm.axuielement.observer:stop() -> observerObject",
-        "notes" : [
-          " * This method does nothing if the observer is not currently running"
-        ],
-        "signature" : "hs._asm.axuielement.observer:stop() -> observerObject",
-        "type" : "Method",
-        "returns" : [
-          " * the observerObject",
-          ""
-        ],
-        "name" : "stop",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.\n\nParameters:\n * None\n\nReturns:\n * a boolean value indicating whether or not the observer is currently active.",
-        "stripped_doc" : [
-          "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.",
-          ""
-        ],
-        "desc" : "Returns true or false indicating whether the observer is currently watching for notifications and generating callbacks.",
-        "def" : "hs._asm.axuielement.observer:isRunning() -> boolean",
-        "notes" : [
+    "Field" : [
 
-        ],
-        "signature" : "hs._asm.axuielement.observer:isRunning() -> boolean",
-        "type" : "Method",
-        "returns" : [
-          " * a boolean value indicating whether or not the observer is currently active."
-        ],
-        "name" : "isRunning",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "doc" : "Get or set the callback for the observer.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to the observer will invoke when the assigned elements generate notifications.\n\nReturns:\n * If an argument is provided, the observerObject; otherwise the current value.\n\nNotes:\n * the callback should expect 4 arguments and return none. The arguments passed to the callback will be as follows:\n   * the observerObject itself\n   * the `hs._asm.axuielement` object for the accessibility element which generated the notification\n   * a string specifying the specific notification which was received\n   * a table containing key-value pairs with more information about the notification, if the element and notification type provide it. Commonly this will be an empty table indicating that no additional detail was provided.",
-        "stripped_doc" : [
-          "Get or set the callback for the observer.",
-          ""
-        ],
-        "desc" : "Get or set the callback for the observer.",
-        "def" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
-        "notes" : [
-          " * the callback should expect 4 arguments and return none. The arguments passed to the callback will be as follows:",
-          "   * the observerObject itself",
-          "   * the `hs._asm.axuielement` object for the accessibility element which generated the notification",
-          "   * a string specifying the specific notification which was received",
-          "   * a table containing key-value pairs with more information about the notification, if the element and notification type provide it. Commonly this will be an empty table indicating that no additional detail was provided."
-        ],
-        "signature" : "hs._asm.axuielement.observer:callback([fn | nil]) -> observerObject | fn | nil",
-        "type" : "Method",
-        "returns" : [
-          " * If an argument is provided, the observerObject; otherwise the current value.",
-          ""
-        ],
-        "name" : "callback",
-        "parameters" : [
-          " * `fn` - a function, or an explicit nil to remove, specifying the callback to the observer will invoke when the assigned elements generate notifications.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Registers the specified notification for the specified accesibility element with the observer.\n\nParameters:\n * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.\n * `notification` - a string specifying the notification.\n\nReturns:\n * the observerObject; generates an error if watcher cannot be registered\n\nNotes:\n * multiple notifications for the same accessibility element can be registered by invoking this method multiple times with the same element but different notification strings.\n * if the specified element and notification string are already registered, this method does nothing.\n * the notification string is application dependent and can be any string that the application developers choose; some common ones are found in `hs._asm.axuielement.observer.notifications`, but the list is not exhaustive nor is an application or element required to provide them.",
-        "stripped_doc" : [
-          "Registers the specified notification for the specified accesibility element with the observer.",
-          ""
-        ],
-        "desc" : "Registers the specified notification for the specified accesibility element with the observer.",
-        "def" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
-        "notes" : [
-          " * multiple notifications for the same accessibility element can be registered by invoking this method multiple times with the same element but different notification strings.",
-          " * if the specified element and notification string are already registered, this method does nothing.",
-          " * the notification string is application dependent and can be any string that the application developers choose; some common ones are found in `hs._asm.axuielement.observer.notifications`, but the list is not exhaustive nor is an application or element required to provide them."
-        ],
-        "signature" : "hs._asm.axuielement.observer:addWatcher(element, notification) -> observerObject",
-        "type" : "Method",
-        "returns" : [
-          " * the observerObject; generates an error if watcher cannot be registered",
-          ""
-        ],
-        "name" : "addWatcher",
-        "parameters" : [
-          " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
-          " * `notification` - a string specifying the notification.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Unregisters the specified notification for the specified accessibility element from the observer.\n\nParameters:\n * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.\n * `notification` - a string specifying the notification.\n\nReturns:\n * the observerObject; generates an error if watcher cannot be unregistered\n\nNotes:\n * if the specified element and notification string are not currently registered with the observer, this method does nothing.",
-        "stripped_doc" : [
-          "Unregisters the specified notification for the specified accessibility element from the observer.",
-          ""
-        ],
-        "desc" : "Unregisters the specified notification for the specified accessibility element from the observer.",
-        "def" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
-        "notes" : [
-          " * if the specified element and notification string are not currently registered with the observer, this method does nothing."
-        ],
-        "signature" : "hs._asm.axuielement.observer:removeWatcher(element, notification) -> observerObject",
-        "type" : "Method",
-        "returns" : [
-          " * the observerObject; generates an error if watcher cannot be unregistered",
-          ""
-        ],
-        "name" : "removeWatcher",
-        "parameters" : [
-          " * `element`      - the `hs._asm.axuielement` representing an accessibility element of the application the observer was created for.",
-          " * `notification` - a string specifying the notification.",
-          ""
-        ]
-      },
-      {
-        "doc" : "Returns a table of the notifications currently registered with the observer.\n\nParameters:\n * `element` - an optional `hs._asm.axuielement` to return a list of registered notifications for.\n\nReturns:\n * a table containing the currently registered notifications\n\nNotes:\n * If an element is specified, then the table returned will contain a list of strings specifying the specific notifications that the observer is watching that element for.\n * If no argument is specified, then the table will contain key-value pairs in which each key will be an `hs._asm.axuielement` that is being observed and the corresponding value will be a table containing a list of strings specifying the specific notifications that the observer is watching for from from that element.",
-        "stripped_doc" : [
-          "Returns a table of the notifications currently registered with the observer.",
-          ""
-        ],
-        "desc" : "Returns a table of the notifications currently registered with the observer.",
-        "def" : "hs._asm.axuielement.observer:watching([element]) -> table",
-        "notes" : [
-          " * If an element is specified, then the table returned will contain a list of strings specifying the specific notifications that the observer is watching that element for.",
-          " * If no argument is specified, then the table will contain key-value pairs in which each key will be an `hs._asm.axuielement` that is being observed and the corresponding value will be a table containing a list of strings specifying the specific notifications that the observer is watching for from from that element."
-        ],
-        "signature" : "hs._asm.axuielement.observer:watching([element]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * a table containing the currently registered notifications",
-          ""
-        ],
-        "name" : "watching",
-        "parameters" : [
-          " * `element` - an optional `hs._asm.axuielement` to return a list of registered notifications for.",
-          ""
-        ]
-      }
     ],
     "name" : "hs._asm.axuielement.observer"
   }
