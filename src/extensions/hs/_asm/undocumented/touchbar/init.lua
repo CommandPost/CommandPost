@@ -1,3 +1,6 @@
+if package.searchpath("hs._asm.coroutineshim", package.path) then
+    require"hs._asm.coroutineshim"
+end
 
 --- === hs._asm.undocumented.touchbar ===
 ---
