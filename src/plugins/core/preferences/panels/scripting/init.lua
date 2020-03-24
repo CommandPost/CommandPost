@@ -285,11 +285,15 @@ function plugin.init(deps, env)
             -- Delete Snippet:
             --------------------------------------------------------------------------------
             local snippet = params["snippet"]
-            if snippet then
-                local snippets = mod.snippets()
-                snippets[snippet] = nil
-                mod.snippets(snippets)
-                mod._manager.refresh()
+            if snippet ~= "" then
+                webviewAlert(mod._manager._webview, function(result)
+                    if result == i18n("yes") then
+                        local snippets = mod.snippets()
+                        snippets[snippet] = nil
+                        mod.snippets(snippets)
+                        mod._manager.refresh()
+                    end
+                end, i18n("deleteSnippetConfirmation"), "", i18n("yes"), i18n("no"))
             end
         elseif params["type"] == "change" then
             --------------------------------------------------------------------------------
