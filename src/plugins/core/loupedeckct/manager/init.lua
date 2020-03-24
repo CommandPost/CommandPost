@@ -2,38 +2,11 @@
 ---
 --- Loupedeck CT Manager Plugin.
 
---[[
-
-TODO LIST:
-
-    [ ] Add more extensible system to adding applications
-    [ ] Add Search Console section icon for keyboard shortcuts & banks
-    [ ] Allow you to add custom Search Console icons for user defined sections
-    [ ] Allow dragging and dropping of images to knobs, wheel and side screens.
-    [ ] Custom applications should have a default layout where buttons 1-8 are
-        for banks
-    [ ] Add visual references for LED colours in Preferences panel.
-    [ ] Add option to apply unique vibration setting to each button.
-    [ ] Add actions for controlling generic accessibility objects (like we do with MIDI).
-    [ ] If "Store settings on Flash Drive" is enabled, you shouldn't be able to edit
-        preferences if the Flash Drive isn't connected.
-    [ ] Force quit the official Loupedeck CT app and detect if it opens whilst CP is running.
-    [ ] Add action for enabling/disabling Loupedeck CT support.
-    [ ] Add action for opening the Loupedeck official app.
-    [ ] i18n everything.
-    [ ] Add option to change Loupedeck CT orientation.
-    [ ] Work out actions for a jog wheel using J/K/L.
-    [ ] Add action to open Spotlight search window.
-    [ ] Make sure Color Board works well with knobs.
-    [ ] Update default layout to be more useful.
-
---]]
-
 local require               = require
 
 local hs                    = hs
 
---local log                   = require "hs.logger".new "ldCT"
+local log                   = require "hs.logger".new "ldCT"
 
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
@@ -48,6 +21,7 @@ local dialog                = require "cp.dialog"
 local i18n                  = require "cp.i18n"
 local json                  = require "cp.json"
 local just                  = require "cp.just"
+local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 
 local displayNotification   = dialog.displayNotification
@@ -176,6 +150,11 @@ local lastWheelDoubleTapY = nil
 local wheelDoubleTapXTolerance = 12
 local wheelDoubleTapYTolerance = 7
 
+--- plugins.core.loupedeckct.manager.connected <cp.prop: boolean>
+--- Field
+--- Is Loupedeck CT connected?
+mod.connected = prop.FALSE()
+
 --- plugins.core.loupedeckct.manager.numberOfBanks -> number
 --- Field
 --- Number of banks
@@ -212,13 +191,6 @@ mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         ct.disconnect()
     end
-end)
-
---- plugins.core.loupedeckct.manager.vibrations <cp.prop: boolean>
---- Field
---- Enable or disable Touch Bar vibrations.
-mod.vibrations = config.prop("loupedeckct.vibrations", false):watch(function(enabled)
-    ct.vibrations(enabled)
 end)
 
 -- defaultLayoutPath -> string
@@ -371,6 +343,13 @@ function mod.refresh(dueToAppChange)
     end
 
     local items = mod.items()
+
+    --------------------------------------------------------------------------------
+    -- Revert to "All Applications" if no settings for frontmost app exist:
+    --------------------------------------------------------------------------------
+    if not items[bundleID] then
+        bundleID = "All Applications"
+    end
 
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
@@ -583,16 +562,17 @@ local function callback(data)
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_open" then
+        mod.connected(true)
         clearCache()
         mod.refresh()
         hasLoaded = true
-        mod.vibrations:update()
         mod.enableFlashDrive:update()
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
         -- If the websocket disconnects or fails, then trash all the caches:
         --------------------------------------------------------------------------------
+        mod.connected(false)
         clearCache()
         return
     end
@@ -601,6 +581,13 @@ local function callback(data)
     local bundleID = frontmostApplication:bundleID()
 
     local items = mod.items()
+
+    --------------------------------------------------------------------------------
+    -- Revert to "All Applications" if no settings for frontmost app exist:
+    --------------------------------------------------------------------------------
+    if not items[bundleID] then
+        bundleID = "All Applications"
+    end
 
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
@@ -674,6 +661,12 @@ local function callback(data)
             -- TOUCH SCREEN BUTTON PRESS:
             --------------------------------------------------------------------------------
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
+
+            -- Vibrate if needed:
+            if thisTouchButton and thisTouchButton.vibrate then
+                ct.vibrate(tonumber(thisTouchButton.vibrate))
+            end
+
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
                 return
             end

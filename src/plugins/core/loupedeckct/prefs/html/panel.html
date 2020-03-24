@@ -126,6 +126,9 @@
 			document.getElementById("sideResolution").style.display = "none";
 			document.getElementById("wheelResolution").style.display = "none";
 			document.getElementById("knobResolution").style.display = "block";
+
+			document.getElementById("vibrateA").style.display = "none";
+			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -170,6 +173,9 @@
 
 			document.getElementById("iconLabel").style.display = "block";
 			document.getElementById("iconLabelHeading").style.display = "table-cell";
+
+			document.getElementById("vibrateA").style.display = "block";
+			document.getElementById("vibrateB").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -209,6 +215,9 @@
 
 			document.getElementById("iconLabel").style.display = "none";
 			document.getElementById("iconLabelHeading").style.display = "none";
+
+			document.getElementById("vibrateA").style.display = "none";
+			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -254,6 +263,9 @@
 
 			document.getElementById("iconLabel").style.display = "none";
 			document.getElementById("iconLabelHeading").style.display = "none";
+
+			document.getElementById("vibrateA").style.display = "none";
+			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -293,6 +305,9 @@
 
 			document.getElementById("iconLabel").style.display = "none";
 			document.getElementById("iconLabelHeading").style.display = "none";
+
+			document.getElementById("vibrateA").style.display = "none";
+			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -337,6 +352,9 @@
 
 			document.getElementById("iconLabel").style.display = "none";
 			document.getElementById("iconLabelHeading").style.display = "none";
+
+			document.getElementById("vibrateA").style.display = "none";
+			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
@@ -584,6 +602,170 @@
 		};
 	}
 
+	function changeIconKnobDropZone(element, id) {
+		var file = element.files[0];
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+
+			// Change button icon:
+			//element.parentElement.getElementsByTagName("img")[0].src = data;
+
+			// If this button is currently selected, change that too:
+			if (document.getElementById("controlType").value == "knob" && document.getElementById("id").value == id) {
+				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+				document.getElementById("iconDropZone").className = "dropzone dropped";
+			}
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "updateKnobIcon",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						id: id,
+						icon: data,
+						controlType: document.getElementById("controlType").value,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
+
+	function changeIconScreenDropZone(element, id) {
+		var file = element.files[0];
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+
+			// If this button is currently selected, change that too:
+			if (document.getElementById("controlType").value == "sideScreen" && document.getElementById("id").value == id) {
+				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+				document.getElementById("iconDropZone").className = "dropzone dropped";
+			}
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "updateButtonIcon",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						id: id,
+						icon: data,
+						controlType: document.getElementById("controlType").value,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
+
+	function changeIconWheelScreenDropZone(element, id) {
+		var file = element.files[0];
+
+		var match = element.accept.split(/, ?/).indexOf(file.type);
+
+		if (element.accept && match == -1) {
+			// File type dropped doesn't match the accepted list:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "badExtension",
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			return;
+		};
+
+		var reader = new FileReader(file);
+		reader.readAsDataURL(file);
+
+		reader.onload = function(e) {
+			var data = e.target.result;
+
+			// If this button is currently selected, change that too:
+			if (document.getElementById("controlType").value == "wheelScreen" && document.getElementById("id").value == id) {
+				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+				document.getElementById("iconDropZone").className = "dropzone dropped";
+			}
+
+			// Icon Callback:
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "updateButtonIcon",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						id: id,
+						icon: data,
+						controlType: document.getElementById("controlType").value,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+
+		};
+	}
 
 	function importSettings() {
 		try {
@@ -613,6 +795,132 @@
 		}
 	}
 
+	function copyControlToAllBanks() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "copyControlToAllBanks",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetControl() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "resetControl",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetEverything() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "resetEverything",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetApplication() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "resetApplication",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetBank() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "resetBank",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyApplication() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "copyApplication",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyBank() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "copyBank",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateVibrate() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateVibrate",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("vibrate").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 </script>
 <table>
 	<thead>
@@ -632,8 +940,10 @@
 		<th style=text-align: left;">
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
+					<option value="All Applications">All Applications</option>
+					<option dttisabled>──────────</option>
 					{%
-					for id, label in spairs(apps, function(t,a,b) return t[a] < t[b] end) do
+					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
 						local selected = ""
 						if lastApplication == id then
 							selected = [[selected=""]]
@@ -642,6 +952,24 @@
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{% end %}
 					<option disabled>──────────</option>
+					{%
+					local atLeastOne = false
+					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+						atLeastOne = true
+						local selected = ""
+						if lastApplication == id then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{id}}">{{label}}</option>
+					{%
+					end
+					if atLeastOne then
+					%}
+					<option disabled>──────────</option>
+					{%
+					end
+					%}
 					<option value="Add Application">Add Application</option>
 				</select>
 			</span>
@@ -687,23 +1015,21 @@
 		</th>
 	</tr>
 </table>
-
 <table>
 	<thead>
 		<tr>
 			<th width="447px">
 				<div id="loupedeckCT">
 					<div id="knob1">
-						<a href="#" onclick="changeControl('Knob 1', 'knob', '1');">
-							<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '1')" onclick="changeControl('Knob 1', 'knob', '1');" />
+						<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" onclick="changeControl('Knob 1', 'knob', '1');" />
 					</div>
 					<div id="knob4">
-						<a href="#" onclick="changeControl('Knob 4', 'knob', '4');">
-							<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '4')" onclick="changeControl('Knob 4', 'knob', '4');" />
+						<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" onclick="changeControl('Knob 4', 'knob', '4');" />
 					</div>
 					<div id="sideScreen1">
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconScreenDropZone(this, '1')" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
 						<img src="{{ insertImage('images/sideScreen1.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
 					</div>
 					<div id="touchButton1">
@@ -723,6 +1049,7 @@
 						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" onclick="changeControl('Button 4', 'touchButton', '4');" />
 					</div>
 					<div id="sideScreen2">
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconScreenDropZone(this, '2')" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
 						<img src="{{ insertImage('images/sideScreen2.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
 					</div>
 					<div id="touchButton5">
@@ -742,14 +1069,12 @@
 						<img src="{{ insertImage('images/touchButton8.png') }}" width="40" height="40" onclick="changeControl('Button 8', 'touchButton', '8');" />
 					</div>
 					<div id="knob2">
-						<a href="#" onclick="changeControl('Knob 2', 'knob', '2');">
-							<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '2')" onclick="changeControl('Knob 2', 'knob', '2');" />
+						<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" onclick="changeControl('Knob 2', 'knob', '2');" />
 					</div>
 					<div id="knob5">
-						<a href="#" onclick="changeControl('Knob 5', 'knob', '5');">
-							<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '5')" onclick="changeControl('Knob 5', 'knob', '5');" />
+						<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" onclick="changeControl('Knob 5', 'knob', '5');" />
 					</div>
 					<div id="touchButton9">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '9')" onclick="changeControl('Button 9', 'touchButton', '9');" />
@@ -768,159 +1093,130 @@
 						<img src="{{ insertImage('images/touchButton12.png') }}" width="40" height="40" onclick="changeControl('Button 12', 'touchButton', '12');" />
 					</div>
 					<div id="knob3">
-						<a href="#" onclick="changeControl('Knob 3', 'knob', '3');">
-							<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '3')" onclick="changeControl('Knob 3', 'knob', '3');" />
+						<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" onclick="changeControl('Knob 3', 'knob', '3');" />
 					</div>
 					<div id="knob6">
-						<a href="#" onclick="changeControl('Knob 6', 'knob', '6');">
-							<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" />
-						</a>
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '6')" onclick="changeControl('Knob 6', 'knob', '6');" />
+						<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" onclick="changeControl('Knob 6', 'knob', '6');"/>
 					</div>
 					<div id="ledButton1">
-						<a href="#" onclick="changeControl('1', 'ledButton', '7');">
-							<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" onclick="changeControl('1', 'ledButton', '7');" />
 					</div>
 					<div id="ledButton2">
-						<a href="#" onclick="changeControl('2', 'ledButton', '8');">
-							<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" onclick="changeControl('2', 'ledButton', '8');" />
 					</div>
 					<div id="ledButton3">
-						<a href="#" onclick="changeControl('3', 'ledButton', '9');">
-							<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" onclick="changeControl('3', 'ledButton', '9');" />
 					</div>
 					<div id="ledButton4">
-						<a href="#" onclick="changeControl('4', 'ledButton', '10');">
-							<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" onclick="changeControl('4', 'ledButton', '10');" />
 					</div>
 					<div id="ledButton5">
-						<a href="#" onclick="changeControl('5', 'ledButton', '11');">
-							<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" onclick="changeControl('5', 'ledButton', '11');" />
 					</div>
 					<div id="ledButton6">
-						<a href="#" onclick="changeControl('6', 'ledButton', '12');">
-							<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" onclick="changeControl('6', 'ledButton', '12');" />
 					</div>
 					<div id="ledButton7">
-						<a href="#" onclick="changeControl('7', 'ledButton', '13');">
-							<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" onclick="changeControl('7', 'ledButton', '13');" />
 					</div>
 					<div id="ledButton8">
-						<a href="#" onclick="changeControl('8', 'ledButton', '14');">
-							<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" />
-						</a>
+						<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" onclick="changeControl('8', 'ledButton', '14');" />
 					</div>
 					<div id="ledButtonO">
-						<a href="#" onclick="changeControl('O', 'ledButton', '15');">
-							<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" onclick="changeControl('O', 'ledButton', '15');" />
 					</div>
 					<div id="ledButtonReturn">
-						<a href="#" onclick="changeControl('Return', 'ledButton', '18');">
-							<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" onclick="changeControl('Return', 'ledButton', '18');" />
 					</div>
 					<div id="ledButtonA">
-						<a href="#" onclick="changeControl('A', 'ledButton', '21');">
-							<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" onclick="changeControl('A', 'ledButton', '21');" />
 					</div>
 					<div id="ledButtonB">
-						<a href="#" onclick="changeControl('B', 'ledButton', '24');">
-							<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" onclick="changeControl('B', 'ledButton', '24');" />
 					</div>
 					<div id="jogWheelTop">
-						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" />
-						</a>
+						<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
 					</div>
 					<div id="jogWheelLeft">
-						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" />
-						</a>
+						<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
 					</div>
 					<div id="wheelScreen1">
+						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconWheelScreenDropZone(this, '1')" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 						<img src="{{ insertImage('images/wheelScreen1.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 					</div>
 					<div id="jogWheelRight">
-						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" />
-						</a>
+						<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
 					</div>
 					<div id="ledButtonUndo">
-						<a href="#" onclick="changeControl('Undo', 'ledButton', '16');">
-							<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" onclick="changeControl('Undo', 'ledButton', '16');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonSave">
-						<a href="#" onclick="changeControl('Save', 'ledButton', '19');">
-							<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" onclick="changeControl('Save', 'ledButton', '19');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonC">
-						<a href="#" onclick="changeControl('C', 'ledButton', '22');">
-							<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" onclick="changeControl('C', 'ledButton', '22');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonD">
-						<a href="#" onclick="changeControl('D', 'ledButton', '25');">
-							<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" onclick="changeControl('D', 'ledButton', '25');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonKeyboard">
-						<a href="#" onclick="changeControl('Keyboard', 'ledButton', '17');">
-							<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" onclick="changeControl('Keyboard', 'ledButton', '17');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonLeftFn">
-						<a href="#" onclick="changeControl('Fn (Left)', 'ledButton', '20');">
-							<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" onclick="changeControl('Fn (Left)', 'ledButton', '20');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonRightFn">
-						<a href="#" onclick="changeControl('Fn (Left)', 'ledButton', '23');">
-							<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" onclick="changeControl('Fn (Left)', 'ledButton', '23');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonE">
-						<a href="#" onclick="changeControl('E', 'ledButton', '26');">
-							<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" />
-						</a>
+						<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" onclick="changeControl('E', 'ledButton', '26');" style="cursor: pointer;" />
 					</div>
 					<div id="jogWheelBottom">
-						<a href="#" onclick="changeControl('Jog Wheel', 'jogWheel', '1');">
-							<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" />
-						</a>
+						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
 					</div>
 				</div>
 			</th>
 			<th style="text-align:top; padding-top: 20px;">
 
 				<p style="text-align: left; padding-left:20px; font-size:16px; margin: 0px;">
-					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">{{ lastSelectedControl }}</span>
+					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">Loading...</span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
-					<table class="loupedeck" style="height: 500px;">
-
-						<!-- PRESS ACTION & LED COLOR: -->
+					<table class="loupedeck" style="height: 526px;" id="noLoupedeck">
+						<tr>
+							<th>
+								<p style="font-size: 12px; font-weight: normal;"><strong>Store settings on Flash Drive</strong> is enabled, but no Loupedeck CT is detected.</p>
+								<p style="font-size: 12px; font-weight: normal;">Please connect your Loupedeck CT to allow configuration.</p>
+							</th>
+						</tr>
+					</table>
+					<table class="loupedeck" style="height: 526px; display: none;" id="yesLoupedeck">
+						<!-- PRESS ACTION, LED COLOR & VIBRATE: -->
 						<tr id="pressActionA">
 							<th width="229px">Press Action:</th>
 							<th width="229px" id="ledColorA">LED Color:</th>
+							<th width="229px" id="vibrateA">Vibrate When Pressed:</th>
 						</tr>
 						<tr id="pressActionB">
-							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="{{ lastPressValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 							<td width="229px" id="ledColorB">
 								<div>
-									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="{{ lastColorValue }}">
+									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
 								</div>
+							</td>
+							<td width="229px" id="vibrateB">
+								<select id="vibrate" style="width: 210px;" onchange="updateVibrate()">
+									<option value="">None</option>
+									{%
+									for id, label in pairs(vibrationIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
 							</td>
 						</tr>
 						<tr id="pressActionC">
@@ -941,8 +1237,8 @@
 							<th width="229px">Turn Right Action:</th>
 						</tr>
 						<tr id="knobB">
-							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="knobC">
 							<td width="229px"><a id="left_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
@@ -962,8 +1258,8 @@
 							<th width="229px">Slide Down Action:</th>
 						</tr>
 						<tr id="touchWheelB">
-							<td width="229px"><input type="text" id="up_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchUpValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="down_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchDownValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="up_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="down_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelC">
 							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('upAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('upAction')">{{ i18n("clear") }}</a></td>
@@ -983,8 +1279,8 @@
 							<th width="229px">Slide Right Action:</th>
 						</tr>
 						<tr id="touchWheelE">
-							<td width="229px"><input type="text" id="left_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchLeftValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="right_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchRightValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="left_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="right_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelF">
 							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
@@ -1004,8 +1300,8 @@
 							<th width="229px">Two Finger Tap:</th>
 						</tr>
 						<tr id="touchWheelH">
-							<td width="229px"><input type="text" id="double_tap_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchDoubleTapValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px"><input type="text" id="two_finger_touch_action" class="loupedeckActionTextbox" value="{{ lastTouchTwoFingerValue }}" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="double_tap_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="two_finger_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="touchWheelI">
 							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('doubleTapAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('doubleTapAction')">{{ i18n("clear") }}</a></td>
@@ -1028,24 +1324,13 @@
 							<td width="229px">
 								<div id="iconDropZone" class="dropzone{{ class }}" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
 									<div id="iconDropZonePreview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
-										{%
-
-											if lastEncodedIcon then
-										%}
-										<img src="{{ lastEncodedIcon }}" />
-										{%
-											else
-										%}
-											<p style="padding-top: 13px;">icon</p>
-										{%
-											end
-										%}
+										<p style="padding-top: 13px;">icon</p>
 									</div>
 									<input id="iconDropZoneInput" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconDropZone(this)" onclick="pressIconDropZone()" />
 								</div>
 							</td>
 							<td width="229px" style="vertical-align: top;">
-								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" oninput="updateIconLabel()"></textarea>
+								<textarea id="iconLabel" class="loupedeckActionTextbox" style="resize: none;" rows="5" cols="5" placeholder="{{ i18n("none") }}" onchange="updateIconLabel()"></textarea>
 							</td>
 						</tr>
 						<tr id="iconC">
@@ -1057,6 +1342,15 @@
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">History</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>
+						<tr>
+							<th>
+								<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">Copy Control to All Banks</a>
+							</th>
+							<th>
+								<a href="#" class="bottomButton" onclick="resetControl()">Reset Control</a>
+							</th>
+						</tr>
+
 					</table>
 				</div>
 			</th>
@@ -1064,20 +1358,36 @@
 	</thead>
 </table>
 
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetEverything()">Reset Everything</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetApplication()">Reset Application</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetBank()">Reset Bank</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyApplication()">Copy Application</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyBank()">Copy Bank</a>
+		</th>
+	</tr>
+</table>
+
 <input type="hidden" id="selectedControl" value="{{ lastSelectedControl }}">
 <input type="hidden" id="id" value="{{ lastID }}">
 <input type="hidden" id="controlType" value="{{ lastControlType }}">
-
-
-
-{%
-	local textVisibility = "none"
-	local buttonVisibility = "none"
-	if not lastIsButton then
-		textVisibility = "block"
-		buttonVisibility = "inline-block"
-	end
-%}
 
 <script>
 	// Update UI on initial load:

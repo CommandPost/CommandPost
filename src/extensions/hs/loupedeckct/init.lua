@@ -4,29 +4,6 @@
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 
--- TODO:
---  [ ] Add control to enable/disable Bluetooth
-
---------------------------------------------------------------------------------
--- BLUETOOTH:
---
--- Message received (4): (4) 04-10-97-01
--- Message received (4): (4) 04-0F-98-01
--- WebSocket text message (37) '{"id":15,"name":"IsBluetoothEnabled"}'
--- Message 'IsBluetoothEnabled' responded in 0 ms
--- WebSocket response (63) '{
---   "id": 15,
---   "name": "IsBluetoothEnabled",
---   "data": false
--- }'
--- Message received (4): (4) 04-10-99-01
--- Message received (4): (4) 04-0F-9A-01
--- Message received (4): (4) 04-10-9B-01
--- Message received (4): (4) 04-0F-9C-01
--- Message received (4): (4) 04-10-9D-01
--- Message received (4): (4) 04-0F-9E-01
---------------------------------------------------------------------------------
-
 local log               = require "hs.logger".new("loupedeckct")
 
 local bytes             = require "hs.bytes"
@@ -50,12 +27,11 @@ local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
 local int16be           = bytes.int16be
 local int8              = bytes.int8
+local remainder         = bytes.remainder
 local uint16be          = bytes.uint16be
 local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
-local uint8              = bytes.uint8
-
-local remainder         = bytes.remainder
+local uint8             = bytes.uint8
 
 local mod               = {}
 
@@ -674,10 +650,6 @@ mod.responseHandler = {
         end
 
         triggerCallback(response)
-        -- Vibrate if enabled:
-        if mod._vibrations and response.screenID == mod.screens.middle.id then
-            mod.vibrate()
-        end
     end,
 
     --------------------------------------------------------------------------------
@@ -1418,12 +1390,89 @@ function mod.buttonColor(buttonID, color, callbackFn)
     )
 end
 
---- hs.loupedeckct.vibrate([vibraWaveformIndex, callbackFn]) -> boolean
+--- hs.loupedeckct.vibrationIndex -> table
+--- Constant
+--- Descriptions of all the vibration indexes.
+mod.vibrationIndex = {
+    [1]     = "One short vibration (do)", -- 1 to 9, 17 to 26
+    [10]    = "Two quick vibrations (do-de)", -- 37 to 46
+    [12]    = "Three quick vibrations (do-de-de)",
+    [13]    = "Single ramp down (dooooooooo)",
+    [14]    = "Medium length high-pitched (veeeee)",
+    [15]    = "Long length high-pitched (veeeeeee)",
+    [16]    = "Really long length high-pitched (veeeeeeee)",
+    [27]    = "Two quick vibrations (do-do)", -- 27 to 36
+    [47]    = "Medium length high-pitched (veeeee)",
+    [48]    = "One medium length vibration (veeeeee)",
+    [49]    = "One medium length vibration (vuum)",
+    [50]    = "Short deep vibration (vum)", -- 50 to 51
+    [52]    = "Alarm (vu-ve-ve-ve-ve)", -- 52 to 55
+    [56]    = "Deeper Alarm (vu-ve-ve-ve-ve)",
+    [58]    = "Ramp (vuuuuuu-vu)", -- 58 to 62
+    [63]    = "Ramp (vuuuuuu-ve)",
+    [64]    = "Low medium vibration (vuuuuuuuu)", -- 64 to 69
+    [70]    = "High to low ramp (veeeeoooo)",
+    [71]    = "High to low ramp (voooooooo)",
+    [72]    = "High to low ramp (vooooo)",
+    [73]    = "High to low ramp (vooo)",
+    [74]    = "High to low ramp (voo)",
+    [75]    = "High to low ramp (vo)",
+    [76]    = "High to low ramp (vooooooo)",
+    [77]    = "High to low ramp (vooooo)",
+    [78]    = "High to low ramp (voooo)",
+    [79]    = "High to low ramp (vooo)",
+    [80]    = "High to low ramp (voo)",
+    [82]    = "Ramp Up (vvvvvoooooooeeeee)",
+    [83]    = "Ramp Up (vvvvvoooooeeee)",
+    [84]    = "Ramp Up (vvvoooeee)",
+    [85]    = "Ramp Up (vvooee)",
+    [86]    = "Ramp Up (vvoe)",
+    [87]    = "Ramp Up (voe)",
+    [88]    = "Ramp Up (.....vvvoooeeeeee)",
+    [89]    = "Ramp Up (...vvvoooeeeeee)",
+    [90]    = "Ramp Up (.vvvoooeeeeee)",
+    [91]    = "Ramp Up (vvvooe)",
+    [92]    = "Ramp Up (vvooe)",
+    [93]    = "Ramp Up (voe)",
+    [94]    = "Slow and low (vrrrrmmmmmmmmmmmm)",
+    [95]    = "Slow and low (vrrrrmmmmmm)",
+    [96]    = "Slow and low (vrrrrmmm)",
+    [97]    = "Slow and low (vrrrmmm)",
+    [98]    = "Almost silent (vrm)",
+    [99]    = "Almost silent (vr)",
+    [100]   = "Ramp Down - Low and Subtle (vvvrrrmmmmmm)",
+    [101]   = "Ramp Down - Low and Subtle (vvvrrrmmmmm)",
+    [102]   = "Ramp Down - Low and Subtle (vvrrmmmm)",
+    [103]   = "Ramp Down - Low and Subtle (vvrrmmmm)",
+    [104]   = "Ramp Down - Low and Subtle (vvrrmmmm)",
+    [105]   = "Ramp Down - Low and Subtle (vvrrmm)",
+    [106]   = "Ramp Down & Up (vvrrrrmmmmmeeeeee)",
+    [107]   = "Ramp Down & Up (vvrrrrmmmmmeeeerrr)",
+    [108]   = "Ramp Down & Up (vvrrrmmmeeerrr)",
+    [109]   = "Ramp Down & Up (vvrrrmmmeeerrrrr)",
+    [110]   = "Ramp Down & Up (vvvrrreee)",
+    [111]   = "Up & Down (ver-reh)",
+    [112]   = "Up & Down (ver-reh-reee)",
+    [113]   = "Up & Down (veeeeer-reeeeeh-reeh)",
+    [114]   = "Up & Down (veeeer-reeeeh)",
+    [115]   = "Up & Down (veeer-reeeh)",
+    [116]   = "Up & Down (veer-reeh)",
+    [117]   = "Up & Down (veer-reeh)",
+    [118]   = "Extremely long constant (veeeerrrrrrrr...)",
+    [119]   = "Down & Up (verr-eehhh)",
+    [120]   = "Down & Up (verr-eeh)",
+    [121]   = "Down & Up (ver-ehh)",
+    [122]   = "Down & Up (ver-ehhh)",
+    [123]   = "Down & Up (ver-ehhhh)",
+    [125]   = "Ramp Up (ver-eh)",
+}
+
+--- hs.loupedeckct.vibrate([vibrationIndex, callbackFn]) -> boolean
 --- Function
 --- Requests the Loupedeck to vibrate.
 ---
 --- Parameters:
----  * vibraWaveformIndex - (optional) The vibra waveform index. Defaults to 25.
+---  * vibrationIndex - (optional) The vibra waveform index. Defaults to 25.
 ---  * callbackFn   - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
@@ -1432,26 +1481,26 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.vibrate(vibraWaveformIndex, callbackFn)
-    -- Sending message (4): (4) 04-1B-6B-19
-    -- Message sent (4): (4) 04-1B-6B-19
-    -- Message received (4): (4) 04-1B-6B-01
-
+---  *
+function mod.vibrate(vibrationIndex, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 04 1B 6B 19
     --          ^     ^  ^
     --          ^     ^  Vibra waveform index?
     --          ^     Callback ID
     --          Command ID
+    --
+    -- Sending message (4): (4) 04-1B-6B-19
+    -- Message sent (4): (4) 04-1B-6B-19
+    -- Message received (4): (4) 04-1B-6B-01
     --------------------------------------------------------------------------------
-
     return sendCommand(
         0x041B,
         callbackFn and function(response)
             response.success = uint8(response.data) == 0x01
             callbackFn(response)
         end,
-        uint8(vibraWaveformIndex or 0x19)
+        uint8(vibrationIndex or 0x19)
     )
 end
 
@@ -1477,22 +1526,6 @@ local function updateWatcher(enabled)
             mod._usbWatcher = nil
         end
     end
-end
-
---- hs.loupedeckct.vibrations(enabled) -> boolean
---- Function
---- Gets or sets vibrations on Touch Screen button presses.
----
---- Parameters:
----  * enabled - An optional boolean which sets whether or not vibrations are enabled
----
---- Returns:
----  * `true` if enabled, otherwise `false`
-function mod.vibrations(enabled)
-    if type(enabled) ~= nil then
-        mod._vibrations = enabled == true or false
-    end
-    return mod._vibrations
 end
 
 --- hs.loupedeckct.connect(retry) -> boolean, errorMessage

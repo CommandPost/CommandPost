@@ -9,8 +9,10 @@ local log                       = require "hs.logger".new "prefsLoupedeckCT"
 local application               = require "hs.application"
 local canvas                    = require "hs.canvas"
 local dialog                    = require "hs.dialog"
+local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
+local loupedeckct               = require "hs.loupedeckct"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 
@@ -32,14 +34,6 @@ local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
--- Hardcoded for now as a temporary solution:
-local apps = {
-    ["com.blackmagic-design.DaVinciResolve"] = "DaVinci Resolve",
-    ["com.apple.finder"] = "Finder",
-    ["com.apple.FinalCut"] = "Final Cut Pro",
-    ["org.latenitefilms.CommandPost"] = "CommandPost",
-}
-
 --- plugins.core.loupedeckct.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Icons.
@@ -58,7 +52,7 @@ mod.lastIconPath = config.prop("loupedeckct.preferences.lastIconPath", mod.defau
 --- plugins.core.loupedeckct.prefs.iconHistory <cp.prop: table>
 --- Field
 --- Icon History
-mod.iconHistory = json.prop(config.userConfigRootPath, "Loupedeck CT", "Icon History.cpLoupedeckCT", {})
+mod.iconHistory = json.prop(config.cachePath, "Loupedeck CT", "Icon History.cpCache", {})
 
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -85,129 +79,6 @@ mod.lastID = config.prop("loupedeckct.preferences.lastID", "7")
 --- Last Selected Control Type used in the Preferences Panel.
 mod.lastControlType = config.prop("loupedeckct.preferences.lastControlType", "ledButton")
 
--- resetEverything() -> none
--- Function
--- Prompts to reset shortcuts to default for all groups.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function resetEverything()
-    webviewAlert(mod._manager.getWebview(), function(result)
-        if result == i18n("yes") then
-            mod._ctmanager.reset()
-            mod._manager.refresh()
-            mod._ctmanager.refresh()
-        end
-    end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
--- resetApplication() -> none
--- Function
--- Reset the current application.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function resetApplication()
-    webviewAlert(mod._manager.getWebview(), function(result)
-        if result == i18n("yes") then
-            local items = mod.items()
-            local app = mod.lastApplication()
-
-            local defaultLayout = mod._ctmanager.defaultLayout
-            items[app] = defaultLayout and defaultLayout[app] or {}
-
-            mod.items(items)
-            mod._manager.refresh()
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
-        end
-    end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
--- resetBank() -> none
--- Function
--- Reset the current bank.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function resetBank()
-    webviewAlert(mod._manager.getWebview(), function(result)
-        if result == i18n("yes") then
-            local items = mod.items()
-            local app = mod.lastApplication()
-            local bank = mod.lastBank()
-
-            local defaultLayout = mod._ctmanager.defaultLayout
-
-            if items[app] and items[app][bank] then
-                items[app][bank] = defaultLayout and defaultLayout[app] and defaultLayout[app][bank] or {}
-            end
-            mod.items(items)
-            mod._manager.refresh()
-
-            --------------------------------------------------------------------------------
-            -- Refresh the hardware:
-            --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
-        end
-    end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
--- copyControlToAllBanks() -> none
--- Function
--- Copy's the currently selected control to all banks.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function copyControlToAllBanks()
-    local items = mod.items()
-    local app = mod.lastApplication()
-    local bank = mod.lastBank()
-    local controlType = mod.lastControlType()
-    local id = mod.lastID()
-
-    local data = items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][id]
-
-    local suffix = ""
-    if bank:sub(-7) == "_LeftFn" then
-        suffix = "_LeftFn"
-    elseif bank:sub(-8) == "_RightFn" then
-        suffix = "_RightFn"
-    end
-
-    if data then
-        for b=1, mod._ctmanager.numberOfBanks do
-            b = tostring(b) .. suffix
-            if not items[app] then items[app] = {} end
-            if not items[app][b] then items[app][b] = {} end
-            if not items[app][b][controlType] then items[app][b][controlType] = {} end
-            if not items[app][b][controlType][id] then items[app][b][controlType][id] = {} end
-            if type(data) == "table" then
-                for i, v in pairs(data) do
-                    items[app][b][controlType][id][i] = v
-                end
-            end
-        end
-    end
-
-    mod.items(items)
-end
-
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -228,6 +99,15 @@ local function renderPanel(context)
     return mod._renderPanel(context)
 end
 
+-- insertImage(path)
+-- Function
+-- Encodes an image as a PNG URL String
+--
+-- Parameters:
+--  * path - Path to the image you want to encode.
+--
+-- Returns:
+--  * The encoded URL string
 local function insertImage(path)
     local p = mod._env:pathToAbsolute(path)
     local i = image.imageFromPath(p)
@@ -245,102 +125,21 @@ end
 --  * HTML content as string
 local function generateContent()
     --------------------------------------------------------------------------------
-    -- Get last values to populate the UI when it first loads:
+    -- Get list of registered and custom apps:
     --------------------------------------------------------------------------------
-    local lastApplication = mod.lastApplication()
-    local lastBank = mod.lastBank()
-    local lastSelectedControl = mod.lastSelectedControl()
-    local lastID = mod.lastID()
-    local lastControlType = mod.lastControlType()
-
-    local lastEncodedIcon = ""
-    local lastBankLabel = ""
-    local lastPressValue = ""
-    local lastLeftValue = ""
-    local lastRightValue = ""
-    local lastColorValue = "FFFFFF"
-
-    local lastTouchUpValue = ""
-    local lastTouchDownValue = ""
-    local lastTouchLeftValue = ""
-    local lastTouchRightValue = ""
-
-    local lastTouchDoubleTapValue = ""
-    local lastTouchTwoFingerValue = ""
-
-    local items = mod.items()
-
-    if items[lastApplication] and items[lastApplication][lastBank] then
-        if items[lastApplication][lastBank]["bankLabel"] then
-           lastBankLabel = items[lastApplication][lastBank]["bankLabel"]
-        end
-
-        if items[lastApplication][lastBank][lastControlType] and items[lastApplication][lastBank][lastControlType][lastID] then
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["leftAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"] then
-                    lastLeftValue = items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"]
-                    lastTouchLeftValue = items[lastApplication][lastBank][lastControlType][lastID]["leftAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["rightAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"] then
-                    lastRightValue = items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"]
-                    lastTouchRightValue = items[lastApplication][lastBank][lastControlType][lastID]["rightAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["pressAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["pressAction"]["actionTitle"] then
-                    lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["pressAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["upAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"] then
-                    lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
-                    lastTouchUpValue = items[lastApplication][lastBank][lastControlType][lastID]["upAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["downAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"] then
-                    lastPressValue = items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"]
-                    lastTouchDownValue = items[lastApplication][lastBank][lastControlType][lastID]["downAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"]["actionTitle"] then
-                    lastTouchDoubleTapValue = items[lastApplication][lastBank][lastControlType][lastID]["doubleTapAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"] then
-                if items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"]["actionTitle"] then
-                    lastTouchTwoFingerValue = items[lastApplication][lastBank][lastControlType][lastID]["twoFingerTapAction"]["actionTitle"]
-                end
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["led"] then
-                lastColorValue = items[lastApplication][lastBank][lastControlType][lastID]["led"]
-            end
-
-            if items[lastApplication][lastBank][lastControlType][lastID]["encodedIcon"] then
-                lastEncodedIcon = items[lastApplication][lastBank][lastControlType][lastID]["encodedIcon"]
-            end
-
+    local builtInApps = {}
+    local registeredApps = mod._appmanager.getApplications()
+    for bundleID, v in pairs(registeredApps) do
+        if v.displayName then
+            builtInApps[bundleID] = v.displayName
         end
     end
 
-    --------------------------------------------------------------------------------
-    -- Get any custom apps:
-    --------------------------------------------------------------------------------
-    local allApps = apps
+    local userApps = {}
+    local items = mod.items()
     for bundleID, v in pairs(items) do
         if v.displayName then
-            allApps[bundleID] = v.displayName
+            userApps[bundleID] = v.displayName
         end
     end
 
@@ -348,32 +147,24 @@ local function generateContent()
     -- Setup the context:
     --------------------------------------------------------------------------------
     local context = {
-        apps                        = allApps,
+        builtInApps                 = builtInApps,
+        userApps                    = userApps,
 
         spairs                      = spairs,
 
         numberOfBanks               = mod._ctmanager.numberOfBanks,
         i18n                        = i18n,
 
-        lastApplication             = lastApplication,
-        lastBank                    = lastBank,
-        lastSelectedControl         = lastSelectedControl,
-        lastBankLabel               = lastBankLabel,
-        lastPressValue              = lastPressValue,
-        lastLeftValue               = lastLeftValue,
-        lastRightValue              = lastRightValue,
-        lastColorValue              = lastColorValue,
-        lastControlType             = lastControlType,
-        lastEncodedIcon             = lastEncodedIcon,
-        lastID                      = lastID,
-        lastTouchUpValue            = lastTouchUpValue,
-        lastTouchDownValue          = lastTouchDownValue,
-        lastTouchLeftValue          = lastTouchLeftValue,
-        lastTouchRightValue         = lastTouchRightValue,
-        lastTouchDoubleTapValue     = lastTouchDoubleTapValue,
-        lastTouchTwoFingerValue     = lastTouchTwoFingerValue,
+        lastApplication             = mod.lastApplication(),
+        lastBank                    = mod.lastBank(),
+
+        lastSelectedControl         = mod.lastSelectedControl(),
+        lastID                      = mod.lastID(),
+        lastControlType             = mod.lastControlType(),
 
         insertImage                 = insertImage,
+
+        vibrationIndex              = loupedeckct.vibrationIndex,
     }
 
     return renderPanel(context)
@@ -554,6 +345,29 @@ local function loupedeckCTPanelCallback(id, params)
             if not mod.activator then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
+
+                --------------------------------------------------------------------------------
+                -- Get list of registered and custom apps:
+                --------------------------------------------------------------------------------
+                local apps = {}
+                local registeredApps = mod._appmanager.getApplications()
+                for bundleID, v in pairs(registeredApps) do
+                    if v.displayName then
+                        apps[bundleID] = v.displayName
+                    end
+                end
+                local items = mod.items()
+                for bundleID, v in pairs(items) do
+                    if v.displayName then
+                        apps[bundleID] = v.displayName
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Add allowance for "All Applications":
+                --------------------------------------------------------------------------------
+                apps["All Applications"] = "All Applications"
+
                 for groupID,_ in pairs(apps) do
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
@@ -582,19 +396,9 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Allow specific toolbar icons in the Console:
                     --------------------------------------------------------------------------------
-                    if groupID == "com.apple.FinalCut" then
-                        local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
-                        local toolbarIcons = {
-                            fcpx_videoEffect    = { path = iconPath .. "videoEffect.png",   priority = 3},
-                            fcpx_audioEffect    = { path = iconPath .. "audioEffect.png",   priority = 4},
-                            fcpx_generator      = { path = iconPath .. "generator.png",     priority = 5},
-                            fcpx_title          = { path = iconPath .. "title.png",         priority = 6},
-                            fcpx_transition     = { path = iconPath .. "transition.png",    priority = 7},
-                            fcpx_fonts          = { path = iconPath .. "font.png",          priority = 8},
-                            fcpx_shortcuts      = { path = iconPath .. "shortcut.png",      priority = 9},
-                            fcpx_menu           = { path = iconPath .. "menu.png",          priority = 10},
-                        }
-                        mod.activator[groupID]:toolbarIcons(toolbarIcons)
+                    local searchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID)
+                    if searchConsoleToolbar then
+                        mod.activator[groupID]:toolbarIcons(searchConsoleToolbar)
                     end
                 end
             end
@@ -684,6 +488,22 @@ local function loupedeckCTPanelCallback(id, params)
                         local items = mod.items()
 
                         --------------------------------------------------------------------------------
+                        -- Get list of registered and custom apps:
+                        --------------------------------------------------------------------------------
+                        local apps = {}
+                        local registeredApps = mod._appmanager.getApplications()
+                        for bundleID, v in pairs(registeredApps) do
+                            if v.displayName then
+                                apps[bundleID] = v.displayName
+                            end
+                        end
+                        for bundleID, v in pairs(items) do
+                            if v.displayName then
+                                apps[bundleID] = v.displayName
+                            end
+                        end
+
+                        --------------------------------------------------------------------------------
                         -- Prevent duplicates:
                         --------------------------------------------------------------------------------
                         for i, _ in pairs(items) do
@@ -738,6 +558,9 @@ local function loupedeckCTPanelCallback(id, params)
             local colorValue = selectedID and selectedID.led or "FFFFFF"
             local encodedIcon = selectedID and selectedID.encodedIcon or ""
             local iconLabel = selectedID and selectedID.iconLabel or ""
+            local vibrateValue = selectedID and selectedID.vibrate or ""
+
+            local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
             local updateIconsScript = ""
 
@@ -796,7 +619,24 @@ local function loupedeckCTPanelCallback(id, params)
                 end
             end
 
+            --------------------------------------------------------------------------------
+            -- Update UI on whether connected or not:
+            --------------------------------------------------------------------------------
+            local loadSettingsFromDevice = mod._ctmanager.loadSettingsFromDevice()
+            local connected = mod._ctmanager.connected()
+            local connectedScript = [[
+                document.getElementById("yesLoupedeck").style.display = "block";
+                document.getElementById("noLoupedeck").style.display = "none";
+            ]]
+            if not connected and loadSettingsFromDevice then
+                connectedScript = [[
+                    document.getElementById("yesLoupedeck").style.display = "none";
+                    document.getElementById("noLoupedeck").style.display = "block";
+                ]]
+            end
+
             injectScript([[
+                changeValueByID('bankLabel', ']] .. bankLabel .. [[');
                 changeValueByID('press_action', ']] .. pressValue .. [[');
                 changeValueByID('left_action', ']] .. leftValue .. [[');
                 changeValueByID('right_action', ']] .. rightValue .. [[');
@@ -806,10 +646,11 @@ local function loupedeckCTPanelCallback(id, params)
                 changeValueByID('right_touch_action', ']] .. rightValue .. [[');
                 changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
                 changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
+                changeValueByID('vibrate', ']] .. vibrateValue .. [[');
                 changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
                 changeColor(']] .. colorValue .. [[');
                 setIcon("]] .. encodedIcon .. [[")
-            ]] .. updateIconsScript)
+            ]] .. updateIconsScript .. "\n" .. connectedScript)
 
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
@@ -841,6 +682,17 @@ local function loupedeckCTPanelCallback(id, params)
             items[app][bank]["bankLabel"] = params["bankLabel"]
 
             mod.items(items)
+        elseif callbackType == "updateVibrate" then
+            --------------------------------------------------------------------------------
+            -- Update Vibrate:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "vibrate", value)
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
@@ -1058,6 +910,92 @@ local function loupedeckCTPanelCallback(id, params)
             local bid = params["id"]
 
             setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "updateKnobIcon" then
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            local encodedIcon = params["icon"]
+
+            --------------------------------------------------------------------------------
+            -- Set screen limitations:
+            --------------------------------------------------------------------------------
+            local controlType = params["controlType"]
+            local width, height = getScreenSizeFromControlType(controlType)
+
+            --------------------------------------------------------------------------------
+            -- Process the Icon to remove transparency:
+            --------------------------------------------------------------------------------
+            local newImage = imageFromURL(encodedIcon)
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+            v[2] = {
+              type="image",
+              image = newImage,
+              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+            }
+            local fixedImage = v:imageFromCanvas()
+            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+            --------------------------------------------------------------------------------
+            -- Write to file:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local bid = params["id"]
+
+            setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Generate Knob Images:
+            --------------------------------------------------------------------------------
+            generateKnobImages(app, bank, bid)
+
+            --------------------------------------------------------------------------------
+            -- Update Preferences Screen:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+            local selectedApp = items[app]
+            local selectedBank = selectedApp and selectedApp[bank]
+
+            local updateIconsScript = ""
+
+            --------------------------------------------------------------------------------
+            -- Left Screen:
+            --------------------------------------------------------------------------------
+            local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
+            if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
+            elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
+            else
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+            end
+
+            --------------------------------------------------------------------------------
+            -- Right Screen:
+            --------------------------------------------------------------------------------
+            local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
+            if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
+            elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
+            else
+                updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+            end
+
+            injectScript(updateIconsScript)
 
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
@@ -1373,6 +1311,260 @@ local function loupedeckCTPanelCallback(id, params)
                 local items = mod.items()
                 json.write(path["1"] .. "/Loupedeck CT Settings " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckCT", items)
             end
+        elseif callbackType == "copyControlToAllBanks" then
+            --------------------------------------------------------------------------------
+            -- Copy Control to All Banks:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            local data = items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid]
+
+            local suffix = ""
+            if bank:sub(-7) == "_LeftFn" then
+                suffix = "_LeftFn"
+            elseif bank:sub(-8) == "_RightFn" then
+                suffix = "_RightFn"
+            end
+
+            if data then
+                for b=1, mod._ctmanager.numberOfBanks do
+                    b = tostring(b) .. suffix
+                    if not items[app] then items[app] = {} end
+                    if not items[app][b] then items[app][b] = {} end
+                    if not items[app][b][controlType] then items[app][b][controlType] = {} end
+                    if not items[app][b][controlType][bid] then items[app][b][controlType][bid] = {} end
+                    if type(data) == "table" then
+                        for i, v in pairs(data) do
+                            items[app][b][controlType][bid][i] = v
+                        end
+                    end
+                end
+            end
+            mod.items(items)
+        elseif callbackType == "resetControl" then
+            --------------------------------------------------------------------------------
+            -- Reset Control:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            local items = mod.items()
+
+            if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                items[app][bank][controlType][bid] = nil
+            end
+
+            mod.items(items)
+
+            injectScript([[
+                changeValueByID('press_action', '');
+                changeValueByID('left_action', '');
+                changeValueByID('right_action', '');
+                changeValueByID('up_touch_action', '');
+                changeValueByID('down_touch_action', '');
+                changeValueByID('left_touch_action', '');
+                changeValueByID('right_touch_action', '');
+                changeValueByID('double_tap_touch_action', '');
+                changeValueByID('two_finger_touch_action', '');
+                changeValueByID('iconLabel', '');
+                changeColor('FFFFFF');
+                setIcon("");
+                changeImage("]] .. controlType .. bid .. [[", "]] .. insertImage("images/" .. controlType .. bid .. ".png") .. [[");
+            ]])
+
+            mod._ctmanager.refresh()
+        elseif callbackType == "resetEverything" then
+            --------------------------------------------------------------------------------
+            -- Reset Everything:
+            --------------------------------------------------------------------------------
+            webviewAlert(mod._manager.getWebview(), function(result)
+                if result == i18n("yes") then
+                    mod._ctmanager.reset()
+                    mod._manager.refresh()
+                    mod._ctmanager.refresh()
+                end
+            end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+        elseif callbackType == "resetApplication" then
+            --------------------------------------------------------------------------------
+            -- Reset Application:
+            --------------------------------------------------------------------------------
+            webviewAlert(mod._manager.getWebview(), function(result)
+                if result == i18n("yes") then
+                    local items = mod.items()
+                    local app = mod.lastApplication()
+
+                    local defaultLayout = mod._ctmanager.defaultLayout
+                    items[app] = defaultLayout and defaultLayout[app] or {}
+
+                    mod.items(items)
+                    mod._manager.refresh()
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware:
+                    --------------------------------------------------------------------------------
+                    mod._ctmanager.refresh()
+                end
+            end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+        elseif callbackType == "resetBank" then
+            --------------------------------------------------------------------------------
+            -- Reset Bank:
+            --------------------------------------------------------------------------------
+            webviewAlert(mod._manager.getWebview(), function(result)
+                if result == i18n("yes") then
+                    local items = mod.items()
+                    local app = mod.lastApplication()
+                    local bank = mod.lastBank()
+
+                    local defaultLayout = mod._ctmanager.defaultLayout
+
+                    if items[app] and items[app][bank] then
+                        items[app][bank] = defaultLayout and defaultLayout[app] and defaultLayout[app][bank] or {}
+                    end
+                    mod.items(items)
+                    mod._manager.refresh()
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware:
+                    --------------------------------------------------------------------------------
+                    mod._ctmanager.refresh()
+                end
+            end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+        elseif callbackType == "copyApplication" then
+            --------------------------------------------------------------------------------
+            -- Copy Application:
+            --------------------------------------------------------------------------------
+            local copyApplication = function(destinationApp)
+                local items = mod.items()
+                local app = mod.lastApplication()
+
+                local data = items[app]
+                if data then
+                    items[destinationApp] = fnutils.copy(data)
+                    mod.items(items)
+                end
+            end
+
+            local builtInApps = {}
+            local registeredApps = mod._appmanager.getApplications()
+            for bundleID, v in pairs(registeredApps) do
+                if v.displayName then
+                    builtInApps[bundleID] = v.displayName
+                end
+            end
+
+            local userApps = {}
+            local items = mod.items()
+            for bundleID, v in pairs(items) do
+                if v.displayName then
+                    userApps[bundleID] = v.displayName
+                end
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = "COPY ACTIVE APPLICATION TO:",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i, v in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
+                table.insert(menu, {
+                    title = v,
+                    fn = function() copyApplication(i) end
+                })
+            end
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i, v in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+                table.insert(menu, {
+                    title = v,
+                    fn = function() copyApplication(i) end
+                })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
+        elseif callbackType == "copyBank" then
+            --------------------------------------------------------------------------------
+            -- Copy Bank:
+            --------------------------------------------------------------------------------
+            local numberOfBanks = mod._ctmanager.numberOfBanks
+
+            local copyToBank = function(destinationBank)
+                local items = mod.items()
+                local app = mod.lastApplication()
+                local bank = mod.lastBank()
+
+                local data = items[app] and items[app][bank]
+                if data then
+                    items[app][destinationBank] = fnutils.copy(data)
+                    mod.items(items)
+                end
+            end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = "COPY ACTIVE BANK TO:",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i=1, numberOfBanks do
+                table.insert(menu, {
+                    title = tostring(i),
+                    fn = function() copyToBank(tostring(i)) end
+                })
+            end
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i=1, numberOfBanks do
+                table.insert(menu, {
+                    title = tostring(i) .. " (Left Fn)",
+                    fn = function() copyToBank(i .. "_LeftFn") end
+                })
+            end
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            for i=1, numberOfBanks do
+                table.insert(menu, {
+                    title = tostring(i) .. " (Right Fn)",
+                    fn = function() copyToBank(i .. "_RightFn") end
+                })
+            end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -1421,6 +1613,7 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
+    mod._appmanager             = deps.appmanager
     mod._manager                = deps.manager
     mod._webviewLabel           = deps.manager.getLabel()
     mod._actionmanager          = deps.actionmanager
@@ -1429,9 +1622,25 @@ function mod.init(deps, env)
     mod._ctmanager              = deps.ctmanager
     mod.items                   = deps.ctmanager.items
     mod.enabled                 = deps.ctmanager.enabled
-    mod.vibrations              = deps.ctmanager.vibrations
     mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
     mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
+
+    --------------------------------------------------------------------------------
+    -- Watch for Loupedeck CT connections and disconnects:
+    --------------------------------------------------------------------------------
+    mod._ctmanager.connected:watch(function(connected)
+        if connected then
+            mod._manager.injectScript([[
+                document.getElementById("yesLoupedeck").style.display = "block";
+                document.getElementById("noLoupedeck").style.display = "none";
+            ]])
+        else
+            mod._manager.injectScript([[
+                document.getElementById("yesLoupedeck").style.display = "none";
+                document.getElementById("noLoupedeck").style.display = "block";
+            ]])
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -1442,7 +1651,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 920,
+        height          = 970,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
@@ -1492,46 +1701,8 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addCheckbox(10,
-            {
-                label       = "Vibrate when pressing Screen Buttons",
-                checked     = mod.vibrations,
-                onchange    = function(_, params)
-                    mod.vibrations(params.checked)
-                end,
-            }
-        )
 
         :addContent(11, generateContent, false)
-
-        :addButton(13,
-            {
-                label       = i18n("resetEverything"),
-                onclick     = resetEverything,
-                class       = "applyTopDeviceToAll",
-            }
-        )
-        :addButton(14,
-            {
-                label       = i18n("resetApplication"),
-                onclick     = resetApplication,
-                class       = "loupedeckResetGroup",
-            }
-        )
-        :addButton(15,
-            {
-                label       = i18n("resetBank"),
-                onclick     = resetBank,
-                class       = "loupedeckResetGroup",
-            }
-        )
-        :addButton(16,
-            {
-                label       = "Copy Control to All Banks",
-                onclick     = copyControlToAllBanks,
-                class       = "loupedeckResetGroup",
-            }
-        )
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
@@ -1549,6 +1720,7 @@ local plugin = {
         ["core.preferences.manager"]        = "manager",
         ["core.action.manager"]             = "actionmanager",
         ["core.loupedeckct.manager"]        = "ctmanager",
+        ["core.application.manager"]        = "appmanager",
     }
 }
 
