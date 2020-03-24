@@ -4,10 +4,11 @@
 
 local require       = require
 
+local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
 local fcp                       = require "cp.apple.finalcutpro"
-local localeID                  = require "cp.i18n.localeID"
 local i18n                      = require "cp.i18n"
+local localeID                  = require "cp.i18n.localeID"
 
 local insert                    = table.insert
 local displayErrorMessage       = dialog.displayErrorMessage
@@ -79,22 +80,35 @@ local plugin = {
     id = "finalcutpro.language",
     group = "finalcutpro",
     dependencies = {
-        ["core.menu.manager"] = "menu",
-    }
+        ["core.menu.manager"]               = "menu",
+        ["core.preferences.panels.menubar"] = "prefs",
+    },
 }
 
 function plugin.init(deps)
     -------------------------------------------------------------------------------
     -- New Menu Section:
     -------------------------------------------------------------------------------
-    local section = deps.menu.bottom:addSection(10.3)
+    local enabled = config.prop("menubar.global.FinalCutPro.enabled", true)
+    local prefs = deps.prefs
+    prefs:addCheckbox(105,
+        {
+            label = i18n("show") .. " " .. i18n("finalCutPro"),
+            onchange = function(_, params) enabled(params.checked) end,
+            checked = enabled,
+        }
+    )
+
+    local section = deps.menu.addSection(7777778)
+        :addHeading(i18n("finalCutPro"))
+        :setDisabledFn(function() return not enabled() or fcp.isFrontmost() end)
 
     -------------------------------------------------------------------------------
     -- The FCPX Languages Menu:
     -------------------------------------------------------------------------------
     local fcpxLangs = section:addMenu(100, function()
         if fcp:isSupported() then
-            return i18n("finalCutProLanguage")
+            return i18n("language")
         end
     end)
     fcpxLangs:addItems(1, getFinalCutProLanguagesMenu)

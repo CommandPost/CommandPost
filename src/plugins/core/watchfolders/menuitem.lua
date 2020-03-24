@@ -18,7 +18,7 @@ local plugin = {
 function plugin.init(deps)
     deps.menu.bottom
         :addItem(10.2, function()
-            return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
+            return { title = i18n("watchFolders"), fn = deps.watchfolders.show }
         end)
 end
 

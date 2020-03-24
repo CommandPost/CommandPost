@@ -567,7 +567,7 @@ local plugin = {
     id              = "core.loupedeckplus.prefs",
     group           = "core",
     dependencies    = {
-        ["core.preferences.manager"]        = "manager",
+        ["core.controlsurfaces.manager"]    = "manager",
         ["core.midi.manager"]               = "midi",
         ["core.action.manager"]             = "actionmanager",
     }

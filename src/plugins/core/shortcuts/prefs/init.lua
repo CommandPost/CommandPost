@@ -645,7 +645,7 @@ local plugin = {
     id              = "core.shortcuts.prefs",
     group           = "core",
     dependencies    = {
-        ["core.preferences.manager"]        = "manager",
+        ["core.controlsurfaces.manager"]        = "manager",
     }
 }
 

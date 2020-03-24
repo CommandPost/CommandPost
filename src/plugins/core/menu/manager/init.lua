@@ -184,8 +184,9 @@ local plugin = {
     group       = "core",
     required    = true,
     dependencies    = {
-        ["core.preferences.panels.menubar"] = "prefs",
-        ["core.preferences.manager"] = "prefsManager",
+        ["core.preferences.panels.menubar"]     = "prefs",
+        ["core.preferences.manager"]            = "prefsManager",
+        ["core.controlsurfaces.manager"]        = "controlSurfaces"
     }
 }
 
@@ -196,6 +197,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local prefs = deps.prefs
     local prefsManager = deps.prefsManager
+    local controlSurfaces = deps.controlSurfaces
 
     --------------------------------------------------------------------------------
     -- Setup Menubar Manager:
@@ -264,7 +266,10 @@ function plugin.init(deps)
     manager.settings = manager.bottom
         :addHeading(i18n("settings"))
         :addItem(10.1, function()
-            return { title = i18n("preferences") .. "...", fn = prefsManager.show }
+            return { title = i18n("preferences"), fn = prefsManager.show }
+        end)
+        :addItem(10.2, function()
+            return { title = i18n("controlSurfaces"), fn = controlSurfaces.show }
         end)
         :addItem(11, function()
             return { title = "-" }

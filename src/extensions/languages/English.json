@@ -1762,6 +1762,7 @@
         "viewer": "Viewer",
         "viewer_group": "Viewer",
         "viewerOverlay": "Viewer Overlay",
+        "controlSurfaces": "Control Surfaces",
         "viewGreenColorChannel": "View Green Color Channel",
         "viewOptions": "View Options",
         "viewRedColorChannel": "View Red Color Channel",
