@@ -8,7 +8,6 @@ local log         = require "hs.logger".new "prefsMgr"
 
 local inspect     = require "hs.inspect"
 local screen      = require "hs.screen"
-local timer       = require "hs.timer"
 local toolbar     = require "hs.webview.toolbar"
 local webview     = require "hs.webview"
 
@@ -23,7 +22,6 @@ local moses       = require "moses"
 local panel       = require "panel"
 
 local sortedIndex = moses.sortedIndex
-local waitUntil   = timer.waitUntil
 
 local mod = {}
 
@@ -332,11 +330,7 @@ function mod.new()
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
-            :setCallback(function(_, _, id)
-                waitUntil(function() return not mod._webview:loading() end, function()
-                        mod.refresh(id)
-                end, 0.01)
-            end)
+            :setCallback(function(_, _, id) mod.refresh(id) end)
         local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
@@ -464,17 +458,13 @@ end
 ---  * None
 function mod.injectScript(script)
     if mod._webview and mod._webview:frame() then
-        --------------------------------------------------------------------------------
-        -- Wait until the Webview has loaded before executing JavaScript:
-        --------------------------------------------------------------------------------
-        waitUntil(function() return not mod._webview:loading() end, function()
-            mod._webview:evaluateJavaScript(script,
-                function(_, theerror)
-                    if theerror and theerror.code ~= 0 then
-                        log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
-                    end
-                end)
-        end, 0.01)
+        mod._webview:evaluateJavaScript(script,
+            function(_, theerror)
+                if theerror and theerror.code ~= 0 then
+                    log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                end
+            end
+        )
     end
 end
 

@@ -1,4 +1,4 @@
---- === plugins.core.preferences.panels.snippets ===
+--- === plugins.core.preferences.panels.scripting ===
 ---
 --- Snippets Preferences Panel
 
@@ -6,19 +6,27 @@ local require           = require
 
 --local log               = require "hs.logger".new "snippets"
 
+local hs                = hs
+
 local dialog            = require "hs.dialog"
 local image             = require "hs.image"
+local ipc				= require "hs.ipc"
+local timer             = require "hs.timer"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
 
-local webviewAlert      = dialog.webviewAlert
+local execute           = hs.execute
+local allowAppleScript  = hs.allowAppleScript
+
 local blockAlert        = dialog.blockAlert
+local imageFromPath     = image.imageFromPath
+local webviewAlert      = dialog.webviewAlert
 
 local mod = {}
 
---- plugins.core.preferences.panels.snippets.snippets <cp.prop: table>
+--- plugins.core.preferences.panels.scripting.snippets <cp.prop: table>
 --- Field
 --- Snippets
 mod.snippets = json.prop(config.userConfigRootPath, "Snippets", "Snippets.cpSnippets", {}):watch(function()
@@ -115,8 +123,59 @@ local function getCode()
     return snippets and snippet and snippets[snippet].code or ""
 end
 
+-- updatePreferences() -> none
+-- Function
+-- Updates the Preferences Panel UI.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function updatePreferences()
+    mod._manager.injectScript([[changeCheckedByID('commandLineTool', ]] .. tostring(ipc.cliStatus(nil, true)) .. [[);]])
+    --------------------------------------------------------------------------------
+    -- Sometimes it takes a little while to uninstall the CLI:
+    --------------------------------------------------------------------------------
+    timer.doAfter(0.5, function()
+        mod._manager.injectScript([[changeCheckedByID('commandLineTool', ]] .. tostring(ipc.cliStatus(nil, true)) .. [[);]])
+    end)
+end
+
+-- toggleCommandLineTool() -> none
+-- Function
+-- Toggles the Command Line Tool
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function toggleCommandLineTool()
+    local cliStatus = ipc.cliStatus()
+    if cliStatus then
+        ipc.cliUninstall()
+    else
+        ipc.cliInstall()
+    end
+    local newCliStatus = ipc.cliStatus()
+    if cliStatus == newCliStatus then
+        if cliStatus then
+            dialog.webviewAlert(mod._manager.getWebview(), function()
+                updatePreferences()
+            end, i18n("cliUninstallError"), "", i18n("ok"), nil, "informational")
+        else
+            dialog.webviewAlert(mod._manager.getWebview(), function()
+                updatePreferences()
+            end, i18n("cliInstallError"), "", i18n("ok"), nil, "informational")
+        end
+    else
+        updatePreferences()
+    end
+end
+
 local plugin = {
-    id              = "core.preferences.panels.snippets",
+    id              = "core.preferences.panels.scripting",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"] = "manager",
@@ -128,14 +187,58 @@ function plugin.init(deps, env)
 
     mod._manager = deps.manager
 
+    local actionmanager = deps.actionmanager
+
     local panel = deps.manager.addPanel({
         priority    = 2049,
-        id          = "snippets",
-        label       = i18n("snippets"),
-        image       = image.imageFromPath(env:pathToAbsolute("/images/snippets.tiff")),
-        tooltip     = i18n("snippets"),
-        height      = 500,
+        id          = "scripting",
+        label       = i18n("scripting"),
+        image       = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns"),
+        tooltip     = i18n("scripting"),
+        height      = 660,
     })
+
+    --------------------------------------------------------------------------------
+    -- Command Line Tool:
+    --------------------------------------------------------------------------------
+    panel
+        :addHeading(1, i18n("scriptingTools"))
+        :addCheckbox(2,
+            {
+                label		= i18n("enableCommandLineSupport"),
+                checked		= function() return ipc.cliStatus() end,
+                onchange	= toggleCommandLineTool,
+                id		    = "commandLineTool",
+            }
+        )
+
+    --------------------------------------------------------------------------------
+    -- AppleScript:
+    --------------------------------------------------------------------------------
+    panel
+        :addCheckbox(3,
+            {
+                label		= i18n("enableAppleScriptSupport"),
+                checked		= function() return allowAppleScript() end,
+                onchange	= function()
+                                local value = allowAppleScript()
+                                allowAppleScript(not value)
+                            end,
+            }
+        )
+
+    --------------------------------------------------------------------------------
+    -- Learn More Button:
+    --------------------------------------------------------------------------------
+    panel
+        :addContent(4, [[<br />]], false)
+        :addButton(5,
+            {
+                label 	    = "Learn More...",
+                width       = 100,
+                onclick	    = function() execute("open 'https://help.commandpost.io/advanced/controlling_commandpost'") end,
+            }
+        )
 
     --------------------------------------------------------------------------------
     -- Generate HTML for Panel:
@@ -145,7 +248,7 @@ function plugin.init(deps, env)
     e.getSnippetLabels = getSnippetLabels
     e.getCode = getCode
     local renderPanel = env:compileTemplate("html/panel.html")
-    panel:addContent(1, function() return renderPanel(e) end, false)
+    panel:addContent(100, function() return renderPanel(e) end, false)
 
     --------------------------------------------------------------------------------
     -- Setup Controller Callback:
@@ -216,6 +319,17 @@ function plugin.init(deps, env)
                 snippets[snippet] = { ["code"] = code }
                 mod.snippets(snippets)
             end
+        elseif params["type"] == "insertAction" then
+            --------------------------------------------------------------------------------
+            -- Insert Action:
+            --------------------------------------------------------------------------------
+            actionmanager.getActivator("snippetsAddAction"):onActivate(function(handler, action, text)
+                local result = [[local handler = cp.plugins("core.action.manager").getHandler("]] .. handler:id()  .. [[")]] .. "\n"
+                result = result .. "local action = " .. "\n"
+                result = result .. hs.inspect(action) .. "\n"
+                result = result .. [[handler:execute(action)]]
+                mod._manager.injectScript("insertTextAtCursor(`" .. result .. "`);")
+            end):show()
         elseif params["type"] == "execute" then
             --------------------------------------------------------------------------------
             -- Execute Code:
@@ -244,7 +358,6 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Action Handler:
     --------------------------------------------------------------------------------
-    local actionmanager = deps.actionmanager
     mod._handler = actionmanager.addHandler("global_snippets", "global")
         :onChoices(function(choices)
             local snippets = mod.snippets()

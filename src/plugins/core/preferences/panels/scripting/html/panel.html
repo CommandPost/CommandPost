@@ -89,7 +89,8 @@
 		}
 	}
 </script>
-
+<br />
+<hr style="margin-top: 30px;" />
 <table>
 	<tr>
 		<th>
@@ -131,42 +132,68 @@
 				<textarea id="code" name="code" style="display: none;">{* getCode() *}</textarea>
 			</form>
 			<script>
-				var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-					mode: "lua",
-					dragDrop: false,
-					lineNumbers: true,
-					scrollbarStyle: "simple",
-        		});
-
-				editor.on("change",function(){
-					try {
-						var result = {
-							id: "snippets",
-							params: {
-								type: "update",
-								code: editor.getValue(),
-								snippet: document.getElementById("snippet").value,
-							},
-						}
-						postMessage(result);
-					} catch(err) {
-						alertErrorMessage(err);
+				var editor;
+				function setupEditor(readOnly) {
+					var readOnlyValue = false
+					if (readOnly == true) {
+						readOnlyValue = "nocursor";
 					}
-				});
+
+					editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+						mode: "lua",
+						dragDrop: false,
+						lineNumbers: true,
+						scrollbarStyle: "simple",
+						readOnly: readOnlyValue,
+					});
+
+					editor.on("change",function(){
+						try {
+							var result = {
+								id: "snippets",
+								params: {
+									type: "update",
+									code: editor.getValue(),
+									snippet: document.getElementById("snippet").value,
+								},
+							}
+							postMessage(result);
+						} catch(err) {
+							alertErrorMessage(err);
+						}
+					});
+				}
 
         		function setCode(value){
         			if (editor != null) {
 		        		editor.setValue(atob(value));
 		        	}
         		}
+
+				function insertTextAtCursor(text){
+					if (editor != null) {
+						var doc = editor.getDoc();
+						var cursor = doc.getCursor();
+						doc.replaceRange(text, cursor);
+					}
+				}
+
+				if (document.getElementById("snippet").value == "") {
+					setupEditor(true);
+				} else {
+					setupEditor(false);
+				}
 			</script>
 		</th>
 	</tr>
 </table>
 <table>
 	<tr>
-		<th style="padding-left: 20px; width: 210px;">
-			<a style="width: 200px; padding-right: 20px;" id="new" class="button" href="#" onclick="sendMessage('execute');">Execute Code</a>
+		<th style="padding-left: 20px; width: 220px;">
+			<a style="width: 200px;" class="button" href="#" onclick="sendMessage('execute');">Execute Code</a>
+		</th>
+		<th>
+			<a style="width: 200px;" class="button" href="#" onclick="sendMessage('insertAction');">Insert Action</a>
 		</th>
 	</tr>
 </table>

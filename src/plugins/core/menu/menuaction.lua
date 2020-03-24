@@ -32,7 +32,7 @@ local kAXMenuItemModifierOption = (1 << 1)
 local kAXMenuItemModifierShift = (1 << 0)
 
 -- SOURCE: https://github.com/Hammerspoon/hammerspoon/pull/2308#issuecomment-590246330
-local function getMenuStructure(item)
+function mod._getMenuStructure(item)
 
     if not item then
         log.ef("No `item` in plugins.core.menu.menuaction.")
@@ -72,8 +72,15 @@ local function getMenuStructure(item)
         thisMenuItem["AXMenuItemCmdModifiers"] = modsDst
 
         local children = {}
-        for i = 1, #item, 1 do table.insert(children, getMenuStructure(item[i])) end
-        if #children > 0 then thisMenuItem["AXChildren"] = children end
+        for i = 1, #item, 1 do
+            local data = mod._getMenuStructure(item[i])
+            if data then
+                table.insert(children, data)
+            end
+        end
+        if #children > 0 then
+            thisMenuItem["AXChildren"] = children
+        end
 
         if not (role == "AXMenuItem" or role == "AXMenuBarItem") then
             thisMenuItem = (#children > 0) and children or nil
@@ -93,7 +100,7 @@ local function getMenuItems(appObject, callback)
     local menuBar = app and app("menuBar")
     if menuBar then
         coroutine.wrap(function(m, c)
-            local menus = getMenuStructure(m)
+            local menus = mod._getMenuStructure(m)
             c(menus)
         end)(menuBar, callback)
     else

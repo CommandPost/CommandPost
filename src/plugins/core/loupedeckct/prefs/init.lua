@@ -878,7 +878,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Set screen limitations:
             --------------------------------------------------------------------------------
-            local controlType = params["controlType"]
+            local controlType = "touchButton"
             local width, height = getScreenSizeFromControlType(controlType)
 
             --------------------------------------------------------------------------------
@@ -915,7 +915,7 @@ local function loupedeckCTPanelCallback(id, params)
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
-        elseif callbackType == "updateKnobIcon" then
+        elseif callbackType == "updateSideScreenIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
             --------------------------------------------------------------------------------
@@ -924,7 +924,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Set screen limitations:
             --------------------------------------------------------------------------------
-            local controlType = params["controlType"]
+            local controlType = "sideScreen"
             local width, height = getScreenSizeFromControlType(controlType)
 
             --------------------------------------------------------------------------------
@@ -955,6 +955,96 @@ local function loupedeckCTPanelCallback(id, params)
             local bank = params["bank"]
             local bid = params["id"]
 
+            setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "updateWheelIcon" then
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            local encodedIcon = params["icon"]
+
+            --------------------------------------------------------------------------------
+            -- Set screen limitations:
+            --------------------------------------------------------------------------------
+            local controlType = "wheelScreen"
+            local width, height = getScreenSizeFromControlType(controlType)
+
+            --------------------------------------------------------------------------------
+            -- Process the Icon to remove transparency:
+            --------------------------------------------------------------------------------
+            local newImage = imageFromURL(encodedIcon)
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+            v[2] = {
+              type="image",
+              image = newImage,
+              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+            }
+            local fixedImage = v:imageFromCanvas()
+            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+            --------------------------------------------------------------------------------
+            -- Write to file:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local bid = params["id"]
+            setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "updateKnobIcon" then
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            local encodedIcon = params["icon"]
+
+            --------------------------------------------------------------------------------
+            -- Set screen limitations:
+            --------------------------------------------------------------------------------
+            local controlType = "knob"
+            local width, height = getScreenSizeFromControlType(controlType)
+
+            --------------------------------------------------------------------------------
+            -- Process the Icon to remove transparency:
+            --------------------------------------------------------------------------------
+            local newImage = imageFromURL(encodedIcon)
+            local v = canvas.new{x = 0, y = 0, w = width, h = height }
+            v[1] = {
+                --------------------------------------------------------------------------------
+                -- Force Black background:
+                --------------------------------------------------------------------------------
+                frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                type = "rectangle",
+            }
+            v[2] = {
+              type="image",
+              image = newImage,
+              frame = { x = 0, y = 0, h = "100%", w = "100%" },
+            }
+            local fixedImage = v:imageFromCanvas()
+            local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
+
+            --------------------------------------------------------------------------------
+            -- Write to file:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local bid = params["id"]
             setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
 
             --------------------------------------------------------------------------------

@@ -629,9 +629,6 @@
 		reader.onload = function(e) {
 			var data = e.target.result;
 
-			// Change button icon:
-			//element.parentElement.getElementsByTagName("img")[0].src = data;
-
 			// If this button is currently selected, change that too:
 			if (document.getElementById("controlType").value == "knob" && document.getElementById("id").value == id) {
 				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
@@ -697,12 +694,11 @@
 				var result = {
 					id: "loupedeckCTPanelCallback",
 					params: {
-						type: "updateButtonIcon",
+						type: "updateSideScreenIcon",
 						application: document.getElementById("application").value,
 						bank: document.getElementById("bank").value,
 						id: id,
 						icon: data,
-						controlType: document.getElementById("controlType").value,
 					},
 				}
 				postMessage(result);
@@ -740,6 +736,9 @@
 		reader.onload = function(e) {
 			var data = e.target.result;
 
+			// Change wheel icon:
+			element.parentElement.getElementsByTagName("img")[0].src = data;
+
 			// If this button is currently selected, change that too:
 			if (document.getElementById("controlType").value == "wheelScreen" && document.getElementById("id").value == id) {
 				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
@@ -751,12 +750,11 @@
 				var result = {
 					id: "loupedeckCTPanelCallback",
 					params: {
-						type: "updateButtonIcon",
+						type: "updateWheelIcon",
 						application: document.getElementById("application").value,
 						bank: document.getElementById("bank").value,
 						id: id,
 						icon: data,
-						controlType: document.getElementById("controlType").value,
 					},
 				}
 				postMessage(result);
@@ -1101,53 +1099,53 @@
 						<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" onclick="changeControl('Knob 6', 'knob', '6');"/>
 					</div>
 					<div id="ledButton1">
-						<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" onclick="changeControl('1', 'ledButton', '7');" />
+						<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" onclick="changeControl('1', 'ledButton', '7');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton2">
-						<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" onclick="changeControl('2', 'ledButton', '8');" />
+						<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" onclick="changeControl('2', 'ledButton', '8');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton3">
-						<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" onclick="changeControl('3', 'ledButton', '9');" />
+						<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" onclick="changeControl('3', 'ledButton', '9');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton4">
-						<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" onclick="changeControl('4', 'ledButton', '10');" />
+						<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" onclick="changeControl('4', 'ledButton', '10');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton5">
-						<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" onclick="changeControl('5', 'ledButton', '11');" />
+						<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" onclick="changeControl('5', 'ledButton', '11');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton6">
-						<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" onclick="changeControl('6', 'ledButton', '12');" />
+						<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" onclick="changeControl('6', 'ledButton', '12');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton7">
-						<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" onclick="changeControl('7', 'ledButton', '13');" />
+						<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" onclick="changeControl('7', 'ledButton', '13');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButton8">
-						<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" onclick="changeControl('8', 'ledButton', '14');" />
+						<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" onclick="changeControl('8', 'ledButton', '14');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonO">
-						<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" onclick="changeControl('O', 'ledButton', '15');" />
+						<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" onclick="changeControl('O', 'ledButton', '15');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonReturn">
-						<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" onclick="changeControl('Return', 'ledButton', '18');" />
+						<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" onclick="changeControl('Return', 'ledButton', '18');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonA">
-						<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" onclick="changeControl('A', 'ledButton', '21');" />
+						<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" onclick="changeControl('A', 'ledButton', '21');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonB">
-						<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" onclick="changeControl('B', 'ledButton', '24');" />
+						<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" onclick="changeControl('B', 'ledButton', '24');" style="cursor: pointer;" />
 					</div>
 					<div id="jogWheelTop">
-						<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
+						<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
 					</div>
 					<div id="jogWheelLeft">
-						<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
+						<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
 					</div>
 					<div id="wheelScreen1">
 						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconWheelScreenDropZone(this, '1')" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 						<img src="{{ insertImage('images/wheelScreen1.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
 					</div>
 					<div id="jogWheelRight">
-						<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" />
+						<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
 					</div>
 					<div id="ledButtonUndo">
 						<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" onclick="changeControl('Undo', 'ledButton', '16');" style="cursor: pointer;" />
