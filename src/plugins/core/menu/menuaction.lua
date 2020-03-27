@@ -34,17 +34,9 @@ local kAXMenuItemModifierShift = (1 << 0)
 -- SOURCE: https://github.com/Hammerspoon/hammerspoon/pull/2308#issuecomment-590246330
 function mod._getMenuStructure(item)
 
-    if not item then
-        log.ef("No `item` in plugins.core.menu.menuaction.")
-        return
-    end
-
+    if not item then return end
     local values = item:allAttributeValues()
-
-    if not values then
-        log.ef("No `values` in plugins.core.menu.menuaction.")
-        return
-    end
+    if not values then return end
 
     local thisMenuItem = {
         AXTitle                = values["AXTitle"] or "",
@@ -96,11 +88,10 @@ local function getMenuItems(appObject, callback)
 
     local app = ax.applicationElement(appObject)
     local menus
-
-    local menuBar = app and app("menuBar")
+    local menuBar = app and app:attributeValue("AXMenuBar")
     if menuBar then
         coroutine.wrap(function(m, c)
-            local menus = mod._getMenuStructure(m)
+            menus = mod._getMenuStructure(m)
             c(menus)
         end)(menuBar, callback)
     else
@@ -149,7 +140,7 @@ function plugin.init(deps)
 
     mod._appWatcher = watcher.new(function(_, event, app)
         if app and event == watcher.activated and app:pid() then
-            mod._handler:reset(true)
+            mod._handler:reset()
             doAfter(0.1, function()
                 if app and app:pid() then
                     getMenuItems(app, function(result)

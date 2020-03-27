@@ -351,6 +351,13 @@ function mod.refresh(dueToAppChange)
         bundleID = "All Applications"
     end
 
+    --------------------------------------------------------------------------------
+    -- Ignore if ignored:
+    --------------------------------------------------------------------------------
+    if items[bundleID].ignore and items[bundleID].ignore == true then
+        bundleID = "All Applications"
+    end
+
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
 
@@ -586,6 +593,13 @@ local function callback(data)
     -- Revert to "All Applications" if no settings for frontmost app exist:
     --------------------------------------------------------------------------------
     if not items[bundleID] then
+        bundleID = "All Applications"
+    end
+
+    --------------------------------------------------------------------------------
+    -- Ignore if ignored:
+    --------------------------------------------------------------------------------
+    if items[bundleID].ignore and items[bundleID].ignore == true then
         bundleID = "All Applications"
     end
 
@@ -923,6 +937,23 @@ function plugin.init(deps)
 
                 local frontmostApplication = application.frontmostApplication()
                 local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.items()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
                 local activeBanks = mod.activeBanks()
                 local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
 

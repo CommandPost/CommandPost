@@ -26,6 +26,7 @@ local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
+local mergeTable                = tools.mergeTable
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
@@ -324,6 +325,144 @@ local function generateKnobImages(app, bank, bid)
     setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
 end
 
+-- updateUI(params) -> none
+-- Function
+-- Update the Preferences Panel UI.
+--
+-- Parameters:
+--  * params - A table of parameters
+--
+-- Returns:
+--  * None
+local function updateUI(params)
+    local app = params["application"]
+    local bank = params["bank"]
+    local controlType = params["controlType"]
+    local bid = params["id"]
+
+    local selectedControl = params["selectedControl"]
+
+    local injectScript = mod._manager.injectScript
+
+    mod.lastSelectedControl(selectedControl)
+    mod.lastID(bid)
+    mod.lastControlType(controlType)
+
+    local items = mod.items()
+
+    local selectedApp = items[app]
+
+    local ignoreValue = (selectedApp and selectedApp.ignore) or false
+    local selectedBank = selectedApp and selectedApp[bank]
+    local selectedControlType = selectedBank and selectedBank[controlType]
+    local selectedID = selectedControlType and selectedControlType[bid]
+
+    local leftValue = selectedID and selectedID.leftAction and selectedID.leftAction.actionTitle or ""
+    local rightValue = selectedID and selectedID.rightAction and selectedID.rightAction.actionTitle or ""
+    local pressValue = selectedID and selectedID.pressAction and selectedID.pressAction.actionTitle or ""
+    local upValue = selectedID and selectedID.upAction and selectedID.upAction.actionTitle or ""
+    local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
+    local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
+    local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
+    local colorValue = selectedID and selectedID.led or "FFFFFF"
+    local encodedIcon = selectedID and selectedID.encodedIcon or ""
+    local iconLabel = selectedID and selectedID.iconLabel or ""
+    local vibrateValue = selectedID and selectedID.vibrate or ""
+
+    local bankLabel = selectedBank and selectedBank.bankLabel or ""
+
+    local updateIconsScript = ""
+
+    if selectedBank then
+        --------------------------------------------------------------------------------
+        -- Update Touch Buttons:
+        --------------------------------------------------------------------------------
+        for i=1, 12 do
+            i = tostring(i)
+            local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
+            local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
+            local currentEncodedIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIconLabel
+            if currentEncodedIcon and currentEncodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIcon .. [[")]] .. "\n"
+            else
+                if currentIconLabel and currentIconLabel ~= "" and currentEncodedIconLabel and currentEncodedIconLabel ~= "" then
+                    updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIconLabel .. [[")]] .. "\n"
+                else
+                    updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Left Screen:
+        --------------------------------------------------------------------------------
+        local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
+        if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
+        elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
+        else
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Right Screen:
+        --------------------------------------------------------------------------------
+        local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
+        if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
+        elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
+        else
+            updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Wheel Screen:
+        --------------------------------------------------------------------------------
+        local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
+        if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
+            updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
+        else
+            updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Update UI on whether connected or not:
+    --------------------------------------------------------------------------------
+    local loadSettingsFromDevice = mod._ctmanager.loadSettingsFromDevice()
+    local connected = mod._ctmanager.connected()
+    local connectedScript = [[
+        document.getElementById("yesLoupedeck").style.display = "block";
+        document.getElementById("noLoupedeck").style.display = "none";
+    ]]
+    if not connected and loadSettingsFromDevice then
+        connectedScript = [[
+            document.getElementById("yesLoupedeck").style.display = "none";
+            document.getElementById("noLoupedeck").style.display = "block";
+        ]]
+    end
+
+    injectScript([[
+        changeValueByID('bankLabel', ']] .. bankLabel .. [[');
+        changeValueByID('press_action', ']] .. pressValue .. [[');
+        changeValueByID('left_action', ']] .. leftValue .. [[');
+        changeValueByID('right_action', ']] .. rightValue .. [[');
+        changeValueByID('up_touch_action', ']] .. upValue .. [[');
+        changeValueByID('down_touch_action', ']] .. downValue .. [[');
+        changeValueByID('left_touch_action', ']] .. leftValue .. [[');
+        changeValueByID('right_touch_action', ']] .. rightValue .. [[');
+        changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
+        changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
+        changeValueByID('vibrate', ']] .. vibrateValue .. [[');
+        changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
+        changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
+        changeColor(']] .. colorValue .. [[');
+        setIcon("]] .. encodedIcon .. [[");
+    ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
+end
+
 -- loupedeckCTPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
@@ -394,12 +533,12 @@ local function loupedeckCTPanelCallback(id, params)
                     mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
-                    -- Allow specific toolbar icons in the Console:
+                    -- Gather Toolbar Icons for Search Console:
                     --------------------------------------------------------------------------------
-                    local searchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID)
-                    if searchConsoleToolbar then
-                        mod.activator[groupID]:toolbarIcons(searchConsoleToolbar)
-                    end
+                    local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+                    local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
+                    local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
+                    mod.activator[groupID]:toolbarIcons(searchConsoleToolbar)
                 end
             end
 
@@ -474,7 +613,10 @@ local function loupedeckCTPanelCallback(id, params)
 
             mod._manager.refresh()
         elseif callbackType == "updateApplicationAndBank" then
-            if params["application"] == "Add Application" then
+            local app = params["application"]
+            local bank = params["bank"]
+
+            if app == "Add Application" then
                 injectScript([[
                     changeValueByID('application', ']] .. mod.lastApplication() .. [[');
                 ]])
@@ -519,139 +661,40 @@ local function loupedeckCTPanelCallback(id, params)
                     else
                         log.ef("Something went wrong trying to add a custom application. bundleID: %s, displayName: %s", bundleID, displayName)
                     end
-                    mod._manager.refresh()
+
+                    --------------------------------------------------------------------------------
+                    -- Update the UI:
+                    --------------------------------------------------------------------------------
+                    updateUI(params)
                 end
             else
-                mod.lastApplication(params["application"])
-                mod.lastBank(params["bank"])
-                mod._manager.refresh()
+                mod.lastApplication(app)
+                mod.lastBank(bank)
+
+                --------------------------------------------------------------------------------
+                -- Change the bank:
+                --------------------------------------------------------------------------------
+                local activeBanks = mod._ctmanager.activeBanks()
+                activeBanks[app] = bank
+                mod._ctmanager.activeBanks(activeBanks)
+
+                local items = mod.items()
+                local label = items[app] and items[app][bank] and items[app][bank]["bankLabel"] or bank
+
+                --displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
+
+                --------------------------------------------------------------------------------
+                -- Update the UI:
+                --------------------------------------------------------------------------------
+                updateUI(params)
+
+                --------------------------------------------------------------------------------
+                -- Refresh the hardware:
+                --------------------------------------------------------------------------------
+                mod._ctmanager.refresh()
             end
         elseif callbackType == "updateUI" then
-            --------------------------------------------------------------------------------
-            -- Update UI:
-            --------------------------------------------------------------------------------
-            local app = params["application"]
-            local bank = params["bank"]
-            local controlType = params["controlType"]
-            local bid = params["id"]
-
-            local selectedControl = params["selectedControl"]
-
-            mod.lastSelectedControl(selectedControl)
-            mod.lastID(bid)
-            mod.lastControlType(controlType)
-
-            local items = mod.items()
-
-            local selectedApp = items[app]
-            local selectedBank = selectedApp and selectedApp[bank]
-            local selectedControlType = selectedBank and selectedBank[controlType]
-            local selectedID = selectedControlType and selectedControlType[bid]
-
-            local leftValue = selectedID and selectedID.leftAction and selectedID.leftAction.actionTitle or ""
-            local rightValue = selectedID and selectedID.rightAction and selectedID.rightAction.actionTitle or ""
-            local pressValue = selectedID and selectedID.pressAction and selectedID.pressAction.actionTitle or ""
-            local upValue = selectedID and selectedID.upAction and selectedID.upAction.actionTitle or ""
-            local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
-            local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
-            local twoFingerTapValue = selectedID and selectedID.twoFingerTapAction and selectedID.twoFingerTapAction.actionTitle or ""
-            local colorValue = selectedID and selectedID.led or "FFFFFF"
-            local encodedIcon = selectedID and selectedID.encodedIcon or ""
-            local iconLabel = selectedID and selectedID.iconLabel or ""
-            local vibrateValue = selectedID and selectedID.vibrate or ""
-
-            local bankLabel = selectedBank and selectedBank.bankLabel or ""
-
-            local updateIconsScript = ""
-
-            if selectedBank then
-                --------------------------------------------------------------------------------
-                -- Update Touch Buttons:
-                --------------------------------------------------------------------------------
-                for i=1, 12 do
-                    i = tostring(i)
-                    local currentEncodedIcon = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIcon
-                    local currentIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].iconLabel
-                    local currentEncodedIconLabel = selectedBank.touchButton and selectedBank.touchButton[i] and selectedBank.touchButton[i].encodedIconLabel
-                    if currentEncodedIcon and currentEncodedIcon ~= "" then
-                        updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIcon .. [[")]] .. "\n"
-                    else
-                        if currentIconLabel and currentIconLabel ~= "" and currentEncodedIconLabel and currentEncodedIconLabel ~= "" then
-                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. currentEncodedIconLabel .. [[")]] .. "\n"
-                        else
-                            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
-                        end
-                    end
-                end
-
-                --------------------------------------------------------------------------------
-                -- Left Screen:
-                --------------------------------------------------------------------------------
-                local leftScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["1"]
-                if leftScreen and leftScreen.encodedKnobIcon and leftScreen.encodedKnobIcon ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedKnobIcon .. [[")]] .. "\n"
-                elseif leftScreen and leftScreen.encodedIcon and leftScreen.encodedIcon ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. leftScreen.encodedIcon .. [[")]] .. "\n"
-                else
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
-                end
-
-                --------------------------------------------------------------------------------
-                -- Right Screen:
-                --------------------------------------------------------------------------------
-                local rightScreen = selectedBank and selectedBank.sideScreen and selectedBank.sideScreen["2"]
-                if rightScreen and rightScreen.encodedKnobIcon and rightScreen.encodedKnobIcon ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedKnobIcon .. [[")]] .. "\n"
-                elseif rightScreen and rightScreen.encodedIcon and rightScreen.encodedIcon ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. rightScreen.encodedIcon .. [[")]] .. "\n"
-                else
-                    updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
-                end
-
-                --------------------------------------------------------------------------------
-                -- Wheel Screen:
-                --------------------------------------------------------------------------------
-                local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
-                if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
-                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
-                else
-                    updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Update UI on whether connected or not:
-            --------------------------------------------------------------------------------
-            local loadSettingsFromDevice = mod._ctmanager.loadSettingsFromDevice()
-            local connected = mod._ctmanager.connected()
-            local connectedScript = [[
-                document.getElementById("yesLoupedeck").style.display = "block";
-                document.getElementById("noLoupedeck").style.display = "none";
-            ]]
-            if not connected and loadSettingsFromDevice then
-                connectedScript = [[
-                    document.getElementById("yesLoupedeck").style.display = "none";
-                    document.getElementById("noLoupedeck").style.display = "block";
-                ]]
-            end
-
-            injectScript([[
-                changeValueByID('bankLabel', ']] .. bankLabel .. [[');
-                changeValueByID('press_action', ']] .. pressValue .. [[');
-                changeValueByID('left_action', ']] .. leftValue .. [[');
-                changeValueByID('right_action', ']] .. rightValue .. [[');
-                changeValueByID('up_touch_action', ']] .. upValue .. [[');
-                changeValueByID('down_touch_action', ']] .. downValue .. [[');
-                changeValueByID('left_touch_action', ']] .. leftValue .. [[');
-                changeValueByID('right_touch_action', ']] .. rightValue .. [[');
-                changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
-                changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
-                changeValueByID('vibrate', ']] .. vibrateValue .. [[');
-                changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
-                changeColor(']] .. colorValue .. [[');
-                setIcon("]] .. encodedIcon .. [[")
-            ]] .. updateIconsScript .. "\n" .. connectedScript)
-
+            updateUI(params)
         elseif callbackType == "updateColor" then
             --------------------------------------------------------------------------------
             -- Update Color:
@@ -1591,6 +1634,21 @@ local function loupedeckCTPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.getAbsolutePosition(), true)
+        elseif callbackType == "changeIgnore" then
+            local app = params["application"]
+            local ignore = params["ignore"]
+
+            local items = mod.items()
+
+            if not items[app] then items[app] = {} end
+            items[app]["ignore"] = ignore
+
+            mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -1741,7 +1799,7 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 970,
+        height          = 980,
     })
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,

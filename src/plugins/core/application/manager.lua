@@ -58,6 +58,29 @@ function mod.getSearchConsoleToolbar(bundleID)
     return mod._applications[bundleID] and mod._applications[bundleID].searchConsoleToolbar
 end
 
+--- plugins.core.application.manager.defaultSearchConsoleToolbar() -> table
+--- Function
+--- Returns the default search toolbar data.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
+function mod.defaultSearchConsoleToolbar()
+    local iconPath = config.basePath .. "/plugins/core/console/images/"
+    return {
+        global_applications         = { path = iconPath .. "apps.png",              priority = 50},
+        global_shortcuts            = { path = iconPath .."Keyboard.icns",          priority = 51},
+        global_snippets             = { path = iconPath .. "snippets.png",          priority = 52},
+        global_loupedeckbanks       = { path = iconPath .. "loupedeckplusbank.png", priority = 53},
+        global_loupedeckct_banks    = { path = iconPath .. "loupedeckctbank.png",   priority = 54},
+        global_midibanks            = { path = iconPath .. "midibank.png",          priority = 55},
+        global_streamDeckbanks      = { path = iconPath .. "streamdeckbank.png",    priority = 56},
+        global_touchbarbanks        = { path = iconPath .. "touchbarbank.png",      priority = 57},
+    }
+end
+
 local plugin = {
     id              = "core.application.manager",
     group           = "core",

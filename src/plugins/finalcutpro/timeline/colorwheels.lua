@@ -67,7 +67,7 @@ function plugin.init(deps)
     -- Reset Master Color Wheel Brightness:
     --------------------------------------------------------------------------------
     fcpxCmds
-        :add("cpResetMasterColorWheelSaturation")
+        :add("cpResetMasterColorWheelBrightness")
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end

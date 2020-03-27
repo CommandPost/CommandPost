@@ -55,6 +55,22 @@ function plugin.init(deps)
                 { label = "⌥R⇧", mods = {"alt", "rightshift"} },
                 { label = "⌃⌥R⇧", mods = {"ctrl", "alt", "rightshift"} },
                 { label = "⌃R⇧", mods = {"ctrl", "rightshift"} },
+                { label = "Fn⌘", mods = {"cmd", "fn"} },
+                { label = "Fn⇧⌘", mods = {"shift", "cmd", "fn"} },
+                { label = "Fn⌥⇧⌘", mods = {"alt", "shift", "cmd", "fn"} },
+                { label = "Fn⌃⌥⇧⌘", mods = {"ctrl", "alt", "shift", "cmd", "fn"} },
+                { label = "Fn⌃⇧⌘", mods = {"ctrl", "shift", "cmd", "fn"} },
+                { label = "Fn⌥⌘", mods = {"alt", "cmd", "fn"} },
+                { label = "Fn⌃⌥⌘", mods = {"ctrl", "alt", "cmd", "fn"} },
+                { label = "Fn⌃⌘", mods = {"ctrl", "cmd", "fn"} },
+                { label = "Fn⇧", mods = {"shift", "fn"} },
+                { label = "Fn⌥⇧", mods = {"alt", "shift", "fn"} },
+                { label = "Fn⌃⌥⇧", mods = {"ctrl", "alt", "shift", "fn"} },
+                { label = "Fn⌃⇧", mods = {"ctrl", "shift", "fn"} },
+                { label = "Fn⌥", mods = {"alt", "fn"} },
+                { label = "Fn⌃⌥", mods = {"ctrl", "alt", "fn"} },
+                { label = "Fn⌃", mods = {"ctrl", "fn"} },
+                { label = "Fn", mods = {"fn"} },
             }
             local pressLabel = i18n("press")
             local andLabel = i18n("and")

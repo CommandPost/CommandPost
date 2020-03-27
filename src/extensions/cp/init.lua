@@ -26,6 +26,9 @@ local i18n                  = require "cp.i18n"
 local plugins               = require "cp.plugins"
 local tools                 = require "cp.tools"
 
+local imageFromName         = image.imageFromName
+local imageFromPath         = image.imageFromPath
+
 --------------------------------------------------------------------------------
 -- Not used in `init.lua`, but is required to "jump start" the CLI support:
 --------------------------------------------------------------------------------
@@ -90,27 +93,27 @@ function mod.init()
     --------------------------------------------------------------------------------
     local function consoleOnTopIcon()
         if hs.consoleOnTop() then
-            return image.imageFromName("NSStatusAvailable")
+            return imageFromName("NSStatusAvailable")
         else
-            return image.imageFromName("NSStatusUnavailable")
+            return imageFromName("NSStatusUnavailable")
         end
     end
     local function autoReloadIcon()
         if config.automaticScriptReloading() then
-            return image.imageFromName("NSStatusAvailable")
+            return imageFromName("NSStatusAvailable")
         else
-            return image.imageFromName("NSStatusUnavailable")
+            return imageFromName("NSStatusUnavailable")
         end
     end
     console.toolbar(toolbar.new("myConsole", {
-            { id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
+            { id = i18n("reload"), image = imageFromName("NSSynchronize"),
                 fn = function()
                     console.clearConsole()
                     print("Reloading CommandPost...")
                     hs.reload()
                 end
             },
-            { id = i18n("clearLog"), image = image.imageFromName("NSTrashFull"),
+            { id = i18n("clearLog"), image = imageFromName("NSTrashFull"),
                 fn = function()
                     console.clearConsole()
                 end
@@ -128,12 +131,17 @@ function mod.init()
                 end
             },
             { id = "NSToolbarFlexibleSpaceItem" },
-            { id = i18n("preferences"), image = image.imageFromName("NSPreferencesGeneral"),
+            { id = i18n("controlSurfaces"), image = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
+                fn = function()
+                    plugins("core.controlsurfaces.manager").show()
+                end
+            },
+            { id = i18n("preferences"), image = imageFromName("NSPreferencesGeneral"),
                 fn = function()
                     plugins("core.preferences.manager").show()
                 end
             },
-            { id = i18n("feedback"), image = image.imageFromName("NSInfo"),
+            { id = i18n("feedback"), image = imageFromName("NSInfo"),
                 fn = function()
                     feedback.showFeedback()
                 end

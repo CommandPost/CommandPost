@@ -17,6 +17,9 @@
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
+					selectedControl: document.getElementById("selectedControl").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
 				},
 			}
 			postMessage(result);
@@ -919,6 +922,31 @@
 			alertErrorMessage(err);
 		}
 	}
+
+	function changeIgnore() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "changeIgnore",
+					application: document.getElementById("application").value,
+					ignore: document.getElementById("ignore").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateIgnoreVisibility() {
+		if (document.getElementById("application").value == "All Applications") {
+			document.getElementById("ignoreApp").style.display = "none";
+		} else {
+			document.getElementById("ignoreApp").style.display = "block";
+		}
+	}
+
 </script>
 <table>
 	<thead>
@@ -1010,6 +1038,12 @@
 		<th style="padding-left: 20px;">
 			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
 			<input type="text" id="bankLabel" class="loupedeckLabel" value="{{ lastBankLabel }}" onchange="updateBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
+		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
+			<span id="ignoreApp">
+				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">Ignore Application</span></label>
+	  		</span>
 		</th>
 	</tr>
 </table>
