@@ -6,7 +6,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "menuaction"
+--local log               = require "hs.logger".new "menuaction"
 
 local application       = require "hs.application"
 local fnutils           = require "hs.fnutils"
@@ -95,7 +95,7 @@ local function getMenuItems(appObject, callback)
             c(menus)
         end)(menuBar, callback)
     else
-        callback(menus)
+        callback(menus) -- luacheck: ignore
     end
 end
 

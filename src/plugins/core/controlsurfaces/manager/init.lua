@@ -15,7 +15,6 @@ local config      = require "cp.config"
 local dialog      = require "cp.dialog"
 local just        = require "cp.just"
 local tools       = require "cp.tools"
-local i18n        = require "cp.i18n"
 
 local moses       = require "moses"
 
