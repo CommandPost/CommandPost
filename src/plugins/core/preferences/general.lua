@@ -4,11 +4,11 @@
 
 local require = require
 
-local hs = hs
+local hs        = hs
 
-local config    = require("cp.config")
-local i18n      = require("cp.i18n")
-local prop      = require("cp.prop")
+local config    = require "cp.config"
+local i18n      = require "cp.i18n"
+local prop      = require "cp.prop"
 
 local mod = {}
 
@@ -31,7 +31,7 @@ mod.uploadCrashData = prop.new(
 --- plugins.core.preferences.general.dockIcon <cp.prop: boolean>
 --- Field
 --- Controls whether or not CommandPost should show a dock icon.
-mod.dockIcon = config.prop("dockIcon", false):watch(function(value)
+mod.dockIcon = config.prop("dockIcon", true):watch(function(value)
     hs.dockIcon(value)
 end)
 

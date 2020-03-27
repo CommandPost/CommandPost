@@ -582,9 +582,9 @@ function mod.init(deps, env)
     mod._panel          =  deps.manager.addPanel({
         priority        = 2030,
         id              = "shortcuts",
-        label           = i18n("shortcutsPanelLabel"),
+        label           = i18n("keyboard"),
         image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
-        tooltip         = i18n("shortcutsPanelTooltip"),
+        tooltip         = i18n("keyboard"),
         height          = 750,
     })
     mod._panel
@@ -645,7 +645,7 @@ local plugin = {
     id              = "core.shortcuts.prefs",
     group           = "core",
     dependencies    = {
-        ["core.preferences.manager"]        = "manager",
+        ["core.controlsurfaces.manager"]        = "manager",
     }
 }
 

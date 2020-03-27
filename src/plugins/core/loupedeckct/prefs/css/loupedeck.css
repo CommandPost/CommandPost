@@ -1,0 +1,709 @@
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 21px;
+	height: 21px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
+}
+
+.bottomButton {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	width: 180px;
+  	font-weight: normal;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.bottomButton:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+
+.loupedeckDropdown {
+	width: 180px;
+	float: left;
+}
+
+.loupedeck {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.loupedeck td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.loupedeckButtonLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 190px;
+}
+
+.loupedeckLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 150px;
+}
+
+.loupedeckRowAction {
+	width: 240px;
+}
+.loupedeckRowActionButton {
+	width: 50px;
+}
+.loupedeckRowDevice {
+	width: 120px;
+}
+loupedeckRowType {
+	width: 120px;
+}
+.loupedeckRowNumber {
+	width: 70px;
+}
+.loupedeckRowChannel {
+	width: 70px;
+}
+
+.loupedeckRowValue {
+	width: 75px;
+}
+.loupedeckRowLearn {
+	width: 120px;
+}
+
+.loupedeck thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.loupedeck thead tr, .loupedeck tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.loupedeck thead tr {
+	width: calc( 100% - 8px);
+}
+
+.loupedeck tbody {
+	display:block;
+	/* height: 65px; */
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+/*
+.loupedeck tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+*/
+
+.openAudioLoupedeckSetup {
+	margin: 0px 0px 5px;
+	float: left;
+	width: 180px;
+}
+
+.refreshLoupedeck {
+	margin: 0px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.importSettings {
+	margin: 10px 0px;
+	text-align: center;
+	width: 180px;
+}
+
+.applyTopDeviceToAll {
+	margin: 10px 0px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.loupedeckResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 180px;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: right;
+	float: right;
+}
+
+.buttonDisabled {
+	pointer-events:none;
+	opacity: 0.4;
+}
+
+.loupedeckControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+
+.loupedeckActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 186px;
+}
+
+.loupedeckActionButton {
+	padding: 5px 5px !important;
+}
+
+#loupedeckController {
+	font-weight: bold;
+}
+
+#loupedeckGroupControls {
+	/* min-height: 295px; */
+}
+
+#loupedeckGroupControls .loupedeckGroup {
+	display: none;
+}
+
+#loupedeckGroupControls .loupedeckGroup.selected {
+	display: block;
+}
+
+.loupedeckGroupSelect {
+	float: right;
+}
+
+/* ICON DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 95px;
+  /* margin: 7.5px auto; */
+  text-align: center;
+  width: 95px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 2.5px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  border-radius: 2.5px;
+  vertical-align: middle;
+  max-width: 95%;
+  max-height: 95%;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.touchButtonDropZone {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 0;
+  margin: 0;
+  font-size: 0;
+  border-image-width: 0;
+}
+
+.touchButtonDropZone::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+/* LOUPEDECK CT INTERFACE: */
+
+#loupedeckCT {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url({* insertImage('images/loupedeckCT.png') *});
+}
+
+#knob1 {
+	position:absolute;
+	left:38px;
+	top:52px;
+	width:39px;
+	height:39px;
+}
+
+#knob4 {
+	position:absolute;
+	left:360px;
+	top:52px;
+	width:39px;
+	height:39px;
+}
+
+#sideScreen1 {
+	position:absolute;
+	left:100px;
+	top:67px;
+	width:24px;
+	height:131px;
+}
+
+#touchButton1 {
+	position:absolute;
+	left:130px;
+	top:67px;
+	width:40px;
+	height:40px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
+}
+
+#touchButton2 {
+	position:absolute;
+	left:175px;
+	top:67px;
+	width:40px;
+	height:40px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
+}
+
+#touchButton3 {
+	position:absolute;
+	left:220px;
+	top:67px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton4 {
+	position:absolute;
+	left:266px;
+	top:67px;
+	width:40px;
+	height:40px;
+}
+
+#sideScreen2 {
+	position:absolute;
+	left:313px;
+	top:67px;
+	width:24px;
+	height:131px;
+}
+
+#touchButton5 {
+	position:absolute;
+	left:130px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton6 {
+	position:absolute;
+	left:175px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton7 {
+	position:absolute;
+	left:220px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton8 {
+	position:absolute;
+	left:266px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#knob2 {
+	position:absolute;
+	left:38px;
+	top:114px;
+	width:39px;
+	height:38px;
+}
+
+#knob5 {
+	position:absolute;
+	left:360px;
+	top:114px;
+	width:39px;
+	height:38px;
+}
+
+#touchButton9 {
+	position:absolute;
+	left:130px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton10 {
+	position:absolute;
+	left:175px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton11 {
+	position:absolute;
+	left:220px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton12 {
+	position:absolute;
+	left:266px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#knob3 {
+	position:absolute;
+	left:38px;
+	top:175px;
+	width:39px;
+	height:39px;
+}
+
+#knob6 {
+	position:absolute;
+	left:360px;
+	top:175px;
+	width:39px;
+	height:39px;
+}
+
+#ledButton1 {
+	position:absolute;
+	left:41px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton2 {
+	position:absolute;
+	left:87px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton3 {
+	position:absolute;
+	left:133px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton4 {
+	position:absolute;
+	left:179px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton5 {
+	position:absolute;
+	left:225px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton6 {
+	position:absolute;
+	left:271px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton7 {
+	position:absolute;
+	left:317px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton8 {
+	position:absolute;
+	left:363px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButtonO {
+	position:absolute;
+	left:37px;
+	top:277px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonReturn {
+	position:absolute;
+	left:85px;
+	top:277px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonA {
+	position:absolute;
+	left:306px;
+	top:277px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonB {
+	position:absolute;
+	left:354px;
+	top:277px;
+	width:46px;
+	height:46px;
+}
+
+#jogWheelTop {
+	position:absolute;
+	left:151px;
+	top:280px;
+	width:135px;
+	height:27px;
+}
+
+#jogWheelLeft {
+	position:absolute;
+	left:151px;
+	top:307px;
+	width:28px;
+	height:107px;
+}
+
+#wheelScreen1 {
+	position:absolute;
+	left:179px;
+	top:307px;
+	width:81px;
+	height:82px;
+}
+
+#jogWheelRight {
+	position:absolute;
+	left:260px;
+	top:307px;
+	width:26px;
+	height:107px;
+}
+
+#ledButtonUndo {
+	position:absolute;
+	left:37px;
+	top:324px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonSave {
+	position:absolute;
+	left:85px;
+	top:324px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonC {
+	position:absolute;
+	left:306px;
+	top:324px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonD {
+	position:absolute;
+	left:354px;
+	top:324px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonKeyboard {
+	position:absolute;
+	left:37px;
+	top:371px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonLeftFn {
+	position:absolute;
+	left:85px;
+	top:371px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonRightFn {
+	position:absolute;
+	left:306px;
+	top:371px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonE {
+	position:absolute;
+	left:354px;
+	top:371px;
+	width:46px;
+	height:46px;
+}
+
+#jogWheelBottom {
+	position:absolute;
+	left:179px;
+	top:389px;
+	width:81px;
+	height:25px;
+}

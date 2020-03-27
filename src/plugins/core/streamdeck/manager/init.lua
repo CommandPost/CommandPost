@@ -566,55 +566,6 @@ function mod.groupStatus(groupID, status)
     mod.update()
 end
 
--- convertButtonID(buttonID) -> number
--- Function
--- Converts the button ID to reflect Stream Deck numbering.
---
--- Parameters:
---  * buttonID
---
--- Returns:
---  * A number
-local function convertButtonID(buttonID)
-    --------------------------------------------------------------------------------
-    -- TODO: Fix lazy programming (sorry David)
-    --------------------------------------------------------------------------------
-    buttonID = tonumber(buttonID)
-    if buttonID == 1 then
-        return 5
-    elseif buttonID == 2 then
-        return 4
-    elseif buttonID == 3 then
-        return 3
-    elseif buttonID == 4 then
-        return 2
-    elseif buttonID == 5 then
-        return 1
-    elseif buttonID == 6 then
-        return 10
-    elseif buttonID == 7 then
-        return 9
-    elseif buttonID == 8 then
-        return 8
-    elseif buttonID == 9 then
-        return 7
-    elseif buttonID == 10 then
-        return 6
-    elseif buttonID == 11 then
-        return 15
-    elseif buttonID == 12 then
-        return 14
-    elseif buttonID == 13 then
-        return 13
-    elseif buttonID == 14 then
-        return 12
-    elseif buttonID == 15 then
-        return 11
-    else
-        return nil
-    end
-end
-
 --- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
 --- Function
 --- Stream Deck Button Callback
@@ -631,8 +582,8 @@ function mod.buttonCallback(_, buttonID, pressed)
     local activeSubGroup = mod.activeSubGroup()
     local activeGroupAndSubGroup = activeGroup .. activeSubGroup
     if pressed then
-        local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), activeGroupAndSubGroup)
-        local action = mod.getAction(tostring(convertButtonID(buttonID)), activeGroupAndSubGroup)
+        local handlerID = mod.getActionHandlerID(tostring(buttonID), activeGroupAndSubGroup)
+        local action = mod.getAction(tostring(buttonID), activeGroupAndSubGroup)
         if handlerID and action then
             local handler = mod._actionmanager.getHandler(handlerID)
             handler:execute(action)
@@ -681,7 +632,7 @@ function mod.update()
                     for _, streamDeck in pairs(mod._streamDeck) do
                         if icon then
                             icon = image.imageFromURL(icon) --:setSize({w=36,h=36})
-                            streamDeck:setButtonImage(convertButtonID(buttonID), icon)
+                            streamDeck:setButtonImage(tonumber(buttonID), icon)
                         elseif label then
                             local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
                             imageHolder[1] = {
@@ -698,7 +649,7 @@ function mod.update()
                                 type = "text",
                             }
                             local textIcon = imageHolder:imageFromCanvas()
-                            streamDeck:setButtonImage(convertButtonID(buttonID), textIcon)
+                            streamDeck:setButtonImage(tonumber(buttonID), textIcon)
                         end
                     end
                 end

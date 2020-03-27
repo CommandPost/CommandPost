@@ -59,7 +59,7 @@ function mod.write(path, data)
         log.ef("Path is required for `cp.json.write`.")
         return false
     end
-    return json.write(data, path, false, true)
+    return json.write(data, path, true, true)
 end
 
 --- cp.json.encode(val[, prettyprint]) -> string
@@ -104,10 +104,15 @@ end
 ---  * folder - The folder containing the JSON file (i.e. "Final Cut Pro")
 ---  * filename - The filename of the JSON file (i.e. "Test.json")
 ---  * defaultValue - The default value if the JSON file doesn't exist yet.
+---  * errorCallbackFn - An optional function that's triggered if something goes wrong.
 ---
 --- Returns:
 ---  * A `cp.prop` instance.
-function mod.prop(path, folder, filename, defaultValue)
+---
+--- Notes:
+---  * The optional `errorCallbackFn` should accept one parameter, a string with
+---    the error message.
+function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
 
     if not path then
         log.ef("Folder is required for `cp.json.prop`.")
@@ -131,11 +136,26 @@ function mod.prop(path, folder, filename, defaultValue)
                 if result then
                     return result
                 else
-                    log.ef("Failed to read JSON file: %s", fullFilePath)
+                    local errorMessage = string.format("Failed to read JSON file: %s", fullFilePath)
+                    if type(errorCallbackFn) == "function" then
+                        errorCallbackFn(errorMessage)
+                    else
+                        log.ef(errorMessage)
+                    end
+                end
+            else
+                local errorMessage = string.format("Failed to read JSON file: %s", fullFilePath)
+                if type(errorCallbackFn) == "function" then
+                    errorCallbackFn(errorMessage)
                 end
             end
         else
-            log.ef("Failed to create JSON folder: %s", fullPath)
+            local errorMessage = string.format("Failed to create JSON folder: %s", fullPath)
+            if type(errorCallbackFn) == "function" then
+                errorCallbackFn(errorMessage)
+            else
+                log.ef(errorMessage)
+            end
         end
         --------------------------------------------------------------------------------
         -- Return Default Value:
@@ -149,10 +169,19 @@ function mod.prop(path, folder, filename, defaultValue)
         if tools.ensureDirectoryExists(path, folder) then
             local result = mod.write(fullFilePath, value)
             if not result then
-                log.ef("Failed to save JSON file: %s", fullFilePath)
+                local errorMessage = string.format("Failed to save JSON file: %s", fullFilePath)
+                if type(errorCallbackFn) == "function" then
+                    errorCallbackFn(errorMessage)
+                else
+                    log.ef(errorMessage)
+                end
             end
         else
-            log.ef("Failed to create JSON folder: %s", fullPath)
+            local errorMessage = string.format("Failed to create JSON folder: %s", fullPath)
+            if type(errorCallbackFn) == "function" then
+                errorCallbackFn(errorMessage)
+            end
+
         end
     end):deepTable()
 

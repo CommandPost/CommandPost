@@ -57,6 +57,14 @@ local function deepneq(a, b)
     end
 end
 
+local function report(value)
+    if type(value) == "string" then
+        return format("%q", value)
+    else
+        return inspect(value)
+    end
+end
+
 function expect.static.given(context)
     return expect(nil, context)
 end
@@ -92,31 +100,31 @@ function expect:_expected(message, ...)
 end
 
 function expect:is(other)
-    assert(deepeq(self.value, other), self:_expected("that the value would be %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(deepeq(self.value, other), self:_expected("that the value would be %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:isNot(other)
-    assert(deepneq(self.value, other), self:_expected("that the value would not be %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(deepneq(self.value, other), self:_expected("that the value would not be %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:isAtLeast(other)
-    assert(self.value >= other, self:_expected("the value would be at least %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(self.value >= other, self:_expected("the value would be at least %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:isAtMost(other)
-    assert(self.value <= other, self:_expected("the value would be at most %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(self.value <= other, self:_expected("the value would be at most %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:isLessThan(other)
-    assert(self.value < other, self:_expected("the value would be less than %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(self.value < other, self:_expected("the value would be less than %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:isGreaterThan(other)
-    assert(self.value > other, self:_expected("the value would be greater than %s, but it was %s", inspect(other), inspect(self.value)), self._level + 1)
+    assert(self.value > other, self:_expected("the value would be greater than %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 function expect:matches(other)
-    assert(type(self.value) == "string" and self.value:match(other) ~= nil, self:_expected("the value to match '%s', but it was '%s'", other, self.value), self._level + 1)
+    assert(type(self.value) == "string" and self.value:match(other) ~= nil, self:_expected("the value to match %s, but it was %s", report(other), report(self.value)), self._level + 1)
 end
 
 return expect

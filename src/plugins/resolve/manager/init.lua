@@ -4,12 +4,12 @@
 
 local require       = require
 
-local application   = require("hs.application")
+local application   = require "hs.application"
 
-local commands      = require("cp.commands")
+local commands      = require "cp.commands"
 local config        = require "cp.config"
-local i18n          = require("cp.i18n")
-local resolve       = require("cp.blackmagic.resolve")
+local i18n          = require "cp.i18n"
+local resolve       = require "cp.blackmagic.resolve"
 
 local mod = {}
 

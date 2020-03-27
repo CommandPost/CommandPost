@@ -4,10 +4,11 @@
 
 local require       = require
 
-local timer         = require("hs.timer")
-local eventtap      = require("hs.eventtap")
+local timer         = require "hs.timer"
+local eventtap      = require "hs.eventtap"
 
-local fcp           = require("cp.apple.finalcutpro")
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
 local doUntil       = timer.doUntil
 
@@ -107,11 +108,23 @@ function plugin.init(deps)
         :add("changeBrowserClipHeightUp")
         :whenActivated(function() mod.changeBrowserClipHeight("up") end)
         :whenReleased(function() changeBrowserClipHeightRelease() end)
+        :titled(i18n("changeBrowserClipHeightUp") .. " (" .. i18n("keyboardShortcut") .. ")")
 
     fcpxCmds
         :add("changeBrowserClipHeightDown")
         :whenActivated(function() mod.changeBrowserClipHeight("down") end)
         :whenReleased(function() changeBrowserClipHeightRelease() end)
+        :titled(i18n("changeBrowserClipHeightDown") .. " (" .. i18n("keyboardShortcut") .. ")")
+
+    fcpxCmds
+        :add("changeBrowserClipHeightUpSingle")
+        :whenActivated(function() shiftClipHeight("up") end)
+        :titled(i18n("changeBrowserClipHeightUp"))
+
+    fcpxCmds
+        :add("changeBrowserClipHeightDownSingle")
+        :whenActivated(function() shiftClipHeight("down") end)
+        :titled(i18n("changeBrowserClipHeightDown"))
 
     return mod
 end

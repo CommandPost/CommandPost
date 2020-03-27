@@ -542,7 +542,7 @@ local plugin = {
     id              = "core.streamdeck.prefs",
     group           = "core",
     dependencies    = {
-        ["core.preferences.manager"]        = "manager",
+        ["core.controlsurfaces.manager"]    = "manager",
         ["core.streamdeck.manager"]         = "sd",
         ["core.action.manager"]             = "actionmanager",
     }

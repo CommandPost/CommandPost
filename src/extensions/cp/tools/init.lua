@@ -108,6 +108,9 @@ function tools.keyStroke(modifiers, character, app)
     modifiers = modifiers or {}
 
     for _, m in pairs(modifiers) do
+        if m == "command" then m = "cmd" end
+        if m == "option" then m = "alt" end
+        if m == "control" then m = "ctrl" end
         newKeyEvent(map[m], true):post(app)
     end
 
@@ -115,6 +118,9 @@ function tools.keyStroke(modifiers, character, app)
     newKeyEvent(character, false):post(app)
 
     for _, m in pairs(modifiers) do
+        if m == "command" then m = "cmd" end
+        if m == "option" then m = "alt" end
+        if m == "control" then m = "ctrl" end
         newKeyEvent(map[m], false):post(app)
     end
 end
@@ -1619,6 +1625,9 @@ end
 --- Returns:
 ---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
 function tools.ensureDirectoryExists(rootPath, ...)
+    if not tools.doesDirectoryExist(rootPath) then
+        return
+    end
     local fullPath = rootPath
     for _,path in ipairs(table.pack(...)) do
         fullPath = fullPath .. "/" .. path
