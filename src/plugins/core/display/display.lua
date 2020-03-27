@@ -15,7 +15,7 @@ local displayNotification       = dialog.displayNotification
 local format                    = string.format
 
 local plugin = {
-    id = "core.core.display",
+    id = "core.display",
     group = "core",
     dependencies = {
         ["core.commands.global"] = "global",

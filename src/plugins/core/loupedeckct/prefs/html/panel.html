@@ -952,10 +952,10 @@
 	<thead>
 		<tr>
 			<th style="padding-left: 20px;">
-				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="importSettings()">Import Settings</a>
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="importSettings()">{{ i18n("importSettings") }}</a>
 			</th>
 			<th style="padding-left: 10px;">
-				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">Export Settings</a>
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">{{ i18n("exportSettings") }}</a>
 			</th>
 		</tr>
 	</thead>
@@ -1042,7 +1042,7 @@
 		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
 			<span id="ignoreApp">
 				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
-		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">Ignore Application</span></label>
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("ignoreApplication") }}</span></label>
 	  		</span>
 		</th>
 	</tr>
@@ -1213,23 +1213,23 @@
 			<th style="text-align:top; padding-top: 20px;">
 
 				<p style="text-align: left; padding-left:20px; font-size:16px; margin: 0px;">
-					<strong>Selected Control:</strong> <span id="label" style="font-weight: normal;">Loading...</span>
+					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
 				</p>
 				<div id="loupedeckGroupControls" class="uiItem">
 					<table class="loupedeck" style="height: 526px;" id="noLoupedeck">
 						<tr>
 							<th>
-								<p style="font-size: 12px; font-weight: normal;"><strong>Store settings on Flash Drive</strong> is enabled, but no Loupedeck CT is detected.</p>
-								<p style="font-size: 12px; font-weight: normal;">Please connect your Loupedeck CT to allow configuration.</p>
+								<p style="font-size: 12px; font-weight: normal;">{{ i18n("loupedeckCTStoreSettingsOnFlashDriveLineOne") }}</p>
+								<p style="font-size: 12px; font-weight: normal;">{{ i18n("loupedeckCTStoreSettingsOnFlashDriveLineTwo") }}</p>
 							</th>
 						</tr>
 					</table>
 					<table class="loupedeck" style="height: 526px; display: none;" id="yesLoupedeck">
 						<!-- PRESS ACTION, LED COLOR & VIBRATE: -->
 						<tr id="pressActionA">
-							<th width="229px">Press Action:</th>
-							<th width="229px" id="ledColorA">LED Color:</th>
-							<th width="229px" id="vibrateA">Vibrate When Pressed:</th>
+							<th width="229px">{{ i18n("pressAction") }}:</th>
+							<th width="229px" id="ledColorA">{{ i18n("ledColor") }}:</th>
+							<th width="229px" id="vibrateA">{{ i18n("vibrateWhenPressed") }}:</th>
 						</tr>
 						<tr id="pressActionB">
 							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
@@ -1240,7 +1240,7 @@
 							</td>
 							<td width="229px" id="vibrateB">
 								<select id="vibrate" style="width: 210px;" onchange="updateVibrate()">
-									<option value="">None</option>
+									<option value="">{{ i18n("none") }}</option>
 									{%
 									for id, label in pairs(vibrationIndex) do
 									%}
@@ -1265,8 +1265,8 @@
 
 						<!-- KNOB LEFT & RIGHT: -->
 						<tr id="knobA">
-							<th width="229px">Turn Left Action:</th>
-							<th width="229px">Turn Right Action:</th>
+							<th width="229px">{{ i18n("turnLeftAction") }}:</th>
+							<th width="229px">{{ i18n("turnRightAction") }}:</th>
 						</tr>
 						<tr id="knobB">
 							<td width="229px"><input type="text" id="left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
@@ -1286,8 +1286,8 @@
 
 						<!-- TOUCH WHEEL UP & DOWN : -->
 						<tr id="touchWheelA">
-							<th width="229px">Slide Up Action:</th>
-							<th width="229px">Slide Down Action:</th>
+							<th width="229px">{{ i18n("slideUpAction") }}:</th>
+							<th width="229px">{{ i18n("slideDownAction") }}:</th>
 						</tr>
 						<tr id="touchWheelB">
 							<td width="229px"><input type="text" id="up_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
@@ -1307,8 +1307,8 @@
 
 						<!-- TOUCH WHEEL LEFT & RIGHT : -->
 						<tr id="touchWheelD">
-							<th width="229px">Slide Left Action:</th>
-							<th width="229px">Slide Right Action:</th>
+							<th width="229px">{{ i18n("slideLeftAction") }}:</th>
+							<th width="229px">{{ i18n("slideRightAction") }}:</th>
 						</tr>
 						<tr id="touchWheelE">
 							<td width="229px"><input type="text" id="left_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
@@ -1328,8 +1328,8 @@
 
 						<!-- TOUCH WHEEL DOUBLE TAP & TWO FINGER TAP : -->
 						<tr id="touchWheelG">
-							<th width="229px">Double Tap:</th>
-							<th width="229px">Two Finger Tap:</th>
+							<th width="229px">{{ i18n("doubleTap") }}:</th>
+							<th width="229px">{{ i18n("twoFingerTap") }}:</th>
 						</tr>
 						<tr id="touchWheelH">
 							<td width="229px"><input type="text" id="double_tap_touch_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
@@ -1349,8 +1349,8 @@
 
 						<!-- ICON: -->
 						<tr id="iconA">
-							<th width="229px">Image Drop Zone:</th>
-							<th width="229px" id="iconLabelHeading">Text Label:</th>
+							<th width="229px">{{ i18n("imageDropZone") }}:</th>
+							<th width="229px" id="iconLabelHeading">{{ i18n("textLabel") }}:</th>
 						</tr>
 						<tr id="iconB">
 							<td width="229px">
@@ -1371,15 +1371,15 @@
 							<th width="229px" id="wheelResolution"><i style="color: #FFFFFF; padding-left: 10px;">240 x 240 pixels</i></th>
 							<th width="229px" id="knobResolution"><i style="color: #FFFFFF; padding-left: 16px;">90 x 60 pixels</i></th>
 							<th width="229px">
-								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">History</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
+								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>
 						<tr style="padding-top: 10px;">
 							<th>
-								<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">Copy Control to All Banks</a>
+								<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">{{ i18n("copyControlToAllBanks") }}</a>
 							</th>
 							<th>
-								<a href="#" class="bottomButton" onclick="resetControl()">Reset Control</a>
+								<a href="#" class="bottomButton" onclick="resetControl()">{{ i18n("resetControl") }}</a>
 							</th>
 						</tr>
 
@@ -1397,22 +1397,22 @@
 	<tr>
 		<th style="width: 10px;"></th>
 		<th>
-			<a href="#" class="bottomButton" onclick="resetEverything()">Reset Everything</a>
+			<a href="#" class="bottomButton" onclick="resetEverything()">{{ i18n("resetEverything") }}</a>
 		</th>
 		<th>
-			<a href="#" class="bottomButton" onclick="resetApplication()">Reset Application</a>
+			<a href="#" class="bottomButton" onclick="resetApplication()">{{ i18n("resetApplication") }}</a>
 		</th>
 		<th>
-			<a href="#" class="bottomButton" onclick="resetBank()">Reset Bank</a>
+			<a href="#" class="bottomButton" onclick="resetBank()">{{ i18n("resetBank") }}</a>
 		</th>
 	</tr>
 	<tr>
 		<th style="width: 10px;"></th>
 		<th>
-			<a href="#" class="bottomButton" onclick="copyApplication()">Copy Application</a>
+			<a href="#" class="bottomButton" onclick="copyApplication()">{{ i18n("copyApplication") }}</a>
 		</th>
 		<th>
-			<a href="#" class="bottomButton" onclick="copyBank()">Copy Bank</a>
+			<a href="#" class="bottomButton" onclick="copyBank()">{{ i18n("copyBank") }}</a>
 		</th>
 	</tr>
 </table>

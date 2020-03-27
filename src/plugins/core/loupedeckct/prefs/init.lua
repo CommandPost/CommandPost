@@ -335,6 +335,7 @@ end
 -- Returns:
 --  * None
 local function updateUI(params)
+
     local app = params["application"]
     local bank = params["bank"]
     local controlType = params["controlType"]
@@ -375,7 +376,7 @@ local function updateUI(params)
 
     if selectedBank then
         --------------------------------------------------------------------------------
-        -- Update Touch Buttons:
+        -- Touch Buttons:
         --------------------------------------------------------------------------------
         for i=1, 12 do
             i = tostring(i)
@@ -426,6 +427,17 @@ local function updateUI(params)
         else
             updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
         end
+    else
+        --------------------------------------------------------------------------------
+        -- Clear all the UI elements in the Preferences Window:
+        --------------------------------------------------------------------------------
+        for i=1, 12 do
+            i = tostring(i)
+            updateIconsScript = updateIconsScript .. [[changeImage("touchButton]] .. i .. [[", "]] .. insertImage("images/touchButton" .. i .. ".png") .. [[")]] .. "\n"
+        end
+        updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
+        updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
+        updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
     end
 
     --------------------------------------------------------------------------------
@@ -620,7 +632,7 @@ local function loupedeckCTPanelCallback(id, params)
                 injectScript([[
                     changeValueByID('application', ']] .. mod.lastApplication() .. [[');
                 ]])
-                local files = chooseFileOrFolder("Please select an application:", "/Applications", true, false, false, {"app"}, false)
+                local files = chooseFileOrFolder(i18n("pleaseSelectAnApplication") .. ":", "/Applications", true, false, false, {"app"}, false)
                 if files then
                     local path = files["1"]
                     local info = path and infoForBundlePath(path)
@@ -680,8 +692,6 @@ local function loupedeckCTPanelCallback(id, params)
 
                 local items = mod.items()
                 local label = items[app] and items[app][bank] and items[app][bank]["bankLabel"] or bank
-
-                --displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
@@ -1804,7 +1814,7 @@ function mod.init(deps, env)
         :addHeading(6, "Loupedeck CT")
         :addCheckbox(7,
             {
-                label       = "Enable Loupedeck CT Support",
+                label       = i18n("enableLoupedeckCTSupport"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
@@ -1813,11 +1823,11 @@ function mod.init(deps, env)
         )
         :addCheckbox(8,
             {
-                label       = "Enable Flash Drive",
+                label       = i18n("enableFlashDrive"),
                 checked     = mod.enableFlashDrive,
                 onchange    = function(_, params)
                     if params.checked then
-                        webviewAlert(mod._manager.getWebview(), function() end, "Please disconnect and reconnect your Loupedeck CT.", "To enable the Flash drive you need to restart your device by disconnecting it from your computer and reconnecting it.", i18n("ok"))
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("pleaseDisconnectAndReconnectYourLoupedeckCT"), i18n("toEnableTheFlashDriveOnLoupedeckCT"), i18n("ok"))
                     end
                     mod.enableFlashDrive(params.checked)
                 end,
@@ -1826,7 +1836,7 @@ function mod.init(deps, env)
 
         :addCheckbox(9,
             {
-                label       = "Store settings on Flash Drive",
+                label       = i18n("storeSettingsOnFlashDrive"),
                 checked     = mod.loadSettingsFromDevice,
                 id          = "storeSettingsOnFlashDrive",
                 onchange    = function(_, params)
@@ -1840,7 +1850,7 @@ function mod.init(deps, env)
                             else
                                 manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
                             end
-                        end, "Are you sure you want to store your settings on the Loupedeck CT Flash Drive?", "Enabling this option will tell CommandPost to read and write the settings to and from the connected Loupedeck CT's internal Flash Drive.\n\nIf your Loupedeck CT has settings already stored on it, those settings will overwrite whatever is locally stored on your Mac. However, for safety, before they're overwritten they will be backed up with today's date and time in CommandPost's Settings Folder.\n\nIf there are no existing settings on the Loupedeck CT Flash Drive, then the settings from the Mac will be copied to the Loupedeck CT.", "OK", "Cancel", "warning")
+                        end, i18n("areYouSureYouWantToStoreYourSettingsOnTheLoupedeckCTFlashDrive"), i18n("areYouSureYouWantToStoreYourSettingsOnTheLoupedeckCTFlashDriveDescription"), i18n("ok"), i18n("cancel"), "warning")
                     else
                         mod.loadSettingsFromDevice(params.checked)
                         mod._manager.refresh()
