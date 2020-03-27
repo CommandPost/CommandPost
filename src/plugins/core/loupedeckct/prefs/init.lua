@@ -646,14 +646,14 @@ local function loupedeckCTPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         local apps = {}
                         local registeredApps = mod._appmanager.getApplications()
-                        for bundleID, v in pairs(registeredApps) do
+                        for theBundleID, v in pairs(registeredApps) do
                             if v.displayName then
-                                apps[bundleID] = v.displayName
+                                apps[theBundleID] = v.displayName
                             end
                         end
-                        for bundleID, v in pairs(items) do
+                        for theBundleID, v in pairs(items) do
                             if v.displayName then
-                                apps[bundleID] = v.displayName
+                                apps[theBundleID] = v.displayName
                             end
                         end
 
@@ -689,9 +689,6 @@ local function loupedeckCTPanelCallback(id, params)
                 local activeBanks = mod._ctmanager.activeBanks()
                 activeBanks[app] = bank
                 mod._ctmanager.activeBanks(activeBanks)
-
-                local items = mod.items()
-                local label = items[app] and items[app][bank] and items[app][bank]["bankLabel"] or bank
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:

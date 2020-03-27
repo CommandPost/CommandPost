@@ -2,8 +2,6 @@
 ---
 --- Registers Finder with the Core Application Manager.
 
-local require   = require
-
 local plugin = {
     id              = "finder.application.manager",
     group           = "finder",

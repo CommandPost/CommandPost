@@ -6,7 +6,7 @@ local require               = require
 
 local hs                    = hs
 
-local log                   = require "hs.logger".new "ldCT"
+--local log                   = require "hs.logger".new "ldCT"
 
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
@@ -714,8 +714,6 @@ local function callback(data)
                             tookFingerOffLeftScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
-                            lastWheelX = data.x
-                            lastWheelY = data.y
                             leftScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
                                 leftScreenDoubleTapTriggered = false
@@ -981,9 +979,8 @@ function plugin.init(deps)
 
                 mod.refresh()
 
-                local items = mod.items()
+                items = mod.items() -- Reload items
                 local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-
                 displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
             end
         end)

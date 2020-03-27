@@ -94,7 +94,7 @@ return {
         ---  * unlike `coroutine.yield`, this function does not allow the passing of (new) information to or from the coroutine while it is running; this function is to allow long running tasks to yield time to the Hammerspoon application so other timers and scheduled events can occur without requiring the programmer to add code for an explicit resume.
         ---
         ---  * this function is added to the lua `coroutine` library as `coroutine.applicationYield` as an alternative name.
-        local resumeTimers = {}
+        local resumeTimers = {} -- luacheck: ignore
 
         hs.coroutineApplicationYield = function(delay)
             delay = delay or require"hs.math".minFloat
@@ -115,7 +115,7 @@ return {
             end
         end
 
-        coroutine.applicationYield = hs.coroutineApplicationYield
+        coroutine.applicationYield = hs.coroutineApplicationYield -- luacheck: ignore
 
         --- hs.docstrings_json_file
         --- Constant
