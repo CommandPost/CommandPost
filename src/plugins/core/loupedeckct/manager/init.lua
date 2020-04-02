@@ -140,14 +140,39 @@ local leftScreenDoubleTapTriggered = false
 -- Has the wheel screen been tapped once?
 local rightScreenDoubleTapTriggered = false
 
+-- tookFingerOffLeftScreen -> boolean
+-- Variable
+-- Took Finger Off Left Screen?
 local tookFingerOffLeftScreen = false
+
+-- tookFingerOffRightScreen -> boolean
+-- Variable
+-- Took Finger Off Right Screen?
 local tookFingerOffRightScreen = false
+
+-- tookFingerOffWheelScreen -> boolean
+-- Variable
+-- Took Finger Off Wheel Screen?
 local tookFingerOffWheelScreen = false
 
+-- lastWheelDoubleTapX -> number
+-- Variable
+-- Last Wheel Double Tap X Position
 local lastWheelDoubleTapX = nil
+
+-- lastWheelDoubleTapY -> number
+-- Variable
+-- Last Wheel Double Tap Y Position
 local lastWheelDoubleTapY = nil
 
+-- wheelDoubleTapXTolerance -> number
+-- Variable
+-- Last Wheel Double Tap X Tolerance
 local wheelDoubleTapXTolerance = 12
+
+-- wheelDoubleTapYTolerance -> number
+-- Variable
+-- Last Wheel Double Tap Y Tolerance
 local wheelDoubleTapYTolerance = 7
 
 --- plugins.core.loupedeckct.manager.connected <cp.prop: boolean>

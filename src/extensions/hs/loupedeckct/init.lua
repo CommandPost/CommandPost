@@ -1,6 +1,6 @@
 --- === hs.loupedeckct ===
 ---
---- Adds Loupedeck CT Support
+--- Adds Loupedeck CT Support.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
 

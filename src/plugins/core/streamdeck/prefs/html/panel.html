@@ -1,53 +1,15 @@
 <style>{(css/streamdeck.css)}</style>
 <script>
-	function setStreamDeckIcon(groupID, buttonID, encodedIcon) {
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = "<img src='" + encodedIcon + "'>";
-    	document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = "dropzone dropped";
-	}
-
-	function setStreamDeckActionTitle(groupID, buttonID, actionTitle) {
-		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value = actionTitle;
-	}
-
-	function setStreamDeckLabel(groupID, buttonID, label) {
-		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value = label;
-	}
-
-	function shiftStreamDeckButtons(groupID, buttonID, shiftButton) {
-		var originalPreview = document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML;
-		var originalIconClass = document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className;
-		var originalAction = document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value;
-		var originalLabel = document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value;
-
-		var newPreview = document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton + "_preview").innerHTML;
-		var newIconClass = document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton).className;
-		var newAction = document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_action").value;
-		var newLabel = document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_label").value;
-
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = newPreview;
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = newIconClass;
-		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_action").value = newAction;
-		document.getElementById("streamDeck_" + groupID + "_button" + buttonID + "_label").value = newLabel;
-
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton + "_preview").innerHTML = originalPreview;
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + shiftButton).className = originalIconClass;
-		document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_action").value = originalAction;
-		document.getElementById("streamDeck_" + groupID + "_button" + shiftButton + "_label").value = originalLabel;
-	}
-
-	function clearStreamDeckIcon(groupID, buttonID) {
-		document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = "icon";
-        document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID).className = "dropzone";
-    }
-
-	function pressStreamDeckDropZone(groupID, buttonID) {
+	function updateUI() {
 		try {
 			var result = {
 				id: "streamDeckPanelCallback",
 				params: {
-					type: "iconClicked",
-					groupID: groupID,
-					buttonID: buttonID,
+					type: "updateUI",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 				},
 			}
 			postMessage(result);
@@ -56,7 +18,105 @@
 		}
 	}
 
-	function changeStreamDeckDropZone(groupID, buttonID, element) {
+	function changeDeviceUnitApplicationBank() {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "changeDeviceUnitApplicationBank",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeBankLabel() {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "changeBankLabel",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					bankLabel: document.getElementById("bankLabel").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeLabel(button, label) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: "changeLabel",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					button: button,
+					label: label,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clickButton(callbackType, button) {
+		try {
+			var result = {
+				id: "streamDeckPanelCallback",
+				params: {
+					type: callbackType,
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					button: button,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeScrollAreaPosition() {
+		var element = document.getElementById("scrollArea")
+		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
+			try {
+				var result = {
+					id: "streamDeckPanelCallback",
+					params: {
+						type: "changeScrollAreaPosition",
+						device: document.getElementById("device").value,
+						unit: document.getElementById("unit").value,
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						position: element.scrollTop,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
+
+	function changeDropZone(button, element) {
 		var file = element.files[0];
 
 		element.classList.remove("hover");
@@ -86,7 +146,7 @@
 
 		reader.onload = function(e) {
 			var data = e.target.result;
-			document.getElementById("streamDeck_" + groupID + "_dropzone" + buttonID + "_preview").innerHTML = '<img src="' + data + '" />';
+			document.getElementById("dropzone" + button + "_preview").innerHTML = '<img src="' + data + '" />';
 
 			// Icon Callback:
 			try {
@@ -94,8 +154,11 @@
 					id: "streamDeckPanelCallback",
 					params: {
 						type: "updateIcon",
-						groupID: groupID,
-						buttonID: buttonID,
+						device: document.getElementById("device").value,
+						unit: document.getElementById("unit").value,
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						button: button,
 						icon: data,
 					},
 				}
@@ -107,14 +170,17 @@
 		};
 	}
 
-	function pressStreamDeckActionButton(groupID, buttonID) {
+	function changeIgnore() {
 		try {
 			var result = {
 				id: "streamDeckPanelCallback",
 				params: {
-					type: "updateAction",
-					groupID: groupID,
-					buttonID: buttonID,
+					type: "changeIgnore",
+					device: document.getElementById("device").value,
+					unit: document.getElementById("unit").value,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					ignore: document.getElementById("ignore").checked,
 				},
 			}
 			postMessage(result);
@@ -122,169 +188,231 @@
 			alertErrorMessage(err);
 		}
 	}
-
-	function pressStreamDeckClearButton(groupID, buttonID) {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "clearAction",
-					groupID: groupID,
-					buttonID: buttonID,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function pressStreamDeckUpButton(groupID, buttonID) {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "upButtonPressed",
-					groupID: groupID,
-					buttonID: buttonID,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function pressStreamDeckDownButton(groupID, buttonID) {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "downButtonPressed",
-					groupID: groupID,
-					buttonID: buttonID,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function changeStreamDeckLabel(groupID, buttonID, label) {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "updateLabel",
-					groupID: groupID,
-					buttonID: buttonID,
-					label: label,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function changeStreamDeckBankLabel(groupID, label) {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "updateBankLabel",
-					groupID: groupID,
-					label: label,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function saveScrollbarPosition(groupID, element) {
-		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
-			try {
-				var result = {
-					id: "streamDeckPanelCallback",
-					params: {
-						type: "scrollBarPosition",
-						groupID: groupID,
-						value: element.scrollTop,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-		}
-	}
-
-	function updateStreamDeckGroup() {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "updateGroup",
-					groupID: document.getElementById("streamDeckGroupSelect").value + document.getElementById("streamDeckSubGroupSelect").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
-	function updateStreamDeckBankLabel() {
-		try {
-			var result = {
-				id: "streamDeckPanelCallback",
-				params: {
-					type: "updateBankLabel",
-					groupID: document.getElementById("streamDeckGroupSelect").value + document.getElementById("streamDeckSubGroupSelect").value,
-					bankLabel: document.getElementById("streamDeckBankLabel").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
-
 </script>
-<table style="width: 100%; text-align: left; vertical-align: text-bottom; padding-top: 10px;">
+
+<table>
 	<tr>
-		<th style="width: 10%;"><span style="font-weight:bold; font-size:1.17em; padding-left: 20px;">{{ i18n("layoutEditor") }}</span></th>
-		<th style="width: 30%; text-align: right;"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
-			<select id="streamDeckGroupSelect" style="width: 150px;" onchange="updateStreamDeckGroup()">
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('importSettings')">{{ i18n("importSettings") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('exportSettings')">{{ i18n("exportSettings") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('openKeyCreator')">Open Key Creator</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('buyIcons')">Buy More Icons</a>
+		</th>
+	</tr>
+</table>
+
+<table style="text-align: left; vertical-align: text-bottom; padding-top: 10px;">
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("device") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="device" style="width: 150px;" onchange="changeDeviceUnitApplicationBank()">
+				<option value="Original" {{ lastDevice == "Original" and "selected" or ""}}>Stream Deck</option>
+				<option value="XL" {{ lastDevice == "XL" and "selected" or ""}}>Stream Deck XL</option>
+				<option value="Mini" {{ lastDevice == "Mini" and "selected" or ""}}>Stream Deck Mini</option>
+			</select>
+		</th>
+		<th style="width: 40px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("unit") }}:</span>
+		</th>
+		<th style="width: 150px;">
+			<select id="unit" style="width: 35px;" onchange="changeDeviceUnitApplicationBank()">
 				{%
-				for _, v in pairs(groupLabels) do
-					local selected = ""
-					local selectedGroup = defaultGroup:sub(1, -2)
-					if v.value == selectedGroup then selected = [[selected=""]] end
+				for i=1, numberOfDevices do
 				%}
-				<option {{selected}} value="{{v.value}}">{{v.label}}</option>
+				<option value="{{i}}" {{ lastUnit == tostring(i) and "selected" or ""}}>{{i}}</option>
 				{% end %}
 			</select>
-		</span></th>
-		<th style="width: 8%;"><span class="streamDeckGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
-			<select id="streamDeckSubGroupSelect" style="width: 50px;" onchange="updateStreamDeckGroup()">
+		</th>
+	</tr>
+</table>
+
+<table style="text-align: left; vertical-align: text-bottom;">
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="application" style="width: 150px;" onchange="changeDeviceUnitApplicationBank()">
+				<option value="All Applications">{{ i18n("allApplications") }}</option>
+				<option dttisabled>──────────</option>
 				{%
-				for i=1, numberOfSubGroups do
+				for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
 					local selected = ""
-					local selectedSubGroup = defaultGroup:sub(-1)
-					if tostring(i) == selectedSubGroup then selected = [[selected=""]] end
+					if lastApplication == id then
+						selected = [[selected=""]]
+					end
+				%}
+				<option {{selected}} value="{{id}}">{{label}}</option>
+				{% end %}
+				<option disabled>──────────</option>
+				{%
+				local atLeastOne = false
+				for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+					atLeastOne = true
+					local selected = ""
+					if lastApplication == id then
+						selected = [[selected=""]]
+					end
+				%}
+				<option {{selected}} value="{{id}}">{{label}}</option>
+				{%
+				end
+				if atLeastOne then
+				%}
+				<option disabled>──────────</option>
+				{%
+				end
+				%}
+				<option value="Add Application">{{ i18n("addApplication") }}</option>
+			</select>
+		</th>
+		<th style="width: 40px;"></th>
+		<th style="width: 150px;">
+			<span id="ignoreApp">
+				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("ignoreApplication") }}</span></label>
+	  		</span>
+		</th>
+	</tr>
+</table>
+
+<table style="text-align: left; vertical-align: text-bottom;">
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="bank" style="width: 35px;" onchange="changeDeviceUnitApplicationBank()">
+				{%
+				for i=1, numberOfBanks do
+					local selected = ""
+					if lastBank == tostring(i) then
+						selected = [[selected=""]]
+					end
 				%}
 				<option {{selected}} value="{{i}}">{{i}}</option>
 				{% end %}
 			</select>
-		</span></th>
-		<th style="width: 16%; ; text-align: right;"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
-			<input type="text" id="streamDeckBankLabel" class="streamDeckLabel" value="{{ bankLabel }}" onchange="updateStreamDeckBankLabel()" placeholder="{{ i18n("none") }}">
 		</th>
-		<th style="width: 1%;"></th>
+		<th style="width: 40px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<input type="text" id="bankLabel" class="streamDeckLabel" value="" onchange="changeBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
 	</tr>
 </table>
-{(html/controls.html, context)}
+
+<div id="streamDeckGroupControls" class="uiItem">
+	<div class="streamDeckGroup">
+		<table class="streamDeck">
+			<thead>
+				<tr>
+					<th class="sdRowIcon">{{ i18n("icon") }}</th>
+					<th class="sdRowAction">{{ i18n("action") }}</th>
+					<th class="sdRowActionButton"></th>
+					<th class="sdRowLabel">{{ i18n("buttonLabel") }}</th>
+					<th class="sdRowActionButton"></th>
+					<th class="sdRowOrder"></th>
+				</tr>
+			</thead>
+			<tbody onscroll="changeScrollAreaPosition()" id="scrollArea">
+				{%
+					for i=1, 32 do
+				%}
+				<tr id="row_{{ i }}">
+					<td class="sdRowIcon">
+						<div id="dropzone{{ i }}" class="dropzone" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
+							<div id="dropzone{{ i }}_preview" ondragover="this.classList.add('hover')" ondragleave="this.classList.remove('hover')">
+								icon
+							</div>
+							<input id="icon_{{ i }}" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeDropZone('{{ i }}', this)" onclick="clickButton('iconClicked', '{{ i }}')" />
+						</div>
+					</td>
+					<td class="sdRowAction">
+						<input type="text" id="action_{{ i }}" class="sdActionTextbox" value="{{ i18n("none") }}" disabled>
+					</td>
+					<td class="sdRowActionButton">
+						<a href="#" class="button sdActionButton" onclick="clickButton('select', '{{ i }}')">{{ i18n("select") }}</a>
+					</td>
+					<td class="sdRowLabel">
+						<input type="text" id="label_{{ i }}" class="sdButtonLabel" value="{{ i18n("none") }}" placeholder="{{ i18n("none") }}" onchange="changeLabel('{{ i }}', this.value)">
+					</td>
+					<td class="sdRowActionButton">
+						<a href="#" class="button sdActionButton" onclick="clickButton('clear', '{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+					<td class="sdRowOrder">
+						{% if i ~= 1  then %}
+						<a href="#" class="button sdActionButton" onclick="clickButton('up', '{{ i }}')">⬆</a>
+						{% end %}
+						<a id="down_{{i}}" href="#" class="button sdActionButton" onclick="clickButton('down', '{{ i }}')">⬇</a>
+					</td>
+				</tr>
+				{%
+					end
+				%}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetEverything')">{{ i18n("resetEverything") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetDevice')">{{ i18n("resetDevice") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetUnit')">{{ i18n("resetUnit") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetApplication')">{{ i18n("resetApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('resetBank')">{{ i18n("resetBank") }}</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyDevice')">{{ i18n("copyDevice") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyUnit')">{{ i18n("copyUnit") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyApplication')">{{ i18n("copyApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="clickButton('copyBank')">{{ i18n("copyBank") }}</a>
+		</th>
+	</tr>
+</table>
+
+<script>
+	// Update UI on initial load:
+	updateUI();
+</script>
