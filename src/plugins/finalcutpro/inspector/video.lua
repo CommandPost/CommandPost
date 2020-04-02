@@ -542,6 +542,44 @@ function plugin.init(deps)
         end)
 
     --------------------------------------------------------------------------------
+    -- Opacity:
+    --------------------------------------------------------------------------------
+    local shiftOpacityValue = 0
+    local updateShiftOpacity = deferred.new(0.01):action(function()
+        local opacity = fcp:inspector():video():compositing():opacity()
+        opacity:show()
+        local original = opacity:value()
+        opacity:value(original + shiftOpacityValue)
+        shiftOpacityValue = 0
+    end)
+    local shiftOpacity = function(value)
+        shiftOpacityValue = shiftOpacityValue + value
+        updateShiftOpacity()
+    end
+    for _, shiftAmount in pairs(shiftAmounts) do
+        fcpxCmds:add("shiftOpacityLeft" .. shiftAmount)
+            :titled(i18n("shiftOpacityLeft", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftOpacity(shiftAmount * -1) end)
+            :whenRepeated(function() shiftOpacity(shiftAmount * -1) end)
+
+        fcpxCmds:add("shiftOpacityRight" .. shiftAmount)
+            :titled(i18n("shiftOpacityRight", {amount=shiftAmount, count=shiftAmount}))
+            :groupedBy("timeline")
+            :whenPressed(function() shiftOpacity(shiftAmount) end)
+            :whenRepeated(function() shiftOpacity(shiftAmount) end)
+    end
+
+    fcpxCmds:add("resetOpacity")
+        :titled(i18n("reset") .. " " .. i18n("opacity"))
+        :groupedBy("timeline")
+        :whenPressed(function()
+            local opacity = fcp:inspector():video():compositing():opacity()
+            opacity:show()
+            opacity:value(100)
+        end)
+
+    --------------------------------------------------------------------------------
     -- Crop:
     --------------------------------------------------------------------------------
     local CROP_TYPES = fcp:inspector():video().CROP_TYPES
