@@ -52,6 +52,29 @@ function plugin.init(deps)
                 end
             end)
     end
+
+    --------------------------------------------------------------------------------
+    -- Filmstrip Mode:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+            :add("filmstripMode")
+            :titled(i18n("goToFilmstripModeInBrowser"))
+            :groupedBy("browser")
+            :whenActivated(function()
+                fcp.libraries.filmstrip():show()
+            end)
+
+    --------------------------------------------------------------------------------
+    -- List Mode:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+            :add("listMode")
+            :titled(i18n("goToListModeInBrowser"))
+            :groupedBy("browser")
+            :whenActivated(function()
+                fcp.libraries.list():show()
+            end)
+
 end
 
 return plugin
