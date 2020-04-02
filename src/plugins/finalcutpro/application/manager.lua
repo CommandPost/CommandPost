@@ -32,6 +32,7 @@ function plugin.init(deps)
         bundleID = fcp:bundleID(),
         displayName = "Final Cut Pro",
         searchConsoleToolbar = searchConsoleToolbar,
+        legacyGroupID = "fcpx",
     })
 end
 

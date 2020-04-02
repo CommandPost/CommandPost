@@ -25,10 +25,12 @@ mod._applications = {}
 ---   * displayName - The display name of the application
 ---   * bundleID - The bundle ID of the application
 ---   * searchConsoleToolbar - A table containing the Search Console Toolbar information
+---   * legacyGroupID - A string containing the legacy group ID (i.e. "fcpx")
 function mod.registerApplication(data)
     mod._applications[data.bundleID] = {
         displayName             = data.displayName,
         searchConsoleToolbar    = data.searchConsoleToolbar,
+        legacyGroupID           = data.legacyGroupID,
     }
 end
 

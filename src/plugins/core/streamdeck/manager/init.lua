@@ -4,566 +4,126 @@
 
 local require = require
 
-local log               = require "hs.logger".new "streamDeck"
+local log                   = require "hs.logger".new "streamDeck"
 
-local application       = require "hs.application"
-local canvas            = require "hs.canvas"
-local fnutils           = require "hs.fnutils"
-local image             = require "hs.image"
-local streamdeck        = require "hs.streamdeck"
+local application           = require "hs.application"
+local appWatcher            = require "hs.application.watcher"
+local canvas                = require "hs.canvas"
+local image                 = require "hs.image"
+local streamdeck            = require "hs.streamdeck"
 
-local dialog            = require "cp.dialog"
-local i18n              = require "cp.i18n"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local tools                 = require "cp.tools"
 
-local config            = require "cp.config"
-local json              = require "cp.json"
+local config                = require "cp.config"
+local json                  = require "cp.json"
 
-local copy              = fnutils.copy
+local displayNotification   = dialog.displayNotification
+local imageFromURL          = image.imageFromURL
+local spairs                = tools.spairs
 
 local mod = {}
 
---- plugins.core.streamdeck.manager.DEFAULT_GROUP -> string
+-- defaultLayoutPath -> string
+-- Variable
+-- Default Layout Path
+local defaultLayoutPath = config.basePath .. "/plugins/core/streamdeck/default/Default.cpStreamDeck"
+
+--- plugins.core.streamdeck.manager.defaultLayout -> table
+--- Variable
+--- Default Stream Deck Layout
+mod.defaultLayout = json.read(defaultLayoutPath)
+
+--- plugins.core.streamdeck.manager.numberOfDevices -> number
 --- Constant
---- The default group.
-mod.DEFAULT_GROUP = "global"
+--- Number of supported devices per Stream Deck model.
+mod.numberOfDevices = 9
 
--- FILE_NAME -> string
--- Constant
--- File name of settings file.
-local FILE_NAME = "Default.cpStreamDeck"
-
--- FOLDER_NAME -> string
--- Constant
--- Folder Name where settings file is contained.
-local FOLDER_NAME = "Stream Deck"
-
--- plugins.core.streamdeck.manager._groupStatus -> table
--- Variable
--- Group Statuses.
-mod._groupStatus = {}
-
--- plugins.core.streamdeck.manager._streamDeck -> table
--- Variable
--- Stream Deck Instances.
-mod._streamDeck = {}
-
--- plugins.core.touchbar.manager._currentSubGroup -> table
--- Variable
--- Current Stream Deck Sub Group Statuses.
-mod._currentSubGroup = config.prop("streamDeckCurrentSubGroup", {})
-
---- plugins.core.streamdeck.manager.maxItems -> number
+--- plugins.core.streamdeck.manager.numberOfBanks -> number
 --- Variable
---- The maximum number of Stream Deck items per group.
-mod.maxItems = 15
+--- The number of banks.
+mod.numberOfBanks = 9
 
---- plugins.core.streamdeck.manager.numberOfSubGroups -> number
---- Variable
---- The number of Sub Groups per Stream Deck Group.
-mod.numberOfSubGroups = 9
+--- plugins.core.streamdeck.manager.activeBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeBanks = config.prop("streamDeck.activeBanks", {
+    ["Mini"] = {},
+    ["Original"] = {},
+    ["XL"] = {},
+})
 
--- plugins.core.streamdeck.manager._items <cp.prop: table>
--- Field
--- Contains all the saved Stream Deck Buttons
-mod._items = json.prop(config.userConfigRootPath, FOLDER_NAME, FILE_NAME, {})
+-- plugins.core.streamdeck.manager.devices -> table
+-- Variable
+-- Table of Stream Deck Devices.
+mod.devices = {
+    ["Mini"] = {},
+    ["Original"] = {},
+    ["XL"] = {},
+}
 
---- plugins.core.streamdeck.manager.clear() -> none
+-- plugins.core.streamdeck.manager.deviceOrder -> table
+-- Variable
+-- Table of Stream Deck Device Orders.
+mod.deviceOrder = {
+    ["Mini"] = {},
+    ["Original"] = {},
+    ["XL"] = {},
+}
+
+-- plugins.core.streamdeck.manager.numberOfButtons -> table
+-- Variable
+-- Table of Stream Deck Device Button Count.
+mod.numberOfButtons = {
+    ["Mini"] = 6,
+    ["Original"] = 15,
+    ["XL"] = 32,
+}
+
+--- plugins.core.streamdeck.manager.items <cp.prop: table>
+--- Field
+--- Contains all the saved Stream Deck Buttons
+mod.items = json.prop(config.userConfigRootPath, "Stream Deck", "Default v2.cpStreamDeck", mod.defaultLayout)
+
+-- imageHolder -> hs.canvas
+-- Constant
+-- Canvas used to store the blackIcon.
+local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
+imageHolder[1] = {
+    frame = { h = 100, w = 100, x = 0, y = 0 },
+    fillColor = { hex = "#000000" },
+    type = "rectangle",
+}
+
+-- blackIcon -> hs.image
+-- Constant
+-- A black icon
+local blackIcon = imageHolder:imageFromCanvas()
+
+--- plugins.core.streamdeck.manager.getDeviceType(object) -> string
 --- Function
---- Clears the Stream Deck items.
+--- Translates a Stream Deck button layout into a device type string.
 ---
 --- Parameters:
----  * None
+---  * object - A `hs.streamdeck` object
 ---
 --- Returns:
----  * None
-function mod.clear()
-    mod._items({})
-    mod.update()
-end
-
---- plugins.core.streamdeck.manager.updateOrder(direction, button, group) -> none
---- Function
---- Shifts a Stream Deck button either up or down.
----
---- Parameters:
----  * direction - Either "up" or "down"
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * None
-function mod.updateOrder(direction, button, group)
-    local buttons = mod._items()
-
-    local shiftButton
-    if direction == "down" then
-        shiftButton = tostring(tonumber(button) + 1)
-    else
-        shiftButton = tostring(tonumber(button) - 1)
-    end
-
-    if not buttons[group] then
-        buttons[group] = {}
-    end
-    if not buttons[group][button] then
-        buttons[group][button] = {}
-    end
-    if not buttons[group][shiftButton] then
-        buttons[group][shiftButton] = {}
-    end
-
-    local original = copy(buttons[group][button])
-    local new = copy(buttons[group][shiftButton])
-
-    buttons[group][button] = new
-    buttons[group][shiftButton] = original
-
-    mod._items(buttons)
-    mod.update()
-end
-
---- plugins.core.streamdeck.manager.updateIcon(button, group, icon) -> none
---- Function
---- Updates a Stream Deck icon.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----  * icon - Icon Data as string
----
---- Returns:
----  * None
-function mod.updateIcon(button, group, icon)
-    local items = mod._items()
-
-    button = tostring(button)
-
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
-    items[group][button]["icon"] = icon
-
-    mod._items(items)
-    mod.update()
-end
-
---- plugins.core.streamdeck.manager.setBankLabel(group, label) -> none
---- Function
---- Sets a Stream Deck Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----  * label - Label as string
----
---- Returns:
----  * None
-function mod.setBankLabel(group, label)
-    local items = mod._items()
-
-    if not items[group] then
-        items[group] = {}
-    end
-    items[group]["bankLabel"] = label
-
-    mod._items(items)
-    mod.update()
-end
-
---- plugins.core.streamdeck.manager.getBankLabel(group) -> string
---- Function
---- Returns a specific Stream Deck Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getBankLabel(group)
-    local items = mod._items()
-    if items[group] and items[group] and items[group]["bankLabel"] then
-        return items[group]["bankLabel"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.updateAction(button, group, action) -> boolean
---- Function
---- Updates a Stream Deck action.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----  * actionTitle - Action Title as string
----  * handlerID - Handler ID as string
----  * action - Action as table
----
---- Returns:
----  * `true` if successfully updated, or `false` if a duplicate entry was found
-function mod.updateAction(button, group, actionTitle, handlerID, action)
-    local items = mod._items()
-
+---  * "Mini", "Original" or "XL"
+function mod.getDeviceType(object)
     --------------------------------------------------------------------------------
-    -- Check to make sure the widget isn't already in use:
+    -- Detect Device Type:
     --------------------------------------------------------------------------------
-    if handlerID and handlerID:sub(-8) == "_widgets" then
-        for _, _group in pairs(items) do
-            for _, _button in pairs(_group) do
-                if _button.action and _button.action.id and action.id and _button.action.id == action.id then
-                    --------------------------------------------------------------------------------
-                    -- Duplicate found, so abort:
-                    --------------------------------------------------------------------------------
-                    return false
-                end
-            end
-        end
-    end
-
-    button = tostring(button)
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
-    items[group][button]["actionTitle"] = actionTitle
-    items[group][button]["handlerID"] = handlerID
-    items[group][button]["action"] = action
-
-    mod._items(items)
-    mod.update()
-    return true
-end
-
---- plugins.core.streamdeck.manager.updateLabel(button, group, label) -> none
---- Function
---- Updates a Stream Deck label.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----  * label - Label as string
----
---- Returns:
----  * None
-function mod.updateLabel(button, group, label)
-    local items = mod._items()
-
-    button = tostring(button)
-
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
-    items[group][button]["label"] = label
-
-    mod._items(items)
-    mod.update()
-end
-
---- plugins.core.streamdeck.manager.getIcon(button, group) -> string
---- Function
---- Returns a specific Stream Deck Icon.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * Icon data as string
-function mod.getIcon(button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button]["icon"] then
-        return items[group][button]["icon"]
+    local columns, rows = object:buttonLayout()
+    if columns == 3 and rows == 2 then
+        return "Mini"
+    elseif columns == 5 and rows == 3 then
+        return "Original"
+    elseif columns == 8 and rows == 4 then
+        return "XL"
     else
-        return nil
+        log.ef("Unknown Stream Deck Model. Columns: %s, Rows: %s", columns, rows)
     end
-end
-
---- plugins.core.streamdeck.manager.getActionTitle(button, group) -> string
---- Function
---- Returns a specific Stream Deck Action Title.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * Action as string
-function mod.getActionTitle(button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button]["actionTitle"] then
-        return items[group][button]["actionTitle"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.getActionHandlerID(button, group) -> string
---- Function
---- Returns a specific Stream Deck Action Handler ID.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * Action as string
-function mod.getActionHandlerID(button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button]["handlerID"] then
-        return items[group][button]["handlerID"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.getAction(button, group) -> string
---- Function
---- Returns a specific Stream Deck Action.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * Action as string
-function mod.getAction(button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button]["action"] then
-        return items[group][button]["action"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.getLabel(button, group) -> string
---- Function
---- Returns a specific Stream Deck Label.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getLabel(button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button]["label"] then
-        return items[group][button]["label"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.getBankLabel(group) -> string
---- Function
---- Returns a specific Stream Deck Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getBankLabel(group)
-    local items = mod._items()
-    if items[group] and items[group] and items[group]["bankLabel"] then
-        return items[group]["bankLabel"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.streamdeck.manager.activeGroup() -> string
---- Function
---- Returns the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active group or `manager.defaultGroup` as a string.
-function mod.activeGroup()
-    local groupStatus = mod._groupStatus
-    for group, status in pairs(groupStatus) do
-        if status then
-            return group
-        end
-    end
-    return mod.DEFAULT_GROUP
-end
-
---- plugins.core.streamdeck.manager.activeSubGroup() -> string
---- Function
---- Returns the active sub-group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active sub group as string
-function mod.activeSubGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local result = 1
-    local activeGroup = mod.activeGroup()
-    if currentSubGroup[activeGroup] then
-        result = currentSubGroup[activeGroup]
-    end
-    return tostring(result)
-end
-
---- plugins.core.streamdeck.manager.gotoSubGroup() -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * id - The ID of the sub-group.
----
---- Returns:
----  * None
-function mod.gotoSubGroup(id)
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    currentSubGroup[activeGroup] = id
-    mod._currentSubGroup(currentSubGroup)
-end
-
---- plugins.core.streamdeck.manager.forceGroupChange(combinedGroupAndSubGroupID) -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
----
---- Returns:
----  * None
-function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
-    if combinedGroupAndSubGroupID then
-        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
-        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
-        if group and subGroup then
-            local currentSubGroup = mod._currentSubGroup()
-            currentSubGroup[group] = tonumber(subGroup)
-            mod._currentSubGroup(currentSubGroup)
-        end
-        if notify then
-            local bankLabel = mod.getBankLabel(combinedGroupAndSubGroupID)
-            if bankLabel then
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. bankLabel)
-            else
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
-            end
-        end
-    end
-end
-
---- plugins.core.streamdeck.manager.nextSubGroup() -> none
---- Function
---- Goes to the next sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.nextSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue < mod.numberOfSubGroups then
-        currentSubGroup[activeGroup] = currentSubGroupValue + 1
-    else
-        currentSubGroup[activeGroup] = 1
-    end
-    mod._currentSubGroup(currentSubGroup)
-end
-
---- plugins.core.streamdeck.manager.previousSubGroup() -> none
---- Function
---- Goes to the previous sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.previousSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue == 1 then
-        currentSubGroup[activeGroup] = mod.numberOfSubGroups
-    else
-        currentSubGroup[activeGroup] = currentSubGroupValue - 1
-    end
-    mod._currentSubGroup(currentSubGroup)
-end
-
---- plugins.core.streamdeck.manager.incrementActiveSubGroup() -> none
---- Function
---- Increments the active sub-group
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.incrementActiveSubGroup()
-    local currentSubGroup = mod._currentSubGroup()
-
-    local items = mod._items()
-    local activeGroup = mod.activeGroup()
-    local result = 0
-    local startingGroup = 1
-    if currentSubGroup[activeGroup] then
-        startingGroup = currentSubGroup[activeGroup]
-    end
-    for i=startingGroup + 1, mod.numberOfSubGroups do
-        if items[activeGroup .. tostring(i)] then
-            result  = i
-            break
-        end
-    end
-    if result == 0 then
-        local foundResult = false
-        for i=1, mod.numberOfSubGroups do
-            if items[activeGroup .. tostring(i)] then
-                result  = i
-                foundResult = true
-                break
-            end
-        end
-        if not foundResult then
-            result = 1
-        end
-    end
-    currentSubGroup[activeGroup] = result
-
-    -- Save to Preferences:
-    mod._currentSubGroup(currentSubGroup)
-
-    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("streamDeck") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. result)
-end
-
-
---- plugins.core.streamdeck.manager.groupStatus(groupID, status) -> none
---- Function
---- Updates a group's visibility status.
----
---- Parameters:
----  * groupID - the group you want to update as a string.
----  * status - the status of the group as a boolean.
----
---- Returns:
----  * None
-function mod.groupStatus(groupID, status)
-    mod._groupStatus[groupID] = status
-    mod.update()
 end
 
 --- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
@@ -577,23 +137,55 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(_, buttonID, pressed)
-    local activeGroup = mod.activeGroup()
-    local activeSubGroup = mod.activeSubGroup()
-    local activeGroupAndSubGroup = activeGroup .. activeSubGroup
+function mod.buttonCallback(object, buttonID, pressed)
     if pressed then
-        local handlerID = mod.getActionHandlerID(tostring(buttonID), activeGroupAndSubGroup)
-        local action = mod.getAction(tostring(buttonID), activeGroupAndSubGroup)
-        if handlerID and action then
-            local handler = mod._actionmanager.getHandler(handlerID)
-            handler:execute(action)
+        local serialNumber = object:serialNumber()
+        local deviceType = mod.getDeviceType(object)
+        local deviceID = mod.deviceOrder[deviceType][serialNumber]
+
+        local frontmostApplication = application.frontmostApplication()
+        local bundleID = frontmostApplication:bundleID()
+
+        local activeBanks = mod.activeBanks()
+        local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+
+        --------------------------------------------------------------------------------
+        -- Get layout from preferences file:
+        --------------------------------------------------------------------------------
+        local items = mod.items()
+        local deviceData = items[deviceType] and items[deviceType][deviceID]
+
+        --------------------------------------------------------------------------------
+        -- Revert to "All Applications" if no settings for frontmost app exist:
+        --------------------------------------------------------------------------------
+        if deviceData and not deviceData[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
+        if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+            bundleID = "All Applications"
+        end
+
+        buttonID = tostring(buttonID)
+
+        if items[deviceType] and items[deviceType][deviceID] and items[deviceType][deviceID][bundleID] and items[deviceType][deviceID][bundleID][bankID] and items[deviceType][deviceID][bundleID][bankID][buttonID] then
+            local handlerID = items[deviceType][deviceID][bundleID][bankID][buttonID]["handlerID"]
+            local action = items[deviceType][deviceID][bundleID][bankID][buttonID]["action"]
+            if handlerID and action then
+                local handler = mod._actionmanager.getHandler(handlerID)
+                handler:execute(action)
+            end
         end
     end
 end
 
 --- plugins.core.streamdeck.manager.update() -> none
 --- Function
---- Updates the Stream Deck.
+--- Updates the screens of all Stream Deck devices.
 ---
 --- Parameters:
 ---  * None
@@ -601,62 +193,99 @@ end
 --- Returns:
 ---  * None
 function mod.update()
+    for deviceType, devices in pairs(mod.devices) do
+        for _, device in pairs(devices) do
+            --------------------------------------------------------------------------------
+            -- Determine bundleID:
+            --------------------------------------------------------------------------------
+            local serialNumber = device:serialNumber()
 
-    if not mod._streamDeck then
-        log.df("Update called, but no Stream Deck available.")
-        return
-    end
+            local buttonCount = mod.numberOfButtons[deviceType]
+            local deviceID = mod.deviceOrder[deviceType][serialNumber]
 
-    --------------------------------------------------------------------------------
-    -- Reset Stream Deck:
-    --------------------------------------------------------------------------------
-    for _, streamDeck in pairs(mod._streamDeck) do
-        streamDeck:reset()
-    end
+            local frontmostApplication = application.frontmostApplication()
+            local bundleID = frontmostApplication:bundleID()
 
-    --------------------------------------------------------------------------------
-    -- Create new buttons and widgets:
-    --------------------------------------------------------------------------------
-    local items = mod._items()
+            --------------------------------------------------------------------------------
+            -- Get layout from preferences file:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+            local deviceData = items[deviceType] and items[deviceType][deviceID]
 
-    local activeGroup = mod.activeGroup()
-    local activeSubGroup = mod.activeSubGroup()
-    local activeGroupAndSubGroup = activeGroup .. activeSubGroup
+            --------------------------------------------------------------------------------
+            -- Revert to "All Applications" if no settings for frontmost app exist:
+            --------------------------------------------------------------------------------
+            if deviceData and not deviceData[bundleID] then
+                bundleID = "All Applications"
+            end
 
-    for groupID, group in pairs(items) do
-        if groupID == activeGroupAndSubGroup then
-            for buttonID, button in pairs(group) do
-                if button["action"] then
-                    local label         = button["label"] or nil
-                    local icon          = button["icon"] or nil
-                    for _, streamDeck in pairs(mod._streamDeck) do
-                        if icon then
-                            icon = image.imageFromURL(icon) --:setSize({w=36,h=36})
-                            streamDeck:setButtonImage(tonumber(buttonID), icon)
-                        elseif label then
-                            local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
-                            imageHolder[1] = {
-                                frame = { h = 100, w = 100, x = 0, y = 0 },
-                                fillColor = { alpha = 0.5, green = 1.0  },
-                                type = "rectangle",
-                            }
-                            imageHolder[2] = {
-                                frame = { h = 100, w = 100, x = 0, y = 40 },
-                                text = label,
-                                textAlignment = "center",
-                                textColor = { white = 1.0 },
-                                textSize = 20,
-                                type = "text",
-                            }
-                            local textIcon = imageHolder:imageFromCanvas()
-                            streamDeck:setButtonImage(tonumber(buttonID), textIcon)
-                        end
+            --------------------------------------------------------------------------------
+            -- Ignore if ignored:
+            --------------------------------------------------------------------------------
+            local ignoreData = items[deviceType] and items[deviceType]["1"] and items[deviceType]["1"][bundleID]
+            if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+                bundleID = "All Applications"
+            end
+
+            --------------------------------------------------------------------------------
+            -- Determine bankID:
+            --------------------------------------------------------------------------------
+            local activeBanks = mod.activeBanks()
+            local bankID = activeBanks and activeBanks[deviceType] and activeBanks[deviceType][deviceID] and activeBanks[deviceType][deviceID][bundleID] or "1"
+
+            --------------------------------------------------------------------------------
+            -- Get bank data:
+            --------------------------------------------------------------------------------
+            local bankData = deviceData and deviceData[bundleID] and deviceData[bundleID][bankID]
+
+            --------------------------------------------------------------------------------
+            -- Update every button:
+            --------------------------------------------------------------------------------
+            for buttonID=1, buttonCount do
+                local success = false
+                local buttonData = bankData and bankData[tostring(buttonID)]
+                if buttonData then
+                    local label = buttonData["label"]
+                    local icon = buttonData["icon"]
+                    if icon then
+                        --------------------------------------------------------------------------------
+                        -- Draw an icon:
+                        --------------------------------------------------------------------------------
+                        icon = imageFromURL(icon)
+                        device:setButtonImage(buttonID, icon)
+                        success = true
+                    elseif label then
+                        --------------------------------------------------------------------------------
+                        -- Draw a label:
+                        --------------------------------------------------------------------------------
+                        local c = canvas.new{x = 0, y = 0, h = 100, w = 100}
+                        c[1] = {
+                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            fillColor = { hex = "#000000"  },
+                            type = "rectangle",
+                        }
+                        c[2] = {
+                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            text = label,
+                            textAlignment = "left",
+                            textColor = { white = 1.0 },
+                            textSize = 20,
+                            type = "text",
+                        }
+                        local textIcon = c:imageFromCanvas()
+                        device:setButtonImage(buttonID, textIcon)
+                        success = true
                     end
+                end
+                if not success then
+                    --------------------------------------------------------------------------------
+                    -- Default to black if no label or icon supplied:
+                    --------------------------------------------------------------------------------
+                    device:setButtonImage(buttonID, blackIcon)
                 end
             end
         end
     end
-
 end
 
 --- plugins.core.streamdeck.manager.discoveryCallback(connected, object) -> none
@@ -674,35 +303,29 @@ function mod.discoveryCallback(connected, object)
     if serialNumber == nil then
         log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
     else
+        local deviceType = mod.getDeviceType(object)
         if connected then
-            mod._streamDeck[serialNumber] = object:buttonCallback(mod.buttonCallback)
+            --log.df("Stream Deck Connected: %s - %s", deviceType, serialNumber)
+            mod.devices[deviceType][serialNumber] = object:buttonCallback(mod.buttonCallback)
+
+            --------------------------------------------------------------------------------
+            -- Sort the devices alphabetically based on serial number:
+            --------------------------------------------------------------------------------
+            local count = 1
+            for sn, _ in spairs(mod.devices[deviceType], function(_,a,b) return a < b end) do
+                mod.deviceOrder[deviceType][sn] = tostring(count)
+                count = count + 1
+            end
+
             mod.update()
         else
-            if mod._streamDeck and mod._streamDeck[serialNumber] then
-                --log.df("Disconnected Stream Deck: %s", serialNumber)
-                mod._streamDeck[serialNumber] = nil
+            if mod.devices and mod.devices[deviceType][serialNumber] then
+                --log.df("Stream Deck Disconnected: %s - %s", deviceType, serialNumber)
+                mod.devices[deviceType][serialNumber] = nil
             else
-                log.ef("Disconnected Stream Deck wasn't previously registered.")
+                log.ef("Disconnected Stream Deck wasn't previously registered: %s - %s", deviceType, serialNumber)
             end
         end
-    end
-end
-
---- plugins.core.streamdeck.manager.appWatcherCallback(name, event, app) -> none
---- Function
---- Stream Deck App Watcher Callback
----
---- Parameters:
----  * name - A string containing the name of the application
----  * event - An event type
----  * app - An `hs.application` object representing the application, or `nil` if the application couldn't be found
----
---- Returns:
----  * None
-function mod.appWatcherCallback(_, _, app)
-    if app and app:bundleID() == "com.elgato.StreamDeck" then
-        log.ef("Stream Deck App is running. This must be closed to activate Stream Deck support in CommandPost.")
-        mod.enabled(false)
     end
 end
 
@@ -716,16 +339,19 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-    if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
-        mod._streamDeck = {}
-        mod._appWatcher = application.watcher.new(mod.appWatcherCallback):start()
-        streamdeck.init(mod.discoveryCallback)
-        return true
-    else
-        log.ef("Stream Deck App is already running. This must be closed to activate Stream Deck support in CommandPost.")
-        mod.enabled(false)
-        return false
-    end
+    --------------------------------------------------------------------------------
+    -- Setup watch to refresh the Stream Deck's when apps change focus:
+    --------------------------------------------------------------------------------
+    mod._appWatcher = appWatcher.new(function(_, event)
+        if event == appWatcher.activated then
+            mod.update()
+        end
+    end):start()
+
+    --------------------------------------------------------------------------------
+    -- Initialise Stream Deck support:
+    --------------------------------------------------------------------------------
+    streamdeck.init(mod.discoveryCallback)
 end
 
 --- plugins.core.streamdeck.manager.start() -> boolean
@@ -738,12 +364,18 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    if mod._streamDeck then
-        for i, _ in pairs(mod._streamDeck) do
-            mod._streamDeck[i] = nil
+    --------------------------------------------------------------------------------
+    -- Kill any devices:
+    --------------------------------------------------------------------------------
+    for deviceType, devices in pairs(mod.devices) do
+        for serialNumber, _ in pairs(devices) do
+            mod.devices[deviceType][serialNumber] = nil
         end
-        mod._streamDeck = nil
     end
+
+    --------------------------------------------------------------------------------
+    -- Kill the app watcher:
+    --------------------------------------------------------------------------------
     if mod._appWatcher then
         mod._appWatcher:stop()
         mod._appWatcher = nil
@@ -772,12 +404,143 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    mod._actionmanager = deps.actionmanager
+
+    --------------------------------------------------------------------------------
+    -- Setup action:
+    --------------------------------------------------------------------------------
     local global = deps.global
     global:add("cpStreamDeck")
-        :whenActivated(mod.toggle)
+        :whenActivated(function()
+            mod.enabled:toggle()
+        end)
         :groupedBy("commandPost")
 
-    mod._actionmanager = deps.actionmanager
+    --------------------------------------------------------------------------------
+    -- Setup Bank Actions:
+    --------------------------------------------------------------------------------
+    local actionmanager = deps.actionmanager
+    actionmanager.addHandler("global_streamDeckbanks")
+        :onChoices(function(choices)
+            for device, _ in pairs(mod.devices) do
+                for unit=1, mod.numberOfDevices do
+
+                    local deviceLabel = device
+                    if deviceLabel == "Original" then
+                        deviceLabel = ""
+                    else
+                        deviceLabel = deviceLabel .. " "
+                    end
+
+                    for bank=1, mod.numberOfBanks do
+                        choices:add("Stream Deck " .. deviceLabel .. i18n("bank") .. " " .. tostring(bank) .. " (Unit " .. unit .. ")")
+                            :subText(i18n("streamDeckBankDescription"))
+                            :params({
+                                action = "bank",
+                                device = device,
+                                unit = tostring(unit),
+                                bank = bank,
+                                id = device .. "_" .. unit .. "_" .. tostring(bank),
+                            })
+                            :id(device .. "_" .. unit .. "_" .. tostring(bank))
+                    end
+
+                    choices
+                        :add(i18n("next") .. " Stream Deck " .. deviceLabel .. i18n("bank") .. " (Unit " .. unit .. ")")
+                        :subText(i18n("streamDeckBankDescription"))
+                        :params({
+                            action = "next",
+                            device = device,
+                            unit = tostring(unit),
+                            id = device .. "_" .. unit .. "_nextBank"
+                        })
+                        :id(device .. "_" .. unit .. "_nextBank")
+
+                    choices
+                        :add(i18n("previous") .. " Stream Deck " .. deviceLabel .. i18n("bank") .. " (Unit " .. unit .. ")")
+                        :subText(i18n("streamDeckBankDescription"))
+                        :params({
+                            action = "previous",
+                            device = device,
+                            unit = tostring(unit),
+                            id = device .. "_" .. unit .. "_previousBank",
+                        })
+                        :id(device .. "_" .. unit .. "_previousBank")
+                end
+            end
+            return choices
+        end)
+        :onExecute(function(result)
+            if result then
+                local device = result.device
+                local unit = result.unit
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.items()
+
+                local unitData = items[device] and items[device]["1"] -- The ignore preference is stored on unit 1.
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if unitData and not unitData[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                local ignoreData = items[device] and items[device]["1"] and items[device]["1"][bundleID]
+                if ignoreData and ignoreData.ignore and ignoreData.ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                local activeBanks = mod.activeBanks()
+
+                if not activeBanks[device] then activeBanks[device] = {} end
+                if not activeBanks[device][unit] then activeBanks[device][unit] = {} end
+
+                local currentBank = activeBanks and activeBanks[device] and activeBanks[device][unit] and activeBanks[device][unit][bundleID] or "1"
+
+                if result.action == "bank" then
+                    activeBanks[device][unit][bundleID] = tostring(result.bank)
+                elseif result.action == "next" then
+                    if tonumber(currentBank) == mod.numberOfBanks then
+                        activeBanks[device][unit][bundleID] = "1"
+                    else
+                        activeBanks[device][unit][bundleID] = tostring(tonumber(currentBank) + 1)
+                    end
+                elseif result.action == "previous" then
+                    if tonumber(currentBank) == 1 then
+                        activeBanks[device][unit][bundleID] = tostring(mod.numberOfBanks)
+                    else
+                        activeBanks[device][unit][bundleID] = tostring(tonumber(currentBank) - 1)
+                    end
+                end
+
+                local newBank = activeBanks[device][unit][bundleID]
+
+                mod.activeBanks(activeBanks)
+
+                mod.update()
+
+                items = mod.items() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+
+                local deviceLabel = device
+                if deviceLabel == "Original" then
+                    deviceLabel = ""
+                else
+                    deviceLabel = deviceLabel .. " "
+                end
+
+                displayNotification("Stream Deck " .. deviceLabel .. "(Unit " .. unit .. ") " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "streamDeckBank" .. action.id end)
+
     return mod
 end
 

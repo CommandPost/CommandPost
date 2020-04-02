@@ -17,6 +17,7 @@ local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 
 local config                    = require "cp.config"
+local html                      = require "cp.web.html"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
@@ -170,10 +171,6 @@ local function generateContent()
 
     return renderPanel(context)
 end
-
-local translateGroupID = {
-    ["com.apple.FinalCut"] = "fcpx"
-}
 
 -- setItem(app, bank, controlType, id, valueA, valueB) -> none
 -- Function
@@ -501,11 +498,13 @@ local function loupedeckCTPanelCallback(id, params)
                 -- Get list of registered and custom apps:
                 --------------------------------------------------------------------------------
                 local apps = {}
+                local legacyGroupIDs = {}
                 local registeredApps = mod._appmanager.getApplications()
                 for bundleID, v in pairs(registeredApps) do
                     if v.displayName then
                         apps[bundleID] = v.displayName
                     end
+                    legacyGroupIDs[bundleID] = v.legacyGroupID or bundleID
                 end
                 local items = mod.items()
                 for bundleID, v in pairs(items) do
@@ -531,7 +530,7 @@ local function loupedeckCTPanelCallback(id, params)
                     local allowedHandlers = {}
                     for _,v in pairs(handlerIds) do
                         local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == translateGroupID[groupID] or handlerTable[1] == "global" then
+                        if handlerTable[1] == groupID or handlerTable[1] == legacyGroupIDs[groupID] or handlerTable[1] == "global" then
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
@@ -623,7 +622,10 @@ local function loupedeckCTPanelCallback(id, params)
 
             setItem(app, bank, controlType, bid, buttonType, {})
 
-            mod._manager.refresh()
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI(params)
         elseif callbackType == "updateApplicationAndBank" then
             local app = params["application"]
             local bank = params["bank"]
@@ -677,7 +679,7 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Update the UI:
                     --------------------------------------------------------------------------------
-                    updateUI(params)
+                    mod._manager.refresh()
                 end
             else
                 mod.lastApplication(app)
@@ -1433,7 +1435,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Import Settings:
             --------------------------------------------------------------------------------
-            local path = dialog.chooseFileOrFolder("Please select a file to import:", "~/Desktop", true, false, false, {"cpLoupedeckCT"})
+            local path = dialog.chooseFileOrFolder(i18n("pleaseSelectAFileToImport") .. ":", "~/Desktop", true, false, false, {"cpLoupedeckCT"})
             if path and path["1"] then
                 local data = json.read(path["1"])
                 if data then
@@ -1446,7 +1448,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Export Settings:
             --------------------------------------------------------------------------------
-            local path = dialog.chooseFileOrFolder("Please select a folder to export to:", "~/Desktop", false, true, false)
+            local path = dialog.chooseFileOrFolder(i18n("pleaseSelectAFolderToExportTo") .. ":", "~/Desktop", false, true, false)
             if path and path["1"] then
                 local items = mod.items()
                 json.write(path["1"] .. "/Loupedeck CT Settings " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckCT", items)
@@ -1503,21 +1505,10 @@ local function loupedeckCTPanelCallback(id, params)
 
             mod.items(items)
 
-            injectScript([[
-                changeValueByID('press_action', '');
-                changeValueByID('left_action', '');
-                changeValueByID('right_action', '');
-                changeValueByID('up_touch_action', '');
-                changeValueByID('down_touch_action', '');
-                changeValueByID('left_touch_action', '');
-                changeValueByID('right_touch_action', '');
-                changeValueByID('double_tap_touch_action', '');
-                changeValueByID('two_finger_touch_action', '');
-                changeValueByID('iconLabel', '');
-                changeColor('FFFFFF');
-                setIcon("");
-                changeImage("]] .. controlType .. bid .. [[", "]] .. insertImage("images/" .. controlType .. bid .. ".png") .. [[");
-            ]])
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI(params)
 
             mod._ctmanager.refresh()
         elseif callbackType == "resetEverything" then
@@ -1610,7 +1601,7 @@ local function loupedeckCTPanelCallback(id, params)
             local menu = {}
 
             table.insert(menu, {
-                title = "COPY ACTIVE APPLICATION TO:",
+                title = string.upper(i18n("copyActiveApplicationTo")) .. ":",
                 disabled = true,
             })
 
@@ -1677,7 +1668,7 @@ local function loupedeckCTPanelCallback(id, params)
             local menu = {}
 
             table.insert(menu, {
-                title = "COPY ACTIVE BANK TO:",
+                title = string.upper(i18n("copyActiveBankTo")) .. ":",
                 disabled = true,
             })
 
@@ -1786,13 +1777,17 @@ function mod.init(deps, env)
     mod._ctmanager.connected:watch(function(connected)
         if connected then
             mod._manager.injectScript([[
-                document.getElementById("yesLoupedeck").style.display = "block";
-                document.getElementById("noLoupedeck").style.display = "none";
+                if (document.getElementById("yesLoupedeck")) {
+                    document.getElementById("yesLoupedeck").style.display = "block";
+                    document.getElementById("noLoupedeck").style.display = "none";
+                }
             ]])
         else
             mod._manager.injectScript([[
-                document.getElementById("yesLoupedeck").style.display = "none";
-                document.getElementById("noLoupedeck").style.display = "block";
+                if (document.getElementById("yesLoupedeck")) {
+                    document.getElementById("yesLoupedeck").style.display = "none";
+                    document.getElementById("noLoupedeck").style.display = "block";
+                }
             ]])
         end
     end)
@@ -1806,10 +1801,11 @@ function mod.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 980,
+        height          = 990,
     })
         :addHeading(6, "Loupedeck CT")
-        :addCheckbox(7,
+
+        :addCheckbox(7.1,
             {
                 label       = i18n("enableLoupedeckCTSupport"),
                 checked     = mod.enabled,
@@ -1818,6 +1814,7 @@ function mod.init(deps, env)
                 end,
             }
         )
+
         :addCheckbox(8,
             {
                 label       = i18n("enableFlashDrive"),
@@ -1856,6 +1853,8 @@ function mod.init(deps, env)
                 end,
             }
         )
+
+        :addParagraph(10, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
 
         :addContent(11, generateContent, false)
 
