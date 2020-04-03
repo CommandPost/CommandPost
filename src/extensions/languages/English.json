@@ -596,6 +596,7 @@
         "diamond": "Diamond",
         "difference": "Difference",
         "difference9": "Diff",
+        "disableAll": "Disable All",
         "disabled": "Disabled",
         "display": "Display",
         "displayProxyOriginalIcon": "Display Proxy/Original Icon in Menubar",
@@ -624,6 +625,7 @@
         "emailResponse": "If you want an email response you will need to enter your email address:",
         "empty": "Empty",
         "enable": "Enable",
+        "enableAll": "Enable All",
         "enableAppleScriptSupport": "Enable AppleScript Support",
         "enableBackgroundRender": {
             "one": "Enable Background Render (%{count} sec)",

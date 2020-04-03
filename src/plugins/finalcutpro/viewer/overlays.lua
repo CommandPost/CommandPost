@@ -656,6 +656,9 @@ local function generateMenu()
         --------------------------------------------------------------------------------
         { title = string.upper(i18n("guides")) .. ":", disabled = true },
         { title = "  " .. i18n("draggableGuides"), menu = {
+            { title = i18n("enableAll"), fn = mod.enableAllDraggableGuides },
+            { title = i18n("disableAll"), fn = mod.disableAllDraggableGuides },
+            { title = "-", disabled = true },
             { title = i18n("guide") .. " 1", menu = {
                 { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(1), fn = function() mod.toggleDraggableGuide(1); mod.update(); end },
                 { title = i18n("reset"), fn = function() mod.resetDraggableGuide(1) end },
@@ -1474,6 +1477,42 @@ function mod.setCustomGuideColor(id)
     end)
     dialog.color.show()
     hs.focus()
+end
+
+--- plugins.finalcutpro.viewer.overlays.enableAllDraggableGuides() -> none
+--- Function
+--- Enable all draggable guides.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.enableAllDraggableGuides()
+    local draggableGuideEnabled = mod.draggableGuideEnabled()
+    for id=1, 5 do
+        draggableGuideEnabled[tostring(id)] = true
+    end
+    mod.draggableGuideEnabled(draggableGuideEnabled)
+    mod.update()
+end
+
+--- plugins.finalcutpro.viewer.overlays.disableAllDraggableGuides() -> none
+--- Function
+--- Disable all draggable guides.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.disableAllDraggableGuides()
+    local draggableGuideEnabled = mod.draggableGuideEnabled()
+    for id=1, 5 do
+        draggableGuideEnabled[tostring(id)] = false
+    end
+    mod.draggableGuideEnabled(draggableGuideEnabled)
+    mod.update()
 end
 
 --- plugins.finalcutpro.viewer.overlays.getDraggableGuideEnabled(id) -> none
