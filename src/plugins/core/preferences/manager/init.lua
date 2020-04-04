@@ -348,7 +348,7 @@ function mod.new()
         local prefs = {}
         prefs.developerExtrasEnabled = config.developerMode()
         mod._webview = webview.new(defaultRect, prefs, mod._controller)
-            :windowStyle({"titled", "closable", "nonactivating"})
+            :windowStyle({"titled", "closable"}) -- , "nonactivating"})
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)

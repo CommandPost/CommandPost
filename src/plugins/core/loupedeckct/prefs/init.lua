@@ -23,6 +23,7 @@ local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
+local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromURL              = image.imageFromURL
@@ -55,6 +56,11 @@ mod.lastIconPath = config.prop("loupedeckct.preferences.lastIconPath", mod.defau
 --- Field
 --- Icon History
 mod.iconHistory = json.prop(config.cachePath, "Loupedeck CT", "Icon History.cpCache", {})
+
+--- plugins.core.loupedeckct.prefs.pasteboard <cp.prop: table>
+--- Field
+--- Pasteboard
+mod.pasteboard = json.prop(config.cachePath, "Loupedeck CT", "Pasteboard.cpCache", {})
 
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -322,16 +328,28 @@ local function generateKnobImages(app, bank, bid)
     setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
 end
 
--- updateUI(params) -> none
+-- updateUI([params]) -> none
 -- Function
 -- Update the Preferences Panel UI.
 --
 -- Parameters:
---  * params - A table of parameters
+--  * params - A optional table of parameters
 --
 -- Returns:
 --  * None
 local function updateUI(params)
+
+    --------------------------------------------------------------------------------
+    -- If no parameters are supplied, just use whatever was last:
+    --------------------------------------------------------------------------------
+    if not params then
+        params = {
+            ["application"] = mod.lastApplication(),
+            ["bank"] = mod.lastBank(),
+            ["controlType"] = mod.lastControlType(),
+            ["id"] =  mod.lastID()
+        }
+    end
 
     local app = params["application"]
     local bank = params["bank"]
@@ -1707,6 +1725,147 @@ local function loupedeckCTPanelCallback(id, params)
                     fn = function() copyToBank(i .. "_RightFn") end
                 })
             end
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
+        elseif callbackType == "dropAndDrop" then
+            --------------------------------------------------------------------------------
+            -- Drag & Drop:
+            --------------------------------------------------------------------------------
+            local translateID = function(v)
+                local controlType
+                local bid
+                if string.sub(v, 1, 4) == "knob" then
+                    controlType = "knob"
+                    bid = string.sub(v, 5)
+                elseif string.sub(v, 1, 9) == "ledButton" then
+                    controlType = "ledButton"
+                    bid = string.sub(v, 10)
+                elseif string.sub(v, 1, 10) == "sideScreen" then
+                    controlType = "sideScreen"
+                    bid = string.sub(v, 11)
+                elseif string.sub(v, 1, 11) == "touchButton" then
+                    controlType = "touchButton"
+                    bid = string.sub(v, 12)
+                elseif string.sub(v, 1, 11) == "wheelScreen" then
+                    controlType = "wheelScreen"
+                    bid = string.sub(v, 12)
+                end
+                return controlType, bid
+            end
+
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local source = params["source"]
+            local destination = params["destination"]
+
+            local sourceControlType, sourceID = translateID(source)
+            local destinationControlType, destinationID = translateID(destination)
+
+            --------------------------------------------------------------------------------
+            -- You can only drag items of the same control type:
+            --------------------------------------------------------------------------------
+            if sourceControlType ~= destinationControlType then
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("youCannotDragItemsBetweenDifferentControlTypes"), i18n("youCannotDragItemsBetweenDifferentControlTypesDescription"), i18n("ok"), nil , "informational")
+                return
+            end
+
+            --------------------------------------------------------------------------------
+            -- Swap controls:
+            --------------------------------------------------------------------------------
+            local items = mod.items()
+
+            if not items[app] then items[app] = {} end
+            if not items[app][bank] then items[app][bank] = {} end
+            if not items[app][bank][sourceControlType] then items[app][bank][sourceControlType] = {} end
+            if not items[app][bank][sourceControlType][sourceID] then items[app][bank][sourceControlType][sourceID] = {} end
+
+            if not items[app][bank][destinationControlType] then items[app][bank][destinationControlType] = {} end
+            if not items[app][bank][destinationControlType][destinationID] then items[app][bank][destinationControlType][destinationID] = {} end
+
+            local a = copy(items[app][bank][destinationControlType][destinationID])
+            local b = copy(items[app][bank][sourceControlType][sourceID])
+
+            items[app][bank][sourceControlType][sourceID] = a
+            items[app][bank][destinationControlType][destinationID] = b
+
+            mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Generate Knob Images (if required):
+            --------------------------------------------------------------------------------
+            if sourceControlType == "knob" or destinationControlType == "knob" then
+                if sourceID == "1" or sourceID == "2" or sourceID == "3" or destinationID == "1" or destinationID == "2" or destinationID == "3" then
+                    generateKnobImages(app, bank, "1")
+                end
+                if sourceID == "4" or sourceID == "5" or sourceID == "6" or destinationID == "4" or destinationID == "5" or destinationID == "6" then
+                    generateKnobImages(app, bank, "4")
+                end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Update the UI:
+            --------------------------------------------------------------------------------
+            updateUI()
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
+        elseif callbackType == "showContextMenu" then
+            --------------------------------------------------------------------------------
+            -- Show Context Menu:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+
+            local items = mod.items()
+            local pasteboard = mod.pasteboard()
+
+            local pasteboardContents = pasteboard[controlType]
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = i18n("copy"),
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Copy:
+                    --------------------------------------------------------------------------------
+                    if items[app] and items[app][bank] and items[app][bank][controlType] and items[app][bank][controlType][bid] then
+                        pasteboard[controlType] = copy(items[app][bank][controlType][bid])
+                        mod.pasteboard(pasteboard)
+                    end
+                end
+            })
+
+            table.insert(menu, {
+                title = i18n("paste"),
+                disabled = not pasteboardContents,
+                fn = function()
+                    --------------------------------------------------------------------------------
+                    -- Paste:
+                    --------------------------------------------------------------------------------
+                    if not items[app] then items[app] = {} end
+                    if not items[app][bank] then items[app][bank] = {} end
+                    if not items[app][bank][controlType] then items[app][bank][controlType] = {} end
+
+                    items[app][bank][controlType][bid] = copy(pasteboardContents)
+
+                    mod.items(items)
+
+                    updateUI()
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the hardware:
+                    --------------------------------------------------------------------------------
+                    mod._ctmanager.refresh()
+                end
+            })
 
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()

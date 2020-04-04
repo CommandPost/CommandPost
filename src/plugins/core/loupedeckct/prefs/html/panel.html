@@ -84,7 +84,65 @@
 		}
 	}
 
-	function changeControl(label, controlType, id) {
+	function changeControl(element, label, controlType, id) {
+		if (!label) {
+			controlType = element.getAttribute("controlType");
+			id = element.getAttribute("controlID");
+			if (controlType == "touchButton") {
+				if (id == "1") { label = "Touch Button 1" }
+				if (id == "2") { label = "Touch Button 2" }
+				if (id == "3") { label = "Touch Button 3" }
+				if (id == "4") { label = "Touch Button 4" }
+				if (id == "5") { label = "Touch Button 5" }
+				if (id == "6") { label = "Touch Button 6" }
+				if (id == "7") { label = "Touch Button 7" }
+				if (id == "8") { label = "Touch Button 8" }
+				if (id == "9") { label = "Touch Button 9" }
+				if (id == "10") { label = "Touch Button 10" }
+				if (id == "11") { label = "Touch Button 11" }
+				if (id == "112") { label = "Touch Button 12" }
+			}
+			if (controlType == "knob") {
+				if (id == "1") { label = "Knob 1" }
+				if (id == "2") { label = "Knob 2" }
+				if (id == "3") { label = "Knob 3" }
+				if (id == "4") { label = "Knob 4" }
+				if (id == "5") { label = "Knob 5" }
+				if (id == "6") { label = "Knob 6" }
+			}
+			if (controlType == "jogWheel") {
+				label = "Job Wheel";
+			}
+			if (controlType == "wheelScreen") {
+				label = "Wheel Screen";
+			}
+			if (controlType == "ledButton") {
+				if (id == "7") { label = "1"}
+				if (id == "8") { label = "2"}
+				if (id == "9") { label = "3"}
+				if (id == "10") { label = "4"}
+				if (id == "11") { label = "5"}
+				if (id == "12") { label = "6"}
+				if (id == "13") { label = "7"}
+				if (id == "14") { label = "8"}
+				if (id == "15") { label = "O"}
+				if (id == "16") { label = "Undo"}
+				if (id == "17") { label = "Keyboard"}
+				if (id == "18") { label = "Return"}
+				if (id == "19") { label = "Save"}
+				if (id == "20") { label = "Fn (Left)"}
+				if (id == "21") { label = "A"}
+				if (id == "22") { label = "C"}
+				if (id == "23") { label = "Fn (Right)"}
+				if (id == "24") { label = "B"}
+				if (id == "25") { label = "D"}
+				if (id == "26") { label = "E"}
+			}
+		}
+
+		// -------------------------------------------------
+		// UPDATE LABEL UI:
+		// -------------------------------------------------
 		document.getElementById("label").innerHTML = label;
 
 		// -------------------------------------------------
@@ -548,226 +606,6 @@
 		};
 	}
 
-	function changeIconButtonDropZone(element, id) {
-		var file = element.files[0];
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-
-			// Change button icon:
-			element.parentElement.getElementsByTagName("img")[0].src = data;
-
-			// If this button is currently selected, change that too:
-			if (document.getElementById("controlType").value == "touchButton" && document.getElementById("id").value == id) {
-				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-				document.getElementById("iconDropZone").className = "dropzone dropped";
-			}
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "updateButtonIcon",
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						id: id,
-						icon: data,
-						controlType: document.getElementById("controlType").value,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-		};
-	}
-
-	function changeIconKnobDropZone(element, id) {
-		var file = element.files[0];
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-
-			// If this button is currently selected, change that too:
-			if (document.getElementById("controlType").value == "knob" && document.getElementById("id").value == id) {
-				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-				document.getElementById("iconDropZone").className = "dropzone dropped";
-			}
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "updateKnobIcon",
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						id: id,
-						icon: data,
-						controlType: document.getElementById("controlType").value,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-		};
-	}
-
-	function changeIconScreenDropZone(element, id) {
-		var file = element.files[0];
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-
-			// If this button is currently selected, change that too:
-			if (document.getElementById("controlType").value == "sideScreen" && document.getElementById("id").value == id) {
-				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-				document.getElementById("iconDropZone").className = "dropzone dropped";
-			}
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "updateSideScreenIcon",
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						id: id,
-						icon: data,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-		};
-	}
-
-	function changeIconWheelScreenDropZone(element, id) {
-		var file = element.files[0];
-
-		var match = element.accept.split(/, ?/).indexOf(file.type);
-
-		if (element.accept && match == -1) {
-			// File type dropped doesn't match the accepted list:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "badExtension",
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-			return;
-		};
-
-		var reader = new FileReader(file);
-		reader.readAsDataURL(file);
-
-		reader.onload = function(e) {
-			var data = e.target.result;
-
-			// Change wheel icon:
-			element.parentElement.getElementsByTagName("img")[0].src = data;
-
-			// If this button is currently selected, change that too:
-			if (document.getElementById("controlType").value == "wheelScreen" && document.getElementById("id").value == id) {
-				document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
-				document.getElementById("iconDropZone").className = "dropzone dropped";
-			}
-
-			// Icon Callback:
-			try {
-				var result = {
-					id: "loupedeckCTPanelCallback",
-					params: {
-						type: "updateWheelIcon",
-						application: document.getElementById("application").value,
-						bank: document.getElementById("bank").value,
-						id: id,
-						icon: data,
-					},
-				}
-				postMessage(result);
-			} catch(err) {
-				alertErrorMessage(err);
-			}
-
-		};
-	}
-
 	function importSettings() {
 		try {
 			var result = {
@@ -947,6 +785,163 @@
 		}
 	}
 
+	function showContextMenu(ev) {
+		ev.preventDefault();
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "showContextMenu",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: ev.srcElement.parentElement.getAttribute("controlType"),
+					id: ev.srcElement.parentElement.getAttribute("controlID"),
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+		return false;
+	}
+
+	function allowDrop(ev) {
+		ev.dataTransfer.dropEffect = "copy";
+		ev.preventDefault();
+	}
+
+	function drag(ev) {
+		console.log("drag:")
+		console.log(ev)
+		ev.dataTransfer.setData("text", ev.target.parentElement.getAttribute("controlType") + ev.target.parentElement.getAttribute("controlID"));
+	}
+
+	function drop(ev, controlType, id) {
+
+		ev.preventDefault();
+
+		var controlType = ev.toElement.parentElement.getAttribute("controlType");
+		var id = ev.toElement.parentElement.getAttribute("controlID");
+
+		var dt = ev.dataTransfer
+	    var files = dt.files
+		var file = files[0]
+
+	    if (file) {
+	    	if (["image/png", "image/gif", "image/jpeg", "image/tiff"].indexOf(file.type) >= 0) {
+				var reader = new FileReader(file);
+				reader.readAsDataURL(file);
+
+				reader.onload = function(e) {
+					var data = e.target.result;
+
+					var callbackType
+					if (controlType == "knob") {
+						callbackType = "updateKnobIcon";
+					}
+					if (controlType == "touchButton") {
+						callbackType = "updateButtonIcon";
+					}
+					if (controlType == "sideScreen") {
+						callbackType = "updateSideScreenIcon";
+					}
+					if (controlType == "wheelScreen") {
+						callbackType = "updateWheelIcon";
+					}
+
+					// If this button is currently selected, change that too:
+					if (controlType == "knob") {
+						if (document.getElementById("controlType").value == "knob" && document.getElementById("id").value == id) {
+							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+							document.getElementById("iconDropZone").className = "dropzone dropped";
+						}
+					}
+
+					if (controlType == "touchButton") {
+						// Change button icon:
+						ev.toElement.parentElement.getElementsByTagName("img")[0].src = data;
+
+						// If this button is currently selected, change that too:
+						if (document.getElementById("controlType").value == "touchButton" && document.getElementById("id").value == id) {
+							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+							document.getElementById("iconDropZone").className = "dropzone dropped";
+						}
+					}
+
+					if (controlType == "sideScreen") {
+						// If this button is currently selected, change that too:
+						if (document.getElementById("controlType").value == "sideScreen" && document.getElementById("id").value == id) {
+							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+							document.getElementById("iconDropZone").className = "dropzone dropped";
+						}
+					}
+
+					if (controlType == "wheelScreen") {
+						// Change wheel icon:
+						ev.toElement.parentElement.getElementsByTagName("img")[0].src = data;
+
+						// If this button is currently selected, change that too:
+						if (document.getElementById("controlType").value == "wheelScreen" && document.getElementById("id").value == id) {
+							document.getElementById("iconDropZonePreview").innerHTML = '<img src="' + data + '" />';
+							document.getElementById("iconDropZone").className = "dropzone dropped";
+						}
+					}
+
+					// Icon Callback:
+					try {
+						var result = {
+							id: "loupedeckCTPanelCallback",
+							params: {
+								type: callbackType,
+								application: document.getElementById("application").value,
+								bank: document.getElementById("bank").value,
+								id: id,
+								icon: data,
+								controlType: controlType,
+							},
+						}
+						postMessage(result);
+					} catch(err) {
+						alertErrorMessage(err);
+					}
+
+				};
+
+
+	    	} else {
+				// File type dropped doesn't match the accepted list:
+				try {
+					var result = {
+						id: "loupedeckCTPanelCallback",
+						params: {
+							type: "badExtension",
+						},
+					}
+					postMessage(result);
+				} catch(err) {
+					alertErrorMessage(err);
+				}
+				return;
+	    	}
+	    }
+	    else {
+			try {
+				var result = {
+					id: "loupedeckCTPanelCallback",
+					params: {
+						type: "dropAndDrop",
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						source: ev.dataTransfer.getData("text"),
+						destination: controlType + id,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+		}
+	}
 </script>
 <table>
 	<thead>
@@ -1052,161 +1047,140 @@
 		<tr>
 			<th width="447px">
 				<div id="loupedeckCT">
-					<div id="knob1">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '1')" onclick="changeControl('Knob 1', 'knob', '1');" />
-						<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" onclick="changeControl('Knob 1', 'knob', '1');" />
+					<div controlType="knob" controlID="1" id="knob1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" />
 					</div>
-					<div id="knob4">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '4')" onclick="changeControl('Knob 4', 'knob', '4');" />
-						<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" onclick="changeControl('Knob 4', 'knob', '4');" />
+					<div controlType="knob" controlID="4" id="knob4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob4.png') }}" width="39" height="39" />
 					</div>
-					<div id="sideScreen1">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconScreenDropZone(this, '1')" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
-						<img src="{{ insertImage('images/sideScreen1.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Left Screen', 'sideScreen', '1');" />
+					<div controlType="sideScreen" controlID="1" id="sideScreen1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/sideScreen1.png') }}" width="24" height="131" style="object-fit: cover;" />
 					</div>
-					<div id="touchButton1">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '1')" onclick="changeControl('Button 1', 'touchButton', '1');" />
-						<img src="{{ insertImage('images/touchButton1.png') }}" width="40" height="40" onclick="changeControl('Button 1', 'touchButton', '1');" />
+					<div controlType="touchButton" controlID="1" id="touchButton1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton1.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton2">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '2')" onclick="changeControl('Button 2', 'touchButton', '2');" />
-						<img src="{{ insertImage('images/touchButton2.png') }}" width="40" height="40" onclick="changeControl('Button 2', 'touchButton', '2');" />
+					<div controlType="touchButton" controlID="2" id="touchButton2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton2.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton3">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '3')" onclick="changeControl('Button 3', 'touchButton', '3');" />
-						<img src="{{ insertImage('images/touchButton3.png') }}" width="40" height="40" onclick="changeControl('Button 3', 'touchButton', '3');" />
+					<div controlType="touchButton" controlID="3" id="touchButton3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton3.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton4">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '4')" onclick="changeControl('Button 4', 'touchButton', '4');" />
-						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" onclick="changeControl('Button 4', 'touchButton', '4');" />
+					<div controlType="touchButton" controlID="4" id="touchButton4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton4.png') }}" width="40" height="40" />
 					</div>
-					<div id="sideScreen2">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconScreenDropZone(this, '2')" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
-						<img src="{{ insertImage('images/sideScreen2.png') }}" width="24" height="131" style="object-fit: cover;" onclick="changeControl('Right Screen', 'sideScreen', '2');" />
+					<div controlType="sideScreen" controlID="2" id="sideScreen2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/sideScreen2.png') }}" width="24" height="131" style="object-fit: cover;" />
 					</div>
-					<div id="touchButton5">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '5')" onclick="changeControl('Button 5', 'touchButton', '5');" />
-						<img src="{{ insertImage('images/touchButton5.png') }}" width="40" height="40" onclick="changeControl('Button 5', 'touchButton', '5');" />
+					<div controlType="touchButton" controlID="5" id="touchButton5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton5.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton6">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '6')" onclick="changeControl('Button 6', 'touchButton', '6');" />
-						<img src="{{ insertImage('images/touchButton6.png') }}" width="40" height="40" onclick="changeControl('Button 6', 'touchButton', '6');" />
+					<div controlType="touchButton" controlID="6" id="touchButton6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton6.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton7">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '7')" onclick="changeControl('Button 7', 'touchButton', '7');" />
-						<img src="{{ insertImage('images/touchButton7.png') }}" width="40" height="40" onclick="changeControl('Button 7', 'touchButton', '7');" />
+					<div controlType="touchButton" controlID="7" id="touchButton7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton7.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton8">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '8')" onclick="changeControl('Button 8', 'touchButton', '8');" />
-						<img src="{{ insertImage('images/touchButton8.png') }}" width="40" height="40" onclick="changeControl('Button 8', 'touchButton', '8');" />
+					<div controlType="touchButton" controlID="8" id="touchButton8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton8.png') }}" width="40" height="40" />
 					</div>
-					<div id="knob2">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '2')" onclick="changeControl('Knob 2', 'knob', '2');" />
-						<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" onclick="changeControl('Knob 2', 'knob', '2');" />
+					<div controlType="knob" controlID="2" id="knob2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob2.png') }}" width="39" height="38" />
 					</div>
-					<div id="knob5">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '5')" onclick="changeControl('Knob 5', 'knob', '5');" />
-						<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" onclick="changeControl('Knob 5', 'knob', '5');" />
+					<div controlType="knob" controlID="5" id="knob5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob5.png') }}" width="39" height="38" />
 					</div>
-					<div id="touchButton9">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '9')" onclick="changeControl('Button 9', 'touchButton', '9');" />
-						<img src="{{ insertImage('images/touchButton9.png') }}" width="40" height="40" onclick="changeControl('Button 9', 'touchButton', '9');" />
+					<div controlType="touchButton" controlID="9" id="touchButton9" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton9.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton10">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '10')" onclick="changeControl('Button 10', 'touchButton', '10');" />
-						<img src="{{ insertImage('images/touchButton10.png') }}" width="40" height="40" onclick="changeControl('Button 10', 'touchButton', '10');" />
+					<div controlType="touchButton" controlID="10" id="touchButton10" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton10.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton11">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '11')" onclick="changeControl('Button 11', 'touchButton', '11');" />
-						<img src="{{ insertImage('images/touchButton11.png') }}" width="40" height="40" onclick="changeControl('Button 11', 'touchButton', '11');" />
+					<div controlType="touchButton" controlID="11" id="touchButton11" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton11.png') }}" width="40" height="40" />
 					</div>
-					<div id="touchButton12">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconButtonDropZone(this, '12')" onclick="changeControl('Button 12', 'touchButton', '12');" />
-						<img src="{{ insertImage('images/touchButton12.png') }}" width="40" height="40" onclick="changeControl('Button 12', 'touchButton', '12');" />
+					<div controlType="touchButton" controlID="12" id="touchButton12" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/touchButton12.png') }}" width="40" height="40" />
 					</div>
-					<div id="knob3">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '3')" onclick="changeControl('Knob 3', 'knob', '3');" />
-						<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" onclick="changeControl('Knob 3', 'knob', '3');" />
+					<div controlType="knob" controlID="3" id="knob3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob3.png') }}" width="39" height="39" />
 					</div>
-					<div id="knob6">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconKnobDropZone(this, '6')" onclick="changeControl('Knob 6', 'knob', '6');" />
-						<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" onclick="changeControl('Knob 6', 'knob', '6');"/>
+					<div controlType="knob" controlID="6" id="knob6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/knob6.png') }}" width="39" height="39" />
 					</div>
-					<div id="ledButton1">
-						<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" onclick="changeControl('1', 'ledButton', '7');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="7" id="ledButton1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton1.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton2">
-						<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" onclick="changeControl('2', 'ledButton', '8');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="8" id="ledButton2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton2.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton3">
-						<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" onclick="changeControl('3', 'ledButton', '9');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="9" id="ledButton3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton3.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton4">
-						<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" onclick="changeControl('4', 'ledButton', '10');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="10" id="ledButton4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton4.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton5">
-						<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" onclick="changeControl('5', 'ledButton', '11');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="11" id="ledButton5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton5.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton6">
-						<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" onclick="changeControl('6', 'ledButton', '12');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="12" id="ledButton6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton6.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton7">
-						<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" onclick="changeControl('7', 'ledButton', '13');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="13" id="ledButton7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton7.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButton8">
-						<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" onclick="changeControl('8', 'ledButton', '14');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="14" id="ledButton8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButton8.png') }}" width="33" height="33" />
 					</div>
-					<div id="ledButtonO">
-						<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" onclick="changeControl('O', 'ledButton', '15');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="15" id="ledButtonO" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonO.png') }}" width="46" height="46" />
 					</div>
-					<div id="ledButtonReturn">
-						<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" onclick="changeControl('Return', 'ledButton', '18');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="18" id="ledButtonReturn" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonReturn.png') }}" width="45" height="46" />
 					</div>
-					<div id="ledButtonA">
-						<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" onclick="changeControl('A', 'ledButton', '21');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="21" id="ledButtonA" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonA.png') }}" width="47" height="46" />
 					</div>
-					<div id="ledButtonB">
-						<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" onclick="changeControl('B', 'ledButton', '24');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="24" id="ledButtonB" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonB.png') }}" width="46" height="46" />
 					</div>
-					<div id="jogWheelTop">
-						<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
+					<div controlType="jogWheel" controlID="1" id="jogWheelTop" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)" draggable="false">
+						<img src="{{ insertImage('images/jogWheelTop.png') }}" width="135" height="27" draggable="false" />
 					</div>
-					<div id="jogWheelLeft">
-						<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
+					<div controlType="jogWheel" controlID="1" id="jogWheelLeft" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)" draggable="false">
+						<img src="{{ insertImage('images/jogWheelLeft.png') }}" width="28" height="107" draggable="false" />
 					</div>
-					<div id="wheelScreen1">
-						<input class="touchButtonDropZone" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" onchange="changeIconWheelScreenDropZone(this, '1')" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
-						<img src="{{ insertImage('images/wheelScreen1.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" onclick="changeControl('Wheel Screen', 'wheelScreen', '1');" />
+					<div controlType="wheelScreen" controlID="1" id="wheelScreen1" draggable="false" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/wheelScreen1.png') }}" width="81" height="82" border="0" style="border-radius: 50%;" draggable="false" />
 					</div>
-					<div id="jogWheelRight">
-						<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
+					<div controlType="jogWheel" controlID="1" id="jogWheelRight" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)" draggable="false">
+						<img src="{{ insertImage('images/jogWheelRight.png') }}" width="26" height="107" draggable="false" />
 					</div>
-					<div id="ledButtonUndo">
-						<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" onclick="changeControl('Undo', 'ledButton', '16');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="16" id="ledButtonUndo" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonUndo.png') }}" width="46" height="46" />
 					</div>
-					<div id="ledButtonSave">
-						<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" onclick="changeControl('Save', 'ledButton', '19');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="19" id="ledButtonSave" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonSave.png') }}" width="45" height="46" />
 					</div>
-					<div id="ledButtonC">
-						<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" onclick="changeControl('C', 'ledButton', '22');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="22" id="ledButtonC" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonC.png') }}" width="47" height="46" />
 					</div>
-					<div id="ledButtonD">
-						<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" onclick="changeControl('D', 'ledButton', '25');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="25" id="ledButtonD" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonD.png') }}" width="46" height="46" />
 					</div>
-					<div id="ledButtonKeyboard">
-						<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" onclick="changeControl('Keyboard', 'ledButton', '17');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="17" id="ledButtonKeyboard" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonKeyboard.png') }}" width="46" height="46" />
 					</div>
-					<div id="ledButtonLeftFn">
-						<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" onclick="changeControl('Fn (Left)', 'ledButton', '20');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="20" id="ledButtonLeftFn" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonLeftFn.png') }}" width="45" height="46" />
 					</div>
-					<div id="ledButtonRightFn">
-						<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" onclick="changeControl('Fn (Left)', 'ledButton', '23');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="23" id="ledButtonRightFn" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonRightFn.png') }}" width="47" height="46" />
 					</div>
-					<div id="ledButtonE">
-						<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" onclick="changeControl('E', 'ledButton', '26');" style="cursor: pointer;" />
+					<div controlType="ledButton" controlID="26" id="ledButtonE" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/ledButtonE.png') }}" width="46" height="46" />
 					</div>
-					<div id="jogWheelBottom">
-						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" onclick="changeControl('Jog Wheel', 'jogWheel', '1');" style="cursor: pointer;" />
+					<div controlType="jogWheel" controlID="1" id="jogWheelBottom" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)" draggable="false">
+						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" draggable="false" />
 					</div>
 				</div>
 			</th>
@@ -1423,5 +1397,5 @@
 
 <script>
 	// Update UI on initial load:
-	changeControl("{{ lastSelectedControl }}", "{{ lastControlType }}", "{{ lastID }}");
+	changeControl("", "{{ lastSelectedControl }}", "{{ lastControlType }}", "{{ lastID }}");
 </script>
