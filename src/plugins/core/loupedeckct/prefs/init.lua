@@ -62,10 +62,20 @@ mod.iconHistory = json.prop(config.cachePath, "Loupedeck CT", "Icon History.cpCa
 --- Pasteboard
 mod.pasteboard = json.prop(config.cachePath, "Loupedeck CT", "Pasteboard.cpCache", {})
 
+--- plugins.core.loupedeckct.prefs.lastExportPath <cp.prop: string>
+--- Field
+--- Last Export path.
+mod.lastExportPath = config.prop("loupedeckct.preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
+
+--- plugins.core.loupedeckct.prefs.lastImportPath <cp.prop: string>
+--- Field
+--- Last Import path.
+mod.lastImportPath = config.prop("loupedeckct.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
+
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
 --- Last Application used in the Preferences Panel.
-mod.lastApplication = config.prop("loupedeckct.preferences.lastApplication", "org.latenitefilms.CommandPost")
+mod.lastApplication = config.prop("loupedeckct.preferences.lastApplication", "All Applications")
 
 --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -1448,29 +1458,127 @@ local function loupedeckCTPanelCallback(id, params)
             end
 
             mod._ctmanager.refresh()
-
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:
             --------------------------------------------------------------------------------
-            local path = dialog.chooseFileOrFolder(i18n("pleaseSelectAFileToImport") .. ":", "~/Desktop", true, false, false, {"cpLoupedeckCT"})
-            if path and path["1"] then
-                local data = json.read(path["1"])
-                if data then
-                    mod.items(data)
-                    mod._manager.refresh()
-                    mod._ctmanager.refresh()
+            local importSettings = function(action)
+
+                local lastImportPath = mod.lastImportPath()
+                if not doesDirectoryExist(lastImportPath) then
+                    lastImportPath = "~/Desktop"
+                    mod.lastImportPath(lastImportPath)
+                end
+
+                local path = chooseFileOrFolder(i18n("pleaseSelectAFileToImport") .. ":", lastImportPath, true, false, false, {"cpLoupedeckCT"})
+                if path and path["1"] then
+                    local data = json.read(path["1"])
+                    if data then
+                        if action == "replace" then
+                            mod.items(data)
+                        elseif action == "merge" then
+                            local original = mod.items()
+                            local combined = mergeTable(original, data)
+                            mod.items(combined)
+                        end
+                        mod._manager.refresh()
+                    end
                 end
             end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = string.upper(i18n("importSettings")) .. ":",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = i18n("replace"),
+                fn = function() importSettings("replace") end,
+            })
+
+            table.insert(menu, {
+                title = i18n("merge"),
+                fn = function() importSettings("merge") end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
         elseif callbackType == "exportSettings" then
             --------------------------------------------------------------------------------
             -- Export Settings:
             --------------------------------------------------------------------------------
-            local path = dialog.chooseFileOrFolder(i18n("pleaseSelectAFolderToExportTo") .. ":", "~/Desktop", false, true, false)
-            if path and path["1"] then
+            local app = params["application"]
+            local bank = params["bank"]
+
+            local exportSettings = function(what)
                 local items = mod.items()
-                json.write(path["1"] .. "/Loupedeck CT Settings " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckCT", items)
+                local data = {}
+
+                local filename = ""
+
+                if what == "Everything" then
+                    data = copy(items)
+                    filename = "Everything"
+                elseif what == "Application" then
+                    data[app] = copy(items[app])
+                    filename = app
+                elseif what == "Bank" then
+                    data[app] = {}
+                    data[app][bank] = copy(items[app][bank])
+                    filename = "Bank " .. bank
+                end
+
+                local lastExportPath = mod.lastExportPath()
+                if not doesDirectoryExist(lastExportPath) then
+                    lastExportPath = "~/Desktop"
+                    mod.lastExportPath(lastExportPath)
+                end
+
+                local path = chooseFileOrFolder(i18n("pleaseSelectAFolderToExportTo") .. ":", lastExportPath, false, true, false)
+                if path and path["1"] then
+                    mod.lastExportPath(path["1"])
+                    json.write(path["1"] .. "/" .. filename .. " - " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckCT", data)
+                end
             end
+
+            local menu = {}
+
+            table.insert(menu, {
+                title = string.upper(i18n("exportSettings")) .. ":",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = "-",
+                disabled = true,
+            })
+
+            table.insert(menu, {
+                title = i18n("everything"),
+                fn = function() exportSettings("Everything") end,
+            })
+
+            table.insert(menu, {
+                title = i18n("currentApplication"),
+                fn = function() exportSettings("Application") end,
+            })
+
+            table.insert(menu, {
+                title = i18n("currentBank"),
+                fn = function() exportSettings("Bank") end,
+            })
+
+            local popup = menubar.new()
+            popup:setMenu(menu):removeFromMenuBar()
+            popup:popupMenu(mouse.getAbsolutePosition(), true)
         elseif callbackType == "copyControlToAllBanks" then
             --------------------------------------------------------------------------------
             -- Copy Control to All Banks:
@@ -1934,18 +2042,18 @@ function mod.init(deps, env)
     -- Watch for Loupedeck CT connections and disconnects:
     --------------------------------------------------------------------------------
     mod._ctmanager.connected:watch(function(connected)
-        if connected then
+        if mod.loadSettingsFromDevice() and not connected then
             mod._manager.injectScript([[
                 if (document.getElementById("yesLoupedeck")) {
-                    document.getElementById("yesLoupedeck").style.display = "block";
-                    document.getElementById("noLoupedeck").style.display = "none";
+                    document.getElementById("yesLoupedeck").style.display = "none";
+                    document.getElementById("noLoupedeck").style.display = "block";
                 }
             ]])
         else
             mod._manager.injectScript([[
                 if (document.getElementById("yesLoupedeck")) {
-                    document.getElementById("yesLoupedeck").style.display = "none";
-                    document.getElementById("noLoupedeck").style.display = "block";
+                    document.getElementById("yesLoupedeck").style.display = "block";
+                    document.getElementById("noLoupedeck").style.display = "none";
                 }
             ]])
         end
