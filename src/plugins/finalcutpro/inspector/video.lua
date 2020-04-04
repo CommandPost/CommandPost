@@ -558,13 +558,13 @@ function plugin.init(deps)
     end
     for _, shiftAmount in pairs(shiftAmounts) do
         fcpxCmds:add("shiftOpacityLeft" .. shiftAmount)
-            :titled(i18n("shiftOpacityLeft", {amount=shiftAmount, count=shiftAmount}))
+            :titled(i18n("decreaseOpacity", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftOpacity(shiftAmount * -1) end)
             :whenRepeated(function() shiftOpacity(shiftAmount * -1) end)
 
         fcpxCmds:add("shiftOpacityRight" .. shiftAmount)
-            :titled(i18n("shiftOpacityRight", {amount=shiftAmount, count=shiftAmount}))
+            :titled(i18n("increaseOpacity", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
             :whenPressed(function() shiftOpacity(shiftAmount) end)
             :whenRepeated(function() shiftOpacity(shiftAmount) end)

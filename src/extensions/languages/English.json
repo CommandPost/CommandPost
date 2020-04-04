@@ -1586,13 +1586,13 @@
         "shareSuccessful": "Share Successful\n%{info}",
         "shareUnknown": "Type: %{type}",
         "sharp": "Sharp",
-        "shiftOpacityLeft": {
-            "one": "Shift Opacity Left by %{amount} Unit",
-            "other": "Shift Opacity Left by %{amount} Units"
+        "decreaseOpacity": {
+            "one": "Decrease Opacity by %{amount} Unit",
+            "other": "Decrease Opacity by %{amount} Units"
         },
-        "shiftOpacityRight": {
-            "one": "Shift Opacity Right by %{amount} Unit",
-            "other": "Shift Opacity Right by %{amount} Units"
+        "increaseOpacity": {
+            "one": "Increase Opacity by %{amount} Unit",
+            "other": "Increase Opacity by %{amount} Units"
         },
         "shiftPositionDownPixels": {
             "one": "Shift Position Down %{amount} Pixel",
