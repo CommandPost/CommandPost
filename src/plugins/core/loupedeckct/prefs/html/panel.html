@@ -612,6 +612,8 @@
 				id: "loupedeckCTPanelCallback",
 				params: {
 					type: "importSettings",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 				},
 			}
 			postMessage(result);
@@ -626,6 +628,8 @@
 				id: "loupedeckCTPanelCallback",
 				params: {
 					type: "exportSettings",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 				},
 			}
 			postMessage(result);
@@ -1193,8 +1197,8 @@
 					<table class="loupedeck" style="height: 526px;" id="noLoupedeck">
 						<tr>
 							<th>
-								<p style="font-size: 12px; font-weight: normal;">{{ i18n("loupedeckCTStoreSettingsOnFlashDriveLineOne") }}</p>
-								<p style="font-size: 12px; font-weight: normal;">{{ i18n("loupedeckCTStoreSettingsOnFlashDriveLineTwo") }}</p>
+								<p style="font-size: 12px; font-weight: normal;">{* i18n("loupedeckCTStoreSettingsOnFlashDriveLineOne") *}</p>
+								<p style="font-size: 12px; font-weight: normal;">{* i18n("loupedeckCTStoreSettingsOnFlashDriveLineTwo") *}</p>
 							</th>
 						</tr>
 					</table>

@@ -76,7 +76,7 @@ mod.lastImportPath = config.prop("streamDeck.preferences.lastImportPath", os.get
 --- plugins.core.streamdeck.prefs.lastApplication <cp.prop: string>
 --- Field
 --- Last Application used in the Preferences Panel.
-mod.lastApplication = config.prop("streamDeck.preferences.lastApplication", "org.latenitefilms.CommandPost")
+mod.lastApplication = config.prop("streamDeck.preferences.lastApplication", "All Applications")
 
 --- plugins.core.streamdeck.prefs.lastApplication <cp.prop: string>
 --- Field
