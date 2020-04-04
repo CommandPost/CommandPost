@@ -623,7 +623,7 @@ function plugin.init(deps)
 
     local cropBottomValue = 0
     local updateCropBottom = deferred.new(0.01):action(function()
-        local cropBottom = fcp:inspector():video():crop():top()
+        local cropBottom = fcp:inspector():video():crop():bottom()
         cropBottom:show()
         local original = cropBottom:value()
         cropBottom:value(original + cropBottomValue)
