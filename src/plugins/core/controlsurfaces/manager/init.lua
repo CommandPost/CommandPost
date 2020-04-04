@@ -8,6 +8,7 @@ local log         = require "hs.logger".new "prefsMgr"
 
 local inspect     = require "hs.inspect"
 local screen      = require "hs.screen"
+local timer       = require "hs.timer"
 local toolbar     = require "hs.webview.toolbar"
 local webview     = require "hs.webview"
 
@@ -18,9 +19,9 @@ local just        = require "cp.just"
 local tools       = require "cp.tools"
 
 local moses       = require "moses"
-
 local panel       = require "panel"
 
+local doAfter     = timer.doAfter
 local sortedIndex = moses.sortedIndex
 
 local mod = {}
@@ -329,7 +330,11 @@ function mod.new()
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
-            :setCallback(function(_, _, id) mod.refresh(id) end)
+            :setCallback(function(_, _, id)
+                doAfter(0, function()
+                    mod.refresh(id)
+                end)
+            end)
         local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
