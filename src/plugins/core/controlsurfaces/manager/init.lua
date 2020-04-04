@@ -2,7 +2,7 @@
 ---
 --- Manager for the CommandPost Preferences Window.
 
-local require = require
+local require     = require
 
 local log         = require "hs.logger".new "prefsMgr"
 
@@ -13,6 +13,7 @@ local webview     = require "hs.webview"
 
 local config      = require "cp.config"
 local dialog      = require "cp.dialog"
+local i18n        = require "cp.i18n"
 local just        = require "cp.just"
 local tools       = require "cp.tools"
 
@@ -347,11 +348,11 @@ function mod.new()
         local prefs = {}
         prefs.developerExtrasEnabled = config.developerMode()
         mod._webview = webview.new(defaultRect, prefs, mod._controller)
-            :windowStyle({"titled", "closable", "nonactivating"})
+            :windowStyle({"titled", "closable"}) --, "nonactivating"})
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
-            :windowTitle("Control Surfaces")
+            :windowTitle(i18n("controlSurfaces"))
             :attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
