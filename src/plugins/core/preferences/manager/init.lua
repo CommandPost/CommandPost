@@ -326,7 +326,6 @@ function mod.new()
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
     if not mod._toolbar then
-        mod._changeInProgress = false
         mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
