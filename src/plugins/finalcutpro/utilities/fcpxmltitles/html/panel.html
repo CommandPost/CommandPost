@@ -1,0 +1,89 @@
+<style>{(css/fcpxmltitles.css)}</style>
+<script>
+	function pressButton(whichButton) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+	function changeDropdown(element) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: element.id,
+					value: element.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<h3 class="uiItem">FCPXML Titles Processor</h3>
+<p class="uiItem">This utility allows you update the titles within a FCPXML, based on new data from a CSV file.</p>
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadFCPXMLTemplate')">Load FCPXML Template</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadCSVData')">Load CSV Data</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('exportNewFCPXML')">Export New FCPXML</a>
+		</th>
+
+	</tr>
+</table>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 200px; text-align:right;">
+			<span style="font-weight:normal; font-size:13px;">Column containing original title:</span>
+		</th>
+		<th>
+			<select id="originalTitleColumn" style="width: 35px;" onchange="changeDropdown(this)">
+				{%
+				for i=1, 10 do
+				%}
+				<option value="{{i}}">{{i}}</option>
+				{% end %}
+			</select>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 200px; text-align:right;">
+			<span style="font-weight:normal; font-size:13px;">Column containing new title:</span>
+		</th>
+		<th>
+			<select id="newTitleColumn" style="width: 35px;" onchange="changeDropdown(this)">
+				{%
+				for i=1, 10 do
+				%}
+				<option value="{{i}}">{{i}}</option>
+				{% end %}
+			</select>
+		</th>
+	</tr>
+
+</table>
+
+<script> pressButton("updateUI"); </script>

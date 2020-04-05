@@ -578,6 +578,10 @@
         "daVinciResolve": "DaVinci Resolve",
         "decrease": "Decrease",
         "decreaseClipHeight": "Decrease Clip Height",
+        "decreaseOpacity": {
+            "one": "Decrease Opacity by %{amount} Unit",
+            "other": "Decrease Opacity by %{amount} Units"
+        },
         "default": "Default",
         "delete": "Delete",
         "deleteAfterImport": "Delete file from Watch Folder (%{numberOfSeconds} %{seconds} after Import)",
@@ -1055,6 +1059,10 @@
         "incomingFile": "Incoming File...",
         "increase": "Increase",
         "increaseClipHeight": "Increase Clip Height",
+        "increaseOpacity": {
+            "one": "Increase Opacity by %{amount} Unit",
+            "other": "Increase Opacity by %{amount} Units"
+        },
         "individualEffects": "Individual Effects",
         "inertiaCam": "InertiaCam",
         "info": "Info",
@@ -1586,14 +1594,6 @@
         "shareSuccessful": "Share Successful\n%{info}",
         "shareUnknown": "Type: %{type}",
         "sharp": "Sharp",
-        "decreaseOpacity": {
-            "one": "Decrease Opacity by %{amount} Unit",
-            "other": "Decrease Opacity by %{amount} Units"
-        },
-        "increaseOpacity": {
-            "one": "Increase Opacity by %{amount} Unit",
-            "other": "Increase Opacity by %{amount} Units"
-        },
         "shiftPositionDownPixels": {
             "one": "Shift Position Down %{amount} Pixel",
             "other": "Shift Position Down %{amount} Pixels"
@@ -1829,6 +1829,7 @@
         "useUnderscore": "Use Underscore Seperator",
         "usingTheFollowingDestinationPreset": "Using the following Destination Preset",
         "usingTheFollowingNamingConvention": "Using the following naming convention",
+        "utilities": "Utilities",
         "validate": "Validate",
         "value": "Value",
         "vectorscope": "Vectorscope",
