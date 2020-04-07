@@ -1,6 +1,6 @@
---- === plugins.core.utilities.manager ===
+--- === plugins.core.toolbox.manager ===
 ---
---- Manager for the CommandPost Utilities Window.
+--- Manager for the CommandPost Toolbox Window.
 
 local require     = require
 
@@ -26,42 +26,42 @@ local sortedIndex = moses.sortedIndex
 
 local mod = {}
 
---- plugins.core.utilities.manager.WEBVIEW_LABEL -> string
+--- plugins.core.toolbox.manager.WEBVIEW_LABEL -> string
 --- Constant
 --- The WebView Label
-mod.WEBVIEW_LABEL = "utilities"
+mod.WEBVIEW_LABEL = "toolbox"
 
---- plugins.core.utilities.manager.DEFAULT_HEIGHT -> number
+--- plugins.core.toolbox.manager.DEFAULT_HEIGHT -> number
 --- Constant
 --- Default Height of Preferences Window
 mod.DEFAULT_HEIGHT = 338
 
---- plugins.core.utilities.manager.DEFAULT_WIDTH -> number
+--- plugins.core.toolbox.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of Preferences Window
 mod.DEFAULT_WIDTH = 1000
 
---- plugins.core.utilities.manager._panels -> table
+--- plugins.core.toolbox.manager._panels -> table
 --- Variable
 --- Table containing panels.
 mod._panels = {}
 
---- plugins.core.utilities.manager._handlers -> table
+--- plugins.core.toolbox.manager._handlers -> table
 --- Variable
 --- Table containing handlers.
 mod._handlers = {}
 
---- plugins.core.utilities.manager.position
+--- plugins.core.toolbox.manager.position
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("utilities.position", nil)
+mod.position = config.prop("toolbox.position", nil)
 
---- plugins.core.utilities.manager.lastTab
+--- plugins.core.toolbox.manager.lastTab
 --- Constant
 --- Returns the last tab saved in settings.
-mod.lastTab = config.prop("utilities.lastTab", nil)
+mod.lastTab = config.prop("toolbox.lastTab", nil)
 
---- plugins.core.utilities.manager.getWebview() -> hs.webview
+--- plugins.core.toolbox.manager.getWebview() -> hs.webview
 --- Function
 --- Returns the Webview of the Preferences Window.
 ---
@@ -74,7 +74,7 @@ function mod.getWebview()
     return mod._webview
 end
 
---- plugins.core.utilities.manager.getLabel() -> string
+--- plugins.core.toolbox.manager.getLabel() -> string
 --- Function
 --- Returns the Webview label.
 ---
@@ -87,7 +87,7 @@ function mod.getLabel()
     return mod.WEBVIEW_LABEL
 end
 
---- plugins.core.utilities.manager.addHandler(id, handlerFn) -> string
+--- plugins.core.toolbox.manager.addHandler(id, handlerFn) -> string
 --- Function
 --- Adds a Handler
 ---
@@ -101,7 +101,7 @@ function mod.addHandler(id, handlerFn)
     mod._handlers[id] = handlerFn
 end
 
---- plugins.core.utilities.manager.getHandler(id) -> string
+--- plugins.core.toolbox.manager.getHandler(id) -> string
 --- Function
 --- Returns the handler for a given ID.
 ---
@@ -114,7 +114,7 @@ function mod.getHandler(id)
     return mod._handlers[id]
 end
 
---- plugins.core.utilities.manager.setPanelRenderer(renderer) -> none
+--- plugins.core.toolbox.manager.setPanelRenderer(renderer) -> none
 --- Function
 --- Sets a Panel Renderer
 ---
@@ -145,7 +145,7 @@ local function isPanelIDValid(whichID)
     return false
 end
 
---- plugins.core.utilities.manager.currentPanelID() -> string
+--- plugins.core.toolbox.manager.currentPanelID() -> string
 --- Function
 --- Returns the panel ID with the highest priority.
 ---
@@ -227,7 +227,7 @@ local function windowCallback(action, _, frame)
     end
 end
 
---- plugins.core.utilities.manager.init() -> nothing
+--- plugins.core.toolbox.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
 ---
@@ -242,7 +242,7 @@ function mod.init(env)
     return mod
 end
 
---- plugins.core.utilities.manager.maxPanelHeight() -> number
+--- plugins.core.toolbox.manager.maxPanelHeight() -> number
 --- Function
 --- Returns the maximum size defined by a panel.
 ---
@@ -263,7 +263,7 @@ function mod.maxPanelHeight()
         if type(height) == "number" then
             if height > max then max = height end
         else
-            log.ef("panel.height in plugins.core.utilities.manager.maxPanelHeight is invalid: %s (%s)", inspect(height), height and type(height))
+            log.ef("panel.height in plugins.core.toolbox.manager.maxPanelHeight is invalid: %s (%s)", inspect(height), height and type(height))
         end
     end
     return max
@@ -283,7 +283,7 @@ local function centredPosition()
     return {x = sf.x + (sf.w/2) - (mod.DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
 end
 
---- plugins.core.utilities.manager.new() -> none
+--- plugins.core.toolbox.manager.new() -> none
 --- Function
 --- Creates a new Preferences Window.
 ---
@@ -356,7 +356,7 @@ function mod.new()
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
-            :windowTitle(i18n("utilities"))
+            :windowTitle(i18n("toolbox"))
             :attachedToolbar(mod._toolbar)
             :deleteOnClose(true)
             :windowCallback(windowCallback)
@@ -366,7 +366,7 @@ function mod.new()
     return mod
 end
 
---- plugins.core.utilities.manager.show() -> boolean
+--- plugins.core.toolbox.manager.show() -> boolean
 --- Function
 --- Shows the Preferences Window
 ---
@@ -381,7 +381,7 @@ function mod.show()
     end
 
     if next(mod._panels) == nil then
-        dialog.displayMessage("There are no Utilities Panels to display.")
+        dialog.displayMessage("There are no Toolbox Panels to display.")
         return nil
     else
         mod.selectPanel(mod.currentPanelID())
@@ -394,7 +394,7 @@ function mod.show()
     return true
 end
 
---- plugins.core.utilities.manager.focus() -> boolean
+--- plugins.core.toolbox.manager.focus() -> boolean
 --- Function
 --- Puts focus on the Preferences Window.
 ---
@@ -413,7 +413,7 @@ function mod.focus()
     end)
 end
 
---- plugins.core.utilities.manager.hide() -> none
+--- plugins.core.toolbox.manager.hide() -> none
 --- Function
 --- Hides the Preferences Window.
 ---
@@ -429,7 +429,7 @@ function mod.hide()
     end
 end
 
---- plugins.core.utilities.manager.refresh() -> none
+--- plugins.core.toolbox.manager.refresh() -> none
 --- Function
 --- Refreshes the Preferences Window.
 ---
@@ -451,7 +451,7 @@ function mod.refresh(id)
     end
 end
 
---- plugins.core.utilities.manager.injectScript(script) -> none
+--- plugins.core.toolbox.manager.injectScript(script) -> none
 --- Function
 --- Injects JavaScript into the Preferences Webview.
 ---
@@ -472,7 +472,7 @@ function mod.injectScript(script)
     end
 end
 
---- plugins.core.utilities.manager.selectPanel(id) -> none
+--- plugins.core.toolbox.manager.selectPanel(id) -> none
 --- Function
 --- Selects a Preferences Panel.
 ---
@@ -526,7 +526,7 @@ local function comparePriorities(a, b)
     return a.priority < b.priority
 end
 
---- plugins.core.utilities.manager.addPanel(params) -> plugins.core.utilities.manager.panel
+--- plugins.core.toolbox.manager.addPanel(params) -> plugins.core.toolbox.manager.panel
 --- Function
 --- Adds a new panel with the specified `params` to the preferences manager.
 ---
@@ -554,7 +554,7 @@ function mod.addPanel(params)
 end
 
 local plugin = {
-    id              = "core.utilities.manager",
+    id              = "core.toolbox.manager",
     group           = "core",
     required        = true,
     dependencies    = {
@@ -567,7 +567,7 @@ function plugin.init(deps, env)
     -- Commands:
     --------------------------------------------------------------------------------
     deps.global
-        :add("utilities")
+        :add("toolbox")
         :whenActivated(mod.show)
         :groupedBy("commandPost")
 

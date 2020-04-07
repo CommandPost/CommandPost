@@ -363,13 +363,13 @@ mod.COLOR_SPACE_OVERRIDE = {
 --- Constant
 --- Supported Audio Sample Rate values.
 mod.AUDIO_SAMPLE_RATE = {
-    32k = "32k",
-    441k = "44.1k",
-    48k = "48k",
-    882k = "88.2k",
-    96k = "96k",
-    1764k = "176.4k",
-    192k = "192k",
+    ["32k"] = "32k",
+    ["441k"] = "44.1k",
+    ["48k"] = "48k",
+    ["882k"] = "88.2k",
+    ["96k"] = "96k",
+    ["1764k"] = "176.4k",
+    ["192k"] = "192k",
 }
 
 --- cp.apple.fcpxml.TIMECODE_FORMAT -> table

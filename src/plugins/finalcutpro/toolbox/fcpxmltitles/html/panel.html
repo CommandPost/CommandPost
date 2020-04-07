@@ -13,13 +13,27 @@
 			alertErrorMessage(err);
 		}
 	}
-	function changeDropdown(element) {
+	function changeValue(element) {
 		try {
 			var result = {
 				id: "fcpxmlTitlesPanelCallback",
 				params: {
 					type: element.id,
 					value: element.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+	function changeChecked(element) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: element.id,
+					value: element.checked,
 				},
 			}
 			postMessage(result);
@@ -45,21 +59,21 @@
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('exportNewFCPXML')">Export New FCPXML</a>
 		</th>
-
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('batchProcessFolder')">Batch Process Folder</a>
+		</th>
 	</tr>
 </table>
 
+<h3 class="uiItem">CSV Options:</h3>
 <table>
 	<tr>
-		<th style="height: 10px;"></th>
-	</tr>
-	<tr>
-		<th style="width: 10px;"></th>
-		<th style="width: 200px; text-align:right;">
+		<th style="width: 13px;"></th>
+		<th style="width: 200px; text-align:left;">
 			<span style="font-weight:normal; font-size:13px;">Column containing original title:</span>
 		</th>
 		<th>
-			<select id="originalTitleColumn" style="width: 35px;" onchange="changeDropdown(this)">
+			<select id="originalTitleColumn" style="width: 35px;" onchange="changeValue(this)">
 				{%
 				for i=1, 10 do
 				%}
@@ -70,11 +84,11 @@
 	</tr>
 	<tr>
 		<th style="width: 10px;"></th>
-		<th style="width: 200px; text-align:right;">
+		<th style="width: 200px; text-align:left;">
 			<span style="font-weight:normal; font-size:13px;">Column containing new title:</span>
 		</th>
 		<th>
-			<select id="newTitleColumn" style="width: 35px;" onchange="changeDropdown(this)">
+			<select id="newTitleColumn" style="width: 35px;" onchange="changeValue(this)">
 				{%
 				for i=1, 10 do
 				%}
@@ -83,7 +97,38 @@
 			</select>
 		</th>
 	</tr>
-
 </table>
+
+<h3 class="uiItem">Processing Options:</h3>
+<table>
+	<tr>
+		<th style="width: 13px;"></th>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">Trim whitespace:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="trimWhiteSpace" onchange="changeChecked(this)">
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">Remove line breaks:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="removeLineBreaks" onchange="changeChecked(this)">
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">Send to Final Cut Pro:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="sentToFinalCutPro" onchange="changeChecked(this)">
+		</th>
+	</tr>
+</table>
+
 
 <script> pressButton("updateUI"); </script>
