@@ -504,7 +504,7 @@ local function callback(id, params)
 
             local result = "Original Title, New Title\n"
             for _, v in spairs(data) do
-                result = result .. [["]] .. v.original .. [[",""]] .. "\n"
+                result = result .. [["]] .. v.original .. [[","]] .. v.new .. [["]] .. "\n"
             end
 
             if not doesDirectoryExist(mod.lastExportCSVPath()) then
