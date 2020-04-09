@@ -1,4 +1,58 @@
 <style>{(css/fcpxmltitles.css)}</style>
+<style>
+	.editor {
+		margin-left: 20px;
+		margin-top: 13px;
+		table-layout: fixed;
+		width: 800px;
+		white-space: nowrap;
+		border: 1px solid #cccccc;
+		padding: 8px;
+		background-color: #161616;
+		text-align: left;
+		height: 300px;
+	}
+	.editor th {
+		width: 100px;
+	}
+	.editor tbody tr td input {
+		width: 350px;
+	}
+	.editor td {
+		white-space: nowrap;
+	  	overflow: hidden;
+	  	text-overflow: ellipsis;
+	}
+	.editor thead tr, .editor tbody tr {
+		display: table;
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	.editor thead tr {
+		width: calc( 100% - 8px);
+	}
+
+	.editor tbody {
+		display:block;
+		height: 250px;
+		font-weight: normal;
+		font-size: 10px;
+
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+
+	.editor thead {
+		font-weight: bold;
+		font-size: 12px;
+	}
+
+	.editor tbody {
+		font-weight: normal;
+		font-size: 10px;
+	}
+</style>
 <script>
 	function pressButton(whichButton) {
 		try {
@@ -41,9 +95,25 @@
 			alertErrorMessage(err);
 		}
 	}
+	function updateNew(element, id) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: "updateNew",
+					id: id,
+					value: element.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
 </script>
 <h3 class="uiItem">FCPXML Titles Processor</h3>
 <p class="uiItem">This utility allows you update the titles within a FCPXML, based on new data from a CSV file.</p>
+<p class="uiItem">You can also Batch Process an entire folder. To do this, the FCPXML and CSV filenames need to be identical.</p>
 <table>
 	<tr>
 		<th style="height: 10px;"></th>
@@ -56,19 +126,43 @@
 		<th>
 			<a href="#" class="bottomButton" onclick="pressButton('loadCSVData')">Load CSV Data</a>
 		</th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('exportNewFCPXML')">Export New FCPXML</a>
-		</th>
-		<th>
-			<a href="#" class="bottomButton" onclick="pressButton('batchProcessFolder')">Batch Process Folder</a>
-		</th>
 	</tr>
 </table>
 
-<h3 class="uiItem">CSV Options:</h3>
-<table>
+<table style="margin-left:13px;">
 	<tr>
-		<th style="width: 13px;"></th>
+		<th>
+			<h3 style="width: 200px; text-align:left; margin-bottom:2px;">Processing Options</h3>
+		</th>
+		<th></th>
+		<th style="width: 100px;"></th>
+		<th>
+			<h3 style="width: 200px; text-align:left; margin-bottom:2px;">CSV Options</h3>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">Trim whitespace:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="trimWhiteSpace" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
+		<th style="text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">Ignore first row:</span>
+		</th>
+		<th style="text-align: left;">
+			<input type="checkbox" id="ignoreFirstRow" onchange="changeChecked(this)">
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">Remove line breaks:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="removeLineBreaks" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
 		<th style="width: 200px; text-align:left;">
 			<span style="font-weight:normal; font-size:13px;">Column containing original title:</span>
 		</th>
@@ -83,7 +177,13 @@
 		</th>
 	</tr>
 	<tr>
-		<th style="width: 10px;"></th>
+		<th style="width: 200px; text-align:left; height:27px;">
+			<span style="font-weight:normal; font-size:13px;">Send to Final Cut Pro:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="sentToFinalCutPro" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
 		<th style="width: 200px; text-align:left;">
 			<span style="font-weight:normal; font-size:13px;">Column containing new title:</span>
 		</th>
@@ -99,36 +199,33 @@
 	</tr>
 </table>
 
-<h3 class="uiItem">Processing Options:</h3>
+<table class="editor">
+	<thead>
+		<tr>
+			<th><h4 style="margin: 0;">Original Title (from FCPXML)</h3></th>
+			<th><h4 style="margin: 0;">New Title (from CSV)</h3></th>
+		</tr>
+	</thead>
+	<tbody id="editorBody">
+	</tbody>
+</table>
+
 <table>
 	<tr>
-		<th style="width: 13px;"></th>
-		<th style="width: 200px; text-align:left;">
-			<span style="font-weight:normal; font-size:13px;">Trim whitespace:</span>
-		</th>
-		<th>
-			<input type="checkbox" id="trimWhiteSpace" onchange="changeChecked(this)">
-		</th>
+		<th style="height: 10px;"></th>
 	</tr>
 	<tr>
 		<th style="width: 10px;"></th>
-		<th style="width: 200px; text-align:left;">
-			<span style="font-weight:normal; font-size:13px;">Remove line breaks:</span>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('exportCSV')">Export CSV</a>
 		</th>
 		<th>
-			<input type="checkbox" id="removeLineBreaks" onchange="changeChecked(this)">
-		</th>
-	</tr>
-	<tr>
-		<th style="width: 10px;"></th>
-		<th style="width: 200px; text-align:left;">
-			<span style="font-weight:normal; font-size:13px;">Send to Final Cut Pro:</span>
+			<a href="#" class="bottomButton" onclick="pressButton('exportNewFCPXML')">Export FCPXML</a>
 		</th>
 		<th>
-			<input type="checkbox" id="sentToFinalCutPro" onchange="changeChecked(this)">
+			<a href="#" class="bottomButton" onclick="pressButton('batchProcessFolder')">Batch Process Folder</a>
 		</th>
 	</tr>
 </table>
-
 
 <script> pressButton("updateUI"); </script>

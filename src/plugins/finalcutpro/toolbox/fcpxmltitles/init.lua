@@ -22,20 +22,32 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
+local spairs                    = tools.spairs
+local tableCount                = tools.tableCount
 local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
 local mod = {}
 
+local data = {}
+
 local xmlPath
 local csvData
 local originalFilename
+
+local csvLoaded = false
+local fcpxmlLoaded = false
 
 -- desktopPath -> string
 -- Constant
 -- Path to the users desktop
 local desktopPath = os.getenv("HOME") .. "/Desktop/"
+
+--- plugins.finalcutpro.toolbox.fcpxmltitles.ignoreFirstRow <cp.prop: boolean>
+--- Field
+--- Ignore first row of CSV?
+mod.ignoreFirstRow = config.prop("toolbox.fcpxmltitles.ignoreFirstRow", true)
 
 --- plugins.finalcutpro.toolbox.fcpxmltitles.sentToFinalCutPro <cp.prop: boolean>
 --- Field
@@ -77,10 +89,15 @@ mod.lastFCPXMLPath = config.prop("toolbox.fcpxmltitles.lastFCPXMLPath", desktopP
 --- Last FCPXMLPath
 mod.lastCSVPath = config.prop("toolbox.fcpxmltitles.lastCSVPath", desktopPath)
 
---- plugins.finalcutpro.toolbox.fcpxmltitles.lastExportPath <cp.prop: string>
+--- plugins.finalcutpro.toolbox.fcpxmltitles.lastExportFCPXMLPath <cp.prop: string>
 --- Field
 --- Last Export Path
-mod.lastExportPath = config.prop("toolbox.fcpxmltitles.lastExportPath", desktopPath)
+mod.lastExportFCPXMLPath = config.prop("toolbox.fcpxmltitles.lastExportFCPXMLPath", desktopPath)
+
+--- plugins.finalcutpro.toolbox.fcpxmltitles.lastExportCSVPath <cp.prop: string>
+--- Field
+--- Last Export CSV Path
+mod.lastExportCSVPath = config.prop("toolbox.fcpxmltitles.lastExportCSVPath", desktopPath)
 
 -- renderPanel(context) -> none
 -- Function
@@ -120,7 +137,7 @@ local function generateContent()
     return renderPanel(context)
 end
 
-local function exportNewFCPXML(exportPath)
+local function batchExport(exportPath)
     --------------------------------------------------------------------------------
     -- Export New FCPXML:
     --------------------------------------------------------------------------------
@@ -223,17 +240,17 @@ local function exportNewFCPXML(exportPath)
     local options = nodeOptions.compactEmptyElement | nodeOptions.useDoubleQuotes
     local result = document:xmlString(options)
 
-    if not doesDirectoryExist(mod.lastExportPath()) then
-        mod.lastExportPath(desktopPath)
+    if not doesDirectoryExist(mod.lastExportFCPXMLPath()) then
+        mod.lastExportFCPXMLPath(desktopPath)
     end
 
     if not exportPath then
-        local exportPathResult = chooseFileOrFolder("Please select an output directory:", mod.lastExportPath(), false, true, false)
+        local exportPathResult = chooseFileOrFolder("Please select an output directory:", mod.lastExportFCPXMLPath(), false, true, false)
         exportPath = exportPathResult and exportPathResult["1"]
     end
 
     if exportPath then
-        mod.lastExportPath(exportPath)
+        mod.lastExportFCPXMLPath(exportPath)
         local exportedFilePath = exportPath .. "/" .. originalFilename .. " (Updated Titles).fcpxml"
         writeToFile(exportedFilePath, result)
 
@@ -253,6 +270,44 @@ local function exportNewFCPXML(exportPath)
             webviewAlert(mod._manager.getWebview(), sendToFCPX, "Success!", "A new FCPXML has been exported successfully. However, there were some titles that could not be found in the CSV:\n\n" .. errorLog, "OK")
         end
     end
+end
+
+local function updateUI()
+    local injectScript = mod._manager.injectScript
+
+    local originalTitleColumn = mod.originalTitleColumn()
+    local newTitleColumn = mod.newTitleColumn()
+
+    local script = [[
+        changeValueByID("originalTitleColumn", "]] .. originalTitleColumn .. [[");
+        changeValueByID("newTitleColumn", "]] .. newTitleColumn .. [[");
+        changeCheckedByID("trimWhiteSpace", ]] .. tostring(mod.trimWhiteSpace()) .. [[);
+        changeCheckedByID("removeLineBreaks", ]] .. tostring(mod.removeLineBreaks()) .. [[);
+        changeCheckedByID("sentToFinalCutPro", ]] .. tostring(mod.sentToFinalCutPro()) .. [[);
+        changeCheckedByID("ignoreFirstRow", ]] .. tostring(mod.ignoreFirstRow()) .. [[);
+    ]]
+
+    if tableCount(data) == 0 then
+        script = script .. [[
+            document.getElementById("editorBody").innerHTML = "<tr><td>Nothing loaded.</td></tr>";
+        ]]
+    else
+        local rows = ""
+        for i, v in spairs(data) do
+            rows = rows .. [[
+                <tr>
+                    <td><input type="text" value="]] .. v.original .. [[" disabled></td>
+                    <td><input type="text" value="]] .. v.new .. [[" onchange="updateNew(this, ]] .. i .. [[)"></td>
+                </tr>
+            ]]
+        end
+
+        script = script .. [[
+            document.getElementById("editorBody").innerHTML = `]] .. rows .. [[`
+        ]]
+    end
+
+    injectScript(script)
 end
 
 -- callback() -> none
@@ -283,6 +338,61 @@ local function callback(id, params)
                     mod.lastFCPXMLPath(removeFilenameFromPath(path))
                     xmlPath = path
                     originalFilename = getFilenameFromPath(path, true)
+
+                    local count = 1
+
+                    local document = xml.open(path)
+                    local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+                    local spineChildren = spine and spine[1] and spine[1]:children()
+                    if spineChildren then
+                        for _, v in pairs(spineChildren) do
+                            local children = v:children()
+                            if children then
+                                for _, vv in pairs(children) do
+                                    if vv:name() == "title" then
+                                        local newValue = nil
+                                        local nodeChildren = vv:children()
+                                        for _, vvv in pairs(nodeChildren) do
+                                            if vvv:name() == "text" then
+                                                local textStyles = vvv:children()
+                                                if textStyles then
+                                                    for _, vvvv in pairs(textStyles) do
+                                                        local originalValue = vvvv:stringValue()
+                                                        if originalValue then
+                                                            if mod.trimWhiteSpace() then
+                                                                originalValue = originalValue and trim(originalValue)
+                                                            end
+                                                            if mod.removeLineBreaks() then
+                                                                originalValue = originalValue and string.gsub(originalValue, "\n", "")
+                                                            end
+                                                        end
+
+                                                        data[count] = {
+                                                            original = originalValue,
+                                                            new = "",
+                                                        }
+                                                        count = count + 1
+                                                    end
+                                                end
+                                            end
+                                        end
+                                        if newValue then
+                                            local rawAttributes = vv:rawAttributes()
+                                            for _, vvv in pairs(rawAttributes) do
+                                                if vvv:name() == "name" then
+                                                    vvv:setStringValue(newValue)
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    fcpxmlLoaded = true
+                    updateUI()
+
                 else
                     webviewAlert(mod._manager.getWebview(), function() end, "Invalid FCPXML File.", "The supplied FCPXML did not pass DTD validation. Please check that the FCPXML supplied is valid and try again.", "OK", nil, "warning")
                 end
@@ -298,13 +408,52 @@ local function callback(id, params)
             local path = result and result["1"]
             if path then
                 mod.lastCSVPath(removeFilenameFromPath(path))
-                csvData = csv.open(path)
+                local csvData = csv.open(path)
                 if not csvData then
                     webviewAlert(mod._manager.getWebview(), function() end, "Failed to process the CSV file.", "Please check the contents of the CSV file and try again.", "OK", nil, "warning")
+                    return
                 end
+
+                local originalTitleColumn = tonumber(mod.originalTitleColumn())
+                local newTitleColumn = tonumber(mod.newTitleColumn())
+
+                if originalTitleColumn == newTitleColumn then
+                    webviewAlert(mod._manager.getWebview(), function() end, "Invalid columns selected.", "The original and new columns cannot be the same. Please check your settings and try again.", "OK", nil, "warning")
+                    return
+                end
+
+                local lookup = {}
+
+                local firstLine = not mod.ignoreFirstRow()
+                for fields in csvData:lines() do
+                    if firstLine then
+                        firstLine = false
+                    else
+                        local original = fields[originalTitleColumn]
+                        local new = fields[newTitleColumn]
+                        if original and new then
+                            if mod.trimWhiteSpace() then
+                                original = original and trim(original)
+                                new = new and trim(new)
+                            end
+                            if mod.removeLineBreaks() then
+                                original = original and string.gsub(original, "\n", "")
+                                new = new and string.gsub(new, "\n", "")
+                            end
+                            lookup[original] = new
+                        end
+                    end
+                end
+
+                for i, v in spairs(data) do
+                    if lookup[v.original] then
+                        data[i].new = lookup[v.original]
+                    end
+                end
+
+                csvLoaded = true
+                updateUI()
             end
-        elseif callbackType == "exportNewFCPXML" then
-            exportNewFCPXML()
         elseif callbackType == "batchProcessFolder" then
             if not doesDirectoryExist(mod.lastBatchProcessPath()) then
                 mod.lastBatchProcessPath(desktopPath)
@@ -344,7 +493,129 @@ local function callback(id, params)
                     csvData = csv.open(csvPath)
                     originalFilename = file
 
-                    exportNewFCPXML(exportPath)
+                    batchExport(exportPath)
+                end
+            end
+        elseif callbackType == "exportCSV" then
+            if not fcpxmlLoaded then
+                webviewAlert(mod._manager.getWebview(), function() end, "No FCPXML Template detected.", "Please load a valid FCPXML Template and try again.", "OK", nil, "warning")
+                return
+            end
+
+            local result = "Original Title, New Title\n"
+            for _, v in spairs(data) do
+                result = result .. [["]] .. v.original .. [[",""]] .. "\n"
+            end
+
+            if not doesDirectoryExist(mod.lastExportCSVPath()) then
+                mod.lastExportCSVPath(desktopPath)
+            end
+
+            local exportPathResult = chooseFileOrFolder("Please select an output directory:", mod.lastExportCSVPath(), false, true, false)
+            exportPath = exportPathResult and exportPathResult["1"]
+
+            if exportPath then
+                mod.lastExportCSVPath(exportPath)
+                local exportedFilePath = exportPath .. "/" .. originalFilename .. ".csv"
+                writeToFile(exportedFilePath, result)
+
+                webviewAlert(mod._manager.getWebview(), function() end, "Success!", "The CSV has been exported successfully.", "OK")
+            end
+        elseif callbackType == "exportNewFCPXML" then
+            if not fcpxmlLoaded then
+                webviewAlert(mod._manager.getWebview(), function() end, "No FCPXML Template detected.", "Please load a valid FCPXML Template and try again.", "OK", nil, "warning")
+                return
+            end
+
+            local errorLog = ""
+
+            local document = xml.open(xmlPath)
+            local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
+            local spineChildren = spine and spine[1] and spine[1]:children()
+            if spineChildren then
+                for _, v in pairs(spineChildren) do
+                    local children = v:children()
+                    if children then
+                        for _, vv in pairs(children) do
+                            if vv:name() == "title" then
+                                local newValue = nil
+                                local nodeChildren = vv:children()
+                                for _, vvv in pairs(nodeChildren) do
+                                    if vvv:name() == "text" then
+                                        local textStyles = vvv:children()
+                                        if textStyles then
+                                            for _, vvvv in pairs(textStyles) do
+                                                local originalValue = vvvv:stringValue()
+
+                                                if originalValue then
+                                                    if mod.trimWhiteSpace() then
+                                                        originalValue = originalValue and trim(originalValue)
+                                                    end
+                                                    if mod.removeLineBreaks() then
+                                                        originalValue = originalValue and string.gsub(originalValue, "\n", "")
+                                                    end
+                                                end
+
+                                                for _, v in pairs(data) do
+                                                    if v.original == originalValue then
+                                                        newValue = v.new
+                                                        break
+                                                    end
+                                                end
+
+                                                if newValue then
+                                                    vvvv:setStringValue(newValue)
+                                                else
+                                                    errorLog = errorLog .. " * " .. originalValue .. "\n"
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                                if newValue then
+                                    local rawAttributes = vv:rawAttributes()
+                                    for _, vvv in pairs(rawAttributes) do
+                                        if vvv:name() == "name" then
+                                            vvv:setStringValue(newValue)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            local nodeOptions = xml.nodeOptions
+            local options = nodeOptions.compactEmptyElement | nodeOptions.useDoubleQuotes
+            local result = document:xmlString(options)
+
+            if not doesDirectoryExist(mod.lastExportFCPXMLPath()) then
+                mod.lastExportFCPXMLPath(desktopPath)
+            end
+
+            local exportPathResult = chooseFileOrFolder("Please select an output directory:", mod.lastExportFCPXMLPath(), false, true, false)
+            exportPath = exportPathResult and exportPathResult["1"]
+
+            if exportPath then
+                mod.lastExportFCPXMLPath(exportPath)
+                local exportedFilePath = exportPath .. "/" .. originalFilename .. " (Updated Titles).fcpxml"
+                writeToFile(exportedFilePath, result)
+
+                local sendToFCPX = function()
+                    if mod.sentToFinalCutPro() then
+                        fcp:importXML(exportedFilePath)
+                    end
+                end
+
+                if errorLog == "" then
+                    if mod.sentToFinalCutPro() then
+                        sendToFCPX()
+                    else
+                        webviewAlert(mod._manager.getWebview(), function() end, "Success!", "A new FCPXML has been exported successfully.", "OK")
+                    end
+                else
+                    webviewAlert(mod._manager.getWebview(), sendToFCPX, "Success!", "A new FCPXML has been exported successfully. However, there were some titles that could not be found in the CSV:\n\n" .. errorLog, "OK")
                 end
             end
         elseif callbackType == "newTitleColumn" then
@@ -362,22 +633,15 @@ local function callback(id, params)
         elseif callbackType == "sentToFinalCutPro" then
             local value = params["value"]
             mod.sentToFinalCutPro(value)
+        elseif callbackType == "ignoreFirstRow" then
+            local value = params["value"]
+            mod.ignoreFirstRow(value)
         elseif callbackType == "updateUI" then
-            --------------------------------------------------------------------------------
-            -- Update UI:
-            --------------------------------------------------------------------------------
-            local originalTitleColumn = mod.originalTitleColumn()
-            local newTitleColumn = mod.newTitleColumn()
-
-            local script = [[
-                changeValueByID("originalTitleColumn", "]] .. originalTitleColumn .. [[");
-                changeValueByID("newTitleColumn", "]] .. newTitleColumn .. [[");
-                changeCheckedByID("trimWhiteSpace", ]] .. tostring(mod.trimWhiteSpace()) .. [[);
-                changeCheckedByID("removeLineBreaks", ]] .. tostring(mod.removeLineBreaks()) .. [[);
-                changeCheckedByID("sentToFinalCutPro", ]] .. tostring(mod.sentToFinalCutPro()) .. [[);
-            ]]
-
-            injectScript(script)
+            updateUI()
+        elseif callbackType == "updateNew" then
+            local id = params["id"]
+            local value = params["value"]
+            data[id].new = value
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -414,7 +678,7 @@ function plugin.init(deps, env)
         label           = "FCPXML Titles",
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = "FCPXML Titles",
-        height          = 430,
+        height          = 700,
     })
 
     :addContent(1, generateContent, false)
