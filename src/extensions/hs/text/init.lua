@@ -1,3 +1,8 @@
+-- maybe save some pain, if the shim is installed; otherwise, expect an objc dump to console when this loads on stock Hammerspoon without pull #2308 applied
+if package.searchpath("hs._asm.coroutineshim", package.path) then
+    require"hs._asm.coroutineshim"
+end
+
 --- === hs.text ===
 ---
 --- This module provides functions and methods for converting text between the various encodings supported by macOS.
