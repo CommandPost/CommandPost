@@ -42,6 +42,11 @@ local data = {}
 -- Counter used when getting titles.
 local count = 1
 
+-- updateTitlesCount -> number
+-- Variable
+-- Counter used when updating titles.
+local updateTitlesCount = 1
+
 -- xmlPath -> string
 -- Variable
 -- FCPXML Path
@@ -362,7 +367,6 @@ end
 -- Returns:
 --  * None
 local function callback(id, params)
-    local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
         if callbackType == "loadFCPXMLTemplate" then
@@ -587,7 +591,7 @@ local function callback(id, params)
             end
 
             local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastExportCSVPath(), false, true, false)
-            exportPath = exportPathResult and exportPathResult["1"]
+            local exportPath = exportPathResult and exportPathResult["1"]
 
             if exportPath then
                 mod.lastExportCSVPath(exportPath)
@@ -620,7 +624,7 @@ local function callback(id, params)
             end
 
             local exportPathResult = chooseFileOrFolder(i18n("pleaseSelectAnOutputDirectory") .. ":", mod.lastExportFCPXMLPath(), false, true, false)
-            exportPath = exportPathResult and exportPathResult["1"]
+            local exportPath = exportPathResult and exportPathResult["1"]
 
             if exportPath then
                 mod.lastExportFCPXMLPath(exportPath)
@@ -665,9 +669,9 @@ local function callback(id, params)
         elseif callbackType == "updateUI" then
             updateUI()
         elseif callbackType == "updateNew" then
-            local id = params["id"]
+            local bid = params["id"]
             local value = params["value"]
-            data[id].new = value
+            data[bid].new = value
         elseif callbackType == "reset" then
             reset()
         else
