@@ -451,6 +451,8 @@ local function callback(id, params)
                 for i, v in spairs(data) do
                     if lookup[v.original] then
                         data[i].new = lookup[v.original]
+                    else
+                        data[i].new = ""
                     end
                 end
 
