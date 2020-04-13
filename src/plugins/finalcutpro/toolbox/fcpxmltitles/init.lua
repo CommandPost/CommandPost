@@ -307,7 +307,7 @@ local function updateTitles(nodes, errorLog)
                                     end
                                 end
 
-                                if newValue then
+                                if newValue and newValue ~= "" then
                                     textStyle:setStringValue(newValue)
                                 else
                                     errorLog = errorLog .. " * " .. originalValue .. "\n"
@@ -356,6 +356,61 @@ local function reset()
     updateUI()
 end
 
+-- processCSV(csvData) -> none
+-- Function
+-- Process a CSV file into data table.
+--
+-- Parameters:
+--  * csvData - The CSV data to process.
+--
+-- Returns:
+--  * None
+local function processCSV(csvData)
+    local originalTitleColumn = tonumber(mod.originalTitleColumn())
+    local newTitleColumn = tonumber(mod.newTitleColumn())
+
+    local lookup = {}
+    local orderedLookup = {}
+
+    local firstLine = mod.ignoreFirstRow()
+    local csvCount = 1
+    for fields in csvData:lines() do
+        if firstLine then
+            firstLine = false
+        else
+            local original = fields[originalTitleColumn]
+            local new = fields[newTitleColumn]
+            if original and new then
+                if mod.trimWhiteSpace() then
+                    original = original and trim(original)
+                    new = new and trim(new)
+                end
+                if mod.removeLineBreaks() then
+                    original = original and string.gsub(original, "\n", "")
+                    new = new and string.gsub(new, "\n", "")
+                end
+                lookup[original] = new
+                orderedLookup[csvCount] = {}
+                orderedLookup[csvCount].new = new
+                orderedLookup[csvCount].original = original
+            end
+            csvCount = csvCount + 1
+        end
+    end
+
+    for i, v in spairs(data) do
+        if orderedLookup[i] and orderedLookup[i].original and orderedLookup[i].new and orderedLookup[i].original == v.original then
+            data[i].new = orderedLookup[i].new or ""
+        else
+            if lookup[v.original] then
+                data[i].new = lookup[v.original]
+            else
+                data[i].new = ""
+            end
+        end
+    end
+end
+
 -- callback() -> none
 -- Function
 -- JavaScript Callback for the Panel
@@ -392,8 +447,6 @@ local function callback(id, params)
                     local spineChildren = spine and spine[1] and spine[1]:children()
                     getTitles(spineChildren)
 
-                    log.df("getting titles")
-
                     fcpxmlLoaded = true
                     updateUI()
                 else
@@ -419,42 +472,12 @@ local function callback(id, params)
 
                 local originalTitleColumn = tonumber(mod.originalTitleColumn())
                 local newTitleColumn = tonumber(mod.newTitleColumn())
-
                 if originalTitleColumn == newTitleColumn then
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidColumnsSelected"), i18n("theOriginalAndNewColumnsCannotBeTheSamePleaseCheckYourSettingsAndTryAgain"), "OK", nil, "warning")
                     return
                 end
 
-                local lookup = {}
-
-                local firstLine = not mod.ignoreFirstRow()
-                for fields in csvData:lines() do
-                    if firstLine then
-                        firstLine = false
-                    else
-                        local original = fields[originalTitleColumn]
-                        local new = fields[newTitleColumn]
-                        if original and new then
-                            if mod.trimWhiteSpace() then
-                                original = original and trim(original)
-                                new = new and trim(new)
-                            end
-                            if mod.removeLineBreaks() then
-                                original = original and string.gsub(original, "\n", "")
-                                new = new and string.gsub(new, "\n", "")
-                            end
-                            lookup[original] = new
-                        end
-                    end
-                end
-
-                for i, v in spairs(data) do
-                    if lookup[v.original] then
-                        data[i].new = lookup[v.original]
-                    else
-                        data[i].new = ""
-                    end
-                end
+                processCSV(csvData)
 
                 csvLoaded = true
                 updateUI()
@@ -491,22 +514,25 @@ local function callback(id, params)
                 end
             end
 
+            local fileCount = 0
             local bothFiles = {}
             for _, file in pairs(fcpxmlFiles) do
                 if tools.tableContains(csvFiles, file) then
                     table.insert(bothFiles, file)
+                    fileCount = fileCount + 1
                 end
             end
 
             local nodeOptions = xml.nodeOptions
             local options = nodeOptions.compactEmptyElement | nodeOptions.useDoubleQuotes
 
-            for _, file in pairs(bothFiles) do
+            for i, file in pairs(bothFiles) do
                 --------------------------------------------------------------------------------
                 -- Reset data for each file:
                 --------------------------------------------------------------------------------
                 data = {}
                 count = 1
+                updateTitlesCount = 1
 
                 --------------------------------------------------------------------------------
                 -- Read FCPXML File:
@@ -522,39 +548,12 @@ local function callback(id, params)
                 --------------------------------------------------------------------------------
                 local csvPath = exportPath .. "/" .. file .. ".csv"
                 local csvData = csv.open(csvPath)
-                local lookup = {}
-                local firstLine = not mod.ignoreFirstRow()
-                for fields in csvData:lines() do
-                    if firstLine then
-                        firstLine = false
-                    else
-                        local original = fields[originalTitleColumn]
-                        local new = fields[newTitleColumn]
-                        if original and new then
-                            if mod.trimWhiteSpace() then
-                                original = original and trim(original)
-                                new = new and trim(new)
-                            end
-                            if mod.removeLineBreaks() then
-                                original = original and string.gsub(original, "\n", "")
-                                new = new and string.gsub(new, "\n", "")
-                            end
-                            lookup[original] = new
-                        end
-                    end
-                end
-                for i, v in spairs(data) do
-                    if lookup[v.original] then
-                        data[i].new = lookup[v.original]
-                    end
-                end
+                processCSV(csvData)
 
                 --------------------------------------------------------------------------------
                 -- Update FCPXML File:
                 --------------------------------------------------------------------------------
-                local errorLog = ""
-                updateTitlesCount = 1
-                errorLog = updateTitles(spineChildren, errorLog)
+                local errorLog = updateTitles(spineChildren, "")
 
                 local result = document:xmlString(options)
                 local exportedFilePath = exportPath .. "/" .. file .. " (" .. i18n("updatedTitles") .. ").fcpxml"
@@ -571,10 +570,12 @@ local function callback(id, params)
                         sendToFCPX()
                         reset()
                     else
-                        webviewAlert(mod._manager.getWebview(), reset, i18n("success") .. "!", i18n("aNewFCPXMLHasBeenExportedSuccessfully"), i18n("ok"))
+                        if i == fileCount then
+                            webviewAlert(mod._manager.getWebview(), reset, i18n("success") .. "!", i18n("theBatchOfFCPXMLsHasBeenExportedSuccessfully"), i18n("ok"))
+                        end
                     end
                 else
-                    webviewAlert(mod._manager.getWebview(), sendToFCPX, i18n("success") .. "!", i18n("aNewFCPXMLHasBeenExportedSuccessfully") .. " " .. i18n("howeverThereWereSomeTitlesThatCouldNotBeFoundInTheCSV") .. ":\n\n" .. errorLog, i18n("ok"))
+                    webviewAlert(mod._manager.getWebview(), sendToFCPX, i18n("success") .. "!", i18n("aNewFCPXMLHasBeenExportedSuccessfully") .. "\n\n" .. i18n("howeverThereWereSomeTitlesThatCouldNotBeFoundInTheCSV") .. ":\n\n" .. errorLog, i18n("ok"))
                 end
             end
         elseif callbackType == "exportCSV" then
