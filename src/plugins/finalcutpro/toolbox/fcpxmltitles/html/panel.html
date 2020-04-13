@@ -1,0 +1,234 @@
+<style>{(css/fcpxmltitles.css)}</style>
+<style>
+	.editor {
+		margin-left: 20px;
+		margin-top: 13px;
+		table-layout: fixed;
+		width: 800px;
+		white-space: nowrap;
+		border: 1px solid #cccccc;
+		padding: 8px;
+		background-color: #161616;
+		text-align: left;
+		height: 300px;
+	}
+	.editor th {
+		width: 100px;
+	}
+	.editor tbody tr td input {
+		width: 350px;
+	}
+	.editor td {
+		white-space: nowrap;
+	  	overflow: hidden;
+	  	text-overflow: ellipsis;
+	}
+	.editor thead tr, .editor tbody tr {
+		display: table;
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	.editor thead tr {
+		width: calc( 100% - 8px);
+	}
+
+	.editor tbody {
+		display:block;
+		height: 250px;
+		font-weight: normal;
+		font-size: 10px;
+
+		overflow-x: hidden;
+		overflow-y: scroll;
+	}
+
+	.editor thead {
+		font-weight: bold;
+		font-size: 12px;
+	}
+
+	.editor tbody {
+		font-weight: normal;
+		font-size: 10px;
+	}
+</style>
+<script>
+	function pressButton(whichButton) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+	function changeValue(element) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: element.id,
+					value: element.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+	function changeChecked(element) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: element.id,
+					value: element.checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+	function updateNew(element, id) {
+		try {
+			var result = {
+				id: "fcpxmlTitlesPanelCallback",
+				params: {
+					type: "updateNew",
+					id: id,
+					value: element.value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<h3 class="uiItem">{{ i18n("fcpxmlTitlesProcessor") }}</h3>
+<p class="uiItem">{{ i18n("fcpxmlTitlesProcessorDescriptionLineOne") }}</p>
+<p class="uiItem">{{ i18n("fcpxmlTitlesProcessorDescriptionLineTwo") }}</p>
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadFCPXMLTemplate')">{{ i18n("loadFCPXMLTemplate") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('loadCSVData')">{{ i18n("loadCSVData") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('reset')">{{ i18n("reset") }}</a>
+		</th>
+	</tr>
+</table>
+
+<table style="margin-left:13px;">
+	<tr>
+		<th>
+			<h3 style="width: 200px; text-align:left; margin-bottom:2px;">{{ i18n("processingOptions") }}</h3>
+		</th>
+		<th></th>
+		<th style="width: 100px;"></th>
+		<th>
+			<h3 style="width: 200px; text-align:left; margin-bottom:2px;">{{ i18n("csvOptions") }}</h3>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("trimWhitespace") }}:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="trimWhiteSpace" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
+		<th style="text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("ignoreFirstRow") }}:</span>
+		</th>
+		<th style="text-align: left;">
+			<input type="checkbox" id="ignoreFirstRow" onchange="changeChecked(this)">
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("removeLineBreaks") }}:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="removeLineBreaks" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("columnContainingOriginalTitle") }}:</span>
+		</th>
+		<th>
+			<select id="originalTitleColumn" style="width: 35px;" onchange="changeValue(this)">
+				{%
+				for i=1, 10 do
+				%}
+				<option value="{{i}}">{{i}}</option>
+				{% end %}
+			</select>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 200px; text-align:left; height:27px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("sendToFinalCutPro") }}:</span>
+		</th>
+		<th>
+			<input type="checkbox" id="sentToFinalCutPro" onchange="changeChecked(this)">
+		</th>
+		<th style="width: 100px;"></th>
+		<th style="width: 200px; text-align:left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("columnContainingNewTitle") }}:</span>
+		</th>
+		<th>
+			<select id="newTitleColumn" style="width: 35px;" onchange="changeValue(this)">
+				{%
+				for i=1, 10 do
+				%}
+				<option value="{{i}}">{{i}}</option>
+				{% end %}
+			</select>
+		</th>
+	</tr>
+</table>
+
+<table class="editor">
+	<thead>
+		<tr>
+			<th><h4 style="margin: 0;">{{ i18n("originalTitleFromFCPXML") }}</h3></th>
+			<th><h4 style="margin: 0;">{{ i18n("newTitleFromCSV") }}</h3></th>
+		</tr>
+	</thead>
+	<tbody id="editorBody">
+	</tbody>
+</table>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('exportCSV')">{{ i18n("exportCSV") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('exportNewFCPXML')">{{ i18n("exportFCPXML") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('batchProcessFolder')">{{ i18n("batchProcessFolder") }}</a>
+		</th>
+	</tr>
+</table>
+
+<script> pressButton("updateUI"); </script>

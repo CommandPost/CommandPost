@@ -186,7 +186,8 @@ local plugin = {
     dependencies    = {
         ["core.preferences.panels.menubar"]     = "prefs",
         ["core.preferences.manager"]            = "prefsManager",
-        ["core.controlsurfaces.manager"]        = "controlSurfaces"
+        ["core.controlsurfaces.manager"]        = "controlSurfaces",
+        ["core.toolbox.manager"]              = "toolbox",
     }
 }
 
@@ -198,6 +199,7 @@ function plugin.init(deps)
     local prefs = deps.prefs
     local prefsManager = deps.prefsManager
     local controlSurfaces = deps.controlSurfaces
+    local toolbox = deps.toolbox
 
     --------------------------------------------------------------------------------
     -- Setup Menubar Manager:
@@ -270,6 +272,12 @@ function plugin.init(deps)
         end)
         :addItem(10.2, function()
             return { title = i18n("controlSurfaces"), fn = controlSurfaces.show }
+        end)
+        :addItem(10.3, function()
+            return { title = "-" }
+        end)
+        :addItem(10.4, function()
+            return { title = i18n("toolbox"), fn = toolbox.show }
         end)
         :addItem(11, function()
             return { title = "-" }
