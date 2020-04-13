@@ -131,6 +131,11 @@ function mod.init()
                 end
             },
             { id = "NSToolbarFlexibleSpaceItem" },
+            { id = i18n("toolbox"), image = imageFromName("NSAdvanced"),
+                fn = function()
+                    plugins("core.toolbox.manager").show()
+                end
+            },
             { id = i18n("controlSurfaces"), image = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
                 fn = function()
                     plugins("core.controlsurfaces.manager").show()
