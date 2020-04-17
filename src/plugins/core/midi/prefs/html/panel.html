@@ -1,12 +1,13 @@
 <style>{(css/midi.css)}</style>
 <script>
-	function changeMidiDevice(groupID, buttonID, value) {
+	function changeMidiDevice(buttonID, value) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateDevice",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 					device: value,
 				},
@@ -17,13 +18,14 @@
 		}
 	}
 
-	function changeMidiCommandType(groupID, buttonID, value) {
+	function changeMidiCommandType(buttonID, value) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateCommandType",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 					commandType: value,
 				},
@@ -34,13 +36,14 @@
 		}
 	}
 
-	function changeMidiNumber(groupID, buttonID, value) {
+	function changeMidiNumber(buttonID, value) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateNumber",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 					number: value,
 				},
@@ -51,13 +54,14 @@
 		}
 	}
 
-	function changeMidiChannel(groupID, buttonID, value) {
+	function changeMidiChannel(buttonID, value) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateChannel",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 					channel: value,
 				},
@@ -68,13 +72,14 @@
 		}
 	}
 
-	function changeMidiValue(groupID, buttonID, value) {
+	function changeMidiValue(buttonID, value) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateValue",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 					value: value,
 				},
@@ -85,13 +90,14 @@
 		}
 	}
 
-	function pressMidiAllButton(groupID, buttonID) {
+	function pressMidiAllButton(buttonID) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "applyToAll",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 				},
 			}
@@ -101,13 +107,14 @@
 		}
 	}
 
-	function pressMidiActionButton(groupID, buttonID) {
+	function pressMidiActionButton(buttonID) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "updateAction",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 				},
 			}
@@ -117,13 +124,14 @@
 		}
 	}
 
-	function pressMidiClearButton(groupID, buttonID) {
+	function pressMidiClearButton(buttonID) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "clear",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 				},
 			}
@@ -133,13 +141,14 @@
 		}
 	}
 
-	function pressMidiLearnButton(groupID, buttonID) {
+	function pressMidiLearnButton(buttonID) {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
 					type: "learnButton",
-					groupID: groupID,
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 					buttonID: buttonID,
 				},
 			}
@@ -149,11 +158,11 @@
 		}
 	}
 
-	function setMidiValue(groupID, buttonID, field, value) {
+	function setMidiValue(buttonID, field, value) {
 		document.getElementById("midi" + groupID + "_button" + buttonID + "_" + field).value = value;
 	}
 
-	function startLearnMode(groupID, buttonID, stopText) {
+	function startLearnMode(buttonID) {
 
 		var x = document.getElementsByClassName("midiLearnButton");
 		var i;
@@ -167,16 +176,16 @@
 		  x[i].style.backgroundColor = "";
 		}
 
-		document.getElementById("midi" + groupID + "_button" + buttonID + "_learnButton").style.visibility = "visible";
-		document.getElementById("midi" + groupID + "_button" + buttonID + "_learnButton").innerHTML = stopText;
+		document.getElementById("button" + buttonID + "_learn").style.visibility = "visible";
+		document.getElementById("button" + buttonID + "_learn").innerHTML = '{{ i18n("stop") }}';
 	}
 
-	function stopLearnMode(learnText) {
+	function stopLearnMode() {
 		var x = document.getElementsByClassName("midiLearnButton");
 		var i;
 		for (i = 0; i < x.length; i++) {
 		  x[i].style.visibility = "visible";
-		  x[i].innerHTML = learnText;
+		  x[i].innerHTML = '{{ i18n("learn") }}';
 		}
 
 		var x = document.getElementsByTagName("tr");
@@ -186,25 +195,66 @@
 		}
 	}
 
-	function highlightRowRed(groupID, buttonID) {
-		document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.backgroundColor = "#cc5e53";
-        document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 1s");
+
+
+
+
+
+	/* UPDATED CODE: */
+	function updateUI() {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateUI",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
 	}
 
-	function unhighlightRowRed(groupID, buttonID) {
-		document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.backgroundColor = "";
-        document.getElementById("midiGroup_" + groupID).getElementsByTagName("tr")[buttonID].style.setProperty("-webkit-transition", "background-color 0s");
+	function updateBankLabel() {
+		try {
+			var result = {
+				id: "midiPanelCallback",
+				params: {
+					type: "updateBankLabel",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					bankLabel: document.getElementById("bankLabel").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
 	}
 
-	function saveScrollbarPosition(groupID, element) {
+	function highlightRowRed(buttonID) {
+		document.getElementById("row" + buttonID).style.backgroundColor = "#cc5e53";
+        document.getElementById("row" + buttonID).style.setProperty("-webkit-transition", "background-color 1s");
+	}
+
+	function unhighlightRowRed(buttonID) {
+		document.getElementById("row" + buttonID).style.backgroundColor = "";
+        document.getElementById("row" + buttonID).style.setProperty("-webkit-transition", "background-color 0s");
+	}
+
+	function changeScrollAreaPosition() {
+		var element = document.getElementById("scrollArea")
 		if (element.scrollTop >= 0 && element.scrollTop <= element.scrollHeight) {
 			try {
 				var result = {
 					id: "midiPanelCallback",
 					params: {
 						type: "scrollBarPosition",
-						groupID: groupID,
-						value: element.scrollTop,
+						application: document.getElementById("application").value,
+						bank: document.getElementById("bank").value,
+						position: element.scrollTop,
 					},
 				}
 				postMessage(result);
@@ -214,14 +264,14 @@
 		}
 	}
 
-	function updateMIDIBankLabel() {
+	function updateApplicationAndBank() {
 		try {
 			var result = {
 				id: "midiPanelCallback",
 				params: {
-					type: "updateBankLabel",
-					groupID: document.getElementById("midiGroupSelect").value + document.getElementById("midiSubGroupSelect").value,
-					bankLabel: document.getElementById("midiBankLabel").value,
+					type: "updateApplicationAndBank",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
 				},
 			}
 			postMessage(result);
@@ -230,52 +280,162 @@
 		}
 	}
 
-	function updateMIDIGroup() {
-		try {
-			var result = {
-				id: "midiPanelCallback",
-				params: {
-					type: "updateGroup",
-					groupID: document.getElementById("midiGroupSelect").value + document.getElementById("midiSubGroupSelect").value,
-				},
-			}
-			postMessage(result);
-		} catch(err) {
-			alertErrorMessage(err);
-		}
-	}
 </script>
-<table style="width: 100%; text-align: left; vertical-align: text-bottom; padding-top: 10px;">
+<table style="text-align: left; vertical-align: text-bottom;">
 	<tr>
-		<th style="width: 10%;"><span style="font-weight:bold; font-size:1.17em; padding-left: 20px;">{{ i18nMidiEditor }}</span></th>
-		<th style="width: 30%; text-align: right;"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nApplication }}: </span>
-			<select id="midiGroupSelect" style="width: 150px;" onchange="updateMIDIGroup()">
+		<th style="width: 10px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
+				<option value="All Applications">{{ i18n("allApplications") }}</option>
+				<option disabled>──────────</option>
 				{%
-				for _, v in pairs(groupLabels) do
+				for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
 					local selected = ""
-					local selectedGroup = defaultGroup:sub(1, -2)
-					if v.value == selectedGroup then selected = [[selected=""]] end
+					if lastApplication == id then
+						selected = [[selected=""]]
+					end
 				%}
-				<option {{selected}} value="{{v.value}}">{{v.label}}</option>
+				<option {{selected}} value="{{id}}">{{label}}</option>
 				{% end %}
-			</select>
-		</span></th>
-		<th style="width: 8%;"><span class="midiGroupSelect"><span style="font-weight:normal; font-size:13px;">{{ i18nBank }}: </span>
-			<select id="midiSubGroupSelect" style="width: 50px;" onchange="updateMIDIGroup()">
+				<option disabled>──────────</option>
 				{%
-				for i=1, numberOfSubGroups do
+				local atLeastOne = false
+				for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+					atLeastOne = true
 					local selected = ""
-					local selectedSubGroup = defaultGroup:sub(-1)
-					if tostring(i) == selectedSubGroup then selected = [[selected=""]] end
+					if lastApplication == id then
+						selected = [[selected=""]]
+					end
+				%}
+				<option {{selected}} value="{{id}}">{{label}}</option>
+				{%
+				end
+				if atLeastOne then
+				%}
+				<option disabled>──────────</option>
+				{%
+				end
+				%}
+				<option value="Add Application">{{ i18n("addApplication") }}</option>
+			</select>
+		</th>
+		<th style="width: 40px;"></th>
+		<th style="width: 150px;">
+			<span id="ignoreApp">
+				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("ignoreApplication") }}</span></label>
+	  		</span>
+		</th>
+	</tr>
+</table>
+<table style="text-align: left; vertical-align: text-bottom;">
+	<tr>
+		<th style="width: 10px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="bank" style="width: 35px;" onchange="updateApplicationAndBank()">
+				{%
+				for i=1, numberOfBanks do
+					local selected = ""
+					if lastBank == tostring(i) then
+						selected = [[selected=""]]
+					end
 				%}
 				<option {{selected}} value="{{i}}">{{i}}</option>
 				{% end %}
 			</select>
-		</span></th>
-		<th style="width: 16%; ; text-align: right;"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18nLabel }}: </span>
-			<input type="text" id="midiBankLabel" class="midiLabel" value="{{ bankLabel }}" onchange="updateMIDIBankLabel()" placeholder="{{ i18nNone }}">
 		</th>
-		<th style="width: 1%;"></th>
+		<th style="width: 40px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<input type="text" id="bankLabel" class="midiLabel" value="" onchange="updateBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
 	</tr>
 </table>
-{(html/controls.html, context)}
+
+<div id="midiGroupControls" class="uiItem">
+	<table class="midi">
+		<thead>
+			<tr>
+				<th class="midiRowAction">{{ i18n("action") }}</th>
+				<th class="midiRowActionButton"></th>
+				<th class="midiRowDevice">{{ i18n("device") }}</th>
+				<th class="midiRowType">{{ i18n("commandType") }}</th>
+				<th class="midiRowNumber">{{ i18n("noteCC") }}</th>
+				<th class="midiRowChannel">{{ i18n("channel") }}</th>
+				<th class="midiRowValue">{{ i18n("value") }}</th>
+				<th class="midiRowLearn"></th>
+			</tr>
+		</thead>
+		<tbody onscroll="changeScrollAreaPosition()" id="scrollArea">
+{%
+for i=1,maxItems,1 do
+	local buttonID 		= tostring(i)
+%}
+		<tr id="row{{ buttonID }}">
+			<td class="midiRowAction">
+				<input type="text" id="button{{ buttonID }}_action" class="midiActionTextbox" value="" placeholder="{{ i18n('none') }}" disabled>
+			</td>
+			<td class="midiRowActionButton">
+				<a href="#" class="button midiActionButton" onclick="pressMidiActionButton('{{ buttonID }}')">{{ i18n("select") }}</a>
+			</td>
+			<td class="midiRowDevice">
+				<select id="button{{ buttonID }}_device" style="width:110px;" onchange="changeMidiDevice('{{ buttonID }}', this.value)">
+
+				</select>
+			</td>
+			<td class="midiRowType">
+				<select id="button{{ buttonID }}_commandType" style="width:130px;" onchange="changeMidiCommandType('{{ buttonID }}', this.value)">
+					<option value="">{{ i18n("none") }}</option>
+					<option value="noteOn">{{ i18n("noteOn") }}</option>
+					<option value="controlChange">{{ i18n("controlChange") }}</option>
+					<option value="pitchWheelChange">{{ i18n("pitchWheelChange") }}</option>
+				</select>
+			</td>
+			<td class="midiRowNumber">
+				<input style="width: 35px;" type="text" id="button{{ buttonID }}_number" class="midiButtonLabel" placeholder="{{ i18n('none') }}" onchange="changeMidiNumber('{{ buttonID }}', this.value)">
+			</td>
+			<td class="midiRowChannel">
+				<select id="button{{ buttonID }}_channel" onchange="changeMidiChannel('{{ buttonID }}', this.value)">
+					{%
+					local selected = ""
+					if channel == i18n("none") then selected = [[selected=""]] end
+					%}
+					<option {{selected}} value="">{{i18n("none")}}</option>
+					{% for channelValue=0, 15 do
+						local selected = ""
+						if channel ~= i18n("none") then
+							if tostring(channel) == tostring(channelValue) then selected = [[selected=""]] end
+						end
+						local channelValueString = tostring(channelValue + 1)
+					%}
+						<option {{selected}} value="{{ channelValue }}">{{ channelValueString }}</option>
+					{% end %}
+				</select>
+			</td>
+			<td class="midiRowValue">
+				<input style="width: 40px;" type="text" id="button{{ buttonID }}_value" class="midiButtonLabel" onchange="changeMidiValue('{{ buttonID }}', this.value)" placeholder="{{ i18n("none") }}">
+			</td>
+			<td class="midiRowLearn">
+				<a href="#" class="button midiActionButton midiClearButton" onclick="pressMidiAllButton('{{ buttonID }}')">{{ i18n("all") }}</a>
+				<a href="#" class="button midiActionButton midiClearButton" onclick="pressMidiClearButton('{{ buttonID }}')">{{ i18n("clear") }}</a>
+				<a id="button{{ buttonID }}_learn" href="#" class="button midiActionButton midiLearnButton" onclick="pressMidiLearnButton('{{ buttonID }}')">{{ i18n("learn") }}</a>
+			</td>
+		</tr>
+{%
+end
+%}
+		</tbody>
+	</table>
+</div>
+<script>
+	// Update UI on initial load:
+	updateUI();
+</script>

@@ -2,10 +2,9 @@
 ---
 --- MIDI Manager Controls.
 
-local require = require
+local require   = require
 
-local tools = require("cp.tools")
-
+local tools     = require "cp.tools"
 
 local mod = {}
 

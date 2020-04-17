@@ -249,7 +249,7 @@
 		<th style="width: 150px;">
 			<select id="application" style="width: 150px;" onchange="changeDeviceUnitApplicationBank()">
 				<option value="All Applications">{{ i18n("allApplications") }}</option>
-				<option dttisabled>──────────</option>
+				<option disabled>──────────</option>
 				{%
 				for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
 					local selected = ""

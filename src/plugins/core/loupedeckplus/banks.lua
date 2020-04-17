@@ -23,7 +23,7 @@ function plugin.init(deps)
     local actionmanager = deps.actionmanager
     actionmanager.addHandler("global_loupedeckbanks")
         :onChoices(function(choices)
-            for i=1, manager.numberOfSubGroups do
+            for i=1, manager.numberOfBanks do
                 choices:add(i18n("loupedeckPlus") .. " " .. i18n("bank") .. " " .. tostring(i))
                     :subText(i18n("loupedeckBankDescription"))
                     :params({ id = i })

@@ -966,7 +966,7 @@
 			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
 				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
 					<option value="All Applications">{{ i18n("allApplications") }}</option>
-					<option dttisabled>──────────</option>
+					<option disabled>──────────</option>
 					{%
 					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
 						local selected = ""
