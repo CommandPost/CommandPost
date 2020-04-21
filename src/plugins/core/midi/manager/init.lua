@@ -2,55 +2,54 @@
 ---
 --- MIDI Manager Plugin.
 
-local require = require
+local require               = require
 
-local log         = require "hs.logger".new "midiManager"
+local log                   = require "hs.logger".new "midiManager"
 
-local fnutils     = require "hs.fnutils"
-local midi        = require "hs.midi"
-local timer       = require "hs.timer"
+local application           = require "hs.application"
+local fnutils               = require "hs.fnutils"
+local midi                  = require "hs.midi"
+local timer                 = require "hs.timer"
 
-local config      = require "cp.config"
-local dialog      = require "cp.dialog"
-local i18n        = require "cp.i18n"
-local json        = require "cp.json"
-local prop        = require "cp.prop"
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local json                  = require "cp.json"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
-local controls    = require "controls"
+local controls              = require "controls"
 
-local doAfter     = timer.doAfter
+local displayNotification   = dialog.displayNotification
+local doAfter               = timer.doAfter
+local doesFileExist         = tools.doesFileExist
 
 local mod = {}
 
---- plugins.core.midi.manager.loupedeckFnPressed -> boolean
+-- defaultLayoutPath -> string
+-- Variable
+-- Default Layout Path
+local defaultLayoutPath = config.basePath .. "/plugins/core/midi/default/Default.cpMIDI"
+
+--- plugins.core.midi.manager.defaultLayout -> table
 --- Variable
---- Is the Fn key on the Loupedeck+ pressed?
-mod.loupedeckFnPressed = false
+--- Default Loupedeck CT Layout
+mod.defaultLayout = json.read(defaultLayoutPath)
 
 -- midiActions -> table
 -- Variable
 -- A table of all the MIDI actions.
 local midiActions = {}
 
---- plugins.core.midi.manager.learningMode -> boolean
+--- deviceNames -> table
 --- Variable
---- Whether or not the MIDI Manager is in learning mode.
-mod.learningMode = false
+--- MIDI Device Names.
+local deviceNames = {}
 
---- plugins.core.midi.manager.controls -> table
+--- virtualDevices -> table
 --- Variable
---- Controls
-mod.controls = controls
-
--- plugins.core.midi.manager._deviceNames -> table
--- Variable
--- MIDI Device Names.
-mod._deviceNames = {}
-
--- plugins.core.midi.manager._virtualDevices -> table
--- Variable
--- MIDI Virtual Devices.
-mod._virtualDevices = {}
+--- MIDI Virtual Devices.
+local virtualDevices = {}
 
 --- plugins.core.midi.manager.numberOfBanks -> number
 --- Variable
@@ -62,6 +61,21 @@ mod.numberOfBanks = 9
 --- The maximum number of MIDI items per bank.
 mod.maxItems = 100
 
+--- plugins.core.midi.manager.loupedeckFnPressed -> boolean
+--- Variable
+--- Is the Fn key on the Loupedeck+ pressed?
+mod.loupedeckFnPressed = false
+
+--- plugins.core.midi.manager.learningMode -> boolean
+--- Variable
+--- Whether or not the MIDI Manager is in learning mode.
+mod.learningMode = false
+
+--- plugins.core.midi.manager.controls -> table
+--- Variable
+--- Controls
+mod.controls = controls
+
 --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
@@ -71,6 +85,11 @@ mod.activeBanks = config.prop("midi.activeBanks", {})
 --- Field
 --- Table of active banks for each application.
 mod.activeLoupedeckBanks = config.prop("loupedeckplus.activeBanks", {})
+
+-- plugins.core.midi.manager._items <cp.prop: table>
+-- Field
+-- Contains all the saved MIDI items
+mod.items = nil
 
 -- convertPreferencesToMIDIActions() -> none
 -- Function
@@ -112,7 +131,11 @@ local function convertPreferencesToMIDIActions()
             for bankID, bank in pairs(app) do
                 if type(bank) == "table" then
                     for _, button in pairs(bank) do
-                        if button.device and button.channel and button.commandType and button.commandType == "pitchWheelChange" then
+                        if button.device and button.device ~= ""
+                            and button.channel and button.channel ~= ""
+                            and button.commandType and button.commandType ~= ""
+                            and button.commandType == "pitchWheelChange"
+                        then
                             if not midiActions[bundleID] then
                                 midiActions[bundleID] = {}
                             end
@@ -143,7 +166,12 @@ local function convertPreferencesToMIDIActions()
                                     midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["handlerID"] = button.handlerID
                                 end
                             end
-                        elseif button.device and button.channel and button.commandType and button.number and button.action then
+                        elseif button.device and button.device ~= ""
+                            and button.channel and button.channel ~= ""
+                            and button.commandType and button.commandType ~= ""
+                            and button.number and button.number ~= ""
+                            and button.action and button.action ~= ""
+                        then
                             if type(button.number) == "string" then
                                 button.number = tonumber(button.number)
                             end
@@ -165,7 +193,7 @@ local function convertPreferencesToMIDIActions()
                             if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number] then
                                 midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number] = {}
                             end
-                            if button.value and button.value ~= i18n("none") and button.handlerID and string.sub(button.handlerID, -13) ~= "_midicontrols" then
+                            if button.value and button.value ~= "" and button.handlerID and string.sub(button.handlerID, -13) ~= "_midicontrols" then
                                 if button.action then
                                     if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value] then
                                         midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value] = {}
@@ -218,9 +246,9 @@ local function convertPreferencesToMIDIActions()
     -- just ignore whatever the lights say, and the knobs do the same thing in
     -- CommandPost regardless of what "mode" the Loupedeck+ is in.
     --------------------------------------------------------------------------------
-    local loupedeckItems = mod._loupedeckItems()
+    local loupedeckItems = mod.loupedeckItems()
 
-    for bundleID, app in pairs(items) do
+    for bundleID, app in pairs(loupedeckItems) do
         if type(app) == "table" then
             for bankID, bank in pairs(app) do
                 if type("bank") == "table" then
@@ -365,92 +393,7 @@ end
 -- plugins.core.midi.manager._loupedeckItems <cp.prop: table>
 -- Field
 -- Contains all the saved MIDI Loupedeck+ items
-mod._loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck", "Default v2.cpLoupedeck", {}):watch(convertPreferencesToMIDIActions)
-
--- plugins.core.midi.manager._items <cp.prop: table>
--- Field
--- Contains all the saved MIDI items
-mod.items = json.prop(config.userConfigRootPath, "MIDI Controls", "Default v2.cpMIDI", {}):watch(convertPreferencesToMIDIActions)
-
---- plugins.core.midi.manager.clear() -> none
---- Function
---- Clears the MIDI items.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.clear()
-    mod.items({})
-    mod.update()
-end
-
---- plugins.core.midi.manager.updateAction(button, bundleID, bankID, actionTitle, handlerID, action) -> none
---- Function
---- Updates a MIDI action.
----
---- Parameters:
----  * button - Button ID as string
----  * bundleID - The application bundle ID as string
----  * bankID - The bank ID as string
----  * actionTitle - Action Title as string
----  * handlerID - Handler ID as string
----  * action - Action in a table
----
---- Returns:
----  * None
-function mod.updateAction(button, bundleID, bankID, actionTitle, handlerID, action)
-    local items = mod.items()
-
-    button = tostring(button)
-
-    if not items[bundleID] then items[bundleID] = {} end
-    if not items[bundleID][bankID] then items[bundleID][bankID] = {} end
-    if not items[bundleID][bankID][button] then items[bundleID][bankID][button] = {} end
-
-    --------------------------------------------------------------------------------
-    -- Process Stylised Text:
-    --------------------------------------------------------------------------------
-    if actionTitle and type(actionTitle) == "userdata" then
-        actionTitle = actionTitle:convert("text")
-    end
-
-    items[bundleID][bankID][button]["actionTitle"] = actionTitle
-    items[bundleID][bankID][button]["handlerID"] = handlerID
-    items[bundleID][bankID][button]["action"] = action
-
-    mod.items(items)
-    mod.update()
-end
-
---- plugins.core.midi.manager.setItem(item, button, bundleID, bankID, value) -> none
---- Function
---- Stores a MIDI item in Preferences.
----
---- Parameters:
----  * item - The item you want to set.
----  * button - Button ID as string
----  * bundleID - The application bundle ID as string
----  * bankID - The bank ID as string
----  * value - The value of the item you want to set.
----
---- Returns:
----  * None
-function mod.setItem(item, button, bundleID, bankID, value)
-    local items = mod.items()
-
-    button = tostring(button)
-
-    if not items[bundleID] then items[bundleID] = {} end
-    if not items[bundleID][bankID] then items[bundleID][bankID] = {} end
-    if not items[bundleID][bankID][button] then items[bundleID][bankID][button] = {} end
-
-    items[bundleID][bankID][button][item] = value
-
-    mod.items(items)
-    mod.update()
-end
+mod.loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck", "Default v2.cpLoupedeck", {}):watch(convertPreferencesToMIDIActions)
 
 --- plugins.core.midi.manager.getItem(item, button, group) -> table
 --- Function
@@ -468,84 +411,23 @@ function mod.getItem(item, button, bundleID, bankID)
     return items and items[bundleID] and items[bundleID][bankID] and items[bundleID][bankID][button] and items[bundleID][bankID][button][item]
 end
 
---- plugins.core.midi.manager.setBankLabel(group, label) -> none
---- Function
---- Sets a MIDI Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----  * label - Label as string
----
---- Returns:
----  * None
-function mod.setBankLabel(bundleID, bankID, label)
-    local items = mod.items()
-
-    if not items[bundleID] then items[bundleID] = {} end
-    if not items[bundleID][bankID] then items[bundleID][bankID] = {} end
-    items[bundleID][bankID]["bankLabel"] = label
-
-    mod.items(items)
-    mod.update()
-end
-
---- plugins.core.midi.manager.getBankLabel(group) -> string
---- Function
---- Returns a specific MIDI Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getBankLabel(group)
-    local items = mod.items()
-    return items and items[bundleID] and items[bundleID][bankID] and items[bundleID][bankID] and items[bundleID][bankID]["bankLabel"]
-end
-
---- plugins.core.midi.manager.getLoupedeckBankLabel(group) -> string
---- Function
---- Returns a specific Loupedeck Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getLoupedeckBankLabel(group)
-    local items = mod._loupedeckItems()
-    return items and items[bundleID] and items[bundleID][bankID] and items[bundleID][bankID] and items[bundleID][bankID]["bankLabel"]
-end
-
---- plugins.core.midi.manager.getItems() -> tables
---- Function
---- Gets all the MIDI items in a table.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table
-function mod.getItems()
-    return mod.items()
-end
-
---- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
---- Function
---- MIDI Callback
----
---- Parameters:
----  * object - The `hs.midi` userdata object
----  * deviceName - Device name as string
----  * commandType - Command Type as string
----  * description - Description as string
----  * metadata - A table containing metadata for the MIDI command
----
---- Returns:
----  * None
-function mod.midiCallback(_, deviceName, commandType, _, metadata)
+-- callback(object, deviceName, commandType, description, metadata) -> none
+-- Function
+-- MIDI Callback
+--
+-- Parameters:
+--  * object - The `hs.midi` userdata object
+--  * deviceName - Device name as string
+--  * commandType - Command Type as string
+--  * description - Description as string
+--  * metadata - A table containing metadata for the MIDI command
+--
+-- Returns:
+--  * None
+local function callback(_, deviceName, commandType, _, metadata)
 
     if mod.learningMode then
+        log.df("Currently in Learning Mode, so ignorning MIDI callbacks.")
         return
     end
 
@@ -574,24 +456,21 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
             end
         end
         if mod.loupedeckFnPressed then
-            group = group .. "fn"
+            bankID = bankID .. "fn"
         end
     else
+        --------------------------------------------------------------------------------
+        -- Revert to "All Applications" if no settings for frontmost app exist:
+        --------------------------------------------------------------------------------
+        local items = mod.items()
+        if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
         --------------------------------------------------------------------------------
         -- Get active bank from preferences:
         --------------------------------------------------------------------------------
         local activeBanks = mod.activeBanks()
-        if activeBanks[bundleID] then
-            bankID = activeBanks[bundleID]
-        end
-
-        --------------------------------------------------------------------------------
-        -- Revert to "All Applications" if no settings for frontmost app exist:
-        --------------------------------------------------------------------------------
-        if not actions[bundleID] then
-            bundleID = "All Applications"
-        end
-
         bankID = activeBanks[bundleID] or "1"
     end
 
@@ -613,6 +492,12 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
     local ch = device and device[channel]
     local ct = ch and ch[commandType]
     local cn = ct and ct[controllerNumber]
+
+    --[[
+    log.df("bundleID: %s", bundleID)
+    log.df("bankID: %s", bankID)
+    log.df("ct: %s", ct)
+    --]]
 
     if ct then
         if commandType == "pitchWheelChange" then
@@ -679,7 +564,7 @@ end
 --- Returns:
 ---  * A table of Physical MIDI Device Names.
 function mod.devices()
-    return mod._deviceNames
+    return deviceNames
 end
 
 --- plugins.core.midi.manager.virtualDevices() -> table
@@ -692,7 +577,7 @@ end
 --- Returns:
 ---  * A table of Virtual MIDI Source Names.
 function mod.virtualDevices()
-    return mod._virtualDevices
+    return virtualDevices
 end
 
 --- plugins.core.midi.manager.getDevice(deviceName, virtual) -> hs.midi object | nil
@@ -731,9 +616,17 @@ function mod.start()
     --------------------------------------------------------------------------------
     local items = mod.items()
     local usedDevices = {}
-    for _, v in pairs(items) do
-        for _, vv in pairs(v) do
-            table.insert(usedDevices, vv.device)
+    for _, app in pairs(items) do
+        if type(app) == "table" then
+            for _, bank in pairs(app) do
+                if type(bank) == "table" then
+                    for _, item in pairs(bank) do
+                        if item.device then
+                            table.insert(usedDevices, item.device)
+                        end
+                    end
+                end
+            end
         end
     end
 
@@ -762,16 +655,16 @@ function mod.start()
         if not mod._midiDevices[deviceName] then
             if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
-                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
-                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                        mod._midiDevices[deviceName]:callback(callback)
                     end
                 else
-                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
-                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                        mod._midiDevices[deviceName]:callback(callback)
                     end
                 end
             end
@@ -839,7 +732,55 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Migrate old preferences to newer format if 'Default v2.cpMIDI' doesn't
+    -- already exist, and if we haven't already upgraded previously:
+    --------------------------------------------------------------------------------
+    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/MIDI Controls/Default v2.cpMIDI")
+    mod.items = json.prop(config.userConfigRootPath, "MIDI Controls", "Default v2.cpMIDI", mod.defaultLayout):watch(convertPreferencesToMIDIActions)
+    if not newLayoutExists then
+        local updatedPreferencesToV2 = config.prop("midi.updatedPreferencesToV2", false)
+        local legacyPath = config.userConfigRootPath .. "/MIDI Controls/Default.cpMIDI"
+        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+            local legacyPreferences = json.read(legacyPath)
+            local newData = {}
+
+            if legacyPreferences then
+                for groupID, data in pairs(legacyPreferences) do
+
+                    local bundleID
+                    local bankID
+                    if string.sub(groupID, 1, 4) == "fcpx" then
+                        bundleID = "com.apple.FinalCut"
+                        bankID = string.sub(groupID, 5)
+                    end
+                    if string.sub(groupID, 1, 6) == "global" then
+                        bundleID = "All Applications"
+                        bankID = string.sub(groupID, 7)
+                    end
+
+                    if not newData[bundleID] then newData[bundleID] = {} end
+                    newData[bundleID][bankID] = fnutils.copy(data)
+
+                    --------------------------------------------------------------------------------
+                    -- For some stupid reason, some values have "None" as a value instead of
+                    -- just `nil` or "", so let's correct this:
+                    --------------------------------------------------------------------------------
+                    for buttonID, buttonData in pairs(newData[bundleID][bankID]) do
+                        if buttonData.value == i18n("none") then
+                            newData[bundleID][bankID][buttonID].value = ""
+                        end
+                    end
+                end
+                updatedPreferencesToV2(true)
+                mod.items(newData)
+
+                log.df("Upgraded MIDI Preferences from Default.cpMIDI to Default v2.cpMIDI.")
+            end
+        end
+    end
+
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
@@ -852,17 +793,17 @@ function plugin.init(deps, env)
     -- enabled or not so that we can refresh the MIDI Preferences panel if a MIDI
     -- device is added or removed.
     --------------------------------------------------------------------------------
-    midi.deviceCallback(function(devices, virtualDevices)
+    midi.deviceCallback(function(devices, vDevices)
         --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
-        mod._deviceNames = devices
-        mod._virtualDevices = virtualDevices
-        mod.numberOfMidiDevices(#devices + #virtualDevices)
+        deviceNames = devices
+        virtualDevices = vDevices
+        mod.numberOfMidiDevices(#devices + #vDevices)
     end)
 
     --------------------------------------------------------------------------------
     -- Get list of MIDI devices:
     --------------------------------------------------------------------------------
-    mod._deviceNames = midi.devices() or {}
+    deviceNames = midi.devices() or {}
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
@@ -873,6 +814,87 @@ function plugin.init(deps, env)
             mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
+
+    --------------------------------------------------------------------------------
+    -- Setup Bank Actions:
+    --------------------------------------------------------------------------------
+    local actionmanager = deps.actionmanager
+    actionmanager.addHandler("global_midibanks")
+        :onChoices(function(choices)
+            for i=1, mod.numberOfBanks do
+                choices:add(i18n("midi") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("midiBankDescription"))
+                    :params({ id = i })
+                    :id(i)
+            end
+
+            choices:add(i18n("next") .. " " .. i18n("midi") .. " " .. i18n("bank"))
+                :subText(i18n("midiBankDescription"))
+                :params({ id = "next" })
+                :id("next")
+
+            choices:add(i18n("previous") .. " " .. i18n("midi") .. " " .. i18n("bank"))
+                :subText(i18n("midiBankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.items()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                local activeBanks = mod.activeBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == mod.numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(mod.numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                mod.activeBanks(activeBanks)
+
+                --mod.refresh()
+
+                items = mod.items() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "midiBank" .. action.id end)
 
     return mod
 end

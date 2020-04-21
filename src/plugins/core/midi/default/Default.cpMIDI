@@ -1,0 +1,256 @@
+{
+  "com.apple.Compressor" : {
+    "ignore" : true
+  },
+  "All Applications" : {
+    "7" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "3" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "8" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "4" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "9" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "5" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "1" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "6" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    },
+    "2" : {
+      "2" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "previous"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Previous MIDI Bank"
+      },
+      "1" : {
+        "device" : "",
+        "channel" : "",
+        "action" : {
+          "id" : "next"
+        },
+        "number" : "",
+        "handlerID" : "global_midibanks",
+        "commandType" : "",
+        "value" : "",
+        "actionTitle" : "Next MIDI Bank"
+      }
+    }
+  },
+  "com.apple.FinalCut" : {
+    "ignore" : true
+  },
+  "com.apple.motionapp" : {
+    "ignore" : true
+  },
+  "com.blackmagic-design.DaVinciResolve" : {
+    "ignore" : true
+  },
+  "org.latenitefilms.CommandPost" : {
+    "ignore" : true
+  },
+  "com.apple.finder" : {
+    "ignore" : true
+  }
+}
