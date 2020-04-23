@@ -158,8 +158,8 @@ local function generateContent()
 
         spairs                  = spairs,
 
-        numberOfBanks           = mod._sd.numberOfBanks,
-        numberOfDevices         = mod._sd.numberOfDevices,
+        numberOfBanks           = mod.numberOfBanks,
+        numberOfDevices         = mod.numberOfDevices,
 
         lastApplication         = mod.lastApplication(),
         lastBank                = mod.lastBank(),
@@ -1044,7 +1044,7 @@ local function streamDeckPanelCallback(id, params)
             }
 
             for deviceLabel, deviceID in pairs(devices) do
-                for unitID=1, mod._sd.numberOfDevices do
+                for unitID=1, mod.numberOfDevices do
                     table.insert(menu, {
                         title = deviceLabel .. " " .. unitID,
                         fn = function() copyUnit(deviceID, tostring(unitID)) end
@@ -1141,8 +1141,6 @@ local function streamDeckPanelCallback(id, params)
             local device = params["device"]
             local unit = params["unit"]
 
-            local numberOfBanks = mod._sd.numberOfBanks
-
             local copyToBank = function(destinationBank)
                 local items = mod.items()
                 local app = mod.lastApplication()
@@ -1167,7 +1165,7 @@ local function streamDeckPanelCallback(id, params)
                 disabled = true,
             })
 
-            for i=1, numberOfBanks do
+            for i=1, mod.numberOfBanks do
                 table.insert(menu, {
                     title = tostring(i),
                     fn = function() copyToBank(tostring(i)) end
@@ -1352,17 +1350,18 @@ local function streamDeckPanelCallback(id, params)
     end
 end
 
---- plugins.core.streamdeck.prefs.init(deps, env) -> module
---- Function
---- Initialise the Module.
----
---- Parameters:
----  * deps - Dependancies Table
----  * env - Environment Table
----
---- Returns:
----  * The Module
-function mod.init(deps, env)
+local plugin = {
+    id              = "core.streamdeck.prefs",
+    group           = "core",
+    dependencies    = {
+        ["core.controlsurfaces.manager"]    = "manager",
+        ["core.streamdeck.manager"]         = "sd",
+        ["core.action.manager"]             = "actionmanager",
+        ["core.application.manager"]        = "appmanager",
+    }
+}
+
+function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
@@ -1375,6 +1374,9 @@ function mod.init(deps, env)
 
     mod.items           = deps.sd.items
     mod.enabled         = deps.sd.enabled
+
+    mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
+    mod.numberOfDevices = deps.manager.NUMBER_OF_DEVICES
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -1411,21 +1413,6 @@ function mod.init(deps, env)
     mod._panel:addHandler("onchange", "streamDeckPanelCallback", streamDeckPanelCallback)
 
     return mod
-end
-
-local plugin = {
-    id              = "core.streamdeck.prefs",
-    group           = "core",
-    dependencies    = {
-        ["core.controlsurfaces.manager"]    = "manager",
-        ["core.streamdeck.manager"]         = "sd",
-        ["core.action.manager"]             = "actionmanager",
-        ["core.application.manager"]        = "appmanager",
-    }
-}
-
-function plugin.init(deps, env)
-    return mod.init(deps, env)
 end
 
 return plugin

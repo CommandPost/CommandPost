@@ -8,7 +8,10 @@ local config    = require "cp.config"
 
 local mod = {}
 
-mod._applications = {}
+-- applications -> table
+-- Variable
+-- A table of registered applications.
+local applications = {}
 
 --- plugins.core.application.manager.registerApplication(data) -> none
 --- Function
@@ -27,7 +30,7 @@ mod._applications = {}
 ---   * searchConsoleToolbar - A table containing the Search Console Toolbar information
 ---   * legacyGroupID - A string containing the legacy group ID (i.e. "fcpx")
 function mod.registerApplication(data)
-    mod._applications[data.bundleID] = {
+    applications[data.bundleID] = {
         displayName             = data.displayName,
         searchConsoleToolbar    = data.searchConsoleToolbar,
         legacyGroupID           = data.legacyGroupID,
@@ -44,7 +47,7 @@ end
 --- Returns:
 ---  * A table of all the registered applications.
 function mod.getApplications()
-    return mod._applications
+    return applications
 end
 
 --- plugins.core.application.manager.getSearchConsoleToolbar(bundleID) -> table
@@ -57,7 +60,7 @@ end
 --- Returns:
 ---  * A table of the Search Sonole Toolbar data for the specified application.
 function mod.getSearchConsoleToolbar(bundleID)
-    return mod._applications[bundleID] and mod._applications[bundleID].searchConsoleToolbar
+    return applications[bundleID] and applications[bundleID].searchConsoleToolbar
 end
 
 --- plugins.core.application.manager.defaultSearchConsoleToolbar() -> table

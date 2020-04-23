@@ -170,7 +170,7 @@ local function generateContent()
 
         spairs                      = spairs,
 
-        numberOfBanks               = mod._ctmanager.numberOfBanks,
+        numberOfBanks               = mod.numberOfBanks,
         i18n                        = i18n,
 
         lastApplication             = mod.lastApplication(),
@@ -1600,7 +1600,7 @@ local function loupedeckCTPanelCallback(id, params)
             end
 
             if data then
-                for b=1, mod._ctmanager.numberOfBanks do
+                for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
                     if not items[app] then items[app] = {} end
                     if not items[app][b] then items[app][b] = {} end
@@ -1777,7 +1777,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Copy Bank:
             --------------------------------------------------------------------------------
-            local numberOfBanks = mod._ctmanager.numberOfBanks
+            local numberOfBanks = mod.numberOfBanks
 
             local copyToBank = function(destinationBank)
                 local items = mod.items()
@@ -2006,18 +2006,18 @@ function mod._displayBooleanToString(value)
     end
 end
 
---- plugins.core.loupedeckct.prefs.init(deps, env) -> module
---- Function
---- Initialise the Module.
----
---- Parameters:
----  * deps - Dependancies Table
----  * env - Environment Table
----
---- Returns:
----  * The Module
-function mod.init(deps, env)
+local plugin = {
+    id              = "core.loupedeckct.prefs",
+    group           = "core",
+    dependencies    = {
+        ["core.controlsurfaces.manager"]    = "manager",
+        ["core.action.manager"]             = "actionmanager",
+        ["core.loupedeckct.manager"]        = "ctmanager",
+        ["core.application.manager"]        = "appmanager",
+    }
+}
 
+function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Define the Panel ID:
     --------------------------------------------------------------------------------
@@ -2037,6 +2037,8 @@ function mod.init(deps, env)
     mod.enabled                 = deps.ctmanager.enabled
     mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
     mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
+
+    mod.numberOfBanks           = deps.appmanager.NUMBER_OF_BANKS
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -2131,22 +2133,6 @@ function mod.init(deps, env)
     mod._panel:addHandler("onchange", "loupedeckCTPanelCallback", loupedeckCTPanelCallback)
 
     return mod
-
-end
-
-local plugin = {
-    id              = "core.loupedeckct.prefs",
-    group           = "core",
-    dependencies    = {
-        ["core.controlsurfaces.manager"]    = "manager",
-        ["core.action.manager"]             = "actionmanager",
-        ["core.loupedeckct.manager"]        = "ctmanager",
-        ["core.application.manager"]        = "appmanager",
-    }
-}
-
-function plugin.init(deps, env)
-    return mod.init(deps, env)
 end
 
 return plugin

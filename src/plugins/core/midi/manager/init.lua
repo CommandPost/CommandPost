@@ -26,15 +26,15 @@ local doesFileExist         = tools.doesFileExist
 
 local mod = {}
 
--- defaultLayoutPath -> string
--- Variable
--- Default Layout Path
-local defaultLayoutPath = config.basePath .. "/plugins/core/midi/default/Default.cpMIDI"
-
 --- plugins.core.midi.manager.defaultLayout -> table
 --- Variable
---- Default Loupedeck CT Layout
-mod.defaultLayout = json.read(defaultLayoutPath)
+--- Default MIDI Layout
+mod.defaultLayout = json.read(config.basePath .. "/plugins/core/midi/default/Default.cpMIDI")
+
+--- plugins.core.midi.manager.defaultLoupedeckLayout -> table
+--- Variable
+--- Default Loupedeck+ Layout
+mod.defaultLoupedeckLayout = json.read(config.basePath .. "/plugins/core/loupedeckplus/default/Default.cpLoupedeck")
 
 -- midiActions -> table
 -- Variable
@@ -50,11 +50,6 @@ local deviceNames = {}
 --- Variable
 --- MIDI Virtual Devices.
 local virtualDevices = {}
-
---- plugins.core.midi.manager.numberOfBanks -> number
---- Variable
---- The number of banks per application.
-mod.numberOfBanks = 9
 
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
@@ -729,6 +724,8 @@ local plugin = {
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
         ["core.commands.global"]            = "global",
+        ["core.application.manager"]        = "appmanager",
+        ["core.controlsurfaces.manager"]    = "csman",
     }
 }
 
@@ -816,12 +813,13 @@ function plugin.init(deps)
         :groupedBy("commandPost")
 
     --------------------------------------------------------------------------------
-    -- Setup Bank Actions:
+    -- Setup MIDI Bank Actions:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
+    local numberOfBanks = deps.csman.NUMBER_OF_BANKS
     actionmanager.addHandler("global_midibanks")
         :onChoices(function(choices)
-            for i=1, mod.numberOfBanks do
+            for i=1, numberOfBanks do
                 choices:add(i18n("midi") .. " " .. i18n("bank") .. " " .. tostring(i))
                     :subText(i18n("midiBankDescription"))
                     :params({ id = i })
@@ -869,14 +867,14 @@ function plugin.init(deps)
                     activeBanks[bundleID] = tostring(result.id)
                 else
                     if result.id == "next" then
-                        if currentBank == mod.numberOfBanks then
+                        if currentBank == numberOfBanks then
                             activeBanks[bundleID] = "1"
                         else
                             activeBanks[bundleID] = tostring(currentBank + 1)
                         end
                     elseif result.id == "previous" then
                         if currentBank == 1 then
-                            activeBanks[bundleID] = tostring(mod.numberOfBanks)
+                            activeBanks[bundleID] = tostring(numberOfBanks)
                         else
                             activeBanks[bundleID] = tostring(currentBank - 1)
                         end
@@ -887,14 +885,90 @@ function plugin.init(deps)
 
                 mod.activeBanks(activeBanks)
 
-                --mod.refresh()
-
                 items = mod.items() -- Reload items
                 local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
                 displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
             end
         end)
         :onActionId(function(action) return "midiBank" .. action.id end)
+
+    --------------------------------------------------------------------------------
+    -- Setup Loupedeck+ Bank Actions:
+    --------------------------------------------------------------------------------
+    actionmanager.addHandler("global_loupedeckbanks")
+        :onChoices(function(choices)
+            for i=1, numberOfBanks do
+                choices:add(i18n("loupedeckPlus") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("loupedeckBankDescription"))
+                    :params({ id = i })
+                    :id(i)
+            end
+
+            choices:add(i18n("next") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckBankDescription"))
+                :params({ id = "next" })
+                :id("next")
+
+            choices:add(i18n("previous") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckBankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.loupedeckItems()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                local activeBanks = mod.activeLoupedeckBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                mod.activeLoupedeckBanks(activeBanks)
+
+                items = mod.loupedeckItems() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                displayNotification(i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "loupedeckBank" .. action.id end)
 
     return mod
 end

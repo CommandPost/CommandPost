@@ -167,7 +167,7 @@ local function generateContent()
         builtInApps                 = builtInApps,
         userApps                    = userApps,
 
-        numberOfBanks               = mod._midi.numberOfBanks,
+        numberOfBanks               = mod.numberOfBanks,
         maxItems                    = mod._midi.maxItems,
 
         i18n                        = i18n,
@@ -812,7 +812,7 @@ local function midiPanelCallback(id, params)
             local actionTitle = item and item.actionTitle or ""
             local handlerID = item and item.handlerID or ""
 
-            for i = 1, mod._midi.numberOfBanks do
+            for i = 1, mod.numberOfBanks do
                 local bankID = tostring(i)
                 setItem("device", button, app, bankID, device)
                 setItem("channel", button, app, bankID, channel)
@@ -1114,7 +1114,7 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Copy Bank:
             --------------------------------------------------------------------------------
-            local numberOfBanks = mod._midi.numberOfBanks
+            local numberOfBanks = mod.numberOfBanks
 
             local copyToBank = function(destinationBank)
                 local items = mod.items()
@@ -1325,6 +1325,8 @@ function plugin.init(deps, env)
     mod._env            = env
 
     mod.items           = deps.midi.items
+
+    mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
 
     --------------------------------------------------------------------------------
     -- Refresh the webview if MIDI devices are added or removed.
