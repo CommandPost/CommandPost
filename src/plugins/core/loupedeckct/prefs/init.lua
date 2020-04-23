@@ -2019,11 +2019,6 @@ local plugin = {
 
 function plugin.init(deps, env)
     --------------------------------------------------------------------------------
-    -- Define the Panel ID:
-    --------------------------------------------------------------------------------
-    local panelID = "loupedeckct"
-
-    --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._appmanager             = deps.appmanager
@@ -2038,7 +2033,7 @@ function plugin.init(deps, env)
     mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
     mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
 
-    mod.numberOfBanks           = deps.appmanager.NUMBER_OF_BANKS
+    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -2066,7 +2061,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033.1,
-        id              = panelID,
+        id              = "loupedeckct",
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
