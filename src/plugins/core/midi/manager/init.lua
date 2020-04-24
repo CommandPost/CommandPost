@@ -27,6 +27,21 @@ local doesFileExist         = tools.doesFileExist
 
 local mod = {}
 
+--- plugins.core.midi.manager.maxItems -> number
+--- Variable
+--- The maximum number of MIDI items per bank.
+mod.maxItems = 100
+
+--- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeBanks = config.prop("midi.activeBanks", {})
+
+--- plugins.core.loupedeckct.manager.activeLoupedeckBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeLoupedeckBanks = config.prop("loupedeckplus.activeBanks", {})
+
 --- plugins.core.midi.manager.defaultLayout -> table
 --- Variable
 --- Default MIDI Layout
@@ -36,6 +51,16 @@ mod.defaultLayout = json.read(config.basePath .. "/plugins/core/midi/default/Def
 --- Variable
 --- Default Loupedeck+ Layout
 mod.defaultLoupedeckLayout = json.read(config.basePath .. "/plugins/core/loupedeckplus/default/Default.cpLoupedeck")
+
+--- plugins.core.midi.manager.learningMode -> boolean
+--- Variable
+--- Whether or not the MIDI Manager is in learning mode.
+mod.learningMode = false
+
+--- plugins.core.midi.manager.controls -> table
+--- Variable
+--- Controls
+mod.controls = controls
 
 -- midiActions -> table
 -- Variable
@@ -52,40 +77,10 @@ local deviceNames = {}
 --- MIDI Virtual Devices.
 local virtualDevices = {}
 
---- plugins.core.midi.manager.maxItems -> number
---- Variable
---- The maximum number of MIDI items per bank.
-mod.maxItems = 100
-
---- plugins.core.midi.manager.loupedeckFnPressed -> boolean
---- Variable
---- Is the Fn key on the Loupedeck+ pressed?
-mod.loupedeckFnPressed = false
-
---- plugins.core.midi.manager.learningMode -> boolean
---- Variable
---- Whether or not the MIDI Manager is in learning mode.
-mod.learningMode = false
-
---- plugins.core.midi.manager.controls -> table
---- Variable
---- Controls
-mod.controls = controls
-
---- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
---- Field
---- Table of active banks for each application.
-mod.activeBanks = config.prop("midi.activeBanks", {})
-
---- plugins.core.loupedeckct.manager.activeLoupedeckBanks <cp.prop: table>
---- Field
---- Table of active banks for each application.
-mod.activeLoupedeckBanks = config.prop("loupedeckplus.activeBanks", {})
-
--- plugins.core.midi.manager._items <cp.prop: table>
--- Field
--- Contains all the saved MIDI items
-mod.items = nil
+-- loupedeckFnPressed -> boolean
+-- Variable
+-- Is the Fn key on the Loupedeck+ pressed?
+local loupedeckFnPressed = false
 
 -- convertPreferencesToMIDIActions() -> none
 -- Function
@@ -428,7 +423,7 @@ end
 local function callback(_, deviceName, commandType, _, metadata)
 
     if mod.learningMode then
-        log.df("Currently in Learning Mode, so ignorning MIDI callbacks.")
+        --log.df("Currently in Learning Mode, so ignorning MIDI callbacks.")
         return
     end
 
@@ -447,6 +442,13 @@ local function callback(_, deviceName, commandType, _, metadata)
         end
 
         --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        if items[bundleID].ignore and items[bundleID].ignore == true then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
         -- Get active bank from preferences:
         --------------------------------------------------------------------------------
         local activeLoupedeckBanks = mod.activeLoupedeckBanks()
@@ -457,12 +459,12 @@ local function callback(_, deviceName, commandType, _, metadata)
         --------------------------------------------------------------------------------
         if metadata.note and metadata.note == 110 and metadata.channel and metadata.channel == 0 then
             if commandType == "noteOn" then
-                mod.loupedeckFnPressed = true
+                loupedeckFnPressed = true
             elseif commandType == "noteOff" then
-                mod.loupedeckFnPressed = false
+                loupedeckFnPressed = false
             end
         end
-        if mod.loupedeckFnPressed then
+        if loupedeckFnPressed then
             bankID = bankID .. "fn"
         end
     else
@@ -471,6 +473,13 @@ local function callback(_, deviceName, commandType, _, metadata)
         --------------------------------------------------------------------------------
         local items = mod.items()
         if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        if items[bundleID].ignore and items[bundleID].ignore == true then
             bundleID = "All Applications"
         end
 
@@ -499,13 +508,6 @@ local function callback(_, deviceName, commandType, _, metadata)
     local ch = device and device[channel]
     local ct = ch and ch[commandType]
     local cn = ct and ct[controllerNumber]
-
-    --[[
-    log.df("bundleID: %s", bundleID)
-    log.df("bankID: %s", bankID)
-    log.df("deviceName: %s", deviceName)
-    log.df("midiActions: %s", hs.inspect(midiActions))
-    --]]
 
     if ct then
         if commandType == "pitchWheelChange" then
@@ -663,13 +665,13 @@ function mod.start()
         if not mod._midiDevices[deviceName] then
             if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
-                    log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(callback)
                     end
                 else
-                    log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(callback)

@@ -25,6 +25,7 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
 local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
@@ -260,7 +261,7 @@ local function updateUI(params)
         local buttonData = bankData and bankData[tostring(i)]
         if buttonData and buttonData.actionTitle and buttonData.actionTitle ~= "" then
             script = script .. [[
-                document.getElementById("action_]] .. tostring(i) .. [[").value = "]] .. buttonData.actionTitle .. [[";
+                document.getElementById("action_]] .. tostring(i) .. [[").value = `]] .. escapeTilda(buttonData.actionTitle) .. [[`;
             ]] .. "\n"
         else
             script = script .. [[
@@ -297,7 +298,7 @@ local function updateUI(params)
     local bankLabel = bankData and bankData.bankLabel
     if bankLabel and bankLabel ~= "" then
         script = script .. [[
-            document.getElementById("bankLabel").value = "]] .. bankLabel .. [[";
+            document.getElementById("bankLabel").value = `]] .. escapeTilda(bankLabel) .. [[`;
         ]] .. "\n"
     else
         script = script .. [[

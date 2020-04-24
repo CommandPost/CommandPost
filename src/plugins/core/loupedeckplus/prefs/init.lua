@@ -22,6 +22,7 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local escapeTilda               = tools.escapeTilda
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
@@ -205,9 +206,9 @@ local function updateUI()
         end
     end
     script = script .. [[
-        changeValueByID('press_action', ']] .. pressValue .. [[');
-        changeValueByID('left_action', ']] .. leftValue .. [[');
-        changeValueByID('right_action', ']] .. rightValue .. [[');
+        changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
+        changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
+        changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
     ]]
 
     --------------------------------------------------------------------------------
@@ -461,7 +462,7 @@ local function loupedeckPanelCallback(id, params)
                     mod.lastImportPath(lastImportPath)
                 end
 
-                local path = chooseFileOrFolder(i18n("pleaseSelectAFileToImport") .. ":", lastImportPath, true, false, false, {"cpLoupedeck"})
+                local path = chooseFileOrFolder(i18n("pleaseSelectAFileToImport") .. ":", lastImportPath, true, false, false, {"cpLoupedeckPlus"})
                 if path and path["1"] then
                     local data = json.read(path["1"])
                     if data then
@@ -536,7 +537,7 @@ local function loupedeckPanelCallback(id, params)
                 local path = chooseFileOrFolder(i18n("pleaseSelectAFolderToExportTo") .. ":", lastExportPath, false, true, false)
                 if path and path["1"] then
                     mod.lastExportPath(path["1"])
-                    json.write(path["1"] .. "/" .. filename .. " - " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeck", data)
+                    json.write(path["1"] .. "/" .. filename .. " - " .. os.date("%Y%m%d %H%M") .. ".cpLoupedeckPlus", data)
                 end
             end
 
@@ -788,7 +789,7 @@ function plugin.init(deps, env)
         label           = i18n("loupedeckPlus"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = i18n("loupedeckPlus"),
-        height          = 800,
+        height          = 805,
     })
         :addHeading(6, "Loupedeck+")
         :addCheckbox(7,

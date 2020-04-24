@@ -25,6 +25,7 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local delayed                   = timer.delayed
 local doesDirectoryExist        = tools.doesDirectoryExist
+local escapeTilda               = tools.escapeTilda
 local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
@@ -326,14 +327,12 @@ local function updateUI(highlightRow)
         end
 
         script = script .. [[
-            changeValueByID('button]] .. buttonID .. [[_action', ']] .. action .. [[');
+            changeValueByID('button]] .. buttonID .. [[_action', `]] .. escapeTilda(action) .. [[`);
             changeValueByID('button]] .. buttonID .. [[_device', ']] .. device .. [[');
             changeValueByID('button]] .. buttonID .. [[_commandType', ']] .. commandType .. [[');
             changeValueByID('button]] .. buttonID .. [[_number', ']] .. number .. [[');
             changeValueByID('button]] .. buttonID .. [[_channel', ']] .. channel .. [[');
             changeValueByID('button]] .. buttonID .. [[_value', ']] .. value .. [[');
-
-
             changeInnerHTMLByID('button]] .. buttonID .. [[_device', `]] .. dc .. [[`);
         ]]
     end
@@ -960,9 +959,9 @@ local function midiPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Change the bank:
                 --------------------------------------------------------------------------------
-                --local activeBanks = mod._ctmanager.activeBanks()
-                --activeBanks[app] = bank
-                --mod._ctmanager.activeBanks(activeBanks)
+                local activeBanks = mod._midi.activeBanks()
+                activeBanks[app] = tostring(bank)
+                mod._midi.activeBanks(activeBanks)
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:

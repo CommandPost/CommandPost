@@ -25,6 +25,7 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local escapeTilda               = tools.escapeTilda
 local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
@@ -482,16 +483,16 @@ local function updateUI(params)
     end
 
     injectScript([[
-        changeValueByID('bankLabel', ']] .. bankLabel .. [[');
-        changeValueByID('press_action', ']] .. pressValue .. [[');
-        changeValueByID('left_action', ']] .. leftValue .. [[');
-        changeValueByID('right_action', ']] .. rightValue .. [[');
-        changeValueByID('up_touch_action', ']] .. upValue .. [[');
-        changeValueByID('down_touch_action', ']] .. downValue .. [[');
-        changeValueByID('left_touch_action', ']] .. leftValue .. [[');
-        changeValueByID('right_touch_action', ']] .. rightValue .. [[');
-        changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
-        changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
+        changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
+        changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
+        changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
+        changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('up_touch_action', `]] .. escapeTilda(upValue) .. [[`);
+        changeValueByID('down_touch_action', `]] .. escapeTilda(downValue) .. [[`);
+        changeValueByID('left_touch_action', `]] .. escapeTilda(leftValue) .. [[`);
+        changeValueByID('right_touch_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
+        changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
         changeValueByID('vibrate', ']] .. vibrateValue .. [[');
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
@@ -616,21 +617,21 @@ local function loupedeckCTPanelCallback(id, params)
                 -- Update the webview:
                 --------------------------------------------------------------------------------
                 if params["buttonType"] == "pressAction" then
-                    injectScript("changeValueByID('press_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('press_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "leftAction" then
-                    injectScript("changeValueByID('left_action', '" .. actionTitle .. "');")
-                    injectScript("changeValueByID('left_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('left_action', `" .. escapeTilda(actionTitle) .. "`);")
+                    injectScript("changeValueByID('left_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "rightAction" then
-                    injectScript("changeValueByID('right_action', '" .. actionTitle .. "');")
-                    injectScript("changeValueByID('right_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('right_action', `" .. escapeTilda(actionTitle) .. "`);")
+                    injectScript("changeValueByID('right_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "upAction" then
-                    injectScript("changeValueByID('up_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('up_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "downAction" then
-                    injectScript("changeValueByID('down_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('down_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "doubleTapAction" then
-                    injectScript("changeValueByID('double_tap_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('double_tap_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "twoFingerTapAction" then
-                    injectScript("changeValueByID('two_finger_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('two_finger_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 end
             end)
 
