@@ -10,6 +10,7 @@ local application           = require "hs.application"
 local fnutils               = require "hs.fnutils"
 local midi                  = require "hs.midi"
 local timer                 = require "hs.timer"
+local window                = require "hs.window"
 
 local config                = require "cp.config"
 local dialog                = require "cp.dialog"
@@ -246,9 +247,10 @@ local function convertPreferencesToMIDIActions()
     for bundleID, app in pairs(loupedeckItems) do
         if type(app) == "table" then
             for bankID, bank in pairs(app) do
-                if type("bank") == "table" then
+                if type(bank) == "table" then
                     for buttonID, button in pairs(bank) do
                         if button.action then
+
                             --------------------------------------------------------------------------------
                             -- Press Button:
                             --------------------------------------------------------------------------------
@@ -259,6 +261,9 @@ local function convertPreferencesToMIDIActions()
                                     numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                 end
                                 for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
                                     if not midiActions[bundleID][bankID] then
                                         midiActions[bundleID][bankID] = {}
                                     end
@@ -300,6 +305,9 @@ local function convertPreferencesToMIDIActions()
                                     numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                 end
                                 for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
                                     if not midiActions[bundleID][bankID] then
                                         midiActions[bundleID][bankID] = {}
                                     end
@@ -344,6 +352,9 @@ local function convertPreferencesToMIDIActions()
                                     numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                 end
                                 for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
                                     if not midiActions[bundleID][bankID] then
                                         midiActions[bundleID][bankID] = {}
                                     end
@@ -384,11 +395,6 @@ local function convertPreferencesToMIDIActions()
         end
     end
 end
-
--- plugins.core.midi.manager._loupedeckItems <cp.prop: table>
--- Field
--- Contains all the saved MIDI Loupedeck+ items
-mod.loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck", "Default v2.cpLoupedeck", {}):watch(convertPreferencesToMIDIActions)
 
 --- plugins.core.midi.manager.getItem(item, button, group) -> table
 --- Function
@@ -433,12 +439,18 @@ local function callback(_, deviceName, commandType, _, metadata)
 
     if deviceName == "Loupedeck+" then
         --------------------------------------------------------------------------------
+        -- Revert to "All Applications" if no settings for frontmost app exist:
+        --------------------------------------------------------------------------------
+        local items = mod.loupedeckItems()
+        if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
         -- Get active bank from preferences:
         --------------------------------------------------------------------------------
         local activeLoupedeckBanks = mod.activeLoupedeckBanks()
-        if activeLoupedeckBanks[bundleID] then
-            bankID = activeLoupedeckBanks[bundleID]
-        end
+        bankID = activeLoupedeckBanks[bundleID] or "1"
 
         --------------------------------------------------------------------------------
         -- Treat the "Fn" key as a modifier and adjust the group accordingly:
@@ -491,7 +503,8 @@ local function callback(_, deviceName, commandType, _, metadata)
     --[[
     log.df("bundleID: %s", bundleID)
     log.df("bankID: %s", bankID)
-    log.df("ct: %s", ct)
+    log.df("deviceName: %s", deviceName)
+    log.df("midiActions: %s", hs.inspect(midiActions))
     --]]
 
     if ct then
@@ -731,21 +744,62 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Migrate old preferences to newer format if 'Default v2.cpMIDI' doesn't
+    -- Migrate old preferences to newer format if 'Settings.cpMIDI' doesn't
     -- already exist, and if we haven't already upgraded previously:
     --------------------------------------------------------------------------------
-    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/MIDI Controls/Default v2.cpMIDI")
-    mod.items = json.prop(config.userConfigRootPath, "MIDI Controls", "Default v2.cpMIDI", mod.defaultLayout):watch(convertPreferencesToMIDIActions)
+    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/MIDI Controls/Settings.cpMIDI")
+    mod.items = json.prop(config.userConfigRootPath, "MIDI Controls", "Settings.cpMIDI", mod.defaultLayout):watch(convertPreferencesToMIDIActions)
     if not newLayoutExists then
         local updatedPreferencesToV2 = config.prop("midi.updatedPreferencesToV2", false)
         local legacyPath = config.userConfigRootPath .. "/MIDI Controls/Default.cpMIDI"
         if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
             local legacyPreferences = json.read(legacyPath)
             local newData = {}
-
             if legacyPreferences then
                 for groupID, data in pairs(legacyPreferences) do
+                    local bundleID
+                    local bankID
+                    if string.sub(groupID, 1, 4) == "fcpx" then
+                        bundleID = "com.apple.FinalCut"
+                        bankID = string.sub(groupID, 5)
+                    end
+                    if string.sub(groupID, 1, 6) == "global" then
+                        bundleID = "All Applications"
+                        bankID = string.sub(groupID, 7)
+                    end
+                    if not newData[bundleID] then newData[bundleID] = {} end
+                    newData[bundleID][bankID] = fnutils.copy(data)
+                    --------------------------------------------------------------------------------
+                    -- For some stupid reason, some values have "None" as a value instead of
+                    -- just `nil` or "", so let's correct this:
+                    --------------------------------------------------------------------------------
+                    for buttonID, buttonData in pairs(newData[bundleID][bankID]) do
+                        if buttonData.value == i18n("none") then
+                            newData[bundleID][bankID][buttonID].value = ""
+                        end
+                    end
+                end
+                updatedPreferencesToV2(true)
+                mod.items(newData)
+                log.df("Converted MIDI Preferences from Default.cpMIDI to Settings.cpMIDI.")
+            end
+        end
+    end
 
+    --------------------------------------------------------------------------------
+    -- Migrate old preferences to newer format if 'Settings.cpLoupedeck' doesn't
+    -- already exist, and if we haven't already upgraded previously:
+    --------------------------------------------------------------------------------
+    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/Loupedeck+/Settings.cpLoupedeckPlus")
+    mod.loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck+", "Settings.cpLoupedeckPlus", {}):watch(convertPreferencesToMIDIActions)
+    if not newLayoutExists then
+        local updatedPreferencesToV2 = config.prop("loupedeckplus.updatedPreferencesToV2", false)
+        local legacyPath = config.userConfigRootPath .. "/Loupedeck/Default.cpLoupedeck"
+        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+            local legacyPreferences = json.read(legacyPath)
+            local newData = {}
+            if legacyPreferences then
+                for groupID, data in pairs(legacyPreferences) do
                     local bundleID
                     local bankID
                     if string.sub(groupID, 1, 4) == "fcpx" then
@@ -759,21 +813,10 @@ function plugin.init(deps)
 
                     if not newData[bundleID] then newData[bundleID] = {} end
                     newData[bundleID][bankID] = fnutils.copy(data)
-
-                    --------------------------------------------------------------------------------
-                    -- For some stupid reason, some values have "None" as a value instead of
-                    -- just `nil` or "", so let's correct this:
-                    --------------------------------------------------------------------------------
-                    for buttonID, buttonData in pairs(newData[bundleID][bankID]) do
-                        if buttonData.value == i18n("none") then
-                            newData[bundleID][bankID][buttonID].value = ""
-                        end
-                    end
                 end
                 updatedPreferencesToV2(true)
-                mod.items(newData)
-
-                log.df("Upgraded MIDI Preferences from Default.cpMIDI to Default v2.cpMIDI.")
+                mod.loupedeckItems(newData)
+                log.df("Converted Loupedeck+ Preferences from Default.cpLoupedeck to Settings.cpLoupedeckPlus.")
             end
         end
     end
