@@ -10,7 +10,6 @@ local application           = require "hs.application"
 local fnutils               = require "hs.fnutils"
 local midi                  = require "hs.midi"
 local timer                 = require "hs.timer"
-local window                = require "hs.window"
 
 local config                = require "cp.config"
 local dialog                = require "cp.dialog"
@@ -430,7 +429,7 @@ local function callback(_, deviceName, commandType, _, metadata)
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
-    local bankID = "1"
+    local bankID
 
     if deviceName == "Loupedeck+" then
         --------------------------------------------------------------------------------
@@ -792,9 +791,9 @@ function plugin.init(deps)
     -- Migrate old preferences to newer format if 'Settings.cpLoupedeck' doesn't
     -- already exist, and if we haven't already upgraded previously:
     --------------------------------------------------------------------------------
-    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/Loupedeck+/Settings.cpLoupedeckPlus")
+    local newLoupedeckLayoutExists = doesFileExist(config.userConfigRootPath .. "/Loupedeck+/Settings.cpLoupedeckPlus")
     mod.loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck+", "Settings.cpLoupedeckPlus", {}):watch(convertPreferencesToMIDIActions)
-    if not newLayoutExists then
+    if not newLoupedeckLayoutExists then
         local updatedPreferencesToV2 = config.prop("loupedeckplus.updatedPreferencesToV2", false)
         local legacyPath = config.userConfigRootPath .. "/Loupedeck/Default.cpLoupedeck"
         if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
