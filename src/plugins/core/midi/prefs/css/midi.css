@@ -1,3 +1,44 @@
+.importSettings {
+	margin: 10px 0px;
+	text-align: center;
+	width: 180px;
+}
+
+.bottomButton {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+  	width: 180px;
+  	font-weight: normal;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.bottomButton:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.bottomButton.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+
 .midiDropdown {
 	width: 180px;
 	float: left;
@@ -203,53 +244,4 @@ midiRowType {
 
 .midiGroupSelect {
 	float: right;
-}
-
-/* ICON DROP ZONE: */
-
-.dropzone {
-  position: relative;
-  border: 2.5px dotted #FFF;
-  border-radius: 5px;
-  color: white;
-  font: bold 12px/50px arial;
-  height: 50px;
-  margin: 7.5px auto;
-  text-align: center;
-  width: 50px;
-}
-
-.dropzone.hover {
-  border: 2.5px solid #5760e7;
-  color: #5760e7;
-}
-
-.dropzone.dropped {
-  background: #222;
-  border: 2.5px solid #444;
-}
-
-.dropzone div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.dropzone img {
-  border-radius: 2.5px;
-  vertical-align: middle;
-  max-width: 95%;
-  max-height: 95%;
-}
-
-.dropzone [type="file"] {
-  cursor: pointer;
-  position: absolute;
-  opacity: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
 }

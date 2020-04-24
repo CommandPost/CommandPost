@@ -35,16 +35,6 @@ local defaultLayoutPath = config.basePath .. "/plugins/core/streamdeck/default/D
 --- Default Stream Deck Layout
 mod.defaultLayout = json.read(defaultLayoutPath)
 
---- plugins.core.streamdeck.manager.numberOfDevices -> number
---- Constant
---- Number of supported devices per Stream Deck model.
-mod.numberOfDevices = 9
-
---- plugins.core.streamdeck.manager.numberOfBanks -> number
---- Variable
---- The number of banks.
-mod.numberOfBanks = 9
-
 --- plugins.core.streamdeck.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
@@ -400,6 +390,8 @@ local plugin = {
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
         ["core.commands.global"]            = "global",
+        ["core.application.manager"]        = "appmanager",
+        ["core.controlsurfaces.manager"]    = "csman",
     }
 }
 
@@ -420,10 +412,12 @@ function plugin.init(deps)
     -- Setup Bank Actions:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
+    local numberOfBanks = deps.csman.NUMBER_OF_BANKS
+    local numberOfDevices = deps.csman.NUMBER_OF_DEVICES
     actionmanager.addHandler("global_streamDeckbanks")
         :onChoices(function(choices)
             for device, _ in pairs(mod.devices) do
-                for unit=1, mod.numberOfDevices do
+                for unit=1, numberOfDevices do
 
                     local deviceLabel = device
                     if deviceLabel == "Original" then
@@ -432,7 +426,7 @@ function plugin.init(deps)
                         deviceLabel = deviceLabel .. " "
                     end
 
-                    for bank=1, mod.numberOfBanks do
+                    for bank=1, numberOfBanks do
                         choices:add("Stream Deck " .. deviceLabel .. i18n("bank") .. " " .. tostring(bank) .. " (Unit " .. unit .. ")")
                             :subText(i18n("streamDeckBankDescription"))
                             :params({
@@ -507,14 +501,14 @@ function plugin.init(deps)
                 if result.action == "bank" then
                     activeBanks[device][unit][bundleID] = tostring(result.bank)
                 elseif result.action == "next" then
-                    if tonumber(currentBank) == mod.numberOfBanks then
+                    if tonumber(currentBank) == numberOfBanks then
                         activeBanks[device][unit][bundleID] = "1"
                     else
                         activeBanks[device][unit][bundleID] = tostring(tonumber(currentBank) + 1)
                     end
                 elseif result.action == "previous" then
                     if tonumber(currentBank) == 1 then
-                        activeBanks[device][unit][bundleID] = tostring(mod.numberOfBanks)
+                        activeBanks[device][unit][bundleID] = tostring(numberOfBanks)
                     else
                         activeBanks[device][unit][bundleID] = tostring(tonumber(currentBank) - 1)
                     end

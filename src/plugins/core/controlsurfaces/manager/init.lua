@@ -26,6 +26,16 @@ local sortedIndex = moses.sortedIndex
 
 local mod = {}
 
+--- plugins.core.controlsurfaces.manager.NUMBER_OF_BANKS -> number
+--- Constant
+--- Number of banks.
+mod.NUMBER_OF_BANKS = 15
+
+--- plugins.core.controlsurfaces.manager.NUMBER_OF_DEVICES -> number
+--- Constant
+--- Number of devices.
+mod.NUMBER_OF_DEVICES = 10
+
 --- plugins.core.controlsurfaces.manager.WEBVIEW_LABEL -> string
 --- Constant
 --- The WebView Label

@@ -92,6 +92,19 @@ function string:split(delimiter) -- luacheck: ignore
    return list
 end
 
+--- cp.tools.escapeTilda(input) -> none
+--- Method
+--- Escapes a tilda.
+---
+--- Parameters:
+---  * input - The string you want to escape.
+---
+--- Returns:
+---  * A new string
+function tools.escapeTilda(i)
+    return string.gsub(i, "`", [[\`]])
+end
+
 --- cp.tools.keyStroke(modifiers, character, app) -> none
 --- Method
 --- Generates and emits a single keystroke event pair for the supplied keyboard

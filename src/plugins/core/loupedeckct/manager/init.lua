@@ -180,11 +180,6 @@ local wheelDoubleTapYTolerance = 7
 --- Is Loupedeck CT connected?
 mod.connected = prop.FALSE()
 
---- plugins.core.loupedeckct.manager.numberOfBanks -> number
---- Field
---- Number of banks
-mod.numberOfBanks = 9
-
 --- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
 --- Field
 --- Is Loupedeck CT support enabled?
@@ -890,6 +885,8 @@ local plugin = {
     required    = true,
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
+        ["core.application.manager"]        = "appmanager",
+        ["core.controlsurfaces.manager"]    = "csman",
     }
 }
 
@@ -934,9 +931,10 @@ function plugin.init(deps)
     -- Setup Bank Actions:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
+    local numberOfBanks = deps.csman.NUMBER_OF_BANKS
     actionmanager.addHandler("global_loupedeckct_banks")
         :onChoices(function(choices)
-            for i=1, mod.numberOfBanks do
+            for i=1, numberOfBanks do
                 choices:add(i18n("loupedeckCT") .. " " .. i18n("bank") .. " " .. tostring(i))
                     :subText(i18n("loupedeckCTBankDescription"))
                     :params({ id = i })
@@ -984,14 +982,14 @@ function plugin.init(deps)
                     activeBanks[bundleID] = tostring(result.id)
                 else
                     if result.id == "next" then
-                        if currentBank == mod.numberOfBanks then
+                        if currentBank == numberOfBanks then
                             activeBanks[bundleID] = "1"
                         else
                             activeBanks[bundleID] = tostring(currentBank + 1)
                         end
                     elseif result.id == "previous" then
                         if currentBank == 1 then
-                            activeBanks[bundleID] = tostring(mod.numberOfBanks)
+                            activeBanks[bundleID] = tostring(numberOfBanks)
                         else
                             activeBanks[bundleID] = tostring(currentBank - 1)
                         end

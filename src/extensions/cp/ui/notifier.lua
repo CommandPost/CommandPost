@@ -14,25 +14,25 @@
 --- o:start()
 --- ```
 
-local require = require
+local require               = require
 
-local log                   = require("hs.logger").new("notifier")
-local inspect               = require("hs.inspect")
+local log                   = require "hs.logger".new "notifier"
+local inspect               = require "hs.inspect"
 
-local application           = require("hs.application")
-local applicationwatcher    = require("hs.application.watcher")
-local timer                 = require("hs.timer")
+local application           = require "hs.application"
+local applicationwatcher    = require "hs.application.watcher"
+local timer                 = require "hs.timer"
 
-local axutils               = require("cp.ui.axutils")
-local prop                  = require("cp.prop")
+local axutils               = require "cp.ui.axutils"
+local prop                  = require "cp.prop"
 
-local ax                    = require("hs._asm.axuielement")
+local ax                    = require "hs._asm.axuielement"
 
 local doAfter               = timer.doAfter
 local insert                = table.insert
 
-local LAUNCHED, TERMINATED  = applicationwatcher.launched, applicationwatcher.terminated
-
+local LAUNCHED              = applicationwatcher.launched
+local TERMINATED            = applicationwatcher.terminated
 
 local mod = {}
 

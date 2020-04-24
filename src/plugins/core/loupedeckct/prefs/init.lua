@@ -25,6 +25,7 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local escapeTilda               = tools.escapeTilda
 local getFilenameFromPath       = tools.getFilenameFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
@@ -170,7 +171,7 @@ local function generateContent()
 
         spairs                      = spairs,
 
-        numberOfBanks               = mod._ctmanager.numberOfBanks,
+        numberOfBanks               = mod.numberOfBanks,
         i18n                        = i18n,
 
         lastApplication             = mod.lastApplication(),
@@ -482,16 +483,16 @@ local function updateUI(params)
     end
 
     injectScript([[
-        changeValueByID('bankLabel', ']] .. bankLabel .. [[');
-        changeValueByID('press_action', ']] .. pressValue .. [[');
-        changeValueByID('left_action', ']] .. leftValue .. [[');
-        changeValueByID('right_action', ']] .. rightValue .. [[');
-        changeValueByID('up_touch_action', ']] .. upValue .. [[');
-        changeValueByID('down_touch_action', ']] .. downValue .. [[');
-        changeValueByID('left_touch_action', ']] .. leftValue .. [[');
-        changeValueByID('right_touch_action', ']] .. rightValue .. [[');
-        changeValueByID('double_tap_touch_action', ']] .. doubleTapValue .. [[');
-        changeValueByID('two_finger_touch_action', ']] .. twoFingerTapValue .. [[');
+        changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
+        changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
+        changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
+        changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('up_touch_action', `]] .. escapeTilda(upValue) .. [[`);
+        changeValueByID('down_touch_action', `]] .. escapeTilda(downValue) .. [[`);
+        changeValueByID('left_touch_action', `]] .. escapeTilda(leftValue) .. [[`);
+        changeValueByID('right_touch_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
+        changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
         changeValueByID('vibrate', ']] .. vibrateValue .. [[');
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
@@ -616,21 +617,21 @@ local function loupedeckCTPanelCallback(id, params)
                 -- Update the webview:
                 --------------------------------------------------------------------------------
                 if params["buttonType"] == "pressAction" then
-                    injectScript("changeValueByID('press_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('press_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "leftAction" then
-                    injectScript("changeValueByID('left_action', '" .. actionTitle .. "');")
-                    injectScript("changeValueByID('left_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('left_action', `" .. escapeTilda(actionTitle) .. "`);")
+                    injectScript("changeValueByID('left_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "rightAction" then
-                    injectScript("changeValueByID('right_action', '" .. actionTitle .. "');")
-                    injectScript("changeValueByID('right_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('right_action', `" .. escapeTilda(actionTitle) .. "`);")
+                    injectScript("changeValueByID('right_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "upAction" then
-                    injectScript("changeValueByID('up_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('up_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "downAction" then
-                    injectScript("changeValueByID('down_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('down_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "doubleTapAction" then
-                    injectScript("changeValueByID('double_tap_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('double_tap_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "twoFingerTapAction" then
-                    injectScript("changeValueByID('two_finger_touch_action', '" .. actionTitle .. "');")
+                    injectScript("changeValueByID('two_finger_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 end
             end)
 
@@ -1600,7 +1601,7 @@ local function loupedeckCTPanelCallback(id, params)
             end
 
             if data then
-                for b=1, mod._ctmanager.numberOfBanks do
+                for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
                     if not items[app] then items[app] = {} end
                     if not items[app][b] then items[app][b] = {} end
@@ -1777,7 +1778,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Copy Bank:
             --------------------------------------------------------------------------------
-            local numberOfBanks = mod._ctmanager.numberOfBanks
+            local numberOfBanks = mod.numberOfBanks
 
             local copyToBank = function(destinationBank)
                 local items = mod.items()
@@ -2006,23 +2007,18 @@ function mod._displayBooleanToString(value)
     end
 end
 
---- plugins.core.loupedeckct.prefs.init(deps, env) -> module
---- Function
---- Initialise the Module.
----
---- Parameters:
----  * deps - Dependancies Table
----  * env - Environment Table
----
---- Returns:
----  * The Module
-function mod.init(deps, env)
+local plugin = {
+    id              = "core.loupedeckct.prefs",
+    group           = "core",
+    dependencies    = {
+        ["core.controlsurfaces.manager"]    = "manager",
+        ["core.action.manager"]             = "actionmanager",
+        ["core.loupedeckct.manager"]        = "ctmanager",
+        ["core.application.manager"]        = "appmanager",
+    }
+}
 
-    --------------------------------------------------------------------------------
-    -- Define the Panel ID:
-    --------------------------------------------------------------------------------
-    local panelID = "loupedeckct"
-
+function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
@@ -2037,6 +2033,8 @@ function mod.init(deps, env)
     mod.enabled                 = deps.ctmanager.enabled
     mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
     mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
+
+    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -2064,7 +2062,7 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033.1,
-        id              = panelID,
+        id              = "loupedeckct",
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
@@ -2131,22 +2129,6 @@ function mod.init(deps, env)
     mod._panel:addHandler("onchange", "loupedeckCTPanelCallback", loupedeckCTPanelCallback)
 
     return mod
-
-end
-
-local plugin = {
-    id              = "core.loupedeckct.prefs",
-    group           = "core",
-    dependencies    = {
-        ["core.controlsurfaces.manager"]    = "manager",
-        ["core.action.manager"]             = "actionmanager",
-        ["core.loupedeckct.manager"]        = "ctmanager",
-        ["core.application.manager"]        = "appmanager",
-    }
-}
-
-function plugin.init(deps, env)
-    return mod.init(deps, env)
 end
 
 return plugin

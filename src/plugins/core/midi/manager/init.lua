@@ -2,56 +2,54 @@
 ---
 --- MIDI Manager Plugin.
 
-local require = require
+local require               = require
 
-local log         = require "hs.logger".new "midiManager"
+local log                   = require "hs.logger".new "midiManager"
 
-local fnutils     = require "hs.fnutils"
-local midi        = require "hs.midi"
-local timer       = require "hs.timer"
+local application           = require "hs.application"
+local fnutils               = require "hs.fnutils"
+local midi                  = require "hs.midi"
+local timer                 = require "hs.timer"
 
-local config      = require "cp.config"
-local dialog      = require "cp.dialog"
-local i18n        = require "cp.i18n"
-local json        = require "cp.json"
-local prop        = require "cp.prop"
+local config                = require "cp.config"
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local json                  = require "cp.json"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
-local controls    = require "controls"
-local default     = require "default"
+local controls              = require "controls"
 
-local doAfter     = timer.doAfter
+local displayNotification   = dialog.displayNotification
+local doAfter               = timer.doAfter
+local doesFileExist         = tools.doesFileExist
 
 local mod = {}
 
---- plugins.core.midi.manager.DEFAULT_GROUP -> string
---- Constant
---- The default group.
-mod.DEFAULT_GROUP = "global"
-
---- plugins.core.midi.manager.DEFAULT_MIDI_CONTROLS -> table
---- Constant
---- The default MIDI controls, so that the user has a starting point.
-mod.DEFAULT_MIDI_CONTROLS = default
-
---- plugins.core.midi.manager.loupedeckFnPressed -> boolean
+--- plugins.core.midi.manager.maxItems -> number
 --- Variable
---- Is the Fn key on the Loupedeck+ pressed?
-mod.loupedeckFnPressed = false
+--- The maximum number of MIDI items per bank.
+mod.maxItems = 100
 
--- midiActions -> table
--- Variable
--- A table of all the MIDI actions.
-local midiActions = {}
+--- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeBanks = config.prop("midi.activeBanks", {})
 
--- cachedActiveGroupAndSubgroup -> string
--- Variable
--- The current active group and subgroup (i.e. "fcpx1").
-local cachedActiveGroupAndSubgroup
+--- plugins.core.loupedeckct.manager.activeLoupedeckBanks <cp.prop: table>
+--- Field
+--- Table of active banks for each application.
+mod.activeLoupedeckBanks = config.prop("loupedeckplus.activeBanks", {})
 
--- cachedLoupedeckActiveGroupAndSubgroup -> string
--- Variable
--- The current active group and subgroup (i.e. "fcpx1").
-local cachedLoupedeckActiveGroupAndSubgroup
+--- plugins.core.midi.manager.defaultLayout -> table
+--- Variable
+--- Default MIDI Layout
+mod.defaultLayout = json.read(config.basePath .. "/plugins/core/midi/default/Default.cpMIDI")
+
+--- plugins.core.midi.manager.defaultLoupedeckLayout -> table
+--- Variable
+--- Default Loupedeck+ Layout
+mod.defaultLoupedeckLayout = json.read(config.basePath .. "/plugins/core/loupedeckplus/default/Default.cpLoupedeck")
 
 --- plugins.core.midi.manager.learningMode -> boolean
 --- Variable
@@ -63,40 +61,25 @@ mod.learningMode = false
 --- Controls
 mod.controls = controls
 
--- plugins.core.midi.manager._deviceNames -> table
+-- midiActions -> table
 -- Variable
--- MIDI Device Names.
-mod._deviceNames = {}
+-- A table of all the MIDI actions.
+local midiActions = {}
 
--- plugins.core.midi.manager._virtualDevices -> table
--- Variable
--- MIDI Virtual Devices.
-mod._virtualDevices = {}
-
--- plugins.core.midi.manager._groupStatus -> table
--- Variable
--- Group Statuses.
-mod._groupStatus = {}
-
--- plugins.core.midi.manager._currentSubGroup -> table
--- Variable
--- Current MIDI Sub Group Statuses.
-mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
-
--- plugins.core.midi.manager._currentSubGroup -> table
--- Variable
--- Current Loupedeck+ Sub Group Statuses.
-mod._currentLoupedeckSubGroup = config.prop("loupedeck.currentSubGroup", {})
-
---- plugins.core.midi.manager.numberOfSubGroups -> number
+--- deviceNames -> table
 --- Variable
---- The number of Sub Groups per Touch Bar Group.
-mod.numberOfSubGroups = 9
+--- MIDI Device Names.
+local deviceNames = {}
 
---- plugins.core.midi.manager.maxItems -> number
+--- virtualDevices -> table
 --- Variable
---- The maximum number of MIDI items per group.
-mod.maxItems = 100
+--- MIDI Virtual Devices.
+local virtualDevices = {}
+
+-- loupedeckFnPressed -> boolean
+-- Variable
+-- Is the Fn key on the Loupedeck+ pressed?
+local loupedeckFnPressed = false
 
 -- convertPreferencesToMIDIActions() -> none
 -- Function
@@ -110,99 +93,133 @@ mod.maxItems = 100
 --  * None
 local function convertPreferencesToMIDIActions()
     --------------------------------------------------------------------------------
+    -- NOTE TO FUTURE CHRIS:
+    -- Why the hell do we write to the preferences file in one format, then
+    -- convert it here? It seems past Chris wasn't completely crazy - the reason
+    -- is because of the way the MIDI Editor is setup, it's possible to set a
+    -- commandType (for example), before a channel is set. This was essentially a
+    -- "hack job" to speed up MIDI performance, without breaking legacy MIDI
+    -- layouts. However, in April 2020, Chris tweaked it again to add support
+    -- for custom applications - separating the "group" into "bundleID" and
+    -- "bankID".
+    --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
     --
     -- When the items table is updated, we also update the midiActions table for
     -- faster processing in the MIDI callback.
     --
-    -- midiActions[group][deviceName][channel][commandType][controllerNumber] -> OPTIONAL: [controllerValue]
+    -- midiActions[bundleID][bankID][deviceName][channel][commandType][controllerNumber] -> OPTIONAL: [controllerValue]
     --
     --------------------------------------------------------------------------------
     midiActions = nil
     midiActions = {}
-    local items = mod._items()
-    for groupID, group in pairs(items) do
-        for _, button in pairs(group) do
-            if button.device and button.channel and button.commandType and button.commandType == "pitchWheelChange" then
-                if not midiActions[groupID] then
-                    midiActions[groupID] = {}
-                end
-                if not midiActions[groupID][button.device] then
-                    midiActions[groupID][button.device] = {}
-                end
-                if not midiActions[groupID][button.device][button.channel] then
-                    midiActions[groupID][button.device][button.channel] = {}
-                end
-                if not midiActions[groupID][button.device][button.channel][button.commandType] then
-                    midiActions[groupID][button.device][button.channel][button.commandType] = {}
-                end
-                if button.action and button.handlerID and string.sub(button.handlerID, -13) == "_midicontrols" then
-                    if type(button.action) == "table" then
-                        if not midiActions[groupID][button.device][button.channel][button.commandType]["action"] then
-                            midiActions[groupID][button.device][button.channel][button.commandType]["action"] = {}
-                        end
-                        for id, value in pairs(button.action) do
-                            midiActions[groupID][button.device][button.channel][button.commandType]["action"][id] = value
-                        end
-                    elseif type(button.action) == "string" then
-                        midiActions[groupID][button.device][button.channel][button.commandType]["action"] = button.action
-                    end
-                    if button.handlerID then
-                        midiActions[groupID][button.device][button.channel][button.commandType]["handlerID"] = button.handlerID
-                    end
-                end
-            elseif button.device and button.channel and button.commandType and button.number and button.action then
-                if type(button.number) == "string" then
-                    button.number = tonumber(button.number)
-                end
-                if not midiActions[groupID] then
-                    midiActions[groupID] = {}
-                end
-                if not midiActions[groupID][button.device] then
-                    midiActions[groupID][button.device] = {}
-                end
-                if not midiActions[groupID][button.device][button.channel] then
-                    midiActions[groupID][button.device][button.channel] = {}
-                end
-                if not midiActions[groupID][button.device][button.channel][button.commandType] then
-                    midiActions[groupID][button.device][button.channel][button.commandType] = {}
-                end
-                if not midiActions[groupID][button.device][button.channel][button.commandType][button.number] then
-                    midiActions[groupID][button.device][button.channel][button.commandType][button.number] = {}
-                end
-                if button.value and button.value ~= i18n("none") and button.handlerID and string.sub(button.handlerID, -13) ~= "_midicontrols" then
-                    if button.action then
-                        if not midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value] then
-                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value] = {}
-                        end
-                        if type(button.action) == "table" then
-                            if not midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] then
-                                midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = {}
-                            end
-                            for id, value in pairs(button.action) do
-                                midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"][id] = value
-                            end
-                        elseif type(button.action) == "string" then
-                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = button.action
-                        end
+    local items = mod.items()
 
-                        if button.handlerID then
-                            midiActions[groupID][button.device][button.channel][button.commandType][button.number][button.value]["handlerID"] = button.handlerID
-                        end
-                    end
-                else
-                    if button.action then
-                        if type(button.action) == "table" then
-                            if not midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] then
-                                midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] = {}
+    for bundleID, app in pairs(items) do
+        if type(app) == "table" then
+            for bankID, bank in pairs(app) do
+                if type(bank) == "table" then
+                    for _, button in pairs(bank) do
+                        if button.device and button.device ~= ""
+                            and button.channel and button.channel ~= ""
+                            and button.commandType and button.commandType ~= ""
+                            and button.commandType == "pitchWheelChange"
+                        then
+                            if not midiActions[bundleID] then
+                                midiActions[bundleID] = {}
                             end
-                            for id, value in pairs(button.action) do
-                                midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"][id] = value
+                            if not midiActions[bundleID][bankID] then
+                                midiActions[bundleID][bankID] = {}
                             end
-                        elseif type(button.action) == "string" then
-                            midiActions[groupID][button.device][button.channel][button.commandType][button.number]["action"] = button.action
-                        end
-                        if button.handlerID then
-                            midiActions[groupID][button.device][button.channel][button.commandType][button.number]["handlerID"] = button.handlerID
+                            if not midiActions[bundleID][bankID][button.device] then
+                                midiActions[bundleID][bankID][button.device] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device][button.channel] then
+                                midiActions[bundleID][bankID][button.device][button.channel] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType] then
+                                midiActions[bundleID][bankID][button.device][button.channel][button.commandType] = {}
+                            end
+                            if button.action and button.handlerID and string.sub(button.handlerID, -13) == "_midicontrols" then
+                                if type(button.action) == "table" then
+                                    if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["action"] then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["action"] = {}
+                                    end
+                                    for id, value in pairs(button.action) do
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["action"][id] = value
+                                    end
+                                elseif type(button.action) == "string" then
+                                    midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["action"] = button.action
+                                end
+                                if button.handlerID then
+                                    midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["handlerID"] = button.handlerID
+                                end
+                            end
+                        elseif button.device and button.device ~= ""
+                            and button.channel and button.channel ~= ""
+                            and button.commandType and button.commandType ~= ""
+                            and button.number and button.number ~= ""
+                            and button.action and button.action ~= ""
+                        then
+                            if type(button.number) == "string" then
+                                button.number = tonumber(button.number)
+                            end
+                            if not midiActions[bundleID] then
+                                midiActions[bundleID] = {}
+                            end
+                            if not midiActions[bundleID][bankID] then
+                                midiActions[bundleID][bankID] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device] then
+                                midiActions[bundleID][bankID][button.device] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device][button.channel] then
+                                midiActions[bundleID][bankID][button.device][button.channel] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType] then
+                                midiActions[bundleID][bankID][button.device][button.channel][button.commandType] = {}
+                            end
+                            if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number] then
+                                midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number] = {}
+                            end
+                            if button.value and button.value ~= "" and button.handlerID and string.sub(button.handlerID, -13) ~= "_midicontrols" then
+                                if button.action then
+                                    if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value] then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value] = {}
+                                    end
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value]["action"] then
+                                            midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value]["action"] = button.action
+                                    end
+
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number][button.value]["handlerID"] = button.handlerID
+                                    end
+                                end
+                            else
+                                if button.action then
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number]["action"] then
+                                            midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number]["action"] = button.action
+                                    end
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID][button.device][button.channel][button.commandType][button.number]["handlerID"] = button.handlerID
+                                    end
+                                end
+                            end
                         end
                     end
                 end
@@ -219,247 +236,158 @@ local function convertPreferencesToMIDIActions()
     -- just ignore whatever the lights say, and the knobs do the same thing in
     -- CommandPost regardless of what "mode" the Loupedeck+ is in.
     --------------------------------------------------------------------------------
-    local loupedeckItems = mod._loupedeckItems()
-    for groupID, group in pairs(loupedeckItems) do
-        for buttonID, button in pairs(group) do
-            if button.action then
-                --------------------------------------------------------------------------------
-                -- Press Button:
-                --------------------------------------------------------------------------------
-                if string.sub(buttonID, -5) == "Press" then
-                    local original = tonumber(string.sub(buttonID, 0, -6))
-                    local numbers = {original}
-                    if original >= 1 and original <= 8 then
-                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                    end
-                    for _, number in pairs(numbers) do
-                        if not midiActions[groupID] then
-                            midiActions[groupID] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"] then
-                            midiActions[groupID]["Loupedeck+"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0] then
-                            midiActions[groupID]["Loupedeck+"][0] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"] then
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] then
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number] = {}
-                        end
-                        if type(button.action) == "table" then
-                            if not midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] then
-                                midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = {}
-                            end
-                            for id, value in pairs(button.action) do
-                                midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"][id] = value
-                            end
-                        elseif type(button.action) == "string" then
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["action"] = button.action
-                        end
-                        if button.handlerID then
-                            midiActions[groupID]["Loupedeck+"][0]["noteOn"][number]["handlerID"] = button.handlerID
-                        end
-                    end
-                end
+    local loupedeckItems = mod.loupedeckItems()
 
-                --------------------------------------------------------------------------------
-                -- Left Knob Turn:
-                --------------------------------------------------------------------------------
-                if string.sub(buttonID, -4) == "Left" then
-                    local original = tonumber(string.sub(buttonID, 0, -5))
-                    local numbers = {original}
-                    if original >= 1 and original <= 8 then
-                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                    end
-                    for _, number in pairs(numbers) do
-                        if not midiActions[groupID] then
-                            midiActions[groupID] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"] then
-                            midiActions[groupID]["Loupedeck+"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0] then
-                            midiActions[groupID]["Loupedeck+"][0] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127] = {}
-                        end
-                        if type(button.action) == "table" then
-                            if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] then
-                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = {}
-                            end
-                            for id, value in pairs(button.action) do
-                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"][id] = value
-                            end
-                        elseif type(button.action) == "string" then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = button.action
-                        end
-                        if button.handlerID then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][127]["handlerID"] = button.handlerID
-                        end
-                    end
-                end
+    for bundleID, app in pairs(loupedeckItems) do
+        if type(app) == "table" then
+            for bankID, bank in pairs(app) do
+                if type(bank) == "table" then
+                    for buttonID, button in pairs(bank) do
+                        if button.action then
 
-                --------------------------------------------------------------------------------
-                -- Right Knob Turn:
-                --------------------------------------------------------------------------------
-                if string.sub(buttonID, -5) == "Right" then
-                    local original = tonumber(string.sub(buttonID, 0, -6))
-                    local numbers = {original}
-                    if original >= 1 and original <= 8 then
-                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                    end
-                    for _, number in pairs(numbers) do
-                        if not midiActions[groupID] then
-                            midiActions[groupID] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"] then
-                            midiActions[groupID]["Loupedeck+"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0] then
-                            midiActions[groupID]["Loupedeck+"][0] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number] = {}
-                        end
-                        if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1] = {}
-                        end
-                        if type(button.action) == "table" then
-                            if not midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] then
-                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = {}
+                            --------------------------------------------------------------------------------
+                            -- Press Button:
+                            --------------------------------------------------------------------------------
+                            if string.sub(buttonID, -5) == "Press" then
+                                local original = tonumber(string.sub(buttonID, 0, -6))
+                                local numbers = {original}
+                                if original >= 1 and original <= 8 then
+                                    numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
+                                end
+                                for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID] then
+                                        midiActions[bundleID][bankID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number] = {}
+                                    end
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number]["action"] then
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number]["action"] = button.action
+                                    end
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOn"][number]["handlerID"] = button.handlerID
+                                    end
+                                end
                             end
-                            for id, value in pairs(button.action) do
-                                midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"][id] = value
+
+                            --------------------------------------------------------------------------------
+                            -- Left Knob Turn:
+                            --------------------------------------------------------------------------------
+                            if string.sub(buttonID, -4) == "Left" then
+                                local original = tonumber(string.sub(buttonID, 0, -5))
+                                local numbers = {original}
+                                if original >= 1 and original <= 8 then
+                                    numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
+                                end
+                                for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID] then
+                                        midiActions[bundleID][bankID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127] = {}
+                                    end
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127]["action"] then
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127]["action"] = button.action
+                                    end
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                                    end
+                                end
                             end
-                        elseif type(button.action) == "string" then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = button.action
-                        end
-                        if button.handlerID then
-                            midiActions[groupID]["Loupedeck+"][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+
+                            --------------------------------------------------------------------------------
+                            -- Right Knob Turn:
+                            --------------------------------------------------------------------------------
+                            if string.sub(buttonID, -5) == "Right" then
+                                local original = tonumber(string.sub(buttonID, 0, -6))
+                                local numbers = {original}
+                                if original >= 1 and original <= 8 then
+                                    numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
+                                end
+                                for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID] then
+                                        midiActions[bundleID][bankID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1] = {}
+                                    end
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1]["action"] then
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1]["action"] = button.action
+                                    end
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                                    end
+                                end
+                            end
                         end
                     end
                 end
             end
         end
     end
-end
-
--- plugins.core.midi.manager._loupedeckItems <cp.prop: table>
--- Field
--- Contains all the saved MIDI Loupedeck+ items
-mod._loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck", "Default.cpLoupedeck", {}):watch(convertPreferencesToMIDIActions)
-
--- plugins.core.midi.manager._items <cp.prop: table>
--- Field
--- Contains all the saved MIDI items
-mod._items = json.prop(config.userConfigRootPath, "MIDI Controls", "Default.cpMIDI", mod.DEFAULT_MIDI_CONTROLS):watch(convertPreferencesToMIDIActions)
-
--- updateCachedActiveGroupAndSubgroup() -> none
--- Function
--- Updates the cachedActiveGroupAndSubgroup variable.
-local function updateCachedActiveGroupAndSubgroup()
-    cachedActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeSubGroup()
-end
-
--- updateLoupedeckCachedActiveGroupAndSubgroup() -> none
--- Function
--- Updates the cachedLoupedeckActiveGroupAndSubgroup variable.
-local function updateLoupedeckCachedActiveGroupAndSubgroup()
-    cachedLoupedeckActiveGroupAndSubgroup = mod.activeGroup() .. mod.activeLoupedeckSubGroup()
-end
-
---- plugins.core.midi.manager.clear() -> none
---- Function
---- Clears the MIDI items.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.clear()
-    mod._items(mod.DEFAULT_MIDI_CONTROLS)
-    mod.update()
-end
-
---- plugins.core.midi.manager.updateAction(button, group, actionTitle, handlerID, action) -> none
---- Function
---- Updates a MIDI action.
----
---- Parameters:
----  * button - Button ID as string
----  * group - Group ID as string
----  * actionTitle - Action Title as string
----  * handlerID - Handler ID as string
----  * action - Action in a table
----
---- Returns:
----  * None
-function mod.updateAction(button, group, actionTitle, handlerID, action)
-    local items = mod._items()
-
-    button = tostring(button)
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
-
-    --------------------------------------------------------------------------------
-    -- Process Stylised Text:
-    --------------------------------------------------------------------------------
-    if actionTitle and type(actionTitle) == "userdata" then
-        actionTitle = actionTitle:convert("text")
-    end
-
-    items[group][button]["actionTitle"] = actionTitle
-    items[group][button]["handlerID"] = handlerID
-    items[group][button]["action"] = action
-
-    mod._items(items)
-    mod.update()
-end
-
---- plugins.core.midi.manager.setItem(item, button, group, value) -> none
---- Function
---- Stores a MIDI item in Preferences.
----
---- Parameters:
----  * item - The item you want to set.
----  * button - Button ID as string
----  * group - Group ID as string
----  * value - The value of the item you want to set.
----
---- Returns:
----  * None
-function mod.setItem(item, button, group, value)
-    local items = mod._items()
-
-    button = tostring(button)
-
-    if not items[group] then
-        items[group] = {}
-    end
-    if not items[group][button] then
-        items[group][button] = {}
-    end
-    items[group][button][item] = value
-
-    mod._items(items)
-    mod.update()
 end
 
 --- plugins.core.midi.manager.getItem(item, button, group) -> table
@@ -473,388 +401,92 @@ end
 ---
 --- Returns:
 ---  * A table otherwise `nil`
-function mod.getItem(item, button, group)
-    local items = mod._items()
-    if items[group] and items[group][button] and items[group][button][item] then
-        return items[group][button][item]
-    else
-        return nil
-    end
+function mod.getItem(item, button, bundleID, bankID)
+    local items = mod.items()
+    return items and items[bundleID] and items[bundleID][bankID] and items[bundleID][bankID][button] and items[bundleID][bankID][button][item]
 end
 
---- plugins.core.midi.manager.setBankLabel(group, label) -> none
---- Function
---- Sets a MIDI Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----  * label - Label as string
----
---- Returns:
----  * None
-function mod.setBankLabel(group, label)
-    local items = mod._items()
-
-    if not items[group] then
-        items[group] = {}
-    end
-    items[group]["bankLabel"] = label
-
-    mod._items(items)
-    mod.update()
-end
-
---- plugins.core.midi.manager.getBankLabel(group) -> string
---- Function
---- Returns a specific MIDI Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getBankLabel(group)
-    local items = mod._items()
-    if items[group] and items[group] and items[group]["bankLabel"] then
-        return items[group]["bankLabel"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.midi.manager.getLoupedeckBankLabel(group) -> string
---- Function
---- Returns a specific Loupedeck Bank Label.
----
---- Parameters:
----  * group - Group ID as string
----
---- Returns:
----  * Label as string
-function mod.getLoupedeckBankLabel(group)
-    local items = mod._loupedeckItems()
-    if items[group] and items[group] and items[group]["bankLabel"] then
-        return items[group]["bankLabel"]
-    else
-        return nil
-    end
-end
-
---- plugins.core.midi.manager.getItems() -> tables
---- Function
---- Gets all the MIDI items in a table.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table
-function mod.getItems()
-    return mod._items()
-end
-
---- plugins.core.midi.manager.activeGroup() -> string
---- Function
---- Returns the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active group or `manager.defaultGroup` as a string.
-function mod.activeGroup()
-    local groupStatus = mod._groupStatus
-    for group, status in pairs(groupStatus) do
-        if status then
-            return group
-        end
-    end
-    return mod.DEFAULT_GROUP
-end
-
---- plugins.core.midi.manager.activeSubGroup() -> string
---- Function
---- Returns the active sub-group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active sub group as string
-function mod.activeSubGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local result = 1
-    local activeGroup = mod.activeGroup()
-    if currentSubGroup[activeGroup] then
-        result = currentSubGroup[activeGroup]
-    end
-    return tostring(result)
-end
-
---- plugins.core.midi.manager.activeLoupedeckSubGroup() -> string
---- Function
---- Returns the active Loupedeck+ sub-group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active sub group as string
-function mod.activeLoupedeckSubGroup()
-    local currentSubGroup = mod._currentLoupedeckSubGroup()
-    local result = 1
-    local activeGroup = mod.activeGroup()
-    if currentSubGroup[activeGroup] then
-        result = currentSubGroup[activeGroup]
-    end
-    return tostring(result)
-end
-
---- plugins.core.midi.manager.forceGroupChange(combinedGroupAndSubGroupID) -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
----
---- Returns:
----  * None
-function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
-    if combinedGroupAndSubGroupID then
-        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
-        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
-        if group and subGroup then
-            local currentSubGroup = mod._currentSubGroup()
-            currentSubGroup[group] = tonumber(subGroup)
-            mod._currentSubGroup(currentSubGroup)
-        end
-        if notify then
-            local bankLabel = mod.getBankLabel(combinedGroupAndSubGroupID)
-            if bankLabel then
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. bankLabel)
-            else
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
-            end
-        end
-        updateCachedActiveGroupAndSubgroup()
-    end
-end
-
---- plugins.core.midi.manager.forceLoupedeckGroupChange(combinedGroupAndSubGroupID) -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
----
---- Returns:
----  * None
-function mod.forceLoupedeckGroupChange(combinedGroupAndSubGroupID, notify)
-    if combinedGroupAndSubGroupID then
-        --------------------------------------------------------------------------------
-        -- Remove the "fn" from the end of the group if it exists:
-        --------------------------------------------------------------------------------
-        if string.sub(combinedGroupAndSubGroupID, -2) == "fn" then
-            combinedGroupAndSubGroupID = string.sub(combinedGroupAndSubGroupID, 1, -3)
-        end
-        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
-        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
-        if group and subGroup then
-            local currentSubGroup = mod._currentLoupedeckSubGroup()
-            currentSubGroup[group] = tonumber(subGroup)
-            mod._currentLoupedeckSubGroup(currentSubGroup)
-        end
-        if notify then
-            local bankLabel = mod.getLoupedeckBankLabel(combinedGroupAndSubGroupID)
-            if bankLabel then
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. bankLabel)
-            else
-                dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
-            end
-        end
-        updateLoupedeckCachedActiveGroupAndSubgroup()
-    end
-end
-
---- plugins.core.midi.manager.gotoSubGroup() -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * id - The ID of the sub-group.
----
---- Returns:
----  * None
-function mod.gotoSubGroup(id)
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    currentSubGroup[activeGroup] = id
-    mod._currentSubGroup(currentSubGroup)
-    updateCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.nextSubGroup() -> none
---- Function
---- Goes to the next sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.nextSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue < mod.numberOfSubGroups then
-        currentSubGroup[activeGroup] = currentSubGroupValue + 1
-    else
-        currentSubGroup[activeGroup] = 1
-    end
-    mod._currentSubGroup(currentSubGroup)
-    updateCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.previousSubGroup() -> none
---- Function
---- Goes to the previous sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.previousSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue == 1 then
-        currentSubGroup[activeGroup] = mod.numberOfSubGroups
-    else
-        currentSubGroup[activeGroup] = currentSubGroupValue - 1
-    end
-    mod._currentSubGroup(currentSubGroup)
-    updateCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.gotoLoupedeckSubGroup() -> none
---- Function
---- Loads a specific sub-group.
----
---- Parameters:
----  * id - The ID of the sub-group.
----
---- Returns:
----  * None
-function mod.gotoLoupedeckSubGroup(id)
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentLoupedeckSubGroup()
-    currentSubGroup[activeGroup] = id
-    mod._currentLoupedeckSubGroup(currentSubGroup)
-    updateLoupedeckCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.nextLoupedeckSubGroup() -> none
---- Function
---- Goes to the next sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.nextLoupedeckSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentLoupedeckSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue < mod.numberOfSubGroups then
-        currentSubGroup[activeGroup] = currentSubGroupValue + 1
-    else
-        currentSubGroup[activeGroup] = 1
-    end
-    mod._currentLoupedeckSubGroup(currentSubGroup)
-    updateLoupedeckCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.previousLoupedeckSubGroup() -> none
---- Function
---- Goes to the previous sub-group for the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.previousLoupedeckSubGroup()
-    local activeGroup = mod.activeGroup()
-    local currentSubGroup = mod._currentLoupedeckSubGroup()
-    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
-    if currentSubGroupValue == 1 then
-        currentSubGroup[activeGroup] = mod.numberOfSubGroups
-    else
-        currentSubGroup[activeGroup] = currentSubGroupValue - 1
-    end
-    mod._currentLoupedeckSubGroup(currentSubGroup)
-    updateLoupedeckCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.groupStatus(groupID, status) -> none
---- Function
---- Updates a group's visibility status.
----
---- Parameters:
----  * groupID - the group you want to update as a string.
----  * status - the status of the group as a boolean.
----
---- Returns:
----  * None
-function mod.groupStatus(groupID, status)
-    mod._groupStatus[groupID] = status
-    mod.update()
-    updateCachedActiveGroupAndSubgroup()
-    updateLoupedeckCachedActiveGroupAndSubgroup()
-end
-
---- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
---- Function
---- MIDI Callback
----
---- Parameters:
----  * object - The `hs.midi` userdata object
----  * deviceName - Device name as string
----  * commandType - Command Type as string
----  * description - Description as string
----  * metadata - A table containing metadata for the MIDI command
----
---- Returns:
----  * None
-function mod.midiCallback(_, deviceName, commandType, _, metadata)
+-- callback(object, deviceName, commandType, description, metadata) -> none
+-- Function
+-- MIDI Callback
+--
+-- Parameters:
+--  * object - The `hs.midi` userdata object
+--  * deviceName - Device name as string
+--  * commandType - Command Type as string
+--  * description - Description as string
+--  * metadata - A table containing metadata for the MIDI command
+--
+-- Returns:
+--  * None
+local function callback(_, deviceName, commandType, _, metadata)
 
     if mod.learningMode then
+        --log.df("Currently in Learning Mode, so ignorning MIDI callbacks.")
         return
     end
 
-    local group = cachedActiveGroupAndSubgroup
+    local frontmostApplication = application.frontmostApplication()
+    local bundleID = frontmostApplication:bundleID()
+
+    local bankID
 
     if deviceName == "Loupedeck+" then
         --------------------------------------------------------------------------------
-        -- Get the group from the cache for faster lookup:
+        -- Revert to "All Applications" if no settings for frontmost app exist:
         --------------------------------------------------------------------------------
-        group = cachedLoupedeckActiveGroupAndSubgroup
+        local items = mod.loupedeckItems()
+        if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        if items[bundleID].ignore and items[bundleID].ignore == true then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get active bank from preferences:
+        --------------------------------------------------------------------------------
+        local activeLoupedeckBanks = mod.activeLoupedeckBanks()
+        bankID = activeLoupedeckBanks[bundleID] or "1"
 
         --------------------------------------------------------------------------------
         -- Treat the "Fn" key as a modifier and adjust the group accordingly:
         --------------------------------------------------------------------------------
         if metadata.note and metadata.note == 110 and metadata.channel and metadata.channel == 0 then
             if commandType == "noteOn" then
-                mod.loupedeckFnPressed = true
+                loupedeckFnPressed = true
             elseif commandType == "noteOff" then
-                mod.loupedeckFnPressed = false
+                loupedeckFnPressed = false
             end
         end
-        if mod.loupedeckFnPressed then
-            group = group .. "fn"
+        if loupedeckFnPressed then
+            bankID = bankID .. "fn"
         end
+    else
+        --------------------------------------------------------------------------------
+        -- Revert to "All Applications" if no settings for frontmost app exist:
+        --------------------------------------------------------------------------------
+        local items = mod.items()
+        if not items[bundleID] then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Ignore if ignored:
+        --------------------------------------------------------------------------------
+        if items[bundleID].ignore and items[bundleID].ignore == true then
+            bundleID = "All Applications"
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get active bank from preferences:
+        --------------------------------------------------------------------------------
+        local activeBanks = mod.activeBanks()
+        bankID = activeBanks[bundleID] or "1"
     end
 
     local channel = metadata.channel
@@ -869,19 +501,21 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
         deviceName = "virtual_" .. deviceName
     end
 
-    if midiActions
-    and midiActions[group]
-    and midiActions[group][deviceName]
-    and midiActions[group][deviceName][channel]
-    and midiActions[group][deviceName][channel][commandType] then
+    local app = midiActions and midiActions[bundleID]
+    local bank = app and app[bankID]
+    local device = bank and bank[deviceName]
+    local ch = device and device[channel]
+    local ct = ch and ch[commandType]
+    local cn = ct and ct[controllerNumber]
+
+    if ct then
         if commandType == "pitchWheelChange" then
             --------------------------------------------------------------------------------
             -- Pitch Wheel Change doesn't have a controllerNumber:
             --------------------------------------------------------------------------------
-            local v = midiActions[group][deviceName][channel][commandType]
-            if v.handlerID and string.sub(v.handlerID, -13) == "_midicontrols" then
+            if ct.handlerID and string.sub(ct.handlerID, -13) == "_midicontrols" then
                 doAfter(0, function()
-                    local id = v.action.id
+                    local id = ct.action.id
                     local control = controls:get(id)
                     if control then
                         local params = control:params()
@@ -894,12 +528,12 @@ function mod.midiCallback(_, deviceName, commandType, _, metadata)
                     end
                 end)
             end
-        elseif midiActions[group][deviceName][channel][commandType][controllerNumber] then
+        elseif cn then
             local v
-            if midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue] and midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]["action"] then
-                v = midiActions[group][deviceName][channel][commandType][controllerNumber][controllerValue]
-            elseif midiActions[group][deviceName][channel][commandType][controllerNumber] and midiActions[group][deviceName][channel][commandType][controllerNumber]["action"] then
-                v = midiActions[group][deviceName][channel][commandType][controllerNumber]
+            if cn[controllerValue] and cn[controllerValue]["action"] then
+                v = cn[controllerValue]
+            elseif cn["action"] then
+                v = cn
             end
             if v then
                 if v.handlerID and string.sub(v.handlerID, -13) == "_midicontrols" then
@@ -939,7 +573,7 @@ end
 --- Returns:
 ---  * A table of Physical MIDI Device Names.
 function mod.devices()
-    return mod._deviceNames
+    return deviceNames
 end
 
 --- plugins.core.midi.manager.virtualDevices() -> table
@@ -952,7 +586,7 @@ end
 --- Returns:
 ---  * A table of Virtual MIDI Source Names.
 function mod.virtualDevices()
-    return mod._virtualDevices
+    return virtualDevices
 end
 
 --- plugins.core.midi.manager.getDevice(deviceName, virtual) -> hs.midi object | nil
@@ -989,16 +623,24 @@ function mod.start()
     --------------------------------------------------------------------------------
     -- For performance, we only use watchers for USED devices:
     --------------------------------------------------------------------------------
-    local items = mod._items()
+    local items = mod.items()
     local usedDevices = {}
-    for _, v in pairs(items) do
-        for _, vv in pairs(v) do
-            table.insert(usedDevices, vv.device)
+    for _, app in pairs(items) do
+        if type(app) == "table" then
+            for _, bank in pairs(app) do
+                if type(bank) == "table" then
+                    for _, item in pairs(bank) do
+                        if item.device then
+                            table.insert(usedDevices, item.device)
+                        end
+                    end
+                end
+            end
         end
     end
 
     --------------------------------------------------------------------------------
-    -- Watch for Loupedeck+ is enabled:
+    -- Watch for Loupedeck+ if enabled:
     --------------------------------------------------------------------------------
     if mod.enabledLoupedeck() then
         table.insert(usedDevices, "Loupedeck+")
@@ -1025,13 +667,13 @@ function mod.start()
                     --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
-                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                        mod._midiDevices[deviceName]:callback(callback)
                     end
                 else
                     --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
-                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                        mod._midiDevices[deviceName]:callback(callback)
                     end
                 end
             end
@@ -1089,21 +731,6 @@ mod.enabled = config.prop("enableMIDI", false):watch(function() mod.update() end
 --- Enable or disable MIDI Loupedeck Support.
 mod.enabledLoupedeck = config.prop("enableLoupedeck", false):watch(function() mod.update() end)
 
---- plugins.core.midi.manager.init(deps, env) -> none
---- Function
---- Initialises the MIDI Plugin
----
---- Parameters:
----  * deps - Dependencies Table
----  * env - Environment Table
----
---- Returns:
----  * None
-function mod.init(deps)
-    mod._actionmanager = deps.actionmanager
-    return mod
-end
-
 local plugin = {
     id          = "core.midi.manager",
     group       = "core",
@@ -1111,10 +738,95 @@ local plugin = {
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
         ["core.commands.global"]            = "global",
+        ["core.application.manager"]        = "appmanager",
+        ["core.controlsurfaces.manager"]    = "csman",
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Migrate old preferences to newer format if 'Settings.cpMIDI' doesn't
+    -- already exist, and if we haven't already upgraded previously:
+    --------------------------------------------------------------------------------
+    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/MIDI Controls/Settings.cpMIDI")
+    mod.items = json.prop(config.userConfigRootPath, "MIDI Controls", "Settings.cpMIDI", mod.defaultLayout):watch(convertPreferencesToMIDIActions)
+    if not newLayoutExists then
+        local updatedPreferencesToV2 = config.prop("midi.updatedPreferencesToV2", false)
+        local legacyPath = config.userConfigRootPath .. "/MIDI Controls/Default.cpMIDI"
+        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+            local legacyPreferences = json.read(legacyPath)
+            local newData = {}
+            if legacyPreferences then
+                for groupID, data in pairs(legacyPreferences) do
+                    local bundleID
+                    local bankID
+                    if string.sub(groupID, 1, 4) == "fcpx" then
+                        bundleID = "com.apple.FinalCut"
+                        bankID = string.sub(groupID, 5)
+                    end
+                    if string.sub(groupID, 1, 6) == "global" then
+                        bundleID = "All Applications"
+                        bankID = string.sub(groupID, 7)
+                    end
+                    if not newData[bundleID] then newData[bundleID] = {} end
+                    newData[bundleID][bankID] = fnutils.copy(data)
+                    --------------------------------------------------------------------------------
+                    -- For some stupid reason, some values have "None" as a value instead of
+                    -- just `nil` or "", so let's correct this:
+                    --------------------------------------------------------------------------------
+                    for buttonID, buttonData in pairs(newData[bundleID][bankID]) do
+                        if buttonData.value == i18n("none") then
+                            newData[bundleID][bankID][buttonID].value = ""
+                        end
+                    end
+                end
+                updatedPreferencesToV2(true)
+                mod.items(newData)
+                log.df("Converted MIDI Preferences from Default.cpMIDI to Settings.cpMIDI.")
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Migrate old preferences to newer format if 'Settings.cpLoupedeck' doesn't
+    -- already exist, and if we haven't already upgraded previously:
+    --------------------------------------------------------------------------------
+    local newLoupedeckLayoutExists = doesFileExist(config.userConfigRootPath .. "/Loupedeck+/Settings.cpLoupedeckPlus")
+    mod.loupedeckItems = json.prop(config.userConfigRootPath, "Loupedeck+", "Settings.cpLoupedeckPlus", {}):watch(convertPreferencesToMIDIActions)
+    if not newLoupedeckLayoutExists then
+        local updatedPreferencesToV2 = config.prop("loupedeckplus.updatedPreferencesToV2", false)
+        local legacyPath = config.userConfigRootPath .. "/Loupedeck/Default.cpLoupedeck"
+        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+            local legacyPreferences = json.read(legacyPath)
+            local newData = {}
+            if legacyPreferences then
+                for groupID, data in pairs(legacyPreferences) do
+                    local bundleID
+                    local bankID
+                    if string.sub(groupID, 1, 4) == "fcpx" then
+                        bundleID = "com.apple.FinalCut"
+                        bankID = string.sub(groupID, 5)
+                    end
+                    if string.sub(groupID, 1, 6) == "global" then
+                        bundleID = "All Applications"
+                        bankID = string.sub(groupID, 7)
+                    end
+
+                    if not newData[bundleID] then newData[bundleID] = {} end
+                    newData[bundleID][bankID] = fnutils.copy(data)
+                end
+                updatedPreferencesToV2(true)
+                mod.loupedeckItems(newData)
+                log.df("Converted Loupedeck+ Preferences from Default.cpLoupedeck to Settings.cpLoupedeckPlus.")
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Link to dependancies:
+    --------------------------------------------------------------------------------
+    mod._actionmanager = deps.actionmanager
+
     --------------------------------------------------------------------------------
     -- Setup MIDI Device Callback:
     --
@@ -1122,17 +834,17 @@ function plugin.init(deps, env)
     -- enabled or not so that we can refresh the MIDI Preferences panel if a MIDI
     -- device is added or removed.
     --------------------------------------------------------------------------------
-    midi.deviceCallback(function(devices, virtualDevices)
+    midi.deviceCallback(function(devices, vDevices)
         --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
-        mod._deviceNames = devices
-        mod._virtualDevices = virtualDevices
-        mod.numberOfMidiDevices(#devices + #virtualDevices)
+        deviceNames = devices
+        virtualDevices = vDevices
+        mod.numberOfMidiDevices(#devices + #vDevices)
     end)
 
     --------------------------------------------------------------------------------
     -- Get list of MIDI devices:
     --------------------------------------------------------------------------------
-    mod._deviceNames = midi.devices() or {}
+    deviceNames = midi.devices() or {}
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
@@ -1144,7 +856,165 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
 
-    return mod.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Setup MIDI Bank Actions:
+    --------------------------------------------------------------------------------
+    local actionmanager = deps.actionmanager
+    local numberOfBanks = deps.csman.NUMBER_OF_BANKS
+    actionmanager.addHandler("global_midibanks")
+        :onChoices(function(choices)
+            for i=1, numberOfBanks do
+                choices:add(i18n("midi") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("midiBankDescription"))
+                    :params({ id = i })
+                    :id(i)
+            end
+
+            choices:add(i18n("next") .. " " .. i18n("midi") .. " " .. i18n("bank"))
+                :subText(i18n("midiBankDescription"))
+                :params({ id = "next" })
+                :id("next")
+
+            choices:add(i18n("previous") .. " " .. i18n("midi") .. " " .. i18n("bank"))
+                :subText(i18n("midiBankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.items()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                local activeBanks = mod.activeBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                mod.activeBanks(activeBanks)
+
+                items = mod.items() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "midiBank" .. action.id end)
+
+    --------------------------------------------------------------------------------
+    -- Setup Loupedeck+ Bank Actions:
+    --------------------------------------------------------------------------------
+    actionmanager.addHandler("global_loupedeckbanks")
+        :onChoices(function(choices)
+            for i=1, numberOfBanks do
+                choices:add(i18n("loupedeckPlus") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("loupedeckBankDescription"))
+                    :params({ id = i })
+                    :id(i)
+            end
+
+            choices:add(i18n("next") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckBankDescription"))
+                :params({ id = "next" })
+                :id("next")
+
+            choices:add(i18n("previous") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
+                :subText(i18n("loupedeckBankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = mod.loupedeckItems()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                local activeBanks = mod.activeLoupedeckBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                mod.activeLoupedeckBanks(activeBanks)
+
+                items = mod.loupedeckItems() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                displayNotification(i18n("loupedeckPlus") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "loupedeckBank" .. action.id end)
+
+    return mod
 end
 
 function plugin.postInit(deps)
@@ -1187,13 +1057,7 @@ function plugin.postInit(deps)
     -- Start Plugin:
     --------------------------------------------------------------------------------
     mod.enabled:update()
-    mod._items:update()
-
-    --------------------------------------------------------------------------------
-    -- Update "Bank" caches:
-    --------------------------------------------------------------------------------
-    updateCachedActiveGroupAndSubgroup()
-    updateLoupedeckCachedActiveGroupAndSubgroup()
+    mod.items:update()
 end
 
 return plugin
