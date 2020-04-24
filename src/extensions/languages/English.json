@@ -586,8 +586,8 @@
         "decrease": "Decrease",
         "decreaseClipHeight": "Decrease Clip Height",
         "decreaseOpacity": {
-            "one": "Decrease Opacity by %{amount} Unit",
-            "other": "Decrease Opacity by %{amount} Units"
+            "one": "Decrease Opacity by %{amount} Percent",
+            "other": "Decrease Opacity by %{amount} Percent"
         },
         "default": "Default",
         "delete": "Delete",
@@ -1077,8 +1077,8 @@
         "increase": "Increase",
         "increaseClipHeight": "Increase Clip Height",
         "increaseOpacity": {
-            "one": "Increase Opacity by %{amount} Unit",
-            "other": "Increase Opacity by %{amount} Units"
+            "one": "Increase Opacity by %{amount} Percent",
+            "other": "Increase Opacity by %{amount} Percent"
         },
         "individualEffects": "Individual Effects",
         "inertiaCam": "InertiaCam",
