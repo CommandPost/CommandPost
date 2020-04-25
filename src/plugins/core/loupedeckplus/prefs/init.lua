@@ -370,7 +370,7 @@ local function loupedeckPanelCallback(id, params)
                 if files then
                     local path = files["1"]
                     local info = path and infoForBundlePath(path)
-                    local displayName = info and info.CFBundleDisplayName or info.CFBundleName
+                    local displayName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
                     local bundleID = info and info.CFBundleIdentifier
                     if displayName and bundleID then
                         local items = mod.items()
@@ -405,7 +405,8 @@ local function loupedeckPanelCallback(id, params)
                         }
                         mod.items(items)
                     else
-                        log.ef("Something went wrong trying to add a custom application. bundleID: %s, displayName: %s", bundleID, displayName)
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
+                        log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleID: '%s'\ndisplayName: '%s'",path, bundleID, displayName)
                     end
 
                     --------------------------------------------------------------------------------
