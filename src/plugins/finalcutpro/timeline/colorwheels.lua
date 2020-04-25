@@ -450,6 +450,47 @@ function plugin.init(deps)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("reset"))
 
     --------------------------------------------------------------------------------
+    -- Color Wheel Contrast:
+    --------------------------------------------------------------------------------
+    local colorWheelContrastValue = 0
+    local updateColorWheelContrast = deferred.new(0.01):action(function()
+        colorWheels:show()
+        colorWheels:shadows():brightness():shiftValue(colorWheelContrastValue*-1)
+        colorWheels:highlights():brightness():shiftValue(colorWheelContrastValue)
+        colorWheelContrastValue = 0
+    end)
+
+    for _, v in pairs(BRIGHTNESS_RANGES) do
+        fcpxCmds
+            :add("colorWheelContrastUp" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelContrastValue = colorWheelContrastValue - v
+                updateColorWheelContrast()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("contrast") .. " - " .. i18n("nudge") .. " ".. i18n("up") .. " " .. v)
+
+        fcpxCmds
+            :add("colorWheelContrastDown" .. v)
+            :groupedBy("colorWheels")
+            :whenActivated(function()
+                colorWheelContrastValue = colorWheelContrastValue + v
+                updateColorWheelContrast()
+            end)
+            :titled(i18n("colorWheel") .. " - " .. i18n("contrast") .. " - " .. i18n("nudge") .. " ".. i18n("down") .. " " .. v)
+    end
+
+    fcpxCmds
+        :add("colorWheelContrastReset")
+        :groupedBy("colorWheels")
+        :whenActivated(function()
+            if not colorWheels:isShowing() then colorWheels:show() end
+            colorWheels:shadows():brightness():value(0)
+            colorWheels:highlights():brightness():value(0)
+        end)
+        :titled(i18n("colorWheel") .. " - " .. i18n("contrast") .. " - " .. i18n("reset"))
+
+    --------------------------------------------------------------------------------
     -- Color Wheel Shadows - Brightness:
     --------------------------------------------------------------------------------
     local colorWheelShadowsBrightnessValue = 0
