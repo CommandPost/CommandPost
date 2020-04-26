@@ -443,7 +443,7 @@ local function callback(_, deviceName, commandType, _, metadata)
         --------------------------------------------------------------------------------
         -- Ignore if ignored:
         --------------------------------------------------------------------------------
-        if items[bundleID].ignore and items[bundleID].ignore == true then
+        if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
             bundleID = "All Applications"
         end
 
@@ -478,7 +478,7 @@ local function callback(_, deviceName, commandType, _, metadata)
         --------------------------------------------------------------------------------
         -- Ignore if ignored:
         --------------------------------------------------------------------------------
-        if items[bundleID].ignore and items[bundleID].ignore == true then
+        if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
             bundleID = "All Applications"
         end
 
