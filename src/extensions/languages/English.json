@@ -695,7 +695,7 @@
         "fadeInType": "Fade In Type",
         "fadeOutType": "Fade Out Type",
         "failedToAddCustomApplication": "Failed to add Custom Application",
-        "failedToAddCustomApplicationDescription": "CommandPost was unable to determine the bundle identifier or diplay name for the custom application.\n\nPlease provide feedback to the CommandPost team so that they can come up with a fix.",
+        "failedToAddCustomApplicationDescription": "CommandPost was unable to determine the bundle identifier or display name for the custom application.\n\nPlease provide feedback to the CommandPost team so that they can come up with a fix.",
         "failedToChangeLanguage": "Unable to change Final Cut Pro's language.",
         "failedToProcessTheCSVFile": "Failed to process the CSV file.",
         "failedToSwitchBackToFinalCutPro": "Failed to switch back to Final Cut Pro.",
