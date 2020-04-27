@@ -631,6 +631,7 @@ local function callback(data)
     --------------------------------------------------------------------------------
     -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
+    local functionButtonPressed = false
     if data.id == ct.event.BUTTON_PRESS then
         if data.direction == "up" then
             if data.buttonID == ct.buttonID.LEFT_FN then
@@ -642,9 +643,11 @@ local function callback(data)
             end
         elseif data.direction == "down" then
             if data.buttonID == ct.buttonID.LEFT_FN then
+                functionButtonPressed = true
                 leftFnPressed = true
                 mod.refresh()
             elseif data.buttonID == ct.buttonID.RIGHT_FN then
+                functionButtonPressed = true
                 rightFnPressed = true
                 mod.refresh()
             end
@@ -654,10 +657,12 @@ local function callback(data)
     --------------------------------------------------------------------------------
     -- HANDLE FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
-    if leftFnPressed then
-        bankID = bankID .. "_LeftFn"
-    elseif rightFnPressed then
-        bankID = bankID .. "_RightFn"
+    if not functionButtonPressed then
+        if leftFnPressed then
+            bankID = bankID .. "_LeftFn"
+        elseif rightFnPressed then
+            bankID = bankID .. "_RightFn"
+        end
     end
 
     local item = items[bundleID]
