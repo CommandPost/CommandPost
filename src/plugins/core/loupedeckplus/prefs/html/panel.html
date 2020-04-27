@@ -227,21 +227,11 @@
 					{%
 					for i=1, numberOfBanks do
 						local selected = ""
-						if lastBank == tostring(i) .. "_LeftFn" then
+						if lastBank == tostring(i) .. "fn" then
 							selected = [[selected=""]]
 						end
 					%}
-					<option {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
-					{% end %}
-					<option disabled>──────────</option>
-					{%
-					for i=1, numberOfBanks do
-						local selected = ""
-						if lastBank == tostring(i) .. "_RightFn" then
-							selected = [[selected=""]]
-						end
-					%}
-					<option {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
+					<option {{selected}} value="{{i}}fn">{{i}} (Fn)</option>
 					{% end %}
 				</select>
 			</span>

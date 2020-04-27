@@ -422,6 +422,11 @@ local function loupedeckPanelCallback(id, params)
                 -- Change the bank:
                 --------------------------------------------------------------------------------
                 local activeBanks = mod._midi.activeLoupedeckBanks()
+
+                -- Remove the 'fn':
+                if string.sub(bank, -2) == "fn" then
+                    bank = string.sub(bank, 1, -3)
+                end
                 activeBanks[app] = bank
                 mod._midi.activeLoupedeckBanks(activeBanks)
 

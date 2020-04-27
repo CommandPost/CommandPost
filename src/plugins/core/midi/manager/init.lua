@@ -462,9 +462,10 @@ local function callback(_, deviceName, commandType, _, metadata)
             elseif commandType == "noteOff" then
                 loupedeckFnPressed = false
             end
-        end
-        if loupedeckFnPressed then
-            bankID = bankID .. "fn"
+        else
+            if loupedeckFnPressed == true then
+                bankID = bankID .. "fn"
+            end
         end
     else
         --------------------------------------------------------------------------------

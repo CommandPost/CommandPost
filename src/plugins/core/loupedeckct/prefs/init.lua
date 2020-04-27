@@ -719,7 +719,17 @@ local function loupedeckCTPanelCallback(id, params)
                 -- Change the bank:
                 --------------------------------------------------------------------------------
                 local activeBanks = mod._ctmanager.activeBanks()
-                activeBanks[app] = bank
+
+                -- Remove the '_LeftFn' and '_RightFn'
+                local newBank = bank
+                if string.sub(bank, -7) == "_LeftFn" then
+                    newBank = string.sub(bank, 1, -8)
+                end
+                if string.sub(bank, -8) == "_RightFn" then
+                    newBank = string.sub(bank, 1, -9)
+                end
+
+                activeBanks[app] = newBank
                 mod._ctmanager.activeBanks(activeBanks)
 
                 --------------------------------------------------------------------------------
