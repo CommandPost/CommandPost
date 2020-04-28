@@ -17,10 +17,13 @@ local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local json              = require "cp.json"
 
+local template          = require "resty.template"
+
 local execute           = hs.execute
 local allowAppleScript  = hs.allowAppleScript
 
 local blockAlert        = dialog.blockAlert
+local htmlEscape        = template.escape
 local imageFromPath     = image.imageFromPath
 local webviewAlert      = dialog.webviewAlert
 
@@ -102,7 +105,7 @@ local function getSnippetLabels()
         if snippets[label].selected == true then
             selected = " selected "
         end
-        result = result .. [[<option ]] .. selected .. [[ value="]] .. label .. [[">]] .. label .. [[</option>]] .. "\n"
+        result = result .. [[<option ]] .. selected .. [[ value="]] .. htmlEscape(label) .. [[">]] .. label .. [[</option>]] .. "\n"
     end
 
     return result
@@ -161,11 +164,11 @@ local function toggleCommandLineTool()
     local newCliStatus = ipc.cliStatus()
     if cliStatus == newCliStatus then
         if cliStatus then
-            dialog.webviewAlert(mod._manager.getWebview(), function()
+            webviewAlert(mod._manager.getWebview(), function()
                 updatePreferences()
             end, i18n("cliUninstallError"), "", i18n("ok"), nil, "informational")
         else
-            dialog.webviewAlert(mod._manager.getWebview(), function()
+            webviewAlert(mod._manager.getWebview(), function()
                 updatePreferences()
             end, i18n("cliInstallError"), "", i18n("ok"), nil, "informational")
         end
