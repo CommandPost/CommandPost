@@ -339,7 +339,7 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Clear an action:
             --------------------------------------------------------------------------------
-            local app = params["app"]
+            local app = params["application"]
             local bank = params["bank"]
             local button = params["button"]
 
