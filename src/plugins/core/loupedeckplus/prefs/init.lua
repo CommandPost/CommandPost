@@ -826,7 +826,7 @@ function plugin.init(deps, env)
     global
         :add("enableLoupedeckPlusandKillLoupedeckApp")
         :whenActivated(function()
-            local apps = application.applicationsForBundleID(LD_BUNDLE_ID)
+            local apps = applicationsForBundleID(LD_BUNDLE_ID)
             if apps then
                 for _, app in pairs(apps) do
                     app:kill9()
