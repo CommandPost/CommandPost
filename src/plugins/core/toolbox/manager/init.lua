@@ -570,6 +570,7 @@ function plugin.init(deps, env)
         :add("toolbox")
         :whenActivated(mod.show)
         :groupedBy("commandPost")
+        :titled(i18n("openToolbox"))
 
     --------------------------------------------------------------------------------
     -- Initalise Module:

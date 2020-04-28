@@ -580,6 +580,7 @@ function plugin.init(deps, env)
         :add("controlSurfaces")
         :whenActivated(mod.show)
         :groupedBy("commandPost")
+        :titled(i18n("openControlSurfaces"))
 
     --------------------------------------------------------------------------------
     -- Initalise Module:

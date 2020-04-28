@@ -19,17 +19,24 @@ local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
+local applicationsForBundleID   = application.applicationsForBundleID
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local infoForBundlePath         = application.infoForBundlePath
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
+
+-- LD_BUNDLE_ID -> string
+-- Constant
+-- The official Loupedeck App bundle identifier.
+local LD_BUNDLE_ID = "com.loupedeck.Loupedeck2"
 
 --- plugins.core.loupedeckplus.prefs.lastApplication <cp.prop: string>
 --- Field
@@ -768,6 +775,7 @@ local plugin = {
         ["core.midi.manager"]               = "midi",
         ["core.action.manager"]             = "actionmanager",
         ["core.application.manager"]        = "appmanager",
+        ["core.commands.global"]            = "global",
     }
 }
 
@@ -785,6 +793,49 @@ function plugin.init(deps, env)
     mod.enabled         = mod._midi.enabledLoupedeck
 
     mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
+
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global
+        :add("enableLoupedeckPlus")
+        :whenActivated(function()
+            mod.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enableLoupedeckPlusSupport"))
+
+    global
+        :add("disableLoupedeckPlus")
+        :whenActivated(function()
+            mod.enabled(false)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disableLoupedeckPlusSupport"))
+
+    global
+        :add("disableLoupedeckPlusandLaunchLoupedeckApp")
+        :whenActivated(function()
+            mod.enabled(false)
+            launchOrFocusByBundleID(LD_BUNDLE_ID)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disableLoupedeckPlusSupportAndLaunchLoupedeckApp"))
+
+    global
+        :add("enableLoupedeckPlusandKillLoupedeckApp")
+        :whenActivated(function()
+            local apps = application.applicationsForBundleID(LD_BUNDLE_ID)
+            if apps then
+                for _, app in pairs(apps) do
+                    app:kill9()
+                end
+            end
+            mod.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enableLoupedeckPlusSupportQuitLoupedeckApp"))
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:

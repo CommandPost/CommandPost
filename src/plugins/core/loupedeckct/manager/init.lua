@@ -2,38 +2,45 @@
 ---
 --- Loupedeck CT Manager Plugin.
 
-local require               = require
+local require                   = require
 
-local hs                    = hs
+local hs                        = hs
 
---local log                   = require "hs.logger".new "ldCT"
+--local log                       = require "hs.logger".new "ldCT"
 
-local application           = require "hs.application"
-local appWatcher            = require "hs.application.watcher"
-local ct                    = require "hs.loupedeckct"
-local fs                    = require "hs.fs"
-local image                 = require "hs.image"
-local plist                 = require "hs.plist"
-local timer                 = require "hs.timer"
+local application               = require "hs.application"
+local appWatcher                = require "hs.application.watcher"
+local ct                        = require "hs.loupedeckct"
+local fs                        = require "hs.fs"
+local image                     = require "hs.image"
+local plist                     = require "hs.plist"
+local timer                     = require "hs.timer"
 
-local config                = require "cp.config"
-local dialog                = require "cp.dialog"
-local i18n                  = require "cp.i18n"
-local json                  = require "cp.json"
-local just                  = require "cp.just"
-local prop                  = require "cp.prop"
-local tools                 = require "cp.tools"
+local config                    = require "cp.config"
+local dialog                    = require "cp.dialog"
+local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
+local just                      = require "cp.just"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
-local displayNotification   = dialog.displayNotification
-local doAfter               = timer.doAfter
-local doesDirectoryExist    = tools.doesDirectoryExist
-local doesFileExist         = tools.doesFileExist
-local ensureDirectoryExists = tools.ensureDirectoryExists
-local execute               = hs.execute
-local imageFromURL          = image.imageFromURL
-local readString            = plist.readString
+local applicationsForBundleID   = application.applicationsForBundleID
+local displayNotification       = dialog.displayNotification
+local doAfter                   = timer.doAfter
+local doesDirectoryExist        = tools.doesDirectoryExist
+local doesFileExist             = tools.doesFileExist
+local ensureDirectoryExists     = tools.ensureDirectoryExists
+local execute                   = hs.execute
+local imageFromURL              = image.imageFromURL
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
+local readString                = plist.readString
 
 local mod = {}
+
+-- LD_BUNDLE_ID -> string
+-- Constant
+-- The official Loupedeck App bundle identifier.
+local LD_BUNDLE_ID = "com.loupedeck.Loupedeck2"
 
 -- fileExtension -> string
 -- Variable
@@ -892,6 +899,7 @@ local plugin = {
         ["core.action.manager"]             = "actionmanager",
         ["core.application.manager"]        = "appmanager",
         ["core.controlsurfaces.manager"]    = "csman",
+        ["core.commands.global"]            = "global",
     }
 }
 
@@ -905,6 +913,49 @@ function plugin.init(deps)
     -- Link to dependancies:
     --------------------------------------------------------------------------------
     mod._actionmanager = deps.actionmanager
+
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global
+        :add("enableLoupedeckCT")
+        :whenActivated(function()
+            mod.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enableLoupedeckCTSupport"))
+
+    global
+        :add("disableLoupedeckCT")
+        :whenActivated(function()
+            mod.enabled(false)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disableLoupedeckCTSupport"))
+
+    global
+        :add("disableLoupedeckCTandLaunchLoupedeckApp")
+        :whenActivated(function()
+            mod.enabled(false)
+            launchOrFocusByBundleID(LD_BUNDLE_ID)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disableLoupedeckCTSupportAndLaunchLoupedeckApp"))
+
+    global
+        :add("enableLoupedeckCTandKillLoupedeckApp")
+        :whenActivated(function()
+            local apps = applicationsForBundleID(LD_BUNDLE_ID)
+            if apps then
+                for _, app in pairs(apps) do
+                    app:kill9()
+                end
+            end
+            mod.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
 
     --------------------------------------------------------------------------------
     -- Setup the Loupedeck CT callback:
