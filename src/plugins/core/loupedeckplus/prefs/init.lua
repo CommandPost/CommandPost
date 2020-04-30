@@ -348,7 +348,7 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local app = params["application"]
             local bank = params["bank"]
-            local button = params["button"]
+            local button = params["buttonID"]
 
             local items = mod.items()
 
