@@ -514,6 +514,8 @@ local receiveHandler = {
         protocolRev, offset = byteStringToNumber(data, offset, 4)
         numberOfPanels, offset = byteStringToNumber(data, offset, 4)
 
+        mod._protocolRev = protocolRev
+
         --------------------------------------------------------------------------------
         -- Trigger callback:
         --------------------------------------------------------------------------------
@@ -1197,20 +1199,25 @@ mod._buffer = {}
 -- Number of read bytes remaining.
 mod._readBytesRemaining = 0
 
--- hs.tangent._applicationName -> number
+-- hs.tangent._applicationName -> string
 -- Variable
 -- Application name as specified in `hs.tangent.connect()`
 mod._applicationName = nil
 
--- hs.tangent._systemPath -> number
+-- hs.tangent._systemPath -> string
 -- Variable
 -- A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 mod._systemPath = nil
 
--- hs.tangent._userPath -> number
+-- hs.tangent._userPath -> string
 -- Variable
 -- A string containing the absolute path of the directory that contains the User’s Default Map XML files.
 mod._userPath = nil
+
+-- hs.tangent._protocolRev -> number
+-- Variable
+-- The most recent protocolRev value returned when an InitiatComms is received.
+mod._protocolRev = nil
 
 --------------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS & METHODS:
@@ -1390,7 +1397,7 @@ function mod.send(byteString)
     return false, "Not connected"
 end
 
---- hs.tangent.sendApplicationDefinition([appName, systemPath, userPath]) -> boolean, string
+--- hs.tangent.sendApplicationDefinition([appName, systemPath, userPath[, task]]) -> boolean, string
 --- Function
 --- Sends the application details to the Tangent Hub.
 --- If no details are provided the ones stored in the module are used.
@@ -1399,10 +1406,11 @@ end
 ---  * appName       - The human-readable name of the application.
 ---  * systemPath    - A string containing the absolute path of the directory that contains the Controls and Default Map XML files (Path String)
 ---  * userPath      - A string containing the absolute path of the directory that contains the User’s Default Map XML files (Path String)
+---  * task          - A string containing the name of the task associated with the application if the `appName` is different to the primary app being managed.
 ---
 --- Returns:
 ---  * `true` if successful, `false` and an error message if there was a problem.
-function mod.sendApplicationDefinition(appName, systemPath, userPath)
+function mod.sendApplicationDefinition(appName, systemPath, userPath, task)
     appName = appName or mod._applicationName
     systemPath = systemPath or mod._systemPath
     userPath = userPath or mod._userPath
@@ -1418,7 +1426,7 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
     end
 
     --------------------------------------------------------------------------------
-    -- Format: 0x81, <appStrLen>, < appStr>, <sysDirStrLen>, <sysDirStr>, <userDirStrLen>, <userDirStr>
+    -- Format: 0x81, <appStrLen>, <appStr>, <sysDirStrLen>, <sysDirStr>, <userDirStrLen>, <userDirStr>
     --
     -- appStrLen: The length of appStr (Unsigned Int)
     -- appStr: A string containing the name of the application (Character String)
@@ -1426,6 +1434,13 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
     -- sysDirStr: A string containing the absolute path of the directory that contains the Controls and Default Map XML files (Path String)
     -- usrDirStrLen: The length of usrDirStr (Unsigned Int)
     -- usrDirStr: A string containing the absolute path of the directory that contains the User’s Default Map XML files (Path String)
+    -- taskStrLen: The length of taskStr (Unsigned Int) (only available from protocolRev 7 onwards)
+    -- tastStr: A string containing the name of the task associated with the application. This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+    -- This parameter should only be required if the string passed in appStr does not match the Task name that the OS identifies as your application.
+    -- Typically, this is only usually required for Plugins which run within a parent Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
+    -- Any numerical characters included in taskStr will be stripped before matching.
+    -- If taskStr is not required then taskStrLen should be set to 0.
+
     --------------------------------------------------------------------------------
     local byteString =  numberToByteString(mod.toHub.applicationDefinition) ..
                         numberToByteString(#appName) ..
@@ -1434,6 +1449,17 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
                         systemPath ..
                         numberToByteString(userPath and #userPath or 0) ..
                         (userPath ~= nil and userPath or "")
+
+    if mod._protocolRev >= 7 then
+        if task then
+            byteString =    byteString ..
+                            numberToByteString(#task) ..
+                            task
+        else
+            byteString =    byteString ..
+                            numberToByteString(0)
+        end
+    end
 
     return mod.send(byteString)
 end
