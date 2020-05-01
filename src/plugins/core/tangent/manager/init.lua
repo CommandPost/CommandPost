@@ -653,7 +653,7 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             mod.disableFinalCutProInTangentHub()
             tangent.callback(callback)
-            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath)
+            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
