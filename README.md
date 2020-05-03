@@ -29,7 +29,7 @@ You can participate in the translation [here](https://poeditor.com/join/project/
 [![Join Translation](https://img.shields.io/badge/POEditor-translate-green.svg)](https://poeditor.com/join/project/QWvOQlF1Sy)
 
 You can also read our Developer Code of Conduct [here](https://github.com/CommandPost/CommandPost/blob/develop/CODE_OF_CONDUCT.md). The source is released under [MIT-License](http://opensource.org/licenses/MIT).  
-[![GitHub license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://raw.githubusercontent.com/CommandPost/CommandPost/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/CommandPost/CommandPost/blob/develop/LICENSE.md)
 
 ## Sponsor:
 
