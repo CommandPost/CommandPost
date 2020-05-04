@@ -2301,10 +2301,10 @@ function mod.connect(applicationName, systemPath, userPath, task)
     --------------------------------------------------------------------------------
     -- Save values for later:
     --------------------------------------------------------------------------------
-    mod._applicationName = applicationName
-    mod._systemPath = systemPath
-    mod._userPath = userPath
-    mod._task = task
+    mod._applicationName = applicationName or mod._applicationName
+    mod._systemPath = systemPath or mod._systemPath
+    mod._userPath = userPath or mod._userPath
+    mod._task = task or mod._task
 
     --------------------------------------------------------------------------------
     -- Connect to Tangent Hub:

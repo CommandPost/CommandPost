@@ -566,12 +566,16 @@ mod.interrupted = prop(function()
         end
     end
     return false
-end):watch(function(value)
+end):watch(function(interrupted)
     -- log.df("Tangent Hub interrupted: %s", value)
-    if value == false then
+    if interrupted then
+        if tangent.supportsFocusRequest() then
+            tangent.disconnect()
+        end
+    else
         if tangent.supportsFocusRequest() then
             -- log.df("Sending Focus Request...")
-            tangent.sendFocusRequest()
+            tangent.connect()
         else
             --------------------------------------------------------------------------------
             -- Force Tangent Hub to restart when an interruption is completed so that
@@ -653,7 +657,7 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             mod.disableFinalCutProInTangentHub()
             tangent.callback(callback)
-            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
+            local ok, errorMessage = tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
