@@ -52,82 +52,6 @@ local parentLabels = { module.attributes.general.parent, module.attributes.gener
 
 -- private variables and methods -----------------------------------------
 
-local _kMetaTable = {}
--- planning to experiment with using this with responses to functional queries... and I
--- don't want to keep loose generated data hanging around
-_kMetaTable._k = setmetatable({}, {__mode = "k"})
-_kMetaTable._t = setmetatable({}, {__mode = "k"})
-_kMetaTable.__index = function(obj, key)
-        if _kMetaTable._k[obj] then
-            if _kMetaTable._k[obj][key] then
-                return _kMetaTable._k[obj][key]
-            else
-                for k,v in pairs(_kMetaTable._k[obj]) do
-                    if v == key then return k end
-                end
-            end
-        end
-        return nil
-    end
-_kMetaTable.__newindex = function(obj, key, value)
-        error("attempt to modify a table of constants",2)
-        return nil
-    end
-_kMetaTable.__pairs = function(obj) return pairs(_kMetaTable._k[obj]) end
-_kMetaTable.__len = function(obj) return #_kMetaTable._k[obj] end
-_kMetaTable.__tostring = function(obj)
-        local result = ""
-        if _kMetaTable._k[obj] then
-            local width = 0
-            for k,v in pairs(_kMetaTable._k[obj]) do width = width < #tostring(k) and #tostring(k) or width end
-            for k,v in require("hs.fnutils").sortByKeys(_kMetaTable._k[obj]) do
-                if _kMetaTable._t[obj] == "table" then
-                    result = result..string.format("%-"..tostring(width).."s %s\n", tostring(k),
-                        ((type(v) == "table") and "{ table }" or tostring(v)))
-                else
-                    result = result..((type(v) == "table") and "{ table }" or tostring(v)).."\n"
-                end
-            end
-        else
-            result = "constants table missing"
-        end
-        return result
-    end
-_kMetaTable.__metatable = _kMetaTable -- go ahead and look, but don't unset this
-
-local _makeConstantsTable
-_makeConstantsTable = function(theTable)
-    if type(theTable) ~= "table" then
-        local dbg = debug.getinfo(2)
-        local msg = dbg.short_src..":"..dbg.currentline..": attempting to make a '"..type(theTable).."' into a constant table"
-        if module.log then module.log.ef(msg) else print(msg) end
-        return theTable
-    end
-    for k,v in pairs(theTable) do
-        if type(v) == "table" then
-            local count = 0
-            for a,b in pairs(v) do count = count + 1 end
-            local results = _makeConstantsTable(v)
-            if #v > 0 and #v == count then
-                _kMetaTable._t[results] = "array"
-            else
-                _kMetaTable._t[results] = "table"
-            end
-            theTable[k] = results
-        end
-    end
-    local results = setmetatable({}, _kMetaTable)
-    _kMetaTable._k[results] = theTable
-    local count = 0
-    for a,b in pairs(theTable) do count = count + 1 end
-    if #theTable > 0 and #theTable == count then
-        _kMetaTable._t[results] = "array"
-    else
-        _kMetaTable._t[results] = "table"
-    end
-    return results
-end
-
 local elementSearchHamster
 elementSearchHamster = function(element, searchParameters, isPattern, includeParents, seen)
     seen = seen or {}
@@ -197,14 +121,14 @@ end
 
 -- Public interface ------------------------------------------------------
 
-module.roles                   = _makeConstantsTable(module.roles)
-module.subroles                = _makeConstantsTable(module.subroles)
-module.parameterizedAttributes = _makeConstantsTable(module.parameterizedAttributes)
-module.actions                 = _makeConstantsTable(module.actions)
-module.attributes              = _makeConstantsTable(module.attributes)
-module.directions              = _makeConstantsTable(module.directions)
+module.roles                   = ls.makeConstantsTable(module.roles)
+module.subroles                = ls.makeConstantsTable(module.subroles)
+module.parameterizedAttributes = ls.makeConstantsTable(module.parameterizedAttributes)
+module.actions                 = ls.makeConstantsTable(module.actions)
+module.attributes              = ls.makeConstantsTable(module.attributes)
+module.directions              = ls.makeConstantsTable(module.directions)
 
-module.observer.notifications  = _makeConstantsTable(module.observer.notifications)
+module.observer.notifications  = ls.makeConstantsTable(module.observer.notifications)
 
 --- hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject
 --- Constructor
@@ -241,7 +165,7 @@ objectMT.__index = function(self, _)
         local formalName = matchName:match("^AX[%w%d_]+$") and matchName or "AX"..matchName:sub(1,1):upper()..matchName:sub(2)
 
         -- check for setters
-        if _:match("^set") then
+        if _:match("^set%u") then
 
              -- check attributes
              for i, v in ipairs(objectMT.attributeNames(self) or {}) do
@@ -251,7 +175,7 @@ objectMT.__index = function(self, _)
             end
 
         -- check for doers
-        elseif _:match("^do") then
+        elseif _:match("^do%u") then
 
             -- check actions
             for i, v in ipairs(objectMT.actionNames(self) or {}) do
@@ -298,8 +222,12 @@ objectMT.__call = function(_, cmd, ...)
         return fn(_, ...)
     elseif fn then
         return fn
+    elseif cmd:match("^do%u") then
+        error(tostring(cmd) .. " is not a recognized action", 2)
+    elseif cmd:match("^set%u") then
+        error(tostring(cmd) .. " is not a recognized attribute", 2)
     else
-        error(tostring(cmd) .. " is not a recognized attribute or action", 2)
+        return nil
     end
 end
 
@@ -366,7 +294,7 @@ objectMT.dynamicMethods = function(self, asKV)
         end
     end
     if not asKV then table.sort(results) end
-    return _makeConstantsTable(results)
+    return ls.makeConstantsTable(results)
 end
 
 --- hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean
@@ -784,5 +712,5 @@ debug.getregistry()[USERDATA_TAG .. ".elementSearchTable"] = {
 
 -- Return Module Object --------------------------------------------------
 
-if module.types then module.types = _makeConstantsTable(module.types) end
+if module.types then module.types = ls.makeConstantsTable(module.types) end
 return module
