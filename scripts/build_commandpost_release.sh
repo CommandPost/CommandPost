@@ -50,12 +50,16 @@ SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")"
 HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")"
 XCODE_BUILT_PRODUCTS_DIR="$(xcodebuild -workspace Hammerspoon.xcworkspace -scheme 'Release' -configuration 'Release' -showBuildSettings | sort | uniq | grep ' BUILT_PRODUCTS_DIR =' | awk '{ print $3 }')"
 
-export CODESIGN_AUTHORITY_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-codesign-authority"
-#export GITHUB_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-github-release"
+
+export TOKENPATH
+TOKENPATH="${HAMMERSPOON_HOME}/.."
+
+export CODESIGN_AUTHORITY_TOKEN_FILE="${TOKENPATH}/token-codesign-authority"
+#export GITHUB_TOKEN_FILE="${TOKENPATH}/token-github-release"
 #export GITHUB_USER="hammerspoon"
 #export GITHUB_REPO="hammerspoon"
-export SENTRY_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-sentry"
-export NOTARIZATION_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-notarization"
+export SENTRY_TOKEN_FILE="${TOKENPATH}/token-sentry"
+export NOTARIZATION_TOKEN_FILE="${TOKENPATH}/token-notarization"
 
 # Import our function library
 # shellcheck source=scripts/librelease.sh disable=SC1091

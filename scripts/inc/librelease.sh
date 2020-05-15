@@ -458,7 +458,7 @@ function archive_dSYMs() {
 }
 
 function upload_dSYMs() {
-  echo "Uploading .dSYM files to Sentry..."
+  echo "Uploading .dSYM files to Sentry (using release script)..."
   pushd "${HAMMERSPOON_HOME}/../" >/dev/null
   if [ ! -d "archive/${VERSION}/dSYM" ]; then
     echo "ERROR: dSYM archive does not exist yet, can't upload it to Sentry. You need to fix this"
@@ -466,7 +466,8 @@ function upload_dSYMs() {
 	export SENTRY_ORG=commandpost
     export SENTRY_PROJECT=commandpost
     export SENTRY_LOG_LEVEL=debug
-    "${HAMMERSPOON_HOME}/scripts/sentry-cli" upload-dif "archive/${VERSION}/dSYM/" >"archive/${VERSION}/dSYM-upload.log" 2>&1
+    export SENTRY_AUTH_TOKEN
+    sentry-cli upload-dif "archive/${VERSION}/dSYM/" >"archive/${VERSION}/dSYM-upload.log" 2>&1
   fi
   popd >/dev/null
 }
