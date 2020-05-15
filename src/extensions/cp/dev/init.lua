@@ -129,15 +129,16 @@ function mod.elementAtMouse()
     return ax.systemElementAtPosition(mouse.getAbsolutePosition())
 end
 
---- cp.dev.inspectAtMouse(options) -> string
+--- cp.dev.inspectAtMouse(options) -> none
 --- Function
 --- Inspects an AX element under the current mouse position.
+--- Writes results to Debug Console.
 ---
 --- Parameters:
 ---  * options - Any additional options to pass along to `cp.dev.inspectElement`.
 ---
 --- Returns:
----  * A string containing the results.
+---  * None
 function mod.inspectAtMouse(options)
     options = options or {}
     local element = mod.elementAtMouse()
@@ -156,10 +157,12 @@ function mod.inspectAtMouse(options)
             end
             return result
         else
-            return inspect(element:buildTree(options.depth))
+            element:buildTree(function(msg, results)
+                log.df("msg: %s\n\n results: %s", msg, inspect(results))
+            end, options.depth)
         end
     else
-        return "<no element found>"
+        log.df("<no element found>")
     end
 end
 
@@ -200,16 +203,16 @@ function mod.inspect(e, options)
     end
 end
 
---- cp.dev.inspectElement() -> string
+--- cp.dev.inspectElement() -> none
 --- Function
---- Inspect an AX element.
+--- Inspect an AX element. Writes results to Debug Console.
 ---
 --- Parameters:
 ---  * element - The element to inspect.
 ---  * options - A table containing any optional values.
 ---
 --- Returns:
----  * The results as a string.
+---  * None.
 ---
 --- Notes:
 ---  * The options table accepts the following parameters:
@@ -228,9 +231,12 @@ function mod.inspectElement(e, options)
     out = out.. "\n      Children   = " .. inspect(#e)
 
     out = out.. "\n==============================================" ..
-                "\n" .. inspect(e:buildTree(depth)) .. "\n"
+                "\n"
 
-    return out
+    e:buildTree(function(msg, results)
+        log.df("%s", out)
+        log.df("msg: %s\n\n results: %s", msg, inspect(results))
+    end, depth)
 end
 
 --- cp.dev.highlight(element) -> axuielementObject

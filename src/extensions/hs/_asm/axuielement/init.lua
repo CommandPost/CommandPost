@@ -1,8 +1,3 @@
--- maybe save some pain, if the shim is installed; otherwise, expect an objc dump to console when this loads on stock Hammerspoon without pull #2308 applied
-if package.searchpath("hs._asm.coroutineshim", package.path) then
-    require"hs._asm.coroutineshim"
-end
-
 --- === hs._asm.axuielement ===
 ---
 --- This module allows you to access the accessibility objects of running applications, their windows, menus, and other user interface elements that support the OS X accessibility API.
@@ -28,6 +23,12 @@ end
 --- Limited support for parameterized attributes is provided, but is not yet complete.  This is expected to see updates in the future.
 
 local USERDATA_TAG = "hs._asm.axuielement"
+
+if not hs.accessibilityState(true) then
+    hs.luaSkinLog.ef("%s - module requires accessibility to be enabled; fix in SystemPreferences -> Privacy & Security and restart Hammerspoon", USERDATA_TAG)
+    return nil
+end
+
 local module       = require(USERDATA_TAG..".internal")
 
 local basePath = package.searchpath(USERDATA_TAG, package.path)
@@ -51,73 +52,6 @@ local objectMT = hs.getObjectMetatable(USERDATA_TAG)
 local parentLabels = { module.attributes.general.parent, module.attributes.general.topLevelUIElement }
 
 -- private variables and methods -----------------------------------------
-
-local elementSearchHamster
-elementSearchHamster = function(element, searchParameters, isPattern, includeParents, seen)
-    seen = seen or {}
-    local results = {}
-
--- check an AXUIElement and its attributes
-
-    if getmetatable(element) == objectMT then
-        if fnutils.contains(seen, element) then return results end
-        table.insert(seen, element)
-
-    -- first check if this element itself belongs in the result set
-        if objectMT.matches(element, searchParameters, isPattern) then
-            table.insert(results, element)
-        end
-
-    -- now check any of it's attributes and if they are a userdata, check them
-        for i, v in ipairs(objectMT.attributeNames(element) or {}) do
-            if not fnutils.contains(parentLabels, v) or includeParents then
-                local value = objectMT.attributeValue(element, v)
-                if  type(value) == "table" or getmetatable(value) == objectMT then
-                    local tempResults = elementSearchHamster(value, searchParameters, isPattern, includeParents, seen)
-                    if #tempResults > 0 then
-                        for i2, v2 in ipairs(tempResults) do -- flatten; we'll cull duplicates later
-                            table.insert(results, v2)
-                        end
-                    end
-                end
-            end
-        end
-
--- iterate over any table that has been passed in
-    elseif type(element) == "table" then
-        for i, v in ipairs(element) do
-            if  type(v) == "table" or getmetatable(v) == objectMT then
-                local tempResults = elementSearchHamster(v, searchParameters, isPattern, includeParents, seen)
-                if #tempResults > 0 then
-                    for i2, v2 in ipairs(tempResults) do -- flatten; we'll cull duplicates later
-                        table.insert(results, v2)
-                    end
-                end
-            end
-        end
-
--- other types we just silently ignore; shouldn't happen anyways with the above checks before recursion
---    else
-    end
-
-    -- cull duplicates
-    if #results > 0 then
-        local holding, realResults = {}, {}
-        for i,v in ipairs(results) do
-            local found = false
-            for k1, v1 in pairs(holding) do
-                if v == v1 then found = true ; break end
-            end
-            if not found then
-                holding[v] = true
-                table.insert(realResults, v)
-            end
-        end
-        results = realResults
-    end
-
-    return results
-end
 
 -- Public interface ------------------------------------------------------
 
@@ -297,138 +231,20 @@ objectMT.dynamicMethods = function(self, asKV)
     return ls.makeConstantsTable(results)
 end
 
---- hs._asm.axuielement:matches(matchCriteria, [isPattern]) -> boolean
+--- hs._asm.axuielement:path() -> table
 --- Method
---- Returns true if the axuielementObject matches the specified criteria or false if it does not.
----
---- Paramters:
----  * `matchCriteria` - the criteria to compare against the accessibility object
----  * `isPattern`     - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).
----
---- Returns:
----  * true if the axuielementObject matches the criteria, false if it does not.
----
---- Notes:
----  * if `isPattern` is specified and is true, all string comparisons are done with `string.match`.  See the Lua manual, section 6.4.1 (`help.lua._man._6_4_1` in the Hammerspoon console).
----  * the `matchCriteria` must be one of the following:
----    * a single string, specifying the AXRole value the axuielementObject's AXRole attribute must equal for the match to return true
----    * an array of strings, specifying a list of AXRoles for which the match should return true
----    * a table of key-value pairs specifying a more complex match criteria.  This table will be evaluated as follows:
----      * each key-value pair is treated as a separate test and the object *must* match as true for all tests
----      * each key is a string specifying an attribute to evaluate.  This attribute may be specified with its formal name (e.g. "AXRole") or the informal version (e.g. "role" or "Role").
----      * each value may be a string, a number, a boolean, or an axuielementObject userdata object, or an array (table) of such.  If the value is an array, then the test will match as true if the object matches any of the supplied values for the attribute specified by the key.
----        * Put another way: key-value pairs are "and'ed" together while the values for a specific key-value pair are "or'ed" together.
----
----  * This method is used by [hs._asm.axuielement:elementSearch](#elementSearch) to determine if the given object should be included it's result set.  As an optimization for the `elementSearch` method, the keys in the `matchCriteria` table may be provided as a function which takes one argument (the axuielementObject to query).  The return value of this function will be compared against the value(s) of the key-value pair as described above.  This is done to prevent dynamically re-creating the query for each comparison when the search set is large.
-objectMT.matches = function(self, searchParameters, isPattern)
-    isPattern = isPattern or false
-    if type(searchParameters) == "string" or #searchParameters > 0 then searchParameters = { role = searchParameters } end
-    local answer = nil
-    if getmetatable(self) == objectMT then
-        answer = true
-        for k, v in pairs(searchParameters) do
-            local testFn = nil
-            if type(k) == "string" then
-                local formalName = k:match("^AX[%w%d_]+$") and k or "AX"..k:sub(1,1):upper()..k:sub(2)
-                testFn = function(self) return objectMT.attributeValue(self, formalName) end
-            elseif type(k) == "function" then
-                testFn = k
-            else
-                local dbg = debug.getinfo(2)
-                log.wf("%s:%d: type '%s' is not a valid key in searchParameters", dbg.short_src, dbg.currentline, type(k))
-            end
-            if testFn then
-                local result = testFn(self)
-                if type(v) ~= "table" then v = { v } end
-                local partialAnswer = false
-                for i2, v2 in ipairs(v) do
-                    if type(v2) == type(result) then
-                        if type(v2) == "string" then
-                            partialAnswer = partialAnswer or (not isPattern and result == v2) or (isPattern and (type(result) == "string") and result:match(v2))
-                        elseif type(v2) == "number" or type(v2) == "boolean" or getmetatable(v2) == objectMT then
-                            partialAnswer = partialAnswer or (result == v2)
-                        else
-                            local dbg = debug.getinfo(2)
-                            log.wf("%s:%d: unable to compare type '%s' in searchParameters", dbg.short_src, dbg.currentline, type(v2))
-                        end
-                    end
-                    if partialAnswer then break end
-                end
-                answer = partialAnswer
-            else
-                answer = false
-            end
-            if not answer then break end
-        end
-    end
-    return answer
-end
-
---- hs._asm.axuielement:elementSearch(matchCriteria, [isPattern], [includeParents]) -> table
---- Method
---- Returns a table of axuielementObjects that match the specified criteria.  If this method is called for an axuielementObject, it will include all children of the element in its search.  If this method is called for a table of axuielementObjects, it will return the subset of the table that match the criteria.
+--- Returns a table of axuielements tracing this object through its parent objects to the root for this element, most likely an application object or the system wide object.
 ---
 --- Parameters:
----  * `matchCriteria`  - the criteria to compare against the accessibility objects
----  * `isPattern`      - an optional boolean, default false, specifying whether or not the strings in the search criteria should be considered as Lua patterns (true) or as absolute string matches (false).
----  * `includeParents` - an optional boolean, default false, indicating that the parent of objects should be queried as well.  If you wish to specify this parameter, you *must* also specify the `isPattern` parameter.  This parameter is ignored if the method is called on a result set from a previous invocation of this method or [hs._asm.axuielement:getAllChildElements](#getAllChildElements).
+---  * None
 ---
 --- Returns:
----  * a table of axuielementObjects which match the specified criteria.  The table returned will include a metatable which allows calling this method on the result table for further narrowing the search.
+---  * a table containing this object and 0 or more parent objects representing the path from the root object to this element.
 ---
 --- Notes:
----  * this method makes heavy use of the [hs._asm.axuielement:matches](#matches) method and pre-creates the necessary dynamic functions to optimize its search.
+---  * this object will always exist as the last element in the table (e.g. at `table[#table]`) with its most imemdiate parent at `#table - 1`, etc. until the rootmost object for this element is reached at index position 1.
 ---
----  * You can use this method to retrieve all of the current axuielementObjects for an application as follows:
---- ~~~
---- ax = require"hs._asm.axuielement"
---- elements = ax.applicationElement(hs.application("Safari")):elementSearch({})
---- ~~~
----  * Note that if you started from the window of an application, only the children of that window would be returned; you could force it to gather all of the objects for the application by using `:elementSearch({}, false, true)`.
----  * However, this method of querying for all elements can be slow -- it is highly recommended that you use [hs._asm.axuielement:getAllChildElements](#getAllChildElements) instead, and ideally with a callback function.
---- ~~~
---- ax = require"hs._asm.axuielement"
---- ax.applicationElement(hs.application("Safari")):getAllChildElements(function(t)
----     elements = t
----     print("done with query")
---- end)
---- ~~~
----  * Whatever option you choose, you can use this method to narrow down the result set. This example will print the frame for each button that was present in Safari when the search occurred which has a description which starts with "min" (e.g. "minimize button") or "full" (e.g. "full screen button"):
---- ~~~
---- for i, v in ipairs(elements:elementSearch({
----                                     role="AXButton",
----                                     roleDescription = { "^min", "^full"}
----                                 }, true)) do
----     print(hs.inspect(v:frame()))
---- end
---- ~~~
-objectMT.elementSearch = function(self, searchParameters, isPattern, includeParents)
-    isPattern = isPattern or false
-    includeParents = includeParents or false
-    if type(searchParameters) == "string" or #searchParameters > 0 then searchParameters = { role = searchParameters } end
-
-    -- reduce overhead slightly by pre-creating the necessary attribute query functions
-    -- rather than have __init do it for *every* comparison
-    local spHolder = {}
-    for k, v in pairs(searchParameters) do
-        local formalName = k:match("^AX[%w%d_]+$") and k or "AX"..k:sub(1,1):upper()..k:sub(2)
-        spHolder[function(self) return objectMT.attributeValue(self, formalName) end] = v
-    end
-    searchParameters = spHolder
-    local results = {}
-    if type(self) == "userdata" then
-        results = elementSearchHamster(self, searchParameters, isPattern, includeParents)
-    else
-        for i,v in ipairs(self) do
-            if objectMT.matches(v, searchParameters, isPattern) then
-                table.insert(results, v)
-            end
-        end
-    end
-
-    return setmetatable(results, hs.getObjectMetatable(USERDATA_TAG .. ".elementSearchTable"))
-end
-
+---  * an axuielement object representing an application or the system wide object is its own rootmost object and will return a table containing only itself (i.e. `#table` will equal 1)
 objectMT.path = function(self)
     local results, current = { self }, self
     while current:attributeValue("AXParent") do
@@ -438,8 +254,12 @@ objectMT.path = function(self)
     return results
 end
 
+
 local buildTreeHamster
-buildTreeHamster = function(self, depth, withParents, seen)
+buildTreeHamster = function(self, prams, depth, withParents, seen)
+    if prams.cancel then return prams.msg end
+    coroutine.applicationYield()
+
     if depth == 0 then return "** max depth exceeded" end
     seen  = seen or {}
     if getmetatable(self) == objectMT then
@@ -455,13 +275,13 @@ buildTreeHamster = function(self, depth, withParents, seen)
         for k, v in pairs(thisObject) do
             if k ~= "_element" then
                 if (type(v) == "table" and #v > 0) then
-                    thisObject[k] = buildTreeHamster(v, depth, withParents, seen)
+                    thisObject[k] = buildTreeHamster(v, prams, depth, withParents, seen)
                 elseif getmetatable(v) == objectMT then
                     if not withParents and fnutils.contains(parentLabels, k) then
                     -- not diving into parents, but lets see if we've seen them already...
                         thisObject[k] = fnutils.find(seen, function(_) return _._element == v end) or v
                     else
-                        thisObject[k] = buildTreeHamster(v, depth - 1, withParents, seen)
+                        thisObject[k] = buildTreeHamster(v, prams, depth - 1, withParents, seen)
                     end
                 end
             end
@@ -471,7 +291,7 @@ buildTreeHamster = function(self, depth, withParents, seen)
         local results = {}
         for i,v in ipairs(self) do
             if (type(v) == "table" and #v > 0) or getmetatable(v) == objectMT then
-                results[i] = buildTreeHamster(v, depth - 1, withParents, seen)
+                results[i] = buildTreeHamster(v, prams, depth - 1, withParents, seen)
             else
                 results[i] = v
             end
@@ -481,234 +301,61 @@ buildTreeHamster = function(self, depth, withParents, seen)
     return self
 end
 
-objectMT.buildTree = function(self, depth, withParents)
+--- hs._asm.axuielement:buildTree(callback, [depth], [withParents]) -> buildTreeObject
+--- Method
+--- Captures all of the available information for the accessibility object and its children and returns it in a table for inspection.
+---
+--- Parameters:
+---  * `callback` - a required function which should expect two arguments: a `msg` string specifying how the search ended, and a table contiaining the recorded information. `msg` will be "completed" when the search has completed normally (or reached the specified depth) and will contain a string starting with "**" if it terminates early for some reason (see Returns: section)
+---  * `depth`    - an optional integer, default `math.huge`, specifying the maximum depth from the intial accessibility object that should be visited to identify child elements and their attributes.
+---  * `withParents` - an optional boolean, default false, specifying whether or not an element's (or child's) attributes for `AXParent` and `AXTopLevelUIElement` should also be visited when identifying additional elements to include in the results table.
+---
+--- Returns:
+---  * a `buildTreeObject` which contains metamethods allowing you to check to see if the build process has completed and cancel it early if desired:
+---    * `buildTreeObject:isRunning()` - will return true if the traversal is still ongoing, or false if it has completed or been cancelled
+---    * `buildTreeObject:cancel()`    - will cancel the currently running search and invoke the callback with the partial results already collected. The `msg` parameter for the calback will be "** cancelled".
+---
+--- Notes:
+---  * this method utilizes coroutines to keep Hammerspoon responsive, but can be slow to complete if you do not specifiy a depth or start from an element that has a lot of children or has children with many elements (e.g. the application element for a web browser).
+---
+---  * The results of this method are not generally intended to be used in production programs; it is organized more for exploratory purposes when trying to understand how elements are related within a given application or to determine what elements might be worth targetting with more specific queries.
+objectMT.buildTree = function(self, callback, depth, withParents)
+    assert(
+        type(callback) == "function" or (getmetatable(callback) or {}).__call,
+        "buildTree requires a callback function; element:buildTree(callback, [depth], [withParents])"
+    )
     if type(depth) == "boolean" and type(withParents) == "nil" then
         depth, withParents = nil, depth
     end
     depth = depth or math.huge
-    return buildTreeHamster(self, depth, withParents)
+
+    local prams = {
+        cancel = false,
+        callback = callback, -- may add partial updates at some point
+    }
+    coroutine.wrap(function()
+        local results = buildTreeHamster(self, prams, depth, withParents)
+        callback(prams.msg or "completed", results)
+    end)()
+
+    return setmetatable({}, {
+        __index = {
+            cancel = function(_, msg)
+                prams.cancel = true
+                prams.msg = msg or "** cancelled"
+            end,
+            isRunning = function(_)
+                return not prams.msg
+            end,
+        },
+        __tostring = function(_)
+            return USERDATA_TAG .. ":buildTree " .. tostring(self):match(USERDATA_TAG .. ": (.+)$")
+        end,
+--         __gc = function(_)
+--             _:cancel("** gc on buildTree object")
+--         end,
+    })
 end
-
-objectMT.matchesCriteria = function(self, searchParameters, isPattern)
-    isPattern = isPattern or false
-    if type(searchParameters) == "string" or #searchParameters > 0 then searchParameters = { role = searchParameters } end
-    local answer = nil
-    if getmetatable(self) == objectMT then
-        answer = true
-        local values = self:allAttributeValues() or {}
-        for k, v in pairs(searchParameters) do
-            if not k:match("^_") then -- skip possible meta parameters
-                local formalName = k:match("^AX[%w%d_]+$") and k or "AX"..k:sub(1,1):upper()..k:sub(2)
-                local result = values[formalName]
-                if type(v) ~= "table" then v = { v } end
-                local partialAnswer = false
-                for i2, v2 in ipairs(v) do
-                    if type(v2) == type(result) then
-                        if type(v2) == "string" then
-                            partialAnswer = partialAnswer or (not isPattern and result == v2) or (isPattern and (type(result) == "string") and result:match(v2))
-                        elseif type(v2) == "number" or type(v2) == "boolean" or getmetatable(v2) == objectMT then
-                            partialAnswer = partialAnswer or (result == v2)
-                        else
-                            local dbg = debug.getinfo(2)
-                            log.wf("%s:%d: unable to compare type '%s' in searchParameters", dbg.short_src, dbg.currentline, type(v2))
-                        end
-                    end
-                    if partialAnswer then break end
-                end
-                answer = partialAnswer
-                if not answer then break end
-            end
-        end
-    end
-    return answer
-end
-
--- Identical criteria in a row will match on self for second criteria... need a way to avoid or detect...
---
--- maybe: add position parameter; include {self, 0} only if == 1;
--- include self's vars at 1 in searchable before loop if not already in there
-
-local searchPathHamster = function(self, levelCriteria, levelDepth, withParents)
-    local attached = debug.getuservalue(self) or {}
-    local seen = attached.seen or {}
-    local searchables = attached.searchables or {}
-    if not attached.searchables then -- pre-populate a new list of potentials
-        if levelCriteria._includeSelf then
-            table.insert(searchables, { self, 0 })
-        else
-            local values = self:allAttributeValues() or {}
-            for k,v in pairs(values) do
-                if not fnutils.contains(parentLabels, k) or withParents then
-                    if getmetatable(v) == objectMT then
-                        table.insert(searchables, { v, 1 })
-                    elseif type(v) == "table" and #v > 0 then
-                        for i, v2 in ipairs(v) do
-                            if getmetatable(v2) == objectMT then
-                                table.insert(searchables, { v2, 1 })
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    local found, haveWarnedAlready = false, false
-    local count = levelCriteria._count or 1
-    local addToParentIgnoreList = {}
-
-    while #searchables > 0 and not found do
-        local current = table.remove(searchables, 1)
-        local element = current[1]
-        if not fnutils.contains(seen, element) then
-            table.insert(seen, element)
-            if element:matchesCriteria(levelCriteria, levelCriteria._pattern) then
-                count = count - 1
-                table.insert(addToParentIgnoreList, element)
-                if count == 0 then found = element end -- allow for "selecting the 2nd found", useful for arrays
-            end
-            -- go ahead and attach these even if found in case we're called again
-            local newDepth = current[2] + 1
-            if newDepth > levelDepth then
-                if not haveWarnedAlready then
-                    haveWarnedAlready = true
-                    log.v("** max depth exceeded")
-                end
-            else
-                local values = element:allAttributeValues() or {}
-                for k,v in pairs(values) do
-                    if not fnutils.contains(parentLabels, k) or withParents then
-                        if getmetatable(v) == objectMT then
-                            if not fnutils.contains(seen, v) then
-                                table.insert(searchables, { v, newDepth })
-                            end
-                        elseif type(v) == "table" and #v > 0 then
-                            for i, v2 in ipairs(v) do
-                                if getmetatable(v2) == objectMT then
-                                    if not fnutils.contains(seen, v2) then
-                                        table.insert(searchables, { v2, newDepth })
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    -- so I don't waste time changing this again -- we attached the currently seen and remaining searchables
-    -- to the element which started the search, not the result of the search... :next will pop the last result
-    -- for us since we shouldn't search deeper then the last criterion
-    local uservalue = debug.getuservalue(self) or {}
-    uservalue.seen        = seen
-    uservalue.searchables = searchables
-    debug.setuservalue(self, uservalue)
---     log.vf("seen: %d, searchable: %d", #seen, #searchables)
-    return found, addToParentIgnoreList
-end
-
-local simpleCopy
-simpleCopy = function(el, seen)
-    seen = seen or {}
-    local new
-    if type(el) == "table" then
-        new = seen[el]
-        if not new then
-            new = {}
-            seen[el] = new
-            for k, v in pairs(el) do
-                new[k] = simpleCopy(v, seen)
-            end
-        end
-    else
-        new = el
-    end
-    return new
-end
-
-local searchPathWrapper = function(self, criteria, depth, withParents, path, criteriaSeen)
-    local position = path and #criteria or 1
-    path = path or { self:copy() }
-    local failed = false
-
-    if not criteriaSeen then
-        criteriaSeen = {}
-        criteria = simpleCopy(criteria) -- in case the table is being used outside of us, we want to capture it's state *now* for :next
-
-        -- allow the first query item to match self if the user doesn't specify one way or the other
-        if criteria[1] and type(criteria[1]._includeSelf) == "nil" then criteria[1]._includeSelf = true end
-
-        for i, v in ipairs(criteria) do criteriaSeen[v] = {} end
-    end
-
-    while not failed and position <= #criteria do
-        local element = path[#path]
-        local levelCriteria = criteria[position]
-        log.df("push:%s, searching for:%s", element:role(), inspect(levelCriteria):gsub("%s+", " "))
-        local step, thingsToIgnore = searchPathHamster(element, levelCriteria, levelCriteria._depth or depth, withParents)
-        if step then
-            if not fnutils.contains(criteriaSeen[levelCriteria], step) then
-                for i, v in ipairs(thingsToIgnore) do table.insert(criteriaSeen[levelCriteria], v) end
-                table.insert(path, step)
-                position = position + 1
-            else
-                step = nil
-            end
-        end
-        if not step then
-            log.df("pop: %s", element:role()) ;
-            table.remove(path)
-            position = position - 1
-            if position == 0 then
-                failed = true
-            end
-        end
-    end
-
-    local found = not failed and path[#path] or nil
-    if found then
-        local uservalue = debug.getuservalue(found) or {}
-        uservalue.path         = path
-        uservalue.criteria     = criteria
-        uservalue.depth        = depth
-        uservalue.withParents  = withParents
-        uservalue.criteriaSeen = criteriaSeen
-        debug.setuservalue(found, uservalue)
-    end
-    return found
-end
-
-objectMT.searchPath = function(self, criteria, depth, withParents)
-    debug.setuservalue(self, nil) -- this is a brand new search, so clear anything that may remain
-    criteria = criteria or {}
-    if type(criteria) == "string" then criteria = { { role = criteria } } end
-    if #criteria == 0 then criteria = { criteria } end
-    if type(depth) == "boolean" and type(withParents) == "nil" then
-        depth, withParents = nil, depth
-    end
-    depth = depth or math.huge
-    return searchPathWrapper(self, criteria, depth, withParents)
-end
-
-objectMT.next = function(self)
-    local uservalue = debug.getuservalue(self)
-    if uservalue then
-        table.remove(uservalue.path) -- we've already been found, so... pop us from the path
-        return searchPathWrapper(self, uservalue.criteria, uservalue.depth, uservalue.withParents, uservalue.path, uservalue.criteriaSeen)
-    else
-        error("object does not possess search state information", 2)
-    end
-end
-
--- store this in the registry so we can easily set it both from Lua and from C functions
-debug.getregistry()[USERDATA_TAG .. ".elementSearchTable"] = {
-    __type  = USERDATA_TAG .. ".elementSearchTable",
-    __index = { elementSearch = objectMT.elementSearch },
-    __tostring = function(_)
-        local results = ""
-        for i, v in ipairs(_) do results = results..string.format("%d\t%s\n", i, tostring(v)) end
-        return results
-    end,
-}
 
 -- Return Module Object --------------------------------------------------
 
