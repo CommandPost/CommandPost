@@ -54,7 +54,7 @@ export CODESIGN_AUTHORITY_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-codesign-auth
 #export GITHUB_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-github-release"
 #export GITHUB_USER="hammerspoon"
 #export GITHUB_REPO="hammerspoon"
-export FABRIC_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-crashlytics"
+export SENTRY_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-sentry"
 export NOTARIZATION_TOKEN_FILE="${HAMMERSPOON_HOME}/../token-notarization"
 
 # Import our function library
