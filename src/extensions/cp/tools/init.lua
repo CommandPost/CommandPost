@@ -1810,7 +1810,7 @@ end
 ---
 --- Returns:
 ---  * A string
-function tools.stringToHexString(value)
+function tools.hexStringToString(value)
     local hexToChar = {}
     for idx = 0, 255 do
         hexToChar[("%02X"):format(idx)] = string.char(idx)
