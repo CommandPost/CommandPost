@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log               = require "hs.logger".new "disableesc"
+--local log               = require "hs.logger".new "disableesc"
 
 local eventtap          = require "hs.eventtap"
 local keycodes          = require "hs.keycodes"
