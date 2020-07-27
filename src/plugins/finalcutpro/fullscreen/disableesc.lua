@@ -2,42 +2,68 @@
 ---
 --- Disables the ESC key when Final Cut Pro is in fullscreen mode.
 
-local require       = require
+local require           = require
 
-local eventtap      = require "hs.eventtap"
-local keycodes      = require "hs.keycodes"
+local log               = require "hs.logger".new "disableesc"
 
-local app           = require "cp.app"
-local config        = require "cp.config"
-local fcp           = require "cp.apple.finalcutpro"
-local i18n          = require "cp.i18n"
-local tools         = require "cp.tools"
+local eventtap          = require "hs.eventtap"
+local keycodes          = require "hs.keycodes"
+
+local app               = require "cp.app"
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+
+local escape            = keycodes.map.escape
+local keyDown           = eventtap.event.types.keyDown
+local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
---- plugins.finalcutpro.fullscreen.disableesc.enabled <cp.prop: boolean>
---- Variable
---- Is the Disable ESC Key Function enabled?
-mod.enabled = config.prop("fcp.disableEscKey", false)
+-- escWatcher -> hs.eventtap object
+-- Variable
+-- ESC key watcher
+local escWatcher
 
---- plugins.finalcutpro.fullscreen.disableesc.fcpActiveFullScreen <cp.prop: boolean; read-only; live>
---- Variable
---- If `true` FCP is full-screen and the frontmost app.
-mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:IS(fcp.app)):AND(fcp.isModalDialogOpen:IS(false))
-:watch(function(enabled)
+-- fcpActiveFullScreen <cp.prop: boolean; read-only; live>
+-- Variable
+-- If `true` FCP is full-screen and the frontmost app.
+local fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:IS(fcp.app)):AND(fcp.isModalDialogOpen:IS(false))
+
+-- checkForESC(enabled) -> none
+-- Function
+-- Sets up event tap that checks to see if
+local function checkForESC(enabled)
     if mod.enabled() and enabled then
-        if mod._eventtap == nil then
-            mod._eventtap = eventtap.new({eventtap.event.types.keyDown}, function(object)
-                if object:getKeyCode() == keycodes.map.escape then
-                    tools.playErrorSound()
+        if escWatcher == nil then
+            escWatcher = eventtap.new({keyDown}, function(object)
+                if object:getKeyCode() == escape then
+                    playErrorSound()
                     return true
                 end
             end):start()
         end
     else
-        if mod._eventtap then
-            mod._eventtap:stop()
-            mod._eventtap  = nil
+        if escWatcher then
+            escWatcher:stop()
+            escWatcher = nil
+        end
+    end
+end
+
+--- plugins.finalcutpro.fullscreen.disableesc.enabled <cp.prop: boolean>
+--- Variable
+--- Is the Disable ESC Key Function enabled?
+mod.enabled = config.prop("fcp.disableEscKey", false):watch(function(enabled)
+    if enabled then
+        fcpActiveFullScreen:watch(checkForESC)
+        fcpActiveFullScreen:update()
+    else
+        fcpActiveFullScreen:unwatch(checkForESC)
+        if escWatcher then
+            escWatcher:stop()
+            escWatcher  = nil
         end
     end
 end)
@@ -72,7 +98,7 @@ function plugin.init(deps)
 end
 
 function plugin.postInit()
-    mod.fcpActiveFullScreen:update()
+    mod.enabled:update()
 end
 
 return plugin

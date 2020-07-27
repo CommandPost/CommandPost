@@ -2,22 +2,42 @@
 ---
 --- Ignore Final Cut Pro's Media Import Window.
 
-local require = require
+local require       = require
 
---local log				        = require "hs.logger".new "ignorecard"
+local log		    = require "hs.logger".new "ignorecard"
 
-local application               = require "hs.application"
-local fs                        = require "hs.fs"
-local timer                     = require "hs.timer"
+local application   = require "hs.application"
+local fs            = require "hs.fs"
+local timer         = require "hs.timer"
 
-local config                    = require "cp.config"
-local fcp                       = require "cp.apple.finalcutpro"
-local i18n                      = require "cp.i18n"
+local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 
-local doEvery                   = timer.doEvery
-local volume                    = fs.volume
+local doEvery       = timer.doEvery
+local volume        = fs.volume
 
 local mod = {}
+
+-- volumeWatcher -> hs.fs.volume watcher object
+-- Variable
+-- Volume Watcher
+local volumeWatcher
+
+-- mediaImportTimer -> hs.timer
+-- Variable
+-- Media Import Timer
+local mediaImportTimer
+
+-- mediaImportCount -> number
+-- Variable
+-- Media Import Counter
+local mediaImportCount
+
+-- fcpHidden -> boolean
+-- Variable
+-- Is Final Cut Pro Hidden?
+local fcpHidden
 
 --- plugins.finalcutpro.import.ignorecard.start() -> none
 --- Function
@@ -29,40 +49,40 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.start()
-    if not mod._volumeWatcher then
-        mod._volumeWatcher = volume.new(function(event)
+    if not volumeWatcher then
+        volumeWatcher = volume.new(function(event)
             if event == volume.didMount and fcp:isRunning() and not fcp:mediaImport():isShowing() then
                 --------------------------------------------------------------------------------
                 -- Setup a timer to check for the Media Import window:
                 --------------------------------------------------------------------------------
-                mod._fcpxHidden = not fcp:isShowing()
+                fcpHidden = not fcp:isShowing()
                 mod._currentApplication = application.frontmostApplication()
-                mod.mediaImportTimer = doEvery(0.01, function()
+                mediaImportTimer = doEvery(0.01, function()
                     local mediaImport = fcp:mediaImport()
                     if mediaImport:isShowing() then
                         --------------------------------------------------------------------------------
                         -- Hide the Media Import Window:
                         --------------------------------------------------------------------------------
                         mediaImport:hide()
-                        if mod._fcpxHidden then fcp:hide() end
+                        if fcpHidden then fcp:hide() end
                         mod._currentApplication:activate()
-                        mod._fcpxHidden = nil
-                        mod._mediaImportCount = nil
+                        fcpHidden = nil
+                        mediaImportCount = nil
                         mod._currentApplication = nil
-                        mod.mediaImportTimer:stop()
+                        mediaImportTimer:stop()
                     end
-                    if type(mod._mediaImportCount) ~= "number" then
-                        mod._mediaImportCount = 0
+                    if type(mediaImportCount) ~= "number" then
+                        mediaImportCount = 0
                     end
-                    mod._mediaImportCount = mod._mediaImportCount + 1
-                    if mod._mediaImportCount == 500 then
+                    mediaImportCount = mediaImportCount + 1
+                    if mediaImportCount == 500 then
                         --------------------------------------------------------------------------------
                         -- Gave up watching for the Media Import window, so cleaning up:
                         --------------------------------------------------------------------------------
-                        mod._fcpxHidden = nil
-                        mod._mediaImportCount = nil
+                        fcpHidden = nil
+                        mediaImportCount = nil
                         mod._currentApplication = nil
-                        mod.mediaImportTimer:stop()
+                        mediaImportTimer:stop()
                     end
                 end)
             end
@@ -80,12 +100,12 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    if mod._volumeWatcher then
-        mod._volumeWatcher:stop()
-        mod._volumeWatcher = nil
-        mod.mediaImportTimer = nil
-        mod._mediaImportCount = nil
-        mod._fcpxHidden = nil
+    if volumeWatcher then
+        volumeWatcher:stop()
+        volumeWatcher = nil
+        mediaImportTimer = nil
+        mediaImportCount = nil
+        fcpHidden = nil
     end
 end
 
