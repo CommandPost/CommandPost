@@ -4,7 +4,7 @@
 
 local require = require
 
---local log                   = require "hs.logger".new "videoInspector"
+local log                   = require "hs.logger".new "videoInspector"
 
 local deferred              = require "cp.deferred"
 local dialog                = require "cp.dialog"
@@ -308,6 +308,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    local SHIFT_AMOUNTS = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
+
     --------------------------------------------------------------------------------
     -- Stabilization:
     --------------------------------------------------------------------------------
@@ -393,59 +396,90 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position:
     --------------------------------------------------------------------------------
-    local shiftAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
+    local posX = 0
+    local posY = 0
 
-    local shiftXPositionValue = 0
-    local updateShiftXPositionValue = deferred.new(0.01):action(function()
-        local position = fcp:inspector():video():transform():position()
-        position:show()
-        local originalPosition = position:x()
-        position:x(originalPosition + shiftXPositionValue)
-        shiftXPositionValue = 0
+    local video = fcp:inspector():video()
+    local transform = video:transform()
+    local position = transform:position()
+
+    local updatePosition = deferred.new(0.01)
+    local posUpdating = false
+    updatePosition:action(function()
+        return If(function() return not posUpdating and (posX ~= 0 or posY ~= 0) end)
+        :Then(
+            Do(position:doShow())
+            :Then(function()
+                posUpdating = true
+                if posX ~= 0 then
+                    local current = position:x()
+                    if current then
+                        position:x(current + posX)
+                    end
+                    posX = 0
+                end
+                if posY ~= 0 then
+                    local current = position:y()
+                    if current then
+                        position:y(current + posY)
+                    end
+                    posY = 0
+                end
+                posUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updatePosition")
+        :Now()
     end)
-    local shiftXPosition = function(value)
-        shiftXPositionValue = shiftXPositionValue + value
-        updateShiftXPositionValue()
-    end
 
-    local shiftYPositionValue = 0
-    local updateShiftYPositionValue = deferred.new(0.01):action(function()
-        local position = fcp:inspector():video():transform():position()
-        position:show()
-        local originalPosition = position:y()
-        position:y(originalPosition + shiftYPositionValue)
-        shiftYPositionValue = 0
-    end)
-    local shiftYPosition = function(value)
-        shiftYPositionValue = shiftYPositionValue + value
-        updateShiftYPositionValue()
-    end
-
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftPositionLeftPixels" .. shiftAmount  .. "Pixels")
             :titled(i18n("shiftPositionLeftPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftXPosition(shiftAmount * -1) end)
-            :whenRepeated(function() shiftXPosition(shiftAmount * -1) end)
+            :whenPressed(function()
+                posX = posX - shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posX = posX - shiftAmount
+                updatePosition()
+            end)
 
         fcpxCmds:add("shiftPositionRightPixels" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionRightPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftXPosition(shiftAmount) end)
-            :whenRepeated(function() shiftXPosition(shiftAmount) end)
+            :whenPressed(function()
+                posX = posX + shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posX = posX + shiftAmount
+                updatePosition()
+            end)
 
         fcpxCmds:add("shiftPositionUp" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionUpPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftYPosition(shiftAmount) end)
-            :whenRepeated(function() shiftYPosition(shiftAmount) end)
-
+            :whenPressed(function()
+                posY = posY + shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posY = posY + shiftAmount
+                updatePosition()
+            end)
         fcpxCmds:add("shiftPositionDown" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionDownPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftYPosition(shiftAmount * -1) end)
-            :whenRepeated(function() shiftYPosition(shiftAmount * -1) end)
-   end
+            :whenPressed(function()
+                posY = posY - shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posY = posY - shiftAmount
+                updatePosition()
+            end)
+    end
 
     fcpxCmds:add("resetPositionX")
         :titled(i18n("reset") .. " " .. i18n("position") .. " X")
@@ -468,19 +502,31 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Scale All:
     --------------------------------------------------------------------------------
+    local scaleAll = transform:scaleAll()
+    local shiftScaleUpdating = false
     local shiftScaleValue = 0
     local updateShiftScale = deferred.new(0.01):action(function()
-        local scaleAll = fcp:inspector():video():transform():scaleAll()
-        scaleAll:show()
-        local original = scaleAll:value()
-        scaleAll:value(original + shiftScaleValue)
-        shiftScaleValue = 0
+        return If(function() return not shiftScaleUpdating and shiftScaleValue ~= 0 end)
+        :Then(
+            Do(scaleAll:doShow())
+            :Then(function()
+                shiftScaleUpdating = true
+                local currentValue = scaleAll:value()
+                if currentValue then
+                    scaleAll:value(currentValue + shiftScaleValue)
+                    shiftScaleValue = 0
+                end
+                shiftScaleUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScale")
+        :Now()
     end)
     local shiftScale = function(value)
         shiftScaleValue = shiftScaleValue + value
         updateShiftScale()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftScaleUp" .. shiftAmount)
             :titled(i18n("shiftScaleUp", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
@@ -518,7 +564,7 @@ function plugin.init(deps)
         shiftRotationValue = shiftRotationValue + value
         updateShiftRotation()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftRotationLeft" .. shiftAmount)
             :titled(i18n("shiftRotationLeft", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
@@ -556,7 +602,7 @@ function plugin.init(deps)
         shiftOpacityValue = shiftOpacityValue + value
         updateShiftOpacity()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftOpacityLeft" .. shiftAmount)
             :titled(i18n("decreaseOpacity", {amount=shiftAmount}))
             :groupedBy("timeline")
