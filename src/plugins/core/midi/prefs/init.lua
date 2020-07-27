@@ -318,7 +318,7 @@ local function updateUI(highlightRow)
         end
         if device ~= "" and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
             dc = dc .. [[
-                    <option selected="" value="virtual_]] .. device .. [[">]] .. device .. [[ (Offline)</option>
+                    <option selected="" value="virtual_]] .. device .. [[">]] .. string.sub(device, 9) .. [[ (Offline)</option>
             ]]
         elseif #virtualMidiDevices == 0 then
             dc = dc .. [[
