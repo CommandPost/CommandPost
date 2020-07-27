@@ -4,7 +4,7 @@
 
 local require = require
 
-local log                   = require "hs.logger".new "videoInspector"
+--local log                   = require "hs.logger".new "videoInspector"
 
 local deferred              = require "cp.deferred"
 local dialog                = require "cp.dialog"
