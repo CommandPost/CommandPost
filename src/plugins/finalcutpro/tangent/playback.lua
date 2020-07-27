@@ -36,6 +36,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local baseID = 0x00060000
     local group = deps.fcpGroup:group(i18n("playback"))
 
