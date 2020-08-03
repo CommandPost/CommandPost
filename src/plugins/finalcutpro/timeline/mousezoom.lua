@@ -395,13 +395,10 @@ function mod.start()
     -- Setup Mouse Watcher:
     --------------------------------------------------------------------------------
     local distributednotifications = require("hs.distributednotifications")
-    mod.distributedObserver = distributednotifications.new(function(name)
-        if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-            --log.df("New Multi-touch Device Detected. Re-scanning...")
-            mod.stop()
-            mod.update()
-        end
-    end):start()
+    mod.distributedObserver = distributednotifications.new(function()
+        mod.stop()
+        mod.update()
+    end, "com.apple.MultitouchSupport.HID.DeviceAdded"):start()
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Watcher:
