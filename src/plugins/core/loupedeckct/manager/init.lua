@@ -6,7 +6,7 @@ local require                   = require
 
 local hs                        = hs
 
---local log                       = require "hs.logger".new "ldCT"
+local log                       = require "hs.logger".new "ldCT"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
@@ -264,6 +264,11 @@ mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(f
     end
 end)
 
+--- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", false)
+
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
 --- Contains all the saved Loupedeck CT layouts.
@@ -399,6 +404,13 @@ function mod.refresh(dueToAppChange)
 
     local item = items[bundleID]
     local bank = item and item[bankID]
+
+    --------------------------------------------------------------------------------
+    -- UPDATE WHEEL SENSITIVITY:
+    --------------------------------------------------------------------------------
+    local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
+    local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or ct.defaultWheelSensitivityIndex
+    ct.updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -685,6 +697,11 @@ local function callback(data)
                 return
             end
 
+            -- Vibrate if needed:
+            if thisButton and thisButton.vibratePress then
+                ct.vibrate(tonumber(thisButton.vibratePress))
+            end
+
             --------------------------------------------------------------------------------
             -- KNOB BUTTON PRESS:
             --------------------------------------------------------------------------------
@@ -692,15 +709,65 @@ local function callback(data)
             if thisKnob and executeAction(thisKnob.pressAction) then
                 return
             end
+
+            -- Vibrate if needed:
+            if thisKnob and thisKnob.vibratePress then
+                ct.vibrate(tonumber(thisKnob.vibratePress))
+            end
+        elseif data.id == ct.event.BUTTON_PRESS and data.direction == "up" then
+            --------------------------------------------------------------------------------
+            -- LED BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisButton = bank.ledButton and bank.ledButton[buttonID]
+            if thisButton and executeAction(thisButton.releaseAction) then
+                return
+            end
+
+            -- Vibrate if needed:
+            if thisButton and thisButton.vibrateRelease then
+                ct.vibrate(tonumber(thisButton.vibrateRelease))
+            end
+
+            --------------------------------------------------------------------------------
+            -- KNOB BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisKnob = bank.knob and bank.knob[buttonID]
+            if thisKnob and executeAction(thisKnob.releaseAction) then
+                return
+            end
+
+            -- Vibrate if needed:
+            if thisKnob and thisKnob.vibrateRelease then
+                ct.vibrate(tonumber(thisKnob.vibrateRelease))
+            end
         elseif data.id == ct.event.ENCODER_MOVE then
+            --------------------------------------------------------------------------------
+            -- KNOB TURN:
+            --------------------------------------------------------------------------------
             local thisKnob = bank.knob and bank.knob[buttonID]
             if thisKnob and executeAction(thisKnob[data.direction.."Action"]) then
                 return
             end
 
+            -- Vibrate if needed:
+            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft then
+                ct.vibrate(tonumber(thisKnob.vibrateLeft))
+            end
+            if data.direction == "right" and thisKnob and thisKnob.vibrateRight then
+                ct.vibrate(tonumber(thisKnob.vibrateRight))
+            end
+
             local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
             if thisJogWheel and executeAction(thisJogWheel[data.direction.."Action"]) then
                 return
+            end
+
+            -- Vibrate if needed:
+            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft then
+                ct.vibrate(tonumber(thisJogWheel.vibrateLeft))
+            end
+            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight then
+                ct.vibrate(tonumber(thisJogWheel.vibrateRight))
             end
         elseif data.id == ct.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
@@ -709,8 +776,8 @@ local function callback(data)
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
 
             -- Vibrate if needed:
-            if thisTouchButton and thisTouchButton.vibrate then
-                ct.vibrate(tonumber(thisTouchButton.vibrate))
+            if thisTouchButton and thisTouchButton.vibratePress then
+                ct.vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
@@ -763,7 +830,6 @@ local function callback(data)
                 end
             end
 
-
             --------------------------------------------------------------------------------
             -- RIGHT TOUCH SCREEN:
             --------------------------------------------------------------------------------
@@ -810,13 +876,52 @@ local function callback(data)
                 end
             end
         elseif data.id == ct.event.SCREEN_RELEASED then
+            --------------------------------------------------------------------------------
+            -- SCREEN RELEASED:
+            --------------------------------------------------------------------------------
             cacheLeftScreenYAxis = nil
             cacheRightScreenYAxis = nil
             tookFingerOffLeftScreen = true
             tookFingerOffRightScreen = true
+
+            --------------------------------------------------------------------------------
+            -- TOUCH SCREEN BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
+
+            -- Vibrate if needed:
+            if thisTouchButton and thisTouchButton.vibrateRelease then
+                ct.vibrate(tonumber(thisTouchButton.vibrateRelease))
+            end
+
+            if thisTouchButton and executeAction(thisTouchButton.releaseAction) then
+                return
+            end
         elseif data.id == ct.event.WHEEL_PRESSED then
             local wheelScreen = bank.wheelScreen and bank.wheelScreen["1"]
             if wheelScreen then
+                --------------------------------------------------------------------------------
+                -- BUTTON PRESS:
+                --------------------------------------------------------------------------------
+                if wheelScreen.topLeftAction and buttonID == "1" then
+                    executeAction(wheelScreen.topLeftAction)
+                end
+                if wheelScreen.topMiddleAction and buttonID == "2" then
+                    executeAction(wheelScreen.topMiddleAction)
+                end
+                if wheelScreen.topRightAction and buttonID == "3" then
+                    executeAction(wheelScreen.topRightAction)
+                end
+                if wheelScreen.bottomLeftAction and buttonID == "4" then
+                    executeAction(wheelScreen.bottomLeftAction)
+                end
+                if wheelScreen.bottomMiddleAction and buttonID == "5" then
+                    executeAction(wheelScreen.bottomMiddleAction)
+                end
+                if wheelScreen.bottomRightAction and buttonID == "6" then
+                    executeAction(wheelScreen.bottomRightAction)
+                end
+
                 --------------------------------------------------------------------------------
                 -- DRAG WHEEL:
                 --------------------------------------------------------------------------------
