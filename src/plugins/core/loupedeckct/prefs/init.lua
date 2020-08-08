@@ -1714,6 +1714,7 @@ local function loupedeckCTPanelCallback(id, params)
             if data then
                 for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
+
                     if not items[app] then items[app] = {} end
                     if not items[app][b] then items[app][b] = {} end
                     if not items[app][b][controlType] then items[app][b][controlType] = {} end
@@ -1723,9 +1724,61 @@ local function loupedeckCTPanelCallback(id, params)
                             items[app][b][controlType][bid][i] = v
                         end
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- Generate an Encoded Icon Label if needed:
+                    --------------------------------------------------------------------------------
+                    local value = items[app][b][controlType][bid].iconLabel
+                    if value then
+                        local encodedImg = ""
+
+                        --------------------------------------------------------------------------------
+                        -- Set screen limitations:
+                        --------------------------------------------------------------------------------
+                        local width, height = getScreenSizeFromControlType(controlType)
+
+                        --------------------------------------------------------------------------------
+                        -- Make an icon using the label:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
+                        v[1] = {
+                            --------------------------------------------------------------------------------
+                            -- Force Black background:
+                            --------------------------------------------------------------------------------
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                            type = "rectangle",
+                        }
+
+                        v[2] = {
+                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            text = value,
+                            textAlignment = "left",
+                            textColor = { white = 1.0 },
+                            textSize = 15,
+                            type = "text",
+                        }
+
+                        local img = v:imageFromCanvas()
+                        encodedImg = img:encodeAsURLString(true)
+
+                        items[app][b][controlType][bid].encodedIconLabel = encodedImg
+                        log.df("Generating Encoded Icon Label")
+                    end
                 end
             end
             mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Update Knob Images:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+                for b=1, mod.numberOfBanks do
+                    b = tostring(b) .. suffix
+                    log.df("Generating Knob Images")
+                    generateKnobImages(app, b, bid)
+                end
+            end
         elseif callbackType == "resetControl" then
             --------------------------------------------------------------------------------
             -- Reset Control:
@@ -2095,7 +2148,7 @@ local function loupedeckCTPanelCallback(id, params)
             -- Open Key Creator:
             --------------------------------------------------------------------------------
             execute('open "' .. KEY_CREATOR_URL .. '"')
-        elseif callbackType == "buyIcons" then
+        elseif callbackType == "buyMoreIcons" then
             --------------------------------------------------------------------------------
             -- Buy More Icons:
             --------------------------------------------------------------------------------
@@ -2138,6 +2191,7 @@ function plugin.init(deps, env)
     mod.loadSettingsFromDevice              = deps.ctmanager.loadSettingsFromDevice
     mod.enableFlashDrive                    = deps.ctmanager.enableFlashDrive
     mod.automaticallySwitchApplications     = deps.ctmanager.automaticallySwitchApplications
+    mod.screensBacklightLevel               = deps.ctmanager.screensBacklightLevel
 
     mod.numberOfBanks                       = deps.manager.NUMBER_OF_BANKS
 
@@ -2171,7 +2225,7 @@ function plugin.init(deps, env)
         label           = "Loupedeck CT",
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 1030,
+        height          = 1055,
     })
         :addHeading(6, "Loupedeck CT")
 
@@ -2227,19 +2281,40 @@ function plugin.init(deps, env)
         :addCheckbox(10,
             {
                 label       = i18n("automaticallySwitchApplications"),
-                checked     = mod.enableFlashDrive,
+                checked     = mod.automaticallySwitchApplications,
                 onchange    = function(_, params)
-                    if params.checked then
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("pleaseDisconnectAndReconnectYourLoupedeckCT"), i18n("toEnableTheFlashDriveOnLoupedeckCT"), i18n("ok"))
-                    end
-                    mod.enableFlashDrive(params.checked)
+                    mod.automaticallySwitchApplications(params.checked)
                 end,
             }
         )
 
-        :addParagraph(11, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
 
-        :addContent(12, generateContent, false)
+        :addSelect(11,
+            {
+                label       =   i18n("screensBacklightLevel"),
+                value       =   mod.screensBacklightLevel,
+                options     =   function()
+                                    local options = {}
+                                    for i=1, 10 do
+                                        table.insert(options, {
+                                            value = tostring(i),
+                                            label = tostring(i)
+                                        })
+                                    end
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.screensBacklightLevel(params.value)
+                                    loupedeckct.updateBacklightLevel(tonumber(params.value))
+                                end,
+            }
+        )
+
+
+        :addParagraph(12, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+
+        :addContent(13, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

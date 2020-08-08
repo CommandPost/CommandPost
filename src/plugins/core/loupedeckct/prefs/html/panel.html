@@ -739,12 +739,12 @@
 		}
 	}
 
-	function buyIcons() {
+	function buyMoreIcons() {
 		try {
 			var result = {
 				id: "loupedeckCTPanelCallback",
 				params: {
-					type: "buyIcons",
+					type: "buyMoreIcons",
 				},
 			}
 			postMessage(result);
@@ -1070,14 +1070,16 @@
 					{%
 					local atLeastOne = false
 					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
-						atLeastOne = true
-						local selected = ""
-						if lastApplication == id then
-							selected = [[selected=""]]
-						end
+						if id ~= "All Applications" then
+							atLeastOne = true
+							local selected = ""
+							if lastApplication == id then
+								selected = [[selected=""]]
+							end
 					%}
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{%
+						end
 					end
 					if atLeastOne then
 					%}

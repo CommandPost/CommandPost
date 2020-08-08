@@ -267,7 +267,17 @@ end)
 --- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
 --- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", false)
+mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", true):watch(function() mod.refresh() end)
+
+--- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.lastBundleID = config.prop("loupedeckct.lastBundleID", "All Applications")
+
+--- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
+--- Field
+--- Screens Backlight Level
+mod.screensBacklightLevel = config.prop("loupedeckct.screensBacklightLevel", "9")
 
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
@@ -388,6 +398,13 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     if items[bundleID].ignore and items[bundleID].ignore == true then
         bundleID = "All Applications"
+    end
+
+    --------------------------------------------------------------------------------
+    -- If not Automatically Switching Applications:
+    --------------------------------------------------------------------------------
+    if not mod.automaticallySwitchApplications() then
+        bundleID = mod.lastBundleID()
     end
 
     local activeBanks = mod.activeBanks()
@@ -614,6 +631,8 @@ local function callback(data)
         mod.refresh()
         hasLoaded = true
         mod.enableFlashDrive:update()
+
+        ct.updateBacklightLevel(tonumber(mod.screensBacklightLevel()))
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
@@ -640,6 +659,13 @@ local function callback(data)
     --------------------------------------------------------------------------------
     if items[bundleID].ignore and items[bundleID].ignore == true then
         bundleID = "All Applications"
+    end
+
+    --------------------------------------------------------------------------------
+    -- If not Automatically Switching Applications:
+    --------------------------------------------------------------------------------
+    if not mod.automaticallySwitchApplications() then
+        bundleID = mod.lastBundleID()
     end
 
     local activeBanks = mod.activeBanks()
@@ -1134,6 +1160,13 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 if items[bundleID].ignore and items[bundleID].ignore == true then
                     bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- If not Automatically Switching Applications:
+                --------------------------------------------------------------------------------
+                if not mod.automaticallySwitchApplications() then
+                    bundleID = mod.lastBundleID()
                 end
 
                 local activeBanks = mod.activeBanks()

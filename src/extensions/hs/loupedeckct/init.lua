@@ -1067,9 +1067,9 @@ function mod.updateVibraWaveformIndex(value, callbackFn)
     end)
 end
 
---- hs.loupedeckct.updateBacklightLevel(value[, callbackFn]) -> boolean
+--- hs.loupedeckct.saveBacklightLevel(value[, callbackFn]) -> boolean
 --- Function
---- Sends a request to the Loupedeck CT to update the Vibra waveform index.
+--- Sends a request to the Loupedeck CT to save the backlight level in the register.
 ---
 --- Parameters:
 ---  * value - an 8-bit number with the new backlight level.
@@ -1077,10 +1077,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
----
---- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.updateBacklightLevel(value, callbackFn)
+function mod.saveBacklightLevel(value, callbackFn)
     return mod.requestRegister(2, function(response)
         processRegisterResponse(response)
         if response.backlightLevel ~= value then
@@ -1091,6 +1088,26 @@ function mod.updateBacklightLevel(value, callbackFn)
             callbackFn(response)
         end
     end)
+end
+
+--- hs.loupedeckct.updateBacklightLevel(backlightLevel[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to update the backlight level.
+---
+--- Parameters:
+---  * value - an 8-bit number with the new backlight level.
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+function mod.updateBacklightLevel(backlightLevel, callbackFn)
+    return sendCommand(
+        0x0409,
+        callbackFn and function(response)
+            callbackFn(response)
+        end,
+        uint8(backlightLevel)
+    )
 end
 
 --- hs.loupedeckct.wheelSensitivityIndex -> number
