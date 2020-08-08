@@ -1763,7 +1763,6 @@ local function loupedeckCTPanelCallback(id, params)
                         encodedImg = img:encodeAsURLString(true)
 
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg
-                        log.df("Generating Encoded Icon Label")
                     end
                 end
             end
@@ -1775,7 +1774,6 @@ local function loupedeckCTPanelCallback(id, params)
             if controlType == "knob" then
                 for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
-                    log.df("Generating Knob Images")
                     generateKnobImages(app, b, bid)
                 end
             end
