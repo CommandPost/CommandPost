@@ -178,7 +178,7 @@ function activator.new(id, manager)
     end):bind(o)
     :monitor(o._disabledHandlers)
     :monitor(manager.handlers)
-    
+
     --- plugins.core.action.activator.query <cp.prop: string>
     --- Field
     --- The current "query" value for the activator.
@@ -591,7 +591,7 @@ function activator.mt:sortChoices()
     if self._choices then
         local query = self:query()
         local queryLen = query and query:len() or 0
-        
+
         return sort(self._choices, function(a, b)
             --------------------------------------------------------------------------------
             -- Exact query match gets first priority:
@@ -599,14 +599,14 @@ function activator.mt:sortChoices()
             if query then
                 local aExact = a.textMatch == 1 and a.text:len() == queryLen
                 local bExact = b.textMatch == 1 and b.text:len() == queryLen
-                
+
                 if aExact and not bExact then
                     return true
                 elseif not aExact and bExact then
                     return false
                 end
             end
-        
+
             --------------------------------------------------------------------------------
             -- Favorites next:
             --------------------------------------------------------------------------------
@@ -633,7 +633,7 @@ function activator.mt:sortChoices()
                     return false
                 end
             end
-    
+
             --------------------------------------------------------------------------------
             -- Then popularity, if specified:
             --------------------------------------------------------------------------------
@@ -644,13 +644,13 @@ function activator.mt:sortChoices()
             elseif bpop > apop then
                 return false
             end
-    
+
             --------------------------------------------------------------------------------
             -- Then text by alphabetical order in lowercase:
             --------------------------------------------------------------------------------
             local aa = a.text:lower()
             local bb = b.text:lower()
-    
+
             if aa < bb then
                 return true
             elseif bb < aa then
@@ -712,7 +712,7 @@ function activator.mt:activeChoices()
     local disabledHandlers = self:_disabledHandlers()
     local query = self:query()
     local searchSubText = self:searchSubText()
-    
+
     return moses.select(self:allChoices(), function(choice)
         if (showHidden or not choice.hidden) and not disabledHandlers[choice.type] then
             -- Check if we are filtering by query
