@@ -26,13 +26,6 @@ local plugin = {
 
 function plugin.init(deps)
 
-    mod.holdDownShift = eventtap.new({eventtap.event.types.keyDown}, function(e)
-        local flags = e:getFlags()
-        flags.shift = true
-        e:setFlags(flags)
-        return false, e
-    end)
-
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
@@ -123,7 +116,7 @@ function plugin.init(deps)
             end
 
         choices
-            :add("Press and hold SHIFT key")
+            :add("Press and hold SHIFT modifier key")
             :subText(description)
             :params({
                 id = "pressShift",
@@ -131,7 +124,7 @@ function plugin.init(deps)
             :id("global_shortcuts_" .. "pressShift")
 
         choices
-            :add("Release SHIFT key")
+            :add("Release SHIFT modifier key")
             :subText(description)
             :params({
                 id = "releaseShift",
@@ -141,9 +134,15 @@ function plugin.init(deps)
         end)
         :onExecute(function(action)
             if action.id == "pressShift" then
-                mod.holdDownShift:start()
+                mod.holdDownShift = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                    local flags = e:getFlags()
+                    flags.shift = true
+                    e:setFlags(flags)
+                    return false, e
+                end):start()
             elseif action.id == "releaseShift" then
                 mod.holdDownShift:stop()
+                mod.holdDownShift = nil
             else
                 keyStroke(action.modifiers, action.character)
             end

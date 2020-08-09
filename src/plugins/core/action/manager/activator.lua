@@ -606,22 +606,129 @@ function activator.mt:sortChoices()
             end
 
             --------------------------------------------------------------------------------
-            -- Then text by alphabetical order:
+            -- Then text by alphabetical order in lowercase:
             --------------------------------------------------------------------------------
-            if a.text < b.text then
+            if a.text:lower() < b.text:lower() then
                 return true
-            elseif b.text < a.text then
+            elseif b.text:lower() < a.text:lower() then
                 return false
             end
 
             --------------------------------------------------------------------------------
-            -- Then subText by alphabetical order:
+            -- Then subText by alphabetical order in lowercase:
             --------------------------------------------------------------------------------
             local asub = a.subText or ""
             local bsub = b.subText or ""
-            return asub < bsub
+            return asub:lower() < bsub:lower()
         end)
     end
+end
+
+-- queryResults -> table
+-- Variable
+-- A table containing the filtered and sorted choices based on the current query string.
+local queryResults = nil
+
+--- plugins.core.action.activator:filterAndSortChoicesWhenQueryStringChanged() -> none
+--- Method
+--- Filters and sorts the choices based on the current query string.
+---
+--- Parameters:
+---  * query - The current query string.
+---
+--- Returns:
+---  * None
+function activator.mt:filterAndSortChoicesWhenQueryStringChanged(query)
+
+    query = query and query:lower() or ""
+
+    --------------------------------------------------------------------------------
+    -- Ignore this function if there's no query:
+    --------------------------------------------------------------------------------
+    if query == "" then
+        queryResults = nil
+        self._chooser:refreshChoicesCallback()
+        return
+    end
+
+    queryLen = query:len()
+
+    --------------------------------------------------------------------------------
+    -- Filter the active choices:
+    --
+    -- REMINDER: v.text could be a hs.styledtext object
+    --------------------------------------------------------------------------------
+    local newChoices = {}
+    for i, v in pairs(self:activeChoices()) do
+        if v.text:lower():find(query, 1, true) then
+            table.insert(newChoices, v)
+        elseif self:searchSubText() == true and v.subText and v.subText:lower():find(query, 1, true) then
+            table.insert(newChoices, v)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Sort the choices:
+    --------------------------------------------------------------------------------
+    sort(newChoices, function(a, b)
+        --------------------------------------------------------------------------------
+        -- Favorites get first priority:
+        --------------------------------------------------------------------------------
+        local afav = a.favorite
+        local bfav = b.favorite
+        if afav and not bfav then
+            return true
+        elseif bfav and not afav then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Prioritise fields that match query string:
+        --
+        -- REMINDER: a.text could be a hs.styledtext object
+        --------------------------------------------------------------------------------
+        local aa = a.text:lower()
+        local bb = b.text:lower()
+
+        local aaStartsWithQ = aa:len() >= queryLen and aa:sub(1, queryLen) == query
+        local bbStartsWithQ = bb:len() >= queryLen and bb:sub(1, queryLen) == query
+
+        if aaStartsWithQ and not bbStartsWithQ then
+            return true
+        elseif not aaStartsWithQ and bbStartsWithQ then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then popularity, if specified:
+        --------------------------------------------------------------------------------
+        local apop = a.popularity or 0
+        local bpop = b.popularity or 0
+        if apop > bpop then
+            return true
+        elseif bpop > apop then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then text by alphabetical order in lowercase:
+        --------------------------------------------------------------------------------
+        if aa < bb then
+            return true
+        elseif bb < aa then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then subText by alphabetical order in lowercase:
+        --------------------------------------------------------------------------------
+        local asub = a.subText or ""
+        local bsub = b.subText or ""
+        return asub:lower() < bsub:lower()
+    end)
+
+    queryResults = newChoices
+    self._chooser:refreshChoicesCallback()
 end
 
 --- plugins.core.action.activator:allChoices() -> table
@@ -856,7 +963,7 @@ function activator.mt:chooser()
             self:activate(result)
         end
         local rightClickFn = function(index) self:rightClickMain(index) end
-        local choicesFn = function() return self:activeChoices() end
+        local choicesFn = function() return queryResults or self:activeChoices() end
         local searchSubText = self:searchSubText()
 
         local updateConsole = function(id)
@@ -947,6 +1054,14 @@ function activator.mt:chooser()
             :choices(choicesFn)
             :searchSubText(searchSubText)
             :showCallback(setupEventtap)
+            :queryChangedCallback(function(v)
+                if self.queryChangedTimer then
+                    self.queryChangedTimer:stop()
+                end
+                self.queryChangedTimer = doAfter(0.02, function()
+                    self:filterAndSortChoicesWhenQueryStringChanged(v)
+                end)
+            end)
             :refreshChoicesCallback(true)
 
         if t then
