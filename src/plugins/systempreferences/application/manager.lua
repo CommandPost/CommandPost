@@ -2,8 +2,6 @@
 ---
 --- Registers System Preferences with the Core Application Manager.
 
-local require               = require
-
 local plugin = {
     id              = "systempreferences.application.manager",
     group           = "systempreferences",

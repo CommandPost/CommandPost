@@ -2,8 +2,6 @@
 ---
 --- Registers TextEdit with the Core Application Manager.
 
-local require               = require
-
 local plugin = {
     id              = "textedit.application.manager",
     group           = "textedit",

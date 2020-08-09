@@ -651,7 +651,7 @@ function activator.mt:filterAndSortChoicesWhenQueryStringChanged(query)
         return
     end
 
-    queryLen = query:len()
+    local queryLen = query:len()
 
     --------------------------------------------------------------------------------
     -- Filter the active choices:
@@ -659,7 +659,7 @@ function activator.mt:filterAndSortChoicesWhenQueryStringChanged(query)
     -- REMINDER: v.text could be a hs.styledtext object
     --------------------------------------------------------------------------------
     local newChoices = {}
-    for i, v in pairs(self:activeChoices()) do
+    for _, v in pairs(self:activeChoices()) do
         if v.text:lower():find(query, 1, true) then
             table.insert(newChoices, v)
         elseif self:searchSubText() == true and v.subText and v.subText:lower():find(query, 1, true) then

@@ -1733,8 +1733,6 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     local value = items[app][b][controlType][bid].iconLabel
                     if value then
-                        local encodedImg = ""
-
                         --------------------------------------------------------------------------------
                         -- Set screen limitations:
                         --------------------------------------------------------------------------------
@@ -1763,7 +1761,7 @@ local function loupedeckCTPanelCallback(id, params)
                         }
 
                         local img = v:imageFromCanvas()
-                        encodedImg = img:encodeAsURLString(true)
+                        local encodedImg = img:encodeAsURLString(true)
 
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg
                     end

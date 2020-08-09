@@ -1168,10 +1168,10 @@ function mod.updateWheelSensitivity(wheelSensitivity, callbackFn)
     return sendCommand(
         0x041E,
         callbackFn and function(response)
-            local wheelSensitivity = uint8(response.data)
-            response.wheelSensitivity = wheelSensitivity
-            if wheelSensitivity then
-                response.wheelSensitivityLabel = mod.wheelSensitivityIndex[wheelSensitivity]
+            local result = uint8(response.data)
+            response.wheelSensitivity = result
+            if result then
+                response.wheelSensitivityLabel = mod.wheelSensitivityIndex[result]
             end
             callbackFn(response)
         end,

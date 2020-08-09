@@ -6,7 +6,7 @@ local require                   = require
 
 local hs                        = hs
 
-local log                       = require "hs.logger".new "ldCT"
+--local log                       = require "hs.logger".new "ldCT"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
@@ -397,7 +397,7 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     for _, v in pairs(repeatTimers) do
         v:stop()
-        v = nil
+        v = nil -- luacheck: ignore
     end
 
     local items = mod.items()
@@ -609,7 +609,7 @@ local function clearCache()
     --------------------------------------------------------------------------------
     for _, v in pairs(repeatTimers) do
         v:stop()
-        v = nil
+        v = nil -- luacheck: ignore
     end
 
     cacheWheelYAxis = nil
