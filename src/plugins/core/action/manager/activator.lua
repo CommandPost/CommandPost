@@ -721,7 +721,7 @@ function activator.mt:activeChoices()
                 choice.textMatch = choice.text:lower():find(query, 1, true)
                 if choice.textMatch then
                     return true
-                elseif searchSubText == true and choice.subText and choice.subText:lower():find(query, 1, true)
+                elseif searchSubText == true and choice.subText and choice.subText:lower():find(query, 1, true) then
                     return true
                 end
                 return false
@@ -920,7 +920,7 @@ function activator.mt:chooser()
             self:activate(result)
         end
         local rightClickFn = function(index) self:rightClickMain(index) end
-        local choicesFn = function() self:activeChoices() end
+        local choicesFn = function() return self:activeChoices() end
         local searchSubText = self:searchSubText()
 
         local updateConsole = function(id)
