@@ -35,7 +35,6 @@ local timer                     = require "hs.timer"
 local toolbar                   = require "hs.webview.toolbar"
 
 local config                    = require "cp.config"
-local deferred                  = require "cp.deferred"
 local Do                        = require "cp.rx.go.Do"
 local i18n                      = require "cp.i18n"
 local idle                      = require "cp.idle"
@@ -178,12 +177,6 @@ function activator.new(id, manager)
     end):bind(o)
     :monitor(o._disabledHandlers)
     :monitor(manager.handlers)
-
-    --- plugins.core.action.activator.query <cp.prop: string>
-    --- Field
-    --- The current "query" value for the activator.
-    o.query = prop.THIS(nil):bind(o)
-    :watch(deferred.new(0.2):action(function() o:refreshChooser() end))
 
     --- plugins.core.action.activator.hiddenChoices <cp.prop: table of booleans>
     --- Field
@@ -589,26 +582,9 @@ end
 ---  * `true` if the action executed successfully, otherwise `false`.
 function activator.mt:sortChoices()
     if self._choices then
-        local query = self:query()
-        local queryLen = query and query:len() or 0
-
         return sort(self._choices, function(a, b)
             --------------------------------------------------------------------------------
-            -- Exact query match gets first priority:
-            --------------------------------------------------------------------------------
-            if query then
-                local aExact = a.textMatch == 1 and a.text:len() == queryLen
-                local bExact = b.textMatch == 1 and b.text:len() == queryLen
-
-                if aExact and not bExact then
-                    return true
-                elseif not aExact and bExact then
-                    return false
-                end
-            end
-
-            --------------------------------------------------------------------------------
-            -- Favorites next:
+            -- Favorites get first priority:
             --------------------------------------------------------------------------------
             local afav = a.favorite
             local bfav = b.favorite
@@ -616,22 +592,6 @@ function activator.mt:sortChoices()
                 return true
             elseif bfav and not afav then
                 return false
-            end
-
-            --------------------------------------------------------------------------------
-            -- Prioritise fields that start with query string:
-            --
-            -- REMINDER: a.text could be a hs.styledtext object
-            --------------------------------------------------------------------------------
-            if query then
-                local aStartsWithQ = a.textMatch == 1
-                local bStartsWithQ = b.textMatch == 1
-
-                if aStartsWithQ and not bStartsWithQ then
-                    return true
-                elseif not aStartsWithQ and bStartsWithQ then
-                    return false
-                end
             end
 
             --------------------------------------------------------------------------------
@@ -648,12 +608,9 @@ function activator.mt:sortChoices()
             --------------------------------------------------------------------------------
             -- Then text by alphabetical order in lowercase:
             --------------------------------------------------------------------------------
-            local aa = a.text:lower()
-            local bb = b.text:lower()
-
-            if aa < bb then
+            if a.text:lower() < b.text:lower() then
                 return true
-            elseif bb < aa then
+            elseif b.text:lower() < a.text:lower() then
                 return false
             end
 
@@ -665,6 +622,113 @@ function activator.mt:sortChoices()
             return asub:lower() < bsub:lower()
         end)
     end
+end
+
+-- queryResults -> table
+-- Variable
+-- A table containing the filtered and sorted choices based on the current query string.
+local queryResults = nil
+
+--- plugins.core.action.activator:filterAndSortChoicesWhenQueryStringChanged() -> none
+--- Method
+--- Filters and sorts the choices based on the current query string.
+---
+--- Parameters:
+---  * query - The current query string.
+---
+--- Returns:
+---  * None
+function activator.mt:filterAndSortChoicesWhenQueryStringChanged(query)
+
+    query = query and query:lower() or ""
+
+    --------------------------------------------------------------------------------
+    -- Ignore this function if there's no query:
+    --------------------------------------------------------------------------------
+    if query == "" then
+        queryResults = nil
+        self._chooser:refreshChoicesCallback()
+        return
+    end
+
+    local queryLen = query:len()
+
+    --------------------------------------------------------------------------------
+    -- Filter the active choices:
+    --
+    -- REMINDER: v.text could be a hs.styledtext object
+    --------------------------------------------------------------------------------
+    local newChoices = {}
+    for _, v in pairs(self:activeChoices()) do
+        if v.text:lower():find(query, 1, true) then
+            table.insert(newChoices, v)
+        elseif self:searchSubText() == true and v.subText and v.subText:lower():find(query, 1, true) then
+            table.insert(newChoices, v)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Sort the choices:
+    --------------------------------------------------------------------------------
+    sort(newChoices, function(a, b)
+        --------------------------------------------------------------------------------
+        -- Favorites get first priority:
+        --------------------------------------------------------------------------------
+        local afav = a.favorite
+        local bfav = b.favorite
+        if afav and not bfav then
+            return true
+        elseif bfav and not afav then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Prioritise fields that match query string:
+        --
+        -- REMINDER: a.text could be a hs.styledtext object
+        --------------------------------------------------------------------------------
+        local aa = a.text:lower()
+        local bb = b.text:lower()
+
+        local aaStartsWithQ = aa:len() >= queryLen and aa:sub(1, queryLen) == query
+        local bbStartsWithQ = bb:len() >= queryLen and bb:sub(1, queryLen) == query
+
+        if aaStartsWithQ and not bbStartsWithQ then
+            return true
+        elseif not aaStartsWithQ and bbStartsWithQ then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then popularity, if specified:
+        --------------------------------------------------------------------------------
+        local apop = a.popularity or 0
+        local bpop = b.popularity or 0
+        if apop > bpop then
+            return true
+        elseif bpop > apop then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then text by alphabetical order in lowercase:
+        --------------------------------------------------------------------------------
+        if aa < bb then
+            return true
+        elseif bb < aa then
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Then subText by alphabetical order in lowercase:
+        --------------------------------------------------------------------------------
+        local asub = a.subText or ""
+        local bsub = b.subText or ""
+        return asub:lower() < bsub:lower()
+    end)
+
+    queryResults = newChoices
+    self._chooser:refreshChoicesCallback()
 end
 
 --- plugins.core.action.activator:allChoices() -> table
@@ -710,28 +774,7 @@ end
 function activator.mt:activeChoices()
     local showHidden = self:showHidden()
     local disabledHandlers = self:_disabledHandlers()
-    local query = self:query()
-    local searchSubText = self:searchSubText()
-
-    return moses.select(self:allChoices(), function(choice)
-        if (showHidden or not choice.hidden) and not disabledHandlers[choice.type] then
-            -- Check if we are filtering by query
-            if query then
-                -- Store the match index for sorting later.
-                choice.textMatch = choice.text:lower():find(query, 1, true)
-                if choice.textMatch then
-                    return true
-                elseif searchSubText == true and choice.subText and choice.subText:lower():find(query, 1, true) then
-                    return true
-                end
-                return false
-            else
-                choice.textMatch = nil
-            end
-            return true
-        end
-        return false
-    end)
+    return moses.select(self:allChoices(), function(choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
 end
 
 -- plugins.core.action.activator:_findChoices() -> none
@@ -920,7 +963,7 @@ function activator.mt:chooser()
             self:activate(result)
         end
         local rightClickFn = function(index) self:rightClickMain(index) end
-        local choicesFn = function() return self:activeChoices() end
+        local choicesFn = function() return queryResults or self:activeChoices() end
         local searchSubText = self:searchSubText()
 
         local updateConsole = function(id)
@@ -1011,9 +1054,15 @@ function activator.mt:chooser()
             :choices(choicesFn)
             :searchSubText(searchSubText)
             :showCallback(setupEventtap)
-            :queryChangedCallback(function(value)
-                self.query:set(value)
+            :queryChangedCallback(function(v)
+                if self.queryChangedTimer then
+                    self.queryChangedTimer:stop()
+                end
+                self.queryChangedTimer = doAfter(0.01, function()
+                    self:filterAndSortChoicesWhenQueryStringChanged(v)
+                end)
             end)
+            :refreshChoicesCallback(true)
 
         if t then
             c:attachedToolbar(t)
