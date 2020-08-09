@@ -1919,6 +1919,7 @@
         "viewStillsMemory": "View Stills Memory",
         "virtual": "Virtual",
         "screensBacklightLevel": "Screens Backlight Level",
+        "repeatPressActionUntilReleased": "Repeat Press Action Until Released",
         "virtualTouchBar": "Virtual Touch Bar",
         "visibility": "Visibility",
         "visitTangentWebsite": "Visit Tangent Website",

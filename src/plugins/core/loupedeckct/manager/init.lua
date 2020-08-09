@@ -11,6 +11,7 @@ local log                       = require "hs.logger".new "ldCT"
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local ct                        = require "hs.loupedeckct"
+local eventtap                  = require "hs.eventtap"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local plist                     = require "hs.plist"
@@ -29,9 +30,11 @@ local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
+local doEvery                   = timer.doEvery
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
 local imageFromURL              = image.imageFromURL
+local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
 
@@ -358,6 +361,11 @@ function mod.reset()
     mod.items(mod.defaultLayout)
 end
 
+-- repeatTimers -> table
+-- Variable
+-- A table containing `hs.timer` objects.
+local repeatTimers = {}
+
 --- plugins.core.loupedeckct.manager.refresh()
 --- Function
 --- Refreshes the Loupedeck CT screens and LED buttons.
@@ -384,6 +392,14 @@ function mod.refresh(dueToAppChange)
         cachedBundleID = bundleID
     end
 
+    --------------------------------------------------------------------------------
+    -- Stop any stray repeat timers:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(repeatTimers) do
+        v:stop()
+        v = nil
+    end
+
     local items = mod.items()
 
     --------------------------------------------------------------------------------
@@ -396,7 +412,7 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- Ignore if ignored:
     --------------------------------------------------------------------------------
-    if items[bundleID].ignore and items[bundleID].ignore == true then
+    if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
         bundleID = "All Applications"
     end
 
@@ -588,6 +604,14 @@ end
 -- Returns:
 --  * None
 local function clearCache()
+    --------------------------------------------------------------------------------
+    -- Stop any stray repeat timers:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(repeatTimers) do
+        v:stop()
+        v = nil
+    end
+
     cacheWheelYAxis = nil
     cacheWheelXAxis = nil
 
@@ -720,6 +744,14 @@ local function callback(data)
             --------------------------------------------------------------------------------
             local thisButton = bank.ledButton and bank.ledButton[buttonID]
             if thisButton and executeAction(thisButton.pressAction) then
+
+                -- Repeat if necessary:
+                if thisButton.repeatPressActionUntilReleased then
+                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                        executeAction(thisButton.pressAction)
+                    end)
+                end
+
                 return
             end
 
@@ -745,6 +777,15 @@ local function callback(data)
             -- LED BUTTON RELEASE:
             --------------------------------------------------------------------------------
             local thisButton = bank.ledButton and bank.ledButton[buttonID]
+
+            -- Stop repeating:
+            if thisButton and thisButton.repeatPressActionUntilReleased then
+                if repeatTimers[buttonID] then
+                    repeatTimers[buttonID]:stop()
+                    repeatTimers[buttonID] = nil
+                end
+            end
+
             if thisButton and executeAction(thisButton.releaseAction) then
                 return
             end
@@ -807,6 +848,14 @@ local function callback(data)
             end
 
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
+
+                -- Repeat if necessary:
+                if thisTouchButton.repeatPressActionUntilReleased then
+                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                        executeAction(thisTouchButton.pressAction)
+                    end)
+                end
+
                 return
             end
 
@@ -914,6 +963,14 @@ local function callback(data)
             -- TOUCH SCREEN BUTTON RELEASE:
             --------------------------------------------------------------------------------
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
+
+            -- Stop repeating:
+            if thisTouchButton and thisTouchButton.repeatPressActionUntilReleased then
+                if repeatTimers[buttonID] then
+                    repeatTimers[buttonID]:stop()
+                    repeatTimers[buttonID] = nil
+                end
+            end
 
             -- Vibrate if needed:
             if thisTouchButton and thisTouchButton.vibrateRelease then

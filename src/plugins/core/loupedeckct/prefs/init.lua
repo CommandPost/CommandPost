@@ -420,6 +420,8 @@ local function updateUI(params)
     local vibrateLeftValue = selectedID and selectedID.vibrateLeft or ""
     local vibrateRightValue = selectedID and selectedID.vibrateRight or ""
 
+    local repeatPressActionUntilReleasedValue = selectedID and selectedID.repeatPressActionUntilReleased or false
+
     local wheelSensitivityValue = selectedID and selectedID.wheelSensitivity or tostring(loupedeckct.defaultWheelSensitivityIndex)
 
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
@@ -533,6 +535,7 @@ local function updateUI(params)
         changeValueByID('wheelSensitivity', ']] .. wheelSensitivityValue .. [[');
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
+        changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleasedValue) .. [[);
         changeColor(']] .. colorValue .. [[');
         setIcon("]] .. encodedIcon .. [[");
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
@@ -1936,6 +1939,15 @@ local function loupedeckCTPanelCallback(id, params)
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
+
+        elseif callbackType == "changeRepeatPressActionUntilReleased" then
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local repeatPressActionUntilReleased = params["repeatPressActionUntilReleased"]
+
+            setItem(app, bank, controlType, bid, "repeatPressActionUntilReleased", repeatPressActionUntilReleased)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:

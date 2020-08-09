@@ -113,7 +113,7 @@
 				if (id == "6") { label = "Knob 6" }
 			}
 			if (controlType == "jogWheel") {
-				label = "Job Wheel";
+				label = "Jog Wheel";
 			}
 			if (controlType == "wheelScreen") {
 				label = "Wheel Screen";
@@ -219,6 +219,8 @@
 		document.getElementById("wheelSensitivityA").style.display = "none";
 		document.getElementById("wheelSensitivityB").style.display = "none";
 
+		document.getElementById("repeatA").style.display = "none";
+
 		// -------------------------------------------------
 		// KNOB:
 		// -------------------------------------------------
@@ -273,6 +275,8 @@
 
 			document.getElementById("vibrateA").style.display = "block";
 			document.getElementById("vibrateB").style.display = "block";
+
+			document.getElementById("repeatA").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -291,6 +295,8 @@
 
 			document.getElementById("vibrateA").style.display = "block";
 			document.getElementById("vibrateB").style.display = "block";
+
+			document.getElementById("repeatA").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -783,6 +789,25 @@
 					id: document.getElementById("id").value,
 					controlType: document.getElementById("controlType").value,
 					value: document.getElementById("vibrateRelease").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeRepeatPressActionUntilReleased() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "changeRepeatPressActionUntilReleased",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					repeatPressActionUntilReleased: document.getElementById("repeatPressActionUntilReleased").checked,
 				},
 			}
 			postMessage(result);
@@ -1318,6 +1343,14 @@
 						<tr id="pressActionC">
 							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
 							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- PRESS REPEAT: -->
+						<tr id="repeatA">
+							<td width="458px">
+								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
+								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+							</td>
 						</tr>
 
 						<!-- SPACER: -->
