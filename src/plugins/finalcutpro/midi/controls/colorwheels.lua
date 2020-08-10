@@ -159,56 +159,56 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Wheel Master (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():master() end, false),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
         text = "Color Wheel Master (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():master() end, true),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Shadows (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():shadows() end, false),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
         text = "Color Wheel Shadows (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():shadows() end, true),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
         text = "Color Wheel Midtones (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():midtones() end, false),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
         text = "Color Wheel Midtones (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():midtones() end, true),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
         text = "Color Wheel Highlights (Horizontal)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():highlights() end, false),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
         text = "Color Wheel Highlights (Vertical)",
         subText = i18n("midiControlColorWheel"),
-        fn = makeWheelHandler(function() return fcp.inspector:color():colorWheels():highlights() end, true),
+        fn = makeWheelHandler(function() return fcp.inspector.color:colorWheels():highlights() end, true),
     })
 
     --------------------------------------------------------------------------------
@@ -216,7 +216,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelMasterSaturation
     local updateColorWheelMasterSaturation = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():master():show():saturationValue(cachedColorWheelMasterSaturation)
+        fcp.inspector.color:colorWheels():master():show():saturationValue(cachedColorWheelMasterSaturation)
     end)
     deps.manager.controls:new("colorWheelMasterSaturation", {
         group = "fcpx",
@@ -255,7 +255,7 @@ function mod.init(deps)
 
     local cachedColorWheelShadowsSaturation
     local updateColorWheelShadowsSaturation = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():shadows():show():saturationValue(cachedColorWheelShadowsSaturation)
+        fcp.inspector.color:colorWheels():shadows():show():saturationValue(cachedColorWheelShadowsSaturation)
     end)
     deps.manager.controls:new("colorWheelShadowsSaturation", {
         group = "fcpx",
@@ -294,7 +294,7 @@ function mod.init(deps)
 
     local cachedColorWheelMidtonesSaturation
     local updateColorWheelMidtonesSaturation = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():midtones():show():saturationValue(cachedColorWheelMidtonesSaturation)
+        fcp.inspector.color:colorWheels():midtones():show():saturationValue(cachedColorWheelMidtonesSaturation)
     end)
     deps.manager.controls:new("colorWheelMidtonesSaturation", {
         group = "fcpx",
@@ -333,7 +333,7 @@ function mod.init(deps)
 
     local cachedColorWheelHighlightsSaturation
     local updateColorWheelHighlightsSaturation = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():highlights():show():saturationValue(cachedColorWheelHighlightsSaturation)
+        fcp.inspector.color:colorWheels():highlights():show():saturationValue(cachedColorWheelHighlightsSaturation)
     end)
     deps.manager.controls:new("colorWheelHighlightsSaturation", {
         group = "fcpx",
@@ -375,7 +375,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelMasterBrightness
     local updateColorWheelMasterBrightness = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():master():show():brightnessValue(cachedColorWheelMasterBrightness)
+        fcp.inspector.color:colorWheels():master():show():brightnessValue(cachedColorWheelMasterBrightness)
     end)
     deps.manager.controls:new("colorWheelMasterBrightness", {
         group = "fcpx",
@@ -414,7 +414,7 @@ function mod.init(deps)
 
     local cachedColorWheelShadowsBrightness
     local updateColorWheelShadowsBrightness = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():shadows():show():brightnessValue(cachedColorWheelShadowsBrightness)
+        fcp.inspector.color:colorWheels():shadows():show():brightnessValue(cachedColorWheelShadowsBrightness)
     end)
     deps.manager.controls:new("colorWheelShadowsBrightness", {
         group = "fcpx",
@@ -453,7 +453,7 @@ function mod.init(deps)
 
     local cachedColorWheelHighlightsBrightness
     local updateColorWheelHighlightsBrightness = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():highlights():show():brightnessValue(cachedColorWheelHighlightsBrightness)
+        fcp.inspector.color:colorWheels():highlights():show():brightnessValue(cachedColorWheelHighlightsBrightness)
     end)
     deps.manager.controls:new("colorWheelHighlightsBrightness", {
         group = "fcpx",
@@ -492,7 +492,7 @@ function mod.init(deps)
 
     local cachedColorWheelMidtonesBrightness
     local updateColorWheelMidtonesBrightness = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():midtones():show():brightnessValue(cachedColorWheelMidtonesBrightness)
+        fcp.inspector.color:colorWheels():midtones():show():brightnessValue(cachedColorWheelMidtonesBrightness)
     end)
     deps.manager.controls:new("colorWheelMidtonesBrightness", {
         group = "fcpx",
@@ -534,7 +534,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelTemperature
     local updateColorWheelTemperature = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():show():temperature(cachedColorWheelTemperature)
+        fcp.inspector.color:colorWheels():show():temperature(cachedColorWheelTemperature)
     end)
     deps.manager.controls:new("colorWheelTemperature", {
         group = "fcpx",
@@ -585,7 +585,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelTint
     local updateColorWheelTint = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():show():tint(cachedColorWheelTint)
+        fcp.inspector.color:colorWheels():show():tint(cachedColorWheelTint)
     end)
     deps.manager.controls:new("colorWheelTint", {
         group = "fcpx",
@@ -627,7 +627,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelHue
     local updateColorWheelHue = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():show():hue(cachedColorWheelHue)
+        fcp.inspector.color:colorWheels():show():hue(cachedColorWheelHue)
     end)
     deps.manager.controls:new("colorWheelHue", {
         group = "fcpx",
@@ -669,7 +669,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     local cachedColorWheelMix
     local updateColorWheelMix = deferred.new(0.01):action(function()
-        fcp.inspector:color():colorWheels():show():mix(cachedColorWheelMix)
+        fcp.inspector.color:colorWheels():show():mix(cachedColorWheelMix)
     end)
     deps.manager.controls:new("colorWheelMix", {
         group = "fcpx",

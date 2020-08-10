@@ -324,7 +324,7 @@ end
 --- Returns:
 ---  * ColorBoard
 function PrimaryWindow.lazy.method:colorBoard()
-    return self.inspector:color():colorBoard()
+    return self.inspector.color:colorBoard()
 end
 
 -----------------------------------------------------------------------

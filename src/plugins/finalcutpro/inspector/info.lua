@@ -25,7 +25,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("setCameraLUTToNone")
         :whenActivated(function()
-            local info = fcp.inspector:info()
+            local info = fcp.inspector.info
             info:show()
             info:metadataView("Settings")
             local none = fcp:string("FFCameraLUTControllerNone")

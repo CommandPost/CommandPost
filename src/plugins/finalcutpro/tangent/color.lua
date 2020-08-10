@@ -189,7 +189,7 @@ function plugin.init(deps)
     -- Handle the Color Wheels:
     --------------------------------------------------------------------------------
     local cwGroup = ciGroup:group(i18n("colorWheels"))
-    local ci = fcp.inspector:color()
+    local ci = fcp.inspector.color
     local cw = ci:colorWheels()
 
     local wheelsBaseID = baseID + 0x010000

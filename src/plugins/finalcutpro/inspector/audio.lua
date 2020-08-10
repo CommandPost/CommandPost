@@ -20,7 +20,7 @@ function plugin.init(deps)
     -- Audio Enhancements:
     --------------------------------------------------------------------------------
     local cmds = deps.cmds
-    local audio = fcp.inspector:audio()
+    local audio = fcp.inspector.audio
     local audioEnhancements = audio:audioEnhancements()
     local audioConfiguration = audio:audioConfiguration()
     cmds

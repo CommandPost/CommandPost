@@ -25,7 +25,7 @@
 ---
 --- For example:
 --- ```lua
---- local audio = fcp.inspector:audio()
+--- local audio = fcp.inspector.audio
 --- -- Menu Property:
 --- audio:compositing():blendMode():value("Subtract")
 --- -- Slider Property:

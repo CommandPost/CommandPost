@@ -40,7 +40,7 @@ function plugin.init(deps)
     local TEMPERATURE_RANGES    = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200}
 
     local fcpxCmds = deps.fcpxCmds
-    local colorWheels = fcp.inspector:color():colorWheels()
+    local colorWheels = fcp.inspector.color:colorWheels()
     --------------------------------------------------------------------------------
     -- Reset Master Color Wheel Color:
     --------------------------------------------------------------------------------

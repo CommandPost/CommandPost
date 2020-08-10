@@ -265,7 +265,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- select the first clip.
             tc:selectClip(clips[1])
 
-            local color = fcp.inspector:color()
+            local color = fcp.inspector.color
             color:show()
             just.doUntil(function() return color:isShowing() end, 1)
             ok(color:isShowing())
@@ -288,7 +288,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             tc:selectClip(clips[1])
 
             -- activate the colour inspector
-            local color = fcp.inspector:color()
+            local color = fcp.inspector.color
             local corrections = color:corrections()
             corrections:show()
 

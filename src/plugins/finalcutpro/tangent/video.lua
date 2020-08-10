@@ -49,7 +49,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- VIDEO INSPECTOR:
     --------------------------------------------------------------------------------
-    local video                         = fcp.inspector:video()
+    local video                         = fcp.inspector.video
     local videoGroup                    = fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
 
     local BLEND_MODES                   = video.BLEND_MODES
@@ -100,7 +100,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Blend Mode (Buttons):
             --------------------------------------------------------------------------------
-            local blendMode = fcp.inspector:video():compositing():blendMode()
+            local blendMode = fcp.inspector.video:compositing():blendMode()
             local blendModesGroup = compositingGroup:group(i18n("blendModes"))
             for i=1, tableCount(BLEND_MODES) do
                 local v = BLEND_MODES[i]
@@ -193,7 +193,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Type (Buttons):
             --------------------------------------------------------------------------------
-            local cropType = fcp.inspector:video():crop():type()
+            local cropType = fcp.inspector.video:crop():type()
             local cropTypesGroup = cropGroup:group(i18n("cropTypes"))
             id = popupParameters(cropTypesGroup, cropType, id, CROP_TYPES)
 

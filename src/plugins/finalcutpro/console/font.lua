@@ -135,7 +135,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Make sure the Text Inspector is open:
         --------------------------------------------------------------------------------
-        local text = inspector:text()
+        local text = inspector.text
         text:show()
         if not just.doUntil(function() return text:isShowing() end) then
             displayMessage(i18n("pleaseSelectATitle"))
