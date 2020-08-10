@@ -7,7 +7,6 @@ local require           = require
 --local log               = require "hs.logger".new("audio")
 
 local osascript         = require "hs.osascript"
-local audiodevice       = require "hs.audiodevice"
 
 local tools             = require "cp.tools"
 local i18n              = require "cp.i18n"

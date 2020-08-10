@@ -1287,7 +1287,7 @@ end
 --- Returns:
 ---  * None
 function activator:rightClickMain(index)
-    self:rightClickAction(index, true)
+    self:rightClickAction(index)
 end
 
 --- plugins.core.action.activator:rightClickAction(index) -> none

@@ -4,13 +4,11 @@
 
 local require                   = require
 
-local log                       = require "hs.logger".new "actions"
+--local log                       = require "hs.logger".new "actions"
 
 local application               = require "hs.application"
-local eventtap                  = require "hs.eventtap"
-local keycodes                  = require "hs.keycodes"
 
-local i18n                      = require "cp.i18n"
+--local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
 local keyStroke                 = tools.keyStroke
@@ -28,9 +26,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
-
     --------------------------------------------------------------------------------
     -- Shortcuts:
+    --
+    -- TODO: This needs to be i18n'ified.
     --------------------------------------------------------------------------------
     local shortcuts = {
         {
@@ -223,7 +222,6 @@ function plugin.init(deps)
             modifiers = {"command"},
             character = "w"
         },
-
     }
 
     --------------------------------------------------------------------------------
