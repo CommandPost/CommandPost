@@ -2,12 +2,12 @@
 ---
 --- Toolbar Module.
 
-local require = require
+local require                       = require
 
 local axutils						= require("cp.ui.axutils")
-local Button            = require("cp.ui.Button")
-local Do                = require("cp.rx.go").Do
-local Element           = require("cp.ui.Element")
+local Button                        = require("cp.ui.Button")
+local Do                            = require("cp.rx.go").Do
+local Element                       = require("cp.ui.Element")
 local prop							= require("cp.prop")
 
 
@@ -104,10 +104,6 @@ end
 
 function Toolbar.lazy.method:doHide()
     return self:parent():doHide()
-end
-
-function Toolbar.__tostring()
-    return "cp.ui.Toolbar"
 end
 
 return Toolbar
