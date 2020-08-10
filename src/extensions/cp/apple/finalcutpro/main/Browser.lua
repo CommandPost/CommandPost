@@ -77,7 +77,7 @@ end
 function Browser:initialize(app)
     local UI = prop(function()
         return axutils.cache(self, "_ui", function()
-            return _findBrowser(app:secondaryWindow(), app:primaryWindow())
+            return _findBrowser(app.secondaryWindow, app.primaryWindow)
         end,
         Browser.matches)
     end):monitor(app:toolbar().browserShowing)

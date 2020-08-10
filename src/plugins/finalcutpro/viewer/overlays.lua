@@ -1673,7 +1673,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Update Canvas one second after going full-screen:
     --------------------------------------------------------------------------------
-    fcp:primaryWindow().isFullScreen:watch(function() doAfter(1, mod.update) end)
+    fcp.primaryWindow.isFullScreen:watch(function() doAfter(1, mod.update) end)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro's Viewer is resized or moved:

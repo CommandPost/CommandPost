@@ -71,7 +71,7 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Check FCP Primary Components",
         function()
             -- Test that various UI elements are able to be found.
-            ok(fcp:primaryWindow():isShowing())
+            ok(fcp.primaryWindow:isShowing())
             ok(fcp:browser():isShowing())
             ok(fcp:timeline():isShowing())
             ok(fcp:inspector():isShowing())

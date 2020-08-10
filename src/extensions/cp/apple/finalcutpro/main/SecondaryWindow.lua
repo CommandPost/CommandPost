@@ -184,4 +184,11 @@ function SecondaryWindow.lazy.method:doShow()
     :Label("SecondaryWindow:doShow")
 end
 
+-- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)
+-- This is a bridge while we migrate to using `lazy.value` instead of `lazy.method` (or methods)
+-- in the FCPX API.
+function SecondaryWindow:__call()
+    return self
+end
+
 return SecondaryWindow

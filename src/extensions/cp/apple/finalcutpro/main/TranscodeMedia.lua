@@ -49,7 +49,7 @@ end
 --- Returns:
 ---  * The new `TranscodeMedia`.
 function TranscodeMedia:initialize(parent)
-    local UI = parent:primaryWindow().UI:mutate(function(original)
+    local UI = parent.primaryWindow.UI:mutate(function(original)
         return cache(self, "_ui", function()
             return childMatching(original(), TranscodeMedia.matches)
         end,

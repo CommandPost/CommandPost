@@ -139,9 +139,9 @@ function Viewer:initialize(app, eventViewer)
     local UI = prop(function()
         return cache(self, "_ui", function()
             if self:isMainViewer() then
-                return findViewerUI(app:secondaryWindow(), app:primaryWindow())
+                return findViewerUI(app.secondaryWindow, app.primaryWindow)
             else
-                return findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
+                return findEventViewerUI(app.secondaryWindow, app.primaryWindow)
             end
         end,
         Viewer.matches)
@@ -442,9 +442,9 @@ end
 --- * The `PrimaryWindow` or the `SecondaryWindow`.
 function Viewer:currentWindow()
     if self:isOnSecondary() then
-        return self:app():secondaryWindow()
+        return self:app().secondaryWindow
     else
-        return self:app():primaryWindow()
+        return self:app().primaryWindow
     end
 end
 

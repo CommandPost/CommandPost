@@ -757,29 +757,17 @@ function fcp.lazy.method:preferencesWindow()
     return PreferencesWindow.new(self)
 end
 
---- cp.apple.finalcutpro:primaryWindow() -> primaryWindow object
---- Method
---- Returns the Final Cut Pro Preferences Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Primary Window
-function fcp.lazy.method:primaryWindow()
+--- cp.apple.finalcutpro.primaryWindow <cp.apple.finalcutpro.main.PrimaryWindow>
+--- Field
+--- The Final Cut Pro Primary Window
+function fcp.lazy.value:primaryWindow()
     return PrimaryWindow(self)
 end
 
---- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
---- Method
---- Returns the Final Cut Pro Preferences Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Secondary Window
-function fcp.lazy.method:secondaryWindow()
+--- cp.apple.finalcutpro.secondaryWindow <cp.apple.finalcutpro.main.SecondaryWindow>
+--- Field
+--- The Final Cut Pro Preferences Window
+function fcp.lazy.value:secondaryWindow()
     return SecondaryWindow(self)
 end
 
@@ -903,7 +891,7 @@ end
 --- Returns:
 ---  * the PrimaryToolbar
 function fcp:toolbar()
-    return self:primaryWindow():toolbar()
+    return self.primaryWindow:toolbar()
 end
 
 --- cp.apple.finalcutpro.timeline <Timeline>
@@ -973,7 +961,7 @@ end
 --- Field
 --- Returns the [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
 function fcp.lazy.value:inspector()
-    return self:primaryWindow():inspector()
+    return self.primaryWindow:inspector()
 end
 
 --- cp.apple.finalcutpro:colorBoard() -> ColorBoard
@@ -986,7 +974,7 @@ end
 --- Returns:
 ---  * the ColorBoard
 function fcp.lazy.method:colorBoard()
-    return self:primaryWindow():colorBoard()
+    return self.primaryWindow:colorBoard()
 end
 
 --- cp.apple.finalcutpro:color() -> ColorInspector
@@ -999,7 +987,7 @@ end
 --- Returns:
 ---  * the ColorInspector
 function fcp.lazy.method:color()
-    return self:primaryWindow():color()
+    return self.primaryWindow:color()
 end
 
 --- cp.apple.finalcutpro:alert() -> cp.ui.Alert
@@ -1012,7 +1000,7 @@ end
 --- Returns:
 ---  * the `Alert` instance
 function fcp.lazy.method:alert()
-    return self:primaryWindow():alert()
+    return self.primaryWindow:alert()
 end
 
 ----------------------------------------------------------------------------------------

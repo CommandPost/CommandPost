@@ -112,10 +112,10 @@ function Timeline:initialize(app)
 
     local UI = app.UI:mutate(function()
         return cache(self, "_ui", function()
-            return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
+            return Timeline._findTimeline(app.secondaryWindow, app.primaryWindow)
         end,
         Timeline.matches)
-    end):monitor(app:primaryWindow().UI, app:secondaryWindow().UI)
+    end):monitor(app.primaryWindow.UI, app.secondaryWindow.UI)
 
     Element.initialize(self, app, UI)
 end
