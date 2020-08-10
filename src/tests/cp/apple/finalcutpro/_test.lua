@@ -166,7 +166,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             _, err = export:show(1, false, true, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
-            ok(eq(fcp:alert():isShowing(), false))
+            ok(eq(fcp.alert:isShowing(), false))
 
             -- reset proxies mode
             fcp:viewer():usingProxies(false)

@@ -324,16 +324,10 @@ function Window.lazy.method:doRaise()
     :Label("Window:doRaise")
 end
 
---- cp.ui.Window:alert() -> cp.ui.Alert
---- Method
+--- cp.ui.Window.alert <cp.ui.Alert>
+--- Field
 --- Provides access to any 'Alert' windows on the Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `cp.ui.Alert` object
-function Window.lazy.method:alert()
+function Window.lazy.value:alert()
     return Alert(self)
 end
 

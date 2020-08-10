@@ -135,7 +135,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             --------------------------------------------------------------------------------
             -- Successfully selected the share menu item:
             --------------------------------------------------------------------------------
-            local alert = fcp:alert()
+            local alert = fcp.alert
 
             local missingMediaString = fcp:string("FFMissingMediaMessageText")
             local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")

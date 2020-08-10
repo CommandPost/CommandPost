@@ -966,17 +966,11 @@ function fcp.lazy.method:color()
     return self.primaryWindow:color()
 end
 
---- cp.apple.finalcutpro:alert() -> cp.ui.Alert
---- Method
+--- cp.apple.finalcutpro.alert <cp.ui.Alert>
+--- Field
 --- Provides basic access to any 'alert' dialog windows in the app.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the `Alert` instance
-function fcp.lazy.method:alert()
-    return self.primaryWindow:alert()
+function fcp.lazy.value:alert()
+    return self.primaryWindow.alert
 end
 
 ----------------------------------------------------------------------------------------

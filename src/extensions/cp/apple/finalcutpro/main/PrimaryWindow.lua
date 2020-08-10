@@ -359,17 +359,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:alert() -> cp.ui.Alert
---- Method
+--- cp.apple.finalcutpro.main.PrimaryWindow.alert <cp.ui.Alert>
+--- Valuie
 --- Provides access to any 'Alert' windows on the PrimaryWindow.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `cp.ui.Alert` object
-function PrimaryWindow.lazy.method:alert()
-    return self:window():alert()
+function PrimaryWindow.lazy.value:alert()
+    return self:window().alert
 end
 
 -- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)
