@@ -7,7 +7,6 @@ local require = require
 -- local log								= require "hs.logger".new("PrimaryToolbar")
 
 local axutils							= require "cp.ui.axutils"
-local prop								= require "cp.prop"
 
 local Button							= require "cp.ui.Button"
 local CheckBox							= require "cp.ui.CheckBox"
