@@ -60,4 +60,34 @@ function TextArea.lazy.prop:focused()
     return axutils.prop(self.UI, "AXFocused", true)
 end
 
+--- cp.ui.TextArea:append(moreText) -> string
+--- Method
+--- Appends `moreText` to the end of the current value, returning the combined text value. If no text is currently set, `moreText` becomes the value.
+---
+--- Parameters:
+---  * moreText - The text to add.
+---
+--- Returns:
+---  * The combined `string` value.
+function TextArea:append(moreText)
+    local value = self:value() or ""
+    self.value:set(value .. moreText)
+    return self:value()
+end
+
+--- cp.ui.TextArea:prepend(moreText) -> string
+--- Method
+--- Appends `moreText` to the beginning of the current value, returning the combined text value. If no text is currently set, `moreText` becomes the value.
+---
+--- Parameters:
+---  * moreText - The text to add.
+---
+--- Returns:
+---  * The combined `string` value.
+function TextArea:prepend(moreText)
+    local value = self:value() or ""
+    self.value:set(moreText .. value)
+    return self:value()
+end
+
 return TextArea

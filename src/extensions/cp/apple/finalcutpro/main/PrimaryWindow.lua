@@ -2,23 +2,22 @@
 ---
 --- Primary Window Module.
 
-local require = require
+local require           = require
 
--- local log							= require("hs.logger").new("primaryWindow")
+--local log               = require "hs.logger".new "primaryWindow"
 
-local axutils						= require("cp.ui.axutils")
+local axutils           = require "cp.ui.axutils"
 
-local Window						= require("cp.ui.Window")
+local Window            = require "cp.ui.Window"
 
-local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
-local PrimaryToolbar				= require("cp.apple.finalcutpro.main.PrimaryToolbar")
+local Inspector         = require "cp.apple.finalcutpro.inspector.Inspector"
+local PrimaryToolbar    = require "cp.apple.finalcutpro.main.PrimaryToolbar"
 
-local Do                            = require("cp.rx.go.Do")
-local If                            = require("cp.rx.go.If")
+local Do                = require "cp.rx.go.Do"
+local If                = require "cp.rx.go.If"
 
-local class                         = require("middleclass")
-local lazy                          = require("cp.lazy")
-
+local class             = require "middleclass"
+local lazy              = require "cp.lazy"
 
 local PrimaryWindow = class("PrimaryWindow"):include(lazy)
 
@@ -338,7 +337,6 @@ end
 -- VIEWER:
 --
 -----------------------------------------------------------------------
-
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:toolbar() -> PrimaryToolbar
 --- Method
