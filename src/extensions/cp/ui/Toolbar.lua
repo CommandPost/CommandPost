@@ -4,11 +4,11 @@
 
 local require                       = require
 
-local axutils						= require("cp.ui.axutils")
-local Button                        = require("cp.ui.Button")
-local Do                            = require("cp.rx.go").Do
-local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
+local axutils						= require "cp.ui.axutils"
+local Button                        = require "cp.ui.Button"
+local Do                            = require "cp.rx.go.Do"
+local Element                       = require "cp.ui.Element"
+local prop							= require "cp.prop"
 
 
 local Toolbar = Element:subclass("cp.ui.Toolbar")
