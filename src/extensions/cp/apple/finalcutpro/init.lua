@@ -835,16 +835,10 @@ function fcp.lazy.method:mediaImport()
     return MediaImport.new(self)
 end
 
---- cp.apple.finalcutpro:exportDialog() -> exportDialog object
---- Method
---- Returns the Final Cut Pro Export Dialog Box
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Export Dialog Box
-function fcp.lazy.method:exportDialog()
+--- cp.apple.finalcutpro.exportDialog <cp.apple.finalcutpro.main.ExportDialog>
+--- Field
+--- The Final Cut Pro Export Dialog Box
+function fcp.lazy.value:exportDialog()
     return ExportDialog(self)
 end
 

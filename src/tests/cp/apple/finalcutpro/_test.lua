@@ -145,7 +145,7 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Export Dialog",
         function()
             local _, err
-            local export = fcp:exportDialog()
+            local export = fcp.exportDialog
             -- Export Dialog
             ok(not export:isShowing())
             export:show(1, true, true, true)

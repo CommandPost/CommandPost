@@ -285,7 +285,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
-            local exportDialog = fcp:exportDialog()
+            local exportDialog = fcp.exportDialog
             local errorMessage
             _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
             if errorMessage then
@@ -295,7 +295,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Get the file extension for later:
             --------------------------------------------------------------------------------
-            local fileExtension = exportDialog:fileExtension():value()
+            local fileExtension = exportDialog:fileExtension()
 
             --------------------------------------------------------------------------------
             -- Press 'Next':
@@ -305,7 +305,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- If 'Next' has been clicked (as opposed to 'Share'):
             --------------------------------------------------------------------------------
-            local saveSheet = exportDialog:saveSheet()
+            local saveSheet = exportDialog.saveSheet
             if exportDialog:isShowing() then
 
                 --------------------------------------------------------------------------------

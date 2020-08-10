@@ -149,19 +149,19 @@ function Window.lazy.prop:modal()
     return axutils.prop(self.UI, "AXModal")
 end
 
-function Window.lazy.method:closeButton()
+function Window.lazy.value:closeButton()
     return Button(self.UI, "AXCloseButton")
 end
 
-function Window.lazy.method:minimizeButton()
+function Window.lazy.value:minimizeButton()
     return Button(self.UI, "AXMinimizeButton")
 end
 
-function Window.lazy.method:fullScreenButton()
+function Window.lazy.value:fullScreenButton()
     return Button(self.UI, "AXFullScreenButton")
 end
 
-function Window.lazy.method:zoomButton()
+function Window.lazy.value:zoomButton()
     return Button(self.UI, "AXZoomButton")
 end
 
@@ -409,5 +409,14 @@ function Window:__tostring()
     local label = title or "[Untitled]"
     return format("%s: %s (%s)", self.class.name, label, self:app())
 end
+
+
+-- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)
+-- This is a bridge while we migrate to using `lazy.value` instead of `lazy.method` (or methods)
+-- in the FCPX API.
+function Window:__call()
+    return self
+end
+
 
 return Window
