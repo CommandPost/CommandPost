@@ -44,6 +44,8 @@ local prop                      = require "cp.prop"
 local tools                     = require "cp.tools"
 
 local moses                     = require "moses"
+local class                     = require "middleclass"
+local lazy                      = require "cp.lazy"
 
 local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
@@ -55,9 +57,7 @@ local sort                      = table.sort
 local spairs                    = tools.spairs
 local uuid                      = host.uuid
 
-local activator = {}
-activator.mt = {}
-activator.mt.__index = activator.mt
+local activator = class("core.action.activator"):include(lazy)
 
 -- PACKAGE -> string
 -- Constant
@@ -92,51 +92,59 @@ end
 -- plugins.core.action.activator.new(id, manager)
 -- Constructor
 -- Creates a new `activator` instance with the specified ID and action manager
-function activator.new(id, manager)
+function activator:initialize(id, manager)
+    self._id = id
+    self._manager = manager
+    self._chooser = nil
+    self._prefix = PACKAGE .. id .. "."
+end
 
-    local prefix = PACKAGE .. id .. "."
+--- plugins.core.action.activator.searchSubText <cp.prop: boolean>
+--- Field
+--- If `true`, allow users to search the subtext value.
+function activator.lazy.prop:searchSubText()
+    return config.prop(self._prefix .. "searchSubText", true)
+end
 
-    local o = prop.extend({
-        _id             = id,
-        _manager        = manager,
-        _chooser        = nil,      -- the actual hs.chooser
-    }, activator.mt)
+--- plugins.core.action.activator.lastQueryRemembered <cp.prop: boolean>
+--- Field
+--- If `true`, remember the last query.
+function activator.lazy.prop:lastQueryRemembered()
+    return config.prop(self._prefix .. "lastQueryRemembered", true)
+end
 
-    --- plugins.core.action.activator.searchSubText <cp.prop: boolean>
-    --- Field
-    --- If `true`, allow users to search the subtext value.
-    o.searchSubText = config.prop(prefix .. "searchSubText", true):bind(o)
+--- plugins.core.action.activator.lastQueryValue <cp.prop: string>
+--- Field
+--- The last query value.
+function activator.lazy.prop:lastQueryValue()
+    return config.prop(self._prefix .. "lastQueryValue", "")
+end
 
-    --- plugins.core.action.activator.lastQueryRemembered <cp.prop: boolean>
-    --- Field
-    --- If `true`, remember the last query.
-    o.lastQueryRemembered = config.prop(prefix .. "lastQueryRemembered", true):bind(o)
-
-    --- plugins.core.action.activator.lastQueryValue <cp.prop: string>
-    --- Field
-    --- The last query value.
-    o.lastQueryValue = config.prop(prefix .. "lastQueryValue", ""):bind(o)
-
-    --- plugins.core.action.activator.showHidden <cp.prop: boolean>
-    --- Field
-    --- If `true`, hidden items are shown.
-    o.showHidden = config.prop(prefix .. "showHidden", false):bind(o)
+--- plugins.core.action.activator.showHidden <cp.prop: boolean>
+--- Field
+--- If `true`, hidden items are shown.
+function activator.lazy.prop:showHidden()
+    return config.prop(self._prefix .. "showHidden", false)
     -- refresh the chooser list if this status changes.
-    :watch(function() o:refreshChooser() end)
+    :watch(function() self:refreshChooser() end)
+end
 
-    -- plugins.core.action.activator._allowedHandlers <cp.prop: string>
-    -- Field
-    -- The ID of a single handler to source
-    o._allowedHandlers = prop.THIS(nil):bind(o)
+-- plugins.core.action.activator._allowedHandlers <cp.prop: string>
+-- Field
+-- The ID of a single handler to source
+function activator.lazy.prop._allowedHandlers()
+    return prop.THIS(nil)
+end
 
-    --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
-    --- Field
-    --- Contains all handlers that are allowed in this activator.
-    o.allowedHandlers = o._manager.handlers:mutate(
+--- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
+--- Field
+--- Contains all handlers that are allowed in this activator.
+function activator.lazy.prop:allowedHandlers()
+    return self._manager.handlers:mutate(
         function(original)
             local handlers = original()
             local allowed = {}
-            local allowedIds = o:_allowedHandlers()
+            local allowedIds = self:_allowedHandlers()
 
             for theID,handler in pairs(handlers) do
                 if allowedIds == nil or allowedIds[theID] then
@@ -146,26 +154,30 @@ function activator.new(id, manager)
 
             return allowed
         end
-    ):bind(o)
+    )
+end
 
-    -- plugins.core.action.activator._disabledHandlers <cp.prop: table of booleans>
-    -- Field
-    -- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
-    o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(o)
-    :watch(function() o:refreshChooser() end)
+-- plugins.core.action.activator._disabledHandlers <cp.prop: table of booleans>
+-- Field
+-- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
+function activator.lazy.prop:_disabledHandlers()
+    return config.prop(self._prefix .. "disabledHandlers", {})
+    :watch(function() self:refreshChooser() end)
+end
 
-    --- plugins.core.action.activator.activeHandlers <cp.prop: table of handlers>
-    --- Field
-    --- Contains the table of active handlers. A handler is active if it is both allowed and enabled.
-    --- The handler ID is the key, so use `pairs` to iterate the list. E.g.:
-    ---
-    --- ```lua
-    --- for id,handler in pairs(activator:activeHandlers()) do
-    ---     ...
-    --- end
-    --- ```
-    o.activeHandlers = prop(function(self)
-        local handlers = self:allowedHandlers()
+--- plugins.core.action.activator.activeHandlers <cp.prop: table of handlers>
+--- Field
+--- Contains the table of active handlers. A handler is active if it is both allowed and enabled.
+--- The handler ID is the key, so use `pairs` to iterate the list. E.g.:
+---
+--- ```lua
+--- for id,handler in pairs(activator:activeHandlers()) do
+---     ...
+--- end
+--- ```
+function activator.lazy.prop:activeHandlers()
+    return self.allowedHandlers:mutate(function(original)
+        local handlers = original()
         local result = {}
 
         local disabled = self._disabledHandlers()
@@ -176,42 +188,49 @@ function activator.new(id, manager)
         end
 
         return result
-    end):bind(o)
-    :monitor(o._disabledHandlers)
-    :monitor(manager.handlers)
+    end)
+    :monitor(self._disabledHandlers)
+end
 
-    --- plugins.core.action.activator.query <cp.prop: string>
-    --- Field
-    --- The current "query" value for the activator.
-    o.query = prop.THIS(nil):bind(o)
-    :watch(function() doAfter(0, function() o:refreshChooser() end) end)
+--- plugins.core.action.activator.query <cp.prop: string>
+--- Field
+--- The current "query" value for the activator.
+function activator.lazy.prop:query()
+    return prop.THIS(nil)
+    :watch(function() doAfter(0, function() self:refreshChooser() end) end)
+end
 
-    --- plugins.core.action.activator.hiddenChoices <cp.prop: table of booleans>
-    --- Field
-    --- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
-    --- If set to `true`, the choice is hidden.
-    o.hiddenChoices = config.prop(prefix .. "hiddenChoices", {}):cached():bind(o)
+--- plugins.core.action.activator.hiddenChoices <cp.prop: table of booleans>
+--- Field
+--- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
+--- If set to `true`, the choice is hidden.
+function activator.lazy.prop:hiddenChoices()
+    return config.prop(self._prefix .. "hiddenChoices", {}):cached()
+end
 
-    --- plugins.core.action.activator.favoriteChoices <cp.prop: table of booleans>
-    --- Field
-    --- Contains the set of choice IDs which are favorites in this activator, mapped to a boolean value.
-    --- If set to `true`, the choice is a favorite.
-    o.favoriteChoices = config.prop(prefix .. "favoriteChoices", {}):cached():bind(o)
-    :watch(function() doAfter(1.0, function() o:sortChoices() end) end)
+--- plugins.core.action.activator.favoriteChoices <cp.prop: table of booleans>
+--- Field
+--- Contains the set of choice IDs which are favorites in this activator, mapped to a boolean value.
+--- If set to `true`, the choice is a favorite.
+function activator.lazy.prop:favoriteChoices()
+    return config.prop(self._prefix .. "favoriteChoices", {}):cached()
+    :watch(function() doAfter(1.0, function() self:sortChoices() end) end)
+end
 
-    --- plugins.core.action.activator.popularChoices <cp.prop: table of integers>
-    --- Field
-    --- Keeps track of how popular particular choices are. Returns a table of choice IDs
-    --- mapped to the number of times they have been activated.
-    o.popularChoices = config.prop(prefix .. "popularChoices", {}):cached():bind(o)
-    :watch(function() doAfter(1.0, function() o:sortChoices() end) end)
+--- plugins.core.action.activator.popularChoices <cp.prop: table of integers>
+--- Field
+--- Keeps track of how popular particular choices are. Returns a table of choice IDs
+--- mapped to the number of times they have been activated.
+function activator.lazy.prop:popularChoices()
+    return config.prop(self._prefix .. "popularChoices", {}):cached()
+    :watch(function() doAfter(1.0, function() self:sortChoices() end) end)
+end
 
-    --- plugins.core.action.activator.configurable <cp.prop: boolean>
-    --- Field
-    --- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
-    o.configurable = config.prop(prefix .. "configurable", true):cached():bind(o)
-
-    return o
+--- plugins.core.action.activator.configurable <cp.prop: boolean>
+--- Field
+--- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
+function activator.lazy.prop:configurable()
+    return config.prop(self._prefix .. "configurable", true):cached()
 end
 
 --- plugins.core.action.activator:preloadChoices([afterSeconds]) -> activator
@@ -224,7 +243,7 @@ end
 ---
 --- Returns:
 ---  * The activator.
-function activator.mt:preloadChoices(afterSeconds)
+function activator:preloadChoices(afterSeconds)
     afterSeconds = afterSeconds or 0
     idle.queue(afterSeconds, function()
         -- log.df("Preloading choices for '%s'", self._id)
@@ -242,7 +261,7 @@ end
 ---
 --- Returns:
 ---  * The activator ID.
-function activator.mt:id()
+function activator:id()
     return self._id
 end
 
@@ -255,7 +274,7 @@ end
 ---
 --- Returns:
 ---  * The action handler, or `nil`.
-function activator.mt:getActiveHandler(id)
+function activator:getActiveHandler(id)
     return self:activeHandlers()[id]
 end
 
@@ -269,7 +288,7 @@ end
 ---
 --- Returns:
 ---  * Self
-function activator.mt:allowHandlers(...)
+function activator:allowHandlers(...)
     local allowed = {}
     for _,id in ipairs(pack(...)) do
         if self._manager.getHandler(id) then
@@ -292,7 +311,7 @@ end
 ---
 --- Returns:
 ---  * Self
-function activator.mt:toolbarIcons(toolbarIcons)
+function activator:toolbarIcons(toolbarIcons)
     self._toolbarIcons = toolbarIcons
     return self
 end
@@ -306,7 +325,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the handler exists and was disabled.
-function activator.mt:disableHandler(id)
+function activator:disableHandler(id)
     if self._manager.getHandler(id) == nil then
         return false
     end
@@ -326,7 +345,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the handler exists and was enabled.
-function activator.mt:enableHandler(id)
+function activator:enableHandler(id)
     if self._manager.getHandler(id) == nil then
         return false
     end
@@ -346,7 +365,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:enableAllHandlers()
+function activator:enableAllHandlers()
     self._disabledHandlers:set(nil)
     self:refreshChooser()
 end
@@ -360,7 +379,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:disableAllHandlers()
+function activator:disableAllHandlers()
     local dh = {}
     for id,_ in pairs(self:allowedHandlers()) do
         dh[id] = true
@@ -378,7 +397,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the handler is disabled.
-function activator.mt:isDisabledHandler(id)
+function activator:isDisabledHandler(id)
     local dh = self:_disabledHandlers()
     return dh[id] == true
 end
@@ -392,7 +411,7 @@ end
 ---
 --- Returns:
 ---  * The choice or `nil` if not found
-function activator.mt:findChoice(id)
+function activator:findChoice(id)
     for _,choice in ipairs(self:allChoices()) do
         if choice.id == id then
             return choice
@@ -410,7 +429,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successfully hidden otherwise `false`.
-function activator.mt:hideChoice(id)
+function activator:hideChoice(id)
     if id then
         --------------------------------------------------------------------------------
         -- Update the list of hidden choices:
@@ -439,7 +458,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successfully unhidden otherwise `false`.
-function activator.mt:unhideChoice(id)
+function activator:unhideChoice(id)
     if id then
         local hidden = self:hiddenChoices()
         hidden[id] = nil
@@ -466,7 +485,7 @@ end
 ---
 --- Returns:
 ---  * `true` if currently hidden otherwise `false`.
-function activator.mt:isHiddenChoice(id)
+function activator:isHiddenChoice(id)
     return self:hiddenChoices()[id] == true
 end
 
@@ -479,7 +498,7 @@ end
 ---
 --- Returns:
 ---  * `true` if currently hidden.
-function activator.mt:isFavoriteChoice(id)
+function activator:isFavoriteChoice(id)
     local favorites = self:favoriteChoices()
     return id and favorites and favorites[id] == true
 end
@@ -493,7 +512,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successfully favorited otherwise `false`.
-function activator.mt:favoriteChoice(id)
+function activator:favoriteChoice(id)
     if id then
         local favorites = self:favoriteChoices()
         favorites[id] = true
@@ -519,7 +538,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successfully unfavorited.
-function activator.mt:unfavoriteChoice(id)
+function activator:unfavoriteChoice(id)
     if id then
         local favorites = self:favoriteChoices()
         favorites[id] = nil
@@ -544,7 +563,7 @@ end
 ---
 --- Returns:
 ---  * The number of times the choice has been executed.
-function activator.mt:getPopularity(id)
+function activator:getPopularity(id)
     if id then
         local index = self:popularChoices()
         return index[id] or 0
@@ -562,7 +581,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successfully unfavourited, otherwise `false`.
-function activator.mt:incPopularity(choice, id)
+function activator:incPopularity(choice, id)
     if id then
         local index = self:popularChoices()
         local pop = (index[id] or 0) + 1
@@ -666,7 +685,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the action executed successfully, otherwise `false`.
-function activator.mt:sortChoices()
+function activator:sortChoices()
     if self._choices then
         return _sortChoices(self._choices)
     end
@@ -683,7 +702,7 @@ end
 ---
 --- Returns:
 ---  * Table of choices that can be displayed by an `hs.chooser`.
-function activator.mt:allChoices()
+function activator:allChoices()
     if not self._choices then
         self:_findChoices():After(5)
     end
@@ -701,7 +720,7 @@ end
 ---
 --- Returns:
 ---  * Table of choices that can be displayed by an `hs.chooser`.
-function activator.mt:activeChoices()
+function activator:activeChoices()
     local showHidden = self:showHidden()
     local disabledHandlers = self:_disabledHandlers()
     local query = self:query()
@@ -749,7 +768,7 @@ local LOADING_CHOICES = {
 --
 -- Returns:
 --  * None
-function activator.mt:_findChoices()
+function activator:_findChoices()
 
     self._choices = LOADING_CHOICES
 
@@ -808,7 +827,7 @@ end
 --
 -- Returns:
 --  * None
-function activator.mt:refresh()
+function activator:refresh()
     self._choices = nil
 end
 
@@ -819,7 +838,7 @@ activator.reducedTransparency = prop.new(function()
     return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
-function activator.mt:updateSelectedToolbarIcon()
+function activator:updateSelectedToolbarIcon()
     --------------------------------------------------------------------------------
     -- Update toolbar icons:
     --------------------------------------------------------------------------------
@@ -860,7 +879,7 @@ end
 ---
 --- Returns:
 ---  * A `hs.chooser` object
-function activator.mt:chooser()
+function activator:chooser()
 
     --------------------------------------------------------------------------------
     -- Reload Console if Reduce Transparency has been toggled:
@@ -1063,7 +1082,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:refreshChooser()
+function activator:refreshChooser()
     local theChooser = self:chooser()
     if theChooser then
         theChooser:refreshChoicesCallback(true)
@@ -1079,7 +1098,7 @@ end
 ---
 --- Returns:
 ---  * A boolean, `true` if the chooser is displayed on screen, `false` if not.
-function activator.mt:isVisible()
+function activator:isVisible()
     local theChooser = self:chooser()
     return theChooser and theChooser:isVisible()
 end
@@ -1094,7 +1113,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful
-function activator.mt:show()
+function activator:show()
 
     --------------------------------------------------------------------------------
     -- Get Chooser:
@@ -1151,7 +1170,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:hide()
+function activator:hide()
     local theChooser = self:chooser()
     if theChooser then
 
@@ -1179,7 +1198,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:toggle()
+function activator:toggle()
     if self:isVisible() then
         self:hide()
     else
@@ -1204,7 +1223,7 @@ end
 ---
 --- Returns:
 ---  * The activator.
-function activator.mt:onActivate(activateFn)
+function activator:onActivate(activateFn)
     self._onActivate = activateFn
     return self
 end
@@ -1220,7 +1239,7 @@ end
 --
 -- Returns:
 --  * `true` is successful otherwise `false`
-function activator.mt._onActivate(handler, action, text)
+function activator._onActivate(handler, action, text)
     if handler:execute(action) then
         return true
     else
@@ -1238,7 +1257,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:activate(result)
+function activator:activate(result)
     self:hide()
     --------------------------------------------------------------------------------
     -- If something was selected:
@@ -1267,7 +1286,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:rightClickMain(index)
+function activator:rightClickMain(index)
     self:rightClickAction(index, true)
 end
 
@@ -1280,7 +1299,7 @@ end
 ---
 --- Returns:
 ---  * None
-function activator.mt:rightClickAction(index)
+function activator:rightClickAction(index)
 
     local theChooser = self:chooser()
 
