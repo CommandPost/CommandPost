@@ -33,11 +33,7 @@ local Throw                 = go.Throw
 local Given                 = go.Given
 local Done                  = go.Done
 
-local Inspector = Element:subclass("Inspector")
-
-function Inspector.__tostring()
-    return "cp.apple.finalcutpro.inspector.Inspector"
-end
+local Inspector = Element:subclass("cp.apple.finalcutpro.inspector.Inspector")
 
 --- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant

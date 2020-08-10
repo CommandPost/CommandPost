@@ -74,7 +74,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(fcp.primaryWindow:isShowing())
             ok(fcp:browser():isShowing())
             ok(fcp:timeline():isShowing())
-            ok(fcp:inspector():isShowing())
+            ok(fcp.inspector:isShowing())
             ok(fcp:viewer():isShowing())
             ok(not fcp:eventViewer():isShowing())
         end
@@ -240,7 +240,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Inspector",
         function()
-            local inspector = fcp:inspector()
+            local inspector = fcp.inspector
             inspector:show()
             just.doUntil(
                 function()
@@ -265,7 +265,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- select the first clip.
             tc:selectClip(clips[1])
 
-            local color = fcp:inspector():color()
+            local color = fcp.inspector:color()
             color:show()
             just.doUntil(function() return color:isShowing() end, 1)
             ok(color:isShowing())
@@ -288,7 +288,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             tc:selectClip(clips[1])
 
             -- activate the colour inspector
-            local color = fcp:inspector():color()
+            local color = fcp.inspector:color()
             local corrections = color:corrections()
             corrections:show()
 
@@ -364,13 +364,13 @@ return test.suite("cp.apple.finalcutpro"):with(
             end
 
             -- check at full height
-            fcp:inspector():isFullHeight(true)
+            fcp.inspector:isFullHeight(true)
             testAspect(colorBoard:color(), true)
             testAspect(colorBoard:saturation(), false)
             testAspect(colorBoard:exposure(), false)
 
             -- and half-height (in some versions of FCP, puck property rows are hidden unless selected.)
-            -- fcp:inspector():isFullHeight(false)
+            -- fcp.inspector:isFullHeight(false)
             -- testAspect(colorBoard:color(), true)
             -- testAspect(colorBoard:saturation(), false)
             -- testAspect(colorBoard:exposure(), false)

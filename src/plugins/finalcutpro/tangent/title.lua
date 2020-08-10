@@ -37,7 +37,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- GENERATOR INSPECTOR:
     --------------------------------------------------------------------------------
-    local title                     = fcp:inspector():title()
+    local title                     = fcp.inspector:title()
     local titleGroup                = fcpGroup:group(i18n("title") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

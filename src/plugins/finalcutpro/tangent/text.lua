@@ -44,7 +44,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- TEXT INSPECTOR:
     --------------------------------------------------------------------------------
-    local text = fcp:inspector():text()
+    local text = fcp.inspector:text()
     local textGroup = fcpGroup:group(i18n("text") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

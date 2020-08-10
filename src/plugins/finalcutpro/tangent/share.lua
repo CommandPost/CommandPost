@@ -37,7 +37,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- GENERATOR INSPECTOR:
     --------------------------------------------------------------------------------
-    local share                     = fcp:inspector():share()
+    local share                     = fcp.inspector:share()
     local shareGroup                = fcpGroup:group(i18n("share") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

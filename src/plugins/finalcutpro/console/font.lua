@@ -125,7 +125,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Make sure Inspector is open:
         --------------------------------------------------------------------------------
-        local inspector = fcp:inspector()
+        local inspector = fcp.inspector
         inspector:show()
         if not just.doUntil(function() return inspector:isShowing() end) then
             displayErrorMessage("Failed to open the Inspector.")
@@ -208,7 +208,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- Show the Inspector:
     --------------------------------------------------------------------------------
-    local inspector = fcp:inspector()
+    local inspector = fcp.inspector
     inspector:show()
     if not just.doUntil(function() return inspector:isShowing() end) then
         displayErrorMessage("Failed to open the Inspector.")

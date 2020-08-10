@@ -937,7 +937,7 @@ end
 --- Field
 --- Returns the [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
 function fcp.lazy.value:inspector()
-    return self.primaryWindow:inspector()
+    return self.primaryWindow.inspector
 end
 
 --- cp.apple.finalcutpro:colorBoard() -> ColorBoard

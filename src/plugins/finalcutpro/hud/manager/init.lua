@@ -248,7 +248,7 @@ local function windowCallback(action, _, frame)
             local browserUI = fcp:browser():UI()
             local browserFrame = browserUI and browserUI:attributeValue("AXFrame")
 
-            local inspectorUI = fcp:inspector():UI()
+            local inspectorUI = fcp.inspector:UI()
             local inspectorFrame = inspectorUI and inspectorUI:attributeValue("AXFrame")
 
             local newFrame = frame

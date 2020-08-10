@@ -301,16 +301,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:inspector() -> Inspector
---- Method
---- Gets the Inspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Inspector
-function PrimaryWindow.lazy.method:inspector()
+--- cp.apple.finalcutpro.main.PrimaryWindow.inspector <Inspector>
+--- Field
+--- The Inspector object.
+function PrimaryWindow.lazy.value:inspector()
     return Inspector(self)
 end
 
@@ -330,7 +324,7 @@ end
 --- Returns:
 ---  * ColorBoard
 function PrimaryWindow.lazy.method:colorBoard()
-    return self:inspector():color():colorBoard()
+    return self.inspector:color():colorBoard()
 end
 
 -----------------------------------------------------------------------

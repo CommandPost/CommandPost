@@ -37,7 +37,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- INFO INSPECTOR:
     --------------------------------------------------------------------------------
-    local info                     = fcp:inspector():info()
+    local info                     = fcp.inspector:info()
     local infoGroup                = fcpGroup:group(i18n("info") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
