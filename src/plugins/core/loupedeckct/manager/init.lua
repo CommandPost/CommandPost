@@ -257,7 +257,7 @@ end
 --- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
 --- Field
 --- Enable or disable the Loupedeck CT Flash Drive.
-mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(function(enabled)
+mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", false):watch(function(enabled)
     ct.updateFlashDrive(enabled)
     if not enabled then
         local path = getFlashDrivePath()
@@ -270,7 +270,7 @@ end)
 --- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
 --- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", true):watch(function() mod.refresh() end)
+mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", false):watch(function() mod.refresh() end)
 
 --- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
