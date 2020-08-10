@@ -274,7 +274,8 @@ local function loupedeckPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
                     --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
+                    local appActivator = mod._actionmanager.getActivator("loupedeckPlusPreferences" .. groupID)
+                    mod.activator[groupID] = appActivator
 
                     --------------------------------------------------------------------------------
                     -- Restrict Allowed Handlers for Activator to current group (and global):
@@ -292,8 +293,7 @@ local function loupedeckPanelCallback(id, params)
                         end
                     end
                     local unpack = table.unpack
-                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
+                    appActivator:allowHandlers(unpack(allowedHandlers))
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:
@@ -301,7 +301,7 @@ local function loupedeckPanelCallback(id, params)
                     local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
                     local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
                     local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                    mod.activator[groupID]:toolbarIcons(searchConsoleToolbar)
+                    appActivator:toolbarIcons(searchConsoleToolbar)
                 end
             end
 
