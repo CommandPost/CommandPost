@@ -610,7 +610,6 @@ local function loupedeckCTPanelCallback(id, params)
                     end
                     local unpack = table.unpack
                     mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:

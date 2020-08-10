@@ -225,6 +225,7 @@ end
 function activator.mt:preloadChoices(afterSeconds)
     afterSeconds = afterSeconds or 0
     idle.queue(afterSeconds, function()
+        log.df("Preloading choices for '%s'", self._id)
         self:allChoices()
     end)
     return self
@@ -771,9 +772,7 @@ function activator.mt:_findChoices()
                 end
 
                 concat(result, choicesTable)
-                -- update the chooser after each handler is loaded
-                self:refreshChooser()
-            end
+        end
             --------------------------------------------------------------------------------
             -- Check if we should watch the handler choices:
             --------------------------------------------------------------------------------
