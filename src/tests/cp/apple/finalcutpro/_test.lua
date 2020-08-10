@@ -453,9 +453,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline Appearance",
         function()
-            local appearance = fcp:timeline():toolbar():appearance()
+            local appearanceToggle = fcp.timeline.toolbar.appearanceToggle
+            local appearance = fcp.timeline.toolbar.appearance
 
-            ok(appearance:toggle():isShowing())
+            ok(appearanceToggle:isShowing())
             ok(not appearance:isShowing())
             ok(not appearance:clipHeight():isShowing())
 
@@ -477,7 +478,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline Contents",
         function()
-            local contents = fcp:timeline():contents()
+            local contents = fcp.timeline.contents
 
             ok(contents:isShowing())
             ok(contents:scrollAreaUI() ~= nil)
@@ -486,10 +487,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline Toolbar",
         function()
-            local toolbar = fcp:timeline():toolbar()
+            local toolbar = fcp.timeline.toolbar
 
             local skimmingId, effectsGroup
-            local version = fcp.version()
+            local version = fcp:version()
 
             ok(version and type(version) == "table")
 
@@ -509,11 +510,11 @@ return test.suite("cp.apple.finalcutpro"):with(
             end
 
             ok(toolbar:isShowing())
-            ok(toolbar:skimming():UI() ~= nil)
-            ok(skimmingId and toolbar:skimming():UI():attributeValue("AXIdentifier") == skimmingId)
+            ok(toolbar.skimming:UI() ~= nil)
+            ok(skimmingId and toolbar.skimming:UI():attributeValue("AXIdentifier") == skimmingId)
 
-            ok(toolbar:effectsGroup():UI() ~= nil)
-            ok(effectsGroup and toolbar:effectsGroup():UI():attributeValue("AXIdentifier") == effectsGroup)
+            ok(toolbar.effectsGroup:UI() ~= nil)
+            ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(

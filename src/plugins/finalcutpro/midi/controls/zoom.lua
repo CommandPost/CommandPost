@@ -16,12 +16,15 @@ local rescale           = tools.rescale
 local function createAbsoluteMIDIZoomSlider()
     local value
 
+    local appearance = fcp.timeline.toolbar.appearance
+
     local hide = deferred.new(1.5):action(function()
-        fcp:timeline():toolbar():appearance():hide()
+        appearance:hide()
     end)
 
     local updateUI = deferred.new(0.01):action(function()
-        fcp:timeline():toolbar():appearance():zoomAmount():show():value(value)
+        appearance.show()
+        appearance.zoomAmount(value)
         hide()
     end)
     return function(metadata)

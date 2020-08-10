@@ -89,19 +89,12 @@ function Playhead:initialize(parent, skimming, containerUI, useEventViewer)
     Element.initialize(self, parent, UI)
 end
 
-function Playhead.lazy.method:viewer()
-    return self:app():viewer()
+function Playhead.lazy.value:viewer()
+    return self:app().viewer
 end
 
-function Playhead.lazy.method:eventViewer()
-    return self:app():eventViewer()
-end
-
---- cp.apple.finalcutpro.main.Playhead.isShowing <cp.prop: boolean; read-only; live?>
---- Field
---- Is the playhead showing?
-function Playhead.lazy.prop:isShowing()
-    return self.UI:ISNOT(nil)
+function Playhead.lazy.value:eventViewer()
+    return self:app().eventViewer
 end
 
 --- cp.apple.finalcutpro.main.Playhead.isPersistent <cp.prop: boolean; read-only>
@@ -115,7 +108,7 @@ end
 --- Field
 --- Gets the frame of the playhead.
 function Playhead.lazy.prop:frame()
-    return  self.UI:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and ui:frame()
     end)
@@ -177,19 +170,6 @@ function Playhead.lazy.prop:timecode()
         timecode:monitor(self:eventViewer().timecode)
     end
     return timecode
-end
-
---- cp.apple.finalcutpro.main.Playhead:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function Playhead:app()
-    return self:parent():app()
 end
 
 -----------------------------------------------------------------------

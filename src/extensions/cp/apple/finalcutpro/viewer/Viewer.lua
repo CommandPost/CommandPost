@@ -642,7 +642,7 @@ function Viewer.lazy.method:notifier()
 end
 
 function Viewer:__tostring()
-    return string.format("%s: %s", self.class.name, self.eventViewer and "event" or "main")
+    return string.format("%s: %s", self.class.name, self._eventViewer and "event" or "main")
 end
 
 return Viewer

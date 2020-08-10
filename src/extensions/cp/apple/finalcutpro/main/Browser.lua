@@ -4,26 +4,26 @@
 
 local require = require
 
--- local log                             = require("hs.logger").new("browser")
+-- local log                             = require "hs.logger".new("browser")
 
---local inspect                         = require("hs.inspect")
+--local inspect                         = require "hs.inspect"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local CheckBox                          = require("cp.ui.CheckBox")
-local GeneratorsBrowser                 = require("cp.apple.finalcutpro.main.GeneratorsBrowser")
-local LibrariesBrowser                  = require("cp.apple.finalcutpro.main.LibrariesBrowser")
-local MediaBrowser                      = require("cp.apple.finalcutpro.main.MediaBrowser")
-local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
-local prop                              = require("cp.prop")
-local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
-local BrowserMarkerPopover              = require("cp.apple.finalcutpro.main.BrowserMarkerPopover")
+local axutils                           = require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local CheckBox                          = require "cp.ui.CheckBox"
+local GeneratorsBrowser                 = require "cp.apple.finalcutpro.main.GeneratorsBrowser"
+local LibrariesBrowser                  = require "cp.apple.finalcutpro.main.LibrariesBrowser"
+local MediaBrowser                      = require "cp.apple.finalcutpro.main.MediaBrowser"
+local PrimaryWindow                     = require "cp.apple.finalcutpro.main.PrimaryWindow"
+local prop                              = require "cp.prop"
+local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
+local BrowserMarkerPopover              = require "cp.apple.finalcutpro.main.BrowserMarkerPopover"
 
-local Do                                = require("cp.rx.go.Do")
-local If                                = require("cp.rx.go.If")
+local Do                                = require "cp.rx.go.Do"
+local If                                = require "cp.rx.go.If"
 
 
-local Browser = Element:subclass("cp.apple.finalcutpro.main.Browser")
+local Browser = Element:subclass "cp.apple.finalcutpro.main.Browser"
 
 -- _findBrowser(...) -> window | nil
 -- Function

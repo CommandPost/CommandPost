@@ -126,10 +126,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local updateTimelineScrollValue
     local updateTimelineScroll = deferred.new(0.01):action(function()
-        local scrollBar = fcp:timeline():contents():horizontalScrollBarUI()
-        if scrollBar then
-            scrollBar:setAttributeValue("AXValue", tonumber(updateTimelineScrollValue))
-        end
+        fcp.timeline.contents.horizontalScrollBar:value(tonumber(updateTimelineScrollValue))
     end)
     manager.controls:new("horizontalTimelineScroll", {
         group = "fcpx",

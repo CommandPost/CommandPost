@@ -56,11 +56,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local updateZoomUI = deferred.new(0.0000001)
 
+    local appearance = fcp.timeline.toolbar.appearance
+
     local appearancePopUpCloser = delayed.new(1, function()
-        local appearance = fcp:timeline():toolbar():appearance()
-        if appearance then
-            appearance:hide()
-        end
+        appearance:hide()
     end)
 
     local zoomChange = 0
@@ -72,11 +71,8 @@ function plugin.init(deps)
         :maxValue(10)
         :stepSize(0.2)
         :onGet(function()
-            local appearance = fcp:timeline():toolbar():appearance()
-            if appearance then
-                if appearance:isShowing() then
-                    return appearance:show():zoomAmount():getValue()
-                end
+            if appearance:isShowing() then
+                return appearance:show():zoomAmount()
             end
         end)
         :onChange(function(change)
@@ -88,20 +84,14 @@ function plugin.init(deps)
             updateZoomUI()
         end)
         :onReset(function()
-            local appearance = fcp:timeline():toolbar():appearance()
-            if appearance then
-                appearance:show():zoomAmount():setValue(10)
-            end
+            appearance:show():zoomAmount(10)
         end)
 
     updateZoomUI:action(function()
         if zoomChange ~= 0 then
-            local appearance = fcp:timeline():toolbar():appearance()
-            if appearance then
-                local currentValue = appearance:show():zoomAmount():getValue()
-                if currentValue then
-                    appearance:show():zoomAmount():setValue(currentValue + zoomChange)
-                end
+            local currentValue = appearance:show():zoomAmount()
+            if currentValue then
+                appearance:show():zoomAmount(currentValue + zoomChange)
             end
             zoomChange = 0
         end
@@ -120,11 +110,8 @@ function plugin.init(deps)
         :maxValue(210)
         :stepSize(1)
         :onGet(function()
-            local appearance = fcp:timeline():toolbar():appearance()
-            if appearance then
-                if appearance:isShowing() then
-                    return appearance:show():clipHeight():getValue()
-                end
+            if appearance:isShowing() then
+                return appearance:clipHeight()
             end
         end)
         :onChange(function(change)
@@ -136,20 +123,14 @@ function plugin.init(deps)
             updateClipHeightUI()
         end)
         :onReset(function()
-            local appearance = fcp:timeline():toolbar():appearance()
-            if appearance then
-                appearance:show():clipHeight():setValue(35)
-            end
+            appearance:show():clipHeight(35)
         end)
 
         updateClipHeightUI:action(function()
             if clipHeightChange ~= 0 then
-                local appearance = fcp:timeline():toolbar():appearance()
-                if appearance then
-                    local currentValue = appearance:show():clipHeight():getValue()
-                    if currentValue then
-                        appearance:show():clipHeight():setValue(currentValue + clipHeightChange)
-                    end
+                local currentValue = appearance:show():clipHeight()
+                if currentValue then
+                    appearance:show():clipHeight(currentValue + clipHeightChange)
                 end
                 clipHeightChange = 0
             end
@@ -160,6 +141,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     id = id + 1
     local cachedClipWaveformHeight = nil
+    local clipWaveformHeight = appearance.clipWaveformHeight
     timelineGroup:menu(id)
         :name(i18n("clipWaveformHeight"))
         :name9(i18n("clipWaveformHeight9"))
@@ -167,24 +149,24 @@ function plugin.init(deps)
             if cachedClipWaveformHeight then
                 return i18n("mode") .. " " .. cachedClipWaveformHeight
             else
-                local selectedOption = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
+                local selectedOption = clipWaveformHeight:selectedOption()
                 if selectedOption then
                     return i18n("mode") .. " " .. selectedOption
                 end
             end
         end)
         :onNext(function()
-            fcp:timeline():toolbar():appearance():show():clipWaveformHeight():nextOption()
-            cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
+            clipWaveformHeight:show():nextOption()
+            cachedClipWaveformHeight = clipWaveformHeight:selectedOption()
             appearancePopUpCloser:start()
         end)
         :onPrev(function()
-            fcp:timeline():toolbar():appearance():show():clipWaveformHeight():previousOption()
-            cachedClipWaveformHeight = fcp:timeline():toolbar():appearance():clipWaveformHeight():selectedOption()
+            clipWaveformHeight:show():previousOption()
+            cachedClipWaveformHeight = clipWaveformHeight:selectedOption()
             appearancePopUpCloser:start()
         end)
         :onReset(function()
-            fcp:timeline():toolbar():appearance():show():clipWaveformHeight():selectedOption(1)
+            clipWaveformHeight:show():selectedOption(1)
             cachedClipWaveformHeight = 1
             appearancePopUpCloser:start()
         end)
@@ -198,7 +180,7 @@ function plugin.init(deps)
         clipWaveformHeightGroup
             :action(id, i18n("mode") .. " " .. i)
             :onPress(function()
-                fcp:timeline():toolbar():appearance():show():clipWaveformHeight():selectedOption(1)
+                clipWaveformHeight:show():selectedOption(1)
                 appearancePopUpCloser:start()
             end)
     end
@@ -212,7 +194,7 @@ function plugin.init(deps)
     viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("clipNames"))
         :onPress(function()
-            fcp:timeline():toolbar():appearance():show():clipNames():toggle()
+            appearance.clipNames:show():toggle()
             appearancePopUpCloser:start()
         end)
 
@@ -220,7 +202,7 @@ function plugin.init(deps)
     viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("angles"))
         :onPress(function()
-            fcp:timeline():toolbar():appearance():show():angles():toggle()
+            appearance.angles:show():toggle()
             appearancePopUpCloser:start()
         end)
 
@@ -228,7 +210,7 @@ function plugin.init(deps)
     viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("clipRoles"))
         :onPress(function()
-            fcp:timeline():toolbar():appearance():show():clipRoles():toggle()
+            appearance.clipRoles:show():toggle()
             appearancePopUpCloser:start()
         end)
 
@@ -236,7 +218,7 @@ function plugin.init(deps)
     viewOptions
         :action(id, i18n("toggle") .. " " .. i18n("laneHeaders"))
         :onPress(function()
-            fcp:timeline():toolbar():appearance():show():laneHeaders():toggle()
+            appearance.laneHeaders:show():toggle()
             appearancePopUpCloser:start()
         end)
 
