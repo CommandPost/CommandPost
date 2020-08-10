@@ -198,7 +198,7 @@ end
 --- cp.apple.finalcutpro.timeline.Toolbar.Browser.transitions <cp.ui.RadioButton>
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) which toggles the 'Transitions' browser visibility.
-function Toolbar.Browser.lazy.method:transitions()
+function Toolbar.Browser.lazy.value:transitions()
     return RadioButton(self, function()
         return childFromLeft(self:UI(), 2)
     end)

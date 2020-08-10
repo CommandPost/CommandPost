@@ -973,30 +973,18 @@ function fcp.lazy.method:generators()
     return self.browser.generators()
 end
 
---- cp.apple.finalcutpro:effects() -> EffectsBrowser
---- Method
---- Returns the EffectsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the EffectsBrowser
-function fcp.lazy.method:effects()
-    return self:timeline():effects()
+--- cp.apple.finalcutpro.effects <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The EffectsBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:effects()
+    return self.timeline.effects
 end
 
---- cp.apple.finalcutpro:transitions() -> TransitionsBrowser
---- Method
---- Returns the TransitionsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the TransitionsBrowser
-function fcp.lazy.method:transitions()
-    return self:timeline():transitions()
+--- cp.apple.finalcutpro.transitions <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The Transitions `EffectsBrowser` instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:transitions()
+    return self.timeline.transitions
 end
 
 --- cp.apple.finalcutpro.inspector <cp.apple.finalcutpro.inspector.Inspector>
