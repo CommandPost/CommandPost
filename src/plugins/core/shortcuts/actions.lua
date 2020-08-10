@@ -305,7 +305,7 @@ function plugin.init(deps)
             elseif action.action == "pressControl" then
                 mod.holdDownControl = eventtap.new({eventtap.event.types.keyDown}, function(e)
                     local flags = e:getFlags()
-                    flags.control = true
+                    flags.ctrl = true
                     e:setFlags(flags)
                     return false, e
                 end):start()
@@ -315,7 +315,7 @@ function plugin.init(deps)
             elseif action.action == "pressOption" then
                 mod.holdDownOption = eventtap.new({eventtap.event.types.keyDown}, function(e)
                     local flags = e:getFlags()
-                    flags.option = true
+                    flags.alt = true
                     e:setFlags(flags)
                     return false, e
                 end):start()
@@ -325,7 +325,7 @@ function plugin.init(deps)
             elseif action.action == "pressCommand" then
                 mod.holdDownCommand = eventtap.new({eventtap.event.types.keyDown}, function(e)
                     local flags = e:getFlags()
-                    flags.command = true
+                    flags.cmd = true
                     e:setFlags(flags)
                     return false, e
                 end):start()
