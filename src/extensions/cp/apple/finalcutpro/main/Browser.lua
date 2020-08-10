@@ -80,7 +80,7 @@ function Browser:initialize(app)
             return _findBrowser(app.secondaryWindow, app.primaryWindow)
         end,
         Browser.matches)
-    end):monitor(app:toolbar().browserShowing)
+    end):monitor(app.toolbar.browserShowing)
 
     Element.initialize(self, app, UI)
 

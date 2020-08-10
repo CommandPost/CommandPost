@@ -422,7 +422,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             -- Wait until the "Preparing" modal dialog closes or the
             -- Background Tasks Dialog opens:
             --------------------------------------------------------------------------------
-            local backgroundTasksDialog = fcp:backgroundTasksDialog()
+            local backgroundTasksDialog = fcp.backgroundTasksDialog
             if fcp:isModalDialogOpen() then
                 doUntil(function()
                     return backgroundTasksDialog:isShowing() or fcp:isModalDialogOpen() == false

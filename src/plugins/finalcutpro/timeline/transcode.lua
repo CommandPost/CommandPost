@@ -56,7 +56,7 @@ function mod.transcodeSelectedClips(transcodeType)
 
     local timeline = fcp:timeline()
     local contents = timeline:contents()
-    local transcodeMedia = fcp:transcodeMedia()
+    local transcodeMedia = fcp.transcodeMedia
 
     if not timeline:isFocused() then
         -----------------------------------------------------------------------
@@ -215,7 +215,7 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedBrowserClips(transcodeType)
-    local transcodeMedia = fcp:transcodeMedia()
+    local transcodeMedia = fcp.transcodeMedia
 
     local isOptimized = transcodeType == mod.transcodeType.optimized
     local isProxy = transcodeType == mod.transcodeType.proxy

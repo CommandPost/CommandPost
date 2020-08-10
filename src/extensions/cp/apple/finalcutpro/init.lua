@@ -830,29 +830,17 @@ function fcp.lazy.value:exportDialog()
     return ExportDialog(self)
 end
 
---- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
---- Method
---- Returns the [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The window.
-function fcp.lazy.method:findAndReplaceTitleText()
+--- cp.apple.finalcutpro.findAndReplaceTitleText <cp.apple.finalcutpro.main.FindAndReplaceTitleText>
+--- Field
+--- The [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
+function fcp.lazy.value:findAndReplaceTitleText()
     return FindAndReplaceTitleText(self.app)
 end
 
---- cp.apple.finalcutpro:backgroundTasksDialog() -> BackgroundTasksDialog
---- Method
---- Returns the [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The window.
-function fcp.lazy.method:backgroundTasksDialog()
+--- cp.apple.finalcutpro.backgroundTasksDialog <cp.apple.finalcutpro.main.BackgroundTasksDialog>
+--- Field
+--- The [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
+function fcp.lazy.value:backgroundTasksDialog()
     return BackgroundTasksDialog(self.app)
 end
 
@@ -862,16 +850,10 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:transcodeMedia() -> TranscodeMedia
---- Method
---- Returns the [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Transcode Media Sheet.
-function fcp.lazy.method:transcodeMedia()
+--- cp.apple.finalcutpro.transcodeMedia <cp.apple.finalcutpro.main.TranscodeMedia>
+--- Field
+--- The [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
+function fcp.lazy.value:transcodeMedia()
     return TranscodeMedia(self)
 end
 
@@ -881,17 +863,11 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
---- Method
---- Returns the Primary Toolbar - the toolbar at the top of the Primary Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the PrimaryToolbar
-function fcp:toolbar()
-    return self.primaryWindow:toolbar()
+--- cp.apple.finalcutpro.toolbar <cp.apple.finalcutpro.main.PrimaryToolbar>
+--- Field
+--- The Primary Toolbar - the toolbar at the top of the Primary Window.
+function fcp.lazy.value:toolbar()
+    return self.primaryWindow.toolbar
 end
 
 --- cp.apple.finalcutpro.timeline <Timeline>

@@ -27,7 +27,7 @@ local TranscodeMedia = Sheet:subclass("cp.apple.finalcutpro.main.TranscodeMedia"
 ---
 --- Returns:
 --- * `true` if it matches the pattern for a `Viewer` `TranscodeMedia`.
-function TranscodeMedia.matches(element)
+function TranscodeMedia.static.matches(element)
     if Sheet.matches(element) and #element == 5 then
         local children = axutils.children(element, compareTopToBottom)
         return children ~= nil

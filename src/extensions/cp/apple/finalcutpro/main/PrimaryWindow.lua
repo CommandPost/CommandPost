@@ -340,7 +340,7 @@ end
 -----------------------------------------------------------------------
 
 
---- cp.apple.finalcutpro.main.PrimaryWindow:toolbar() -> PrimaryToolbar
+--- cp.apple.finalcutpro.main.PrimaryWindow.toolbar <cp.ui.PrimaryToolbar>
 --- Method
 --- Returns the PrimaryToolbar element.
 ---
@@ -349,8 +349,8 @@ end
 ---
 --- Returns:
 --- * The `PrimaryToolbar`.
-function PrimaryWindow.lazy.method:toolbar()
-    return PrimaryToolbar.new(self)
+function PrimaryWindow.lazy.value:toolbar()
+    return PrimaryToolbar(self)
 end
 
 -----------------------------------------------------------------------
