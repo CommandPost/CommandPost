@@ -8,15 +8,15 @@
 --- * [MenuButton](cp.rx.MenuButton.md)
 local require           = require
 
--- local log               = require("hs.logger").new("Element")
+-- local log               = require "hs.logger".new("Element")
 
-local axutils           = require("cp.ui.axutils")
-local go	            = require("cp.rx.go")
-local If                = require("cp.rx.go.If")
-local lazy              = require("cp.lazy")
-local prop              = require("cp.prop")
+local axutils           = require "cp.ui.axutils"
+local go	            = require "cp.rx.go"
+local If                = require "cp.rx.go.If"
+local lazy              = require "cp.lazy"
+local prop              = require "cp.prop"
 
-local class             = require("middleclass")
+local class             = require "middleclass"
 
 local cache             = axutils.cache
 local Do, Given         = go.Do, go.Given
