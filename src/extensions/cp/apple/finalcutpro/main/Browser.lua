@@ -368,17 +368,11 @@ function Browser.lazy.value:libraries()
     return LibrariesBrowser(self)
 end
 
---- cp.apple.finalcutpro.main.Browser:media() -> MediaBrowser
---- Method
---- Get Media Browser object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `MediaBrowser` object.
-function Browser.lazy.method:media()
-    return MediaBrowser.new(self)
+--- cp.apple.finalcutpro.main.Browser.media <cp.apple.finalcutpro.main.MediaBrowser>
+--- Field
+--- The Media Browser object.
+function Browser.lazy.value:media()
+    return MediaBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>

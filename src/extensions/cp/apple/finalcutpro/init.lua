@@ -942,22 +942,16 @@ end
 
 --- cp.apple.finalcutpro.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
 --- Field
---- Returns the [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
+--- The [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:libraries()
     return self.browser.libraries
 end
 
---- cp.apple.finalcutpro:media() -> MediaBrowser
---- Method
---- Returns the MediaBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the MediaBrowser
-function fcp.lazy.method:media()
-    return self.browser.media()
+--- cp.apple.finalcutpro.media <cp.apple.finalcutpro.main.MediaBrowser>
+--- Field
+--- The MediaBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:media()
+    return self.browser.media
 end
 
 --- cp.apple.finalcutpro.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>
