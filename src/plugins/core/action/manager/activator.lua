@@ -689,7 +689,7 @@ end
 
 --- plugins.core.action.activator:activeChoices() -> table
 --- Method
---- Returns a table with active choices. If a `query` is set, only choices containing the provided substring are returned. 
+--- Returns a table with active choices. If a `query` is set, only choices containing the provided substring are returned.
 --- If [showHidden](#showHidden) is set to `true`  hidden
 --- items are returned, otherwise they are not.
 ---
