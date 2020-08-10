@@ -58,7 +58,7 @@ function Contents:initialize(parent)
         Contents.matches)
     end)
 
-    Element.initialize(self, UI)
+    Element.initialize(self, parent, UI)
 
     prop.bind(self) {
 

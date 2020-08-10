@@ -912,41 +912,23 @@ function fcp:toolbar()
     return self:primaryWindow():toolbar()
 end
 
---- cp.apple.finalcutpro:timeline() -> Timeline
---- Method
---- Returns the Timeline instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Timeline
-function fcp.lazy.method:timeline()
+--- cp.apple.finalcutpro.timeline <Timeline>
+--- Field
+--- The Timeline instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:timeline()
     return Timeline(self)
 end
 
 --- cp.apple.finalcutpro.viewer <cp.apple.finalcutpro.viewer.Viewer>
 --- Field
---- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Viewer
+--- The [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:viewer()
     return Viewer(self, false)
 end
 
 --- cp.apple.finalcutpro.eventViewer <cp.apple.finalcutpro.viewer.Viewer>
 --- Field
---- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Event Viewer
+--- The Event [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:eventViewer()
     return Viewer(self, true)
 end
@@ -954,12 +936,6 @@ end
 --- cp.apple.finalcutpro.browser <cp.apple.finalcutpro.main.Browser>
 --- Field
 --- The [Browser](cp.apple.finalcutpro.main.Browser.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Browser
 function fcp.lazy.value:browser()
     return Browser(self)
 end

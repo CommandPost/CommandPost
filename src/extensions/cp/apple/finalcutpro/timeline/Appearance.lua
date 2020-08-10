@@ -31,7 +31,7 @@ local Appearance = Popover:subclass("cp.apple.finalcutpro.timeline.Appearance")
 --- Returns:
 ---  * A new `Appearance` object.
 function Appearance:initialize(toggle)
-    Popover.initialize(toggle, toggle.UI:mutate(function(original)
+    Popover.initialize(self, toggle, toggle.UI:mutate(function(original)
         return cache(self, "_ui", function()
             return childMatching(original(), Appearance.matches)
         end,
