@@ -36,6 +36,8 @@ local toolbar                   = require "hs.webview.toolbar"
 
 local config                    = require "cp.config"
 local Do                        = require "cp.rx.go.Do"
+local Given                     = require "cp.rx.go.Given"
+local Observable                = require "cp.rx" .Observable
 local i18n                      = require "cp.i18n"
 local idle                      = require "cp.idle"
 local prop                      = require "cp.prop"
@@ -225,7 +227,7 @@ end
 function activator.mt:preloadChoices(afterSeconds)
     afterSeconds = afterSeconds or 0
     idle.queue(afterSeconds, function()
-        log.df("Preloading choices for '%s'", self._id)
+        -- log.df("Preloading choices for '%s'", self._id)
         self:allChoices()
     end)
     return self
@@ -683,7 +685,7 @@ end
 ---  * Table of choices that can be displayed by an `hs.chooser`.
 function activator.mt:allChoices()
     if not self._choices then
-        self:_findChoices()
+        self:_findChoices():After(5)
     end
     return self._choices
 end
@@ -731,7 +733,13 @@ function activator.mt:activeChoices()
     return results
 end
 
--- plugins.core.action.activator:_findChoices() -> none
+local LOADING_CHOICES = {
+    {
+        ["text"] = i18n("activatorLoadingChoices") or "Loading...",
+    }
+}
+
+-- plugins.core.action.activator:_findChoices() -> cp.rx.Statement
 -- Method
 -- Finds and sorts all choices from enabled handlers. They are available via
 -- the [choices](#choices) or [allChoices](#allChoices) properties.
@@ -743,9 +751,9 @@ end
 --  * None
 function activator.mt:_findChoices()
 
-    self._choices = {}
+    self._choices = LOADING_CHOICES
 
-    doAfter(0, function()
+    return Do(function()
         --------------------------------------------------------------------------------
         -- Check if we are already watching the handlers:
         --------------------------------------------------------------------------------
@@ -759,7 +767,10 @@ function activator.mt:_findChoices()
         local result = {}
         self._choices = result
 
-        for _, handler in pairs(self:allowedHandlers()) do
+        local handlers = self:allowedHandlers()
+
+        return Given(Observable.fromTable(handlers, pairs))
+        :Then(function(handler)
             local choices = handler:choices()
             if choices then
                 local choicesTable = choices:getChoices()
@@ -772,18 +783,21 @@ function activator.mt:_findChoices()
                 end
 
                 concat(result, choicesTable)
-        end
+            end
             --------------------------------------------------------------------------------
             -- Check if we should watch the handler choices:
             --------------------------------------------------------------------------------
             if unwatched then
                 handler.choices:watch(function() self:refresh() end)
             end
-        end
-
+        end)
+        :ThenYield()
+    end)
+    :Finally(function()
         self:refreshChooser()
     end)
 end
+
 
 --- plugins.core.action.activator:refresh() -> none
 --- Method
