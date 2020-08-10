@@ -960,17 +960,11 @@ function fcp.lazy.method:media()
     return self.browser.media()
 end
 
---- cp.apple.finalcutpro:generators() -> GeneratorsBrowser
---- Method
---- Returns the GeneratorsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the GeneratorsBrowser
-function fcp.lazy.method:generators()
-    return self.browser.generators()
+--- cp.apple.finalcutpro.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>
+--- Field
+--- The GeneratorsBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:generators()
+    return self.browser.generators
 end
 
 --- cp.apple.finalcutpro.effects <cp.apple.finalcutpro.main.EffectsBrowser>

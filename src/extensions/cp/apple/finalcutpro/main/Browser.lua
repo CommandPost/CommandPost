@@ -381,17 +381,11 @@ function Browser.lazy.method:media()
     return MediaBrowser.new(self)
 end
 
---- cp.apple.finalcutpro.main.Browser:generators() -> GeneratorsBrowser
---- Method
---- Get Generators Browser object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `GeneratorsBrowser` object.
-function Browser.lazy.method:generators()
-    return GeneratorsBrowser.new(self)
+--- cp.apple.finalcutpro.main.Browser.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>
+--- Field
+--- Generators Browser object.
+function Browser.lazy.value:generators()
+    return GeneratorsBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:markerPopover() -> BrowserMarkerPopover
