@@ -29,8 +29,10 @@ local event             = eventtap.event
 local insert            = table.insert
 local locale            = host.locale
 local map               = keycodes.map
-local newKeyEvent       = event.newKeyEvent
 local usleep            = timer.usleep
+
+local newKeyEvent       = event.newKeyEvent
+local newSystemKeyEvent = event.newSystemKeyEvent
 
 local tools = {}
 
@@ -136,6 +138,42 @@ function tools.keyStroke(modifiers, character, app)
         if m == "control" then m = "ctrl" end
         newKeyEvent(map[m], false):post(app)
     end
+end
+
+--- cp.tools.pressSystemKey(key) -> none
+--- Method
+--- Virtually presses a system key.
+---
+--- Parameters:
+---  * key - The key to use.
+---
+--- Returns:
+---  * Supported key values are:
+---   * SOUND_UP
+---   * SOUND_DOWN
+---   * MUTE
+---   * BRIGHTNESS_UP
+---   * BRIGHTNESS_DOWN
+---   * CONTRAST_UP
+---   * CONTRAST_DOWN
+---   * POWER
+---   * LAUNCH_PANEL
+---   * VIDMIRROR
+---   * PLAY
+---   * EJECT
+---   * NEXT
+---   * PREVIOUS
+---   * FAST
+---   * REWIND
+---   * ILLUMINATION_UP
+---   * ILLUMINATION_DOWN
+---   * ILLUMINATION_TOGGLE
+---   * CAPS_LOCK
+---   * HELP
+---   * NUM_LOCK
+function tools.pressSystemKey(key)
+    newSystemKeyEvent(key, true):post()
+    newSystemKeyEvent(key, false):post()
 end
 
 --- cp.tools.shiftPressed() -> boolean

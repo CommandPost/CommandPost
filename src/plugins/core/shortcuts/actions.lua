@@ -13,6 +13,11 @@ local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
 local keyStroke         = tools.keyStroke
+local pressSystemKey    = tools.pressSystemKey
+
+local event             = eventtap.event
+
+local newKeyEvent       = event.newKeyEvent
 
 local mod = {}
 
@@ -115,36 +120,228 @@ function plugin.init(deps)
                 end
             end
 
+        --------------------------------------------------------------------------------
+        -- Press & Hold CONTROL:
+        --------------------------------------------------------------------------------
         choices
-            :add("Press and hold SHIFT modifier key")
+            :add(i18n("pressAndHold") .. " CONTROL " .. i18n("modifierKey"))
             :subText(description)
             :params({
-                id = "pressShift",
+                action = "pressControl",
+                id = "global_shortcuts_pressControl"
             })
-            :id("global_shortcuts_" .. "pressShift")
+            :id("global_shortcuts_pressControl")
 
         choices
-            :add("Release SHIFT modifier key")
+            :add(i18n("release") .. " CONTROL " .. i18n("modifierKey"))
             :subText(description)
             :params({
-                id = "releaseShift",
+                action = "releaseControl",
+                id = "global_shortcuts_releaseControl"
             })
-            :id("global_shortcuts_" .. "releaseShift")
+            :id("global_shortcuts_releaseControl")
+
+        --------------------------------------------------------------------------------
+        -- Press & Hold OPTION:
+        --------------------------------------------------------------------------------
+        choices
+            :add(i18n("pressAndHold") .. " OPTION " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "pressOption",
+                id = "global_shortcuts_pressOption"
+            })
+            :id("global_shortcuts_pressOption")
+
+        choices
+            :add(i18n("release") .. " OPTION " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "releaseOption",
+                id = "global_shortcuts_releaseOption"
+            })
+            :id("global_shortcuts_releaseOption")
+
+
+        --------------------------------------------------------------------------------
+        -- Press & Hold COMMAND:
+        --------------------------------------------------------------------------------
+        choices
+            :add(i18n("pressAndHold") .. " COMMAND " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "pressCommand",
+                id = "global_shortcuts_pressCommand"
+            })
+            :id("global_shortcuts_pressCommand")
+
+        choices
+            :add(i18n("release") .. " COMMAND " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "releaseCommand",
+                id = "global_shortcuts_releaseCommand"
+            })
+            :id("global_shortcuts_releaseCommand")
+
+        --------------------------------------------------------------------------------
+        -- Press & Hold SHIFT:
+        --------------------------------------------------------------------------------
+        choices
+            :add(i18n("pressAndHold") .. " SHIFT " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "pressShift",
+                id = "global_shortcuts_pressShift"
+            })
+            :id("global_shortcuts_pressShift")
+
+        choices
+            :add(i18n("release") .. " SHIFT " .. i18n("modifierKey"))
+            :subText(description)
+            :params({
+                action = "releaseShift",
+                id = "global_shortcuts_releaseShift"
+            })
+            :id("global_shortcuts_releaseShift")
+
+        --------------------------------------------------------------------------------
+        -- Press & Hold TILDA:
+        --------------------------------------------------------------------------------
+        choices
+            :add(i18n("pressAndHold") .. " TILDA")
+            :subText(description)
+            :params({
+                action = "pressTilda",
+                id = "global_shortcuts_pressTilda"
+            })
+            :id("global_shortcuts_pressTilda")
+
+        choices
+            :add(i18n("release") .. " TILDA")
+            :subText(description)
+            :params({
+                action = "releaseTilda",
+                id = "global_shortcuts_releaseTilda"
+            })
+            :id("global_shortcuts_releaseTilda")
+
+        --------------------------------------------------------------------------------
+        -- Play:
+        --------------------------------------------------------------------------------
+        choices
+            :add("Play")
+            :subText(description)
+            :params({
+                action = "systemKey",
+                key = "PLAY",
+                id = "global_shortcuts_play"
+            })
+            :id("global_shortcuts_play")
+
+        --------------------------------------------------------------------------------
+        -- Next:
+        --------------------------------------------------------------------------------
+        choices
+            :add("Next")
+            :subText(description)
+            :params({
+                action = "systemKey",
+                key = "NEXT",
+                id = "global_shortcuts_next"
+            })
+            :id("global_shortcuts_next")
+
+        --------------------------------------------------------------------------------
+        -- Previous:
+        --------------------------------------------------------------------------------
+        choices
+            :add("Previous")
+            :subText(description)
+            :params({
+                action = "systemKey",
+                key = "PREVIOUS",
+                id = "global_shortcuts_previous"
+            })
+            :id("global_shortcuts_previous")
+
+        --------------------------------------------------------------------------------
+        -- Fast:
+        --------------------------------------------------------------------------------
+        choices
+            :add("Fast")
+            :subText(description)
+            :params({
+                action = "systemKey",
+                key = "FAST",
+                id = "global_shortcuts_fast"
+            })
+            :id("global_shortcuts_fast")
+
+        --------------------------------------------------------------------------------
+        -- Rewind:
+        --------------------------------------------------------------------------------
+        choices
+            :add("Rewind")
+            :subText(description)
+            :params({
+                action = "systemKey",
+                key = "REWIND",
+                id = "global_shortcuts_rewind"
+
+            })
+            :id("global_shortcuts_rewind")
 
         end)
         :onExecute(function(action)
-            if action.id == "pressShift" then
+            if not action.action then
+                keyStroke(action.modifiers, action.character)
+            elseif action.action == "systemKey" then
+                pressSystemKey(action.key)
+            elseif action.action == "pressTilda" then
+                newKeyEvent("`", true):post()
+            elseif action.action == "releaseTilda" then
+                newKeyEvent("`", false):post()
+            elseif action.action == "pressControl" then
+                mod.holdDownControl = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                    local flags = e:getFlags()
+                    flags.control = true
+                    e:setFlags(flags)
+                    return false, e
+                end):start()
+            elseif action.action == "releaseControl" then
+                mod.holdDownControl:stop()
+                mod.holdDownControl = nil
+            elseif action.action == "pressOption" then
+                mod.holdDownOption = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                    local flags = e:getFlags()
+                    flags.option = true
+                    e:setFlags(flags)
+                    return false, e
+                end):start()
+            elseif action.action == "releaseOption" then
+                mod.holdDownOption:stop()
+                mod.holdDownOption = nil
+            elseif action.action == "pressCommand" then
+                mod.holdDownCommand = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                    local flags = e:getFlags()
+                    flags.command = true
+                    e:setFlags(flags)
+                    return false, e
+                end):start()
+            elseif action.action == "releaseCommand" then
+                mod.holdDownCommand:stop()
+                mod.holdDownCommand = nil
+            elseif action.action == "pressShift" then
                 mod.holdDownShift = eventtap.new({eventtap.event.types.keyDown}, function(e)
                     local flags = e:getFlags()
                     flags.shift = true
                     e:setFlags(flags)
                     return false, e
                 end):start()
-            elseif action.id == "releaseShift" then
+            elseif action.action == "releaseShift" then
                 mod.holdDownShift:stop()
                 mod.holdDownShift = nil
-            else
-                keyStroke(action.modifiers, action.character)
             end
         end)
         :onActionId(function(params)

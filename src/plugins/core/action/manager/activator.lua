@@ -754,7 +754,7 @@ end
 
 local LOADING_CHOICES = {
     {
-        ["text"] = i18n("activatorLoadingChoices") or "Loading...",
+        ["text"] = i18n("loading") .. "...",
     }
 }
 

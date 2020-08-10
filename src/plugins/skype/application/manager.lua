@@ -22,6 +22,7 @@ function plugin.init(deps)
         deps.manager.registerApplication({
             bundleID = bundleID,
             displayName = "Skype",
+            legacyGroupID = "skype",
         })
     end
 end

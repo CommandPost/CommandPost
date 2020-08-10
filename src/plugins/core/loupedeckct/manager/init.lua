@@ -585,10 +585,12 @@ local function executeAction(thisAction)
         local action = thisAction.action
         if handlerID and action then
             local handler = mod._actionmanager.getHandler(handlerID)
-            doAfter(0, function()
-                handler:execute(action)
-            end)
-            return true
+            if handler then
+                doAfter(0, function()
+                    handler:execute(action)
+                end)
+                return true
+            end
         end
     end
     return false
