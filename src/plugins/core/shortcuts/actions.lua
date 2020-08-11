@@ -18,6 +18,7 @@ local pressSystemKey    = tools.pressSystemKey
 local event             = eventtap.event
 
 local newKeyEvent       = event.newKeyEvent
+local eventTypes        = eventtap.event.types
 
 local mod = {}
 
@@ -303,7 +304,7 @@ function plugin.init(deps)
             elseif action.action == "releaseTilda" then
                 newKeyEvent("`", false):post()
             elseif action.action == "pressControl" then
-                mod.holdDownControl = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                mod.holdDownControl = eventtap.new({eventTypes.keyDown, eventTypes.leftMouseDown}, function(e)
                     local flags = e:getFlags()
                     flags.ctrl = true
                     e:setFlags(flags)
@@ -313,7 +314,7 @@ function plugin.init(deps)
                 mod.holdDownControl:stop()
                 mod.holdDownControl = nil
             elseif action.action == "pressOption" then
-                mod.holdDownOption = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                mod.holdDownOption = eventtap.new({eventTypes.keyDown, eventTypes.leftMouseDown}, function(e)
                     local flags = e:getFlags()
                     flags.alt = true
                     e:setFlags(flags)
@@ -323,7 +324,7 @@ function plugin.init(deps)
                 mod.holdDownOption:stop()
                 mod.holdDownOption = nil
             elseif action.action == "pressCommand" then
-                mod.holdDownCommand = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                mod.holdDownCommand = eventtap.new({eventTypes.keyDown, eventTypes.leftMouseDown}, function(e)
                     local flags = e:getFlags()
                     flags.cmd = true
                     e:setFlags(flags)
@@ -333,7 +334,7 @@ function plugin.init(deps)
                 mod.holdDownCommand:stop()
                 mod.holdDownCommand = nil
             elseif action.action == "pressShift" then
-                mod.holdDownShift = eventtap.new({eventtap.event.types.keyDown}, function(e)
+                mod.holdDownShift = eventtap.new({eventTypes.keyDown, eventTypes.leftMouseDown}, function(e)
                     local flags = e:getFlags()
                     flags.shift = true
                     e:setFlags(flags)
