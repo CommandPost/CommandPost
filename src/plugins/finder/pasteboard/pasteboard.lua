@@ -11,23 +11,27 @@ local pasteboard        = require "hs.pasteboard"
 
 local tools             = require "cp.tools"
 
+local upper             = tools.upper
+local lower             = tools.lower
+local camelCase         = tools.camelCase
+
 local keyStroke         = tools.keyStroke
 local keyStrokes        = eventtap.keyStrokes
 local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
---- plugins.finder.pasteboard.processText(value, copyAndPaste) -> none
---- Function
---- Processes Text
----
---- Parameters:
----  * value - The type of text manipulation you want to do. Current values are: `uppercase`, `lowercase` or `camelcase`.
----  * copyAndPaste - A boolean that defines whether or not we should trigger copy and paste.
----
---- Returns:
----  * None
-function mod.processText(value, copyAndPaste)
+-- processText(value, copyAndPaste) -> none
+-- Function
+-- Processes Text
+--
+-- Parameters:
+--  * value - The type of text manipulation you want to do. Current values are: `uppercase`, `lowercase` or `camelcase`.
+--  * copyAndPaste - A boolean that defines whether or not we should trigger copy and paste.
+--
+-- Returns:
+--  * None
+local function processText(value, copyAndPaste)
     if copyAndPaste then
         keyStroke({"command"}, "c")
     end
@@ -35,18 +39,22 @@ function mod.processText(value, copyAndPaste)
     if contents and type(contents) == "string" then
         local result = ""
         if value == "uppercase" then
-            result = string.upper(contents)
+            result = upper(contents)
         elseif value == "lowercase" then
-            result = string.lower(contents)
+            result = lower(contents)
         elseif value == "camelcase" then
-            result = string.lower(contents):gsub("(%l)(%w*)", function(a,b) return string.upper(a)..b end)
+            result = camelCase(contents)
         end
-        pasteboard.setContents(result)
-        if copyAndPaste then
-            keyStroke({"command"}, "v")
+        if pasteboard.setContents(result) then
+            if copyAndPaste then
+                keyStroke({"command"}, "v")
+            end
+        else
+            log.ef("Failed to write this to the Pasteboard: %s (%s)", result, type(result))
         end
     else
         log.ef("Pasteboard Contents is invalid: %s", contents)
+        playErrorSound()
     end
 end
 
@@ -69,22 +77,22 @@ function plugin.init(deps)
     -- Add Commands:
     --------------------------------------------------------------------------------
     global:add("cpMakePasteboardTextUppercase")
-        :whenActivated(function() mod.processText("uppercase", false) end)
+        :whenActivated(function() processText("uppercase", false) end)
 
     global:add("cpMakePasteboardTextLowercase")
-        :whenActivated(function() mod.processText("lowercase", false) end)
+        :whenActivated(function() processText("lowercase", false) end)
 
     global:add("cpMakePasteboardTextCamelcase")
-        :whenActivated(function() mod.processText("camelcase", false) end)
+        :whenActivated(function() processText("camelcase", false) end)
 
     global:add("cpMakeSelectedTextUppercase")
-        :whenActivated(function() mod.processText("uppercase", true) end)
+        :whenActivated(function() processText("uppercase", true) end)
 
     global:add("cpMakeSelectedTextLowercase")
-        :whenActivated(function() mod.processText("lowercase", true) end)
+        :whenActivated(function() processText("lowercase", true) end)
 
     global:add("cpMakeSelectedTextCamelcase")
-        :whenActivated(function() mod.processText("camelcase", true) end)
+        :whenActivated(function() processText("camelcase", true) end)
 
     global:add("cpTypeClipboardContents")
         :whenActivated(function()
