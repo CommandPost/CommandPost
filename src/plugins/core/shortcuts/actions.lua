@@ -36,7 +36,7 @@ function plugin.init(deps)
     -- Setup Handler:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
-    local eventsToWatch = {eventTypes.keyDown, eventTypes.leftMouseDown, eventTypes.NSEventTypeGesture}
+    local eventsToWatch = {eventTypes.keyDown, eventTypes.leftMouseDown, eventTypes.NSEventTypeGesture, eventTypes.scrollWheel}
     mod._handler = actionmanager.addHandler("global_shortcuts", "global")
         :onChoices(function(choices)
             local modifiers = {
