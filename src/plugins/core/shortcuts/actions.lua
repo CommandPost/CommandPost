@@ -40,16 +40,16 @@ function plugin.init(deps)
     local actions = {
         pressKey        = function(action) keyStroke(action.modifiers, action.character) end,
         systemKey       = function(action) pressSystemKey(action.key) end,
-        pressTilda      = function(action) newKeyEvent("`", true):post() end,
-        releaseTilda    = function(action) newKeyEvent("`", false):post() end,
-        pressControl    = function(action) holdKey("control", true) end,
-        releaseControl  = function(action) holdKey("control", false) end,
-        pressOption     = function(action) holdKey("option", true) end,
-        releaseOption   = function(action) holdKey("option", false) end,
-        pressCommand    = function(action) holdKey("command", true) end,
-        releaseCommand  = function(action) holdKey("command", false) end,
-        pressShift      = function(action) holdKey("shift", true) end,
-        releaseShift    = function(action) holdKey("shift", false) end,
+        pressTilda      = function() newKeyEvent("`", true):post() end,
+        releaseTilda    = function() newKeyEvent("`", false):post() end,
+        pressControl    = function() holdKey("control", true) end,
+        releaseControl  = function() holdKey("control", false) end,
+        pressOption     = function() holdKey("option", true) end,
+        releaseOption   = function() holdKey("option", false) end,
+        pressCommand    = function() holdKey("command", true) end,
+        releaseCommand  = function() holdKey("command", false) end,
+        pressShift      = function() holdKey("shift", true) end,
+        releaseShift    = function() holdKey("shift", false) end,
     }
 
     --------------------------------------------------------------------------------
@@ -130,7 +130,6 @@ function plugin.init(deps)
                             :add(string.upper(keycode) .. " + " .. modifier.label)
                             :subText(description)
                             :params({
-                                action = "pressKey",
                                 character = keycode,
                                 modifiers = modifier.mods,
                                 id = modifier.label .. "_" .. keycode,
@@ -314,11 +313,20 @@ function plugin.init(deps)
 
         end)
         :onExecute(function(action)
-            local fn = actions[action.action]
-            if fn then
-                fn()
+            local whichAction = action.action
+            if whichAction then
+                local fn = actions[action.action]
+                if fn then
+                    fn(action)
+                else
+                    log.ef("Unknown action triggered in core.shortcuts.actions: %s", inspect(action))
+                end
             else
-                log.ef("Unknown action triggered in core.shortcuts.actions: %s", inspect(action))
+                --------------------------------------------------------------------------------
+                -- NOTE: This is only here for legacy reason (because we didn't have an "action"
+                -- in the parameters originally.
+                --------------------------------------------------------------------------------
+                actions["pressKey"](action)
             end
         end)
         :onActionId(function(params)
