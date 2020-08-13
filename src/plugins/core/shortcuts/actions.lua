@@ -4,21 +4,22 @@
 
 local require           = require
 
---local log               = require "hs.logger".new "actions"
+local log               = require "hs.logger".new "actions"
 
 local eventtap          = require "hs.eventtap"
+local inspect           = require "hs.inspect"
 local keycodes          = require "hs.keycodes"
+local osascript         = require "hs.osascript"
 
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
+local applescript       = osascript.applescript
 local keyStroke         = tools.keyStroke
 local pressSystemKey    = tools.pressSystemKey
 
 local event             = eventtap.event
-
 local newKeyEvent       = event.newKeyEvent
-local eventTypes        = eventtap.event.types
 
 local mod = {}
 
@@ -32,11 +33,29 @@ local plugin = {
 
 function plugin.init(deps)
 
+    local holdKey = function(key, isDown)
+        applescript([[tell application "System Events" to ]] .. key .. [[ key ]] .. (isDown and "down" or "up"))
+    end
+
+    local actions = {
+        pressKey        = function(action) keyStroke(action.modifiers, action.character) end,
+        systemKey       = function(action) pressSystemKey(action.key) end,
+        pressTilda      = function() newKeyEvent("`", true):post() end,
+        releaseTilda    = function() newKeyEvent("`", false):post() end,
+        pressControl    = function() holdKey("control", true) end,
+        releaseControl  = function() holdKey("control", false) end,
+        pressOption     = function() holdKey("option", true) end,
+        releaseOption   = function() holdKey("option", false) end,
+        pressCommand    = function() holdKey("command", true) end,
+        releaseCommand  = function() holdKey("command", false) end,
+        pressShift      = function() holdKey("shift", true) end,
+        releaseShift    = function() holdKey("shift", false) end,
+    }
+
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
     local actionmanager = deps.actionmanager
-    local eventsToWatch = {eventTypes.keyDown, eventTypes.leftMouseDown, eventTypes.NSEventTypeGesture, eventTypes.scrollWheel}
     mod._handler = actionmanager.addHandler("global_shortcuts", "global")
         :onChoices(function(choices)
             local modifiers = {
@@ -80,8 +99,6 @@ function plugin.init(deps)
                 { label = "Fn⌃", mods = {"ctrl", "fn"} },
                 { label = "Fn", mods = {"fn"} },
             }
-            local pressLabel = i18n("press")
-            local andLabel = i18n("and")
             local description = i18n("keyboardShortcutDescription")
             for keycode, _ in pairs(keycodes.map) do
                 if type(keycode) == "string"
@@ -232,7 +249,7 @@ function plugin.init(deps)
         -- Play:
         --------------------------------------------------------------------------------
         choices
-            :add("Play")
+            :add(i18n("play"))
             :subText(description)
             :params({
                 action = "systemKey",
@@ -245,7 +262,7 @@ function plugin.init(deps)
         -- Next:
         --------------------------------------------------------------------------------
         choices
-            :add("Next")
+            :add(i18n("next"))
             :subText(description)
             :params({
                 action = "systemKey",
@@ -258,7 +275,7 @@ function plugin.init(deps)
         -- Previous:
         --------------------------------------------------------------------------------
         choices
-            :add("Previous")
+            :add(i18n("previous"))
             :subText(description)
             :params({
                 action = "systemKey",
@@ -271,7 +288,7 @@ function plugin.init(deps)
         -- Fast:
         --------------------------------------------------------------------------------
         choices
-            :add("Fast")
+            :add(i18n("fast"))
             :subText(description)
             :params({
                 action = "systemKey",
@@ -284,7 +301,7 @@ function plugin.init(deps)
         -- Rewind:
         --------------------------------------------------------------------------------
         choices
-            :add("Rewind")
+            :add(i18n("rewind"))
             :subText(description)
             :params({
                 action = "systemKey",
@@ -296,54 +313,20 @@ function plugin.init(deps)
 
         end)
         :onExecute(function(action)
-            if not action.action then
-                keyStroke(action.modifiers, action.character)
-            elseif action.action == "systemKey" then
-                pressSystemKey(action.key)
-            elseif action.action == "pressTilda" then
-                newKeyEvent("`", true):post()
-            elseif action.action == "releaseTilda" then
-                newKeyEvent("`", false):post()
-            elseif action.action == "pressControl" then
-                mod.holdDownControl = eventtap.new(eventsToWatch, function(e)
-                    local flags = e:getFlags()
-                    flags.ctrl = true
-                    e:setFlags(flags)
-                    return false, e
-                end):start()
-            elseif action.action == "releaseControl" then
-                mod.holdDownControl:stop()
-                mod.holdDownControl = nil
-            elseif action.action == "pressOption" then
-                mod.holdDownOption = eventtap.new(eventsToWatch, function(e)
-                    local flags = e:getFlags()
-                    flags.alt = true
-                    e:setFlags(flags)
-                    return false, e
-                end):start()
-            elseif action.action == "releaseOption" then
-                mod.holdDownOption:stop()
-                mod.holdDownOption = nil
-            elseif action.action == "pressCommand" then
-                mod.holdDownCommand = eventtap.new(eventsToWatch, function(e)
-                    local flags = e:getFlags()
-                    flags.cmd = true
-                    e:setFlags(flags)
-                    return false, e
-                end):start()
-            elseif action.action == "releaseCommand" then
-                mod.holdDownCommand:stop()
-                mod.holdDownCommand = nil
-            elseif action.action == "pressShift" then
-                mod.holdDownShift = eventtap.new(eventsToWatch, function(e)
-                    local flags = e:getFlags()
-                    flags.shift = true
-                    e:setFlags(flags)
-                    return false, e
-                end):start()
-            elseif action.action == "releaseShift" then
-                mod.holdDownShift:stop()
-                mod.holdDownShift = nil
+            local whichAction = action.action
+            if whichAction then
+                local fn = actions[action.action]
+                if fn then
+                    fn(action)
+                else
+                    log.ef("Unknown action triggered in core.shortcuts.actions: %s", inspect(action))
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- NOTE: This is only here for legacy reason (because we didn't have an "action"
+                -- in the parameters originally.
+                --------------------------------------------------------------------------------
+                actions["pressKey"](action)
             end
         end)
         :onActionId(function(params)
