@@ -699,28 +699,47 @@ local function callback(data)
 
     local buttonID = tostring(data.buttonID)
 
+    local item = items[bundleID]
+
     --------------------------------------------------------------------------------
-    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
+    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS AS LONG AS A PRESS ACTION
+    -- ISN'T ASSIGNED TO THEM (IN WHICH CASE THEY BECOME NORMAL BUTTONS):
     --------------------------------------------------------------------------------
     local functionButtonPressed = false
     if data.id == ct.event.BUTTON_PRESS then
         if data.direction == "up" then
             if data.buttonID == ct.buttonID.LEFT_FN then
-                leftFnPressed = false
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["20"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    leftFnPressed = false
+                    mod.refresh()
+                end
             elseif data.buttonID == ct.buttonID.RIGHT_FN then
-                rightFnPressed = false
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["23"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    rightFnPressed = false
+                    mod.refresh()
+                end
             end
         elseif data.direction == "down" then
             if data.buttonID == ct.buttonID.LEFT_FN then
-                functionButtonPressed = true
-                leftFnPressed = true
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["20"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    functionButtonPressed = true
+                    leftFnPressed = true
+                    mod.refresh()
+                end
             elseif data.buttonID == ct.buttonID.RIGHT_FN then
-                functionButtonPressed = true
-                rightFnPressed = true
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["23"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    functionButtonPressed = true
+                    rightFnPressed = true
+                    mod.refresh()
+                end
             end
         end
     end
@@ -736,7 +755,6 @@ local function callback(data)
         end
     end
 
-    local item = items[bundleID]
     local bank = item and item[bankID]
 
     if bank then
