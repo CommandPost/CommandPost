@@ -240,7 +240,7 @@ function ColorBoard:current()
     elseif self.exposure:isShowing() then
         return self.exposure
     end
-    return self:color()
+    return self.color
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:doResetCurrent([range]) -> cp.rx.go.Statement
