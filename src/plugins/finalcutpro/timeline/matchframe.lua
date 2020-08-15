@@ -61,7 +61,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     mod.browserPlayhead.deleteHighlight()
 
-    local contents = fcp:timeline():contents()
+    local contents = fcp.timeline:contents()
 
     --------------------------------------------------------------------------------
     -- Store the originally-selected clips
@@ -267,7 +267,7 @@ local function soloClip()
     --------------------------------------------------------------------------------
     -- Get Clip Name from the Viewer
     --------------------------------------------------------------------------------
-    local clipName = fcp:viewer():title()
+    local clipName = fcp.viewer:title()
 
     if clipName then
         --------------------------------------------------------------------------------

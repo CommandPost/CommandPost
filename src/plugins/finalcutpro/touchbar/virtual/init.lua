@@ -89,7 +89,7 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
             --------------------------------------------------------------------------------
             -- Show Touch Bar at Top Centre of Timeline:
             --------------------------------------------------------------------------------
-            local timeline = fcp:timeline()
+            local timeline = fcp.timeline
             if timeline and displayVirtualTouchBarLocation == mod.LOCATION_TIMELINE and timeline:isShowing() then
                 --------------------------------------------------------------------------------
                 -- Position Touch Bar to Top Centre of Final Cut Pro Timeline:

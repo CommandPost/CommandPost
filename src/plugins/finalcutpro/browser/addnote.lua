@@ -70,7 +70,7 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Check to see if Timeline has focus.
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local contents = timeline:contents()
     local selectedTimelineClips = contents:selectedClipsUI()
     local timelineMode = false
@@ -130,7 +130,7 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Check to see if the playhead is moving:
     --------------------------------------------------------------------------------
-    local wasPlaying = fcp:timeline():isPlaying()
+    local wasPlaying = fcp.timeline:isPlaying()
 
     --------------------------------------------------------------------------------
     -- Check to see if we're in Filmstrip or List View:

@@ -171,7 +171,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        result = fcp:viewer():timecode(timecode)
+        result = fcp.viewer:timecode(timecode)
         if not result then
             log.df("Current Line: %s", v)
             displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
@@ -227,7 +227,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             -- Goto start timecode:
             --------------------------------------------------------------------------------
-            result = fcp:viewer():timecode(favouriteStart)
+            result = fcp.viewer:timecode(favouriteStart)
             if not result then
                 log.df("favouriteStart: %s", favouriteStart)
                 displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))

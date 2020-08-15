@@ -18,7 +18,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.play()
-    if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+    if not fcp.viewer:isPlaying() and not fcp.eventViewer:isPlaying() then
         fcp:doShortcut("PlayPause")
     end
 end
@@ -33,7 +33,7 @@ end
 --- Returns:
 ---  * None
 function mod.pause()
-    if fcp:viewer():isPlaying() or fcp:eventViewer():isPlaying() then
+    if fcp.viewer:isPlaying() or fcp.eventViewer:isPlaying() then
         fcp:doShortcut("PlayPause")
     end
 end

@@ -78,7 +78,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    local rangeSelected = fcp:timeline():rangeSelected()
+    local rangeSelected = fcp.timeline:rangeSelected()
     if not rangeSelected and mod._cache()[cacheID] then
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
@@ -105,7 +105,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Make sure Timeline has focus:
         --------------------------------------------------------------------------------
-        local timeline = fcp:timeline()
+        local timeline = fcp.timeline
         timeline:show()
         if not timeline:isShowing() then
             dialog.displayErrorMessage("Unable to display the Timeline.")
@@ -337,7 +337,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure Timeline has focus:
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     timeline:show()
     if not timeline:isShowing() then
         dialog.displayErrorMessage("Unable to display the Timeline.")

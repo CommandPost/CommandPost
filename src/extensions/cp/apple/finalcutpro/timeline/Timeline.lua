@@ -167,7 +167,7 @@ end
 --- Field
 --- Is the timeline playing?
 function Timeline.lazy.prop:isPlaying()
-    return self:app():viewer().isPlaying
+    return self:app().viewer.isPlaying
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.isLockedPlayhead <cp.prop: boolean>

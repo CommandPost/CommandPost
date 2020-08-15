@@ -140,14 +140,14 @@ end
 --- depending on the Playhead instance and whether the Event Viewer is enabled.
 function Playhead.lazy.prop:currentViewer()
     local currentViewer = prop.new(function()
-        if self._useEventViewer and self:eventViewer():isShowing() then
-            return self:eventViewer()
+        if self._useEventViewer and self.eventViewer:isShowing() then
+            return self.eventViewer
         else
-            return self:viewer()
+            return self.viewer
         end
     end)
     if self._useEventViewer then
-        currentViewer:monitor(self:eventViewer().isShowing)
+        currentViewer:monitor(self.eventViewer.isShowing)
     end
     return currentViewer
 end
@@ -164,10 +164,10 @@ function Playhead.lazy.prop:timecode()
         function(newTimecode, original)
             original():timecode(newTimecode)
         end
-    ):monitor(self:viewer().timecode)
+    ):monitor(self.viewer.timecode)
 
     if self._useEventViewer then
-        timecode:monitor(self:eventViewer().timecode)
+        timecode:monitor(self.eventViewer.timecode)
     end
     return timecode
 end

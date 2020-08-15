@@ -101,7 +101,7 @@ end
 --- Returns:
 ---  * A [Statement](cp.rx.go.Statement.md) to be executed.
 function mod.doPasteHistoryItem(index)
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local originalContents = mod._manager.readFCPXData()
     return If(function()
         return mod.history()[index]

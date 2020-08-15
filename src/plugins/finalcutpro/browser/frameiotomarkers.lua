@@ -106,7 +106,7 @@ local function process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        local result = fcp:viewer():timecode(v.timecode)
+        local result = fcp.viewer:timecode(v.timecode)
         if not result then
             log.df("Current Line: %s", v)
             dialog.displayErrorMessage(string.format("Could not go to timecode for line %s.", i))

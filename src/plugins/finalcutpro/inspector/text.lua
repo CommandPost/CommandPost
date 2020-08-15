@@ -26,7 +26,7 @@ local function setTextAlign(value)
     --------------------------------------------------------------------------------
     -- Make sure at least one clip is selected:
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local timelineContents = timeline:contents()
     local clips = timelineContents:selectedClipsUI()
     if clips and #clips == 0 then

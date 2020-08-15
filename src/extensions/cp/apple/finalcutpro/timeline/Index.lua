@@ -83,14 +83,14 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will show the Index if possible.
 function Index.lazy.method:doShow()
-    return self:parent():toolbar():index():doCheck()
+    return self:parent().toolbar:index():doCheck()
 end
 
 --- cp.apple.finalcutpro.timeline.Index:doHide() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will hide the Index if possible.
 function Index.lazy.method:doHide()
-    return self:parent():toolbar():index():doUncheck()
+    return self:parent().toolbar:index():doUncheck()
 end
 
 --- cp.apple.finalcutpro.timeline.Index:clips() -> cp.apple.finalcutpro.timeline.IndexClips

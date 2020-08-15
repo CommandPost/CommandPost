@@ -326,7 +326,7 @@ local function process(cell, row, searchString, isProject)
             fcp:selectMenu({"Clip", "Open Clip"})
         end
         if playAfterFind then
-            if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+            if not fcp.viewer:isPlaying() and not fcp.eventViewer:isPlaying() then
                 fcp:selectMenu({"View", "Playback", "Play"})
             end
         end

@@ -54,7 +54,7 @@ function mod.transcodeSelectedClips(transcodeType)
         return
     end
 
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local contents = timeline:contents()
     local transcodeMedia = fcp.transcodeMedia
 
@@ -239,7 +239,7 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedTimelineClips(transcodeType)
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local contents = timeline:contents()
 
     return Do(timeline:doFocus())
@@ -270,7 +270,7 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedClips(transcodeType)
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     return Do(
         If(fcp:doLaunch()):Is(false):Then(throwMessage("Unable to launch Final Cut Pro"))
     ):Then(

@@ -73,16 +73,16 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- Test that various UI elements are able to be found.
             ok(fcp.primaryWindow:isShowing())
             ok(fcp:browser():isShowing())
-            ok(fcp:timeline():isShowing())
+            ok(fcp.timeline:isShowing())
             ok(fcp.inspector:isShowing())
-            ok(fcp:viewer():isShowing())
-            ok(not fcp:eventViewer():isShowing())
+            ok(fcp.viewer:isShowing())
+            ok(not fcp.eventViewer:isShowing())
         end
     ),
     test(
         "Viewer",
         function()
-            local viewer = fcp:viewer()
+            local viewer = fcp.viewer
 
             ok(viewer:isShowing())
             ok(viewer:infoBar():UI() ~= nil)
@@ -99,15 +99,15 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Event Viewer",
         function()
             -- Turn it on and off.
-            ok(not fcp:eventViewer():isShowing())
-            fcp:eventViewer():showOnPrimary()
-            ok(fcp:eventViewer():isShowing())
-            fcp:eventViewer():hide()
-            ok(not fcp:eventViewer():isShowing())
+            ok(not fcp.eventViewer:isShowing())
+            fcp.eventViewer:showOnPrimary()
+            ok(fcp.eventViewer:isShowing())
+            fcp.eventViewer:hide()
+            ok(not fcp.eventViewer:isShowing())
         end
     ),
     test("Viewer Quality", function()
-        local viewer = fcp:viewer()
+        local viewer = fcp.viewer
 
         ok(viewer:isShowing())
         viewer:usingProxies(true)
@@ -155,7 +155,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(not export:isShowing())
 
             -- switch to viewer > proxy mode, which has an additional warning message
-            fcp:viewer():usingProxies(true)
+            fcp.viewer:usingProxies(true)
             _, err = export:show(1, true, true, true, true)
             ok(err == nil)
             ok(export:isShowing())
@@ -169,7 +169,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(eq(fcp.alert:isShowing(), false))
 
             -- reset proxies mode
-            fcp:viewer():usingProxies(false)
+            fcp.viewer:usingProxies(false)
         end
     ),
     test(
@@ -256,7 +256,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline:contents()
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -278,7 +278,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector Corrections Selector",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline:contents()
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -302,7 +302,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Board",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline:contents()
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -443,7 +443,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline",
         function()
-            local timeline = fcp:timeline()
+            local timeline = fcp.timeline
 
             ok(timeline:isShowing())
             timeline:hide()

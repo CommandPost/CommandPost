@@ -13,7 +13,7 @@ local mod = {}
 --- plugins.finalcutpro.menu.proxyicon.usingProxies -> <cp.prop: boolean>
 --- Field
 --- Using Proxies?
-mod.usingProxies = fcp:viewer().usingProxies
+mod.usingProxies = fcp.viewer.usingProxies
 
 --- plugins.finalcutpro.menu.proxyicon.generateProxyTitle() -> string
 --- Function
