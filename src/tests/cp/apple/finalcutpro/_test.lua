@@ -269,7 +269,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             color:show()
             just.doUntil(function() return color:isShowing() end, 1)
             ok(color:isShowing())
-            ok(color:corrections():isShowing())
+            ok(color.corrections:isShowing())
 
             color:hide()
             ok(not color:isShowing())
@@ -289,14 +289,14 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- activate the colour inspector
             local color = fcp.inspector.color
-            local corrections = color:corrections()
+            local corrections = color.corrections
             corrections:show()
 
             ok(eq(corrections:activate("Color Board"), true))
-            ok(eq(color:colorBoard():isShowing(), true))
+            ok(eq(color.colorBoard:isShowing(), true))
 
             ok(eq(corrections:activate("Color Wheels"), true))
-            ok(eq(color:colorWheels():isShowing(), true))
+            ok(eq(color.colorWheels:isShowing(), true))
         end
     ),
     test(
@@ -311,7 +311,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- select the first clip.
             tc:selectClip(clips[1])
 
-            local colorBoard = fcp:colorBoard()
+            local colorBoard = fcp.colorBoard
             colorBoard:show()
             just.doUntil(function()return colorBoard:isShowing()end, 5)
             ok(colorBoard:isShowing())
@@ -339,7 +339,7 @@ return test.suite("cp.apple.finalcutpro"):with(
                 end
             end
 
-            local allAspects = {colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()}
+            local allAspects = {colorBoard.color, colorBoard.saturation, colorBoard.exposure}
 
             local testAspect = function(aspect, hasAngle)
                 aspect:show()
@@ -357,23 +357,23 @@ return test.suite("cp.apple.finalcutpro"):with(
                 end
 
                 -- check the pucks
-                testPuck(aspect:master(), hasAngle)
-                testPuck(aspect:shadows(), hasAngle)
-                testPuck(aspect:midtones(), hasAngle)
-                testPuck(aspect:highlights(), hasAngle)
+                testPuck(aspect.master, hasAngle)
+                testPuck(aspect.shadows, hasAngle)
+                testPuck(aspect.midtones, hasAngle)
+                testPuck(aspect.highlights, hasAngle)
             end
 
             -- check at full height
             fcp.inspector:isFullHeight(true)
-            testAspect(colorBoard:color(), true)
-            testAspect(colorBoard:saturation(), false)
-            testAspect(colorBoard:exposure(), false)
+            testAspect(colorBoard.color, true)
+            testAspect(colorBoard.saturation, false)
+            testAspect(colorBoard.exposure, false)
 
             -- and half-height (in some versions of FCP, puck property rows are hidden unless selected.)
             -- fcp.inspector:isFullHeight(false)
-            -- testAspect(colorBoard:color(), true)
-            -- testAspect(colorBoard:saturation(), false)
-            -- testAspect(colorBoard:exposure(), false)
+            -- testAspect(colorBoard.color, true)
+            -- testAspect(colorBoard.saturation, false)
+            -- testAspect(colorBoard.exposure, false)
         end
     ),
     test(

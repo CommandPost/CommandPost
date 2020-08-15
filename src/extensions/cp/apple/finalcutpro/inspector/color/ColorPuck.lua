@@ -27,7 +27,7 @@ local toRegionalNumberString                = tools.toRegionalNumberString
 
 local doAfter                               = timer.doAfter
 
-local ColorPuck = Element:subclass("ColorPuck")
+local ColorPuck = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorPuck")
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.RANGE -> table
 --- Constant

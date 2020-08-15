@@ -935,35 +935,23 @@ end
 
 --- cp.apple.finalcutpro.inspector <cp.apple.finalcutpro.inspector.Inspector>
 --- Field
---- Returns the [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
+--- The [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
 function fcp.lazy.value:inspector()
     return self.primaryWindow.inspector
 end
 
---- cp.apple.finalcutpro:colorBoard() -> ColorBoard
---- Method
---- Returns the ColorBoard instance from the primary window
----
---- Parameters:
----  * None
----
---- Returns:
----  * the ColorBoard
-function fcp.lazy.method:colorBoard()
-    return self.primaryWindow:colorBoard()
+--- cp.apple.finalcutpro.colorBoard <ColorBoard>
+--- Field
+--- The ColorBoard instance from the primary window
+function fcp.lazy.value:colorBoard()
+    return self.primaryWindow.colorBoard
 end
 
---- cp.apple.finalcutpro:color() -> ColorInspector
---- Method
---- Returns the ColorInspector instance from the primary window
----
---- Parameters:
----  * None
----
---- Returns:
----  * the ColorInspector
-function fcp.lazy.method:color()
-    return self.primaryWindow:color()
+--- cp.apple.finalcutpro.color <ColorInspector>
+--- Field
+--- The ColorInspector instance from the primary window
+function fcp.lazy.value:color()
+    return self.primaryWindow.inspector.color
 end
 
 --- cp.apple.finalcutpro.alert <cp.ui.Alert>

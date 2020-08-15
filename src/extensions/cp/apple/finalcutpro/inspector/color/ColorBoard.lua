@@ -16,7 +16,7 @@ local Do                    = go.Do
 local If                    = go.If
 local Throw                 = go.Throw
 
-local ColorBoard = Element:subclass("ColorBoard")
+local ColorBoard = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorBoard")
 
 -- CORRECTION_TYPE -> string
 -- Constant
@@ -108,7 +108,7 @@ end
 --- Field
 --- Returns whether or not the Color Board is active
 function ColorBoard.lazy.prop:isActive()
-    return self:aspectGroup().isShowing
+    return self.aspectGroup.isShowing
 end
 
 -----------------------------------------------------------------------
@@ -203,42 +203,24 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:color() -> ColorBoardAspect
---- Method
---- Returns the `color` aspect of the color board.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorBoardAspect`.
-function ColorBoard.lazy.method:color()
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.color <ColorBoardAspect>
+--- Field
+--- The `color` aspect of the color board.
+function ColorBoard.lazy.value:color()
     return Aspect(self, 1, true)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:saturation() -> ColorBoardAspect
---- Method
---- Returns the `saturation` aspect of the color board.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorBoardAspect`.
-function ColorBoard.lazy.method:saturation()
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.saturation <ColorBoardAspect>
+--- Field
+--- The `saturation` aspect of the color board.
+function ColorBoard.lazy.value:saturation()
     return Aspect(self, 2)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:exposure() -> ColorBoardAspect
---- Method
---- Returns the `exposure` aspect of the color board.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorBoardAspect`.
-function ColorBoard.lazy.method:exposure()
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.exposure <ColorBoardAspect>
+--- Field
+--- The `exposure` aspect of the color board.
+function ColorBoard.lazy.value:exposure()
     return Aspect(self, 3)
 end
 
@@ -253,10 +235,10 @@ end
 --- Returns:
 --- * The currently active `ColorBoardAspect`, or the `color` aspect if none is showing.
 function ColorBoard:current()
-    if self:saturation():isShowing() then
-        return self:saturation()
-    elseif self:exposure():isShowing() then
-        return self:exposure()
+    if self.saturation:isShowing() then
+        return self.saturation
+    elseif self.exposure:isShowing() then
+        return self.exposure
     end
     return self:color()
 end
@@ -300,17 +282,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:aspectGroup() -> cp.ui.RadioGroup
---- Method
---- Returns the `RadioGroup` for the 'aspect' currently being controlled -
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.aspectGroup <cp.ui.RadioGroup>
+--- Field
+--- The `RadioGroup` for the 'aspect' currently being controlled -
 --- either "Color", "Saturation", or "Exposure".
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `RadioGroup`.
-function ColorBoard.lazy.method:aspectGroup()
+function ColorBoard.lazy.value:aspectGroup()
     return RadioGroup(self, function()
         return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
     end)
@@ -328,7 +304,7 @@ end
 --- * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
 function ColorBoard:doSelectAspect(index)
     return Do(self:doShow())
-    :Then(self:aspectGroup():doSelectOption(index))
+    :Then(self.aspectGroup:doSelectOption(index))
     :Label("ColorBoard:doSelectAspect")
 end
 
@@ -344,7 +320,7 @@ end
 --- * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
 function ColorBoard:doSelectAspect(index)
     return Do(self:doShow())
-    :Then(self:aspectGroup():doSelectOption(index))
+    :Then(self.aspectGroup:doSelectOption(index))
     :Label("ColorBoard:doSelectAspect")
 end
 
@@ -360,7 +336,7 @@ end
 function ColorBoard:nextAspect()
     self:show()
 
-    local aspects = self:aspectGroup()
+    local aspects = self.aspectGroup
     aspects:nextOption()
 
     return self
@@ -376,7 +352,7 @@ end
 --- Returns:
 ---  * ColorBoard object
 function ColorBoard.lazy.method:doNextAspect()
-    local aspects = self:aspectGroup()
+    local aspects = self.aspectGroup
     return Do(self:doShow())
     :Then(
         aspects:doNextOption()

@@ -22,11 +22,7 @@ local Require                           = require("cp.rx.go.Require")
 local sort = table.sort
 
 
-local CorrectionsBar = Element:subclass("CorrectionsBar")
-
-function CorrectionsBar.__tostring()
-    return "cp.apple.finalcutpro.inspector.color.CorrectionsBar"
-end
+local CorrectionsBar = Element:subclass("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES
 --- Constant
@@ -131,16 +127,10 @@ function CorrectionsBar.lazy.method:doShow()
     return self:parent():doShow():Label("CorrectionsBar:doShow")
 end
 
---- cp.apple.finalcutpro.inspector.color.CorrectionsBar:menuButton() -> MenuButton
---- Method
---- Returns the menu button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `menuButton` object.
-function CorrectionsBar.lazy.method:menuButton()
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar.menuButton <MenuButton>
+--- Field
+--- The menu button.
+function CorrectionsBar.lazy.value:menuButton()
     return MenuButton(self, self.UI:mutate(function(original)
         return axutils.childMatching(original(), MenuButton.matches)
     end))
@@ -188,7 +178,7 @@ function CorrectionsBar:activate(correctionType, number)
         return false
     end
 
-    local menuButton = self:menuButton()
+    local menuButton = self.menuButton
 
     local result = just.doUntil(function()
         return menuButton.isShowing()
@@ -226,7 +216,7 @@ end
 ---  *  The `Statement`.
 function CorrectionsBar:doActivate(correctionType, number)
     number = number or 1
-    local menuButton = self:menuButton()
+    local menuButton = self.menuButton
 
     return Do(self:doShow())
     :Then(function()
@@ -266,7 +256,7 @@ function CorrectionsBar:add(correctionType)
         log.ef("Invalid Correction Type: %s", correctionType)
     end
 
-    local menuButton = self:menuButton()
+    local menuButton = self.menuButton
 
     local pattern = "%+"..correctionText
     if not menuButton:selectItemMatching(pattern) then
@@ -286,7 +276,7 @@ function CorrectionsBar:doAdd(correctionType)
 
         local pattern = "%+"..correctionText
 
-        return Require(self:menuButton():doSelectItemMatching(pattern))
+        return Require(self.menuButton:doSelectItemMatching(pattern))
         :OrThrow("Unable to find correction: '%s' (%s)", correctionType, correctionText)
     end)
 end

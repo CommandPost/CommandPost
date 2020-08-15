@@ -431,7 +431,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Saturation:
                     --------------------------------------------------------------------------------
-                    id = sliderParameter(environmentGroup, environment:saturation(), id, 0, 100, 0.1, 100, "saturation")
+                    id = sliderParameter(environmentGroup, environment.saturation, id, 0, 100, 0.1, 100, "saturation")
 
                     --------------------------------------------------------------------------------
                     -- Anisotropic:

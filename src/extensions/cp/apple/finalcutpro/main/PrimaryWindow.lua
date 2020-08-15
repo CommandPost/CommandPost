@@ -313,17 +313,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:colorBoard() -> ColorBoard
---- Method
---- Gets the ColorBoard object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorBoard
-function PrimaryWindow.lazy.method:colorBoard()
-    return self.inspector.color:colorBoard()
+--- cp.apple.finalcutpro.main.PrimaryWindow.colorBoard <ColorBoard>
+--- Field
+--- The ColorBoard object.
+function PrimaryWindow.lazy.value:colorBoard()
+    return self.inspector.color.colorBoard
 end
 
 -----------------------------------------------------------------------
