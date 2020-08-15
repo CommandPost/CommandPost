@@ -322,7 +322,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:
     --------------------------------------------------------------------------------
-    local effectsList = generators:contents():childrenUI()
+    local effectsList = generators.contents:childrenUI()
     local allGenerators = {}
     if effectsList ~= nil then
         for i=1, #effectsList do
@@ -390,7 +390,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:
     --------------------------------------------------------------------------------
-    local effectsList = generators:contents():childrenUI()
+    local effectsList = generators.contents:childrenUI()
     local allTitles = {}
     if effectsList ~= nil then
         for i=1, #effectsList do

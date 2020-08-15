@@ -61,7 +61,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     mod.browserPlayhead.deleteHighlight()
 
-    local contents = fcp.timeline:contents()
+    local contents = fcp.timeline.contents
 
     --------------------------------------------------------------------------------
     -- Store the originally-selected clips

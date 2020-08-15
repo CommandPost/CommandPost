@@ -30,7 +30,7 @@ local displayMessage        = dialog.displayMessage
 --  * None
 local function doSpatialConformType(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local libraries = fcp.browser.libraries
     local spatialConformType = fcp.inspector.video:spatialConform():type()
 
@@ -77,7 +77,7 @@ end
 --  * None
 local function doBlendMode(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local blendMode = fcp.inspector.video:compositing():blendMode()
 
     return Do(function()
@@ -112,7 +112,7 @@ end
 --  * None
 local function doStabilization(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local stabilization = fcp.inspector.video:stabilization().enabled
 
     return Do(function()
@@ -153,7 +153,7 @@ end
 --  * None
 local function doStabilizationMethod(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local stabilization = fcp.inspector.video:stabilization()
     local method = fcp.inspector.video:stabilization():method()
 
@@ -211,7 +211,7 @@ end
 --  * None
 local function doRollingShutter(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local rollingShutter = fcp.inspector.video:rollingShutter().enabled
 
     return Do(function()
@@ -252,7 +252,7 @@ end
 --  * None
 local function doRollingShutterAmount(value)
     local timeline = fcp.timeline
-    local timelineContents = timeline:contents()
+    local timelineContents = timeline.contents
     local rollingShutter = fcp.inspector.video:rollingShutter()
     local amount = rollingShutter:amount()
 

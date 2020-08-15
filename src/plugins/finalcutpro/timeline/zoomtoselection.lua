@@ -154,7 +154,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     mod.appearance = fcp.timeline.toolbar:appearance()
     mod.zoomAmount = mod.appearance:zoomAmount()
-    mod.contents = fcp.timeline:contents()
+    mod.contents = fcp.timeline.contents
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

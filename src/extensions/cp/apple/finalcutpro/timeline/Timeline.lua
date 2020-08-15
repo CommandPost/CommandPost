@@ -188,14 +188,14 @@ end
 --- Field
 --- Checks if the Timeline has finished loading.
 function Timeline.lazy.prop:isLoaded()
-    return self:contents().isLoaded
+    return self.contents.isLoaded
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the Timeline is the focused panel.
 function Timeline.lazy.prop:isFocused()
-    return self:contents().isFocused
+    return self.contents.isFocused
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
@@ -402,7 +402,7 @@ end
 --- Returns:
 --- * The `Statement`.
 function Timeline:doFocus(show)
-    return self:contents():doFocus(show)
+    return self.contents:doFocus(show)
     :Label("Timeline:doFocus")
 end
 

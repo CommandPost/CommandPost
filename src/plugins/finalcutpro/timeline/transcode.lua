@@ -55,7 +55,7 @@ function mod.transcodeSelectedClips(transcodeType)
     end
 
     local timeline = fcp.timeline
-    local contents = timeline:contents()
+    local contents = timeline.contents
     local transcodeMedia = fcp.transcodeMedia
 
     if not timeline:isFocused() then
@@ -240,7 +240,7 @@ end
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedTimelineClips(transcodeType)
     local timeline = fcp.timeline
-    local contents = timeline:contents()
+    local contents = timeline.contents
 
     return Do(timeline:doFocus())
     :Then(function()

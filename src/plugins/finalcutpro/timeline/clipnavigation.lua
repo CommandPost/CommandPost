@@ -36,7 +36,7 @@ function plugin.init(deps)
         :add("selectMiddleOfNextClipInSameLane")
         :whenActivated(function()
             local timeline = fcp.timeline
-            local contents = timeline:contents()
+            local contents = timeline.contents
             local selectedClips = contents:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]
@@ -95,7 +95,7 @@ function plugin.init(deps)
         :add("selectMiddleOfPreviousClipInSameLane")
         :whenActivated(function()
             local timeline = fcp.timeline
-            local contents = timeline:contents()
+            local contents = timeline.contents
             local selectedClips = contents:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]

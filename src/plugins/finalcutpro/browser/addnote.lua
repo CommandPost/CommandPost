@@ -71,7 +71,7 @@ function mod.addNoteToSelectedClips()
     -- Check to see if Timeline has focus.
     --------------------------------------------------------------------------------
     local timeline = fcp.timeline
-    local contents = timeline:contents()
+    local contents = timeline.contents
     local selectedTimelineClips = contents:selectedClipsUI()
     local timelineMode = false
     if timeline:isFocused() then

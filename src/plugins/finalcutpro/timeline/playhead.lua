@@ -14,7 +14,7 @@ local i18n                      = require("cp.i18n")
 local mod = {}
 
 local viewer = fcp.viewer
-local contents = fcp.timeline:contents()
+local contents = fcp.timeline.contents
 local playhead = fcp.timeline:playhead()
 
 mod._offset = nil

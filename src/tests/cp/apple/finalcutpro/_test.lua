@@ -197,7 +197,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             browser:show()
             ok(browser:isShowing())
             ok(browser.sidebar:isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -209,7 +209,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             browser:show()
             ok(browser:isShowing())
             ok(browser.sidebar:isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -232,7 +232,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             browser:show()
             ok(browser:isShowing())
             ok(browser.sidebar:isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -256,7 +256,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector",
         function()
-            local tc = fcp.timeline:contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -278,7 +278,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector Corrections Selector",
         function()
-            local tc = fcp.timeline:contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -302,7 +302,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Board",
         function()
-            local tc = fcp.timeline:contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then

@@ -27,7 +27,7 @@ local MAX_LANES = 10
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.selectClipAtLane(whichLane)
-    local content = fcp.timeline:contents()
+    local content = fcp.timeline.contents
     local playheadX = content:playhead():position()
 
     local clips = content:clipsUI(false, function(clip)

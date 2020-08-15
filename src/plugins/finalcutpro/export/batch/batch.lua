@@ -159,7 +159,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         end
     end
     local playhead = fcp.timeline:playhead()
-    local timelineContents = fcp.timeline:contents()
+    local timelineContents = fcp.timeline.contents
     for _,clip in spairs(clips, sortFn) do
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -177,7 +177,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp.timeline:contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -264,7 +264,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp.timeline:contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -683,7 +683,7 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Check if we have any currently-selected clips:
     --------------------------------------------------------------------------------
-    local timelineContents = fcp.timeline:contents()
+    local timelineContents = fcp.timeline.contents
     local selectedClips = timelineContents:selectedClipsUI(true)
 
     if not selectedClips or #selectedClips == 0 then
