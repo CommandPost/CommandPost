@@ -25,7 +25,7 @@ local plugin = {
 function plugin.init(deps)
     local cmds = deps.fcpxCmds
 
-    local list = fcp:libraries():list()
+    local list = fcp.libraries:list()
 
     local saveBrowserContentsToCSV = function()
         fcp:launch(5)

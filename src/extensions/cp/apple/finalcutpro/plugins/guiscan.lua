@@ -294,7 +294,7 @@ local function scanGenerators()
 
     local generators = fcp:generators()
 
-    local browserLayout = fcp:browser():saveLayout()
+    local browserLayout = fcp.browser:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure Generators and Generators panel is open:
@@ -336,7 +336,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Restore Effects or Transitions Panel:
     --------------------------------------------------------------------------------
-    fcp:browser():loadLayout(browserLayout)
+    fcp.browser:loadLayout(browserLayout)
 
     --------------------------------------------------------------------------------
     -- Return the results:
@@ -362,7 +362,7 @@ local function scanTitles()
 
     local generators = fcp:generators()
 
-    local browserLayout = fcp:browser():saveLayout()
+    local browserLayout = fcp.browser:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure Titles and Generators panel is open:
@@ -404,7 +404,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Restore Effects or Transitions Panel:
     --------------------------------------------------------------------------------
-    fcp:browser():loadLayout(browserLayout)
+    fcp.browser:loadLayout(browserLayout)
 
     return allTitles
 end

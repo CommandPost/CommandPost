@@ -31,7 +31,7 @@ local displayMessage        = dialog.displayMessage
 local function doSpatialConformType(value)
     local timeline = fcp.timeline
     local timelineContents = timeline:contents()
-    local libraries = fcp:browser():libraries()
+    local libraries = fcp.browser.libraries
     local spatialConformType = fcp.inspector.video:spatialConform():type()
 
     return Do(function()

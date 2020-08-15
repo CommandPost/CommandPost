@@ -559,7 +559,7 @@ end
 --- Returns:
 --- * The library row `axuielement`.
 function fcp:selectLibrary(title)
-    return self:libraries():selectLibrary(title)
+    return self.libraries:selectLibrary(title)
 end
 
 --- cp.apple.finalcutpro:closeLibrary(title) -> boolean
@@ -573,7 +573,7 @@ end
 --- * `true` if successful, or `false` if not.
 function fcp:closeLibrary(title)
     if self:isRunning() then
-        local libraries = self:libraries()
+        local libraries = self.libraries
         libraries:show()
         just.doUntil(function() return libraries:isShowing() end, 5.0)
         --------------------------------------------------------------------------------

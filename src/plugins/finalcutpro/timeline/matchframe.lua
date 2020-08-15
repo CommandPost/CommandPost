@@ -240,7 +240,7 @@ local function soloClip()
     --------------------------------------------------------------------------------
     -- Give FCPX time to find the clip
     --------------------------------------------------------------------------------
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     local selectedClips = nil
     just.doUntil(function()
         selectedClips = libraries:selectedClipsUI()
@@ -309,7 +309,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     mod.browserPlayhead.deleteHighlight()
 
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
 
     --------------------------------------------------------------------------------
     -- Clear the selection first
@@ -347,7 +347,7 @@ end
 local function selectKeywordCollection(keyword, solo)
     fcp:selectMenu({"File", "Reveal in Browser"})
 
-    local sidebar = fcp:libraries():sidebar()
+    local sidebar = fcp.libraries:sidebar()
 
     local selectedRowsUI = sidebar:selectedRowsUI()
     local selectedRowUI = selectedRowsUI and selectedRowsUI[1]

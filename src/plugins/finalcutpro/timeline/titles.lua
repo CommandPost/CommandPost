@@ -159,7 +159,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Save the main Browser layout:
     --------------------------------------------------------------------------------
-    local browser = fcp:browser()
+    local browser = fcp.browser
     local browserLayout = browser:saveLayout()
 
     --------------------------------------------------------------------------------

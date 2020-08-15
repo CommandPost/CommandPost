@@ -58,7 +58,7 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Make sure the Browser is visible:
     --------------------------------------------------------------------------------
-    local libraries = fcp:browser():libraries()
+    local libraries = fcp.browser.libraries
     if not doUntil(function()
         libraries:show()
         return libraries:show()

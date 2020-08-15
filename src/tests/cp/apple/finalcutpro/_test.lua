@@ -72,7 +72,7 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             -- Test that various UI elements are able to be found.
             ok(fcp.primaryWindow:isShowing())
-            ok(fcp:browser():isShowing())
+            ok(fcp.browser:isShowing())
             ok(fcp.timeline:isShowing())
             ok(fcp.inspector:isShowing())
             ok(fcp.viewer:isShowing())
@@ -380,7 +380,7 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Libraries Browser",
         function()
             -- Show it
-            local libraries = fcp:libraries()
+            local libraries = fcp.libraries
             libraries:show()
 
             -- Check UI elements
@@ -416,7 +416,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Libraries Filmstrip",
         function()
-            local libraries = fcp:libraries()
+            local libraries = fcp.libraries
 
             -- Check Filmstrip/List view
             libraries:filmstrip():show()
@@ -427,7 +427,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Libraries List",
         function()
-            local libraries = fcp:libraries()
+            local libraries = fcp.libraries
             local list = libraries:list()
 
             list:show()
@@ -699,11 +699,11 @@ onRun(
         end
 
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
-        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
+        if not just.doUntil(function() return fcp.libraries:selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
             error(format("Unable to open the '%s' Library.", targetLibrary))
         end
 
-        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10, 0.1) then
+        if not just.doUntil(function() return fcp.libraries:openClipTitled("Test Project") end, 10, 0.1) then
             error(format("Unable to open the 'Test Project' clip."))
         end
     end

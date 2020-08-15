@@ -98,7 +98,7 @@ function mod.setupWatcher()
         if not mod._watcher then
             mod._watcher = eventtap.new({eventtap.event.types.leftMouseDown}, function(event)
                 if fcp:isFrontmost() then
-                    local ui = fcp:browser():UI()
+                    local ui = fcp.browser:UI()
                     if ui then
                         local browserFrame = ui:attributeValue("AXFrame")
                         local location = event:location() and geometry.point(event:location())
@@ -156,7 +156,7 @@ end
 --- Returns:
 ---  * A table of active column names or an empty table if something goes wrong.
 function mod.getActiveColumnsNames()
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     local listUI = libraries:list():UI()
     local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
     local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
@@ -182,7 +182,7 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.restoreLayoutFromTable(layout)
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
     --------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ end
 --- Returns:
 ---  * A string if successful otherwise `nil`.
 function mod.getSingleSelectedCollection()
-    local selectedRowsUI = fcp:libraries():sidebar():selectedRowsUI()
+    local selectedRowsUI = fcp.libraries:sidebar():selectedRowsUI()
     if selectedRowsUI and #selectedRowsUI == 1 and childWithRole(selectedRowsUI[1], "AXTextField") then
         return childWithRole(selectedRowsUI[1], "AXTextField"):attributeValue("AXValue")
     end

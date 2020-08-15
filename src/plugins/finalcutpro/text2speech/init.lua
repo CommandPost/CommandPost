@@ -476,7 +476,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Make sure the Browser is visible:
         --------------------------------------------------------------------------------
-        local libraries = fcp:browser():libraries()
+        local libraries = fcp.browser.libraries
         if not libraries:isShowing() then
             displayErrorMessage("Library Panel is closed.")
             return false
