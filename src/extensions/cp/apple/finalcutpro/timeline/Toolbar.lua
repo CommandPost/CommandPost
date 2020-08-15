@@ -207,7 +207,7 @@ end
 --- cp.apple.finalcutpro.timeline.Toolbar.browser <cp.apple.finalcutpro.timeline.Toolbar.Browser>
 --- Field
 --- The [Toolbar.Browser](cp.apple.finalcutpro.timeline.Toolbar.Browser.md) containing buttons that will toggle the Effects/Transitions browsers.
-function Toolbar.lazy.value.browser
+function Toolbar.lazy.value:browser()
     return Toolbar.Browser(self, self.UI:mutate(function(original)
         return cache(self, "_browser", function()
             return childFromRight(original(), 1, Toolbar.Browser.matches)
