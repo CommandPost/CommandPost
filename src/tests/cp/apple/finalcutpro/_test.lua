@@ -217,7 +217,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Media Browser",
         function()
-            local browser = fcp:media()
+            local browser = fcp.media
             browser:show()
             ok(browser:isShowing())
             ok(browser:sidebar():isShowing())
