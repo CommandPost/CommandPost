@@ -334,7 +334,7 @@ end
 -----------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.alert <cp.ui.Alert>
---- Valuie
+--- Field
 --- Provides access to any 'Alert' windows on the PrimaryWindow.
 function PrimaryWindow.lazy.value:alert()
     return self.window.alert

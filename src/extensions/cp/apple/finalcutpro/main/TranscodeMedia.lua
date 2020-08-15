@@ -59,10 +59,10 @@ function TranscodeMedia:initialize(parent)
     Sheet.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:createOptimizedMedia() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.main.TranscodeMedia.createOptimizedMedia <cp.ui.CheckBox>
+--- Field
 --- The "Create Optimized Media" check box, as a [CheckBox](cp.ui.CheckBox.md)
-function TranscodeMedia.lazy.method:createOptimizedMedia()
+function TranscodeMedia.lazy.value:createOptimizedMedia()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_createOptimizedMedia", function()
             return childFromTop(original(), 1, CheckBox.matches)
@@ -70,10 +70,10 @@ function TranscodeMedia.lazy.method:createOptimizedMedia()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:createProxyMedia() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.main.TranscodeMedia.createProxyMedia <cp.ui.CheckBox>
+--- Field
 --- The "Create Proxy Media" check box, as a [CheckBox](cp.ui.CheckBox.md)
-function TranscodeMedia.lazy.method:createProxyMedia()
+function TranscodeMedia.lazy.value:createProxyMedia()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_createProxyMedia", function()
             return childFromTop(original(), 2, CheckBox.matches)
@@ -81,10 +81,10 @@ function TranscodeMedia.lazy.method:createProxyMedia()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:cancel() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.TranscodeMedia.cancel <cp.ui.Button>
+--- Field
 --- The "Cancel" button, as a [Button](cp.ui.Button.md)
-function TranscodeMedia.lazy.method:cancel()
+function TranscodeMedia.lazy.value:cancel()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_cancel", function()
             return childFromTop(original(), 1, Button.matches)
@@ -92,10 +92,10 @@ function TranscodeMedia.lazy.method:cancel()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:cancel() -> cp.ui.Button
---- Method
---- The "Cancel" button, as a [Button](cp.ui.Button.md)
-function TranscodeMedia.lazy.method:ok()
+--- cp.apple.finalcutpro.main.TranscodeMedia.ok <cp.ui.Button>
+--- Field
+--- The "OK" button, as a [Button](cp.ui.Button.md)
+function TranscodeMedia.lazy.value:ok()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_ok", function()
             return childFromLeft(original(), 2, Button.matches)
