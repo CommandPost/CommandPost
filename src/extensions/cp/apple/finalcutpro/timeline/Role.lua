@@ -148,10 +148,10 @@ function Role.lazy.prop:subroleRow()
     end)
 end
 
---- cp.apple.finalcutpro.timeline.Role:active() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.timeline.Role.active <cp.ui.CheckBox>
+--- Field
 --- The [CheckBox](cp.ui.CheckBox.md) that determines if the `Role` is active in the timeline.
-function Role.lazy.method:active()
+function Role.lazy.value:active()
     return CheckBox(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, CheckBox.matches)
     end))
@@ -170,14 +170,14 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will activate the current role, if possible.
 function Role.lazy.method:doActivate()
-    return self:active():doCheck()
+    return self.active:doCheck()
 end
 
 --- cp.apple.finalcutpro.timeline.Role:doDeactivate() -> cp.rx.go.Statement.md
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will deactivate the current role, if possible.
 function Role.lazy.method:doDeactivate()
-    return self:active():doUncheck()
+    return self.active:doUncheck()
 end
 
 function Role:__tostring()
