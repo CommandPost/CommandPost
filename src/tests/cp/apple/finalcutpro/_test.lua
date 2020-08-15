@@ -458,7 +458,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             ok(appearanceToggle:isShowing())
             ok(not appearance:isShowing())
-            ok(not appearance:clipHeight():isShowing())
+            ok(not appearance.clipHeight:isShowing())
 
             appearance:show()
             ok(
@@ -468,11 +468,11 @@ return test.suite("cp.apple.finalcutpro"):with(
                     end
                 )
             )
-            ok(appearance:clipHeight():isShowing())
+            ok(appearance.clipHeight:isShowing())
 
             appearance:hide()
             ok(not appearance:isShowing())
-            ok(not appearance:clipHeight():isShowing())
+            ok(not appearance.clipHeight:isShowing())
         end
     ),
     test(
@@ -542,7 +542,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             panel:show()
             ok(panel:isShowing())
             ok(panel:createProxyMedia():isShowing())
-            ok(panel:createOptimizedMedia():isShowing())
+            ok(panel:createOptimizedMedia:isShowing())
             ok(panel:copyToMediaFolder():isShowing())
             ok(panel:leaveInPlace():isShowing())
             ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())

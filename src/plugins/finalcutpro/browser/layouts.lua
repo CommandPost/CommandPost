@@ -400,12 +400,12 @@ function mod.restoreLayoutFromTable(layout)
     --------------------------------------------------------------------------------
     -- Restore Appearance & Filtering Options:
     --------------------------------------------------------------------------------
-    appearanceAndFiltering:clipHeight():value(layout["clipHeight"])
-    appearanceAndFiltering:duration():value(layout["duration"])
-    appearanceAndFiltering:groupBy():value(layout["groupBy"])
-    appearanceAndFiltering:sortBy():value(layout["sortBy"])
-    appearanceAndFiltering:waveforms():checked(layout["waveforms"])
-    appearanceAndFiltering:continuousPlayback():checked(layout["continuousPlayback"])
+    appearanceAndFiltering.clipHeight:value(layout["clipHeight"])
+    appearanceAndFiltering.duration:value(layout["duration"])
+    appearanceAndFiltering.groupBy:value(layout["groupBy"])
+    appearanceAndFiltering.sortBy:value(layout["sortBy"])
+    appearanceAndFiltering.waveforms:checked(layout["waveforms"])
+    appearanceAndFiltering.continuousPlayback:checked(layout["continuousPlayback"])
 
     --------------------------------------------------------------------------------
     -- Close the Appearance & Filtering Popup:
@@ -541,12 +541,12 @@ function mod.saveLayoutToTable()
         ["activeColumnsNames"] = activeColumnsNames,
         ["sortOrder"] = sortOrder,
         ["isListView"] = isListView,
-        ["clipHeight"] = appearanceAndFiltering:clipHeight():value(),
-        ["duration"] = appearanceAndFiltering:duration():value(),
-        ["groupBy"] = appearanceAndFiltering:groupBy():value(),
-        ["sortBy"] = appearanceAndFiltering:sortBy():value(),
-        ["waveforms"] = appearanceAndFiltering:waveforms():checked(),
-        ["continuousPlayback"] = appearanceAndFiltering:continuousPlayback():checked(),
+        ["clipHeight"] = appearanceAndFiltering.clipHeight:value(),
+        ["duration"] = appearanceAndFiltering.duration:value(),
+        ["groupBy"] = appearanceAndFiltering.groupBy:value(),
+        ["sortBy"] = appearanceAndFiltering.sortBy:value(),
+        ["waveforms"] = appearanceAndFiltering.waveforms:checked(),
+        ["continuousPlayback"] = appearanceAndFiltering.continuousPlayback:checked(),
     }
 
     --------------------------------------------------------------------------------

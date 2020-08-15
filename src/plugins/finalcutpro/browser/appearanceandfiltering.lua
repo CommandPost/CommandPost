@@ -40,7 +40,7 @@ function plugin.init(deps)
                     return
                 end
 
-                appearanceAndFiltering:duration():value(value)
+                appearanceAndFiltering.duration:value(value)
 
                 if not just.doUntil(function()
                     appearanceAndFiltering:hide()
