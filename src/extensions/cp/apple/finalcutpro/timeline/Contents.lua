@@ -313,7 +313,7 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function Contents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self:playhead():position()
+    local playheadPosition = self.playhead:position()
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip:frame()
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
@@ -498,7 +498,7 @@ function Contents:selectClipInAngle(angleNumber)
     if clipsUI then
         local angleUI = clipsUI[angleNumber]
 
-        local playheadPosition = self:playhead():position()
+        local playheadPosition = self.playhead:position()
         local clipUI = axutils.childMatching(angleUI, function(child)
             local frame = child:frame()
             return child:attributeValue("AXRole") == "AXLayoutItem"

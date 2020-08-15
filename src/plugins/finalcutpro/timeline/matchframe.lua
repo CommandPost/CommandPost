@@ -113,7 +113,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Ensure the playhead is visible:
     --------------------------------------------------------------------------------
-    contents:playhead():show()
+    contents.playhead:show()
 
     contents:selectClipInAngle(multicamAngle)
 

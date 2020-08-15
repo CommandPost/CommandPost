@@ -443,7 +443,7 @@ function Timeline.lazy.value:playhead()
     return self.contents.playhead
 end
 
---- cp.apple.finalcutpro.timeline.Timeline:skimmingPlayhead() -> Playhead
+--- cp.apple.finalcutpro.timeline.Timeline.skimmingPlayhead <Playhead>
 --- Field
 --- The Playhead that tracks under the mouse while skimming.
 function Timeline.lazy.value:skimmingPlayhead()

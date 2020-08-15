@@ -79,7 +79,7 @@ function plugin.init(deps)
 
                         local newPositionInTC = newPosition:toTimecode(frameRate, ":")
 
-                        timeline:playhead():timecode(newPositionInTC)
+                        timeline.playhead:timecode(newPositionInTC)
                     end
                 end
             else
@@ -138,7 +138,7 @@ function plugin.init(deps)
 
                         local newPositionInTC = newPosition:toTimecode(frameRate, ":")
 
-                        timeline:playhead():timecode(newPositionInTC)
+                        timeline.playhead:timecode(newPositionInTC)
                     end
                 end
             else

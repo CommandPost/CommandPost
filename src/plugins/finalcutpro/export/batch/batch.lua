@@ -158,7 +158,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             return (t[a]:attributeValue("AXValueDescription") or "") < (t[b]:attributeValue("AXValueDescription") or "")
         end
     end
-    local playhead = fcp.timeline:playhead()
+    local playhead = fcp.timeline.playhead
     local timelineContents = fcp.timeline.contents
     for _,clip in spairs(clips, sortFn) do
         --------------------------------------------------------------------------------

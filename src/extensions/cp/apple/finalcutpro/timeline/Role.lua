@@ -157,10 +157,10 @@ function Role.lazy.method:active()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Role:title() -> cp.ui.StaticText
---- Method
+--- cp.apple.finalcutpro.timeline.Role.title <cp.ui.StaticText>
+--- Field
 --- The [StaticText](cp.ui.StaticText.md) containing the title.
-function Role.lazy.method:title()
+function Role.lazy.value:title()
     return StaticText(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, StaticText.matches)
     end))
@@ -181,7 +181,7 @@ function Role.lazy.method:doDeactivate()
 end
 
 function Role:__tostring()
-    local title = self:title():value() or "[Unknown]"
+    local title = self.title:value() or "[Unknown]"
     return format("%s: %s", Row.__tostring(self), title)
 end
 

@@ -15,7 +15,7 @@ local mod = {}
 
 local viewer = fcp.viewer
 local contents = fcp.timeline.contents
-local playhead = fcp.timeline:playhead()
+local playhead = fcp.timeline.playhead
 
 mod._offset = nil
 

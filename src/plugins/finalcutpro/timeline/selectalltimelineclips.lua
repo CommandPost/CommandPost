@@ -22,7 +22,7 @@ local mod = {}
 function mod.selectAllTimelineClips(forwards)
 
     local content = fcp.timeline.contents
-    local playheadX = content:playhead():position()
+    local playheadX = content.playhead:position()
 
     local clips = content:clipsUI(true, function(clip)
         local frame = clip:frame()
