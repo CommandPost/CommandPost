@@ -31,22 +31,19 @@ local IndexClips = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexCli
 --- Parameters:
 --- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
 
---- cp.apple.finalcutpro.timeline.IndexClips:activate() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.activate <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Clips' section.
-function IndexClips.lazy.method:activate()
+function IndexClips.lazy.value:activate()
     return self:index():mode():clips()
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:list() -> cp.ui.Table
---- Method
---- Returns the list of clips as a [Table](cp.ui.Table.md).
----
---- Returns:
---- * The [Table](cp.ui.Table.md).
-function IndexClips.lazy.method:list()
+--- cp.apple.finalcutpro.timeline.IndexClips.list <cp.ui.Table>
+--- Field
+--- The list of clips as a [Table](cp.ui.Table.md).
+function IndexClips.lazy.value:list()
     return Table(self, self.UI:mutate(function(original)
-        if self:activate():checked() then
+        if self.activate:checked() then
             return cache(self, "_list", function()
                 local scrollArea = childWithRole(original(), "AXScrollArea")
                 return scrollArea and childMatching(scrollArea, Table.matches)
@@ -55,12 +52,12 @@ function IndexClips.lazy.method:list()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:all() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.all <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that will show "All" types of media.
-function IndexClips.lazy.method:all()
+function IndexClips.lazy.value:all()
     return RadioButton(self, self:index().UI:mutate(function(original)
-        if self:activate():checked() then
+        if self.activate:checked() then
             return cache(self, "_all", function()
                 local group = childMatching(original(), function(child)
                     return RadioGroup.matches(child) and #child == 1
@@ -117,59 +114,59 @@ function IndexClips.Type:initialize(parent)
     RadioGroup.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips.Type:video() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.Type.video <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Video" filter.
-function IndexClips.Type.lazy.method:video()
+function IndexClips.Type.lazy.value:video()
     return RadioButton(self, self.UI:mutate(function(original)
         return childWith(original(), "AXTitle", videoFilter())
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips.Type:audio() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.Type.audio <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Audio" filter.
-function IndexClips.Type.lazy.method:audio()
+function IndexClips.Type.lazy.value:audio()
     return RadioButton(self, self.UI:mutate(function(original)
         return childWith(original(), "AXTitle", audioFilter())
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips.Type:titles() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.Type.titles <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Titles" filter.
-function IndexClips.Type.lazy.method:titles()
+function IndexClips.Type.lazy.value:titles()
     return RadioButton(self, self.UI:mutate(function(original)
         return childWith(original(), "AXTitle", titlesFilter())
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:type() -> cp.apple.finalcutpro.timeline.IndexClips.Type
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.type <cp.apple.finalcutpro.timeline.IndexClips.Type>
+--- Field
 --- The [IndexClips.Type](cp.apple.finalcutpro.timeline.IndexClips.Type.md).
-function IndexClips.lazy.method:type()
+function IndexClips.lazy.value:type()
     return IndexClips.Type(self)
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:video() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.video <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Video" filter.
-function IndexClips.lazy.method:video()
-    return self:type():video()
+function IndexClips.lazy.value:video()
+    return self.type.video
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:audio() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.audio <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Audio" filter.
-function IndexClips.lazy.method:audio()
-    return self:type():audio()
+function IndexClips.lazy.value:audio()
+    return self.type.audio
 end
 
---- cp.apple.finalcutpro.timeline.IndexClips:titles() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexClips.titles <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Titles" filter.
-function IndexClips.lazy.method:titles()
-    return self:type():titles()
+function IndexClips.lazy.value:titles()
+    return self.type.titles
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips:doShowAll() -> cp.rx.go.Statement
@@ -177,7 +174,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "All" media types.
 function IndexClips.lazy.method:doShowAll()
     return If(self:doShow())
-    :Then(self:all():doPress())
+    :Then(self.all:doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowAll")
 end
@@ -187,7 +184,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Video" media types.
 function IndexClips.lazy.method:doShowVideo()
     return If(self:doShow())
-    :Then(self:video():doPress())
+    :Then(self.video:doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowVideo")
 end
@@ -197,7 +194,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Audio" media types.
 function IndexClips.lazy.method:doShowAudio()
     return If(self:doShow())
-    :Then(self:audio():doPress())
+    :Then(self.audio:doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowAudio")
 end
@@ -207,7 +204,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the clip index to "Titles" media types.
 function IndexClips.lazy.method:doShowTitles()
     return If(self:doShow())
-    :Then(self:titles():doPress())
+    :Then(self.titles:doPress())
     :Otherwise(false)
     :Label("IndexClips:doShowTitles")
 end
@@ -284,10 +281,10 @@ end
 function IndexClips:saveLayout()
     return {
         showing = self:isShowing(),
-        all = self:all():saveLayout(),
-        video = self:video():saveLayout(),
-        audio = self:audio():saveLayout(),
-        titles = self:titles():saveLayout(),
+        all = self.all:saveLayout(),
+        video = self.video:saveLayout(),
+        audio = self.audio:saveLayout(),
+        titles = self.titles:saveLayout(),
     }
 end
 
@@ -304,10 +301,10 @@ function IndexClips:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)
     :Then(self:doShow())
-    :Then(self:all():doLayout(layout.all))
-    :Then(self:video():doLayout(layout.video))
-    :Then(self:audio():doLayout(layout.audio))
-    :Then(self:titles():doLayout(layout.titles))
+    :Then(self.all:doLayout(layout.all))
+    :Then(self.video:doLayout(layout.video))
+    :Then(self.audio:doLayout(layout.audio))
+    :Then(self.titles:doLayout(layout.titles))
     :Label("IndexClips:doLayout")
 end
 

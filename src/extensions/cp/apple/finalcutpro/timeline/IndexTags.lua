@@ -20,22 +20,19 @@ local If                    = go.If
 
 local IndexTags = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexTags")
 
---- cp.apple.finalcutpro.timeline.IndexTags:activate() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.activate <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Tags' section.
-function IndexTags.lazy.method:activate()
+function IndexTags.lazy.value:activate()
     return self:index():mode():tags()
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:list() -> cp.ui.Table
---- Method
---- Returns the list of tags as a [Table](cp.ui.Table.md).
----
---- Returns:
---- * The [Table](cp.ui.Table.md).
-function IndexTags.lazy.method:list()
+--- cp.apple.finalcutpro.timeline.IndexTags.list <cp.ui.Table>
+--- Field
+--- The list of tags as a [Table](cp.ui.Table.md).
+function IndexTags.lazy.value:list()
     return Table(self, self.UI:mutate(function(original)
-        if self:activate():checked() then
+        if self.activate:checked() then
             return cache(self, "_list", function()
                 local scrollArea = childWithRole(original(), "AXScrollArea")
                 return scrollArea and childMatching(scrollArea, Table.matches)
@@ -44,12 +41,12 @@ function IndexTags.lazy.method:list()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:all() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.all <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that will show "All" types of media.
-function IndexTags.lazy.method:all()
+function IndexTags.lazy.value:all()
     return RadioButton(self, self:index().UI:mutate(function(original)
-        if self:activate():checked() then
+        if self.activate:checked() then
             return cache(self, "_all", function()
                 local group = childMatching(original(), function(child)
                     return RadioGroup.matches(child) and #child == 1
@@ -91,107 +88,107 @@ function IndexTags.Type:initialize(parent)
     RadioGroup.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:standardMarkers() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.standardMarkers <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Show standard markers" filter.
-function IndexTags.Type.lazy.method:standardMarkers()
+function IndexTags.Type.lazy.value:standardMarkers()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 1)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:keywords() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.keywords <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Keywords" filter.
-function IndexTags.Type.lazy.method:keywords()
+function IndexTags.Type.lazy.value:keywords()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 2)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:analysisKeywords() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.analysisKeywords <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Auto-analysis keywords" filter.
-function IndexTags.Type.lazy.method:analysisKeywords()
+function IndexTags.Type.lazy.value:analysisKeywords()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 3)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:incompleteTodos() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.incompleteTodos <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Incomplete todo marker" filter.
-function IndexTags.Type.lazy.method:incompleteTodos()
+function IndexTags.Type.lazy.value:incompleteTodos()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 4)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:completeTodos() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.completeTodos <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Complete todo marker" filter.
-function IndexTags.Type.lazy.method:completeTodos()
+function IndexTags.Type.lazy.value:completeTodos()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 5)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags.Type:chapters() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.Type.chapters <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Chapter markers" filter.
-function IndexTags.Type.lazy.method:chapters()
+function IndexTags.Type.lazy.value:chapters()
     return RadioButton(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 6)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:type() -> cp.apple.finalcutpro.timeline.IndexTags.Type
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.type <cp.apple.finalcutpro.timeline.IndexTags.Type>
+--- Field
 --- The [IndexTags.Type](cp.apple.finalcutpro.timeline.IndexTags.Type.md).
-function IndexTags.lazy.method:type()
+function IndexTags.lazy.value:type()
     return IndexTags.Type(self)
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:standardMarkers() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.standardMarkers <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Standard markers" filter.
-function IndexTags.lazy.method:standardMarkers()
-    return self:type():standardMarkers()
+function IndexTags.lazy.value:standardMarkers()
+    return self.type.standardMarkers
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:keywords() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.keywords <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Keywords" filter.
-function IndexTags.lazy.method:keywords()
-    return self:type():keywords()
+function IndexTags.lazy.value:keywords()
+    return self.type.keywords
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:analysisKeywords() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.analysisKeywords <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Auto-analysis keywords" filter.
-function IndexTags.lazy.method:analysisKeywords()
-    return self:type():analysisKeywords()
+function IndexTags.lazy.value:analysisKeywords()
+    return self.type.analysisKeywords
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:incompleteTodos() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.incompleteTodos <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Incomplete todo marker" filter.
-function IndexTags.lazy.method:incompleteTodos()
-    return self:type():incompleteTodos()
+function IndexTags.lazy.value:incompleteTodos()
+    return self.type.incompleteTodos
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:completeTodos() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.completeTodos <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Complete todo marker" filter.
-function IndexTags.lazy.method:completeTodos()
-    return self:type():completeTodos()
+function IndexTags.lazy.value:completeTodos()
+    return self.type.completeTodos
 end
 
---- cp.apple.finalcutpro.timeline.IndexTags:chapters() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexTags.chapters <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) for the "Chapter markers" filter.
-function IndexTags.lazy.method:chapters()
-    return self:type():chapters()
+function IndexTags.lazy.value:chapters()
+    return self.type.chapters
 end
 
 --- cp.apple.finalcutpro.timeline.IndexTags:doShowAll() -> cp.rx.go.Statement
@@ -199,7 +196,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "All" media types.
 function IndexTags.lazy.method:doShowAll()
     return If(self:doShow())
-    :Then(self:all():doPress())
+    :Then(self.all:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowAll")
 end
@@ -209,7 +206,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Standard" markers.
 function IndexTags.lazy.method:doShowStandardMarkers()
     return If(self:doShow())
-    :Then(self:standardMarkers():doPress())
+    :Then(self.standardMarkers:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowStandardMarkers")
 end
@@ -219,7 +216,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Keywords".
 function IndexTags.lazy.method:doShowKeywords()
     return If(self:doShow())
-    :Then(self:keywords():doPress())
+    :Then(self.keywords:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowKeywords")
 end
@@ -229,7 +226,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Analysis Keywords".
 function IndexTags.lazy.method:doShowAnalysisKeywords()
     return If(self:doShow())
-    :Then(self:analysisKeywords():doPress())
+    :Then(self.analysisKeywords:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowAnalysisKeywords")
 end
@@ -239,7 +236,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Incomplete Todo Markers".
 function IndexTags.lazy.method:doShowIncompleteTodos()
     return If(self:doShow())
-    :Then(self:incompleteTodos():doPress())
+    :Then(self.incompleteTodos:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowIncompleteTodos")
 end
@@ -249,7 +246,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Complete Todos".
 function IndexTags.lazy.method:doShowCompleteTodos()
     return If(self:doShow())
-    :Then(self:completeTodos():doPress())
+    :Then(self.completeTodos:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowCompleteTodos")
 end
@@ -259,7 +256,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will set the tag index to "Chapter" markers.
 function IndexTags.lazy.method:doShowChapters()
     return If(self:doShow())
-    :Then(self:chapters():doPress())
+    :Then(self.chapters:doPress())
     :Otherwise(false)
     :Label("IndexTags:doShowChapters")
 end
@@ -273,13 +270,13 @@ end
 function IndexTags:saveLayout()
     return {
         showing = self:isShowing(),
-        all = self:all():saveLayout(),
-        standardMarkers = self:standardMarkers():saveLayout(),
-        keywords = self:keywords():saveLayout(),
-        analysisKeywords = self:analysisKeywords():saveLayout(),
-        incompleteTodos = self:incompleteTodos():saveLayout(),
-        completeTodos = self:completeTodos():saveLayout(),
-        chapters = self:chapters():saveLayout(),
+        all = self.all:saveLayout(),
+        standardMarkers = self.standardMarkers:saveLayout(),
+        keywords = self.keywords:saveLayout(),
+        analysisKeywords = self.analysisKeywords:saveLayout(),
+        incompleteTodos = self.incompleteTodos:saveLayout(),
+        completeTodos = self.completeTodos:saveLayout(),
+        chapters = self.chapters:saveLayout(),
     }
 end
 
@@ -296,13 +293,13 @@ function IndexTags:doLayout(layout)
     layout = layout or {}
     return If(layout.showing == true)
     :Then(self:doShow())
-    :Then(self:all():doLayout(layout.all))
-    :Then(self:standardMarkers():doLayout(layout.standardMarkers))
-    :Then(self:keywords():doLayout(layout.keywords))
-    :Then(self:analysisKeywords():doLayout(layout.analysisKeywords))
-    :Then(self:incompleteTodos():doLayout(layout.incompleteTodos))
-    :Then(self:completeTodos():doLayout(layout.completeTodos))
-    :Then(self:chapters():doLayout(layout.chapters))
+    :Then(self.all:doLayout(layout.all))
+    :Then(self.standardMarkers:doLayout(layout.standardMarkers))
+    :Then(self.keywords:doLayout(layout.keywords))
+    :Then(self.analysisKeywords:doLayout(layout.analysisKeywords))
+    :Then(self.incompleteTodos:doLayout(layout.incompleteTodos))
+    :Then(self.completeTodos:doLayout(layout.completeTodos))
+    :Then(self.chapters:doLayout(layout.chapters))
     :Label("IndexTags:doLayout")
 end
 

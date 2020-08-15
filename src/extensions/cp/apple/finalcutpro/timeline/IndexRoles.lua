@@ -23,10 +23,10 @@ local Do, If                = go.Do, go.If
 
 local IndexRoles = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexRoles")
 
---- cp.apple.finalcutpro.timeline.IndexRoles:activate() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.activate <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Roles' section.
-function IndexRoles.lazy.method:activate()
+function IndexRoles.lazy.value:activate()
     return self:index():mode():roles()
 end
 
@@ -44,10 +44,10 @@ local function _findGroupedButtonUI(ui, title)
     end
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:area() -> cp.apple.finalcutpro.timeline.IndexRolesArea
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.area <cp.apple.finalcutpro.timeline.IndexRolesArea>
+--- Field
 --- The [IndexRolesArea](cp.apple.finalcutpro.timeline.IndexRolesArea.md) containing the list of [Role](cp.apple.finalcutpro.timeline.Role.md).
-function IndexRoles.lazy.method:area()
+function IndexRoles.lazy.value:area()
     return IndexRolesArea(self, self.UI:mutate(function(original)
         return cache(self, "_list", function()
             return childMatching(original(), IndexRolesArea.matches)
@@ -55,17 +55,17 @@ function IndexRoles.lazy.method:area()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:list() -> cp.apple.finalcutpro.timeline.IndexRolesList
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.list <cp.apple.finalcutpro.timeline.IndexRolesList>
+--- Field
 --- The [IndexRolesList](cp.apple.finalcutpro.timeline.IndexRolesList.md) for the roles.
-function IndexRoles.lazy.method:list()
-    return self:area():list()
+function IndexRoles.lazy.value:list()
+    return self.area.list
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:editRoles() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.editRoles <cp.ui.Button>
+--- Field
 --- The `Edit Roles...` [Button](cp.ui.Button.md).
-function IndexRoles.lazy.method:editRoles()
+function IndexRoles.lazy.value:editRoles()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_editRoles", function()
             return _findGroupedButtonUI(original(), strings:find("FFEditRolesMenuTitle"))
@@ -73,28 +73,28 @@ function IndexRoles.lazy.method:editRoles()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:showAudioLanes() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.showAudioLanes <cp.ui.Button>
+--- Field
 --- The `Show Audio Lanes` [Button](cp.ui.Button.md).
-function IndexRoles.lazy.method:showAudioLanes()
+function IndexRoles.lazy.value:showAudioLanes()
     return Button(self, self.UI:mutate(function(original)
         return _findGroupedButtonUI(original(), strings:find("FFOrganizeAudio"))
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:hideAudioLanes() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.hideAudioLanes <cp.ui.Button>
+--- Field
 --- The `Hide Audio Lanes` [Button](cp.ui.Button.md).
-function IndexRoles.lazy.method:hideAudioLanes()
+function IndexRoles.lazy.value:hideAudioLanes()
     return Button(self, self.UI:mutate(function(original)
         return _findGroupedButtonUI(original(), strings:find("FFUnorganizeAudio"))
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexRoles:collapseSubroles() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRoles.collapseSubroles <cp.ui.Button>
+--- Field
 --- The `Collapse Subroles` [Button](cp.ui.Button.md).
-function IndexRoles.lazy.method:collapseSubroles()
+function IndexRoles.lazy.value:collapseSubroles()
     return Button(self, self.UI:mutate(function(original)
         return _findGroupedButtonUI(original(), strings:find("FFCollapseAllAudioLanes"))
     end))
@@ -106,7 +106,7 @@ end
 function IndexRoles.lazy.prop:audioLanes()
     return prop(
         function()
-            return not self:showAudioLanes():isShowing()
+            return not self.showAudioLanes:isShowing()
         end,
         function(showing)
             If(showing)
@@ -121,7 +121,7 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will show the Audio Lanes when executed.
 function IndexRoles.lazy.method:doShowAudioLanes()
-    local show = self:showAudioLanes()
+    local show = self.showAudioLanes
     return Do(self:doShow())
     :Then(If(show.isShowing):Then(show:doPress()))
     :Label("IndexRoles:doShowAudioLanes")
@@ -131,7 +131,7 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles, if they are currently expanded.
 function IndexRoles.lazy.method:doCollapseSubroles()
-    local collapse = self:collapseSubroles()
+    local collapse = self.collapseSubroles
     return Do(self:doShow())
     :Then(If(collapse.isShowing):Then(collapse:doPress()))
     :Label("IndexRoles:doCollapseSubroles")
@@ -141,7 +141,7 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will collapse subroles (if necessary) and hide the audio lanes.
 function IndexRoles.lazy.method:doHideAudioLanes()
-    local hide = self:hideAudioLanes()
+    local hide = self.hideAudioLanes
     return Do(self:doShow())
     :Then(self:doCollapseSubroles())
     :Then(If(hide.isShowing):Then(hide:doPress()))
@@ -158,7 +158,7 @@ function IndexRoles:saveLayout()
     return {
         showing = self:isShowing(),
         audioLanes = self:audioLanes(),
-        area = self:area():saveLayout(),
+        area = self.area:saveLayout(),
     }
 end
 
@@ -180,7 +180,7 @@ function IndexRoles:doLayout(layout)
         :Then(self:doShowAudioLanes())
         :Otherwise(self:doHideAudioLanes())
     )
-    :Then(self:area():doLayout(layout.area))
+    :Then(self.area:doLayout(layout.area))
     :ThenYield()
     :Label("IndexRoles:doLayout")
 end
@@ -195,7 +195,7 @@ end
 --- Returns:
 --- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:allRoles(includeSubroles)
-    return self:list():allRoles(includeSubroles)
+    return self.list:allRoles(includeSubroles)
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:videoRoles([includeSubroles]) -> table of Roles
@@ -208,7 +208,7 @@ end
 --- Returns:
 --- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:videoRoles(includeSubroles)
-    return self:list():videoRoles(includeSubroles)
+    return self.list:videoRoles(includeSubroles)
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:audioRoles([includeSubroles]) -> table of Roles
@@ -221,7 +221,7 @@ end
 --- Returns:
 --- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:audioRoles(includeSubroles)
-    return self:list():audioRoles(includeSubroles)
+    return self.list:audioRoles(includeSubroles)
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:captionRoles([includeSubroles]) -> table of Roles
@@ -234,7 +234,7 @@ end
 --- Returns:
 --- * The table of [Role](cp.apple.finalcutpro.timeline.Role.md)s, or `nil` if no UI is available.
 function IndexRoles:captionRoles(includeSubroles)
-    return self:list():captionRoles(includeSubroles)
+    return self.list:captionRoles(includeSubroles)
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:fineRoleTitled(title) -> Role or nil
@@ -250,7 +250,7 @@ end
 --- Notes:
 --- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:findRoleTitled(title)
-    return self:list():findRoleTitled(title)
+    return self.list:findRoleTitled(title)
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doActivate(title) -> cp.rx.go.Statement
@@ -269,7 +269,7 @@ end
 function IndexRoles:doActivate(title)
     return Do(self:index():doStoreLayout("doActivate"))
     :Then(self:doShow())
-    :Then(self:list():doActivate(title))
+    :Then(self.list:doActivate(title))
     :Finally(self:index():doRecallLayout("doActivate"))
     :Label("IndexRoles:doActivate")
 end
@@ -290,7 +290,7 @@ end
 function IndexRoles:doDeactivate(title)
     return Do(self:index():doStoreLayout("doDeactivate"))
     :Then(self:doShow())
-    :Then(self:list():doDeactivate(title))
+    :Then(self.list:doDeactivate(title))
     :Finally(self:index():doRecallLayout("doDeactivate"))
     :Label("IndexRoles:doDeactivate")
 end
@@ -320,7 +320,7 @@ end
 function IndexRoles:doFocusInTimeline(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
-    :Then(self:list():doFocusInTimeline(title))
+    :Then(self.list:doFocusInTimeline(title))
     :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doFocusInTimeline")
 end
@@ -341,7 +341,7 @@ end
 function IndexRoles:doUnfocusInTimeline(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
-    :Then(self:list():doUnfocusInTimeline(title))
+    :Then(self.list:doUnfocusInTimeline(title))
     :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doUnfocusInTimeline")
 end
@@ -362,7 +362,7 @@ end
 function IndexRoles:doShowSubroleLanes(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
-    :Then(self:list():doShowSubroleLanes(title))
+    :Then(self.list:doShowSubroleLanes(title))
     :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doSubroleLanes")
 end
@@ -383,7 +383,7 @@ end
 function IndexRoles:doHideSubroleLanes(title)
     return Do(self:_doStoreIndexLayout())
     :Then(self:doShow())
-    :Then(self:list():doHideSubroleLanes(title))
+    :Then(self.list:doHideSubroleLanes(title))
     :Finally(self:_doRecallIndexLayout())
     :Label("IndexRoles:doHideSubroleLanes")
 end

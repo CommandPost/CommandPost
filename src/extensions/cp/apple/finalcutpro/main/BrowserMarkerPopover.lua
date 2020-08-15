@@ -102,7 +102,7 @@ end
 --
 -----------------------------------------------------------------------
 
-function BrowserMarkerPopover.lazy.method:type()
+function BrowserMarkerPopover.lazy.value:type()
     return RadioGroup(self, self.UI:mutate(function(original)
         return cache(self, "_type", function()
             return childMatching(original(), RadioGroup.matches)
@@ -122,7 +122,7 @@ end
 --- Returns:
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover.lazy.method:standard()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 1)
     end))
 end
@@ -137,7 +137,7 @@ end
 --- Returns:
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover.lazy.method:toDo()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 2)
     end))
 end
@@ -152,7 +152,7 @@ end
 --- Returns:
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover.lazy.method:chapter()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 3)
     end))
 end

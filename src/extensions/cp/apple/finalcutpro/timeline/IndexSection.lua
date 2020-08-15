@@ -53,13 +53,13 @@ function IndexSection.lazy.value:search()
     return self:index().search
 end
 
---- cp.apple.finalcutpro.timeline.IndexSection:activate() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexSection.activate <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the section.
 ---
 --- Notes:
 --- * Must be overridden in subclasses to provide the actual RadioButton.
-function IndexSection.lazy.method.activate()
+function IndexSection.lazy.value.activate()
     error("Subclasses must override the lazy `activate` method to return the correct RadioButton.")
 end
 
@@ -68,7 +68,7 @@ end
 --- The `axuielement` that represents the item.
 function IndexSection.lazy.prop:UI()
     return self:index().UI:mutate(function(original)
-        return self:activate():checked() and original()
+        return self.activate:checked() and original()
     end)
 end
 
@@ -76,7 +76,7 @@ end
 --- Field
 --- Indicates if the section is currently showing.
 function IndexSection.lazy.prop:isShowing()
-    return self:activate().checked
+    return self.activate.checked
 end
 
 
@@ -91,7 +91,7 @@ function IndexSection.lazy.method:doShow()
     return Do(index:doShow())
     :Then(
         If(index.isShowing)
-        :Then(self:activate():doPress())
+        :Then(self.activate:doPress())
         :Otherwise(false)
     )
     :ThenYield()
