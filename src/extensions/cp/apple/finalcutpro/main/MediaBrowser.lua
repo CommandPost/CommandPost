@@ -163,7 +163,7 @@ function MediaBrowser.lazy.value:search()
     end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:showSidebar() -> MediaBrowser
 --- Method
 --- Show the Media Browser Sidebar.
 ---
@@ -177,7 +177,7 @@ function MediaBrowser:showSidebar()
     return self
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> axuielementObject
+--- cp.apple.finalcutpro.main.MediaBrowser:topCategoriesUI() -> axuielementObject
 --- Method
 --- Get the Top Categories UI.
 ---

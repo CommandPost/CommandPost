@@ -46,11 +46,11 @@ function IndexSection:index()
     return self._index
 end
 
---- cp.apple.finalcutpro.timeline.IndexSection:search() -> cp.ui.SearchField
---- Method
+--- cp.apple.finalcutpro.timeline.IndexSection.search <cp.ui.SearchField>
+--- Field
 --- The shared [SearchField](cp.ui.SearchField.md) for the [Index](cp.apple.finalcutpro.timeline.Index.md)
-function IndexSection:search()
-    return self:index():search()
+function IndexSection.lazy.value:search()
+    return self:index().search
 end
 
 --- cp.apple.finalcutpro.timeline.IndexSection:activate() -> cp.ui.RadioButton
@@ -103,7 +103,7 @@ end
 --- Returns a [Statement](cp.rx.go.Statement.md) that will show the Clips in the Timeline Index and focus on the Search field.
 function IndexSection.lazy.method:doActivateSearch()
     return If(self:doShow())
-    :Then(self:search():doFocus())
+    :Then(self.search:doFocus())
     :Otherwise(false)
     :Label("IndexSection:doActivateSearch")
 end

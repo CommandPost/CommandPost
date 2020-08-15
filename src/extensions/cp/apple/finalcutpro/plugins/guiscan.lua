@@ -56,7 +56,7 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
     local sidebar = effects.sidebar
 
@@ -143,7 +143,7 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
     local sidebar = effects.sidebar
 
@@ -239,7 +239,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    transitions:search():clear()
+    transitions.search:clear()
 
     --------------------------------------------------------------------------------
     -- Make sure the sidebar is visible:
@@ -307,7 +307,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'Generators':
@@ -375,7 +375,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'Titles':

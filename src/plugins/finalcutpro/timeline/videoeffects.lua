@@ -83,12 +83,12 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Get original search value:
     --------------------------------------------------------------------------------
-    local originalSearch = effects:search():value()
+    local originalSearch = effects.search:value()
 
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'All':
@@ -102,7 +102,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    effects:search():setValue(name)
+    effects.search:setValue(name)
 
     --------------------------------------------------------------------------------
     -- Get the list of matching effects
@@ -122,7 +122,7 @@ function mod.apply(action)
 
     -- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
     doAfter(0.1, function()
-        effects:search():setValue(originalSearch)
+        effects.search:setValue(originalSearch)
         effects:loadLayout(effectsLayout)
         if transitionsLayout then transitions:loadLayout(transitionsLayout) end
         if not effectsShowing then effects:hide() end

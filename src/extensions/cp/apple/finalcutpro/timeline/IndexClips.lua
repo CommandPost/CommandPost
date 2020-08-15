@@ -227,7 +227,7 @@ end
 function IndexClips:doFindClipsContaining(text)
     return If(self:doShowClips())
     :Then(function()
-        self:search():value(text)
+        self.search:value(text)
         return true
     end)
     :Otherwise(false)

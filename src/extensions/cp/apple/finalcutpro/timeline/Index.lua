@@ -57,13 +57,10 @@ function Index:initialize(timeline)
     SplitGroup.initialize(self, timeline, UI)
 end
 
---- cp.apple.finalcutpro.timeline.Index:search() -> cp.ui.SearchField
---- Method
+--- cp.apple.finalcutpro.timeline.Index.search <cp.ui.SearchField>
+--- Field
 --- The [SearchField](cp.ui.SearchField.md) for the Timeline Index.
----
---- Returns:
----  * The SearchField.
-function Index.lazy.method:search()
+function Index.lazy.value:search()
     return SearchField(self, self.UI:mutate(function(original)
         return childMatching(original(), SearchField.matches)
     end))
@@ -160,7 +157,7 @@ function Index:saveLayout()
     layout.roles = self:roles():saveLayout()
     layout.captions = self:captions():saveLayout()
 
-    layout.search = self:search():saveLayout()
+    layout.search = self.search:saveLayout()
 
     return layout
 end
@@ -187,7 +184,7 @@ function Index:doLayout(layout)
     :Then(self:tags():doLayout(layout.tags))
     :Then(self:roles():doLayout(layout.roles))
     :Then(self:captions():doLayout(layout.captions))
-    :Then(self:search():doLayout(layout.search))
+    :Then(self.search:doLayout(layout.search))
     :Label("Index:doLayout")
 end
 

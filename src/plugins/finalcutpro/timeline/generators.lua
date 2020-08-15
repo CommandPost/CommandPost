@@ -179,7 +179,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Select the Category if provided otherwise just show all:
