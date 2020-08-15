@@ -59,13 +59,10 @@ function IndexMode:initialize(index)
     RadioGroup.initialize(self, index, UI)
 end
 
---- cp.apple.finalcutpro.timeline.IndexMode:clips() -> cp.ui.RadioButton
---- Method
---- Returns the [RadioButton](cp.ui.RadioButton.ui) for the "Clips" mode.
----
---- Returns:
---- * The "Clips" RadioButton.
-function IndexMode.lazy.method:clips()
+--- cp.apple.finalcutpro.timeline.IndexMode.clips <cp.ui.RadioButton>
+--- Field
+--- The [RadioButton](cp.ui.RadioButton.ui) for the "Clips" mode.
+function IndexMode.lazy.value:clips()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_clips", function()
             local ui = original()
@@ -74,13 +71,10 @@ function IndexMode.lazy.method:clips()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexMode:tags() -> cp.ui.RadioButton
---- Method
---- Returns the [RadioButton](cp.ui.RadioButton.ui) for the "Tags" mode.
----
---- Returns:
---- * The "Tags" RadioButton.
-function IndexMode.lazy.method:tags()
+--- cp.apple.finalcutpro.timeline.IndexMode.tags <cp.ui.RadioButton>
+--- Field
+--- The [RadioButton](cp.ui.RadioButton.ui) for the "Tags" mode.
+function IndexMode.lazy.value:tags()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_tags", function()
             local ui = original()
@@ -89,13 +83,10 @@ function IndexMode.lazy.method:tags()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexMode:roles() -> cp.ui.RadioButton
---- Method
---- Returns the [RadioButton](cp.ui.RadioButton.ui) for the "Roles" mode.
----
---- Returns:
---- * The "Roles" RadioButton.
-function IndexMode.lazy.method:roles()
+--- cp.apple.finalcutpro.timeline.IndexMode.roles <cp.ui.RadioButton>
+--- Field
+--- The [RadioButton](cp.ui.RadioButton.ui) for the "Roles" mode.
+function IndexMode.lazy.value:roles()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_roles", function()
             local ui = original()
@@ -104,13 +95,10 @@ function IndexMode.lazy.method:roles()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexMode:captions() -> cp.ui.RadioButton
---- Method
---- Returns the [RadioButton](cp.ui.RadioButton.ui) for the "Captions" mode.
----
---- Returns:
---- * The "Captions" RadioButton.
-function IndexMode.lazy.method:captions()
+--- cp.apple.finalcutpro.timeline.IndexMode.captions <cp.ui.RadioButton>
+--- Field
+--- The [RadioButton](cp.ui.RadioButton.ui) for the "Captions" mode.
+function IndexMode.lazy.value:captions()
     return RadioButton(self, self.UI:mutate(function(original)
         return cache(self, "_captions", function()
             local ui = original()

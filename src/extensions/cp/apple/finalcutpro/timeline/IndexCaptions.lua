@@ -23,7 +23,7 @@ local IndexCaptions = IndexSection:subclass("cp.apple.finalcutpro.timeline.Index
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Captions' section.
 function IndexCaptions.lazy.value:activate()
-    return self:index():mode():captions()
+    return self.index.mode.captions
 end
 
 --- cp.apple.finalcutpro.timeline.IndexCaptions.list <cp.ui.Table>

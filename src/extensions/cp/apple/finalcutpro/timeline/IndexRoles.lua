@@ -27,7 +27,7 @@ local IndexRoles = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexRol
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Roles' section.
 function IndexRoles.lazy.value:activate()
-    return self:index():mode():roles()
+    return self.index.mode.roles
 end
 
 local function _findGroupedButtonUI(ui, title)
@@ -267,10 +267,10 @@ end
 --- Notes:
 --- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doActivate(title)
-    return Do(self:index():doStoreLayout("doActivate"))
+    return Do(self.index:doStoreLayout("doActivate"))
     :Then(self:doShow())
     :Then(self.list:doActivate(title))
-    :Finally(self:index():doRecallLayout("doActivate"))
+    :Finally(self.index:doRecallLayout("doActivate"))
     :Label("IndexRoles:doActivate")
 end
 
@@ -288,20 +288,20 @@ end
 --- Notes:
 --- * The title can be the English name (eg. "Video", "Titles", etc.) for default Roles, and it will find the correct role in the current FCPX language.
 function IndexRoles:doDeactivate(title)
-    return Do(self:index():doStoreLayout("doDeactivate"))
+    return Do(self.index:doStoreLayout("doDeactivate"))
     :Then(self:doShow())
     :Then(self.list:doDeactivate(title))
-    :Finally(self:index():doRecallLayout("doDeactivate"))
+    :Finally(self.index:doRecallLayout("doDeactivate"))
     :Label("IndexRoles:doDeactivate")
 end
 
 -- These help with caching the Statements for store/recall
 function IndexRoles.lazy.method:_doStoreIndexLayout()
-    return self:index():doStoreLayout("IndexRoles")
+    return self.index:doStoreLayout("IndexRoles")
 end
 
 function IndexRoles.lazy.method:_doRecallIndexLayout()
-    return self:index():doRecallLayout("IndexRoles")
+    return self.index:doRecallLayout("IndexRoles")
 end
 
 --- cp.apple.finalcutpro.timeline.IndexRoles:doFocusInTimeline(title) -> cp.rx.go.Statement

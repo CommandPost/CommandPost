@@ -29,7 +29,7 @@ end
 --- Method
 --- The parent index.
 function IndexSection:parent()
-    return self:index()
+    return self.index
 end
 
 --- cp.apple.finalcutpro.timeline.IndexSection:app() -> cp.apple.finalcutpro
@@ -39,10 +39,10 @@ function IndexSection:app()
     return self:parent():app()
 end
 
---- cp.apple.finalcutpro.timeline.IndexSection:index() -> cp.apple.finalcutpro.timeline.Index
---- Method
+--- cp.apple.finalcutpro.timeline.IndexSection.index <cp.apple.finalcutpro.timeline.Index>
+--- Field
 --- The parent [Index](cp.apple.finalcutpro.timeline.Index.md).
-function IndexSection:index()
+function IndexSection.lazy.value:index()
     return self._index
 end
 
@@ -50,7 +50,7 @@ end
 --- Field
 --- The shared [SearchField](cp.ui.SearchField.md) for the [Index](cp.apple.finalcutpro.timeline.Index.md)
 function IndexSection.lazy.value:search()
-    return self:index().search
+    return self.index.search
 end
 
 --- cp.apple.finalcutpro.timeline.IndexSection.activate <cp.ui.RadioButton>
@@ -67,7 +67,7 @@ end
 --- Field
 --- The `axuielement` that represents the item.
 function IndexSection.lazy.prop:UI()
-    return self:index().UI:mutate(function(original)
+    return self.index.UI:mutate(function(original)
         return self.activate:checked() and original()
     end)
 end
@@ -87,7 +87,7 @@ end
 --- Returns:
 --- * The [Statement](cp.rx.go.Statement.md)
 function IndexSection.lazy.method:doShow()
-    local index = self:index()
+    local index = self.index
     return Do(index:doShow())
     :Then(
         If(index.isShowing)

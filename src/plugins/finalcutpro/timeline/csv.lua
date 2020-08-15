@@ -37,7 +37,7 @@ function plugin.init(deps)
         if index:isShowing() then
             local activeTab = index:activeTab()
             local list = activeTab and activeTab.list
-            if list and not index:roles():isShowing() then
+            if list and not index.roles:isShowing() then
                 local result = list:toCSV()
                 if result then
                     local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")

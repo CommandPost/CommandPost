@@ -24,7 +24,7 @@ local IndexTags = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexTags
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Tags' section.
 function IndexTags.lazy.value:activate()
-    return self:index():mode():tags()
+    return self.index.mode.tags
 end
 
 --- cp.apple.finalcutpro.timeline.IndexTags.list <cp.ui.Table>
@@ -45,7 +45,7 @@ end
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that will show "All" types of media.
 function IndexTags.lazy.value:all()
-    return RadioButton(self, self:index().UI:mutate(function(original)
+    return RadioButton(self, self.index.UI:mutate(function(original)
         if self.activate:checked() then
             return cache(self, "_all", function()
                 local group = childMatching(original(), function(child)

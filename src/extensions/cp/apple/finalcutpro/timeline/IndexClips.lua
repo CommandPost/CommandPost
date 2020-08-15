@@ -35,7 +35,7 @@ local IndexClips = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexCli
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Clips' section.
 function IndexClips.lazy.value:activate()
-    return self:index():mode():clips()
+    return self.index.mode.clips
 end
 
 --- cp.apple.finalcutpro.timeline.IndexClips.list <cp.ui.Table>
@@ -56,7 +56,7 @@ end
 --- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that will show "All" types of media.
 function IndexClips.lazy.value:all()
-    return RadioButton(self, self:index().UI:mutate(function(original)
+    return RadioButton(self, self.index.UI:mutate(function(original)
         if self.activate:checked() then
             return cache(self, "_all", function()
                 local group = childMatching(original(), function(child)
