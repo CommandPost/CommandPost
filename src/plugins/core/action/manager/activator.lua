@@ -724,6 +724,9 @@ function activator:activeChoices()
     local showHidden = self:showHidden()
     local disabledHandlers = self:_disabledHandlers()
     local query = self:query()
+
+    query = query and query:lower()
+
     local queryLen = query and query:len() or 0
     local searchSubText = self:searchSubText()
 

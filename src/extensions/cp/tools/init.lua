@@ -18,6 +18,7 @@ local mouse             = require "hs.mouse"
 local osascript         = require "hs.osascript"
 local screen            = require "hs.screen"
 local sound             = require "hs.sound"
+local text              = require "hs.text"
 local timer             = require "hs.timer"
 local window            = require "hs.window"
 
@@ -30,6 +31,7 @@ local insert            = table.insert
 local locale            = host.locale
 local map               = keycodes.map
 local usleep            = timer.usleep
+local utf16             = text.utf16
 
 local newKeyEvent       = event.newKeyEvent
 local newSystemKeyEvent = event.newSystemKeyEvent
@@ -1617,6 +1619,56 @@ function tools.numberToWord(number)
     return nil
 end
 
+--- cp.tools.upper(str) -> string
+--- Function
+--- Converts the supplied string to uppercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.upper(str)
+    if type(str) == "string" then
+        return tostring(utf16.new(str):upper())
+    end
+end
+
+--- cp.tools.lower(str) -> string
+--- Function
+--- Converts the supplied string to lowercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.lower(str)
+    if type(str) == "string" then
+        return tostring(utf16.new(str):lower())
+    end
+end
+
+--- cp.tools.camelCase(str) -> string
+--- Function
+--- Converts the supplied string to camelcase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.camelCase(str)
+    if type(str) == "string" then
+        local result = str:gsub("(%a)([%w_']*)", function(first, rest)
+           return tools.upper(first) .. tools.lower(rest)
+        end)
+        if result then
+            return result
+        end
+    end
+end
+
 --- cp.tools.firstToUpper(str) -> string
 --- Function
 --- Makes the first letter of a string uppercase.
@@ -1627,7 +1679,7 @@ end
 --- Returns:
 ---  * A string
 function tools.firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
+    return (str:gsub("^%l", tools.upper))
 end
 
 --- cp.tools.iconFallback(paths) -> string
