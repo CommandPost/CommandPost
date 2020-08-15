@@ -193,7 +193,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure "Installed Generators" is selected:
     --------------------------------------------------------------------------------
-    local group = generators:group():UI()
+    local group = generators.group:UI()
     local groupValue = group:attributeValue("AXValue")
     if groupValue ~= fcp:string("PEMediaBrowserInstalledGeneratorsMenuItem") then
         generators:showInstalledGenerators()

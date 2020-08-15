@@ -194,7 +194,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure "Installed Titles" is selected:
     --------------------------------------------------------------------------------
-    local group = generators:group():UI()
+    local group = generators.group:UI()
     local groupValue = group:attributeValue("AXValue")
     if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
         generators:showInstalledTitles()

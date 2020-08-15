@@ -317,7 +317,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Make sure "Installed Generators" is selected:
     --------------------------------------------------------------------------------
-    generators:group():selectItem(1)
+    generators.group:selectItem(1)
 
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:
@@ -385,7 +385,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Make sure "Installed Titles" is selected:
     --------------------------------------------------------------------------------
-    generators:group():selectItem(1)
+    generators.group:selectItem(1)
 
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:

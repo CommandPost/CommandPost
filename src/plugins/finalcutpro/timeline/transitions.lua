@@ -74,7 +74,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure "Installed Transitions" is selected:
     --------------------------------------------------------------------------------
-    local group = transitions:group():UI()
+    local group = transitions.group:UI()
     local groupValue = group:attributeValue("AXValue")
     if groupValue ~= fcp:string("PEMediaBrowserInstalledTransitionsMenuItem") then
         transitions:showInstalledTransitions()
