@@ -68,7 +68,7 @@ function plugin.init(deps)
         -- EFFECTS:
         --
         --------------------------------------------------------------------------------
-        local effects = video:effects()
+        local effects = video.effects
         local effectsGroup = videoGroup:group(i18n("effects"))
 
             --------------------------------------------------------------------------------

@@ -164,7 +164,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Get Generators Browser:
     --------------------------------------------------------------------------------
-    local generators = fcp:generators()
+    local generators = fcp.generators
     local generatorsLayout = generators:saveLayout()
 
     --------------------------------------------------------------------------------

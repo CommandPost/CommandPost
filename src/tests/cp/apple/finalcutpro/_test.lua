@@ -193,7 +193,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Effects Browser",
         function()
-            local browser = fcp:effects()
+            local browser = fcp.effects
             browser:show()
             ok(browser:isShowing())
             ok(browser:sidebar():isShowing())
@@ -228,7 +228,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Generators Browser",
         function()
-            local browser = fcp:generators()
+            local browser = fcp.generators
             browser:show()
             ok(browser:isShowing())
             ok(browser:sidebar():isShowing())

@@ -417,7 +417,7 @@ function Browser:saveLayout()
 
         layout.libraries = self.libraries:saveLayout()
         layout.media = self.media:saveLayout()
-        layout.generators = self:generators():saveLayout()
+        layout.generators = self.generators:saveLayout()
     end
     return layout
 end
@@ -436,7 +436,7 @@ function Browser:loadLayout(layout)
         if layout.onPrimary then self:showOnPrimary() end
         if layout.onSecondary then self:showOnSecondary() end
 
-        self:generators():loadLayout(layout.generators)
+        self.generators:loadLayout(layout.generators)
         self.media:loadLayout(layout.media)
         self.libraries:loadLayout(layout.libraries)
 

@@ -39,7 +39,7 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsShowing = effects:isShowing()
     if not effects:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Effects panel.")
@@ -126,7 +126,7 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsShowing = effects:isShowing()
     if not effects:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Effects panel.")
@@ -213,7 +213,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Save the layout of the Effects panel, in case we switch away...
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsLayout = nil
     if effects:isShowing() then
         effectsLayout = effects:saveLayout()
@@ -292,7 +292,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     fcp:launch(10)
 
-    local generators = fcp:generators()
+    local generators = fcp.generators
 
     local browserLayout = fcp.browser:saveLayout()
 
@@ -360,7 +360,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     fcp:launch(10)
 
-    local generators = fcp:generators()
+    local generators = fcp.generators
 
     local browserLayout = fcp.browser:saveLayout()
 

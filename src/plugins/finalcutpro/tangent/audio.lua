@@ -240,7 +240,7 @@ function plugin.init(deps)
         -- Effects:
         --
         --------------------------------------------------------------------------------
-        local effects = audio:effects()
+        local effects = audio.effects
         local effectsGroup = audioGroup:group(i18n("effects"))
 
             --------------------------------------------------------------------------------

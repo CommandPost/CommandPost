@@ -51,7 +51,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Save the Effects Browser layout:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsLayout = effects:saveLayout()
 
     --------------------------------------------------------------------------------
