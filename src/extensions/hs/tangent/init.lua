@@ -121,6 +121,9 @@ mod.toHub = {
     renameCustomControl                         = 0xA8,
     highlightCustomControl                      = 0xA9,
     indicateCustomControl                       = 0xAA,
+    shamUnmanagedButtonDown                     = 0xAD,
+    shamUnmanagedButtonUp                       = 0xAE,
+    shamUnmanagedEncoderChange                  = 0xAF,
 }
 
 mod.reserved = {
@@ -2079,10 +2082,133 @@ function mod.sendIndicateCustomControl(controlID, enabled)
     if controlID:len() > 128 then
         error("controlID must be a maximum of 128 bytes, but was " .. tostring(controlID:len()))
     end
-    local byteString = numberToByteString(mod.toHub.indiateCustomControl) ..
+    local byteString = numberToByteString(mod.toHub.indicateCustomControl) ..
                         numberToByteString(#controlID) ..
                         controlID ..
                         numberToByteString(enabled and 1 or 0)
+
+    return mod.send(byteString)
+end
+
+-- hs.tangent.sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID) -> boolean, string
+-- Function
+-- Sends a button down message to an app from an unmanaged panel.
+--
+-- Parameters:
+--  * appNameStr  - The reported name of the target app. For example "DaVinci Resolve".
+--  * panelID    - The source panel ID.
+--  * buttonID   - The source button ID.
+--
+-- Returns:
+--  * `true` if successful, `false` and an error message if not.
+function mod.sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID)
+    --------------------------------------------------------------------------------
+    -- Format: 0xAD, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>
+    --
+    -- appNameStrLen - The length of the target app string.
+    -- appNameStr - The reported name of the target app
+    -- panelID - The source panel ID
+    -- buttonID - The source button ID
+    --------------------------------------------------------------------------------
+    if not type(appNameStr) == "string" then
+        return false, format("Missing target app name")
+    end
+    if not isNumber(panelID) then
+        return false, format("Missing or invalid source panelID: %s", inspect(panelID))
+    end
+    if not isNumber(buttonID) then
+        return false, format("Missing or invalid source buttonID: %s", inspect(buttonID))
+    end
+
+    local byteString =  numberToByteString(mod.toHub.shamUnmanagedButtonDown) ..
+                        numberToByteString(#appNameStr) ..
+                        appNameStr ..
+                        numberToByteString(panelID) ..
+                        numberToByteString(buttonID)
+
+    return mod.send(byteString)
+end
+
+-- hs.tangent.sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID) -> boolean, string
+-- Function
+-- Sends a button down message to an app from an unmanaged panel.
+--
+-- Parameters:
+--  * appNameStr  - The reported name of the target app. For example "DaVinci Resolve".
+--  * panelID    - The source panel ID.
+--  * buttonID   - The source button ID.
+--
+-- Returns:
+--  * `true` if successful, `false` and an error message if not.
+function mod.sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID)
+    --------------------------------------------------------------------------------
+    -- Format: 0xAE, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>
+    --
+    -- appNameStrLen - The length of the target app string.
+    -- appNameStr - The reported name of the target app
+    -- panelID - The source panel ID
+    -- buttonID - The source button ID
+    --------------------------------------------------------------------------------
+    if not type(appNameStr) == "string" then
+        return false, format("Missing target app name")
+    end
+    if not isNumber(panelID) then
+        return false, format("Missing or invalid source panelID: %s", inspect(panelID))
+    end
+    if not isNumber(buttonID) then
+        return false, format("Missing or invalid source buttonID: %s", inspect(buttonID))
+    end
+
+    local byteString =  numberToByteString(mod.toHub.shamUnmanagedButtonUp) ..
+                        numberToByteString(#appNameStr) ..
+                        appNameStr ..
+                        numberToByteString(panelID) ..
+                        numberToByteString(buttonID)
+
+    return mod.send(byteString)
+end
+
+-- hs.tangent.sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, increment) -> boolean, string
+-- Function
+-- Sends a encoder change message to an app from an unmanaged panel.
+--
+-- Parameters:
+--  * appNameStr  - The reported name of the target app. For example "DaVinci Resolve".
+--  * panelID    - The source panel ID.
+--  * buttonID   - The source button ID.
+--  * increment  - The amount to increment.
+--
+-- Returns:
+--  * `true` if successful, `false` and an error message if not.
+function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, increment)
+    --------------------------------------------------------------------------------
+    -- Format: 0xAF, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>, <increment>
+    --
+    -- appNameStrLen - The length of the target app string.
+    -- appNameStr - The reported name of the target app
+    -- panelID - The source panel ID
+    -- buttonID - The source button ID
+    -- increment - The amount to increment (positive or negative)
+    --------------------------------------------------------------------------------
+    if not type(appNameStr) == "string" then
+        return false, format("Missing target app name")
+    end
+    if not isNumber(panelID) then
+        return false, format("Missing or invalid source panelID: %s", inspect(panelID))
+    end
+    if not isNumber(buttonID) then
+        return false, format("Missing or invalid source buttonID: %s", inspect(buttonID))
+    end
+    if not isNumber(increment) then
+        return false, format("Missing or invalid increment: %s", inspect(increment))
+    end
+
+    local byteString =  numberToByteString(mod.toHub.shamUnmanagedButtonUp) ..
+                        numberToByteString(#appNameStr) ..
+                        appNameStr ..
+                        numberToByteString(panelID) ..
+                        numberToByteString(buttonID) ..
+                        numberToByteString(increment)
 
     return mod.send(byteString)
 end
