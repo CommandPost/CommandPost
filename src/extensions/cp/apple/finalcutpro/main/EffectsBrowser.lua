@@ -102,15 +102,9 @@ function EffectsBrowser.lazy.prop:isShowing()
     return self.toggleButton.checked
 end
 
---- cp.apple.finalcutpro.main.EffectsBrowser:toggleButton() -> RadioButton
---- Method
---- Returns the Effects Browser Toggle Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
+--- cp.apple.finalcutpro.main.EffectsBrowser.toggleButton <cp.ui.RadioButton>
+--- Field
+--- The Effects Browser Toggle Button.
 function EffectsBrowser.lazy.value:toggleButton()
     local toolbar = self:app().timeline.toolbar
     local type = self:type()

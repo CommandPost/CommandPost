@@ -573,7 +573,7 @@ end
 --- Returns:
 ---  * A string if successful otherwise `nil`.
 function mod.getSingleSelectedCollection()
-    local selectedRowsUI = fcp.libraries:sidebar():selectedRowsUI()
+    local selectedRowsUI = fcp.libraries.sidebar:selectedRowsUI()
     if selectedRowsUI and #selectedRowsUI == 1 and childWithRole(selectedRowsUI[1], "AXTextField") then
         return childWithRole(selectedRowsUI[1], "AXTextField"):attributeValue("AXValue")
     end

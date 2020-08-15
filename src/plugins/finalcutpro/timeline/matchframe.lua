@@ -347,7 +347,7 @@ end
 local function selectKeywordCollection(keyword, solo)
     fcp:selectMenu({"File", "Reveal in Browser"})
 
-    local sidebar = fcp.libraries:sidebar()
+    local sidebar = fcp.libraries.sidebar
 
     local selectedRowsUI = sidebar:selectedRowsUI()
     local selectedRowUI = selectedRowsUI and selectedRowsUI[1]

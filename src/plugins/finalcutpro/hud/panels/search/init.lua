@@ -385,10 +385,10 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     if mod.searchEntireLibrary() then
         local browser = fcp.browser
-        if not libraries:sidebar():isShowing() then
+        if not libraries.sidebar:isShowing() then
             browser:showLibraries():press()
         end
-        local scrollArea = libraries:sidebar():UI()
+        local scrollArea = libraries.sidebar:UI()
         local outline = scrollArea and scrollArea[1]
         if outline and outline:attributeValue("AXRole") == "AXOutline" then
             local children = outline:attributeValue("AXChildren")

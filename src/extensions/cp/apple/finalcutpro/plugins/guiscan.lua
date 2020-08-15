@@ -58,7 +58,7 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     effects:search():clear()
 
-    local sidebar = effects:sidebar()
+    local sidebar = effects.sidebar
 
     --------------------------------------------------------------------------------
     -- Ensure the sidebar is visible
@@ -145,7 +145,7 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     effects:search():clear()
 
-    local sidebar = effects:sidebar()
+    local sidebar = effects.sidebar
 
     --------------------------------------------------------------------------------
     -- Ensure the sidebar is visible
@@ -244,7 +244,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure the sidebar is visible:
     --------------------------------------------------------------------------------
-    local sidebar = transitions:sidebar()
+    local sidebar = transitions.sidebar
 
     transitions:showSidebar()
 

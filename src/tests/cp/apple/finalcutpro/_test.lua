@@ -196,7 +196,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             local browser = fcp.effects
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
+            ok(browser.sidebar:isShowing())
             ok(browser:contents():isShowing())
             browser:hide()
             ok(not browser:isShowing())
@@ -208,7 +208,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             local browser = fcp.transitions
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
+            ok(browser.sidebar:isShowing())
             ok(browser:contents():isShowing())
             browser:hide()
             ok(not browser:isShowing())
@@ -220,7 +220,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             local browser = fcp.media
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
+            ok(browser.sidebar:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -231,7 +231,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             local browser = fcp.generators
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
+            ok(browser.sidebar:isShowing())
             ok(browser:contents():isShowing())
             browser:hide()
             ok(not browser:isShowing())
@@ -387,7 +387,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(libraries:isShowing())
             ok(libraries.toggleViewMode.isShowing())
             ok(libraries.appearanceAndFiltering:isShowing())
-            ok(libraries:sidebar():isShowing())
+            ok(libraries.sidebar:isShowing())
 
             -- Check the search UI
             ok(libraries.searchToggle:isShowing())
