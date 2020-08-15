@@ -222,7 +222,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure Transitions panel is open:
     --------------------------------------------------------------------------------
-    local transitions = fcp:transitions()
+    local transitions = fcp.transitions
     local transitionsShowing = transitions:isShowing()
     if not transitions:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Transitions panel.")

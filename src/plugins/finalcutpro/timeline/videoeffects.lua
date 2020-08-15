@@ -51,7 +51,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Save the Transitions Browser layout:
     --------------------------------------------------------------------------------
-    local transitions = fcp:transitions()
+    local transitions = fcp.transitions
     local transitionsLayout = transitions:saveLayout()
 
     --------------------------------------------------------------------------------

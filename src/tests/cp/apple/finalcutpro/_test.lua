@@ -205,7 +205,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Transitions Browser",
         function()
-            local browser = fcp:transitions()
+            local browser = fcp.transitions
             browser:show()
             ok(browser:isShowing())
             ok(browser:sidebar():isShowing())
