@@ -26,13 +26,13 @@ function plugin.init(deps)
     local cmds = deps.fcpxCmds
 
     local timeline = fcp.timeline
-    local index = timeline:index()
+    local index = timeline.index
 
     local saveTimelineIndexToCSV = function()
         fcp:launch(5)
         timeline:show()
-        if not timeline.toolbar:index():checked() then
-            timeline.toolbar:index():press()
+        if not timeline.toolbar.index:checked() then
+            timeline.toolbar.index:press()
         end
         if index:isShowing() then
             local activeTab = index:activeTab()
