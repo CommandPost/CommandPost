@@ -64,16 +64,10 @@ function PrimaryWindow:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow:window() -> cp.ui.Window
---- Method
---- Returns the `Window` instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Window` instance.
-function PrimaryWindow.lazy.method:window()
+--- cp.apple.finalcutpro.main.PrimaryWindow.window <cp.ui.Window>
+--- Field
+--- The `Window` instance.
+function PrimaryWindow.lazy.value:window()
     return Window(self:app().app, self.UI)
 end
 
@@ -93,28 +87,28 @@ end
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 function PrimaryWindow.lazy.prop:hsWindow()
-    return self:window().hsWindow
+    return self.window.hsWindow
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is visible.
 function PrimaryWindow.lazy.prop:isShowing()
-    return self:window().visible
+    return self.window.visible
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isFullScreen <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is full-screen.
 function PrimaryWindow.lazy.prop:isFullScreen()
-    return self:window().fullScreen
+    return self.window.fullScreen
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.frame <cp.prop: frame>
 --- Field
 --- The current position (x, y, width, height) of the window.
 function PrimaryWindow.lazy.prop:frame()
-    return self:window().frame
+    return self.window.frame
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.rootGroupUI() <cp.prop: hs._asm.axuielement; read-only; live>
@@ -274,7 +268,7 @@ end
 function PrimaryWindow:show()
     self:app():show()
     if not self:isShowing() then
-        return self:window():focus()
+        return self.window:focus()
     end
     return self
 end
@@ -289,7 +283,7 @@ function PrimaryWindow.lazy.method:doShow()
     return Do(self:app():doShow())
     :Then(
         If(self.isShowing):Is(false)
-        :Then(self:window():doFocus())
+        :Then(self.window:doFocus())
     )
     :Label("PrimaryWindow:doShow")
 end
@@ -343,7 +337,7 @@ end
 --- Valuie
 --- Provides access to any 'Alert' windows on the PrimaryWindow.
 function PrimaryWindow.lazy.value:alert()
-    return self:window().alert
+    return self.window.alert
 end
 
 -- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp.viewer`)

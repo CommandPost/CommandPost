@@ -22,8 +22,7 @@ local BrowserMarkerPopover              = require "cp.apple.finalcutpro.main.Bro
 local Do                                = require "cp.rx.go.Do"
 local If                                = require "cp.rx.go.If"
 
-
-local Browser = Element:subclass "cp.apple.finalcutpro.main.Browser"
+local Browser = Element:subclass("cp.apple.finalcutpro.main.Browser")
 
 -- _findBrowser(...) -> window | nil
 -- Function

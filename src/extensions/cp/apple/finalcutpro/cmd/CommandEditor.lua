@@ -313,7 +313,7 @@ end
 --- Returns:
 --- * The `Alert`.
 function CommandEditor:alert()
-    return self:window():alert()
+    return self:window().alert
 end
 
 return CommandEditor
