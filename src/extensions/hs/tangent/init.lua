@@ -2180,14 +2180,14 @@ end
 --
 -- Returns:
 --  * `true` if successful, `false` and an error message if not.
-function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, increment)
+function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, encoderID, increment)
     --------------------------------------------------------------------------------
-    -- Format: 0xAF, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>, <increment>
+    -- Format: 0xAF, <appNameStrLen>, <appNameStr>, <panelID>, <encoderID>, <increment>
     --
     -- appNameStrLen - The length of the target app string.
     -- appNameStr - The reported name of the target app
     -- panelID - The source panel ID
-    -- buttonID - The source button ID
+    -- encoderID - The source encoder ID
     -- increment - The amount to increment (positive or negative)
     --------------------------------------------------------------------------------
     if not type(appNameStr) == "string" then
@@ -2196,19 +2196,19 @@ function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, incre
     if not isNumber(panelID) then
         return false, format("Missing or invalid source panelID: %s", inspect(panelID))
     end
-    if not isNumber(buttonID) then
-        return false, format("Missing or invalid source buttonID: %s", inspect(buttonID))
+    if not isNumber(encoderID) then
+        return false, format("Missing or invalid source encoderID: %s", inspect(encoderID))
     end
     if not isNumber(increment) then
         return false, format("Missing or invalid increment: %s", inspect(increment))
     end
 
-    local byteString =  numberToByteString(mod.toHub.shamUnmanagedButtonUp) ..
+    local byteString =  numberToByteString(mod.toHub.shamUnmanagedEncoderChange) ..
                         numberToByteString(#appNameStr) ..
                         appNameStr ..
                         numberToByteString(panelID) ..
-                        numberToByteString(buttonID) ..
-                        numberToByteString(increment)
+                        numberToByteString(encoderID) ..
+                        floatToByteString(increment)
 
     return mod.send(byteString)
 end
