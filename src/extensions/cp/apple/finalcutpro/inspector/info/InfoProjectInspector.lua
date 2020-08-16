@@ -81,16 +81,10 @@ function InfoProjectInspector.lazy.prop:propertiesUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoProjectInspector:modify() -> Button
---- Method
---- Gets the Modify Project button in the Info Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `Button` object.
-function InfoProjectInspector.lazy.method:modify()
+--- cp.apple.finalcutpro.inspector.info.InfoProjectInspector.modify <cp.ui.Button>
+--- Field
+--- The Modify Project button in the Info Inspector.
+function InfoProjectInspector.lazy.value:modify()
     return Button(self, function()
         local ui = self:UI()
         local button = childWithRole(ui, "AXButton")
