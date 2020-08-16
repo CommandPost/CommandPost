@@ -34,7 +34,7 @@ mod.createOptimizedMedia = fcp.preferences:prop("FFImportCreateOptimizeMedia", f
                 --------------------------------------------------------------------------------
                 -- Toggle the checkbox:
                 --------------------------------------------------------------------------------
-                local panel = fcp:preferencesWindow():importPanel()
+                local panel = fcp.preferencesWindow.importPanel
                 if panel:show():isShowing() then
                     panel:createOptimizedMedia():toggle()
                 else
@@ -76,7 +76,7 @@ mod.createMulticamOptimizedMedia = fcp.preferences:prop("FFCreateOptimizedMediaF
                 --------------------------------------------------------------------------------
                 -- Toggle the checkbox:
                 --------------------------------------------------------------------------------
-                local panel = fcp:preferencesWindow():playbackPanel()
+                local panel = fcp.preferencesWindow.playbackPanel
                 if panel:show() then
                     panel:createMulticamOptimizedMedia():toggle()
                 else
@@ -117,7 +117,7 @@ mod.createProxyMedia = fcp.preferences:prop("FFImportCreateProxyMedia", false):m
                 --------------------------------------------------------------------------------
                 -- Toggle the checkbox:
                 --------------------------------------------------------------------------------
-                local panel = fcp:preferencesWindow():importPanel()
+                local panel = fcp.preferencesWindow.importPanel
                 if panel:show():isShowing() then
                     panel:createProxyMedia():toggle()
                 else
@@ -158,12 +158,12 @@ mod.leaveInPlace = fcp.preferences:prop("FFImportCopyToMediaFolder", true):mutat
                 --------------------------------------------------------------------------------
                 -- Define FCPX:
                 --------------------------------------------------------------------------------
-                local prefs = fcp:preferencesWindow()
+                local prefs = fcp.preferencesWindow
 
                 --------------------------------------------------------------------------------
                 -- Toggle the checkbox:
                 --------------------------------------------------------------------------------
-                if not prefs:importPanel():toggleMediaLocation() then
+                if not prefs.importPanel:toggleMediaLocation() then
                     dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in leaveInPlace().")
                     return "Failed"
                 end

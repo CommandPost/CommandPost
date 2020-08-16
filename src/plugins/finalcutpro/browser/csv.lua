@@ -25,13 +25,13 @@ local plugin = {
 function plugin.init(deps)
     local cmds = deps.fcpxCmds
 
-    local list = fcp.libraries:list()
+    local list = fcp.libraries.list
 
     local saveBrowserContentsToCSV = function()
         fcp:launch(5)
         list:show()
         if list:isShowing() then
-            local result = list:contents():toCSV()
+            local result = list.contents:toCSV()
             if result then
                 local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")
                 if path then

@@ -17,13 +17,13 @@
 --- The `fcp` variable is the root application. It has functions which allow you to perform tasks or access parts of the UI. For example, to open the `Preferences` window, you can do this:
 ---
 --- ```lua
---- fcp:preferencesWindow():show()
+--- fcp.preferencesWindow:show()
 --- ```
 ---
 --- In general, as long as Final Cut Pro is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
 ---
 --- ```lua
---- fcp:preferencesWindow():importPanel():toggleCreateOptimizedMedia()
+--- fcp.preferencesWindow.importPanel:toggleCreateOptimizedMedia()
 --- ```
 ---
 --- The API will automatically open the `Preferences` window, navigate to the 'Import' panel and toggle the checkbox.
@@ -35,7 +35,7 @@
 --- ```lua
 --- local just = require "cp.just"
 ---
---- local prefsWindow = fcp:preferencesWindow()
+--- local prefsWindow = fcp.preferencesWindow
 ---
 --- local prefsUI = just.doUntil(function() return prefsWindow:UI() end)
 ---
@@ -51,7 +51,7 @@
 --- Of course, we have a specific support function for that already, so you could do this instead:
 ---
 --- ```lua
---- if fcp:preferencesWindow():isShowing() then
+--- if fcp.preferencesWindow:isShowing() then
 --- 	-- it's open!
 --- else
 --- 	-- it's closed!
@@ -744,17 +744,11 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:preferencesWindow() -> preferenceWindow object
---- Method
---- Returns the Final Cut Pro Preferences Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Preferences Window
-function fcp.lazy.method:preferencesWindow()
-    return PreferencesWindow.new(self)
+--- cp.apple.finalcutpro.preferencesWindow <PreferencesWindow>
+--- Field
+--- The Final Cut Pro Preferences Window
+function fcp.lazy.value:preferencesWindow()
+    return PreferencesWindow(self)
 end
 
 --- cp.apple.finalcutpro.primaryWindow <cp.apple.finalcutpro.main.PrimaryWindow>

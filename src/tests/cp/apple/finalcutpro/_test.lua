@@ -419,24 +419,24 @@ return test.suite("cp.apple.finalcutpro"):with(
             local libraries = fcp.libraries
 
             -- Check Filmstrip/List view
-            libraries:filmstrip():show()
-            ok(libraries:filmstrip():isShowing())
-            ok(not libraries:list():isShowing())
+            libraries.filmstrip:show()
+            ok(libraries.filmstrip:isShowing())
+            ok(not libraries.list:isShowing())
         end
     ),
     test(
         "Libraries List",
         function()
             local libraries = fcp.libraries
-            local list = libraries:list()
+            local list = libraries.list
 
             list:show()
             ok(list:isShowing())
-            ok(not libraries:filmstrip():isShowing())
+            ok(not libraries.filmstrip:isShowing())
 
             -- Check the sub-components are available.
             ok(list:playerUI() ~= nil)
-            ok(list:contents():isShowing())
+            ok(list.contents:isShowing())
             ok(list:clipsUI() ~= nil)
         end
     ),
@@ -520,7 +520,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "PreferencesWindow",
         function()
-            local prefs = fcp:preferencesWindow()
+            local prefs = fcp.preferencesWindow
 
             prefs:show()
             ok(prefs:isShowing())
@@ -532,10 +532,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "ImportPanel",
         function()
-            local panel = fcp:preferencesWindow():importPanel()
+            local panel = fcp.preferencesWindow.importPanel
 
             -- Make sure the preferences window is hidden
-            fcp:preferencesWindow():hide()
+            fcp.preferencesWindow:hide()
             ok(not panel:isShowing())
 
             -- Show the import preferences panel
@@ -553,10 +553,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "PlaybackPanel",
         function()
-            local panel = fcp:preferencesWindow():playbackPanel()
+            local panel = fcp.preferencesWindow.playbackPanel
 
             -- Make sure the preferences window is hidden
-            fcp:preferencesWindow():hide()
+            fcp.preferencesWindow:hide()
             ok(not panel:isShowing())
 
             -- Show the import preferences panel

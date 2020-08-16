@@ -88,14 +88,14 @@ end
 --- Field
 --- Indicates if the Library Browser is in 'list view' mode.
 function LibrariesBrowser.lazy.prop:isListView()
-    return self:list().isShowing
+    return self.list.isShowing
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.isFilmstripView <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the Library Browser is in 'filmstrip view' mode.
 function LibrariesBrowser.lazy.prop:isFilmstripView()
-    return self:filmstrip().isShowing
+    return self.filmstrip.isShowing
 end
 
 -----------------------------------------------------------------------
@@ -187,10 +187,10 @@ end
 --- Returns:
 ---  * A `Playhead` object.
 function LibrariesBrowser:playhead()
-    if self:list():isShowing() then
-        return self:list():playhead()
+    if self.list:isShowing() then
+        return self.list.playhead
     else
-        return self:filmstrip():playhead()
+        return self.filmstrip.playhead
     end
 end
 
@@ -204,10 +204,10 @@ end
 --- Returns:
 ---  * A `Playhead` object.
 function LibrariesBrowser:skimmingPlayhead()
-    if self:list():isShowing() then
-        return self:list():skimmingPlayhead()
+    if self.list:isShowing() then
+        return self.list:skimmingPlayhead()
     else
-        return self:filmstrip():skimmingPlayhead()
+        return self.filmstrip.skimmingPlayhead
     end
 end
 
@@ -260,30 +260,18 @@ function LibrariesBrowser.lazy.value:appearanceAndFiltering()
     return AppearanceAndFiltering(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesFilmstrip
---- Method
---- Get Libraries Film Strip object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `LibrariesBrowser` object.
-function LibrariesBrowser.lazy.method:filmstrip()
-    return LibrariesFilmstrip.new(self)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.filmstrip <LibrariesFilmstrip>
+--- Field
+--- The `LibrariesFilmstrip` object.
+function LibrariesBrowser.lazy.value:filmstrip()
+    return LibrariesFilmstrip(self)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser:list() -> LibrariesList
---- Method
---- Get [LibrariesList](cp.apple.finalcutpro.main.LibrariesList.md) object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `LibrariesList` object.
-function LibrariesBrowser.lazy.method:list()
-    return LibrariesList.new(self)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.list <LibrariesList>
+--- Field
+--- The [LibrariesList](cp.apple.finalcutpro.main.LibrariesList.md) object.
+function LibrariesBrowser.lazy.value:list()
+    return LibrariesList(self)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser.sidebar <cp.apple.finalcutpro.main.LibrariesSidebar>
@@ -368,9 +356,9 @@ end
 ---  * A table of `axuielementObject` objects or `nil` if no clip UI could be found.
 function LibrariesBrowser:clipsUI(filterFn)
     if self:isListView() then
-        return self:list():clipsUI(filterFn)
+        return self.list:clipsUI(filterFn)
     elseif self:isFilmstripView() then
-        return self:filmstrip():clipsUI(filterFn)
+        return self.filmstrip:clipsUI(filterFn)
     else
         return nil
     end
@@ -387,9 +375,9 @@ end
 ---  * A table of `Clip` objects or `nil` if no clip UI could be found.
 function LibrariesBrowser:clips(filterFn)
     if self:isListView() then
-        return self:list():clips(filterFn)
+        return self.list:clips(filterFn)
     elseif self:isFilmstripView() then
-        return self:filmstrip():clips(filterFn)
+        return self.filmstrip:clips(filterFn)
     else
         return nil
     end
@@ -406,9 +394,9 @@ end
 ---  * A table of `axuielementObject` objects or `nil` if no clips are selected.
 function LibrariesBrowser:selectedClipsUI()
     if self:isListView() then
-        return self:list():selectedClipsUI()
+        return self.list:selectedClipsUI()
     elseif self:isFilmstripView() then
-        return self:filmstrip():selectedClipsUI()
+        return self.filmstrip:selectedClipsUI()
     else
         return nil
     end
@@ -425,9 +413,9 @@ end
 ---  * A table of `Clip` objects or `nil` if no clips are selected.
 function LibrariesBrowser:selectedClips()
     if self:isListView() then
-        return self:list():selectedClips()
+        return self.list:selectedClips()
     elseif self:isFilmstripView() then
-        return self:filmstrip():selectedClips()
+        return self.filmstrip:selectedClips()
     else
         return nil
     end
@@ -444,9 +432,9 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesBrowser:showClip(clip)
     if self:isListView() then
-        return self:list():showClip(clip)
+        return self.list:showClip(clip)
     else
-        return self:filmstrip():showClip(clip)
+        return self.filmstrip:showClip(clip)
     end
 end
 
@@ -461,9 +449,9 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesBrowser:selectClip(clip)
     if self:isListView() then
-        return self:list():selectClip(clip)
+        return self.list:selectClip(clip)
     elseif self:isFilmstripView() then
-        return self:filmstrip():selectClip(clip)
+        return self.filmstrip:selectClip(clip)
     else
         log.df("ERROR: cannot find either list or filmstrip UI")
         return false
@@ -481,9 +469,9 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesBrowser:selectClipAt(index)
     if self:isListView() then
-        return self:list():selectClipAt(index)
+        return self.list:selectClipAt(index)
     else
-        return self:filmstrip():selectClipAt(index)
+        return self.filmstrip:selectClipAt(index)
     end
 end
 
@@ -498,9 +486,9 @@ end
 ---  * The index or `nil` if an error occurs.
 function LibrariesBrowser:indexOfClip(clip)
     if self:isListView() then
-        return self:list():indexOfClip(clip)
+        return self.list:indexOfClip(clip)
     else
-        return self:filmstrip():indexOfClip(clip)
+        return self.filmstrip:indexOfClip(clip)
     end
 end
 
@@ -583,9 +571,9 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesBrowser:selectAll(clips)
     if self:isListView() then
-        return self:list():selectAll(clips)
+        return self.list:selectAll(clips)
     else
-        return self:filmstrip():selectAll(clips)
+        return self.filmstrip:selectAll(clips)
     end
 end
 
@@ -600,9 +588,9 @@ end
 ---  * `true` if successful otherwise `false`.
 function LibrariesBrowser:deselectAll()
     if self:isListView() then
-        return self:list():deselectAll()
+        return self.list:deselectAll()
     else
-        return self:filmstrip():deselectAll()
+        return self.filmstrip:deselectAll()
     end
 end
 
