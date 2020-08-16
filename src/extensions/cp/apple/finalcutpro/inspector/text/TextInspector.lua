@@ -451,7 +451,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerLeft <cp.ui.Button>
 --- Field
 --- The left text layer arrow at the bottom of the Inspector.
-function TextInspector:textLayerLeft()
+function TextInspector.lazy.value:textLayerLeft()
     return Button(self, function()
         local bottomBarUI = self.bottomBarUI()
         local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
@@ -462,7 +462,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.TextInspector.textLayerRight <cp.ui.Button>
 --- Field
 --- The left text layer arrow at the bottom of the Inspector.
-function TextInspector:textLayerRight()
+function TextInspector.lazy.value:textLayerRight()
     return Button(self, function()
         local bottomBarUI = self.bottomBarUI()
         local group = bottomBarUI and childFromLeft(bottomBarUI, 1, Group.matches)
@@ -473,7 +473,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.TextInspector.deselectAll <cp.ui.Button>
 --- Field
 --- The left text layer arrow at the bottom of the Inspector.
-function TextInspector:deselectAll()
+function TextInspector.lazy.value:deselectAll()
     return Button(self, function()
         local bottomBarUI = self.bottomBarUI()
         return bottomBarUI and childFromLeft(bottomBarUI, 1, Button.matches)
@@ -483,7 +483,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.TextInspector.preset <cp.ui.PopUpButton>
 --- Field
 --- The preset popup found at the top of the inspector.
-function TextInspector:preset()
+function TextInspector.lazy.value:preset()
     return PopUpButton(self, function()
         local ui = self.contentUI()
         return ui and PopUpButton.matches(ui[1]) and ui[1]
@@ -493,7 +493,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.TextInspector.textArea <cp.ui.TextArea>
 --- Field
 --- The Text Inspector main Text Area.
-function TextInspector:textArea()
+function TextInspector.lazy.value:textArea()
     return TextArea(self, function()
         local contentUI = self.contentUI()
         local scrollArea = contentUI and childFromTop(contentUI, 1, ScrollArea.matches)
