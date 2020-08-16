@@ -102,7 +102,7 @@ end
 --- Field
 --- The Replace Alert object.
 function SaveSheet.lazy.value:replaceAlert()
-    return ReplaceAlert.new(self)
+    return ReplaceAlert(self)
 end
 
 --- cp.apple.finalcutpro.export.SaveSheet.goToPrompt <GoToPrompt>
