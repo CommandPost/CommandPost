@@ -836,7 +836,7 @@ local function showOrHideHUD()
                     end
                 end
             elseif bundleID == FCP_BUNDLE_ID then
-                if not fcp:fullScreenWindow():isShowing() and
+                if not fcp.fullScreenWindow:isShowing() and
                 not fcp.commandEditor:isShowing() and
                 not fcp:preferencesWindow():isShowing() then
                     --------------------------------------------------------------------------------
@@ -920,7 +920,7 @@ function mod.update()
         fcp.app.frontmost:watch(mod.updateVisibility)
         fcp.app.showing:watch(mod.updateVisibility)
 
-        fcp:fullScreenWindow().isShowing:watch(mod.updateVisibility)
+        fcp.fullScreenWindow.isShowing:watch(mod.updateVisibility)
         fcp.commandEditor.isShowing:watch(mod.updateVisibility)
         fcp:preferencesWindow().isShowing:watch(mod.updateVisibility)
 
@@ -942,7 +942,7 @@ function mod.update()
         fcp.app.frontmost:unwatch(mod.updateVisibility)
         fcp.app.showing:unwatch(mod.updateVisibility)
 
-        fcp:fullScreenWindow().isShowing:unwatch(mod.updateVisibility)
+        fcp.fullScreenWindow.isShowing:unwatch(mod.updateVisibility)
         fcp.commandEditor.isShowing:unwatch(mod.updateVisibility)
         fcp:preferencesWindow().isShowing:unwatch(mod.updateVisibility)
 

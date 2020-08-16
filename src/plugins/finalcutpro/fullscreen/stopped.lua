@@ -4,8 +4,6 @@
 
 local require           = require
 
-local eventtap          = require "hs.eventtap"
-
 local fcp               = require "cp.apple.finalcutpro"
 local just              = require "cp.just"
 local tools             = require "cp.tools"
@@ -25,10 +23,10 @@ function plugin.init(deps)
     deps.fcpxCmds
         :add("playFullScreenAndStop")
         :whenActivated(function()
-            if not fcp:fullScreenWindow():isShowing() then
+            if not fcp.fullScreenWindow:isShowing() then
                 fcp:selectMenu({"View", "Playback", "Play Full Screen"})
                 if doUntil(function()
-                    return fcp:fullScreenWindow():isShowing()
+                    return fcp.fullScreenWindow:isShowing()
                 end, 5, 0.1) then
                     fcp:keyStroke({}, "space")
                     return

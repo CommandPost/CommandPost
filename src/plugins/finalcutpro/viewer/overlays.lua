@@ -976,7 +976,7 @@ function mod.update()
         if fcp.isFrontmost()
             and fcp.viewer:isShowing()
             and not fcp.isModalDialogOpen()
-            and not fcp:fullScreenWindow():isShowing()
+            and not fcp.fullScreenWindow:isShowing()
             and not fcp.commandEditor:isShowing()
             and not fcp:preferencesWindow():isShowing()
         then
@@ -1666,7 +1666,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcp.isFrontmost:watch(deferredUpdate)
     fcp.isModalDialogOpen:watch(deferredUpdate)
-    fcp:fullScreenWindow().isShowing:watch(deferredUpdate)
+    fcp.fullScreenWindow.isShowing:watch(deferredUpdate)
     fcp.commandEditor.isShowing:watch(deferredUpdate)
     fcp:preferencesWindow().isShowing:watch(deferredUpdate)
 
