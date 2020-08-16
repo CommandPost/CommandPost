@@ -66,7 +66,7 @@ function mod._zoomToFit(minClip, maxClip, shift)
             -- Too small - bail.
             -- Move to the first clip position:
             --------------------------------------------------------------------------------
-            mod.contents:scrollHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
+            mod.contents:shiftHorizontalToX(minClip:position().x - mod.SELECTION_BUFFER)
             mod.appearance:hide()
             return
         end

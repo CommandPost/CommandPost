@@ -207,7 +207,7 @@ function Playhead:show()
                 local scrollWidth = timelineFrame.w - viewFrame.w
                 local scrollPoint = position - viewFrame.w/2 - timelineFrame.x
                 local scrollTarget = scrollPoint/scrollWidth
-                parent:scrollHorizontalTo(scrollTarget)
+                parent:shiftHorizontalTo(scrollTarget)
             end
         end
     end

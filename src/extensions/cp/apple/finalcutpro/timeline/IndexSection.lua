@@ -22,7 +22,11 @@ local IndexSection = class("cp.apple.finalcutpro.timeline.IndexSection"):include
 --- Parameters:
 --- * index - The [Index](cp.apple.finalcutpro.timeline.Index.md) instance.
 function IndexSection:initialize(index)
-    self._index = index
+
+--- cp.apple.finalcutpro.timeline.IndexSection.index <cp.apple.finalcutpro.timeline.Index>
+--- Field
+--- The parent [Index](cp.apple.finalcutpro.timeline.Index.md).
+    self.index = index
 end
 
 --- cp.apple.finalcutpro.timeline.IndexSection:parent() -> cp.apple.finalcutpro.timeline.Index
@@ -37,13 +41,6 @@ end
 --- The [Final Cut Pro](cp.apple.finalcutpro.md) instance.
 function IndexSection:app()
     return self:parent():app()
-end
-
---- cp.apple.finalcutpro.timeline.IndexSection.index <cp.apple.finalcutpro.timeline.Index>
---- Field
---- The parent [Index](cp.apple.finalcutpro.timeline.Index.md).
-function IndexSection.lazy.value:index()
-    return self._index
 end
 
 --- cp.apple.finalcutpro.timeline.IndexSection.search <cp.ui.SearchField>

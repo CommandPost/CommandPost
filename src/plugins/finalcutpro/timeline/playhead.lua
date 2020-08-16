@@ -50,7 +50,7 @@ local positionPlayhead = function()
     -----------------------------------------------------------------------
     local modifiers = eventtap.checkKeyboardModifiers()
     if modifiers and not modifiers["shift"] then
-        contents:scrollHorizontalTo(scrollTarget)
+        contents:shiftHorizontalTo(scrollTarget)
     end
 end
 

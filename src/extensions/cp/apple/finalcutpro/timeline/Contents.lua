@@ -206,11 +206,11 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function Contents:scrollHorizontalTo(value)
+function Contents:shiftHorizontalTo(value)
     return self.scrollArea:shiftHorizontalTo(value)
 end
 
-function Contents:scrollHorizontalToX(x)
+function Contents:shiftHorizontalToX(x)
     -- update the scrollbar position
     local timelineFrame = self:timelineFrame()
     local scrollWidth = timelineFrame.w - self:viewFrame().w
@@ -218,7 +218,7 @@ function Contents:scrollHorizontalToX(x)
 
     local scrollTarget = scrollPoint/scrollWidth
 
-    self:scrollHorizontalTo(scrollTarget)
+    self:shiftHorizontalTo(scrollTarget)
 end
 
 -----------------------------------------------------------------------
