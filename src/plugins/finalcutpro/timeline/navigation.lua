@@ -21,9 +21,7 @@ function plugin.init(deps)
     for i=1, 9 do
         deps.commands
             :add(i18n("openRecentProjectStartingWith") .. " " .. i)
-            :whenActivated(function()
-                fcp:timeline():openProject(tostring(i) .. ".*")
-            end)
+            :whenActivated(fcp.timeline:doOpenProject(tostring(i) .. ".*"))
             :titled(i18n("openRecentProjectStartingWith") .. " " .. i)
     end
 end

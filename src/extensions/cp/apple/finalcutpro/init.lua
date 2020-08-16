@@ -559,7 +559,7 @@ end
 --- Returns:
 --- * The library row `axuielement`.
 function fcp:selectLibrary(title)
-    return self:libraries():selectLibrary(title)
+    return self.libraries:selectLibrary(title)
 end
 
 --- cp.apple.finalcutpro:closeLibrary(title) -> boolean
@@ -573,7 +573,7 @@ end
 --- * `true` if successful, or `false` if not.
 function fcp:closeLibrary(title)
     if self:isRunning() then
-        local libraries = self:libraries()
+        local libraries = self.libraries
         libraries:show()
         just.doUntil(function() return libraries:isShowing() end, 5.0)
         --------------------------------------------------------------------------------
@@ -757,29 +757,17 @@ function fcp.lazy.method:preferencesWindow()
     return PreferencesWindow.new(self)
 end
 
---- cp.apple.finalcutpro:primaryWindow() -> primaryWindow object
---- Method
---- Returns the Final Cut Pro Preferences Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Primary Window
-function fcp.lazy.method:primaryWindow()
+--- cp.apple.finalcutpro.primaryWindow <cp.apple.finalcutpro.main.PrimaryWindow>
+--- Field
+--- The Final Cut Pro Primary Window
+function fcp.lazy.value:primaryWindow()
     return PrimaryWindow(self)
 end
 
---- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
---- Method
---- Returns the Final Cut Pro Preferences Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Secondary Window
-function fcp.lazy.method:secondaryWindow()
+--- cp.apple.finalcutpro.secondaryWindow <cp.apple.finalcutpro.main.SecondaryWindow>
+--- Field
+--- The Final Cut Pro Preferences Window
+function fcp.lazy.value:secondaryWindow()
     return SecondaryWindow(self)
 end
 
@@ -835,42 +823,24 @@ function fcp.lazy.method:mediaImport()
     return MediaImport.new(self)
 end
 
---- cp.apple.finalcutpro:exportDialog() -> exportDialog object
---- Method
---- Returns the Final Cut Pro Export Dialog Box
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Export Dialog Box
-function fcp.lazy.method:exportDialog()
+--- cp.apple.finalcutpro.exportDialog <cp.apple.finalcutpro.main.ExportDialog>
+--- Field
+--- The Final Cut Pro Export Dialog Box
+function fcp.lazy.value:exportDialog()
     return ExportDialog(self)
 end
 
---- cp.apple.finalcutpro:findAndReplaceTitleText() -> FindAndReplaceTitleText
---- Method
---- Returns the [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The window.
-function fcp.lazy.method:findAndReplaceTitleText()
+--- cp.apple.finalcutpro.findAndReplaceTitleText <cp.apple.finalcutpro.main.FindAndReplaceTitleText>
+--- Field
+--- The [FindAndReplaceTitleText](cp.apple.finalcutpro.main.FindAndReplaceTitleText.md) dialog window.
+function fcp.lazy.value:findAndReplaceTitleText()
     return FindAndReplaceTitleText(self.app)
 end
 
---- cp.apple.finalcutpro:backgroundTasksDialog() -> BackgroundTasksDialog
---- Method
---- Returns the [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The window.
-function fcp.lazy.method:backgroundTasksDialog()
+--- cp.apple.finalcutpro.backgroundTasksDialog <cp.apple.finalcutpro.main.BackgroundTasksDialog>
+--- Field
+--- The [BackgroundTasksDialog](cp.apple.finalcutpro.main.BackgroundTasksDialog.md) dialog window.
+function fcp.lazy.value:backgroundTasksDialog()
     return BackgroundTasksDialog(self.app)
 end
 
@@ -880,16 +850,10 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:transcodeMedia() -> TranscodeMedia
---- Method
---- Returns the [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Transcode Media Sheet.
-function fcp.lazy.method:transcodeMedia()
+--- cp.apple.finalcutpro.transcodeMedia <cp.apple.finalcutpro.main.TranscodeMedia>
+--- Field
+--- The [TranscodeMedia](cp.apple.finalcutpro.main.TranscodeMedia.md) sheet.
+function fcp.lazy.value:transcodeMedia()
     return TranscodeMedia(self)
 end
 
@@ -899,54 +863,30 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
---- Method
---- Returns the Primary Toolbar - the toolbar at the top of the Primary Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the PrimaryToolbar
-function fcp:toolbar()
-    return self:primaryWindow():toolbar()
+--- cp.apple.finalcutpro.toolbar <cp.apple.finalcutpro.main.PrimaryToolbar>
+--- Field
+--- The Primary Toolbar - the toolbar at the top of the Primary Window.
+function fcp.lazy.value:toolbar()
+    return self.primaryWindow.toolbar
 end
 
---- cp.apple.finalcutpro:timeline() -> Timeline
---- Method
---- Returns the Timeline instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Timeline
-function fcp.lazy.method:timeline()
+--- cp.apple.finalcutpro.timeline <Timeline>
+--- Field
+--- The Timeline instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:timeline()
     return Timeline(self)
 end
 
 --- cp.apple.finalcutpro.viewer <cp.apple.finalcutpro.viewer.Viewer>
 --- Field
---- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Viewer
+--- The [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:viewer()
     return Viewer(self, false)
 end
 
 --- cp.apple.finalcutpro.eventViewer <cp.apple.finalcutpro.viewer.Viewer>
 --- Field
---- Returns the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Event Viewer
+--- The Event [Viewer](cp.apple.finalcutpro.viewer.Viewer.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:eventViewer()
     return Viewer(self, true)
 end
@@ -954,119 +894,71 @@ end
 --- cp.apple.finalcutpro.browser <cp.apple.finalcutpro.main.Browser>
 --- Field
 --- The [Browser](cp.apple.finalcutpro.main.Browser.md) instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Browser
 function fcp.lazy.value:browser()
     return Browser(self)
 end
 
 --- cp.apple.finalcutpro.libraries <cp.apple.finalcutpro.main.LibrariesBrowser>
 --- Field
---- Returns the [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
+--- The [LibrariesBrowser](cp.apple.finalcutpro.main.LibrariesBrowser.md) instance, whether it is in the primary or secondary window.
 function fcp.lazy.value:libraries()
     return self.browser.libraries
 end
 
---- cp.apple.finalcutpro:media() -> MediaBrowser
---- Method
---- Returns the MediaBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the MediaBrowser
-function fcp.lazy.method:media()
-    return self.browser.media()
+--- cp.apple.finalcutpro.media <cp.apple.finalcutpro.main.MediaBrowser>
+--- Field
+--- The MediaBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:media()
+    return self.browser.media
 end
 
---- cp.apple.finalcutpro:generators() -> GeneratorsBrowser
---- Method
---- Returns the GeneratorsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the GeneratorsBrowser
-function fcp.lazy.method:generators()
-    return self.browser.generators()
+--- cp.apple.finalcutpro.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>
+--- Field
+--- The GeneratorsBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:generators()
+    return self.browser.generators
 end
 
---- cp.apple.finalcutpro:effects() -> EffectsBrowser
---- Method
---- Returns the EffectsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the EffectsBrowser
-function fcp.lazy.method:effects()
-    return self:timeline():effects()
+--- cp.apple.finalcutpro.effects <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The EffectsBrowser instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:effects()
+    return self.timeline.effects
 end
 
---- cp.apple.finalcutpro:transitions() -> TransitionsBrowser
---- Method
---- Returns the TransitionsBrowser instance, whether it is in the primary or secondary window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the TransitionsBrowser
-function fcp.lazy.method:transitions()
-    return self:timeline():transitions()
+--- cp.apple.finalcutpro.transitions <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The Transitions `EffectsBrowser` instance, whether it is in the primary or secondary window.
+function fcp.lazy.value:transitions()
+    return self.timeline.transitions
 end
 
 --- cp.apple.finalcutpro.inspector <cp.apple.finalcutpro.inspector.Inspector>
 --- Field
---- Returns the [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
+--- The [Inspector](cp.apple.finalcutpro.inspector.Inspector.md) instance from the primary window.
 function fcp.lazy.value:inspector()
-    return self:primaryWindow():inspector()
+    return self.primaryWindow.inspector
 end
 
---- cp.apple.finalcutpro:colorBoard() -> ColorBoard
---- Method
---- Returns the ColorBoard instance from the primary window
----
---- Parameters:
----  * None
----
---- Returns:
----  * the ColorBoard
-function fcp.lazy.method:colorBoard()
-    return self:primaryWindow():colorBoard()
+--- cp.apple.finalcutpro.colorBoard <ColorBoard>
+--- Field
+--- The ColorBoard instance from the primary window
+function fcp.lazy.value:colorBoard()
+    return self.primaryWindow.colorBoard
 end
 
---- cp.apple.finalcutpro:color() -> ColorInspector
---- Method
---- Returns the ColorInspector instance from the primary window
----
---- Parameters:
----  * None
----
---- Returns:
----  * the ColorInspector
-function fcp.lazy.method:color()
-    return self:primaryWindow():color()
+--- cp.apple.finalcutpro.color <ColorInspector>
+--- Field
+--- The ColorInspector instance from the primary window
+function fcp.lazy.value:color()
+    return self.primaryWindow.inspector.color
 end
 
---- cp.apple.finalcutpro:alert() -> cp.ui.Alert
---- Method
+--- cp.apple.finalcutpro.alert <cp.ui.Alert>
+--- Field
 --- Provides basic access to any 'alert' dialog windows in the app.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the `Alert` instance
-function fcp.lazy.method:alert()
-    return self:primaryWindow():alert()
+function fcp.lazy.value:alert()
+    return self.primaryWindow.alert
 end
 
 ----------------------------------------------------------------------------------------

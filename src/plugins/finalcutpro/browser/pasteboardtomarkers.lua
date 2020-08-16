@@ -54,7 +54,7 @@ function mod.process()
     --------------------------------------------------------------------------------
     -- Make sure the browser is showing:
     --------------------------------------------------------------------------------
-    if not fcp:browser():isShowing() then
+    if not fcp.browser:isShowing() then
         displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
     end
@@ -62,7 +62,7 @@ function mod.process()
     --------------------------------------------------------------------------------
     -- Make sure only one clip is selected in the browser:
     --------------------------------------------------------------------------------
-    local selectedClips = fcp:browser():libraries():selectedClips()
+    local selectedClips = fcp.browser.libraries:selectedClips()
     if not selectedClips or #selectedClips == 0 then
         displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
@@ -171,7 +171,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        result = fcp:viewer():timecode(timecode)
+        result = fcp.viewer:timecode(timecode)
         if not result then
             log.df("Current Line: %s", v)
             displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
@@ -181,7 +181,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Add Marker & Modify:
         --------------------------------------------------------------------------------
-        local markerPopover = fcp:browser():markerPopover()
+        local markerPopover = fcp.browser:markerPopover()
         markerPopover:show()
         result = just.doUntil(function() return markerPopover:isShowing() end)
         if not result then
@@ -227,7 +227,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             -- Goto start timecode:
             --------------------------------------------------------------------------------
-            result = fcp:viewer():timecode(favouriteStart)
+            result = fcp.viewer:timecode(favouriteStart)
             if not result then
                 log.df("favouriteStart: %s", favouriteStart)
                 displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))
@@ -247,7 +247,7 @@ function mod.process()
             -- Goto end timecode:
             --------------------------------------------------------------------------------
             if favouriteEnd then
-                result = fcp:libraries():playhead():timecode(favouriteEnd)
+                result = fcp.libraries:playhead():timecode(favouriteEnd)
                 if not result then
                     log.df("favouriteEnd: %s", favouriteEnd)
                     displayErrorMessage(string.format("Could not go to favourite end timecode for line %s.", i))

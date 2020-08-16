@@ -41,7 +41,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- TRANSITION INSPECTOR:
     --------------------------------------------------------------------------------
-    local transition                     = fcp:inspector():transition()
+    local transition                     = fcp.inspector.transition
     local transitionGroup                = fcpGroup:group(i18n("transition") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

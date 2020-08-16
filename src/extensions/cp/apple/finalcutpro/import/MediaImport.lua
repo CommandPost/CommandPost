@@ -157,13 +157,7 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.import.MediaImport` object for method chaining.
 function MediaImport:hide()
-    local ui = self:UI()
-    if ui then
-        local closeBtn = ui:closeButton()
-        if closeBtn then
-            closeBtn:doPress()
-        end
-    end
+    self.closeButton:press()
     return self
 end
 

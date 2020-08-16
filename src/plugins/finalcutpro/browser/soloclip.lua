@@ -28,7 +28,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Check that there is exactly one Selected Clip:
         --------------------------------------------------------------------------------
-        local libraries = fcp:libraries()
+        local libraries = fcp.libraries
         local selectedClips = libraries:selectedClipsUI()
         if not selectedClips or #selectedClips ~= 1 then
             tools.playErrorSound()
@@ -39,7 +39,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Get Clip Name from the Viewer
         --------------------------------------------------------------------------------
-        local clipName = fcp:viewer():title()
+        local clipName = fcp.viewer:title()
 
         if clipName then
             --------------------------------------------------------------------------------

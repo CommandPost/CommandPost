@@ -46,7 +46,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- AUDIO INSPECTOR:
     --------------------------------------------------------------------------------
-    local audio                         = fcp:inspector():audio()
+    local audio                         = fcp.inspector.audio
     local audioGroup                    = fcpGroup:group(i18n("audio") .. " " .. i18n("inspector"))
 
     local PAN_MODES                     = audio.PAN_MODES
@@ -240,7 +240,7 @@ function plugin.init(deps)
         -- Effects:
         --
         --------------------------------------------------------------------------------
-        local effects = audio:effects()
+        local effects = audio.effects
         local effectsGroup = audioGroup:group(i18n("effects"))
 
             --------------------------------------------------------------------------------

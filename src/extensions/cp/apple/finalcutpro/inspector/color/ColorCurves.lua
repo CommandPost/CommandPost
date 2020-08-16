@@ -42,11 +42,7 @@ local toRegionalNumberString            = tools.toRegionalNumberString
 
 local CORRECTION_TYPE                   = "Color Curves"
 
-local ColorCurves = Element:subclass("ColorCurves")
-
-function ColorCurves.__tostring()
-    return "cp.apple.finalcutpro.inspector.color.ColorCurves"
-end
+local ColorCurves = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorCurves")
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves.matches(element)
 --- Function
@@ -91,7 +87,7 @@ function ColorCurves:initialize(parent)
 
     -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
     -- link these fields so they mirror each other.
-    self:mixSlider().value:mirror(self:mixTextField().value)
+    self.mixSlider.value:mirror(self.mixTextField.value)
 end
 
 --------------------------------------------------------------------------------
@@ -136,16 +132,10 @@ function ColorCurves.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:viewModeButton() -> MenuButton
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.viewModeButton <cp.ui.MenuButton>
+--- Field
 --- Returns the [MenuButton](cp.ui.MenuButton.md) for the View Mode.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` for the View Mode.
-function ColorCurves.lazy.method:viewModeButton()
+function ColorCurves.lazy.value:viewModeButton()
     return MenuButton(self, function()
         local ui = self:contentUI()
         if ui then
@@ -174,25 +164,19 @@ function ColorCurves.lazy.prop:viewingAllCurves()
         function(allCurves, _, theProp)
             local current = theProp:get()
             if allCurves and not current then
-                self:viewModeButton():selectItem(1)
+                self.viewModeButton:selectItem(1)
             elseif not allCurves and current then
-                self:viewModeButton():selectItem(2)
+                self.viewModeButton:selectItem(2)
             end
         end
     ):monitor(self.contentUI)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:curveType() -> RadioGroup
---- Method
---- Returns the `RadioGroup` that allows selection of the curve type. Only available when
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.wheelType <RadioGroup>
+--- Field
+--- The `RadioGroup` that allows selection of the curve type. Only available when
 --- [viewingAllCurves](#viewingAllCurves) is `true`.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `RadioGroup`.
-function ColorCurves.lazy.method:wheelType()
+function ColorCurves.lazy.value:wheelType()
     return RadioGroup(self,
         function()
             if not self:viewingAllCurves() then
@@ -205,101 +189,64 @@ function ColorCurves.lazy.method:wheelType()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:luma() -> ColorCurve
---- Method
---- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.luma <ColorCurve>
+--- Field
+--- A [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
 --- that allows control of the 'luma' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorCurve`.
-function ColorCurves.lazy.method:luma()
+function ColorCurves.lazy.value:luma()
     return ColorCurve(self, ColorCurve.TYPE.LUMA)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:red() -> ColorCurve
---- Method
---- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.red <ColorCurve>
+--- Field
+--- A [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
 --- that allows control of the 'red' color settings. The actual
 --- color can be adjusted within the ColorCurve, but it starts as red.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorCurve`.
-function ColorCurves.lazy.method:red()
+function ColorCurves.lazy.value:red()
     return ColorCurve(self, ColorCurve.TYPE.RED)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:green() -> ColorCurve
---- Method
---- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.green <ColorCurve>
+--- Field
+--- A [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
 --- that allows control of the 'green' color settings. The actual
 --- color can be adjusted within the ColorCurve, but it starts as green.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorCurve`.
-function ColorCurves.lazy.method:green()
+function ColorCurves.lazy.value:green()
     return ColorCurve(self, ColorCurve.TYPE.GREEN)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:blue() -> ColorCurve
---- Method
---- Returns a [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.blue <ColorCurve>
+--- Field
+--- A [ColorCurve](cp.apple.finalcutpro.inspector.color.ColorCurve.md)
 --- that allows control of the 'blue' color settings. The actual
 --- color can be adjusted within the ColorCurve, but it starts as blue.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorCurve`.
-function ColorCurves.lazy.method:blue()
+function ColorCurves.lazy.value:blue()
     return ColorCurve(self, ColorCurve.TYPE.BLUE)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:mixRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
---- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorCurves.lazy.method:mixRow()
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.mixRow <cp.ui.PropertyRow>
+--- Field
+--- The `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
+function ColorCurves.lazy.value:mixRow()
     return PropertyRow(self, "FFChannelMixName")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:mixSlider() -> cp.ui.Slider
---- Method
---- Returns a `Slider` that provides access to the 'Mix' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Mix `Slider`.
-function ColorCurves.lazy.method:mixSlider()
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.mixSlider <cp.ui.Slider>
+--- Field
+--- A `Slider` that provides access to the 'Mix' slider.
+function ColorCurves.lazy.value:mixSlider()
     return Slider(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, Slider.matches)
         end
     )
 end
 
-function ColorCurves.lazy.method:mixTextField()
+function ColorCurves.lazy.value:mixTextField()
     return TextField(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
@@ -310,20 +257,14 @@ end
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 function ColorCurves.lazy.prop:mix()
-    return self:mixSlider().value
+    return self.mixSlider.value
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:preserveLumaRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Preserve Luma' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.preserveLumaRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Preserve Luma' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorCurves.lazy.method:preserveLumaRow()
+function ColorCurves.lazy.value:preserveLumaRow()
     return PropertyRow(self, "PAEColorCurvesEffectPreserveLuma")
 end
 
@@ -333,7 +274,7 @@ end
 function ColorCurves.lazy.value:preserveLuma()
     return CheckBox(self,
         function()
-            return childMatching(self:preserveLumaRow():children(), CheckBox.matches)
+            return childMatching(self.preserveLumaRow:children(), CheckBox.matches)
         end
     )
 end

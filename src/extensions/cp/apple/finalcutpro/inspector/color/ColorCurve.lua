@@ -13,7 +13,7 @@ local childWithRole                         = axutils.childWithRole
 local childMatching, childrenMatching       = axutils.childMatching, axutils.childrenMatching
 local cache, childFromRight, childFromTop   = axutils.cache, axutils.childFromRight, axutils.childFromTop
 
-local ColorCurve = Element:subclass("ColorCurve")
+local ColorCurve = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorCurve")
 
 ColorCurve.static.TYPE ={
     LUMA = 1,
@@ -57,7 +57,7 @@ function ColorCurve:initialize(parent, type)
                     -- All Wheels:
                     --------------------------------------------------------------------------------
                     return childFromTop(childrenMatching(ui, ColorCurve.matches), self:type())
-                elseif parent:wheelType():selectedOption() == self:type() then
+                elseif parent.wheelType:selectedOption() == self:type() then
                     --------------------------------------------------------------------------------
                     -- Single Wheels - with only a single wheel visible:
                     --------------------------------------------------------------------------------
@@ -79,12 +79,12 @@ end
 function ColorCurve:show()
     local parent = self:parent()
     parent:show()
-    parent:wheelType():selectedOption(self:type())
+    parent.wheelType:selectedOption(self:type())
 end
 
 function ColorCurve.lazy.method:doShow()
     local parent = self:parent()
-    local wheelType = parent:wheelType()
+    local wheelType = parent.wheelType
     return If(self.isShowing):Is(false):Then(
         parent:doShow()
     ):Then(

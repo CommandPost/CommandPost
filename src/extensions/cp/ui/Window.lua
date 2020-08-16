@@ -149,19 +149,19 @@ function Window.lazy.prop:modal()
     return axutils.prop(self.UI, "AXModal")
 end
 
-function Window.lazy.method:closeButton()
+function Window.lazy.value:closeButton()
     return Button(self.UI, "AXCloseButton")
 end
 
-function Window.lazy.method:minimizeButton()
+function Window.lazy.value:minimizeButton()
     return Button(self.UI, "AXMinimizeButton")
 end
 
-function Window.lazy.method:fullScreenButton()
+function Window.lazy.value:fullScreenButton()
     return Button(self.UI, "AXFullScreenButton")
 end
 
-function Window.lazy.method:zoomButton()
+function Window.lazy.value:zoomButton()
     return Button(self.UI, "AXZoomButton")
 end
 
@@ -324,16 +324,10 @@ function Window.lazy.method:doRaise()
     :Label("Window:doRaise")
 end
 
---- cp.ui.Window:alert() -> cp.ui.Alert
---- Method
+--- cp.ui.Window.alert <cp.ui.Alert>
+--- Field
 --- Provides access to any 'Alert' windows on the Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `cp.ui.Alert` object
-function Window.lazy.method:alert()
+function Window.lazy.value:alert()
     return Alert(self)
 end
 
@@ -409,5 +403,14 @@ function Window:__tostring()
     local label = title or "[Untitled]"
     return format("%s: %s (%s)", self.class.name, label, self:app())
 end
+
+
+-- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)
+-- This is a bridge while we migrate to using `lazy.value` instead of `lazy.method` (or methods)
+-- in the FCPX API.
+function Window:__call()
+    return self
+end
+
 
 return Window

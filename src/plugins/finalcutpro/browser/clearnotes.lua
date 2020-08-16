@@ -28,7 +28,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Make sure the Browser is visible:
             --------------------------------------------------------------------------------
-            local libraries = fcp:browser():libraries()
+            local libraries = fcp.browser.libraries
             if not libraries:isShowing() then
                 playErrorSound()
                 return

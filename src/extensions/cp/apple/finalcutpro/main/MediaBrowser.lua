@@ -4,53 +4,55 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("mediaBrowser")
+-- local log								= require "hs.logger" .new "mediaBrowser"
 
-local just								= require("cp.just")
-local prop								= require("cp.prop")
-local axutils							= require("cp.ui.axutils")
+local just								= require "cp.just"
+local axutils							= require "cp.ui.axutils"
 
-local Table								= require("cp.ui.Table")
-local PopUpButton				        = require("cp.ui.PopUpButton")
-local TextField						    = require("cp.ui.TextField")
+local Group                             = require "cp.ui.Group"
+local Table								= require "cp.ui.Table"
+local PopUpButton				        = require "cp.ui.PopUpButton"
+local ScrollArea                        = require "cp.ui.ScrollArea"
+local SplitGroup                        = require "cp.ui.SplitGroup"
+local TextField						    = require "cp.ui.TextField"
 
 local cache                             = axutils.cache
-local childWithRole                     = axutils.childWithRole
+local childMatching                     = axutils.childMatching
 
 
-local MediaBrowser = {}
+local MediaBrowser = Group:subclass("cp.apple.finalcutpro.main.MediaBrowser")
 
 --- cp.apple.finalcutpro.main.MediaBrowser.TITLE -> string
 --- Constant
 --- Photos & Audio Title.
-MediaBrowser.TITLE = "Photos and Audio"
+MediaBrowser.static.TITLE = "Photos and Audio"
 
 --- cp.apple.finalcutpro.main.MediaBrowser.MAX_SECTIONS -> number
 --- Constant
 --- Maximum Sections.
-MediaBrowser.MAX_SECTIONS = 4
+MediaBrowser.static.MAX_SECTIONS = 4
 
 --- cp.apple.finalcutpro.main.MediaBrowser.PHOTOS -> number
 --- Constant
 --- Photos ID.
-MediaBrowser.PHOTOS = 1
+MediaBrowser.static.PHOTOS = 1
 
 --- cp.apple.finalcutpro.main.MediaBrowser.GARAGE_BAND -> number
 --- Constant
 --- Garage Band ID.
-MediaBrowser.GARAGE_BAND = 2
+MediaBrowser.static.GARAGE_BAND = 2
 
 --- cp.apple.finalcutpro.main.MediaBrowser.ITUNES -> number
 --- Constant
 --- iTunes ID.
-MediaBrowser.ITUNES = 3
+MediaBrowser.static.ITUNES = 3
 
 --- cp.apple.finalcutpro.main.MediaBrowser.SOUND_EFFECTS -> number
 --- Constant
 --- Sound Effects ID.
-MediaBrowser.SOUND_EFFECTS = 4
+MediaBrowser.static.SOUND_EFFECTS = 4
 
---- cp.apple.finalcutpro.main.MediaBrowser.new(parent) -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser(parent) -> MediaBrowser
 --- Constructor
 --- Creates a new `Browser` instance.
 ---
@@ -59,62 +61,34 @@ MediaBrowser.SOUND_EFFECTS = 4
 ---
 --- Returns:
 ---  * A new `MediaBrowser` object.
-function MediaBrowser.new(parent)
-    local o = prop.extend({_parent = parent}, MediaBrowser)
-
-    local isShowing = parent.isShowing:AND(parent.mediaShowing)
-
-    local UI = prop.OR(isShowing:AND(parent.UI), prop.NIL)
-
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.main.MediaBrowser.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the Media Browser is showing.
-        isShowing = isShowing,
-
-        --- cp.apple.finalcutpro.main.MediaBrowser.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the UI for the Media Browser, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the main group UI for the Media Browser, or `nil` if not available.
-        mainGroupUI = UI:mutate(function(original, self)
-            return cache(self, "_mainGroup", function()
-                local ui = original()
-                return ui and childWithRole(ui, "AXSplitGroup")
-            end)
-        end),
-    }
-
-    return o
+function MediaBrowser:initialize(parent)
+    Group.initialize(self, parent, parent.UI:mutate(function(original)
+        if self:isShowing() then
+            return original()
+        else
+            return nil
+        end
+    end))
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function MediaBrowser:parent()
-    return self._parent
+--- cp.apple.finalcutpro.main.MediaBrowser.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Media Browser is showing.
+function MediaBrowser.lazy.prop:isShowing()
+    local parent = self:parent()
+    return parent.isShowing:AND(parent.mediaShowing)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function MediaBrowser:app()
-    return self:parent():app()
+--- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the main group UI for the Media Browser, or `nil` if not available.
+function MediaBrowser.lazy.prop:mainGroupUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_mainGroup", function()
+            local ui = original()
+            return ui and childMatching(ui, SplitGroup.matches)
+        end)
+    end)
 end
 
 -----------------------------------------------------------------------
@@ -162,61 +136,34 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.MediaBrowser:sidebar() -> Table
---- Method
---- Get the Sidebar Table.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Table` object.
-function MediaBrowser:sidebar()
-    if not self._sidebar then
-        self._sidebar = Table(self, function()
-            return childWithRole(self:mainGroupUI(), "AXScrollArea")
-        end)
-    end
-    return self._sidebar
+--- cp.apple.finalcutpro.main.MediaBrowser.sidebar <cp.ui.Table>
+--- Field
+--- The Sidebar `Table`.
+function MediaBrowser.lazy.value:sidebar()
+    return Table(self, function()
+        return childMatching(self:mainGroupUI(), ScrollArea.matches)
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:group() -> PopUpButton
---- Method
---- Get the group PopUpButton.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `PopUpButton` object.
-function MediaBrowser:group()
-    if not self._group then
-        self._group = PopUpButton(self, function()
-            return childWithRole(self:UI(), "AXPopUpButton")
-        end)
-    end
-    return self._group
+--- cp.apple.finalcutpro.main.MediaBrowser.group <cp.ui.PopUpButton>
+--- Field
+--- The group PopUpButton.
+function MediaBrowser.lazy.value:group()
+    return PopUpButton(self, function()
+        return childMatching(self:UI(), PopUpButton.matches)
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> TextField
---- Method
---- Get the search TextField.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `TextField` object.
-function MediaBrowser:search()
-    if not self._search then
-        self._search = TextField(self, function()
-            return childWithRole(self:mainGroupUI(), "AXTextField")
-        end)
-    end
-    return self._search
+--- cp.apple.finalcutpro.main.MediaBrowser.search <cp.ui.TextField>
+--- Field
+--- The search TextField.
+function MediaBrowser.lazy.value:search()
+    return TextField(self, function()
+        return childMatching(self:mainGroupUI(), TextField.matches)
+    end)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> MediaBrowser
+--- cp.apple.finalcutpro.main.MediaBrowser:showSidebar() -> MediaBrowser
 --- Method
 --- Show the Media Browser Sidebar.
 ---
@@ -230,7 +177,7 @@ function MediaBrowser:showSidebar()
     return self
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser:search() -> axuielementObject
+--- cp.apple.finalcutpro.main.MediaBrowser:topCategoriesUI() -> axuielementObject
 --- Method
 --- Get the Top Categories UI.
 ---
@@ -240,7 +187,7 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function MediaBrowser:topCategoriesUI()
-    return self:sidebar():rowsUI(function(row)
+    return self.sidebar:rowsUI(function(row)
         return row:attributeValue("AXDisclosureLevel") == 0
     end)
 end
@@ -258,7 +205,7 @@ function MediaBrowser:showSection(index)
     self:showSidebar()
     local topCategories = self:topCategoriesUI()
     if topCategories and #topCategories == MediaBrowser.MAX_SECTIONS then
-        self:sidebar():selectRow(topCategories[index])
+        self.sidebar:selectRow(topCategories[index])
     end
     return self
 end
@@ -328,8 +275,8 @@ function MediaBrowser:saveLayout()
     local layout = {}
     if self:isShowing() then
         layout.showing = true
-        layout.sidebar = self:sidebar():saveLayout()
-        layout.search = self:search():saveLayout()
+        layout.sidebar = self.sidebar:saveLayout()
+        layout.search = self.search:saveLayout()
     end
     return layout
 end
@@ -346,8 +293,8 @@ end
 function MediaBrowser:loadLayout(layout)
     if layout and layout.showing then
         self:show()
-        self:sidebar():loadLayout(layout.sidebar)
-        self:search():loadLayout(layout.sidebar)
+        self.sidebar:loadLayout(layout.sidebar)
+        self.search:loadLayout(layout.sidebar)
     end
 end
 

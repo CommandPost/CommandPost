@@ -11,11 +11,10 @@ local dialog                = require "cp.dialog"
 local Dialog                = require "cp.ui.Dialog"
 local i18n                  = require "cp.i18n"
 local just                  = require "cp.just"
-local prop                  = require "cp.prop"
 local SaveSheet             = require "cp.apple.finalcutpro.export.SaveSheet"
-local StaticText            = require "cp.ui.StaticText"
 
-local v                     = require "semver"
+local Button                = require "cp.ui.Button"
+local StaticText            = require "cp.ui.StaticText"
 
 local cache                 = axutils.cache
 local childFromRight        = axutils.childFromRight
@@ -136,7 +135,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             --------------------------------------------------------------------------------
             -- Successfully selected the share menu item:
             --------------------------------------------------------------------------------
-            local alert = fcp:alert()
+            local alert = fcp.alert
 
             local missingMediaString = fcp:string("FFMissingMediaMessageText")
             local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")
@@ -240,6 +239,13 @@ function ExportDialog:hide()
     return self
 end
 
+function ExportDialog.lazy.value:cancelButton()
+    return Button(self, self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXCancelButton")
+    end))
+end
+
 --- cp.apple.finalcutpro.export.ExportDialog:pressCancel() -> cp.apple.finalcutpro.export.ExportDialog
 --- Method
 --- Presses the Cancel Button.
@@ -250,14 +256,14 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
 function ExportDialog:pressCancel()
-    local ui = self:UI()
-    if ui then
-        local btn = ui:cancelButton()
-        if btn then
-            btn:doPress()
-        end
-    end
-    return self
+    self.cancelButton:press()
+end
+
+function ExportDialog.lazy.value:defaultButton()
+    return Button(self, self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXDefaultButton")
+    end))
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:pressNext() -> cp.apple.finalcutpro.export.ExportDialog
@@ -270,20 +276,13 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
 function ExportDialog:pressNext()
-    local ui = self:UI()
-    if ui then
-        local nextBtn = ui:defaultButton()
-        if nextBtn then
-            nextBtn:doPress()
-        end
-    end
-    return self
+    self.defaultButton:press()
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:fileExtension() -> cp.ui.StaticText
---- Method
+--- cp.apple.finalcutpro.export.ExportDialog.fileExtension <cp.ui.StaticText>
+--- Field
 --- The "File Extension" [StaticText](cp.ui.StaticText.md).
-function ExportDialog.lazy.method:fileExtension()
+function ExportDialog.lazy.value:fileExtension()
     return StaticText(self, self.UI:mutate(function(original)
         return cache(self, "_next", function()
             return childFromRight(original(), 2, StaticText.matches)
@@ -291,20 +290,11 @@ function ExportDialog.lazy.method:fileExtension()
     end))
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:saveSheet() -> SaveSheet
---- Method
---- Creates a new Save Sheet.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The SaveSheet.
-function ExportDialog:saveSheet()
-    if not self._saveSheet then
-        self._saveSheet = SaveSheet.new(self)
-    end
-    return self._saveSheet
+--- cp.apple.finalcutpro.export.ExportDialog.saveSheet <SaveSheet>
+--- Field
+--- The `SaveSheet`.
+function ExportDialog.lazy.value:saveSheet()
+    return SaveSheet.new(self)
 end
 
 return ExportDialog

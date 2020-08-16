@@ -158,8 +158,8 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             return (t[a]:attributeValue("AXValueDescription") or "") < (t[b]:attributeValue("AXValueDescription") or "")
         end
     end
-    local playhead = fcp:timeline():playhead()
-    local timelineContents = fcp:timeline():contents()
+    local playhead = fcp.timeline.playhead
+    local timelineContents = fcp.timeline.contents
     for _,clip in spairs(clips, sortFn) do
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -177,7 +177,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp:timeline():contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -264,7 +264,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp:timeline():contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -285,7 +285,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
-            local exportDialog = fcp:exportDialog()
+            local exportDialog = fcp.exportDialog
             local errorMessage
             _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
             if errorMessage then
@@ -295,7 +295,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Get the file extension for later:
             --------------------------------------------------------------------------------
-            local fileExtension = exportDialog:fileExtension():value()
+            local fileExtension = exportDialog:fileExtension()
 
             --------------------------------------------------------------------------------
             -- Press 'Next':
@@ -305,7 +305,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- If 'Next' has been clicked (as opposed to 'Share'):
             --------------------------------------------------------------------------------
-            local saveSheet = exportDialog:saveSheet()
+            local saveSheet = exportDialog.saveSheet
             if exportDialog:isShowing() then
 
                 --------------------------------------------------------------------------------
@@ -422,7 +422,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             -- Wait until the "Preparing" modal dialog closes or the
             -- Background Tasks Dialog opens:
             --------------------------------------------------------------------------------
-            local backgroundTasksDialog = fcp:backgroundTasksDialog()
+            local backgroundTasksDialog = fcp.backgroundTasksDialog
             if fcp:isModalDialogOpen() then
                 doUntil(function()
                     return backgroundTasksDialog:isShowing() or fcp:isModalDialogOpen() == false
@@ -683,7 +683,7 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Check if we have any currently-selected clips:
     --------------------------------------------------------------------------------
-    local timelineContents = fcp:timeline():contents()
+    local timelineContents = fcp.timeline.contents
     local selectedClips = timelineContents:selectedClipsUI(true)
 
     if not selectedClips or #selectedClips == 0 then

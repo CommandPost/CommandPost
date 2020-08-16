@@ -25,19 +25,19 @@ local plugin = {
 function plugin.init(deps)
     local cmds = deps.fcpxCmds
 
-    local timeline = fcp:timeline()
-    local index = timeline:index()
+    local timeline = fcp.timeline
+    local index = timeline.index
 
     local saveTimelineIndexToCSV = function()
         fcp:launch(5)
         timeline:show()
-        if not timeline:toolbar():index():checked() then
-            timeline:toolbar():index():press()
+        if not timeline.toolbar.index:checked() then
+            timeline.toolbar.index:press()
         end
         if index:isShowing() then
             local activeTab = index:activeTab()
-            local list = activeTab and activeTab:list()
-            if list and not index:roles():isShowing() then
+            local list = activeTab and activeTab.list
+            if list and not index.roles:isShowing() then
                 local result = list:toCSV()
                 if result then
                     local path = dialog.displayChooseFolder(i18n("selectAFolderToSaveCSV") .. ":")

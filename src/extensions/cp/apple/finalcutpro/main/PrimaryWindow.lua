@@ -19,7 +19,7 @@ local If                = require "cp.rx.go.If"
 local class             = require "middleclass"
 local lazy              = require "cp.lazy"
 
-local PrimaryWindow = class("PrimaryWindow"):include(lazy)
+local PrimaryWindow = class("cp.apple.finalcutpro.main.PrimaryWindow"):include(lazy)
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.matches(w) -> boolean
 --- Function
@@ -64,16 +64,10 @@ function PrimaryWindow:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow:window() -> cp.ui.Window
---- Method
---- Returns the `Window` instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Window` instance.
-function PrimaryWindow.lazy.method:window()
+--- cp.apple.finalcutpro.main.PrimaryWindow.window <cp.ui.Window>
+--- Field
+--- The `Window` instance.
+function PrimaryWindow.lazy.value:window()
     return Window(self:app().app, self.UI)
 end
 
@@ -93,28 +87,28 @@ end
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 function PrimaryWindow.lazy.prop:hsWindow()
-    return self:window().hsWindow
+    return self.window.hsWindow
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is visible.
 function PrimaryWindow.lazy.prop:isShowing()
-    return self:window().visible
+    return self.window.visible
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isFullScreen <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is full-screen.
 function PrimaryWindow.lazy.prop:isFullScreen()
-    return self:window().fullScreen
+    return self.window.fullScreen
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.frame <cp.prop: frame>
 --- Field
 --- The current position (x, y, width, height) of the window.
 function PrimaryWindow.lazy.prop:frame()
-    return self:window().frame
+    return self.window.frame
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.rootGroupUI() <cp.prop: hs._asm.axuielement; read-only; live>
@@ -274,7 +268,7 @@ end
 function PrimaryWindow:show()
     self:app():show()
     if not self:isShowing() then
-        return self:window():focus()
+        return self.window:focus()
     end
     return self
 end
@@ -289,7 +283,7 @@ function PrimaryWindow.lazy.method:doShow()
     return Do(self:app():doShow())
     :Then(
         If(self.isShowing):Is(false)
-        :Then(self:window():doFocus())
+        :Then(self.window:doFocus())
     )
     :Label("PrimaryWindow:doShow")
 end
@@ -300,16 +294,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:inspector() -> Inspector
---- Method
---- Gets the Inspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Inspector
-function PrimaryWindow.lazy.method:inspector()
+--- cp.apple.finalcutpro.main.PrimaryWindow.inspector <Inspector>
+--- Field
+--- The Inspector object.
+function PrimaryWindow.lazy.value:inspector()
     return Inspector(self)
 end
 
@@ -319,17 +307,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:colorBoard() -> ColorBoard
---- Method
---- Gets the ColorBoard object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorBoard
-function PrimaryWindow.lazy.method:colorBoard()
-    return self:inspector():color():colorBoard()
+--- cp.apple.finalcutpro.main.PrimaryWindow.colorBoard <ColorBoard>
+--- Field
+--- The ColorBoard object.
+function PrimaryWindow.lazy.value:colorBoard()
+    return self.inspector.color.colorBoard
 end
 
 -----------------------------------------------------------------------
@@ -338,17 +320,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:toolbar() -> PrimaryToolbar
---- Method
---- Returns the PrimaryToolbar element.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `PrimaryToolbar`.
-function PrimaryWindow.lazy.method:toolbar()
-    return PrimaryToolbar.new(self)
+--- cp.apple.finalcutpro.main.PrimaryWindow.toolbar <cp.ui.PrimaryToolbar>
+--- Field
+--- The PrimaryToolbar element.
+function PrimaryWindow.lazy.value:toolbar()
+    return PrimaryToolbar(self)
 end
 
 -----------------------------------------------------------------------
@@ -357,17 +333,18 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:alert() -> cp.ui.Alert
---- Method
+--- cp.apple.finalcutpro.main.PrimaryWindow.alert <cp.ui.Alert>
+--- Field
 --- Provides access to any 'Alert' windows on the PrimaryWindow.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `cp.ui.Alert` object
-function PrimaryWindow.lazy.method:alert()
-    return self:window():alert()
+function PrimaryWindow.lazy.value:alert()
+    return self.window.alert
+end
+
+-- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp.viewer`)
+-- This is a bridge while we migrate to using `lazy.value` instead of `lazy.method` (or methods)
+-- in the FCPX API.
+function PrimaryWindow:__call()
+    return self
 end
 
 return PrimaryWindow

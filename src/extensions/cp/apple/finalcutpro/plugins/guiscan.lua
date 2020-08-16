@@ -39,7 +39,7 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsShowing = effects:isShowing()
     if not effects:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Effects panel.")
@@ -56,9 +56,9 @@ local function scanVideoEffects()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
-    local sidebar = effects:sidebar()
+    local sidebar = effects.sidebar
 
     --------------------------------------------------------------------------------
     -- Ensure the sidebar is visible
@@ -126,7 +126,7 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     -- Make sure Effects panel is open:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsShowing = effects:isShowing()
     if not effects:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Effects panel.")
@@ -143,9 +143,9 @@ local function scanAudioEffects()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
-    local sidebar = effects:sidebar()
+    local sidebar = effects.sidebar
 
     --------------------------------------------------------------------------------
     -- Ensure the sidebar is visible
@@ -213,7 +213,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Save the layout of the Effects panel, in case we switch away...
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsLayout = nil
     if effects:isShowing() then
         effectsLayout = effects:saveLayout()
@@ -222,7 +222,7 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure Transitions panel is open:
     --------------------------------------------------------------------------------
-    local transitions = fcp:transitions()
+    local transitions = fcp.transitions
     local transitionsShowing = transitions:isShowing()
     if not transitions:show():isShowing() then
         dialog.displayErrorMessage("Unable to activate the Transitions panel.")
@@ -239,12 +239,12 @@ local function scanTransitions()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    transitions:search():clear()
+    transitions.search:clear()
 
     --------------------------------------------------------------------------------
     -- Make sure the sidebar is visible:
     --------------------------------------------------------------------------------
-    local sidebar = transitions:sidebar()
+    local sidebar = transitions.sidebar
 
     transitions:showSidebar()
 
@@ -292,9 +292,9 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     fcp:launch(10)
 
-    local generators = fcp:generators()
+    local generators = fcp.generators
 
-    local browserLayout = fcp:browser():saveLayout()
+    local browserLayout = fcp.browser:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure Generators and Generators panel is open:
@@ -307,7 +307,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'Generators':
@@ -317,12 +317,12 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Make sure "Installed Generators" is selected:
     --------------------------------------------------------------------------------
-    generators:group():selectItem(1)
+    generators.group:selectItem(1)
 
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:
     --------------------------------------------------------------------------------
-    local effectsList = generators:contents():childrenUI()
+    local effectsList = generators.contents:childrenUI()
     local allGenerators = {}
     if effectsList ~= nil then
         for i=1, #effectsList do
@@ -336,7 +336,7 @@ local function scanGenerators()
     --------------------------------------------------------------------------------
     -- Restore Effects or Transitions Panel:
     --------------------------------------------------------------------------------
-    fcp:browser():loadLayout(browserLayout)
+    fcp.browser:loadLayout(browserLayout)
 
     --------------------------------------------------------------------------------
     -- Return the results:
@@ -360,9 +360,9 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     fcp:launch(10)
 
-    local generators = fcp:generators()
+    local generators = fcp.generators
 
-    local browserLayout = fcp:browser():saveLayout()
+    local browserLayout = fcp.browser:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Make sure Titles and Generators panel is open:
@@ -375,7 +375,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'Titles':
@@ -385,12 +385,12 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Make sure "Installed Titles" is selected:
     --------------------------------------------------------------------------------
-    generators:group():selectItem(1)
+    generators.group:selectItem(1)
 
     --------------------------------------------------------------------------------
     -- Get list of All Transitions:
     --------------------------------------------------------------------------------
-    local effectsList = generators:contents():childrenUI()
+    local effectsList = generators.contents:childrenUI()
     local allTitles = {}
     if effectsList ~= nil then
         for i=1, #effectsList do
@@ -404,7 +404,7 @@ local function scanTitles()
     --------------------------------------------------------------------------------
     -- Restore Effects or Transitions Panel:
     --------------------------------------------------------------------------------
-    fcp:browser():loadLayout(browserLayout)
+    fcp.browser:loadLayout(browserLayout)
 
     return allTitles
 end

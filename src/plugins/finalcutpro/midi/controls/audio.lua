@@ -25,7 +25,7 @@ local plugin = {
 local function createAbsoluteMIDIVolumeSlider()
     local value
     local updateUI = deferred.new(0.01):action(function()
-        fcp:inspector():audio():volume():show():value(value)
+        fcp.inspector.audio:volume():show():value(value)
     end)
     return function(metadata)
         if metadata.fourteenBitCommand or metadata.pitchChange then

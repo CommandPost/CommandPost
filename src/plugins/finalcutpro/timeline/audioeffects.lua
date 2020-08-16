@@ -53,13 +53,13 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Save the Transitions Browser layout:
     --------------------------------------------------------------------------------
-    local transitions = fcp:transitions()
+    local transitions = fcp.transitions
     local transitionsLayout = transitions:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Get Effects Browser:
     --------------------------------------------------------------------------------
-    local effects = fcp:effects()
+    local effects = fcp.effects
     local effectsShowing = effects:isShowing()
     local effectsLayout = effects:saveLayout()
 
@@ -76,7 +76,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure "Installed Effects" is selected:
     --------------------------------------------------------------------------------
-    local group = effects:group():UI()
+    local group = effects.group:UI()
     if group then
         local groupValue = group:attributeValue("AXValue")
         if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
@@ -89,7 +89,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    effects:search():clear()
+    effects.search:clear()
 
     --------------------------------------------------------------------------------
     -- Click 'All':
@@ -105,7 +105,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Perform Search:
     --------------------------------------------------------------------------------
-    effects:search():setValue(name)
+    effects.search:setValue(name)
 
     --------------------------------------------------------------------------------
     -- Get the list of matching effects:

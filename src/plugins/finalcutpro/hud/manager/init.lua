@@ -242,13 +242,13 @@ local function windowCallback(action, _, frame)
             --------------------------------------------------------------------------------
             -- Window Snapping:
             --------------------------------------------------------------------------------
-            local timelineUI = fcp:timeline():UI()
+            local timelineUI = fcp.timeline:UI()
             local timelineFrame = timelineUI and timelineUI:attributeValue("AXFrame")
 
-            local browserUI = fcp:browser():UI()
+            local browserUI = fcp.browser:UI()
             local browserFrame = browserUI and browserUI:attributeValue("AXFrame")
 
-            local inspectorUI = fcp:inspector():UI()
+            local inspectorUI = fcp.inspector:UI()
             local inspectorFrame = inspectorUI and inspectorUI:attributeValue("AXFrame")
 
             local newFrame = frame

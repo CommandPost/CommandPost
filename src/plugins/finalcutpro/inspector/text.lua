@@ -26,8 +26,8 @@ local function setTextAlign(value)
     --------------------------------------------------------------------------------
     -- Make sure at least one clip is selected:
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
     local clips = timelineContents:selectedClipsUI()
     if clips and #clips == 0 then
         log.df("No clips selected.")
@@ -77,7 +77,7 @@ local function setTextAlign(value)
         --------------------------------------------------------------------------------
         -- Make sure Text Inspector is active:
         --------------------------------------------------------------------------------
-        local text = fcp:inspector():text()
+        local text = fcp.inspector.text
         if not just.doUntil(function()
             text:show()
             return text:isShowing()
@@ -176,7 +176,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("replaceSelectedTitleTextwithPasteboardContents")
         :whenActivated(function()
-            local textArea = fcp:inspector():text():textArea()
+            local textArea = fcp.inspector.text:textArea()
             local contents = pasteboard.getContents()
             if contents then
                 textArea:show()
@@ -193,7 +193,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("appendSelectedTitleTextwithPasteboardContents")
         :whenActivated(function()
-            local textArea = fcp:inspector():text():textArea()
+            local textArea = fcp.inspector.text:textArea()
             local contents = pasteboard.getContents()
             if contents then
                 textArea:show()
@@ -213,7 +213,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("focusOnTitleTextInInspector")
         :whenActivated(function()
-            local textArea = fcp:inspector():text():textArea()
+            local textArea = fcp.inspector.text:textArea()
             textArea:show()
             fcp:selectMenu({"Window", "Go To", "Inspector"})
             textArea:focused(true)
@@ -226,7 +226,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("copyTitleTextContentsToPasteboard")
         :whenActivated(function()
-            local textArea = fcp:inspector():text():textArea()
+            local textArea = fcp.inspector.text:textArea()
             textArea:show()
             local value = textArea:value()
             if value then

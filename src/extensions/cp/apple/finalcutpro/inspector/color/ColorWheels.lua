@@ -30,11 +30,7 @@ local toRegionalNumberString            = tools.toRegionalNumberString
 
 local CORRECTION_TYPE                   = "Color Wheels"
 
-local ColorWheels = Element:subclass("ColorWheels")
-
-function ColorWheels.__tostring()
-    return "cp.apple.finalcutpro.inspector.color.ColorWheels"
-end
+local ColorWheels = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWheels")
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
@@ -81,9 +77,9 @@ function ColorWheels:initialize(parent)
 
     -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
     -- link these fields so they mirror each other.
-    self:temperatureSlider().value:mirror(self:temperatureTextField().value)
-    self:mixSlider().value:mirror(self:mixTextField().value)
-    self:tintSlider().value:mirror(self:tintTextField().value)
+    self.temperatureSlider.value:mirror(self.temperatureTextField.value)
+    self.mixSlider.value:mirror(self.mixTextField.value)
+    self.tintSlider.value:mirror(self.tintTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs._asm.axuielement; read-only>
@@ -118,9 +114,9 @@ function ColorWheels.lazy.prop:viewingAllWheels()
         function(allWheels, _, theProp)
             local current = theProp:get()
             if allWheels and not current then
-                self:viewMode():selectItem(1)
+                self.viewMode:selectItem(1)
             elseif not allWheels and current then
-                self:viewMode():selectItem(2)
+                self.viewMode:selectItem(2)
             end
         end
     ):monitor(self.contentUI)
@@ -130,28 +126,28 @@ end
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 function ColorWheels.lazy.prop:mix()
-    return self:mixSlider().value
+    return self.mixSlider.value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.temperature <cp.prop: number>
 --- Field
 --- The color temperature for this corrector. A number from 2500 to 10000.
 function ColorWheels.lazy.prop:temperature()
-    return self:temperatureSlider().value
+    return self.temperatureSlider.value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.tint <cp.prop: number>
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 function ColorWheels.lazy.prop:tint()
-    return self:tintTextField().value
+    return self.tintTextField.value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
 --- The hue for the corrector. A number from `0` to `360`.
 function ColorWheels.lazy.prop:hue()
-    return self:hueTextField().value
+    return self.hueTextField.value
 end
 
 --------------------------------------------------------------------------------
@@ -192,16 +188,10 @@ function ColorWheels.lazy.method:doShow()
     :Label("ColorWheels:doShow")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:viewMode() -> MenuButton
---- Method
---- Returns the [MenuButton](cp.ui.MenuButton.md) for the View Mode.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` for the View Mode.
-function ColorWheels.lazy.method:viewMode()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.viewMode <cp.ui.MenuButton>
+--- Field
+--- The [MenuButton](cp.ui.MenuButton.md) for the View Mode.
+function ColorWheels.lazy.value:viewMode()
     return MenuButton(self, function()
         local ui = self:contentUI()
         if ui then
@@ -211,17 +201,11 @@ function ColorWheels.lazy.method:viewMode()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:wheelType() -> RadioGroup
---- Method
---- Returns the `RadioGroup` that allows selection of the wheel type. Only available when
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.wheelType <cp.ui.RadioGroup>
+--- Field
+--- The `RadioGroup` that allows selection of the wheel type. Only available when
 --- `viewingAllWheels` is `true`.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `RadioGroup`.
-function ColorWheels.lazy.method:wheelType()
+function ColorWheels.lazy.value:wheelType()
     return RadioGroup(self,
         function()
             if not self:viewingAllWheels() then
@@ -234,55 +218,31 @@ function ColorWheels.lazy.method:wheelType()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:master() -> ColorWheel
---- Method
---- Returns a `ColorWheel` that allows control of the 'master' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorWheel`.
-function ColorWheels.lazy.method:master()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.master <ColorWheel>
+--- Field
+--- A `ColorWheel` that allows control of the 'master' color settings.
+function ColorWheels.lazy.value:master()
     return ColorWheel(self, ColorWheel.TYPE.MASTER)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:shadows() -> ColorWheel
---- Method
---- Returns a `ColorWheel` that allows control of the 'shadows' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorWheel`.
-function ColorWheels.lazy.method:shadows()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.shadows <ColorWheel>
+--- Field
+--- A `ColorWheel` that allows control of the 'shadows' color settings.
+function ColorWheels.lazy.value:shadows()
     return ColorWheel(self, ColorWheel.TYPE.SHADOWS)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:midtones() -> ColorWheel
---- Method
---- Returns a `ColorWheel` that allows control of the 'midtones' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorWheel`.
-function ColorWheels.lazy.method:midtones()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.midtones <ColorWheel>
+--- Field
+--- A `ColorWheel` that allows control of the 'midtones' color settings.
+function ColorWheels.lazy.value:midtones()
     return ColorWheel(self, ColorWheel.TYPE.MIDTONES)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:highlights() -> ColorWheel
---- Method
---- Returns a `ColorWheel` that allows control of the 'highlights' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `ColorWheel`.
-function ColorWheels.lazy.method:highlights()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.highlights <ColorWheel>
+--- Field
+--- A `ColorWheel` that allows control of the 'highlights' color settings.
+function ColorWheels.lazy.value:highlights()
     return ColorWheel(self, ColorWheel.TYPE.HIGHLIGHTS)
 end
 
@@ -290,158 +250,110 @@ end
 -- PROPERTIES:
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:mixRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.mixRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorWheels.lazy.method:mixRow()
+function ColorWheels.lazy.value:mixRow()
     return PropertyRow(self, "FFChannelMixName")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:mixSlider() -> cp.ui.Slider
---- Method
---- Returns a `Slider` that provides access to the 'Mix' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Mix `Slider`.
-function ColorWheels.lazy.method:mixSlider()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.mixSlider <cp.ui.Slider>
+--- Field
+--- A `Slider` that provides access to the 'Mix' slider.
+function ColorWheels.lazy.value:mixSlider()
     return Slider(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, Slider.matches)
         end
     )
 end
 
-function ColorWheels.lazy.method:mixTextField()
+function ColorWheels.lazy.value:mixTextField()
     return TextField(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:temperatureRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Temperatures' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.temperatureRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Temperatures' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorWheels.lazy.method:temperatureRow()
+function ColorWheels.lazy.value:temperatureRow()
     return PropertyRow(self, "PAECorrectorEffectTemperature")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:temperatureSlider() -> cp.ui.Slider
---- Method
---- Returns a `Slider` that provides access to the 'Temperatures' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Temperatures `Slider`.
-function ColorWheels.lazy.method:temperatureSlider()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.temperatureSlider <cp.ui.Slider>
+--- Field
+--- A `Slider` that provides access to the 'Temperatures' slider.
+function ColorWheels.lazy.value:temperatureSlider()
     return Slider(self,
         function()
-            return childMatching(self:temperatureRow(), Slider.matches)
+            return childMatching(self.temperatureRow, Slider.matches)
         end
     )
 end
 
-function ColorWheels.lazy.method:temperatureTextField()
+function ColorWheels.lazy.value:temperatureTextField()
     return TextField(self,
         function()
-            local ui = self:temperatureRow():children()
+            local ui = self.temperatureRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:tintRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Tint' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.tintRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Tint' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorWheels.lazy.method:tintRow()
+function ColorWheels.lazy.value:tintRow()
     return PropertyRow(self, "PAECorrectorEffectTint")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:tintSlider() -> cp.ui.Slider
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.tintSlider <cp.ui.Slider>
+--- Field
 --- Returns a `Slider` that provides access to the 'Tint' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Tint `Slider`.
-function ColorWheels.lazy.method:tintSlider()
+function ColorWheels.lazy.value:tintSlider()
     return Slider(self,
         function()
-            local ui = self:tintRow():children()
+            local ui = self.tintRow:children()
             return ui and childMatching(ui, Slider.matches)
         end
     )
 end
 
-function ColorWheels.lazy.method:tintTextField()
+function ColorWheels.lazy.value:tintTextField()
     return TextField(self,
         function()
-            local ui = self:tintRow():children()
+            local ui = self.tintRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
     ):forceFocus()
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:hueRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Hue' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.hueRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Hue' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function ColorWheels.lazy.method:hueRow()
+function ColorWheels.lazy.value:hueRow()
     return PropertyRow(self, "PAECorrectorEffectHue")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.TextField
---- Method
---- Returns a `TextField` that provides access to the 'Hue' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Hue `Slider`.
-function ColorWheels.lazy.method:hueTextField()
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.hueTextField <cp.ui.TextField>
+--- Field
+--- A `TextField` that provides access to the 'Hue' slider.
+function ColorWheels.lazy.value:hueTextField()
     return TextField(self,
         function()
-            local ui = self:hueRow():children()
+            local ui = self.hueRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString

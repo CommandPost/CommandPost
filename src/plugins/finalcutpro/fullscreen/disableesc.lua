@@ -29,7 +29,7 @@ local escWatcher
 -- fcpActiveFullScreen <cp.prop: boolean; read-only; live>
 -- Variable
 -- If `true` FCP is full-screen and the frontmost app.
-local fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:IS(fcp.app)):AND(fcp.isModalDialogOpen:IS(false))
+local fcpActiveFullScreen = fcp.primaryWindow.isFullScreen:AND(app.frontmostApp:IS(fcp.app)):AND(fcp.isModalDialogOpen:IS(false))
 
 -- checkForESC(enabled) -> none
 -- Function

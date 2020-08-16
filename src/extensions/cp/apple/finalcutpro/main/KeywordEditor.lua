@@ -66,7 +66,7 @@ end
 ---  * A `hs._asm.axuielement` object
 function KeywordEditor:toolbarCheckBoxUI()
     return axutils.cache(self, "_toolbarCheckBoxUI", function()
-        local primaryWindowUI = self:parent():primaryWindow():UI()
+        local primaryWindowUI = self:parent().primaryWindow:UI()
         if not primaryWindowUI then return nil end
 
         local toolbar = axutils.childWithRole(primaryWindowUI, "AXToolbar")

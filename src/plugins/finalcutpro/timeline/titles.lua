@@ -78,7 +78,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Restore from Cache, unless there's a range selected in the timeline:
     --------------------------------------------------------------------------------
-    local rangeSelected = fcp:timeline():rangeSelected()
+    local rangeSelected = fcp.timeline:rangeSelected()
     if not rangeSelected and mod._cache()[cacheID] then
         --------------------------------------------------------------------------------
         -- Stop Watching Pasteboard:
@@ -105,7 +105,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Make sure Timeline has focus:
         --------------------------------------------------------------------------------
-        local timeline = fcp:timeline()
+        local timeline = fcp.timeline
         timeline:show()
         if not timeline:isShowing() then
             dialog.displayErrorMessage("Unable to display the Timeline.")
@@ -159,13 +159,13 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Save the main Browser layout:
     --------------------------------------------------------------------------------
-    local browser = fcp:browser()
+    local browser = fcp.browser
     local browserLayout = browser:saveLayout()
 
     --------------------------------------------------------------------------------
     -- Get Titles Browser:
     --------------------------------------------------------------------------------
-    local generators = fcp:generators()
+    local generators = fcp.generators
     local generatorsLayout = generators:saveLayout()
 
     --------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure there's nothing in the search box:
     --------------------------------------------------------------------------------
-    generators:search():clear()
+    generators.search:clear()
 
     --------------------------------------------------------------------------------
     -- Select the Category if provided otherwise just show all:
@@ -194,7 +194,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure "Installed Titles" is selected:
     --------------------------------------------------------------------------------
-    local group = generators:group():UI()
+    local group = generators.group:UI()
     local groupValue = group:attributeValue("AXValue")
     if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
         generators:showInstalledTitles()
@@ -337,7 +337,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Make sure Timeline has focus:
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     timeline:show()
     if not timeline:isShowing() then
         dialog.displayErrorMessage("Unable to display the Timeline.")

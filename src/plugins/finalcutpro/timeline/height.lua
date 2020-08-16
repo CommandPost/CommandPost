@@ -33,13 +33,13 @@ local function shiftClipHeight(direction)
     --------------------------------------------------------------------------------
     -- Find the Timeline Appearance Button:
     --------------------------------------------------------------------------------
-    local appearance = fcp:timeline():toolbar():appearance()
+    local appearance = fcp.timeline.toolbar.appearance
     if appearance then
         appearance:show()
         if direction == "up" then
-            appearance:clipHeight():increment()
+            appearance.clipHeight:increment()
         else
-            appearance:clipHeight():decrement()
+            appearance.clipHeight:decrement()
         end
         return true
     else
@@ -58,7 +58,7 @@ end
 ---  * None
 local function changeTimelineClipHeightRelease()
     mod.changeTimelineClipHeightAlreadyInProgress = false
-    fcp:timeline():toolbar():appearance():hide()
+    fcp.timeline.toolbar.appearance:hide()
 end
 
 --- plugins.finalcutpro.timeline.height.changeTimelineClipHeight(direction) -> none
@@ -127,14 +127,14 @@ function plugin.init(deps)
     -- Non-Keyboard Actions (such as MIDI):
     --------------------------------------------------------------------------------
     local closeAppearancePopup = deferred.new(1):action(function()
-        fcp:timeline():toolbar():appearance():hide()
+        fcp.timeline.toolbar.appearance:hide()
     end)
     fcpxCmds
         :add("timelineClipHeightIncrease")
         :whenActivated(function()
-            local appearance = fcp:timeline():toolbar():appearance()
+            local appearance = fcp.timeline.toolbar.appearance
             appearance:show()
-            appearance:clipHeight():increment()
+            appearance.clipHeight:increment()
             closeAppearancePopup()
         end)
         :titled(i18n("timelineClipHeight") .. " " .. i18n("increase"))
@@ -142,9 +142,9 @@ function plugin.init(deps)
     fcpxCmds
         :add("timelineClipHeightDecrease")
         :whenActivated(function()
-            local appearance = fcp:timeline():toolbar():appearance()
+            local appearance = fcp.timeline.toolbar.appearance
             appearance:show()
-            appearance:clipHeight():decrement()
+            appearance.clipHeight:decrement()
             closeAppearancePopup()
         end)
         :titled(i18n("timelineClipHeight") .. " " .. i18n("decrease"))

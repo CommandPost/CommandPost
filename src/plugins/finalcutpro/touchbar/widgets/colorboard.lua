@@ -168,7 +168,7 @@ end
 -- Returns:
 --  * None
 local function update()
-    if fcp:isRunning() and fcp:isFrontmost() and fcp:colorBoard():isShowing() then
+    if fcp:isRunning() and fcp:isFrontmost() and fcp.colorBoard:isShowing() then
         for _, v in pairs(mod._updateCallbacks) do
             v()
         end
@@ -454,7 +454,7 @@ end
 -- Returns:
 --  * A `hs._asm.undocumented.touchbar.item` object
 local function groupPuck(id)
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
 
     --------------------------------------------------------------------------------
     -- Setup Toggle Button:
@@ -491,10 +491,10 @@ local function groupPuck(id)
     --------------------------------------------------------------------------------
     local group = mod._manager.touchbar().item.newGroup(id):groupItems({
         mod._manager.touchbar().item.newCanvas(widgetCanvas):canvasClickColor{ alpha = 0.0 },
-        puckWidget("colorBoardGroup1", function() return colorBoard:current():master() end),
-        puckWidget("colorBoardGroup2", function() return colorBoard:current():shadows() end),
-        puckWidget("colorBoardGroup3", function() return colorBoard:current():midtones() end),
-        puckWidget("colorBoardGroup4", function() return colorBoard:current():highlights() end),
+        puckWidget("colorBoardGroup1", function() return colorBoard:current().master end),
+        puckWidget("colorBoardGroup2", function() return colorBoard:current().shadows end),
+        puckWidget("colorBoardGroup3", function() return colorBoard:current().midtones end),
+        puckWidget("colorBoardGroup4", function() return colorBoard:current().highlights end),
     })
     return group
 
@@ -524,7 +524,7 @@ function mod.init(manager)
     }
     manager.widgets:new("colorBoardGroup", params)
 
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
 
     --------------------------------------------------------------------------------
     -- Active Puck Controls:
@@ -533,7 +533,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("puck") .. " 1",
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("one")}),
-        item = function() return puckWidget("colorBoardPuck1", function() return colorBoard:current():master() end) end,
+        item = function() return puckWidget("colorBoardPuck1", function() return colorBoard:current().master end) end,
     }
     manager.widgets:new("colorBoardPuck1", params)
 
@@ -541,7 +541,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("puck") .. " 2",
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("two")}),
-        item = function() return puckWidget("colorBoardPuck2", function() return colorBoard:current():shadows() end) end,
+        item = function() return puckWidget("colorBoardPuck2", function() return colorBoard:current().shadows end) end,
     }
     manager.widgets:new("colorBoardPuck2", params)
 
@@ -549,7 +549,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("puck") .. " 3",
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("three")}),
-        item = function() return puckWidget("colorBoardPuck3", function() return colorBoard:current():midtones() end) end,
+        item = function() return puckWidget("colorBoardPuck3", function() return colorBoard:current().midtones end) end,
     }
     manager.widgets:new("colorBoardPuck3", params)
 
@@ -557,7 +557,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("puck") .. " 4",
         subText = i18n("touchBarColorBoardPuckDescription", {puck=i18n("four")}),
-        item = function() return puckWidget("colorBoardPuck4", function() return colorBoard:current():highlights() end) end,
+        item = function() return puckWidget("colorBoardPuck4", function() return colorBoard:current().highlights end) end,
     }
     manager.widgets:new("colorBoardPuck4", params)
 
@@ -568,7 +568,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 1",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
-        item = function() return puckWidget("colorBoardColorPuck1", function() return colorBoard:color():master() end) end,
+        item = function() return puckWidget("colorBoardColorPuck1", function() return colorBoard.color.master end) end,
     }
     manager.widgets:new("colorBoardColorPuck1", params)
 
@@ -576,7 +576,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 2",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
-        item = function() return puckWidget("colorBoardColorPuck2", function() return colorBoard:color():shadows() end) end,
+        item = function() return puckWidget("colorBoardColorPuck2", function() return colorBoard.color.shadows end) end,
     }
     manager.widgets:new("colorBoardColorPuck2", params)
 
@@ -584,7 +584,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 3",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
-        item = function() return puckWidget("colorBoardColorPuck3", function() return colorBoard:color():midtones() end) end,
+        item = function() return puckWidget("colorBoardColorPuck3", function() return colorBoard.color.midtones end) end,
     }
     manager.widgets:new("colorBoardColorPuck3", params)
 
@@ -592,7 +592,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " 4",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("color")}),
-        item = function() return puckWidget("colorBoardColorPuck4", function() return colorBoard:color():highlights() end) end,
+        item = function() return puckWidget("colorBoardColorPuck4", function() return colorBoard.color.highlights end) end,
     }
     manager.widgets:new("colorBoardColorPuck4", params)
 
@@ -603,7 +603,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 1",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
-        item = function() return puckWidget("colorBoardSaturationPuck1", function() return colorBoard:saturation():master() end) end,
+        item = function() return puckWidget("colorBoardSaturationPuck1", function() return colorBoard.saturation.master end) end,
     }
     manager.widgets:new("colorBoardSaturationPuck1", params)
 
@@ -611,7 +611,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 2",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
-        item = function() return puckWidget("colorBoardSaturationPuck2", function() return colorBoard:saturation():shadows() end) end,
+        item = function() return puckWidget("colorBoardSaturationPuck2", function() return colorBoard.saturation.shadows end) end,
     }
     manager.widgets:new("colorBoardSaturationPuck2", params)
 
@@ -619,7 +619,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 3",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
-        item = function() return puckWidget("colorBoardSaturationPuck3", function() return colorBoard:saturation():midtones() end) end,
+        item = function() return puckWidget("colorBoardSaturationPuck3", function() return colorBoard.saturation.midtones end) end,
     }
     manager.widgets:new("colorBoardSaturationPuck3", params)
 
@@ -627,7 +627,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " 4",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("saturation")}),
-        item = function() return puckWidget("colorBoardSaturationPuck4", function() return colorBoard:saturation():highlights() end) end,
+        item = function() return puckWidget("colorBoardSaturationPuck4", function() return colorBoard.saturation.highlights end) end,
     }
     manager.widgets:new("colorBoardSaturationPuck4", params)
 
@@ -638,7 +638,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 1",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
-        item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():master() end) end,
+        item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard.exposure.master end) end,
     }
     manager.widgets:new("colorBoardExposurePuck1", params)
 
@@ -646,7 +646,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 2",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
-        item = function() return puckWidget("colorBoardExposurePuck2", function() return colorBoard:exposure():shadows() end) end,
+        item = function() return puckWidget("colorBoardExposurePuck2", function() return colorBoard.exposure.shadows end) end,
     }
     manager.widgets:new("colorBoardExposurePuck2", params)
 
@@ -654,7 +654,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 3",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
-        item = function() return puckWidget("colorBoardExposurePuck3", function() return colorBoard:exposure():midtones() end) end,
+        item = function() return puckWidget("colorBoardExposurePuck3", function() return colorBoard.exposure.midtones end) end,
     }
     manager.widgets:new("colorBoardExposurePuck3", params)
 
@@ -662,7 +662,7 @@ function mod.init(manager)
         group = "fcpx",
         text = i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " 4",
         subText = i18n("touchBarColorBoardDescription", {panel=i18n("exposure")}),
-        item = function() return puckWidget("colorBoardExposurePuck4", function() return colorBoard:exposure():highlights() end) end,
+        item = function() return puckWidget("colorBoardExposurePuck4", function() return colorBoard.exposure.highlights end) end,
     }
     manager.widgets:new("colorBoardExposurePuck4", params)
 

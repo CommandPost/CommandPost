@@ -40,7 +40,7 @@ function plugin.init(deps)
     local TEMPERATURE_RANGES    = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100, 200}
 
     local fcpxCmds = deps.fcpxCmds
-    local colorWheels = fcp:inspector():color():colorWheels()
+    local colorWheels = fcp.inspector.color.colorWheels
     --------------------------------------------------------------------------------
     -- Reset Master Color Wheel Color:
     --------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():colorOrientation({right=0, up=0})
+            colorWheels.master:colorOrientation({right=0, up=0})
         end)
 
     --------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():saturationValue(1)
+            colorWheels.master:saturationValue(1)
         end)
 
     --------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():brightnessValue(0)
+            colorWheels.master:brightnessValue(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():colorOrientation({right=0, up=0})
+            colorWheels.shadows:colorOrientation({right=0, up=0})
         end)
 
     --------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():saturationValue(1)
+            colorWheels.shadows:saturationValue(1)
         end)
 
     --------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():brightnessValue(0)
+            colorWheels.shadows:brightnessValue(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():colorOrientation({right=0, up=0})
+            colorWheels.midtones:colorOrientation({right=0, up=0})
         end)
 
     --------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():saturationValue(1)
+            colorWheels.midtones:saturationValue(1)
         end)
 
     --------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():brightnessValue(0)
+            colorWheels.midtones:brightnessValue(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -148,7 +148,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():colorOrientation({right=0, up=0})
+            colorWheels.highlights:colorOrientation({right=0, up=0})
         end)
 
     --------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():saturationValue(1)
+            colorWheels.highlights:saturationValue(1)
         end)
 
     --------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():brightnessValue(0)
+            colorWheels.highlights:brightnessValue(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -225,7 +225,7 @@ function plugin.init(deps)
     local colorWheelMasterHorizontalValue = 0
     local updateColorWheelMaster = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:master():nudgeColor(colorWheelMasterHorizontalValue, colorWheelMasterVerticalValue)
+        colorWheels.master:nudgeColor(colorWheelMasterHorizontalValue, colorWheelMasterVerticalValue)
         colorWheelMasterVerticalValue = 0
         colorWheelMasterHorizontalValue = 0
     end)
@@ -271,7 +271,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:master():reset():press()
+                colorWheels.master:reset():press()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("reset"))
 
@@ -281,7 +281,7 @@ function plugin.init(deps)
     local colorWheelMasterSaturationValue = 0
     local updateColorWheelMasterSaturation = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:master():saturation():shiftValue(colorWheelMasterSaturationValue)
+        colorWheels.master.saturation:shiftValue(colorWheelMasterSaturationValue)
         colorWheelMasterSaturationValue = 0
     end)
 
@@ -310,7 +310,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():saturation():value(1)
+            colorWheels.master.saturation:value(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("saturation") .. " - " .. i18n("reset"))
 
@@ -320,7 +320,7 @@ function plugin.init(deps)
     local colorWheelMasterBrightnessValue = 0
     local updateColorWheelMasterBrightness = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:master():brightness():shiftValue(colorWheelMasterBrightnessValue)
+        colorWheels.master.brightness:shiftValue(colorWheelMasterBrightnessValue)
         colorWheelMasterBrightnessValue = 0
     end)
 
@@ -349,7 +349,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:master():brightness():value(0)
+            colorWheels.master.brightness:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("master") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
@@ -360,7 +360,7 @@ function plugin.init(deps)
     local colorWheelShadowsHorizontalValue = 0
     local updateColorWheelShadows = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:shadows():nudgeColor(colorWheelShadowsHorizontalValue, colorWheelShadowsVerticalValue)
+        colorWheels.shadows:nudgeColor(colorWheelShadowsHorizontalValue, colorWheelShadowsVerticalValue)
         colorWheelShadowsVerticalValue = 0
         colorWheelShadowsHorizontalValue = 0
     end)
@@ -406,7 +406,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:shadows():reset():press()
+                colorWheels.shadows:reset():press()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("reset"))
 
@@ -416,7 +416,7 @@ function plugin.init(deps)
     local colorWheelShadowsSaturationValue = 0
     local updateColorWheelShadowsSaturation = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:shadows():saturation():shiftValue(colorWheelShadowsSaturationValue)
+        colorWheels.shadows.saturation:shiftValue(colorWheelShadowsSaturationValue)
         colorWheelShadowsSaturationValue = 0
     end)
 
@@ -445,7 +445,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():saturation():value(1)
+            colorWheels.shadows.saturation:value(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("saturation") .. " - " .. i18n("reset"))
 
@@ -455,8 +455,8 @@ function plugin.init(deps)
     local colorWheelContrastValue = 0
     local updateColorWheelContrast = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:shadows():brightness():shiftValue(colorWheelContrastValue*-1)
-        colorWheels:highlights():brightness():shiftValue(colorWheelContrastValue)
+        colorWheels.shadows.brightness:shiftValue(colorWheelContrastValue*-1)
+        colorWheels.highlights.brightness:shiftValue(colorWheelContrastValue)
         colorWheelContrastValue = 0
     end)
 
@@ -485,8 +485,8 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():brightness():value(0)
-            colorWheels:highlights():brightness():value(0)
+            colorWheels.shadows.brightness:value(0)
+            colorWheels.highlights.brightness:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("contrast") .. " - " .. i18n("reset"))
 
@@ -496,7 +496,7 @@ function plugin.init(deps)
     local colorWheelShadowsBrightnessValue = 0
     local updateColorWheelShadowsBrightness = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:shadows():brightness():shiftValue(colorWheelShadowsBrightnessValue)
+        colorWheels.shadows.brightness:shiftValue(colorWheelShadowsBrightnessValue)
         colorWheelShadowsBrightnessValue = 0
     end)
 
@@ -525,7 +525,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:shadows():brightness():value(0)
+            colorWheels.shadows.brightness:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("shadows") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
@@ -536,7 +536,7 @@ function plugin.init(deps)
     local colorWheelMidtonesHorizontalValue = 0
     local updateColorWheelMidtones = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:midtones():nudgeColor(colorWheelMidtonesHorizontalValue, colorWheelMidtonesVerticalValue)
+        colorWheels.midtones:nudgeColor(colorWheelMidtonesHorizontalValue, colorWheelMidtonesVerticalValue)
         colorWheelMidtonesVerticalValue = 0
         colorWheelMidtonesHorizontalValue = 0
     end)
@@ -582,7 +582,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:midtones():reset():press()
+                colorWheels.midtones:reset():press()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("reset"))
 
@@ -592,7 +592,7 @@ function plugin.init(deps)
     local colorWheelMidtonesSaturationValue = 0
     local updateColorWheelMidtonesSaturation = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:midtones():saturation():shiftValue(colorWheelMidtonesSaturationValue)
+        colorWheels.midtones.saturation:shiftValue(colorWheelMidtonesSaturationValue)
         colorWheelMidtonesSaturationValue = 0
     end)
 
@@ -621,7 +621,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():saturation():value(1)
+            colorWheels.midtones.saturation:value(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("saturation") .. " - " .. i18n("reset"))
 
@@ -631,7 +631,7 @@ function plugin.init(deps)
     local colorWheelMidtonesBrightnessValue = 0
     local updateColorWheelMidtonesBrightness = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:midtones():brightness():shiftValue(colorWheelMidtonesBrightnessValue)
+        colorWheels.midtones.brightness:shiftValue(colorWheelMidtonesBrightnessValue)
         colorWheelMidtonesBrightnessValue = 0
     end)
 
@@ -660,7 +660,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:midtones():brightness():value(0)
+            colorWheels.midtones.brightness:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("midtones") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
@@ -671,7 +671,7 @@ function plugin.init(deps)
     local colorWheelHighlightsHorizontalValue = 0
     local updateColorWheelHighlights = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:highlights():nudgeColor(colorWheelHighlightsHorizontalValue, colorWheelHighlightsVerticalValue)
+        colorWheels.highlights:nudgeColor(colorWheelHighlightsHorizontalValue, colorWheelHighlightsVerticalValue)
         colorWheelHighlightsVerticalValue = 0
         colorWheelHighlightsHorizontalValue = 0
     end)
@@ -717,7 +717,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-                colorWheels:highlights():reset():press()
+                colorWheels.highlights:reset():press()
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("reset"))
 
@@ -727,7 +727,7 @@ function plugin.init(deps)
     local colorWheelHighlightsSaturationValue = 0
     local updateColorWheelHighlightsSaturation = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:highlights():saturation():shiftValue(colorWheelHighlightsSaturationValue)
+        colorWheels.highlights.saturation:shiftValue(colorWheelHighlightsSaturationValue)
         colorWheelHighlightsSaturationValue = 0
     end)
 
@@ -756,7 +756,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():saturation():value(1)
+            colorWheels.highlights.saturation:value(1)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("saturation") .. " - " .. i18n("reset"))
 
@@ -766,7 +766,7 @@ function plugin.init(deps)
     local colorWheelHighlightsBrightnessValue = 0
     local updateColorWheelHighlightsBrightness = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:highlights():brightness():shiftValue(colorWheelHighlightsBrightnessValue)
+        colorWheels.highlights.brightness:shiftValue(colorWheelHighlightsBrightnessValue)
         colorWheelHighlightsBrightnessValue = 0
     end)
 
@@ -795,7 +795,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:highlights():brightness():value(0)
+            colorWheels.highlights.brightness:value(0)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("highlights") .. " - " .. i18n("brightness") .. " - " .. i18n("reset"))
 
@@ -805,7 +805,7 @@ function plugin.init(deps)
     local colorWheelTemperatureValue = 0
     local updateColorWheelTemperature = deferred.new(0.01):action(function()
         colorWheels:show()
-        colorWheels:temperatureSlider():shiftValue(colorWheelTemperatureValue)
+        colorWheels.temperatureSlider:shiftValue(colorWheelTemperatureValue)
         colorWheelTemperatureValue = 0
     end)
 
@@ -834,7 +834,7 @@ function plugin.init(deps)
         :groupedBy("colorWheels")
         :whenActivated(function()
             if not colorWheels:isShowing() then colorWheels:show() end
-            colorWheels:temperatureSlider():value(5000)
+            colorWheels.temperatureSlider:value(5000)
         end)
         :titled(i18n("colorWheel") .. " - " .. i18n("temperature") .. " - " .. i18n("reset"))
 

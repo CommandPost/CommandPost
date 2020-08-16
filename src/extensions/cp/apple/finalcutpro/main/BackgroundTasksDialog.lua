@@ -24,7 +24,7 @@ local BackgroundTasksDialog = Dialog:subclass("cp.apple.finalcutpro.main.Backgro
 ---
 --- Returns:
 --- * `true` if it matches the pattern for a `BackgroundTasksDialog``.
-function BackgroundTasksDialog.matches(element)
+function BackgroundTasksDialog.static.matches(element)
     if Dialog.matches(element) and #element == 6 then
         local backgroundTasksString = strings:find("FFTranscodeMissingOpticalFlowMessageText")
         local backgroundTasks = backgroundTasksString and string.gsub(backgroundTasksString, "%%@", ".*")

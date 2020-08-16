@@ -25,7 +25,7 @@
 ---
 --- For example:
 --- ```lua
---- local text = fcp:inspector():text()
+--- local text = fcp.inspector.text
 --- -- Menu Property:
 --- text:compositing():blendMode():value("Subtract")
 --- -- Slider Property:

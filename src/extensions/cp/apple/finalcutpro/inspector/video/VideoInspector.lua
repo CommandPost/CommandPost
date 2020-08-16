@@ -25,7 +25,7 @@
 ---
 --- For example:
 --- ```lua
---- local video = fcp:inspector():video()
+--- local video = fcp.inspector.video
 --- -- Menu Property:
 --- video:compositing():blendMode():value("Subtract")
 --- -- Slider Property:
@@ -43,7 +43,7 @@
 
 local require = require
 
-local log						= require "hs.logger".new "videoInspect"
+-- local log						= require "hs.logger".new "videoInspect"
 
 local axutils					= require "cp.ui.axutils"
 

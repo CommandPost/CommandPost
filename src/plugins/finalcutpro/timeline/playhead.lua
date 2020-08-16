@@ -13,9 +13,9 @@ local i18n                      = require("cp.i18n")
 
 local mod = {}
 
-local viewer = fcp:viewer()
-local contents = fcp:timeline():contents()
-local playhead = fcp:timeline():playhead()
+local viewer = fcp.viewer
+local contents = fcp.timeline.contents
+local playhead = fcp.timeline.playhead
 
 mod._offset = nil
 
@@ -50,7 +50,7 @@ local positionPlayhead = function()
     -----------------------------------------------------------------------
     local modifiers = eventtap.checkKeyboardModifiers()
     if modifiers and not modifiers["shift"] then
-        contents:scrollHorizontalTo(scrollTarget)
+        contents:shiftHorizontalTo(scrollTarget)
     end
 end
 

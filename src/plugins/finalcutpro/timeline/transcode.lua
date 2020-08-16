@@ -54,9 +54,9 @@ function mod.transcodeSelectedClips(transcodeType)
         return
     end
 
-    local timeline = fcp:timeline()
-    local contents = timeline:contents()
-    local transcodeMedia = fcp:transcodeMedia()
+    local timeline = fcp.timeline
+    local contents = timeline.contents
+    local transcodeMedia = fcp.transcodeMedia
 
     if not timeline:isFocused() then
         -----------------------------------------------------------------------
@@ -80,24 +80,24 @@ function mod.transcodeSelectedClips(transcodeType)
         end
 
         if transcodeType == mod.transcodeType.proxy then
-            if not transcodeMedia:createProxyMedia():isEnabled() then
-                transcodeMedia:cancel():press()
+            if not transcodeMedia.createProxyMedia:isEnabled() then
+                transcodeMedia.cancel:press()
                 playErrorSound()
                 return
             end
-            transcodeMedia:createProxyMedia():checked(true)
+            transcodeMedia.createProxyMedia:checked(true)
         end
 
         if transcodeType == mod.transcodeType.optimized then
-            if not transcodeMedia:createOptimizedMedia():isEnabled() then
-                transcodeMedia:cancel():press()
+            if not transcodeMedia.createOptimizedMedia:isEnabled() then
+                transcodeMedia.cancel:press()
                 playErrorSound()
                 return
             end
-            transcodeMedia:createOptimizedMedia():checked(true)
+            transcodeMedia.createOptimizedMedia:checked(true)
         end
 
-        transcodeMedia:ok():press()
+        transcodeMedia.ok:press()
 
         if not doUntil(function()
             return not transcodeMedia:isShowing()
@@ -151,24 +151,24 @@ function mod.transcodeSelectedClips(transcodeType)
         end
 
         if transcodeType == mod.transcodeType.proxy then
-            if not transcodeMedia:createProxyMedia():isEnabled() then
-                transcodeMedia:cancel():press()
+            if not transcodeMedia.createProxyMedia:isEnabled() then
+                transcodeMedia.cancel:press()
                 playErrorSound()
                 return
             end
-            transcodeMedia:createProxyMedia():checked(true)
+            transcodeMedia.createProxyMedia:checked(true)
         end
 
         if transcodeType == mod.transcodeType.optimized then
-            if not transcodeMedia:createOptimizedMedia():isEnabled() then
-                transcodeMedia:cancel():press()
+            if not transcodeMedia.createOptimizedMedia:isEnabled() then
+                transcodeMedia.cancel:press()
                 playErrorSound()
                 return
             end
-            transcodeMedia:createOptimizedMedia():checked(true)
+            transcodeMedia.createOptimizedMedia:checked(true)
         end
 
-        transcodeMedia:ok():press()
+        transcodeMedia.ok:press()
 
         if not doUntil(function()
             return not transcodeMedia:isShowing()
@@ -215,7 +215,7 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedBrowserClips(transcodeType)
-    local transcodeMedia = fcp:transcodeMedia()
+    local transcodeMedia = fcp.transcodeMedia
 
     local isOptimized = transcodeType == mod.transcodeType.optimized
     local isProxy = transcodeType == mod.transcodeType.proxy
@@ -223,8 +223,8 @@ function mod.doTranscodeSelectedBrowserClips(transcodeType)
     return Do(fcp:selectMenu({"Window", "Go To", "Libraries"}))
     :Then(Retry(fcp:doSelectMenu({"File", "Transcode Media…"})):UpTo(5))
     :Then(WaitUntil(transcodeMedia.isShowing):TimeoutAfter(3000))
-    :Then(If(isOptimized):Then(transcodeMedia:createOptimizedMedia():doCheck()))
-    :Then(If(isProxy):Then(transcodeMedia:createProxyMedia():doCheck()))
+    :Then(If(isOptimized):Then(transcodeMedia.createOptimizedMedia:doCheck()))
+    :Then(If(isProxy):Then(transcodeMedia.createProxyMedia:doCheck()))
     :Then(transcodeMedia:doDefault())
     :Then(WaitUntil(transcodeMedia.isShowing):Is(false):TimeoutAfter(3000))
 end
@@ -239,8 +239,8 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedTimelineClips(transcodeType)
-    local timeline = fcp:timeline()
-    local contents = timeline:contents()
+    local timeline = fcp.timeline
+    local contents = timeline.contents
 
     return Do(timeline:doFocus())
     :Then(function()
@@ -270,7 +270,7 @@ end
 --- Returns:
 ---  * [Statement](cp.rx.go.Statement.md) to execute
 function mod.doTranscodeSelectedClips(transcodeType)
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     return Do(
         If(fcp:doLaunch()):Is(false):Then(throwMessage("Unable to launch Final Cut Pro"))
     ):Then(

@@ -37,7 +37,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- GENERATOR INSPECTOR:
     --------------------------------------------------------------------------------
-    local generator                     = fcp:inspector():generator()
+    local generator                     = fcp.inspector.generator
     local generatorGroup                = fcpGroup:group(i18n("generator") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

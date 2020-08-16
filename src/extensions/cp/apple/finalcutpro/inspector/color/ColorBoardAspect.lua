@@ -16,7 +16,7 @@ local If, Do, Throw, WaitUntil  = go.If, go.Do, go.Throw, go.WaitUntil
 local format = string.format
 
 
-local ColorBoardAspect = Element:subclass("ColorBoardAspect")
+local ColorBoardAspect = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.ids -> table
 --- Constant
@@ -58,7 +58,7 @@ function ColorBoardAspect:initialize(parent, index, hasAngle)
     local UI = parent.contentUI:mutate(function(original)
         -- only return the if this is the currently-selected aspect
         local ui = original()
-        if ui and parent:aspectGroup():selectedOption() == index then
+        if ui and parent.aspectGroup:selectedOption() == index then
             return ui
         end
     end)
@@ -86,7 +86,7 @@ function ColorBoardAspect:show()
     if not self:isShowing() then
         local parent = self:parent()
         parent:show()
-        parent:aspectGroup():selectedOption(self._index)
+        parent.aspectGroup:selectedOption(self._index)
         just.doUntil(function() return self:isShowing() end, 3, 0.01)
     end
     return self
@@ -164,10 +164,10 @@ end
 ---  * The `cp.apple.finalcutpro.inspector.color.ColorBoardAspect` object for method chaining.
 function ColorBoardAspect:reset()
     self:show()
-    self:master():reset()
-    self:shadows():reset()
-    self:midtones():reset()
-    self:highlights():reset()
+    self.master:reset()
+    self.shadows:reset()
+    self.midtones:reset()
+    self.highlights:reset()
     return self
 end
 
@@ -182,23 +182,17 @@ end
 ---  * The `Statement`, which will resolve to `true` if sucessful, or throws an error if not.
 function ColorBoardAspect.lazy.method:doReset()
     return Do(self:doShow())
-    :Then(self:master():doReset())
-    :Then(self:shadows():doReset())
-    :Then(self:midtones():doReset())
+    :Then(self.master:doReset())
+    :Then(self.shadows:doReset())
+    :Then(self.midtones:doReset())
     :Then(self:highlight():doReset())
     :Labeled("ColorBoardAspect:doReset")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:master() -> ColorPuck
---- Method
---- Gets the Master ColorPuck object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Master ColorPuck object.
-function ColorBoardAspect.lazy.method:master()
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.master <ColorPuck>
+--- Field
+--- The Master ColorPuck object.
+function ColorBoardAspect.lazy.value:master()
     return ColorPuck(
         self, ColorPuck.RANGE.master,
         {"CPColorBoardMaster", "cb master puck display name"},
@@ -206,16 +200,10 @@ function ColorBoardAspect.lazy.method:master()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:shadows() -> ColorPuck
---- Method
---- Gets the Shadows ColorPuck object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Shadows ColorPuck object.
-function ColorBoardAspect.lazy.method:shadows()
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.shadows <ColorPuck>
+--- Field
+--- The Shadows ColorPuck object.
+function ColorBoardAspect.lazy.value:shadows()
     return ColorPuck(
         self, ColorPuck.RANGE.shadows,
         {"CPBolorBoardShadows", "cb shadow puck display name"},
@@ -223,16 +211,10 @@ function ColorBoardAspect.lazy.method:shadows()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:midtones() -> ColorPuck
---- Method
---- Gets the Midtones ColorPuck object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Midtones ColorPuck object.
-function ColorBoardAspect.lazy.method:midtones()
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.midtones <ColorPuck>
+--- Field
+--- The Midtones ColorPuck object.
+function ColorBoardAspect.lazy.value:midtones()
     return ColorPuck(
         self, ColorPuck.RANGE.midtones,
         {"CPColorBoardMidtones", "cb midtone puck display name"},
@@ -240,16 +222,10 @@ function ColorBoardAspect.lazy.method:midtones()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:highlights() -> ColorPuck
---- Method
---- Gets the Highlights ColorPuck object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Highlights ColorPuck object.
-function ColorBoardAspect.lazy.method:highlights()
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.highlights <ColorPuck>
+--- Field
+--- The Highlights ColorPuck object.
+function ColorBoardAspect.lazy.value:highlights()
     return ColorPuck(
         self, ColorPuck.RANGE.highlights,
         {"CPColorBoardHighlights", "cb highlight puck display name"},

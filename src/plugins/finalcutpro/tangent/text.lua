@@ -44,7 +44,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- TEXT INSPECTOR:
     --------------------------------------------------------------------------------
-    local text = fcp:inspector():text()
+    local text = fcp.inspector.text
     local textGroup = fcpGroup:group(i18n("text") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
@@ -431,7 +431,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Saturation:
                     --------------------------------------------------------------------------------
-                    id = sliderParameter(environmentGroup, environment:saturation(), id, 0, 100, 0.1, 100, "saturation")
+                    id = sliderParameter(environmentGroup, environment.saturation, id, 0, 100, 0.1, 100, "saturation")
 
                     --------------------------------------------------------------------------------
                     -- Anisotropic:

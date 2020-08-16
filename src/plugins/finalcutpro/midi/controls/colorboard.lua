@@ -142,12 +142,12 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
 
     local colorBoardAspects = {
-        { title = i18n("color"),        control = colorBoard:color(),          hasAngle = true },
-        { title = i18n("saturation"),   control = colorBoard:saturation()      },
-        { title = i18n("exposure"),     control = colorBoard:exposure()        },
+        { title = i18n("color"),        control = colorBoard.color,          hasAngle = true },
+        { title = i18n("saturation"),   control = colorBoard.saturation      },
+        { title = i18n("exposure"),     control = colorBoard.exposure        },
     }
 
     local pucks = {
@@ -179,7 +179,7 @@ function plugin.init(deps)
             group = "fcpx",
             text = format("%s %s %s %s (%s)", colorBoardText, colorText, puckText, i, angleText),
             subText = descriptionText,
-            fn = makeAngleHandler(function() return colorBoard:color()[puck.id]() end),
+            fn = makeAngleHandler(function() return colorBoard.color[puck.id]() end),
         })
 
         --------------------------------------------------------------------------------

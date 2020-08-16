@@ -4,24 +4,23 @@
 
 local require = require
 
--- local log                             = require("hs.logger").new("browser")
+-- local log                             = require "hs.logger".new("browser")
 
---local inspect                         = require("hs.inspect")
+--local inspect                         = require "hs.inspect"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local CheckBox                          = require("cp.ui.CheckBox")
-local GeneratorsBrowser                 = require("cp.apple.finalcutpro.main.GeneratorsBrowser")
-local LibrariesBrowser                  = require("cp.apple.finalcutpro.main.LibrariesBrowser")
-local MediaBrowser                      = require("cp.apple.finalcutpro.main.MediaBrowser")
-local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
-local prop                              = require("cp.prop")
-local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
-local BrowserMarkerPopover              = require("cp.apple.finalcutpro.main.BrowserMarkerPopover")
+local axutils                           = require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local CheckBox                          = require "cp.ui.CheckBox"
+local GeneratorsBrowser                 = require "cp.apple.finalcutpro.main.GeneratorsBrowser"
+local LibrariesBrowser                  = require "cp.apple.finalcutpro.main.LibrariesBrowser"
+local MediaBrowser                      = require "cp.apple.finalcutpro.main.MediaBrowser"
+local PrimaryWindow                     = require "cp.apple.finalcutpro.main.PrimaryWindow"
+local prop                              = require "cp.prop"
+local SecondaryWindow                   = require "cp.apple.finalcutpro.main.SecondaryWindow"
+local BrowserMarkerPopover              = require "cp.apple.finalcutpro.main.BrowserMarkerPopover"
 
-local Do                                = require("cp.rx.go.Do")
-local If                                = require("cp.rx.go.If")
-
+local Do                                = require "cp.rx.go.Do"
+local If                                = require "cp.rx.go.If"
 
 local Browser = Element:subclass("cp.apple.finalcutpro.main.Browser")
 
@@ -77,10 +76,10 @@ end
 function Browser:initialize(app)
     local UI = prop(function()
         return axutils.cache(self, "_ui", function()
-            return _findBrowser(app:secondaryWindow(), app:primaryWindow())
+            return _findBrowser(app.secondaryWindow, app.primaryWindow)
         end,
         Browser.matches)
-    end):monitor(app:toolbar().browserShowing)
+    end):monitor(app.toolbar.browserShowing)
 
     Element.initialize(self, app, UI)
 
@@ -368,30 +367,18 @@ function Browser.lazy.value:libraries()
     return LibrariesBrowser(self)
 end
 
---- cp.apple.finalcutpro.main.Browser:media() -> MediaBrowser
---- Method
---- Get Media Browser object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `MediaBrowser` object.
-function Browser.lazy.method:media()
-    return MediaBrowser.new(self)
+--- cp.apple.finalcutpro.main.Browser.media <cp.apple.finalcutpro.main.MediaBrowser>
+--- Field
+--- The Media Browser object.
+function Browser.lazy.value:media()
+    return MediaBrowser(self)
 end
 
---- cp.apple.finalcutpro.main.Browser:generators() -> GeneratorsBrowser
---- Method
---- Get Generators Browser object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `GeneratorsBrowser` object.
-function Browser.lazy.method:generators()
-    return GeneratorsBrowser.new(self)
+--- cp.apple.finalcutpro.main.Browser.generators <cp.apple.finalcutpro.main.GeneratorsBrowser>
+--- Field
+--- Generators Browser object.
+function Browser.lazy.value:generators()
+    return GeneratorsBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:markerPopover() -> BrowserMarkerPopover
@@ -427,9 +414,9 @@ function Browser:saveLayout()
         layout.showMedia = self:showMedia():saveLayout()
         layout.showGenerators = self:showGenerators():saveLayout()
 
-        layout.libraries = self:libraries():saveLayout()
-        layout.media = self:media():saveLayout()
-        layout.generators = self:generators():saveLayout()
+        layout.libraries = self.libraries:saveLayout()
+        layout.media = self.media:saveLayout()
+        layout.generators = self.generators:saveLayout()
     end
     return layout
 end
@@ -448,9 +435,9 @@ function Browser:loadLayout(layout)
         if layout.onPrimary then self:showOnPrimary() end
         if layout.onSecondary then self:showOnSecondary() end
 
-        self:generators():loadLayout(layout.generators)
-        self:media():loadLayout(layout.media)
-        self:libraries():loadLayout(layout.libraries)
+        self.generators:loadLayout(layout.generators)
+        self.media:loadLayout(layout.media)
+        self.libraries:loadLayout(layout.libraries)
 
         self:showGenerators():loadLayout(layout.showGenerators)
         self:showMedia():loadLayout(layout.showMedia)

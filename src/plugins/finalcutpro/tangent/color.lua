@@ -63,7 +63,7 @@ function plugin.init(deps)
     -- Handle the Color Board:
     --------------------------------------------------------------------------------
     local cbGroup = ciGroup:group(i18n("colorBoard"))
-    local cb = fcp:colorBoard()
+    local cb = fcp.colorBoard
 
     --------------------------------------------------------------------------------
     -- The multiplier for aspects (color/saturation/exposure):
@@ -189,8 +189,8 @@ function plugin.init(deps)
     -- Handle the Color Wheels:
     --------------------------------------------------------------------------------
     local cwGroup = ciGroup:group(i18n("colorWheels"))
-    local ci = fcp:inspector():color()
-    local cw = ci:colorWheels()
+    local ci = fcp.inspector.color
+    local cw = ci.colorWheels
 
     local wheelsBaseID = baseID + 0x010000
     local wheelID = 0x010
@@ -227,7 +227,7 @@ function plugin.init(deps)
             :Then(
                 If(function() return wheel:isShowing() end)
                 :Then(function()
-                    wheel:saturation():shiftValue(satChange)
+                    wheel.saturation:shiftValue(satChange)
                     satChange = 0
                     manager.controls:findByID(id):update() -- Force the Tangent display to update.
                     return true
@@ -239,7 +239,7 @@ function plugin.init(deps)
             :Then(
                 If(function() return wheel:isShowing() end)
                 :Then(function()
-                    wheel:brightness():shiftValue(brightChange)
+                    wheel.brightness:shiftValue(brightChange)
                     brightChange = 0
                     manager.controls:findByID(id):update() -- Force the Tangent display to update.
                     return true
@@ -280,7 +280,7 @@ function plugin.init(deps)
                 rightChange = rightChange + value
                 updateUI()
             end)
-            :onReset(wheel:colorWell():doReset())
+            :onReset(wheel.colorWell:doReset())
 
         local vert = cwGroup:parameter(id + 2)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iVertical))
@@ -295,7 +295,7 @@ function plugin.init(deps)
                 upChange = upChange + value
                 updateUI()
             end)
-            :onReset(wheel:colorWell():doReset())
+            :onReset(wheel.colorWell:doReset())
 
         local sat = cwGroup:parameter(id + 3)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iSaturation))
@@ -304,14 +304,14 @@ function plugin.init(deps)
             :maxValue(2)
             :stepSize(0.001)
             :onGet(function()
-                local value = wheel:saturation():value()
+                local value = wheel.saturation:value()
                 return value and round(value, 2)
             end)
             :onChange(function(value)
                 satChange = satChange + value
                 updateUI()
             end)
-            :onReset(function() wheel:show():saturation():value(1) end)
+            :onReset(function() wheel:show().saturation:value(1) end)
 
         cwGroup:parameter(id + 4)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iBrightness))
@@ -320,14 +320,14 @@ function plugin.init(deps)
             :maxValue(1)
             :stepSize(0.001)
             :onGet(function()
-                local value = wheel:brightness():value()
+                local value = wheel.brightness:value()
                 return value and round(value, 2)
             end)
             :onChange(function(value)
                 brightChange = brightChange + value
                 updateUI()
             end)
-            :onReset(function() wheel:show():brightness():value(0) end)
+            :onReset(function() wheel:show().brightness:value(0) end)
 
         cwGroup:binding(format("%s %s", iColorBoard, iWheel))
             :members(horiz, vert, sat)
@@ -348,7 +348,7 @@ function plugin.init(deps)
         If(function() return tempChange ~= 0 end)
         :Then(cw:doShow())
         :Then(function()
-            cw:temperatureSlider():shiftValue(tempChange)
+            cw.temperatureSlider:shiftValue(tempChange)
             tempChange = 0
             manager.controls:findByID(wheelsBaseID+0x0101):update() -- Force the Tangent display to update.
             return true
@@ -390,7 +390,7 @@ function plugin.init(deps)
         If(function() return mixChange ~= 0 end)
         :Then(cw:doShow())
         :Then(function()
-            cw:show():mixSlider():shiftValue(mixChange)
+            cw:show().mixSlider:shiftValue(mixChange)
             mixChange = 0
             manager.controls:findByID(wheelsBaseID+0x0104):update() -- Force the Tangent display to update.
             return true
@@ -429,7 +429,7 @@ function plugin.init(deps)
             tintChange = tintChange + value
             updateUI()
         end)
-        :onReset(function() cw:show():tintSlider():setValue(0) end)
+        :onReset(function() cw:show().tintSlider:setValue(0) end)
 
     --------------------------------------------------------------------------------
     -- Color Wheel Hue:
@@ -529,19 +529,19 @@ function plugin.init(deps)
         :onPress(ci:doAddCorrection("Hue/Saturation Curves"))
 
     cbGroup:action(wheelsBaseID+0x0124, i18n("colorBoardShowColor"))
-        :onPress(cb:color():doShow())
+        :onPress(cb.color:doShow())
 
     cbGroup:action(wheelsBaseID+0x0125, i18n("colorBoardShowSaturation"))
-        :onPress(cb:saturation():doShow())
+        :onPress(cb.saturation:doShow())
 
     cbGroup:action(wheelsBaseID+0x0126, i18n("colorBoardShowExposure"))
-        :onPress(cb:exposure():doShow())
+        :onPress(cb.exposure:doShow())
 
     cbGroup:action(wheelsBaseID+0x0127, i18n("colorBoardNextPane"))
-        :onPress(cb:aspectGroup():doNextOption())
+        :onPress(cb.aspectGroup:doNextOption())
 
     cbGroup:action(wheelsBaseID+0x0128, i18n("colorBoardPreviousPane"))
-        :onPress(cb:aspectGroup():doPreviousOption())
+        :onPress(cb.aspectGroup:doPreviousOption())
 
     cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
         :onPress(doShortcut("ColorBoard-ResetAllPucks"))

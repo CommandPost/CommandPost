@@ -427,8 +427,8 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Get timeline contents:
         --------------------------------------------------------------------------------
-        local content = fcp:timeline():contents()
-        local playheadX = content:playhead():position()
+        local content = fcp.timeline.contents
+        local playheadX = content.playhead:position()
 
         local clips = content:clipsUI(false, function(clip)
             local frame = clip:frame()
@@ -476,7 +476,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Make sure the Browser is visible:
         --------------------------------------------------------------------------------
-        local libraries = fcp:browser():libraries()
+        local libraries = fcp.browser.libraries
         if not libraries:isShowing() then
             displayErrorMessage("Library Panel is closed.")
             return false

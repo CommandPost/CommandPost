@@ -630,7 +630,7 @@ end
 --- Returns:
 ---  * None
 function MediaFolder.mt:doImportNext()
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local context = {}
 
     return If(function() return self.importingNow ~= true and #self.importing > 0 end):Then(function()

@@ -6,17 +6,17 @@ local require = require
 
 -- local log							= require("hs.logger").new("secondaryWindow")
 
-local axutils						= require("cp.ui.axutils")
-local Window						= require("cp.ui.Window")
+local axutils						= require "cp.ui.axutils"
+local Window						= require "cp.ui.Window"
 
-local go                            = require("cp.rx.go")
+local go                            = require "cp.rx.go"
 local Do, If                        = go.Do, go.If
 
-local class                         = require("middleclass")
-local lazy                          = require("cp.lazy")
+local class                         = require "middleclass"
+local lazy                          = require "cp.lazy"
 
 
-local SecondaryWindow = class("SecondaryWindow"):include(lazy)
+local SecondaryWindow = class("cp.apple.finalcutpro.main.SecondaryWindow"):include(lazy)
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.matches(element) -> boolean
 --- Function
@@ -52,7 +52,7 @@ function SecondaryWindow:app()
     return self._app
 end
 
-function SecondaryWindow.lazy.method:window()
+function SecondaryWindow.lazy.value:window()
     return Window(self:app().app, self.UI)
 end
 
@@ -69,28 +69,28 @@ end
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 function SecondaryWindow.lazy.prop:hsWindow()
-    return self:window().hsWindow
+    return self.window.hsWindow
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.isShowing <cp.prop: boolean; read-only; live>
 --- Field
 --- Is `true` if the window is visible.
 function SecondaryWindow.lazy.prop:isShowing()
-    return self:window().visible
+    return self.window.visible
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.isFullScreen <cp.prop: boolean; live>
 --- Field
 --- Is `true` if the window is full-screen.
 function SecondaryWindow.lazy.prop:isFullScreen()
-    return self:window().fullScreen
+    return self.window.fullScreen
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.frame <cp.prop: frame>
 --- Field
 --- The current position (x, y, width, height) of the window.
 function SecondaryWindow.lazy.prop:frame()
-    return self:window().frame
+    return self.window.frame
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
@@ -178,10 +178,17 @@ function SecondaryWindow.lazy.method:doShow()
     return Do(self:app():doShow())
     :Then(
         If(self.isShowing):Is(false)
-        :Then(self:window():doFocus())
+        :Then(self.window:doFocus())
         :TimeoutAfter(1000, "Unable to focus on Secondary Window.")
     )
     :Label("SecondaryWindow:doShow")
+end
+
+-- This just returns the same element when it is called as a method. (eg. `fcp.viewer == fcp:viewer()`)
+-- This is a bridge while we migrate to using `lazy.value` instead of `lazy.method` (or methods)
+-- in the FCPX API.
+function SecondaryWindow:__call()
+    return self
 end
 
 return SecondaryWindow

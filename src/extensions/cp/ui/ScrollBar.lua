@@ -5,7 +5,6 @@
 local axutils	                = require "cp.ui.axutils"
 local Element	                = require "cp.ui.Element"
 
-
 local ScrollBar = Element:subclass("cp.ui.ScrollBar")
 
 --- cp.ui.ScrollBar.VERTICAL_ORIENTATION <string>
@@ -79,6 +78,23 @@ end
 --- Is the numeric scroll value, typically between `0.0` and `1.0`. May be set.
 function ScrollBar.lazy.prop:value()
     return axutils.prop(self.UI, "AXValue", true)
+end
+
+--- cp.ui.ScrollBar:shiftValueBy(amount) -> number
+--- Method
+--- Attempts to shift the value by the specified amount.
+---
+--- Parameters:
+---  * amount - The amount to shift by.
+---
+--- Returns:
+---  * The new value, or `nil` if not available.
+function ScrollBar:shiftValueBy(amount)
+    local value = self:value()
+    if value then
+        self:value(value + amount)
+    end
+    return self:value()
 end
 
 --- cp.ui.ScrollBar:saveLayout() -> table

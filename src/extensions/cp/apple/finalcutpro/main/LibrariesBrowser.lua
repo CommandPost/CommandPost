@@ -303,7 +303,7 @@ end
 --- Returns:
 ---  * A `Table` object.
 function LibrariesBrowser:selectLibrary(...)
-    return Table.selectRow(self:sidebar():topRowsUI(), table.pack(...))
+    return Table.selectRow(self.sidebar:topRowsUI(), table.pack(...))
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:openClipTitled(name) -> boolean
