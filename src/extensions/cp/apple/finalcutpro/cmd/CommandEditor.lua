@@ -226,15 +226,15 @@ end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Save button in the Command Editor.
+--- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Close button in the Command Editor.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
-function CommandEditor.lazy.method:doSave()
-    return self.save:doPress()
+function CommandEditor.lazy.method:doClose()
+    return self.close:doPress()
 end
 
 return CommandEditor
