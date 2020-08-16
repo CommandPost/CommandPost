@@ -294,7 +294,7 @@ end
 --- Field
 --- The `SaveSheet`.
 function ExportDialog.lazy.value:saveSheet()
-    return SaveSheet.new(self)
+    return SaveSheet(self)
 end
 
 return ExportDialog

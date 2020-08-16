@@ -4,18 +4,24 @@
 
 local require               = require
 
+local prop                  = require "cp.prop"
+
 local axutils               = require "cp.ui.axutils"
 local just                  = require "cp.just"
-local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 
 local Button				= require "cp.ui.Button"
+local ComboBox              = require "cp.ui.ComboBox"
+local Sheet                 = require "cp.ui.Sheet"
+local TextField             = require "cp.ui.TextField"
 
+local cache                 = axutils.cache
 local childFromLeft			= axutils.childFromLeft
+local childMatching         = axutils.childMatching
 local keyStroke             = tools.keyStroke
 local doUntil               = just.doUntil
 
-local GoToPrompt = {}
+local GoToPrompt = Sheet:subclass("cp.apple.finalcutpro.export:GoToPrompt")
 
 --- cp.apple.finalcutpro.export.GoToPrompt.matches(element) -> boolean
 --- Function
@@ -26,11 +32,10 @@ local GoToPrompt = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function GoToPrompt.matches(element)
-    if element then
-        return element:attributeValue("AXRole") == "AXSheet"            -- it's a sheet
-           and (axutils.childWithRole(element, "AXTextField") ~= nil    -- with a text field
-            or axutils.childWithRole(element, "AXComboBox") ~= nil)
+function GoToPrompt.static.matches(element)
+    if Sheet.matches(element) then
+        return (childMatching(element, TextField.matches) ~= nil    -- with a text field
+            or childMatching(element, ComboBox.matches) ~= nil) -- or a combo box.
     end
     return false
 end
@@ -44,59 +49,16 @@ end
 ---
 --- Returns:
 ---  * A new GoToPrompt object.
-function GoToPrompt.new(parent)
-    local o = {_parent = parent}
-    return prop.extend(o, GoToPrompt)
-end
+function GoToPrompt:initialize(parent)
+    local UI = parent.UI:mutate(function(original)
+        return cache(self, "_ui", function()
+            return childMatching(original(), GoToPrompt.matches)
+        end,
+        GoToPrompt.matches)
+    end)
 
---- cp.apple.finalcutpro.export.GoToPrompt:parent() -> object
---- Method
---- Returns the Parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function GoToPrompt:parent()
-    return self._parent
+    Sheet.initialize(self, parent, UI)
 end
-
---- cp.apple.finalcutpro.export.GoToPrompt:app() -> App
---- Method
---- Returns the App instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function GoToPrompt:app()
-    return self:parent():app()
-end
-
---- cp.apple.finalcutpro.export.GoToPrompt:UI() -> axuielementObject
---- Method
---- Returns the Go To Prompt Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function GoToPrompt:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:parent():UI(), GoToPrompt.matches)
-    end,
-    GoToPrompt.matches)
-end
-
---- cp.apple.finalcutpro.export.GoToPrompt.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the 'Go To' prompt showing?
-GoToPrompt.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(GoToPrompt)
 
 --- cp.apple.finalcutpro.export.GoToPrompt:show() -> cp.apple.finalcutpro.export.GoToPrompt
 --- Method
@@ -128,28 +90,83 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
 function GoToPrompt:hide()
-    self:pressCancel()
+    self:cancel()
 end
 
---- cp.apple.finalcutpro.export.GoToPrompt:pressCancel() -> cp.apple.finalcutpro.export.GoToPrompt
+--- cp.apple.finalcutpro.export.GoToPrompt.cancel <cp.ui.Button>
+--- Field
+--- The "Cancel" `Button`.
+function GoToPrompt.lazy.value:cancel()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromLeft(original(), 1, Button.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.export.GoToPrompt.go <cp.ui.Button>
+--- Field
+--- The "Go" `Button`.
+function GoToPrompt.lazy.value:go()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromLeft(original(), 2, Button.matches)
+    end))
+end
+
+-- Override the base `default` since it doesn't seem to be publishing "AXDefaultButton"
+function GoToPrompt.lazy.value:default()
+    return self.go
+end
+
+--- cp.apple.finalcutpro.export.GoToPrompt.valueText <cp.ui.TextField>
+--- Field
+--- The `TextField` containing the folder value, if available.
+function GoToPrompt.lazy.value:valueText()
+    return TextField(self, self.UI:mutate(function(original)
+        return childMatching(original(), TextField.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.export.GoToPrompt.valueCombo <cp.ui.ComboBox>
+--- Field
+--- The `ComboBox` containing the folder value, if available.
+function GoToPrompt.lazy.value:valueCombo()
+    return ComboBox(self,
+        self.UI:mutate(function(original)
+            return childMatching(original(), ComboBox.matches)
+        end),
+        function(list, itemUI)
+            return TextField(list, prop.THIS(itemUI))
+        end
+    )
+end
+
+--- cp.apple.finalcutpro.export.GoToPrompt:valueField() -> TextField | ComboField
 --- Method
---- Presses the Cancel Button.
+--- Returns either the `valueText` or `valueCombo`, depending what is available on-screen.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
-function GoToPrompt:pressCancel()
-    local ui = self:UI()
-    if ui then
-        local btn = childFromLeft(ui, 1, Button.matches)
-        if btn then
-            btn:doPress()
-            just.doWhile(function() return self:isShowing() end)
-        end
+---  * The `TextField` or `ComboField` containing the value.
+function GoToPrompt:valueField()
+    if self.valueText:isShowing() then
+        return self.valueText
+    else
+        return self.valueCombo
     end
-    return self
+end
+
+--- cp.apple.finalcutpro.export.GoToPrompt:value([newValue]) -> string
+--- Method
+--- Returns the current path value, or `nil`.
+---
+--- Parameters:
+---  * newValue - (optional) The new value for the path.
+---
+--- Returns:
+---  * The current value of the path.
+function GoToPrompt:value(newValue)
+    return self:valueField():value(newValue)
 end
 
 --- cp.apple.finalcutpro.export.GoToPrompt:setValue(value) -> cp.apple.finalcutpro.export.GoToPrompt
@@ -162,51 +179,8 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
 function GoToPrompt:setValue(value)
-    local textField = axutils.childWithRole(self:UI(), "AXTextField")
-    if textField then
-        textField:setAttributeValue("AXValue", value)
-    else
-        local comboBox = axutils.childWithRole(self:UI(), "AXComboBox")
-        if comboBox then
-            comboBox:setAttributeValue("AXValue", value)
-        end
-    end
+    self:value(value)
     return self
-end
-
---- cp.apple.finalcutpro.export.GoToPrompt:pressDefault() -> cp.apple.finalcutpro.export.GoToPrompt
---- Method
---- Presses the Default Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
-function GoToPrompt:pressDefault()
-    local ui = self:UI()
-    if ui then
-        local btn = childFromLeft(ui, 2, Button.matches)
-        if btn and btn:enabled() then
-            btn:doPress()
-            just.doWhile(function() return self:isShowing() end)
-        end
-    end
-    return self
-end
-
---- cp.apple.finalcutpro.export.ExportDialog:getTitle() -> string | nil
---- Method
---- The title of the Go To Prompt window or `nil`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Go To Prompt window as a string or `nil`.
-function GoToPrompt:getTitle()
-    local ui = self:UI()
-    return ui and ui:title()
 end
 
 return GoToPrompt
