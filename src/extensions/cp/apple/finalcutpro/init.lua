@@ -771,17 +771,11 @@ function fcp.lazy.value:secondaryWindow()
     return SecondaryWindow(self)
 end
 
---- cp.apple.finalcutpro:fullScreenWindow() -> fullScreenWindow object
---- Method
---- Returns the Final Cut Pro Full Screen Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Full Screen Playback Window
-function fcp.lazy.method:fullScreenWindow()
-    return FullScreenWindow.new(self)
+--- cp.apple.finalcutpro.fullScreenWindow <FullScreenWindow>
+--- Field
+--- Returns the Final Cut Pro Full Screen Window (usually triggered by Cmd+Shift+F)
+function fcp.lazy.value:fullScreenWindow()
+    return FullScreenWindow(self)
 end
 
 --- cp.apple.finalcutpro.commandEditor <CommandEditor>
@@ -791,17 +785,11 @@ function fcp.lazy.value:commandEditor()
     return CommandEditor(self)
 end
 
---- cp.apple.finalcutpro:keywordEditor() -> keywordEditor object
---- Method
---- Returns the Final Cut Pro Keyword Editor
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Keyword Editor
-function fcp.lazy.method:keywordEditor()
-    return KeywordEditor.new(self)
+--- cp.apple.finalcutpro.keywordEditor <KeywordEditor>
+--- Field
+--- The Final Cut Pro Keyword Editor
+function fcp.lazy.value:keywordEditor()
+    return KeywordEditor(self)
 end
 
 --- cp.apple.finalcutpro.mediaImport <MediaImport>

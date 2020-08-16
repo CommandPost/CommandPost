@@ -79,7 +79,7 @@ function Browser:initialize(app)
             return _findBrowser(app.secondaryWindow, app.primaryWindow)
         end,
         Browser.matches)
-    end):monitor(app.toolbar.browserShowing)
+    end):monitor(app.toolbar.browserShowing.checked)
 
     Element.initialize(self, app, UI)
 
@@ -89,9 +89,9 @@ function Browser:initialize(app)
             local parent = element:attributeValue("AXParent")
             local ui = self:UI()
             if parent ~= nil and parent == ui then -- it's from inside the Browser UI
-                self:showLibraries().checked:update()
-                self:showMedia().checked:update()
-                self:showGenerators().checked:update()
+                self.showLibraries.checked:update()
+                self.showMedia.checked:update()
+                self.showGenerators.checked:update()
             end
         end
     end)
@@ -126,21 +126,21 @@ end
 --- Field
 --- Is the 'Libraries' button active, and thus showing?
 function Browser.lazy.prop:librariesShowing()
-    return self:showLibraries().checked
+    return self.showLibraries.checked
 end
 
 --- cp.apple.finalcutpro.main.Browser.mediaShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the 'Media' button active, and thus showing?
 function Browser.lazy.prop:mediaShowing()
-    return self:showMedia().checked
+    return self.showMedia.checked
 end
 
 --- cp.apple.finalcutpro.main.Browser.generatorsShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the 'Generators' button active, and thus showing?
 function Browser.lazy.prop:generatorsShowing()
-    return self:showGenerators().checked
+    return self.showGenerators.checked
 end
 
 -----------------------------------------------------------------------
@@ -294,16 +294,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Browser:showLibraries() -> CheckBox
---- Method
---- Shows Libraries.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `CheckBox` object.
-function Browser.lazy.method:showLibraries()
+--- cp.apple.finalcutpro.main.Browser.showLibraries <cp.ui.CheckBox>
+--- Field
+--- Indicates if Libraries is showing, and can be clicked to toggle.
+function Browser.lazy.value:showLibraries()
     return CheckBox(self, function()
         local ui = self:UI()
         if ui and #ui > 3 then
@@ -314,16 +308,10 @@ function Browser.lazy.method:showLibraries()
     end)
 end
 
---- cp.apple.finalcutpro.main.Browser:showMedia() -> CheckBox
---- Method
---- Show Media.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `CheckBox` object.
-function Browser.lazy.method:showMedia()
+--- cp.apple.finalcutpro.main.Browser.showMedia <cp.ui.CheckBox>
+--- Field
+--- CheckBox indicating if the  Media Browser is showing.
+function Browser.lazy.value:showMedia()
     return CheckBox(self, function()
         local ui = self:UI()
         if ui and #ui > 3 then
@@ -334,16 +322,10 @@ function Browser.lazy.method:showMedia()
     end)
 end
 
---- cp.apple.finalcutpro.main.Browser:showGenerators() -> CheckBox
---- Method
---- Show Media.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `CheckBox` object.
-function Browser.lazy.method:showGenerators()
+--- cp.apple.finalcutpro.main.Browser.showGenerators <cp.ui.CheckBox>
+--- Field
+--- The CheckBox indicating if the Generators Browser is showing.
+function Browser.lazy.value:showGenerators()
     return CheckBox(self, function()
         local ui = self:UI()
         if ui and #ui > 3 then
@@ -381,16 +363,10 @@ function Browser.lazy.value:generators()
     return GeneratorsBrowser(self)
 end
 
---- cp.apple.finalcutpro.main.Browser:markerPopover() -> BrowserMarkerPopover
---- Method
---- Get Browser Marker Popover object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `BrowserMarkerPopover` object.
-function Browser.lazy.method:markerPopover()
+--- cp.apple.finalcutpro.main.Browser.markerPopover <BrowserMarkerPopover>
+--- Field
+--- The Browser Marker Popover object.
+function Browser.lazy.value:markerPopover()
     return BrowserMarkerPopover(self)
 end
 
@@ -410,9 +386,9 @@ function Browser:saveLayout()
         layout.onPrimary = self:isOnPrimary()
         layout.onSecondary = self:isOnSecondary()
 
-        layout.showLibraries = self:showLibraries():saveLayout()
-        layout.showMedia = self:showMedia():saveLayout()
-        layout.showGenerators = self:showGenerators():saveLayout()
+        layout.showLibraries = self.showLibraries:saveLayout()
+        layout.showMedia = self.showMedia:saveLayout()
+        layout.showGenerators = self.showGenerators:saveLayout()
 
         layout.libraries = self.libraries:saveLayout()
         layout.media = self.media:saveLayout()
@@ -439,9 +415,9 @@ function Browser:loadLayout(layout)
         self.media:loadLayout(layout.media)
         self.libraries:loadLayout(layout.libraries)
 
-        self:showGenerators():loadLayout(layout.showGenerators)
-        self:showMedia():loadLayout(layout.showMedia)
-        self:showLibraries():loadLayout(layout.showLibraries)
+        self.showGenerators:loadLayout(layout.showGenerators)
+        self.showMedia:loadLayout(layout.showMedia)
+        self.showLibraries:loadLayout(layout.showLibraries)
     end
 end
 

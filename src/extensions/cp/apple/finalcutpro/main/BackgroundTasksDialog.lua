@@ -30,7 +30,7 @@ function BackgroundTasksDialog.static.matches(element)
         local backgroundTasks = backgroundTasksString and string.gsub(backgroundTasksString, "%%@", ".*")
         return axutils.childMatching(element, function(e)
             local value = e:attributeValue("AXValue")
-            return value and value:find(backgroundTasks)
+            return type(value) == "string" and value:find(backgroundTasks)
         end)
     end
 end

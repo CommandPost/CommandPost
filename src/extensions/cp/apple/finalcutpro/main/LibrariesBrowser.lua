@@ -119,7 +119,7 @@ function LibrariesBrowser:show()
         if not browser:isShowing() then
             browser:showOnPrimary()
         end
-        browser:showLibraries():checked(true)
+        browser.showLibraries:checked(true)
     end
     return self
 end

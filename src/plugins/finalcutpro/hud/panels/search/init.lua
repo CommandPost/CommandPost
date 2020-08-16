@@ -386,7 +386,7 @@ local function find(searchString, column, findNext, findPrevious)
     if mod.searchEntireLibrary() then
         local browser = fcp.browser
         if not libraries.sidebar:isShowing() then
-            browser:showLibraries():press()
+            browser.showLibraries:press()
         end
         local scrollArea = libraries.sidebar:UI()
         local outline = scrollArea and scrollArea[1]
