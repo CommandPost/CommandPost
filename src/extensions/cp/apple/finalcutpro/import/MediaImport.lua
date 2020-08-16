@@ -99,7 +99,7 @@ function MediaImport.new(app)
 --- cp.apple.finalcutpro.import.MediaImport.isFullScreen <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
+        isFullScreen = window.isFullScreen,
 
 --- cp.apple.finalcutpro.import.MediaImport.frame <cp.prop: frame>
 --- Field

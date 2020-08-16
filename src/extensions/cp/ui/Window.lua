@@ -220,10 +220,10 @@ function Window.lazy.prop:frame()
     )
 end
 
---- cp.ui.Window.fullScreen <cp.prop: boolean>
+--- cp.ui.Window.isFullScreen <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window is full-screen.
-function Window.lazy.prop:fullScreen()
+function Window.lazy.prop:isFullScreen()
     return notifyWatch(
         self.hsWindow:mutate(
             function(original)

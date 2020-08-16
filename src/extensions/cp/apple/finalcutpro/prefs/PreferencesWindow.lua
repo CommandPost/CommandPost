@@ -73,7 +73,7 @@ function PreferencesWindow.new(app)
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.isFullScreen <cp.prop: boolean; live>
 --- Field
 --- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
+        isFullScreen = window.isFullScreen,
 
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.frame <cp.prop: frame; live>
 --- Field

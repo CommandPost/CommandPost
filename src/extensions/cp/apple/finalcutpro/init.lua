@@ -784,17 +784,11 @@ function fcp.lazy.method:fullScreenWindow()
     return FullScreenWindow.new(self)
 end
 
---- cp.apple.finalcutpro:commandEditor() -> commandEditor object
---- Method
---- Returns the Final Cut Pro Command Editor
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Command Editor
-function fcp.lazy.method:commandEditor()
-    return CommandEditor.new(self)
+--- cp.apple.finalcutpro.commandEditor <CommandEditor>
+--- Field
+--- The Final Cut Pro Command Editor
+function fcp.lazy.value:commandEditor()
+    return CommandEditor(self)
 end
 
 --- cp.apple.finalcutpro:keywordEditor() -> keywordEditor object
