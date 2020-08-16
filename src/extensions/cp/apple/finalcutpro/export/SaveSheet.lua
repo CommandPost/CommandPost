@@ -5,17 +5,18 @@
 local require               = require
 
 local axutils               = require "cp.ui.axutils"
-local prop                  = require "cp.prop"
 
 local GoToPrompt            = require "cp.apple.finalcutpro.export.GoToPrompt"
 local ReplaceAlert          = require "cp.apple.finalcutpro.export.ReplaceAlert"
 
-local TextField             = require "cp.ui.TextField"
 local Button				= require "cp.ui.Button"
+local Sheet                 = require "cp.ui.Sheet"
+local TextField             = require "cp.ui.TextField"
 
 local childFromRight	    = axutils.childFromRight
+local childMatching         = axutils.childMatching
 
-local SaveSheet = {}
+local SaveSheet = Sheet:subclass("cp.apple.finalcutpro.export.SaveSheet")
 
 --- cp.apple.finalcutpro.export.SaveSheet.matches(element) -> boolean
 --- Function
@@ -26,14 +27,11 @@ local SaveSheet = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function SaveSheet.matches(element)
-    if element then
-        return element:attributeValue("AXRole") == "AXSheet"
-    end
-    return false
+function SaveSheet.static.matches(element)
+    return Sheet.matches(element)
 end
 
---- cp.apple.finalcutpro.export.SaveSheet.new(app) -> SaveSheet
+--- cp.apple.finalcutpro.export.SaveSheet(app) -> SaveSheet
 --- Function
 --- Creates a new SaveSheet object.
 ---
@@ -42,143 +40,41 @@ end
 ---
 --- Returns:
 ---  * A new SaveSheet object.
-function SaveSheet.new(parent)
-    local o = {_parent = parent}
-    return prop.extend(o, SaveSheet)
+function SaveSheet:initialize(parent)
+    local UI = parent.UI:mutate(function(original)
+        return axutils.cache(self, "_ui", function()
+            return axutils.childMatching(original(), SaveSheet.matches)
+        end,
+        SaveSheet.matches)
+    end)
+    return Sheet.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:parent() -> object
---- Method
---- Returns the Parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function SaveSheet:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.export.SaveSheet:app() -> App
---- Method
---- Returns the App instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function SaveSheet:app()
-    return self:parent():app()
-end
-
---- cp.apple.finalcutpro.export.SaveSheet:UI() -> axuielementObject
---- Method
---- Returns the Save Sheet Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function SaveSheet:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:parent():UI(), SaveSheet.matches)
-    end,
-    SaveSheet.matches)
-end
-
---- cp.apple.finalcutpro.export.SaveSheet <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.export.SaveSheet.save <cp.ui.Button>
 --- Field
---- Is the Save Sheet showing?
-SaveSheet.isShowing = prop.new(function(self)
-    return self:UI() ~= nil or self:replaceAlert():isShowing()
-end):bind(SaveSheet)
-
---- cp.apple.finalcutpro.export.SaveSheet:hide() -> none
---- Method
---- Hides the Save Sheet
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function SaveSheet:hide()
-    self:pressCancel()
+--- The "Save" `Button`.
+function SaveSheet.lazy.value:save()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(original(), 1, Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:pressCancel() -> cp.apple.finalcutpro.export.SaveSheet
---- Method
---- Presses the Cancel Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.apple.finalcutpro.export.SaveSheet` object for method chaining.
-function SaveSheet:pressCancel()
-    local ui = self:UI()
-    if ui then
-        local btn = childFromRight(ui, 2, Button.matches)
-        if btn then
-            btn:doPress()
-        end
-    end
-    return self
+--- cp.apple.finalcutpro.export.SaveSheet.cancel <cp.ui.Button>
+--- Field
+--- The "Cancel" `Button`.
+function SaveSheet.lazy.value:cancel()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(original(), 2, Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:pressSave() -> cp.apple.finalcutpro.export.SaveSheet
---- Method
---- Presses the Save Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `cp.apple.finalcutpro.export.SaveSheet` object for method chaining.
-function SaveSheet:pressSave()
-    local ui = self:UI()
-    if ui then
-        local btn = childFromRight(ui, 1, Button.matches)
-        if btn and btn:enabled() then
-            btn:doPress()
-        end
-    end
-    return self
-end
-
---- cp.apple.finalcutpro.export.SaveSheet:getTitle() -> string | nil
---- Method
---- The title of the Save Sheet window or `nil`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Save Sheet window as a string or `nil`.
-function SaveSheet:getTitle()
-    local ui = self:UI()
-    return ui and ui:title()
-end
-
---- cp.apple.finalcutpro.export.SaveSheet:filename() -> TextField
---- Method
---- Returns the Save Sheet Filename Text Field.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Save Sheet window as a string or `nil`.
-function SaveSheet:filename()
-    if not self._filename then
-        self._filename = TextField(self, function()
-            return axutils.childWithRole(self:UI(), "AXTextField")
-        end)
-    end
-    return self._filename
+--- cp.apple.finalcutpro.export.SaveSheet.filename <cp.ui.TextField>
+--- Field
+--- The Save Sheet Filename Text Field.
+function SaveSheet.lazy.value:filename()
+    return TextField(self, function()
+        return childMatching(self:UI(), TextField.matches)
+    end)
 end
 
 --- cp.apple.finalcutpro.export.SaveSheet:setPath(path) -> cp.apple.finalcutpro.export.SaveSheet
@@ -195,41 +91,25 @@ function SaveSheet:setPath(path)
         --------------------------------------------------------------------------------
         -- Display the 'Go To' prompt:
         --------------------------------------------------------------------------------
-        self:goToPrompt():show():setValue(path):pressDefault()
+        local prompt = self.goToPrompt
+        prompt:show():value(path)
+        prompt:go()
     end
     return self
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:setPath() -> ReplaceAlert
---- Method
---- Gets the Replace Alert object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `ReplaceAlert` object.
-function SaveSheet:replaceAlert()
-    if not self._replaceAlert then
-        self._replaceAlert = ReplaceAlert.new(self)
-    end
-    return self._replaceAlert
+--- cp.apple.finalcutpro.export.SaveSheet.replaceAlert <ReplaceAlert>
+--- Field
+--- The Replace Alert object.
+function SaveSheet.lazy.value:replaceAlert()
+    return ReplaceAlert.new(self)
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:goToPrompt() -> GoToPrompt
---- Method
---- Gets the Go To Prompt object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `GoToPrompt` object.
-function SaveSheet:goToPrompt()
-    if not self._goToPrompt then
-        self._goToPrompt = GoToPrompt.new(self)
-    end
-    return self._goToPrompt
+--- cp.apple.finalcutpro.export.SaveSheet.goToPrompt <GoToPrompt>
+--- Field
+--- The Go To Prompt object.
+function SaveSheet.lazy.value:goToPrompt()
+    return GoToPrompt(self)
 end
 
 return SaveSheet

@@ -331,7 +331,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 --------------------------------------------------------------------------------
                 -- Make sure we don't already have a clip with the same name in the batch:
                 --------------------------------------------------------------------------------
-                local filename = saveSheet:filename():getValue()
+                local filename = saveSheet:filename()
                 if filename then
                     local newFilename = clipName
 
@@ -373,7 +373,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                     -- Update the filename and save it for comparison of next clip:
                     --------------------------------------------------------------------------------
                     if filename ~= newFilename then
-                        saveSheet:filename():setValue(newFilename)
+                        saveSheet:filename(newFilename)
                     end
                     table.insert(mod._existingClipNames, newFilename)
                 end
@@ -381,7 +381,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 --------------------------------------------------------------------------------
                 -- Click 'Save' on the save sheet:
                 --------------------------------------------------------------------------------
-                saveSheet:pressSave()
+                saveSheet:save()
 
             end
 
@@ -389,13 +389,13 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             -- Make sure Save Window is closed:
             --------------------------------------------------------------------------------
             while saveSheet:isShowing() do
-                local replaceAlert = saveSheet:replaceAlert()
+                local replaceAlert = saveSheet.replaceAlert
                 if mod.replaceExistingFiles() and replaceAlert:isShowing() then
                     replaceAlert:pressReplace()
                 else
                     replaceAlert:pressCancel()
 
-                    local originalFilename = saveSheet:filename():getValue()
+                    local originalFilename = saveSheet:filename()
                     if originalFilename == nil then
                         displayErrorMessage("Failed to get the original Filename." .. errorFunction)
                         return false
@@ -403,8 +403,8 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
 
                     local newFilename = incrementFilename(originalFilename)
 
-                    saveSheet:filename():setValue(newFilename)
-                    saveSheet:pressSave()
+                    saveSheet:filename(newFilename)
+                    saveSheet:save()
                 end
             end
 
