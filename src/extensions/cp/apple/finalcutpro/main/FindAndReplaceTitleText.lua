@@ -172,7 +172,7 @@ end
 function FindAndReplace.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:app():doLaunch())
-    :Then(self:app():menu():doSelectMenu({"Edit", "Find and Replace Title Text..."}))
+    :Then(self:app().menu:doSelectMenu({"Edit", "Find and Replace Title Text..."}))
     :Otherwise(false)
     :ThenYield()
     :Label("FindAndReplaceTitleText:doShow")

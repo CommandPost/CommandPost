@@ -647,7 +647,7 @@ end
 --- automatically if the window layout changes.
 function fcp.lazy.prop:selectedWorkspace()
     return prop(function()
-        local workspacesUI = self:menu():findMenuUI({"Window", "Workspaces"})
+        local workspacesUI = self.menu:findMenuUI({"Window", "Workspaces"})
         local children = workspacesUI and workspacesUI[1] and workspacesUI[1]:attributeValue("AXChildren")
         local selected = children and childMatching(children, function(menuItem)
             return menuItem:attributeValue("AXMenuItemMarkChar") ~= nil
@@ -784,17 +784,11 @@ function fcp.lazy.method:fullScreenWindow()
     return FullScreenWindow.new(self)
 end
 
---- cp.apple.finalcutpro:commandEditor() -> commandEditor object
---- Method
---- Returns the Final Cut Pro Command Editor
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Command Editor
-function fcp.lazy.method:commandEditor()
-    return CommandEditor.new(self)
+--- cp.apple.finalcutpro.commandEditor <CommandEditor>
+--- Field
+--- The Final Cut Pro Command Editor
+function fcp.lazy.value:commandEditor()
+    return CommandEditor(self)
 end
 
 --- cp.apple.finalcutpro:keywordEditor() -> keywordEditor object

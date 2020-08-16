@@ -133,12 +133,12 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Command Editor",
         function()
             -- The Command Editor.
-            ok(not fcp:commandEditor():isShowing())
-            fcp:commandEditor():show()
-            ok(fcp:commandEditor():isShowing())
-            ok(fcp:commandEditor():saveButton():UI() ~= nil)
-            fcp:commandEditor():hide()
-            ok(not fcp:commandEditor():isShowing())
+            ok(not fcp.commandEditor:isShowing())
+            fcp.commandEditor:show()
+            ok(fcp.commandEditor:isShowing())
+            ok(fcp.commandEditor.save:UI() ~= nil)
+            fcp.commandEditor:hide()
+            ok(not fcp.commandEditor:isShowing())
         end
     ),
     test(

@@ -83,7 +83,7 @@ end
 --- Field
 --- Is `true` if the window is full-screen.
 function SecondaryWindow.lazy.prop:isFullScreen()
-    return self.window.fullScreen
+    return self.window.isFullScreen
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.frame <cp.prop: frame>

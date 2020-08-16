@@ -92,7 +92,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Open in Angle Editor:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
         menuBar:selectMenu({"Clip", "Open in Angle Editor"})
     else
@@ -300,7 +300,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Check the option is available in the current context
     --------------------------------------------------------------------------------
-    if not fcp:menu():isEnabled({"File", "Reveal in Browser"}) then
+    if not fcp.menu:isEnabled({"File", "Reveal in Browser"}) then
         return nil
     end
 
@@ -319,7 +319,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Trigger the menu item to reveal the clip
     --------------------------------------------------------------------------------
-    fcp:menu():selectMenu({"File", "Reveal in Browser"})
+    fcp.menu:selectMenu({"File", "Reveal in Browser"})
 
     --------------------------------------------------------------------------------
     -- Solo Clip:
@@ -631,7 +631,7 @@ local function revealInKeywordCollection(solo)
             --------------------------------------------------------------------------------
             -- If no keywords on the clip, just "Reveal in Browser":
             --------------------------------------------------------------------------------
-            fcp:menu():selectMenu({"File", "Reveal in Browser"})
+            fcp.menu:selectMenu({"File", "Reveal in Browser"})
 
             --------------------------------------------------------------------------------
             -- Solo the clip if necessary:

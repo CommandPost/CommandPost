@@ -176,7 +176,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("replaceSelectedTitleTextwithPasteboardContents")
         :whenActivated(function()
-            local textArea = fcp.inspector.text:textArea()
+            local textArea = fcp.inspector.text.textArea
             local contents = pasteboard.getContents()
             if contents then
                 textArea:show()
@@ -193,7 +193,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("appendSelectedTitleTextwithPasteboardContents")
         :whenActivated(function()
-            local textArea = fcp.inspector.text:textArea()
+            local textArea = fcp.inspector.text.textArea
             local contents = pasteboard.getContents()
             if contents then
                 textArea:show()
@@ -213,7 +213,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("focusOnTitleTextInInspector")
         :whenActivated(function()
-            local textArea = fcp.inspector.text:textArea()
+            local textArea = fcp.inspector.text.textArea
             textArea:show()
             fcp:selectMenu({"Window", "Go To", "Inspector"})
             textArea:focused(true)
@@ -226,7 +226,7 @@ function plugin.init(deps)
     fcpxCmds
         :add("copyTitleTextContentsToPasteboard")
         :whenActivated(function()
-            local textArea = fcp.inspector.text:textArea()
+            local textArea = fcp.inspector.text.textArea
             textArea:show()
             local value = textArea:value()
             if value then

@@ -279,7 +279,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
@@ -566,7 +566,7 @@ end
 --- Returns:
 ---  * A [Statement](cp.rx.go.Statement.md)
 function mod.doSaveToBuffer(id)
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
 
     return Do(
         Require(menuBar:doIsEnabled({"Edit", "Copy"}))
@@ -705,7 +705,7 @@ function mod.ninjaPasteboardCopy()
     --------------------------------------------------------------------------------
     -- Trigger 'copy' from Menubar:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:isEnabled({"Edit", "Copy"}) then
         menuBar:selectMenu({"Edit", "Copy"})
     else

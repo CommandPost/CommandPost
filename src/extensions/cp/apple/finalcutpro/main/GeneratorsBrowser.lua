@@ -81,7 +81,7 @@ end
 --- Returns:
 ---  * The `GeneratorsBrowser` instance.
 function GeneratorsBrowser:show()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
     -----------------------------------------------------------------------
     -- Go there direct:
     -----------------------------------------------------------------------
@@ -91,7 +91,7 @@ function GeneratorsBrowser:show()
 end
 
 function GeneratorsBrowser.lazy.method:doShow()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(menuBar:doSelectMenu({"Window", "Go To", GeneratorsBrowser.TITLE}))
     :Then(WaitUntil(self.isShowing))
@@ -188,7 +188,7 @@ end
 ---  * The `GeneratorsBrowser` object.
 function GeneratorsBrowser:showSidebar()
     if not self.sidebar:isShowing() then
-        self:app():menu():selectMenu({"Window", "Show in Workspace", 1})
+        self:app().menu:selectMenu({"Window", "Show in Workspace", 1})
     end
     return self
 end

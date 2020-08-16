@@ -23,7 +23,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Make sure the libraries window is open:
         --------------------------------------------------------------------------------
-        fcp:menu():selectMenu({"Window", "Go To", "Libraries"})
+        fcp.menu:selectMenu({"Window", "Go To", "Libraries"})
 
         --------------------------------------------------------------------------------
         -- Check that there is exactly one Selected Clip:

@@ -261,7 +261,7 @@ function plugin.init(deps)
         -- Audio Configuration:
         --
         --------------------------------------------------------------------------------
-        local audioConfiguration = audio:audioConfiguration()
+        local audioConfiguration = audio.audioConfiguration
         local audioConfigurationGroup = audioGroup:group(i18n("audioConfiguration"))
 
             --------------------------------------------------------------------------------

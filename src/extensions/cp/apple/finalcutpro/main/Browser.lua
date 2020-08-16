@@ -160,7 +160,7 @@ end
 ---  * The `Browser` object.
 function Browser:showOnPrimary()
     -- show the parent.
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     -- if the browser is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
@@ -183,7 +183,7 @@ end
 --- Returns:
 ---  * The `Statement` to execute.
 function Browser.lazy.method:doShowOnPrimary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         If(self.isOnSecondary):Then(
@@ -208,7 +208,7 @@ end
 ---  * The `Browser` object.
 function Browser:showOnSecondary()
     -- show the parent.
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     if not self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Browser"})
@@ -226,7 +226,7 @@ end
 --- Returns:
 ---  * The `Statement` to execute.
 function Browser.lazy.method:doShowOnSecondary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         self:parent():doShow()
@@ -268,7 +268,7 @@ end
 function Browser:hide()
     if self:isShowing() then
         -- Uncheck it from the workspace
-        self:app():menu():selectMenu({"Window", "Show in Workspace", "Browser"})
+        self:app().menu:selectMenu({"Window", "Show in Workspace", "Browser"})
     end
     return self
 end
@@ -284,7 +284,7 @@ end
 ---  * The `Statement` to execute.
 function Browser.lazy.method:doHide()
     return If(self.isShowing):Then(
-        self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Browser"})
+        self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Browser"})
     ):Label("Browser:doHide")
 end
 

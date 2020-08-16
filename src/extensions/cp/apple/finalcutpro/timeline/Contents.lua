@@ -438,7 +438,7 @@ end
 --- * The `Statement`.
 function Contents:doFocus(show)
     show = show or false
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return Do(If(show):Then(self:doShow()))
     :Then(

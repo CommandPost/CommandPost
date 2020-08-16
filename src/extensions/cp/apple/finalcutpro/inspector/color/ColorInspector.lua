@@ -128,7 +128,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:show()
     if not self:isShowing() then
-        self:app():menu():selectMenu({"Window", "Go To", "Color Inspector"})
+        self:app().menu:selectMenu({"Window", "Go To", "Color Inspector"})
     end
     return self
 end
@@ -145,7 +145,7 @@ end
 function ColorInspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(
-        self:app():menu():doSelectMenu({"Window", "Go To", "Color Inspector"})
+        self:app().menu:doSelectMenu({"Window", "Go To", "Color Inspector"})
     )
     :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the Color Inspector"))
     :Otherwise(true)

@@ -106,7 +106,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
         -- Open the window:
         --------------------------------------------------------------------------------
         local fcp = self:app()
-        local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
+        local menuItem = fcp.menu:findMenuUI({"File", "Share", destinationSelect})
 
         --------------------------------------------------------------------------------
         -- No destination selected:

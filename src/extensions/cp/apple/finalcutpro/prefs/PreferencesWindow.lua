@@ -73,7 +73,7 @@ function PreferencesWindow.new(app)
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.isFullScreen <cp.prop: boolean; live>
 --- Field
 --- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
+        isFullScreen = window.isFullScreen,
 
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.frame <cp.prop: frame; live>
 --- Field
@@ -156,8 +156,8 @@ end
 function PreferencesWindow:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menu():isEnabled({"Final Cut Pro", "Preferences…"}) then
-            self:app():menu():selectMenu({"Final Cut Pro", "Preferences…"})
+        if self:app().menu:isEnabled({"Final Cut Pro", "Preferences…"}) then
+            self:app().menu:selectMenu({"Final Cut Pro", "Preferences…"})
             -- wait for it to open.
             just.doUntil(function() return self:UI() end)
         end
@@ -167,7 +167,7 @@ end
 
 function PreferencesWindow:doShow()
     return If(self.isShowing):Is(false):Then(
-        self:app():menu():doSelectMenu({"Final Cut Pro", "Preferences…"})
+        self:app().menu:doSelectMenu({"Final Cut Pro", "Preferences…"})
     ):Then(
         WaitUntil(self.isShowing)
     )

@@ -65,7 +65,7 @@ function mod.transcodeSelectedClips(transcodeType)
         fcp:selectMenu({"Window", "Go To", "Libraries"})
 
         if not doUntil(function()
-            return fcp:menu():isEnabled({"File", "Transcode Media…"})
+            return fcp.menu:isEnabled({"File", "Transcode Media…"})
         end) then
             playErrorSound()
             return
@@ -137,7 +137,7 @@ function mod.transcodeSelectedClips(transcodeType)
         fcp:selectMenu({"Window", "Go To", "Libraries"})
 
         if not doUntil(function()
-            return fcp:menu():isEnabled({"File", "Transcode Media…"})
+            return fcp.menu:isEnabled({"File", "Transcode Media…"})
         end) then
             playErrorSound()
             return

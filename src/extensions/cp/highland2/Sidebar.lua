@@ -29,7 +29,7 @@ end
 function Sidebar.lazy.value:doShow()
     return If(self.isShowing):Is(false)
     :Then(self.document.doShow)
-    :Then(self:app():menu():doSelectMenu({"View", "Toggle Sidebar"}))
+    :Then(self:app().menu:doSelectMenu({"View", "Toggle Sidebar"}))
     :Label("Sidebar.show")
 end
 
@@ -39,7 +39,7 @@ end
 function Sidebar.lazy.value:doHide()
     return If(self.isShowing)
     :Then(self.document.doShow)
-    :Then(self:app():menu():doSelectMenu({"View", "Toggle Sidebar"}))
+    :Then(self:app().menu:doSelectMenu({"View", "Toggle Sidebar"}))
     :Label("Sidebar.hide")
 end
 

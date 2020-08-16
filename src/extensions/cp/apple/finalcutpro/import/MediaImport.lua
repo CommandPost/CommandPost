@@ -99,7 +99,7 @@ function MediaImport.new(app)
 --- cp.apple.finalcutpro.import.MediaImport.isFullScreen <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
+        isFullScreen = window.isFullScreen,
 
 --- cp.apple.finalcutpro.import.MediaImport.frame <cp.prop: frame>
 --- Field
@@ -139,8 +139,8 @@ end
 function MediaImport:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menu():isEnabled({"File", "Import", "Media…"}) then
-            self:app():menu():selectMenu({"File", "Import", "Media…"})
+        if self:app().menu:isEnabled({"File", "Import", "Media…"}) then
+            self:app().menu:selectMenu({"File", "Import", "Media…"})
             just.doUntil(function() return self:isShowing() end)
         end
     end

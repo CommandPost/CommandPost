@@ -202,7 +202,7 @@ end
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
 function Timeline.lazy.method:doFocus()
-    return self:app():menu():doSelectMenu({"Window", "Go To", "Timeline"})
+    return self:app().menu:doSelectMenu({"Window", "Go To", "Timeline"})
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App
@@ -257,7 +257,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnPrimary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
@@ -281,7 +281,7 @@ end
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline.lazy.method:doShowOnPrimary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         Do(
@@ -309,7 +309,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnSecondary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if not self:isOnSecondary() then
@@ -329,7 +329,7 @@ end
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline.lazy.method:doShowOnSecondary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         If(self.isOnSecondary):Is(false)
@@ -350,7 +350,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:hide()
-    local menu = self:app():menu()
+    local menu = self:app().menu
     -- Uncheck it from the primary workspace
     if self:isOnSecondary() then
         menu:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
@@ -372,7 +372,7 @@ end
 --- Returns:
 ---  * A `Statement` ready to run.
 function Timeline.lazy.method:doHide()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         Do(
