@@ -290,6 +290,50 @@ local function convertPreferencesToMIDIActions()
                             end
 
                             --------------------------------------------------------------------------------
+                            -- Release Button:
+                            --------------------------------------------------------------------------------
+                            if string.sub(buttonID, -7) == "Release" then
+                                local original = tonumber(string.sub(buttonID, 0, -8))
+                                local numbers = {original}
+                                if original >= 1 and original <= 8 then
+                                    numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
+                                end
+                                for _, number in pairs(numbers) do
+                                    if not midiActions[bundleID] then
+                                        midiActions[bundleID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID] then
+                                        midiActions[bundleID][bankID] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"] = {}
+                                    end
+                                    if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number] then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number] = {}
+                                    end
+                                    if type(button.action) == "table" then
+                                        if not midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number]["action"] then
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number]["action"] = {}
+                                        end
+                                        for id, value in pairs(button.action) do
+                                            midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number]["action"][id] = value
+                                        end
+                                    elseif type(button.action) == "string" then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number]["action"] = button.action
+                                    end
+                                    if button.handlerID then
+                                        midiActions[bundleID][bankID]["Loupedeck+"][0]["noteOff"][number]["handlerID"] = button.handlerID
+                                    end
+                                end
+                            end
+
+                            --------------------------------------------------------------------------------
                             -- Left Knob Turn:
                             --------------------------------------------------------------------------------
                             if string.sub(buttonID, -4) == "Left" then
@@ -551,7 +595,7 @@ local function callback(_, deviceName, commandType, _, metadata)
                             end
                         end
                     end)
-                elseif commandType == "pitchWheelChange" or commandType == "controlChange" or (commandType == "noteOn" and metadata.velocity ~= 0) then
+                elseif commandType == "pitchWheelChange" or commandType == "controlChange" or commandType == "noteOff" or (commandType == "noteOn" and metadata.velocity ~= 0) then
                     doAfter(0, function()
                         local handler = mod._actionmanager.getHandler(v.handlerID)
                         if handler then

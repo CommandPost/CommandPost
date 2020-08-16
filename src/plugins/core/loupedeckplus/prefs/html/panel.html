@@ -339,21 +339,30 @@
 	<table class="loupedeck">
 		<thead>
 			<tr>
-				<th>{{ i18n("buttonPress") }}</th>
-				<th><span id="textLeft" style="display: {{ textVisibility }}">{{ i18n("turnLeftDown") }}</span></th>
-				<th><span id="textRight" style="display: {{ textVisibility }}">{{ i18n("turnRightUp") }}</span></th>
+				<th>{{ i18n("pressAction") }}</th>
+				<th><span id="textLeft" style="display: {{ textVisibility }}">{{ i18n("turnLeftDownAction") }}</span></th>
+				<th><span id="textRight" style="display: {{ textVisibility }}">{{ i18n("turnRightUpAction") }}</span></th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
-				<td><input type="text" id="press_action" class="loupedeckActionTextbox" value="{{ lastPressValue }}" disabled=""></td>
-				<td><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" style="display: {{ textVisibility }}"></td>
-				<td><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" style="display: {{ textVisibility }}"></td>
+				<td><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled=""></td>
+				<td><input type="text" id="left_action" class="loupedeckActionTextbox" value="" disabled="" style="display: {{ textVisibility }}"></td>
+				<td><input type="text" id="right_action" class="loupedeckActionTextbox" value="" disabled="" style="display: {{ textVisibility }}"></td>
 			</tr>
 			<tr>
 				<td><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Press')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Press')">{{ i18n("clear") }}</a></td>
 				<td><a id="left_actionButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="selectButton('Left')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="clearButton('Left')">{{ i18n("clear") }}</a></td>
 				<td><a id="right_actionButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="selectButton('Right')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="clearButton('Right')">{{ i18n("clear") }}</a></td>
+			</tr>
+			<tr>
+				<th style="font-size:12px; padding-top: 15px;">{{ i18n("releaseAction") }}</th>
+			</tr>
+			<tr>
+				<td><input type="text" id="release_action" class="loupedeckActionTextbox" value="{{ lastReleaseValue }}" disabled=""></td>
+			</tr>
+			<tr>
+				<td><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Release')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Release')">{{ i18n("clear") }}</a></td>
 			</tr>
 		</tbody>
 	</table>
