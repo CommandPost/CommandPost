@@ -46,10 +46,10 @@ function BackgroundTasksDialog:initialize(cpApp)
     end))
 end
 
---- cp.apple.finalcutpro.main.BackgroundTasksDialog:cancel() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.BackgroundTasksDialog.cancel <cp.ui.Button>
+--- Field
 --- The Cancel button.
-function BackgroundTasksDialog.lazy.method:cancel()
+function BackgroundTasksDialog.lazy.value:cancel()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_cancel", function()
             return childFromLeft(original(), 1, Button.matches)
@@ -57,10 +57,10 @@ function BackgroundTasksDialog.lazy.method:cancel()
     end))
 end
 
---- cp.apple.finalcutpro.main.BackgroundTasksDialog:continue() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.BackgroundTasksDialog.continue <cp.ui.Button>
+--- Field
 --- The Continue button.
-function BackgroundTasksDialog.lazy.method:continue()
+function BackgroundTasksDialog.lazy.value:continue()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_continue", function()
             return childFromLeft(original(), 2, Button.matches)

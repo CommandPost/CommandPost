@@ -435,9 +435,9 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             local ignoreBackgroundTasks = mod.ignoreBackgroundTasks()
             if backgroundTasksDialog:isShowing() then
                 if ignoreBackgroundTasks then
-                    backgroundTasksDialog:continue():press()
+                    backgroundTasksDialog:continue()
                 else
-                    backgroundTasksDialog:cancel():press()
+                    backgroundTasksDialog:cancel()
                     displayMessage(i18n("batchExportBackgroundTasksDetected"))
                     return false
                 end
