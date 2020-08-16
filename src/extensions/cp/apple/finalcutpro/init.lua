@@ -804,17 +804,11 @@ function fcp.lazy.method:keywordEditor()
     return KeywordEditor.new(self)
 end
 
---- cp.apple.finalcutpro:mediaImport() -> mediaImport object
---- Method
---- Returns the Final Cut Pro Media Import Window
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Final Cut Pro Media Import Window
-function fcp.lazy.method:mediaImport()
-    return MediaImport.new(self)
+--- cp.apple.finalcutpro.mediaImport <MediaImport>
+--- Field
+--- The Final Cut Pro Media Import Window
+function fcp.lazy.value:mediaImport()
+    return MediaImport(self)
 end
 
 --- cp.apple.finalcutpro.exportDialog <cp.apple.finalcutpro.main.ExportDialog>
