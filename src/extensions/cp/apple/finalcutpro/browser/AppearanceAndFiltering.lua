@@ -147,7 +147,7 @@ end
 --- cp.apple.finalcutpro.browser.AppearanceAndFiltering.continuousPlayback <cp.ui.CheckBox>
 --- Field
 --- The Continuous Playback checkbox.
-function AppearanceAndFiltering.lazy.method:continuousPlayback()
+function AppearanceAndFiltering.lazy.value:continuousPlayback()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 2)
     end))

@@ -140,7 +140,7 @@ end
 --  * A table of choices.
 local function legacyScan() -- luacheck: ignore
     local choices = {}
-    fcp:menu():visitMenuItems(function(path, menuItem)
+    fcp.menu:visitMenuItems(function(path, menuItem)
         local title = menuItem:title()
         if path[1] ~= "Apple" then
             local params = {}
@@ -1236,7 +1236,7 @@ function mod.init(actionmanager)
 
             overrideFunctions = {} -- Reset overrideFunctions
 
-            local menu = fcp:menu():getMenuTitles()
+            local menu = fcp.menu:getMenuTitles()
             local currentLocaleCode = fcp:currentLocale().code
             local result = processMenu(menu, currentLocaleCode)
 

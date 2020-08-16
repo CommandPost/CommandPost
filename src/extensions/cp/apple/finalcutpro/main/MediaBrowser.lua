@@ -107,7 +107,7 @@ end
 --- Returns:
 ---  * The `MediaBrowser` object.
 function MediaBrowser:show()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
     -----------------------------------------------------------------------
     -- Go there direct:
     -----------------------------------------------------------------------
@@ -173,7 +173,7 @@ end
 --- Returns:
 ---  * `MediaBrowser` object.
 function MediaBrowser:showSidebar()
-    self:app():menu():selectMenu({"Window", "Show in Workspace", "Sidebar"})
+    self:app().menu:selectMenu({"Window", "Show in Workspace", "Sidebar"})
     return self
 end
 

@@ -191,7 +191,7 @@ local function showColumn(column)
         return false
     end
 
-    local menu = libraries:list():columns():menu()
+    local menu = libraries:list():columns().menu
     if not menu then
         log.ef("showColumn: Failed to get the columns menu popup.")
         return false

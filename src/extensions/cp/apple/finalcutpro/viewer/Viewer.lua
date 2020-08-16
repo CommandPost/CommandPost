@@ -458,7 +458,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:showOnPrimary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     -----------------------------------------------------------------------
     -- If it is on the secondary, we need to turn it off before
@@ -488,7 +488,7 @@ end
 --- Returns:
 --- * The `Statement`, which resolves to `true`, or sends an error message.
 function Viewer.lazy.method:doShowOnPrimary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         If(self.isOnSecondary):Then(
@@ -514,7 +514,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:showOnSecondary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     if not self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
@@ -540,7 +540,7 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true`, or sending an error message.
 function Viewer.lazy.method:doShowOnSecondary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         If(self.isOnSecondary):Is(false):Then(
@@ -566,7 +566,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:hide()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     if self:isEventViewer() then
         -----------------------------------------------------------------------
@@ -594,7 +594,7 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true`, or sends an error.
 function Viewer.lazy.method:doHide()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return If(self.isEventViewer):Then(
         -----------------------------------------------------------------------

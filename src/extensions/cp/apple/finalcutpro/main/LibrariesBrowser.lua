@@ -318,7 +318,7 @@ end
 function LibrariesBrowser:openClipTitled(name)
     if self:selectClipTitled(name) then
         self:app():launch()
-        local menuBar = self:app():menu()
+        local menuBar = self:app().menu
 
         --------------------------------------------------------------------------------
         -- Ensure the Libraries browser is focused:
@@ -347,7 +347,7 @@ end
 --- Returns:
 --- * The `Statement` to execute.
 function LibrariesBrowser:doOpenClipTitled(title)
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(self:app():doLaunch())
     :Then(self:doSelectClipTitled(title))

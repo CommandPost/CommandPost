@@ -647,7 +647,7 @@ end
 --- automatically if the window layout changes.
 function fcp.lazy.prop:selectedWorkspace()
     return prop(function()
-        local workspacesUI = self:menu():findMenuUI({"Window", "Workspaces"})
+        local workspacesUI = self.menu:findMenuUI({"Window", "Workspaces"})
         local children = workspacesUI and workspacesUI[1] and workspacesUI[1]:attributeValue("AXChildren")
         local selected = children and childMatching(children, function(menuItem)
             return menuItem:attributeValue("AXMenuItemMarkChar") ~= nil

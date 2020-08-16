@@ -135,7 +135,7 @@ end
 --- Returns:
 ---  * The Clip Name Size as a string or `nil` if cannot be found.
 function mod.getClipNameSize()
-    local menu = fcp:menu()
+    local menu = fcp.menu
     if menu:isChecked({"View", "Browser", "Clip Name Size", "Small"}) then
         return "Small"
     elseif menu:isChecked({"View", "Browser", "Clip Name Size", "Medium"}) then
@@ -200,7 +200,7 @@ function mod.restoreLayoutFromTable(layout)
     -- Restore Clip Name Size:
     --------------------------------------------------------------------------------
     if layout["clipNameSize"] then
-        fcp:menu():selectMenu({"View", "Browser", "Clip Name Size", layout["clipNameSize"]})
+        fcp.menu:selectMenu({"View", "Browser", "Clip Name Size", layout["clipNameSize"]})
     end
 
     --------------------------------------------------------------------------------
@@ -249,7 +249,7 @@ function mod.restoreLayoutFromTable(layout)
                 return false
             end
 
-            local menu = libraries:list():columns():menu()
+            local menu = libraries:list():columns().menu
             if not menu then
                 log.ef("restoreLayoutFromTable: Failed to get the columns menu popup.")
                 return false
@@ -467,7 +467,7 @@ function mod.saveLayoutToTable()
             return false
         end
 
-        local menu = libraries:list():columns():menu()
+        local menu = libraries:list():columns().menu
         if not menu then
             log.ef("saveLayoutToTable: Failed to get the columns menu popup.")
             return false

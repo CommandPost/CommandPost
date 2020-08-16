@@ -396,7 +396,7 @@ function ColorPuck:start()
     --------------------------------------------------------------------------------
     -- Disable skimming while the ColorPuck is running:
     --------------------------------------------------------------------------------
-    self.menuBar = self:parent():app():menu()
+    self.menuBar = self:parent():app().menu
     if self:skimming() then
         self.menuBar:selectMenu({"View", "Skimming"})
     end

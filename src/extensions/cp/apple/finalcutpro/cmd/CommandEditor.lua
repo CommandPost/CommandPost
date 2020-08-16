@@ -162,8 +162,8 @@ end
 function CommandEditor:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menu():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
-            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+        if self:app().menu:isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
+            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
             just.doUntil(function() return self:UI() end)
         end
     end
@@ -182,7 +182,7 @@ end
 function CommandEditor:doShow()
     return If(self:app().isRunning):Then(
         If(self.isShowing):Is(false):Then(
-            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
         ):Then(
             WaitUntil(self.isShowing)
         ):Otherwise(true)

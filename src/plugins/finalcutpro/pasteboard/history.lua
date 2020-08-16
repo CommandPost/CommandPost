@@ -120,7 +120,7 @@ function mod.doPasteHistoryItem(index)
                 mod._manager.writeFCPXData(data, true)
             end)
             :Then(function()
-                return Do(fcp:menu():doSelectMenu({"Edit", "Paste"}))
+                return Do(fcp.menu:doSelectMenu({"Edit", "Paste"}))
                 :Then(function()
                     --------------------------------------------------------------------------------
                     -- Restore the original Pasteboard Contents:

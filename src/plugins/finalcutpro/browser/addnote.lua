@@ -139,7 +139,7 @@ function mod.addNoteToSelectedClips()
     if libraries:isFilmstripView() then
         filmstripView = true
         libraries:toggleViewMode()
-        if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end
+        if wasPlaying then fcp.menu:selectMenu({"View", "Playback", "Play"}) end
     end
 
     --------------------------------------------------------------------------------
@@ -310,7 +310,7 @@ function mod.addNoteToSelectedClips()
             libraries:toggleViewMode()
         end
 
-        if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end
+        if wasPlaying then fcp.menu:selectMenu({"View", "Playback", "Play"}) end
 
     end):bgDark(true):query(existingValue):queryChangedCallback(function()
         --------------------------------------------------------------------------------
