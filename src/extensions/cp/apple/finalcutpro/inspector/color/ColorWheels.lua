@@ -6,29 +6,30 @@
 
 local require = require
 
--- local log                               = require("hs.logger").new("colorWheels")
+--local log                           = require "hs.logger".new "colorWheels"
 
-local axutils                           = require("cp.ui.axutils")
-local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
+local axutils                       = require "cp.ui.axutils"
+local prop                          = require "cp.prop"
+local tools                         = require "cp.tools"
 
-local Element                           = require("cp.ui.Element")
-local MenuButton                        = require("cp.ui.MenuButton")
-local PropertyRow                       = require("cp.ui.PropertyRow")
-local RadioGroup                        = require("cp.ui.RadioGroup")
-local Slider                            = require("cp.ui.Slider")
-local TextField                         = require("cp.ui.TextField")
+local Element                       = require "cp.ui.Element"
+local MenuButton                    = require "cp.ui.MenuButton"
+local PropertyRow                   = require "cp.ui.PropertyRow"
+local RadioGroup                    = require "cp.ui.RadioGroup"
+local Slider                        = require "cp.ui.Slider"
+local TextField                     = require "cp.ui.TextField"
 
-local ColorWheel                        = require("cp.apple.finalcutpro.inspector.color.ColorWheel")
+local ColorWheel                    = require "cp.apple.finalcutpro.inspector.color.ColorWheel"
+local ColorCurve                    = require "cp.apple.finalcutpro.inspector.color.ColorCurve"
 
-local If                                = require("cp.rx.go.If")
+local If                            = require "cp.rx.go.If"
 
-local childMatching, cache              = axutils.childMatching, axutils.cache
+local childMatching, cache          = axutils.childMatching, axutils.cache
 
-local toRegionalNumber                  = tools.toRegionalNumber
-local toRegionalNumberString            = tools.toRegionalNumberString
+local toRegionalNumber              = tools.toRegionalNumber
+local toRegionalNumberString        = tools.toRegionalNumberString
 
-local CORRECTION_TYPE                   = "Color Wheels"
+local CORRECTION_TYPE               = "Color Wheels"
 
 local ColorWheels = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWheels")
 
@@ -46,7 +47,8 @@ function ColorWheels.static.matches(element)
     and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
     and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
         local scroll = element[1][1]
-        return childMatching(scroll, ColorWheel.matches) ~= nil
+        -- TODO: David probably will have a better solution for this:
+        return childMatching(scroll, ColorWheel.matches) ~= nil and not childMatching(scroll, ColorCurve.matches)
     end
     return false
 end
