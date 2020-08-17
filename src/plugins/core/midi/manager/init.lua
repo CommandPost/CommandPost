@@ -7,6 +7,7 @@ local require               = require
 local log                   = require "hs.logger".new "midiManager"
 
 local application           = require "hs.application"
+local applicationwatcher    = require "hs.application.watcher"
 local fnutils               = require "hs.fnutils"
 local midi                  = require "hs.midi"
 local timer                 = require "hs.timer"
@@ -31,17 +32,22 @@ local mod = {}
 --- The maximum number of MIDI items per bank.
 mod.maxItems = 100
 
---- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
+--- plugins.core.midi.manager.displayMessageWhenChangingBanks <cp.prop: boolean>
+--- Field
+--- Display message when changing banks?
+mod.displayMessageWhenChangingBanks = config.prop("midi.displayMessageWhenChangingBanks", true)
+
+--- plugins.core.midi.manager.activeBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeBanks = config.prop("midi.activeBanks", {})
 
---- plugins.core.loupedeckct.manager.activeLoupedeckBanks <cp.prop: table>
+--- plugins.core.midi.manager.activeLoupedeckBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeLoupedeckBanks = config.prop("loupedeck.activeBanks", {})
 
---- plugins.core.loupedeckct.manager.activeLoupedeckPlusBanks <cp.prop: table>
+--- plugins.core.midi.manager.activeLoupedeckPlusBanks <cp.prop: table>
 --- Field
 --- Table of active banks for each application.
 mod.activeLoupedeckPlusBanks = config.prop("loupedeckplus.activeBanks", {})
@@ -65,6 +71,11 @@ mod.defaultLoupedeckPlusLayout = json.read(config.basePath .. "/plugins/core/lou
 --- Variable
 --- Whether or not the MIDI Manager is in learning mode.
 mod.learningMode = false
+
+--- plugins.core.midi.manager.lastActiveBundleID -> string
+--- Variable
+--- The last Active Bundle ID. Used for AudioSwift workaround.
+mod.lastActiveBundleID = nil
 
 --- plugins.core.midi.manager.controls -> table
 --- Variable
@@ -136,7 +147,8 @@ local function convertPreferencesToMIDIActions()
             for bankID, bank in pairs(app) do
                 if type(bank) == "table" then
                     for _, button in pairs(bank) do
-                        if button.device and button.device ~= ""
+                        if button
+                            and button.device and button.device ~= ""
                             and button.channel and button.channel ~= ""
                             and button.commandType and button.commandType ~= ""
                             and button.commandType == "pitchWheelChange"
@@ -171,7 +183,8 @@ local function convertPreferencesToMIDIActions()
                                     midiActions[bundleID][bankID][button.device][button.channel][button.commandType]["handlerID"] = button.handlerID
                                 end
                             end
-                        elseif button.device and button.device ~= ""
+                        elseif button
+                            and button.device and button.device ~= ""
                             and button.channel and button.channel ~= ""
                             and button.commandType and button.commandType ~= ""
                             and button.number and button.number ~= ""
@@ -493,6 +506,13 @@ local function callback(_, deviceName, commandType, _, metadata)
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
 
+    --------------------------------------------------------------------------------
+    -- Don't ever use AudioSwift as the frontmost app:
+    --------------------------------------------------------------------------------
+    if bundleID == "com.nigelrios.AudioSwift" then
+        bundleID = mod.lastActiveBundleID
+    end
+
     local bankID
 
     if deviceName == "Loupedeck" then
@@ -717,6 +737,9 @@ end
 --- Returns:
 ---  * None
 function mod.start()
+
+    mod._appWatcher:start()
+
     if not mod._midiDevices then
         mod._midiDevices = {}
     end
@@ -805,6 +828,7 @@ function mod.stop()
         end
         mod._midiDevices = nil
     end
+    mod._appWatcher:start()
 end
 
 --- plugins.core.midi.manager.update() -> none
@@ -857,6 +881,18 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Watch for application changes for AudioSwift workaround:
+    --------------------------------------------------------------------------------
+    mod._appWatcher = applicationwatcher.new(function(appName, eventType, hsApp)
+        if eventType == applicationwatcher.activated then
+            if appName ~= "AudioSwift" then
+                mod.lastActiveBundleID = hsApp and hsApp:bundleID()
+            end
+        end
+    end)
+
     --------------------------------------------------------------------------------
     -- Migrate old preferences to newer format if 'Settings.cpMIDI' doesn't
     -- already exist, and if we haven't already upgraded previously:
@@ -1050,7 +1086,9 @@ function plugin.init(deps)
 
                 items = mod.items() -- Reload items
                 local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-                displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
+                if mod.displayMessageWhenChangingBanks() then
+                    displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
+                end
             end
         end)
         :onActionId(function(action) return "midiBank" .. action.id end)

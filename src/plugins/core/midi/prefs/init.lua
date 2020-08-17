@@ -1354,7 +1354,7 @@ function plugin.init(deps, env)
         label           = i18n("midi"),
         image           = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
         tooltip         = i18n("midi"),
-        height          = 800,
+        height          = 820,
         closeFn         = destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
@@ -1368,12 +1368,15 @@ function plugin.init(deps, env)
             {
                 label       = i18n("enableMIDI"),
                 checked     = mod._midi.enabled,
-                onchange    = function(_, params)
-                    --------------------------------------------------------------------------------
-                    -- Toggle Preference:
-                    --------------------------------------------------------------------------------
-                    mod._midi.enabled(params.checked)
-                end,
+                onchange    = function(_, params) mod._midi.enabled(params.checked) end,
+            }
+        )
+
+        :addCheckbox(3,
+            {
+                label       = i18n("displayMessageWhenChangingBanks"),
+                checked     = mod._midi.displayMessageWhenChangingBanks,
+                onchange    = function(_, params) mod._midi.displayMessageWhenChangingBanks(params.checked) end,
             }
         )
 
