@@ -3,7 +3,7 @@
 	function changeIgnore() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "changeIgnore",
 					application: document.getElementById("application").value,
@@ -19,7 +19,7 @@
 	function clickButton(callbackType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: callbackType,
 					application: document.getElementById("application").value,
@@ -35,7 +35,7 @@
 	function updateApplicationAndBank() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
@@ -51,7 +51,7 @@
 	function updateUI() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
@@ -89,7 +89,7 @@
 		}
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "changeControl",
 					application: document.getElementById("application").value,
@@ -108,7 +108,7 @@
 	function selectButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateAction",
 					application: document.getElementById("application").value,
@@ -125,7 +125,7 @@
 	function clearButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "clearAction",
 					application: document.getElementById("application").value,
@@ -142,7 +142,7 @@
 	function updateBankLabel() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateBankLabel",
 					application: document.getElementById("application").value,
@@ -190,14 +190,16 @@
 					{%
 					local atLeastOne = false
 					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
-						atLeastOne = true
-						local selected = ""
-						if lastApplication == id then
-							selected = [[selected=""]]
-						end
+						if id ~= "All Applications" then
+							atLeastOne = true
+							local selected = ""
+							if lastApplication == id then
+								selected = [[selected=""]]
+							end
 					%}
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{%
+						end
 					end
 					if atLeastOne then
 					%}
