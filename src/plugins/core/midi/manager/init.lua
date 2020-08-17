@@ -256,8 +256,8 @@ local function convertPreferencesToMIDIActions()
         ["Loupedeck+"]  = mod.loupedeckPlusItems(),
     }
 
-    for panelType, items in pairs(whichItems) do
-        for bundleID, app in pairs(items) do
+    for panelType, panelItems in pairs(whichItems) do
+        for bundleID, app in pairs(panelItems) do
             if type(app) == "table" then
                 for bankID, bank in pairs(app) do
                     if type(bank) == "table" then
