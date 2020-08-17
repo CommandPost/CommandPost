@@ -541,8 +541,8 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- Show the import preferences panel
             panel:show()
             ok(panel:isShowing())
-            ok(panel:createProxyMedia():isShowing())
-            ok(panel:createOptimizedMedia():isShowing())
+            ok(panel.createProxyMedia:isShowing())
+            ok(panel.createOptimizedMedia:isShowing())
             ok(panel:copyToMediaFolder():isShowing())
             ok(panel:leaveInPlace():isShowing())
             ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())
@@ -562,7 +562,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- Show the import preferences panel
             panel:show()
             ok(panel:isShowing())
-            ok(panel:createMulticamOptimizedMedia():isShowing())
+            ok(panel.createMulticamOptimizedMedia:isShowing())
             ok(panel:backgroundRender():isShowing())
 
             panel:hide()

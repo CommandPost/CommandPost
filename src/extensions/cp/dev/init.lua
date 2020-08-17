@@ -211,10 +211,12 @@ function mod.inspect(e, options)
             local result = ""
             for i=1,#e do
                 item = e[i]
-                result = result ..
-                         "\n= " .. string.format("%3d", i) ..
-                         " ========================================" ..
-                         mod.inspect(item, options)
+                if item ~= e then
+                    result = result ..
+                            "\n= " .. string.format("%3d", i) ..
+                            " ========================================" ..
+                            mod.inspect(item, options)
+                end
             end
             return result
         else

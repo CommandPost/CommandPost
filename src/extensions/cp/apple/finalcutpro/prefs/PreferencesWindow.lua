@@ -10,13 +10,14 @@ local require = require
 
 local axutils						= require "cp.ui.axutils"
 local just							= require "cp.just"
-local prop							= require "cp.prop"
 local go                            = require "cp.rx.go"
 local Dialog                        = require "cp.ui.Dialog"
 local Group                         = require "cp.ui.Group"
+local StaticText                    = require "cp.ui.StaticText"
 local Toolbar                       = require "cp.ui.Toolbar"
 
 local GeneralPanel                  = require "cp.apple.finalcutpro.prefs.GeneralPanel"
+local EditingPanel                  = require "cp.apple.finalcutpro.prefs.EditingPanel"
 local PlaybackPanel					= require "cp.apple.finalcutpro.prefs.PlaybackPanel"
 local ImportPanel					= require "cp.apple.finalcutpro.prefs.ImportPanel"
 
@@ -46,52 +47,65 @@ function PreferencesWindow:initialize(app)
     Dialog.initialize(self, app.app, UI)
 end
 
--- TODO: Add documentation
--- Returns the UI for the AXToolbar containing this panel's buttons
-function PreferencesWindow.lazy.prop:toolbarUI()
-    return UI:mutate(function(originalelf)
-        return cache(self, "_toolbar", function()
-            return childMatching(original(), Toolbar.matches)
-        end)
-    end)
-end
-
--- TODO: Add documentation
--- Returns the UI for the AXGroup containing this panel's elements
-function PreferencesWindow.lazy.prop:groupUI()
-    return UI:mutate(function(original)
-        return cache(self, "_group", function()
-            local group = childMatching(original(), Group.matches)
-            -- The group conains another single group that contains the actual checkboxes, etc.
-            return group and #group == 1 and group[1] or nil
-        end)
-    end)
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.title <cp.ui.StaticText>
+--- Field
+--- The `StaticText` for the Preferences Window title.
+function PreferencesWindow.lazy.value:title()
+    return StaticText(self, self.UI:mutate(function(original)
+        return cache(self, "_title", function()
+            return childMatching(original(), StaticText.matches)
+        end, StaticText.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.toolbar <cp.ui.Toolbar>
 --- Field
 --- The `Toolbar` for the Preferences Window.
 function  PreferencesWindow.lazy.value:toolbar()
-    return Toolbar(self, self.toolbarUI)
+    return Toolbar(self, self.UI:mutate(function(original)
+        return cache(self, "_toolbar", function()
+            return childMatching(original(), Toolbar.matches)
+        end)
+    end))
 end
 
--- TODO: Add documentation
-function PreferencesWindow.lazy.value:playbackPanel()
-    return PlaybackPanel.new(self)
-end
-
--- TODO: Add documentation
-function PreferencesWindow.lazy.value:importPanel()
-    return ImportPanel.new(self)
-end
-
--- TODO: Add documentation
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.generalPanel <GeneralPanel>
+--- Field
+--- The `GeneralPanel` for the Preferences Window.
 function PreferencesWindow.lazy.value:generalPanel()
-    return GeneralPanel.new(self)
+    return GeneralPanel(self)
 end
 
--- TODO: Add documentation
--- Ensures the PreferencesWindow is showing
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.editingPanel <EditingPanel>
+--- Field
+--- The `EditingPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:editingPanel()
+    return EditingPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.playbackPanel <PlaybackPanel>
+--- Field
+--- The `PlaybackPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:playbackPanel()
+    return PlaybackPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.importPanel <ImportPanel>
+--- Field
+--- The `ImportPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:importPanel()
+    return ImportPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:show() -> PreferencesWindow
+--- Method
+--- Attempts to show the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The same `PreferencesWindow`, for chaining.
 function PreferencesWindow:show()
     if not self:isShowing() then
         -- open the window
@@ -104,6 +118,15 @@ function PreferencesWindow:show()
     return self
 end
 
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:doShow() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that attempts to show the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
 function PreferencesWindow.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:app().menu:doSelectMenu({"Final Cut Pro", "Preferences…"})
@@ -112,7 +135,15 @@ function PreferencesWindow.lazy.method:doShow()
     )
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:hide() -> PreferencesWindow
+--- Method
+--- Attempts to hide the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The same `PreferencesWindow`, for chaining.
 function PreferencesWindow:hide()
     local hsWindow = self:hsWindow()
     if hsWindow then
@@ -123,6 +154,15 @@ function PreferencesWindow:hide()
     return self
 end
 
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:doHide() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that attempts to hide the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
 function PreferencesWindow.lazy.method:doHide()
     return If(self.isShowing)
     :Then(function()

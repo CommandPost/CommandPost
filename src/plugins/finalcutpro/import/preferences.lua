@@ -36,7 +36,7 @@ mod.createOptimizedMedia = fcp.preferences:prop("FFImportCreateOptimizeMedia", f
                 --------------------------------------------------------------------------------
                 local panel = fcp.preferencesWindow.importPanel
                 if panel:show():isShowing() then
-                    panel:createOptimizedMedia():toggle()
+                    panel.createOptimizedMedia:toggle()
                 else
                     dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
                 end
@@ -78,7 +78,7 @@ mod.createMulticamOptimizedMedia = fcp.preferences:prop("FFCreateOptimizedMediaF
                 --------------------------------------------------------------------------------
                 local panel = fcp.preferencesWindow.playbackPanel
                 if panel:show() then
-                    panel:createMulticamOptimizedMedia():toggle()
+                    panel.createMulticamOptimizedMedia:toggle()
                 else
                     dialog.displayErrorMessage("Failed to toggle 'Create Multicam Optimized Media'.\n\nError occurred in createMulticamOptimizedMedia().")
                 end
