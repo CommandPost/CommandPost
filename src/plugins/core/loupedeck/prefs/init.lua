@@ -1,4 +1,4 @@
---- === plugins.core.loupedeckplus.prefs ===
+--- === plugins.core.loupedeck.prefs ===
 ---
 --- Loupedeck+ Preferences Panel
 
@@ -38,40 +38,40 @@ local mod = {}
 -- The official Loupedeck App bundle identifier.
 local LD_BUNDLE_ID = "com.loupedeck.Loupedeck2"
 
---- plugins.core.loupedeckplus.prefs.lastApplication <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastApplication <cp.prop: string>
 --- Field
 --- Last application used in the Preferences Drop Down.
-mod.lastApplication = config.prop("loupedeckplus.preferences.lastApplication", "All Applications")
+mod.lastApplication = config.prop("loupedeck.preferences.lastApplication", "All Applications")
 
---- plugins.core.loupedeckplus.prefs.lastBank <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastBank <cp.prop: string>
 --- Field
 --- Last bank used in the Preferences Drop Down.
-mod.lastBank = config.prop("loupedeckplus.preferences.lastBank", "1")
+mod.lastBank = config.prop("loupedeck.preferences.lastBank", "1")
 
---- plugins.core.loupedeckplus.prefs.lastNote <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastNote <cp.prop: string>
 --- Field
 --- Last note used in the Preferences panel.
-mod.lastNote = config.prop("loupedeckplus.preferences.lastNote", "95")
+mod.lastNote = config.prop("loupedeck.preferences.lastNote", "95")
 
---- plugins.core.loupedeckplus.prefs.lastIsButton <cp.prop: boolean>
+--- plugins.core.loupedeck.prefs.lastIsButton <cp.prop: boolean>
 --- Field
 --- Whether or not the last selected item in the Preferences was a button.
-mod.lastIsButton = config.prop("loupedeckplus.preferences.lastIsButton", true)
+mod.lastIsButton = config.prop("loupedeck.preferences.lastIsButton", true)
 
---- plugins.core.loupedeckplus.prefs.lastLabel <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastLabel <cp.prop: string>
 --- Field
 --- Last label used in the Preferences panel.
-mod.lastLabel = config.prop("loupedeckplus.preferences.lastLabel", "Undo")
+mod.lastLabel = config.prop("loupedeck.preferences.lastLabel", "Undo")
 
---- plugins.core.loupedeckplus.prefs.lastExportPath <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastExportPath <cp.prop: string>
 --- Field
 --- Last Export path.
-mod.lastExportPath = config.prop("loupedeckplus.preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
+mod.lastExportPath = config.prop("loupedeck.preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
 
---- plugins.core.loupedeckplus.prefs.lastImportPath <cp.prop: string>
+--- plugins.core.loupedeck.prefs.lastImportPath <cp.prop: string>
 --- Field
 --- Last Import path.
-mod.lastImportPath = config.prop("loupedeckplus.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
+mod.lastImportPath = config.prop("loupedeck.preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
 
 -- renderPanel(context) -> none
 -- Function
@@ -229,7 +229,7 @@ local function updateUI()
     injectScript(script)
 end
 
--- loupedeckPlusPanelCallback() -> none
+-- loupedeckPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
 --
@@ -239,7 +239,7 @@ end
 --
 -- Returns:
 --  * None
-local function loupedeckPlusPanelCallback(id, params)
+local function loupedeckPanelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
@@ -433,21 +433,14 @@ local function loupedeckPlusPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Change the bank:
                 --------------------------------------------------------------------------------
-                local activeBanks = mod._midi.activeLoupedeckPlusBanks()
-
-                log.df("bank: %s", bank)
-
-                log.df("before: %s", hs.inspect(activeBanks))
+                local activeBanks = mod._midi.activeLoupedeckBanks()
 
                 -- Remove the 'fn':
                 if string.sub(bank, -2) == "fn" then
                     bank = string.sub(bank, 1, -3)
                 end
                 activeBanks[app] = bank
-
-                log.df("before: %s", hs.inspect(activeBanks))
-
-                mod._midi.activeLoupedeckPlusBanks(activeBanks)
+                mod._midi.activeLoupedeckBanks(activeBanks)
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
@@ -615,7 +608,7 @@ local function loupedeckPlusPanelCallback(id, params)
             --------------------------------------------------------------------------------
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
-                    local default = copy(mod._midi.defaultLoupedeckPlusLayout)
+                    local default = copy(mod._midi.defaultLoupedeckLayout)
                     mod.items(default)
 
                     updateUI()
@@ -631,7 +624,7 @@ local function loupedeckPlusPanelCallback(id, params)
 
                     local items = mod.items()
 
-                    local default = mod._midi.defaultLoupedeckPlusLayout[app] or {}
+                    local default = mod._midi.defaultLoupedeckLayout[app] or {}
                     items[app] = copy(default)
 
                     mod.items(items)
@@ -654,7 +647,7 @@ local function loupedeckPlusPanelCallback(id, params)
                     if not items[app] then items[app] = {} end
                     if not items[app][bank] then items[app][bank] = {} end
 
-                    local default = mod._midi.defaultLoupedeckPlusLayout[app] and mod._midi.defaultLoupedeckPlusLayout[app][bank] or {}
+                    local default = mod._midi.defaultLoupedeckLayout[app] and mod._midi.defaultLoupedeckLayout[app][bank] or {}
                     items[app][bank] = copy(default)
 
                     mod.items(items)
@@ -780,7 +773,7 @@ local function loupedeckPlusPanelCallback(id, params)
 end
 
 local plugin = {
-    id              = "core.loupedeckplus.prefs",
+    id              = "core.loupedeck.prefs",
     group           = "core",
     dependencies    = {
         ["core.controlsurfaces.manager"]    = "manager",
@@ -801,8 +794,8 @@ function plugin.init(deps, env)
     mod._actionmanager  = deps.actionmanager
     mod._env            = env
 
-    mod.items           = mod._midi.loupedeckPlusItems
-    mod.enabled         = mod._midi.enabledLoupedeckPlus
+    mod.items           = mod._midi.loupedeckItems
+    mod.enabled         = mod._midi.enabledLoupedeck
 
     mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
 
@@ -811,23 +804,23 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     local global = deps.global
     global
-        :add("enableLoupedeckPlus")
+        :add("enableLoupedeck")
         :whenActivated(function()
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckPlusSupport"))
+        :titled(i18n("enableLoupedeckSupport"))
 
     global
-        :add("disableLoupedeckPlus")
+        :add("disableLoupedeck")
         :whenActivated(function()
             mod.enabled(false)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("disableLoupedeckPlusSupport"))
+        :titled(i18n("disableLoupedeckSupport"))
 
     global
-        :add("disableLoupedeckPlusandLaunchLoupedeckApp")
+        :add("disableLoupedeckAndLaunchLoupedeckApp")
         :whenActivated(function()
             mod.enabled(false)
             launchOrFocusByBundleID(LD_BUNDLE_ID)
@@ -836,7 +829,7 @@ function plugin.init(deps, env)
         :titled(i18n("disableLoupedeckPlusSupportAndLaunchLoupedeckApp"))
 
     global
-        :add("enableLoupedeckPlusandKillLoupedeckApp")
+        :add("enableLoupedeckSupportQuitLoupedeckApp")
         :whenActivated(function()
             local apps = applicationsForBundleID(LD_BUNDLE_ID)
             if apps then
@@ -847,23 +840,23 @@ function plugin.init(deps, env)
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckPlusSupportQuitLoupedeckApp"))
+        :titled(i18n("enableLoupedeckSupportQuitLoupedeckApp"))
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033,
-        id              = "loupedeckplus",
-        label           = i18n("loupedeckPlus"),
+        id              = "loupedeck",
+        label           = i18n("loupedeck"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
-        tooltip         = i18n("loupedeckPlus"),
+        tooltip         = i18n("loupedeck"),
         height          = 910,
     })
-        :addHeading(6, i18n("loupedeckPlus"))
+        :addHeading(6, "Loupedeck+")
         :addCheckbox(7,
             {
-                label       = i18n("enableLoupedeckPlusSupport"),
+                label       = i18n("enableLoupdeckSupport"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
@@ -875,7 +868,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
-    mod._panel:addHandler("onchange", "loupedeckPlusPanelCallback", loupedeckPlusPanelCallback)
+    mod._panel:addHandler("onchange", "loupedeckPanelCallback", loupedeckPanelCallback)
 
     return mod
 end
