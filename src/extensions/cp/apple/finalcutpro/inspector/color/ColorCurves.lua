@@ -17,23 +17,24 @@
 
 local require = require
 
--- local log                               = require("hs.logger").new("colorCurves")
+-- local log                               = require "hs.logger".new("colorCurves")
 
-local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
+local prop                              = require "cp.prop"
+local tools                             = require "cp.tools"
 
-local axutils                           = require("cp.ui.axutils")
-local CheckBox                          = require("cp.ui.CheckBox")
-local Element                           = require("cp.ui.Element")
-local MenuButton                        = require("cp.ui.MenuButton")
-local PropertyRow						= require("cp.ui.PropertyRow")
-local RadioGroup						= require("cp.ui.RadioGroup")
-local Slider							= require("cp.ui.Slider")
-local TextField                         = require("cp.ui.TextField")
+local axutils                           = require "cp.ui.axutils"
+local CheckBox                          = require "cp.ui.CheckBox"
+local Group                             = require "cp.ui.Group"
+local MenuButton                        = require "cp.ui.MenuButton"
+local PropertyRow						= require "cp.ui.PropertyRow"
+local RadioGroup						= require "cp.ui.RadioGroup"
+local ScrollArea                        = require "cp.ui.ScrollArea"
+local Slider							= require "cp.ui.Slider"
+local TextField                         = require "cp.ui.TextField"
 
-local If                                = require("cp.rx.go.If")
+local If                                = require "cp.rx.go.If"
 
-local ColorCurve                        = require("cp.apple.finalcutpro.inspector.color.ColorCurve")
+local ColorCurve                        = require "cp.apple.finalcutpro.inspector.color.ColorCurve"
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 
@@ -42,7 +43,7 @@ local toRegionalNumberString            = tools.toRegionalNumberString
 
 local CORRECTION_TYPE                   = "Color Curves"
 
-local ColorCurves = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorCurves")
+local ColorCurves = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorCurves")
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves.matches(element)
 --- Function
@@ -54,9 +55,8 @@ local ColorCurves = Element:subclass("cp.apple.finalcutpro.inspector.color.Color
 --- Returns:
 --- * `true` if the element is the Color Curves.
 function ColorCurves.static.matches(element)
-    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
-    and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
-    and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
+    if Group.matches(element) and #element == 1 and Group.matches(element[1])
+    and #element[1] == 1 and ScrollArea.matches(element[1][1]) then
         local scroll = element[1][1]
         return childMatching(scroll, ColorCurve.matches) ~= nil
     end
@@ -81,7 +81,7 @@ function ColorCurves:initialize(parent)
         end, ColorCurves.matches)
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
 
     PropertyRow.prepareParent(self, self.contentUI)
 

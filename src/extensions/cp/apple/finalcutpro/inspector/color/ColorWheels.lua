@@ -12,15 +12,15 @@ local axutils                       = require "cp.ui.axutils"
 local prop                          = require "cp.prop"
 local tools                         = require "cp.tools"
 
-local Element                       = require "cp.ui.Element"
+local Group                         = require "cp.ui.Group"
 local MenuButton                    = require "cp.ui.MenuButton"
 local PropertyRow                   = require "cp.ui.PropertyRow"
 local RadioGroup                    = require "cp.ui.RadioGroup"
+local ScrollArea                    = require "cp.ui.ScrollArea"
 local Slider                        = require "cp.ui.Slider"
 local TextField                     = require "cp.ui.TextField"
 
 local ColorWheel                    = require "cp.apple.finalcutpro.inspector.color.ColorWheel"
-local ColorCurve                    = require "cp.apple.finalcutpro.inspector.color.ColorCurve"
 
 local If                            = require "cp.rx.go.If"
 
@@ -31,7 +31,7 @@ local toRegionalNumberString        = tools.toRegionalNumberString
 
 local CORRECTION_TYPE               = "Color Wheels"
 
-local ColorWheels = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWheels")
+local ColorWheels = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorWheels")
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
@@ -43,12 +43,10 @@ local ColorWheels = Element:subclass("cp.apple.finalcutpro.inspector.color.Color
 --- Returns:
 --- * `true` if the element is the Color Wheels.
 function ColorWheels.static.matches(element)
-    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
-    and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
-    and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
+    if Group.matches(element) and #element == 1 and Group.matches(element[1])
+    and #element[1] == 1 and ScrollArea.matches(element[1][1]) then
         local scroll = element[1][1]
-        -- TODO: David probably will have a better solution for this:
-        return childMatching(scroll, ColorWheel.matches) ~= nil and not childMatching(scroll, ColorCurve.matches)
+        return childMatching(scroll, ColorWheel.matches) ~= nil
     end
     return false
 end
@@ -71,7 +69,7 @@ function ColorWheels:initialize(parent)
         end, ColorWheels.matches)
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
     self._child = {}
 
     -- mark this as being able to contain `PropertyRow` values.

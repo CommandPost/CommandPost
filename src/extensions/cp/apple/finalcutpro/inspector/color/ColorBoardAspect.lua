@@ -4,19 +4,18 @@
 
 local require = require
 
-local inspect                   = require("hs.inspect")
+local inspect                   = require "hs.inspect"
 
-local ColorPuck                 = require("cp.apple.finalcutpro.inspector.color.ColorPuck")
-local Element                   = require("cp.ui.Element")
-local just                      = require("cp.just")
+local ColorPuck                 = require "cp.apple.finalcutpro.inspector.color.ColorPuck"
+local Group                     = require "cp.ui.Group"
+local just                      = require "cp.just"
 
-local go                        = require("cp.rx.go")
+local go                        = require "cp.rx.go"
 local If, Do, Throw, WaitUntil  = go.If, go.Do, go.Throw, go.WaitUntil
 
 local format = string.format
 
-
-local ColorBoardAspect = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
+local ColorBoardAspect = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.ids -> table
 --- Constant
@@ -33,7 +32,7 @@ ColorBoardAspect.static.ids = {"color", "saturation", "exposure"}
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function ColorBoardAspect.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
+    return Group.matches(element)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect(parent, index[, hasAngle]) -> ColorBoardAspect
@@ -63,7 +62,7 @@ function ColorBoardAspect:initialize(parent, index, hasAngle)
         end
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean

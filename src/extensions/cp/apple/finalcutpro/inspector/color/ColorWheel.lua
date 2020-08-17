@@ -4,19 +4,21 @@
 
 local require = require
 
--- local log                               = require("hs.logger").new("colorWheel")
+-- local log                               = require "hs.logger".new("colorWheel")
 
-local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
+local axutils							= require "cp.ui.axutils"
+local Group                             = require "cp.ui.Group"
 
-local ColorWell							= require("cp.apple.finalcutpro.inspector.color.ColorWell")
-local ValueIndicator					= require("cp.apple.finalcutpro.inspector.color.ValueIndicator")
-local Button							= require("cp.ui.Button")
+local ColorWell							= require "cp.apple.finalcutpro.inspector.color.ColorWell"
+local ValueIndicator					= require "cp.apple.finalcutpro.inspector.color.ValueIndicator"
+local Button							= require "cp.ui.Button"
 
-local Do                                = require("cp.rx.go.Do")
-local If                                = require("cp.rx.go.If")
+local Do                                = require "cp.rx.go.Do"
+local If                                = require "cp.rx.go.If"
 
-local ColorWheel = Element:subclass("cp.apple.finalcutpro.inspector.color.ColorWheel")
+local childMatching                     = axutils.childMatching
+
+local ColorWheel = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.TYPE
 --- Constant
@@ -43,8 +45,9 @@ ColorWheel.static.HUE_SHIFT = 4183333/6000000
 --- Returns:
 --- * `true` if the element is a Color Well.
 function ColorWheel.static.matches(element)
-    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup" and #element == 4 then
-        return axutils.childMatching(element, ColorWell.matches) ~= nil
+    if Group.matches(element) and #element == 4 then
+        return childMatching(element, ValueIndicator.matches) ~= nil
+        and childMatching(element, ColorWell.matches) ~= nil
     end
     return false
 end
@@ -87,7 +90,7 @@ function ColorWheel:initialize(parent, type)
         end, ColorWheel.matches)
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
 
     self._type = type
 end
