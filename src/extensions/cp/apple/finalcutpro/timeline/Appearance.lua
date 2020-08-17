@@ -86,7 +86,7 @@ function Appearance:hide()
     return self
 end
 
-function Appearance:doHide()
+function Appearance.lazy.method:doHide()
     return If(self.UI)
     :Then(function(ui)
         ui:doCancel()
