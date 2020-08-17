@@ -2,17 +2,66 @@
 ---
 --- Keyword Editor Module.
 
-local require       = require
+local require               = require
 
-local log           = require "hs.logger".new "keywordEditor"
+-- local log                   = require "hs.logger".new "keywordEditor"
 
-local axutils       = require "cp.ui.axutils"
-local just          = require "cp.just"
-local prop          = require "cp.prop"
+local axutils               = require "cp.ui.axutils"
+local Button                = require "cp.ui.Button"
+local Dialog                = require "cp.ui.Dialog"
+local DisclosureTriangle    = require "cp.ui.DisclosureTriangle"
 
-local KeywordEditor = {}
+local KeywordField          = require "cp.apple.finalcutpro.main.KeywordField"
 
---- cp.apple.finalcutpro.main.KeywordEditor.new(parent) -> KeywordEditor object
+local cache                 = axutils.cache
+local childFromTop          = axutils.childFromTop
+local childMatching         = axutils.childMatching
+local childrenBelow         = axutils.childrenBelow
+local childrenMatching      = axutils.childrenMatching
+
+local insert                = table.insert
+
+local KeywordEditor = Dialog:subclass("cp.apple.finalcutpro.main.KeywordEditor")
+
+--- cp.apple.finalcutpro.main.KeywordEditor.NUMBER_OF_SHORTCUTS -> number
+--- Constant
+--- The number of Keyword Keyboard shortcuts available.
+KeywordEditor.static.NUMBER_OF_SHORTCUTS = 9
+
+--- cp.apple.finalcutpro.main.KeywordEditor.matches(element) -> boolean
+--- Function
+--- Checks to see if an `hs._asm.axuielement` object matches a Keyword Editor window
+---
+--- Parameters:
+---  * element - the `hs._asm.axuielement` object you want to check
+---
+--- Returns:
+---  * `true` if a match otherwise `false`
+function KeywordEditor.static.matches(element)
+    if Dialog.matches(element) then
+        local childCount = element:attributeValueCount("AXChildren")
+        return childCount == 6 or childCount == 26
+    end
+    return false
+end
+
+-- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs._asm.axuielement object | nil
+-- Function
+-- Finds the Keyword Editor window.
+--
+-- Parameters:
+--  * windows - a table of `hs._asm.axuielement` object to search
+--
+-- Returns:
+--  * A `hs._asm.axuielement` object if succesful otherwise `nil`
+local function _findWindowUI(windows)
+    for _,window in ipairs(windows) do
+        if KeywordEditor.matches(window) then return window end
+    end
+    return nil
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor(parent) -> KeywordEditor object
 --- Constructor
 --- Creates a new KeywordEditor object
 ---
@@ -21,12 +70,20 @@ local KeywordEditor = {}
 ---
 --- Returns:
 ---  * A KeywordEditor object
-function KeywordEditor.new(parent)
-    local o = {
-        _parent = parent,
-        _child = {}
-    }
-    return prop.extend(o, KeywordEditor)
+function KeywordEditor:initialize(parent)
+    self._child = {}
+
+    self._parent = parent
+
+    local UI = parent.windowsUI:mutate(function(original)
+        return cache(self, "_ui", function()
+            local windowsUI = original()
+            return windowsUI and _findWindowUI(windowsUI)
+        end,
+        KeywordEditor.matches)
+    end)
+
+    Dialog.initialize(self, parent.app, UI)
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor:parent() -> table
@@ -42,106 +99,21 @@ function KeywordEditor:parent()
     return self._parent
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function KeywordEditor:app()
-    return self:parent():app()
+-- Access to the `PrimaryToolbar`
+function KeywordEditor.lazy.value:_toolbar()
+    return self:parent().primaryWindow.toolbar
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor:toolbarCheckBoxUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Keyword Editor button in the toolbar
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function KeywordEditor:toolbarCheckBoxUI()
-    return axutils.cache(self, "_toolbarCheckBoxUI", function()
-        local primaryWindowUI = self:parent().primaryWindow:UI()
-        if not primaryWindowUI then return nil end
-
-        local toolbar = axutils.childWithRole(primaryWindowUI, "AXToolbar")
-        if not toolbar then return nil end
-
-        local group = axutils.childWithRole(toolbar, "AXGroup")
-        if not group then return nil end
-
-        local checkBox = axutils.childWithRole(group, "AXCheckBox")
-        return checkBox
-    end)
+-- Access to the Keyword Editor CheckBox on the PrimaryToolbar
+function KeywordEditor.lazy.value:_keywordEditor()
+    return self._toolbar.keywordEditor
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor.matches(element) -> boolean
---- Function
---- Checks to see if an `hs._asm.axuielement` object matches a Keyword Editor window
----
---- Parameters:
----  * element - the `hs._asm.axuielement` object you want to check
----
---- Returns:
----  * `true` if a match otherwise `false`
-function KeywordEditor.matches(element)
-    if element then
-        return element:attributeValue("AXSubrole") == "AXDialog"
-           and element:attributeValueCount("AXChildren") == 6 or element:attributeValueCount("AXChildren") == 26
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Keyword Editor window
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function KeywordEditor:UI()
-    return axutils.cache(self, "_ui", function()
-        local windowsUI = self:parent():windowsUI()
-        return windowsUI and self._findWindowUI(windowsUI)
-    end,
-    KeywordEditor.matches)
-end
-
--- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs._asm.axuielement object | nil
--- Function
--- Finds the Keyword Editor window.
---
--- Parameters:
---  * windows - a table of `hs._asm.axuielement` object to search
---
--- Returns:
---  * A `hs._asm.axuielement` object if succesful otherwise `nil`
-function KeywordEditor._findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if KeywordEditor.matches(window) then return window end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor:isShowing() -> boolean
---- Method
---- Gets whether or not the Keyword Editor is currently showing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing otherwise `false`
-function KeywordEditor:isShowing()
-    local checkBox = self:toolbarCheckBoxUI()
-    return checkBox and checkBox:attributeValue("AXValue") == 1
+--- cp.apple.finalcutpro.main.KeywordEditor.isShowing <cp.prop: boolean; live?>
+--- Field
+--- Indicates whether or not the Keyword Editor is currently showing.
+function KeywordEditor.lazy.prop:isShowing()
+    return self._keywordEditor.checked
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor:show() -> boolean
@@ -155,14 +127,20 @@ end
 ---  * KeywordEditor object
 ---  * `true` if successful otherwise `false`
 function KeywordEditor:show()
-    local checkBox = self:toolbarCheckBoxUI()
-    if checkBox and checkBox:attributeValue("AXValue") == 0 then
-        local result = checkBox:performAction("AXPress")
-        if result then
-            return self, true
-        end
-    end
-    return self, false
+    return self, self:isShowing(true)
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor:doShow() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that shows the Keyword Editor.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`
+function KeywordEditor.lazy.method:doShow()
+    return self._keywordEditor:doCheck()
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor:hide() -> boolean
@@ -176,355 +154,137 @@ end
 ---  * KeywordEditor object
 ---  * `true` if successful otherwise `false`
 function KeywordEditor:hide()
-    local checkBox = self:toolbarCheckBoxUI()
-    if checkBox and checkBox:attributeValue("AXValue") == 1 then
-        if checkBox:performAction("AXPress") then
-            return self, true
-        end
-    end
-    return self, false
+    return self, not self:isShowing(false)
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor:keyword(value) -> string | table | nil
+--- cp.apple.finalcutpro.main.KeywordEditor:doHide() -> cp.rx.go.Statement
 --- Method
---- Sets or gets the main Keyword Textbox value.
+--- A `Statement` that hides the Keyword Editor.
 ---
 --- Parameters:
----  * value - The value you want to set the keyword textbox to. This can either be a string, with the tags separated by a comma, or a table of tags.
+---  * None
 ---
 --- Returns:
----  * `value` if successful otherwise `false`
-function KeywordEditor:keyword(value)
-    local ui = self:UI()
-    if type(value) == "nil" then
-        --------------------------------------------------------------------------------
-        -- Getter:
-        --------------------------------------------------------------------------------
-        local result = {}
-        if ui then
-            local textbox = axutils.childWithRole(ui, "AXTextField")
-            if textbox then
-                local children = textbox:attributeValue("AXChildren")
-                for _, child in ipairs(children) do
-                    table.insert(result, child:attributeValue("AXValue"))
-                end
-                return result
-            end
-        end
-        log.ef("Could not get Keyword.")
-        return false
-    else
-        --------------------------------------------------------------------------------
-        -- Setter:
-        --------------------------------------------------------------------------------
-        if ui then
-            local textbox = axutils.childWithRole(ui, "AXTextField")
-            if textbox then
-                if type(value) == "string" then
-                    if textbox:setAttributeValue("AXValue", value) then
-                        if textbox:performAction("AXConfirm") then
-                            return value
-                        end
-                    end
-                elseif type(value) == "table" and #value >= 1 then
-                    local result = table.concat(value, ", ")
-                    if result and textbox:setAttributeValue("AXValue", result) then
-                        if textbox:performAction("AXConfirm") then
-                            return value
-                        end
-                    end
-                end
-            end
-        end
-        log.ef("Could not set Keyword.")
-        return false
-    end
+---  * The `Statement`
+function KeywordEditor.lazy.method:doHide()
+    return self._keywordEditor:doUncheck()
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor:removeKeyword(keyword) -> boolean
---- Method
---- Removes a keyword from the main Keyword Textbox.
----
---- Parameters:
----  * keyword - The keyword you want to remove as a string.
----
---- Returns:
----  * `true` if successful otherwise `false`
-function KeywordEditor:removeKeyword(keyword)
-    if type(keyword) ~= "string" then
-        log.ef("Keyword is invalid.")
-        return false
-    end
-    local ui = self:UI()
+--- cp.apple.finalcutpro.main.KeywordEditor.keywords <cp.ui.TextField>
+--- Field
+--- A `TextField` that contains the current keywords. The value is a `table` of `string` values for each individual keyword.
+function KeywordEditor.lazy.value:keywords()
+    return KeywordField(self, self.UI:mutate(function(original)
+        return childFromTop(original(), 1, KeywordField.matches)
+    end))
+end
+
+
+--- cp.apple.finalcutpro.main.KeywordEditor.keyboardShortcuts <cp.ui.DisclosureWindow>
+--- Field
+--- The `DisclosureTriangle` that shows/hides the keyboard shortcuts configuration.
+function KeywordEditor.lazy.value:keyboardShortcuts()
+    return DisclosureTriangle(self, self.UI:mutate(function(original)
+        return childMatching(original(), DisclosureTriangle.matches)
+    end))
+end
+
+function KeywordEditor.lazy.prop:_shortcutsUI()
+    return self.UI:mutate(function(original)
+        return childrenBelow(original(), self.keyboardShortcuts:UI())
+    end)
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor.shortcutFields <table of KeywordField>
+--- Field
+--- The list of keyboard shortcut `KeywordField`s. The field for `Cmd+1` is accessed via `shortcutFields[1]`, and so on.
+function KeywordEditor.lazy.value:shortcutFields()
     local result = {}
-    if ui then
-        local textbox = axutils.childWithRole(ui, "AXTextField")
-        if textbox then
-            local children = textbox:attributeValue("AXChildren")
-            local found = false
-            for _, child in ipairs(children) do
-                local value = child:attributeValue("AXValue")
-                if keyword ~= value then
-                    table.insert(result, value)
-                else
-                    found = true
-                end
+
+    local shortcutsUI = self._shortcutsUI
+
+    for i=1,9 do
+        insert(result, KeywordField(self, shortcutsUI:mutate(function(original)
+            local fields = childrenMatching(original(), KeywordField.matches)
+            if fields and #fields >= KeywordEditor.NUMBER_OF_SHORTCUTS then
+                return fields[i]
             end
-            if not found then
-                log.ef("Could not find keyword to remove: %s", keyword)
-                return false
+        end)):forceFocus())
+    end
+
+    return result
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor.shortcutButtons <table of cp.ui.Button>
+--- Field
+--- The list of keyboard shortcut `Button`s. The button for `Cmd+1` is accessed via `shortcutButtons[1]`, and so on.
+function KeywordEditor.lazy.value:shortcutButtons()
+    local result = {}
+
+    local shortcutsUI = self._shortcutsUI
+
+    for i=1,9 do
+        insert(result, Button(self, shortcutsUI:mutate(function(original)
+            local buttons = childrenMatching(original(), Button.matches)
+            if buttons and #buttons >= KeywordEditor.NUMBER_OF_SHORTCUTS then
+                return buttons[i]
             end
-            local resultString = table.concat(result, ", ")
-            if resultString and textbox:setAttributeValue("AXValue", resultString) then
-                if textbox:performAction("AXConfirm") then
-                    return true
-                end
+        end)))
+    end
+
+    return result
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor.resetButton <cp.ui.Button>
+--- Field
+--- The `Button` that resets the current keywords to blank.
+function KeywordEditor.lazy.value:resetButton()
+    return Button(self, self.UI:mutate(function(original)
+        return cache(self, "_resetButton", function()
+            local buttonsUI = childrenMatching(childrenBelow(original(), self.keyboardShortcuts:UI()), Button.matches)
+            if buttonsUI and #buttonsUI > KeywordEditor.NUMBER_OF_SHORTCUTS then
+                return buttonsUI[10]
             end
+        end, Button.matches)
+    end))
+end
+
+function KeywordEditor:saveShortcuts()
+    local fcp = self:parent()
+    local result = {}
+    local keywordGroups = fcp.preferences.FFKeywordGroups
+    if keywordGroups and #keywordGroups == KeywordEditor.NUMBER_OF_SHORTCUTS then
+        for _,value in ipairs(keywordGroups) do
+            insert(result, value)
         end
     end
-    log.ef("Could not find UI.")
-    return false
+    return result
 end
 
---------------------------------------------------------------------------------
---
--- KEYBOARD SHORTCUTS:
---
---------------------------------------------------------------------------------
+function KeywordEditor:loadShortcuts(data)
+    local wasShowing = self:isShowing()
 
---- === cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts ===
----
---- Keyboard Shortcuts
+    self:show()
 
-local KeyboardShortcuts = {}
+    if self:isShowing() then
+        local wasShortcutsOpened = self.keyboardShortcuts:opened()
 
-function KeywordEditor:keyboardShortcuts()
-    return KeyboardShortcuts.new(self)
-end
+        self.keyboardShortcuts:opened(true)
 
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts.new(parent) -> KeyboardShortcuts
---- Constructor
---- Creates a new `KeyboardShortcuts` object
----
---- Parameters:
----  * parent - The parent object.
----
---- Returns:
----  * A `KeyboardShortcuts` object
-function KeyboardShortcuts.new(parent)
-    local o = {
-        _parent = parent,
-        _child = {}
-    }
-    return prop.extend(o, KeyboardShortcuts)
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:parent() -> table
---- Method
---- Returns the KeywordShortcuts's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function KeyboardShortcuts:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:isShowing() -> boolean
---- Method
---- Gets whether or not the Keyword Editor's Keyboard Shortcuts section is currently showing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing otherwise `false`
-function KeyboardShortcuts:isShowing()
-    local ui = self:parent():UI()
-    local disclosureTriangle = axutils.childWithRole(ui, "AXDisclosureTriangle")
-    return disclosureTriangle and disclosureTriangle:attributeValue("AXValue") == 1
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:show() -> boolean
---- Method
---- Shows the Keyword Editor's Keyboard Shortcuts section.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful otherwise `false`
-function KeyboardShortcuts:show()
-    local ui = self:parent():UI()
-    local disclosureTriangle = axutils.childWithRole(ui, "AXDisclosureTriangle")
-    if disclosureTriangle:attributeValue("AXValue") == 0 then
-        if disclosureTriangle:performAction("AXPress") then
-            return true
-        end
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:hide() -> boolean
---- Method
---- Hides the Keyword Editor's Keyboard Shortcuts section.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful otherwise `false`
-function KeyboardShortcuts:hide()
-    local ui = self:parent():UI()
-    local disclosureTriangle = axutils.childWithRole(ui, "AXDisclosureTriangle")
-    if disclosureTriangle:attributeValue("AXValue") == 1 then
-        if disclosureTriangle:performAction("AXPress") then
-            return true
-        end
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:keyword(item, value) -> string | table | nil
---- Method
---- Sets or gets a specific Keyboard Shortcut Keyword Textbox value.
----
---- Parameters:
----  * item - The textbox you want to update. This can be a number between 1 and 9.
----  * value - The value you want to set the keyword textbox to. This can either be a string, with the tags separated by a comma, or a table of tags.
----
---- Returns:
----  * `value` if successful otherwise `false`
-function KeyboardShortcuts:keyword(item, value)
-    if not item or type(item) ~= "number" or item < 1 or item > 9 then
-        log.ef("The keyboard shortcuts item must be between 1 and 9.")
-        return nil
-    end
-    item = item + 1
-    if not self:isShowing() then
-        self:show()
-    end
-    local ui = self:parent():UI()
-    if ui then
-        local textfields = axutils.childrenWith(ui, "AXRole", "AXTextField")
-        if textfields and #textfields == 10 then
-            if type(value) == "nil" then
-                --------------------------------------------------------------------------------
-                -- Getter:
-                --------------------------------------------------------------------------------
-                local result = {}
-                if #textfields[item]:attributeValue("AXChildren") > 0 then
-                    local children = textfields[item]:attributeValue("AXChildren")
-                    for _, child in ipairs(children) do
-                        table.insert(result, child:attributeValue("AXValue"))
-                    end
-                    return result
-                end
-                return {}
-            elseif type(value) == "string" then
-                --------------------------------------------------------------------------------
-                -- String Setter:
-                --------------------------------------------------------------------------------
-                textfields[1]:setAttributeValue("AXFocused", true)
-                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
-
-                textfields[item]:setAttributeValue("AXFocused", true)
-                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
-
-                if textfields[item]:setAttributeValue("AXValue", value) then
-                    if textfields[item]:performAction("AXConfirm") then
-                        textfields[1]:setAttributeValue("AXFocused", true)
-                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
-
-                        return value
-                    end
-                end
-            elseif type(value) == "table" then
-                --------------------------------------------------------------------------------
-                -- Table Setter:
-                --------------------------------------------------------------------------------
-                local result = ""
-                for _, v in pairs(value) do
-                    result = result .. v .. ", "
-                end
-
-                textfields[1]:setAttributeValue("AXFocused", true)
-                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
-
-                textfields[item]:setAttributeValue("AXFocused", true)
-                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
-
-                if textfields[item]:setAttributeValue("AXValue", result) then
-                    if textfields[item]:performAction("AXConfirm") then
-                        textfields[1]:setAttributeValue("AXFocused", true)
-                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
-                        return value
-                    end
-                end
-            end
-            log.ef("Failed to set Keyword.")
-            return false
-        end
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:apply(item) -> boolean
---- Method
---- Applies a Keyword Shortcut.
----
---- Parameters:
----  * item - The textbox you want to update. This can be a number between 1 and 9.
----
---- Returns:
----  * `true` if successful otherwise `false`
-function KeyboardShortcuts:apply(item)
-    if not item or type(item) ~= "number" or item < 1 or item > 9 then
-        log.ef("The keyboard shortcuts item must be between 1 and 9.")
-        return false
-    end
-    if not self:isShowing() then
-        self:show()
-    end
-    local ui = self:parent():UI()
-    if ui then
-        local buttons = axutils.childrenWith(ui, "AXRole", "AXButton")
-        if buttons and #buttons == 11 then
-            if buttons[item]:performAction("AXPress") then
-                return true
+        if self.keyboardShortcuts:opened() then
+            for i=1,KeywordEditor.NUMBER_OF_SHORTCUTS do
+                self.shortcutFields[i].value:set(data[i])
             end
         end
-    end
-    log.ef("Failed to Apply Keyword.")
-    return false
-end
 
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:removeAllKeywords() -> boolean
---- Method
---- Triggers the "Remove all Keywords" button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful otherwise `false`
-function KeyboardShortcuts:removeAllKeywords()
-    if not self:isShowing() then
-        self:show()
-    end
-    local ui = self:parent():UI()
-    if ui then
-        local buttons = axutils.childrenWith(ui, "AXRole", "AXButton")
-        if buttons and #buttons == 11 then
-            if buttons[10]:performAction("AXPress") then
-                return true
-            end
+        if not wasShortcutsOpened then
+            self.keyboardShortcuts:opened(false)
         end
     end
-    log.ef("Could not remove all keywords.")
-    return false
+
+    if not wasShowing then
+        self:hide()
+    end
 end
 
 return KeywordEditor

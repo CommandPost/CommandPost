@@ -116,7 +116,7 @@ local function process()
         --------------------------------------------------------------------------------
         -- Add Marker & Modify:
         --------------------------------------------------------------------------------
-        local markerPopover = fcp.browser:markerPopover()
+        local markerPopover = fcp.browser.markerPopover
         markerPopover:show()
         result = just.doUntil(function() return markerPopover:isShowing() end)
         if not result then

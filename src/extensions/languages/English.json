@@ -1134,6 +1134,7 @@
         "keyframe": "Keyframe",
         "keywordEditorNotOpened": "The Keyword Editor could not be opened.",
         "keywordKeyboardShortcutsNotOpened": "The Keyword Editor's Keyboard Shortcuts section could not be opened.",
+        "keywordPresetInvalid": "Invalid Keyword Preset number: ${preset}",
         "keywordPresetsRestored": "Your Keywords have been restored to Preset",
         "keywordPresetsSaved": "Your Keywords have been saved to Preset",
         "label": "Label",

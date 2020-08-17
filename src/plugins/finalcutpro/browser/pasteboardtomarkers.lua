@@ -181,7 +181,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Add Marker & Modify:
         --------------------------------------------------------------------------------
-        local markerPopover = fcp.browser:markerPopover()
+        local markerPopover = fcp.browser.markerPopover
         markerPopover:show()
         result = just.doUntil(function() return markerPopover:isShowing() end)
         if not result then
@@ -193,8 +193,8 @@ function mod.process()
         -- If it's a "To Do" Marker then change tabs:
         --------------------------------------------------------------------------------
         if toDoMarker then
-            markerPopover:toDo():press()
-            result = just.doUntil(function() return markerPopover:toDo():checked() end)
+            markerPopover.toDo:press()
+            result = just.doUntil(function() return markerPopover.toDo:checked() end)
             if not result then
                 displayErrorMessage(string.format("Could not check 'To Do' for line %s.", i))
                 return

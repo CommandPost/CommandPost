@@ -67,7 +67,7 @@ end
 function GeneratorsBrowser.lazy.prop:isShowing()
     return prop.new(function()
         local parent = self:parent()
-        return parent:isShowing() and parent:showGenerators():checked()
+        return parent:isShowing() and parent.showGenerators:checked()
     end)
 end
 

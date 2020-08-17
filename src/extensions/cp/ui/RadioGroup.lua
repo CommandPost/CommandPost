@@ -4,13 +4,25 @@
 
 local require = require
 
-local Element						            = require("cp.ui.Element")
+local prop                          = require "cp.prop"
 
-local go                            = require("cp.rx.go")
+local Element						= require "cp.ui.Element"
+local RadioButton                   = require "cp.ui.RadioButton"
+
+local go                            = require "cp.rx.go"
 local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
 
+local insert                        = table.insert
 
 local RadioGroup = Element:subclass("cp.ui.RadioGroup")
+
+function RadioGroup.static.createOption(radioGroup, optionUI)
+    if RadioButton.matches(optionUI) then
+        return RadioButton(radioGroup, prop.THIS(optionUI))
+    elseif Element.matches(optionUI) then
+        return Element(radioGroup, prop.THIS(optionUI))
+    end
+end
 
 --- cp.ui.RadioGroup.matches(element) -> boolean
 --- Function
@@ -25,18 +37,20 @@ function RadioGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup(parent, finderFn[, cached]) -> cp.ui.RadioGroup
+--- cp.ui.RadioGroup(parent, uiFinder[, createOptionFn]) -> cp.ui.RadioGroup
 --- Constructor
 --- Creates a new RadioGroup.
 ---
 --- Parameters:
---- * parent	- The parent table.
---- * finderFn	- The function which will find the `axuielement` representing the RadioGroup.
+---  * parent	        - The parent table.
+---  * uiFinder	        - The function which will find the `axuielement` representing the RadioGroup.
+---  * createOptionFn   - If provided a function that receives the `RadioGroup` and an `axuielement` for a given option within the group.
 ---
 --- Returns:
---- * The new `RadioGroup` instance.
-function RadioGroup:initialize(parent, finderFn)
-    Element.initialize(self, parent, finderFn)
+---  * The new `RadioGroup` instance.
+function RadioGroup:initialize(parent, uiFinder, createOptionFn)
+    self._createOption = createOptionFn or RadioGroup.createOption
+    Element.initialize(self, parent, uiFinder)
 end
 
 --- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
@@ -51,15 +65,38 @@ function RadioGroup.lazy.prop:optionCount()
     )
 end
 
---- cp.ui.RadioGroup:options() -> table
---- Method
---- The `table` of options available in the radio group.
+--- cp.ui.RadioGroup.optionsUI <cp.prop: axuielement; read-only>
+--- Field
+--- A `cp.prop` containing `table` of `axuielement` options available in the radio group.
 ---
 --- Returns:
---- * The table of options.
-function RadioGroup:options()
-    local ui = self.UI
-    return ui and ui:children()
+--- * The `cp.prop` of options.
+function RadioGroup.lazy.prop:optionsUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:children()
+    end)
+end
+
+--- cp.ui.RadioGroup.options <table: cp.ui.Element; read-only>
+--- Field
+--- A `table` containing `cp.ui.Element` available in the radio group.
+---
+--- Returns:
+--- * The `cp.prop` of options.
+function RadioGroup.lazy.value:options()
+    local optionsUI = self:optionsUI()
+
+    if optionsUI then
+        local result = {}
+
+        for _,optionUI in ipairs(optionsUI) do
+            local option = self:_createOption(optionUI)
+            insert(result, option)
+        end
+
+        return result
+    end
 end
 
 --- cp.ui.RadioGroup.selectedOption <cp.prop: number>

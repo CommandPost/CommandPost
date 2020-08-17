@@ -157,7 +157,7 @@ end
 ---  * A table of active column names or an empty table if something goes wrong.
 function mod.getActiveColumnsNames()
     local libraries = fcp.libraries
-    local listUI = libraries:list():UI()
+    local listUI = libraries.list:UI()
     local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
     local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
     local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
@@ -208,7 +208,7 @@ function mod.restoreLayoutFromTable(layout)
     --------------------------------------------------------------------------------
     if layout["isListView"] then
         if not just.doUntil(function()
-            libraries:list():show()
+            libraries.list:show()
             return libraries:isListView()
         end) then
             log.ef("restoreLayoutFromTable: Failed to change to list view.")
@@ -216,7 +216,7 @@ function mod.restoreLayoutFromTable(layout)
         end
     else
         if not just.doUntil(function()
-            libraries:filmstrip():show()
+            libraries.filmstrip:show()
             return libraries:isFilmstripView()
         end) then
             log.ef("restoreLayoutFromTable: Failed to change to filmstrip view.")
@@ -242,14 +242,14 @@ function mod.restoreLayoutFromTable(layout)
         if not match then
 
             if not just.doUntil(function()
-                libraries:list():columns():show()
-                return libraries:list():columns():isMenuShowing()
+                libraries.list:columns():show()
+                return libraries.list:columns():isMenuShowing()
             end) then
                 log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
                 return false
             end
 
-            local menu = libraries:list():columns().menu
+            local menu = libraries.list:columns().menu
             if not menu then
                 log.ef("restoreLayoutFromTable: Failed to get the columns menu popup.")
                 return false
@@ -302,7 +302,7 @@ function mod.restoreLayoutFromTable(layout)
                     -- Wait until menu has disappeared:
                     --------------------------------------------------------------------------------
                     if not just.doUntil(function()
-                        return not libraries:list():columns():isMenuShowing()
+                        return not libraries.list:columns():isMenuShowing()
                     end) then
                         log.ef("restoreLayoutFromTable: Failed to close menu after pressing a button.")
                         return
@@ -314,8 +314,8 @@ function mod.restoreLayoutFromTable(layout)
             -- Trigger the columns popup:
             --------------------------------------------------------------------------------
             if not just.doUntil(function()
-                libraries:list():columns():show()
-                return libraries:list():columns():isMenuShowing()
+                libraries.list:columns():show()
+                return libraries.list:columns():isMenuShowing()
             end) then
                 log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup when restoring column data.")
                 return false
@@ -337,15 +337,15 @@ function mod.restoreLayoutFromTable(layout)
                     menuItem:performAction("AXPress")
 
                     if not just.doUntil(function()
-                        return not libraries:list():columns():isMenuShowing()
+                        return not libraries.list:columns():isMenuShowing()
                     end) then
                         log.ef("restoreLayoutFromTable: Failed to close menu after pressing a button.")
                         return
                     end
 
                     if not just.doUntil(function()
-                        libraries:list():columns():show()
-                        return libraries:list():columns():isMenuShowing()
+                        libraries.list:columns():show()
+                        return libraries.list:columns():isMenuShowing()
                     end) then
                         log.ef("restoreLayoutFromTable: Failed to activate the columns menu popup in loop.")
                         return
@@ -361,7 +361,7 @@ function mod.restoreLayoutFromTable(layout)
     -- Restore Sort Order:
     --------------------------------------------------------------------------------
     if layout["isListView"] and layout["sortOrder"] then
-        local ui = libraries:list():columns():UI()
+        local ui = libraries.list:columns():UI()
         local outline = ui and childWithRole(ui, "AXOutline")
         local group = outline and childWithRole(outline, "AXGroup")
         if group then
@@ -460,14 +460,14 @@ function mod.saveLayoutToTable()
         -- Open the Columns popup:
         --------------------------------------------------------------------------------
         if not just.doUntil(function()
-            libraries:list():columns():show()
-            return libraries:list():columns():isMenuShowing()
+            libraries.list:columns():show()
+            return libraries.list:columns():isMenuShowing()
         end) then
             log.ef("saveLayoutToTable: Failed to activate the columns menu popup when saving.")
             return false
         end
 
-        local menu = libraries:list():columns().menu
+        local menu = libraries.list:columns().menu
         if not menu then
             log.ef("saveLayoutToTable: Failed to get the columns menu popup.")
             return false
@@ -490,7 +490,7 @@ function mod.saveLayoutToTable()
         --------------------------------------------------------------------------------
         if not just.doUntil(function()
             menu:close()
-            return not libraries:list():columns():isMenuShowing()
+            return not libraries.list:columns():isMenuShowing()
         end) then
             log.ef("saveLayoutToTable: Failed to close the columns menu popup when saving.")
             return false
@@ -503,7 +503,7 @@ function mod.saveLayoutToTable()
     --------------------------------------------------------------------------------
     local sortOrder = {}
     if isListView then
-        local ui = libraries:list():columns():UI()
+        local ui = libraries.list:columns():UI()
         local outline = ui and childWithRole(ui, "AXOutline")
         local group = outline and childWithRole(outline, "AXGroup")
         if group then

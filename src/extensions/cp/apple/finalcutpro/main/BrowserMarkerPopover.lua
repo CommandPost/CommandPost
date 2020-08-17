@@ -112,45 +112,27 @@ function BrowserMarkerPopover.lazy.value:type()
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:standard() -> RadioButton
---- Method
---- Gets the "Standard" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
-function BrowserMarkerPopover.lazy.method:standard()
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.standard <cp.ui.RadioButton>
+--- Field
+--- The "Standard" Marker button.
+function BrowserMarkerPopover.lazy.value:standard()
     return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 1)
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:toDo() -> RadioButton
---- Method
---- Gets the "To Do" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
-function BrowserMarkerPopover.lazy.method:toDo()
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.toDo <cp.ui.RadioButton>
+--- Field
+--- The "To Do" Marker button.
+function BrowserMarkerPopover.lazy.value:toDo()
     return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 2)
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.chapter() -> RadioButton
---- Method
---- Gets the "Chapter" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.chapter <cp.ui.RadioButton>
+--- Field
+--- The "Chapter" Marker button.
 function BrowserMarkerPopover.lazy.method:chapter()
     return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 3)
