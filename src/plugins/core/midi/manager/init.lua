@@ -87,14 +87,14 @@ mod.controls = controls
 -- A table of all the MIDI actions.
 local midiActions = {}
 
---- deviceNames -> table
---- Variable
---- MIDI Device Names.
+-- deviceNames -> table
+-- Variable
+-- MIDI Device Names.
 local deviceNames = {}
 
---- virtualDevices -> table
---- Variable
---- MIDI Virtual Devices.
+-- virtualDevices -> table
+-- Variable
+-- MIDI Virtual Devices.
 local virtualDevices = {}
 
 -- loupedeckFnPressed -> boolean

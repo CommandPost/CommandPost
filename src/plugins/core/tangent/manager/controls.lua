@@ -29,14 +29,14 @@ function controls:initialize()
     self.ids = {}
 end
 
-        --- plugins.core.tangent.controls.enabled <cp.prop: boolean>
-        --- Field
-        --- Indicates if the controls are enabled.
+--- plugins.core.tangent.manager.controls.enabled <cp.prop: boolean>
+--- Field
+--- Indicates if the controls are enabled.
 function controls.lazy.prop.enabled()
     return prop.TRUE()
 end
 
---- plugins.core.tangent.controls.active <cp.prop: boolean; read-only>
+--- plugins.core.tangent.manager.controls.active <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the controls are active. They will be active if `enabled` is `true`.
 function controls.lazy.prop:active()

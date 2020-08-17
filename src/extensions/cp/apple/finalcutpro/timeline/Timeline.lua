@@ -437,7 +437,7 @@ function Timeline.lazy.value:transitions()
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.playhead <Playhead>
---- Value
+--- Field
 --- The Timeline Playhead.
 function Timeline.lazy.value:playhead()
     return self.contents.playhead

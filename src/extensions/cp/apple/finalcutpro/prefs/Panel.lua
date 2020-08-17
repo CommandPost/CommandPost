@@ -1,4 +1,8 @@
-local require = require
+--- === cp.apple.finalcutpro.prefs.Panel ===
+---
+--- Preferences Panel.
+
+local require           = require
 
 local strings           = require "cp.apple.finalcutpro.strings"
 
@@ -8,8 +12,8 @@ local Group             = require "cp.ui.Group"
 
 local If                = require "cp.rx.go".If
 
-local childMatching                 = axutils.childMatching
-local childWith                     = axutils.childWith
+local childMatching     = axutils.childMatching
+local childWith         = axutils.childWith
 
 local Panel = Group:subclass("cp.apple.finalcutpro.prefs.Panel")
 
