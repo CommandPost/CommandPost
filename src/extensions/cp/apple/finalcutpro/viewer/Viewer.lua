@@ -322,7 +322,7 @@ function Viewer.lazy.prop:title()
     return self.infoBar.title
 end
 
-function Viewer.lazy.method:viewMenu()
+function Viewer.lazy.value:viewMenu()
     return self.infoBar.viewMenu
 end
 
