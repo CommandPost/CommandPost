@@ -141,18 +141,13 @@ loupedeckRowType {
 
 .loupedeck tbody {
 	display:block;
-	height: 65px;
+	height: 170px;
 	font-weight: normal;
 	font-size: 10px;
 	width: 100%;
 
 	overflow-x: hidden;
 	overflow-y: scroll;
-}
-
-.loupedeck tbody tr:hover {
-	background-color: #006dd4;
-	color: white;
 }
 
 .openAudioLoupedeckSetup {

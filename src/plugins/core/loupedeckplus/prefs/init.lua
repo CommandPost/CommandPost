@@ -200,6 +200,7 @@ local function updateUI()
     local pressValue = i18n("none")
     local leftValue = i18n("none")
     local rightValue = i18n("none")
+    local releaseValue = i18n("none")
 
     if bankData then
         if bankData[note .. "Press"] and bankData[note .. "Press"]["actionTitle"] then
@@ -211,11 +212,15 @@ local function updateUI()
         if bankData[note .. "Right"] and bankData[note .. "Right"]["actionTitle"] then
             rightValue = bankData[note .. "Right"]["actionTitle"]
         end
+        if bankData[note .. "Release"] and bankData[note .. "Release"]["actionTitle"] then
+            releaseValue = bankData[note .. "Release"]["actionTitle"]
+        end
     end
     script = script .. [[
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
         changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
         changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('release_action', `]] .. escapeTilda(releaseValue) .. [[`);
     ]]
 
     --------------------------------------------------------------------------------
@@ -846,7 +851,7 @@ function plugin.init(deps, env)
         label           = i18n("loupedeckPlus"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = i18n("loupedeckPlus"),
-        height          = 805,
+        height          = 910,
     })
         :addHeading(6, "Loupedeck+")
         :addCheckbox(7,
