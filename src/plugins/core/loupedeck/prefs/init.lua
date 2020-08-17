@@ -853,7 +853,7 @@ function plugin.init(deps, env)
         tooltip         = i18n("loupedeck"),
         height          = 910,
     })
-        :addHeading(6, "Loupedeck+")
+        :addHeading(6, i18n("loupedeck"))
         :addCheckbox(7,
             {
                 label       = i18n("enableLoupdeckSupport"),
