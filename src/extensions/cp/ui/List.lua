@@ -25,6 +25,15 @@ function List.static.matches(element)
 end
 
 --- cp.ui.List(parent, uiFinder, itemAdaptorFn)
+--- Constructor
+--- Creates a new List.
+---
+--- Parameters:
+---  * parent       - The parent table. Should have a `isShowing` property.
+---  * uiFinder      - The `function` or `cp.prop` that provides the current `hs._asm.axuielement`.
+---
+--- Returns:
+---  * The new `List` instance.
 function List:initialize(parent, uiFinder, itemAdaptorFn)
     if type(itemAdaptorFn) ~= "function" then
         error("The itemAdaptor must be a function")

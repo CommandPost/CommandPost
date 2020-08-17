@@ -38,7 +38,7 @@ function action.lazy.prop:localActive()
     return prop.THIS(self._localActive == true)
 end
 
---- plugin.core.tangent.manager.action.active <cp.prop: boolean; read-only>
+--- plugins.core.tangent.manager.action.active <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the action is active. It will only be active if
 --- the current action is `enabled` and if the parent group (if present) is `active`.
