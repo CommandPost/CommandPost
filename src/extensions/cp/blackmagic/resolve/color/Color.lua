@@ -1,4 +1,4 @@
---- === cp.blackmagic.resolve.Color ===
+--- === cp.blackmagic.resolve.color.Color ===
 ---
 --- Color Module.
 
@@ -7,17 +7,17 @@ local require = require
 --local log                   = require "hs.logger".new "Color"
 
 local axutils               = require "cp.ui.axutils"
-local Element               = require "cp.ui.Element"
-local CheckBox              = require "cp.ui.CheckBox"
+local Group                 = require "cp.ui.Group"
 
-local Tracker               = require("cp.blackmagic.resolve.color.Tracker")
+local Tracker               = require "cp.blackmagic.resolve.color.Tracker"
 
-local childrenWithRole      = axutils.childrenWithRole
-local childWithDescription  = axutils.childWithDescription
+local childMatching         = axutils.childMatching
 
-local Color = Element:subclass "cp.blackmagic.resolve.Color"
+local Color = Group:subclass("cp.blackmagic.resolve.color.Color")
 
---- cp.apple.finalcutpro.main.Color(app) -> Color
+Color.static.DESCRIPTION = "Color"
+
+--- cp.blackmagic.resolve.color.Color(app) -> Color
 --- Constructor
 --- Creates a new `Color` instance.
 ---
@@ -26,43 +26,31 @@ local Color = Element:subclass "cp.blackmagic.resolve.Color"
 ---
 --- Returns:
 ---  * The new `Color`.
-function Color:initialize(app)
-    self._app = app
-end
-
---- cp.blackmagic.resolve.main.Color:app() -> cp.blackmagic.resolve
---- Method
---- Returns the application object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The app instance.
-function Color:app()
-    return self._app
-end
-
-function Color.lazy.method:checkBox()
-    return CheckBox(self, function()
-        local primaryWindow = self:app():primaryWindow():UI()
-        local children = primaryWindow and childrenWithRole(primaryWindow, "AXCheckBox")
-        return childWithDescription(children, "Color")
+function Color:initialize(primaryWindow)
+    local UI = primaryWindow.UI:mutate(function(original)
+        if self:isShowing() then
+            return childMatching(original(), Group.matches)
+        end
     end)
+    Group.initialize(self, primaryWindow, UI)
 end
 
-function Color:isShowing()
-    return self:checkBox():checked() or false
+function Color.lazy.value:active()
+    return self:parent().colorActive
+end
+
+function Color.lazy.prop:isShowing()
+    return self.active.checked
 end
 
 function Color:show()
     if not self:isShowing() then
-        self:checkBox():click()
+        self.active:click()
     end
     return self
 end
 
-function Color:tracker()
+function Color.lazy.value:tracker()
     return Tracker(self)
 end
 
