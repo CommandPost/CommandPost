@@ -86,13 +86,21 @@ local UNSHIFTED_SCALE = 20/100
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeWheelHandler(wheelFinderFn, vertical)
 
+    local wheelRight = nil
+    local wheelUp = nil
+
     local wheel = wheelFinderFn()
 
-    local result
     local updateUI = deferred.new(0.01):action(function()
-        wheel:show()
-        if result and result.right and result.up then
-            wheel:colorOrientation(result)
+        if wheel:isShowing() then
+            local current = wheel:colorOrientation()
+
+            if wheelRight then current.right = wheelRight end
+            if wheelUp then current.up = wheelUp end
+
+            wheel:colorOrientation(current)
+        else
+            wheel:show()
         end
     end)
 
@@ -124,14 +132,12 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
         end
 
-        local current = wheel:colorOrientation()
-        if current then
-            if vertical then
-                result = {right=current.right,up=value}
-            else
-                result = {right=value,up=current.up}
-            end
+        if vertical then
+            wheelUp = value
+        else
+            wheelRight = value
         end
+
         updateUI()
     end
 end
