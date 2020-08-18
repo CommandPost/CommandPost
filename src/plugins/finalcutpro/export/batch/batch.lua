@@ -12,6 +12,7 @@ local fs                    = require "hs.fs"
 local geometry              = require "hs.geometry"
 local image                 = require "hs.image"
 local mouse                 = require "hs.mouse"
+local osascript             = require "hs.osascript"
 
 local compressor            = require "cp.apple.compressor"
 local config                = require "cp.config"
@@ -42,9 +43,9 @@ local trim                  = tools.trim
 local doUntil               = just.doUntil
 local wait                  = just.wait
 
+local applescript           = osascript.applescript
 local imageFromPath         = image.imageFromPath
 local insert                = table.insert
-
 local pathToAbsolute        = fs.pathToAbsolute
 
 local mod = {}
@@ -311,7 +312,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 --------------------------------------------------------------------------------
                 -- Click 'Save' on the save sheet:
                 --------------------------------------------------------------------------------
-                if not doUntil(function() return saveSheet:isShowing() end) then
+                if not doUntil(function() return saveSheet:isShowing() end, 5) then
                     displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                     return false
                 end
@@ -323,7 +324,47 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 if firstTime then
                     local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
                     if not NSNavLastRootDirectory or (pathToAbsolute(NSNavLastRootDirectory) ~= pathToAbsolute(exportPath)) then
-                        saveSheet:setPath(exportPath)
+                        --------------------------------------------------------------------------------
+                        -- NOTE: We shouldn't have to do this. We should just be able to press
+                        --       the shortcut key using `hs.eventtap` and it should just work, but
+                        --       alas, for some weird reason it doesn't. It also takes several goes
+                        --       before the shortcut key is triggered. Why? I have no idea.
+                        --------------------------------------------------------------------------------
+                        local prompt = saveSheet.goToPrompt
+                        if not doUntil(function()
+                            saveSheet:UI():performAction("AXRaise")
+                            applescript([[tell application "System Events" to keystroke "g" using {shift down, command down}]])
+                            return prompt:isShowing()
+                        end, 5) then
+                            displayErrorMessage("Failed to open the 'Go to the folder' prompt." .. errorFunction)
+                            return false
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Set the path value:
+                        --------------------------------------------------------------------------------
+                        prompt:value(exportPath)
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the value is actually set:
+                        --------------------------------------------------------------------------------
+                        if not doUntil(function() return prompt:value() == exportPath end, 5) then
+                            displayErrorMessage("Failed to set the 'Go to the folder' path." .. errorFunction)
+                            return false
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Press Go:
+                        --------------------------------------------------------------------------------
+                        prompt:go()
+
+                        --------------------------------------------------------------------------------
+                        -- Wait until the 'Go to the folder' prompt is closed:
+                        --------------------------------------------------------------------------------
+                        if not doUntil(function() return not prompt:isShowing() end, 5) then
+                            displayErrorMessage("Failed to close the 'Go to the folder' prompt." .. errorFunction)
+                            return false
+                        end
                     end
                     firstTime = false
                 end
