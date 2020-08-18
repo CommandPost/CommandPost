@@ -10,6 +10,7 @@ local log                               = require "hs.logger".new "menuaction"
 local fnutils                           = require "hs.fnutils"
 local host                              = require "hs.host"
 local image                             = require "hs.image"
+local inspect                           = require "hs.inspect"
 
 local config                            = require "cp.config"
 local destinations                      = require "cp.apple.finalcutpro.export.destinations"
@@ -30,6 +31,7 @@ local imageFromPath                     = image.imageFromPath
 local insert                            = table.insert
 local locale                            = host.locale
 local localizedString                   = locale.localizedString
+local playErrorSound                    = tools.playErrorSound
 local unescapeXML                       = text.unescapeXML
 
 local mod = {}
@@ -1279,7 +1281,8 @@ function mod.init(actionmanager)
                         fcp:doSelectMenu(action.path, {plain=action.plain, locale=action.locale, pressAll=action.pressAll})
                     )
                     :Catch(function()
-                        displayMessage(i18n("menuItemCouldNotBeTriggeredSuccessfully") .. "\n\n" .. i18n("pleaseTryAgain"))
+                        log.ef("Menu item could not be triggered successfully: %s", action and inspect(action))
+                        playErrorSound()
                     end)
                     :Now()
                 end
