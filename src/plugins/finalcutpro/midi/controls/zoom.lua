@@ -23,7 +23,7 @@ local function createAbsoluteMIDIZoomSlider()
     end)
 
     local updateUI = deferred.new(0.01):action(function()
-        appearance.show()
+        appearance:show()
         appearance.zoomAmount(value)
         hide()
     end)

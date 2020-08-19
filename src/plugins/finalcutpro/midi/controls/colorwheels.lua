@@ -48,6 +48,17 @@ end
 -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
 --
 -- Wheel Color Orientation          -1 to 1
+--
+--
+-- AudioSwift:
+--
+-- Relative A or Signed Bit
+--  * Increase: 1-8
+--  * Decrease: 65-72
+--
+-- Relative B or 2's Compliment
+--  * Increase: 1-8
+--  * Decrease: 127-120
 --------------------------------------------------------------------------------
 
 -- MAX_14BIT -> number
@@ -74,6 +85,72 @@ local HALF_7BIT = (MAX_7BIT + 1) / 2
 -- Constant
 -- Scale unshifted 7-bit by 20%
 local UNSHIFTED_SCALE = 20/100
+
+-- makeRelativeAWheelHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the percentage value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makeRelativeAWheelHandler(wheelFinderFn, vertical)
+
+    local wheelRight = 0
+    local wheelUp = 0
+
+    local wheel = wheelFinderFn()
+
+    local updateUI = deferred.new(0.01):action(function()
+        if wheel:isShowing() then
+            local current = wheel:colorOrientation()
+
+            current.right = current.right + wheelRight
+            current.up = current.up + wheelUp
+
+            wheel:colorOrientation(current)
+
+            wheelRight = 0
+            wheelUp = 0
+        else
+            wheel:show()
+        end
+    end)
+
+    return function(metadata)
+
+        local increment = 0.01
+
+        if shiftPressed() then
+            increment = 0.001
+        end
+
+        local midiValue
+
+        if metadata.pitchChange then
+            midiValue = metadata.pitchChange
+        else
+            midiValue = metadata.fourteenBitValue
+        end
+
+        if midiValue < 8000 then
+            if vertical then
+                wheelUp = wheelUp + increment
+            else
+                wheelRight = wheelRight + increment
+            end
+        else
+            if vertical then
+                wheelUp = wheelUp - increment
+            else
+                wheelRight = wheelRight - increment
+            end
+        end
+
+        updateUI()
+    end
+end
 
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
@@ -159,60 +236,119 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
 
     --------------------------------------------------------------------------------
-    -- Color Wheels (-1 to 1):
+    -- Color Wheels - Relative A:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("masterHorizontalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Master - Horizontal (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.master end, false),
+    })
+
+    deps.manager.controls:new("masterVerticalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Master - Vertical (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.master end, true),
+    })
+
+    deps.manager.controls:new("shadowsHorizontalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Shadows - Horizontal (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.shadows end, false),
+    })
+
+    deps.manager.controls:new("shadowsVerticalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Shadows - Vertical (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.shadows end, true),
+    })
+
+    deps.manager.controls:new("midtonesHorizontalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Midtones - Horizontal (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.midtones end, false),
+    })
+
+    deps.manager.controls:new("midtonesVerticalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Midtones - Vertical (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.midtones end, true),
+    })
+
+    deps.manager.controls:new("highlightsHorizontalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Highlights - Horizontal (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.highlights end, false),
+    })
+
+    deps.manager.controls:new("highlightsVerticalRelative", {
+        group = "fcpx",
+        text = "Color Wheel - Highlights - Vertical (Relative A)",
+        subText = i18n("holdDownShiftToChangeValueAtFinerSmallerIncrements"),
+        fn = makeRelativeAWheelHandler(function() return fcp.inspector.color.colorWheels.highlights end, true),
+    })
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels (-1 to 1) - Absolute:
     --------------------------------------------------------------------------------
     deps.manager.controls:new("masterHorizontal", {
         group = "fcpx",
-        text = "Color Wheel Master (Horizontal)",
+        text = "Color Wheel - Master - Horizontal (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.master end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
-        text = "Color Wheel Master (Vertical)",
+        text = "Color Wheel - Master - Vertical (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.master end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
-        text = "Color Wheel Shadows (Horizontal)",
+        text = "Color Wheel - Shadows - Horizontal (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.shadows end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
-        text = "Color Wheel Shadows (Vertical)",
+        text = "Color Wheel - Shadows - Vertical (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.shadows end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
-        text = "Color Wheel Midtones (Horizontal)",
+        text = "Color Wheel - Midtones - Horizontal (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.midtones end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
-        text = "Color Wheel Midtones (Vertical)",
+        text = "Color Wheel - Midtones - Vertical (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.midtones end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
-        text = "Color Wheel Highlights (Horizontal)",
+        text = "Color Wheel - Highlights - Horizontal (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.highlights end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
-        text = "Color Wheel Highlights (Vertical)",
+        text = "Color Wheel - Highlights - Vertical (Absolute)",
         subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp.inspector.color.colorWheels.highlights end, true),
     })
