@@ -153,6 +153,18 @@ local function convertPreferencesToMIDIActions()
                             and button.commandType and button.commandType ~= ""
                             and button.commandType == "pitchWheelChange"
                         then
+                            --------------------------------------------------------------------------------
+                            -- Command Type is a Pitch Wheel Change:
+                            --------------------------------------------------------------------------------
+                            if type(button.number) == "string" then
+                                button.number = tonumber(button.number)
+                            end
+                            if type(button.value) == "string" then
+                                button.value = tonumber(button.value)
+                            end
+                            if type(button.channel) == "string" then
+                                button.channel = tonumber(button.channel)
+                            end
                             if not midiActions[bundleID] then
                                 midiActions[bundleID] = {}
                             end
@@ -190,8 +202,17 @@ local function convertPreferencesToMIDIActions()
                             and button.number and button.number ~= ""
                             and button.action and button.action ~= ""
                         then
+                            --------------------------------------------------------------------------------
+                            -- Command Type is not a Pitch Wheel Change:
+                            --------------------------------------------------------------------------------
                             if type(button.number) == "string" then
                                 button.number = tonumber(button.number)
+                            end
+                            if type(button.value) == "string" then
+                                button.value = tonumber(button.value)
+                            end
+                            if type(button.channel) == "string" then
+                                button.channel = tonumber(button.channel)
                             end
                             if not midiActions[bundleID] then
                                 midiActions[bundleID] = {}
@@ -268,7 +289,6 @@ local function convertPreferencesToMIDIActions()
         ["Loupedeck"]   = mod.loupedeckItems(),
         ["Loupedeck+"]  = mod.loupedeckPlusItems(),
     }
-
     for panelType, panelItems in pairs(whichItems) do
         for bundleID, app in pairs(panelItems) do
             if type(app) == "table" then
@@ -276,7 +296,6 @@ local function convertPreferencesToMIDIActions()
                     if type(bank) == "table" then
                         for buttonID, button in pairs(bank) do
                             if button.action then
-
                                 --------------------------------------------------------------------------------
                                 -- Press Button:
                                 --------------------------------------------------------------------------------
@@ -616,6 +635,10 @@ local function callback(_, deviceName, commandType, _, metadata)
 
     if metadata.fourteenBitCommand then
         controllerValue = metadata.fourteenBitValue
+    end
+
+    if commandType == "noteOff" or commandType == "noteOn" then
+        controllerValue = metadata.velocity
     end
 
     if metadata.isVirtual then
@@ -990,10 +1013,11 @@ function plugin.init(deps)
     -- device is added or removed.
     --------------------------------------------------------------------------------
     midi.deviceCallback(function(devices, vDevices)
-        --log.df("MIDI Devices Updated (%s physical, %s virtual, %s total)", #devices, #virtualDevices, #devices + #virtualDevices)
         deviceNames = devices
         virtualDevices = vDevices
         mod.numberOfMidiDevices(#devices + #vDevices)
+
+        mod.update()
     end)
 
     --------------------------------------------------------------------------------
@@ -1043,6 +1067,13 @@ function plugin.init(deps)
                 local frontmostApplication = application.frontmostApplication()
                 local bundleID = frontmostApplication:bundleID()
 
+                --------------------------------------------------------------------------------
+                -- Don't ever use AudioSwift as the frontmost app:
+                --------------------------------------------------------------------------------
+                if bundleID == "com.nigelrios.AudioSwift" then
+                    bundleID = mod.lastActiveBundleID
+                end
+
                 local items = mod.items()
 
                 --------------------------------------------------------------------------------
@@ -1080,14 +1111,23 @@ function plugin.init(deps)
                     end
                 end
 
-                local newBank = activeBanks[bundleID]
-
+                --------------------------------------------------------------------------------
+                -- Update the active banks:
+                --------------------------------------------------------------------------------
                 mod.activeBanks(activeBanks)
 
-                items = mod.items() -- Reload items
-                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                --------------------------------------------------------------------------------
+                -- Display a notification if enabled:
+                --------------------------------------------------------------------------------
                 if mod.displayMessageWhenChangingBanks() then
-                    displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. label)
+                    local newBank = activeBanks[bundleID]
+                    items = mod.items() -- Reload items
+                    local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"]
+                    if label then
+                        displayNotification(label)
+                    else
+                        displayNotification(i18n("midi") .. " " .. i18n("bank") .. ": " .. newBank)
+                    end
                 end
             end
         end)

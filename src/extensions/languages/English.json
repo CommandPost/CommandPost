@@ -1055,6 +1055,7 @@
         "history": "History",
         "historyIsEmpty": "History is empty",
         "historySize": "History Size",
+        "holdDownShiftToChangeValueAtFinerSmallerIncrements": "Hold down SHIFT to change value at finer/smaller increments.",
         "holdDownShortcutKeyToRepeatAction": "Hold down shortcut key to repeat action.",
         "horizontal": "Horizontal",
         "horizontal4": "Horz",

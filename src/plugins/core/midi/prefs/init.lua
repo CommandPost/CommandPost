@@ -136,7 +136,7 @@ local function generateContent()
     local virtualMidiDevices = mod._midi.virtualDevices()
     local devices = {}
     for _, device in pairs(midiDevices) do
-        if device ~= "Loupedeck+" then
+        if device ~= "Loupedeck" and device ~= "Loupedeck+" then
             table.insert(devices, device)
         end
     end
@@ -276,7 +276,7 @@ local function updateUI(highlightRow)
 
         local foundDevice = false
         for _, deviceName in ipairs(midiDevices) do
-            if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
                 local selected = ""
                 if device == deviceName then
                     selected = [[selected=""]]
@@ -305,7 +305,7 @@ local function updateUI(highlightRow)
         ]]
         local foundVirtualDevice = false
         for _, deviceName in ipairs(virtualMidiDevices) do
-            if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
                 local selected = ""
                 if device == "virtual_" .. deviceName then
                     selected = [[selected=""]]
@@ -503,7 +503,7 @@ local function startLearning(params)
         --------------------------------------------------------------------------------
         -- Prevent Loupedeck+'s from appearing in the MIDI Preferences:
         --------------------------------------------------------------------------------
-        if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+        if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
             if string.sub(deviceName, 1, 8) == "virtual_" then
                 learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
             else
@@ -630,7 +630,7 @@ local function startLearning(params)
 
                         if commandType == "noteOff" or commandType == "noteOn" then
                             setItem("number", learnButton, learnApplication, learnBank, metadata.note)
-                            setItem("value", learnButton, learnApplication, learnBank, "")
+                            setItem("value", learnButton, learnApplication, learnBank, metadata.velocity)
                         elseif commandType == "controlChange" then
                             setItem("number", learnButton, learnApplication, learnBank, metadata.controllerNumber)
                             setItem("value", learnButton, learnApplication, learnBank, controllerValue)

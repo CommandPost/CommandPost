@@ -70,7 +70,7 @@ function plugin.init(deps)
     local manager = deps.manager
     local params = {
         group = "fcpx",
-        text = i18n("volume") .. "(" .. i18n("absolute") .. ")",
+        text = i18n("volume") .. " (" .. i18n("absolute") .. ")",
         subText = i18n("midiVolumeDescription"),
         fn = createAbsoluteMIDIVolumeSlider(),
     }
