@@ -98,7 +98,6 @@ local function assignAction(id)
     -- Setup Activator:
     --------------------------------------------------------------------------------
     local activator = mod._actionManager.getActivator("twelvebuttons")
-    activator:preloadChoices()
     activator:onActivate(function(handler, action, text)
         --------------------------------------------------------------------------------
         -- Process Stylised Text:

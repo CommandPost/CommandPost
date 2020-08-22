@@ -196,6 +196,24 @@ function tools.shiftPressed()
     end
 end
 
+--- cp.tools.optionPressed() -> boolean
+--- Function
+--- Is the Option Key being pressed?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the option key is being pressed, otherwise `false`.
+function tools.optionPressed()
+    local mods = eventtap.checkKeyboardModifiers()
+    local result = false
+    if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        result = true
+    end
+    return result
+end
+
 --- cp.tools.writeToFile(path, data) -> none
 --- Function
 --- Write data to a file at a given path.
