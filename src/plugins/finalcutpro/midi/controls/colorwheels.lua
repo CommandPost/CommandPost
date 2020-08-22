@@ -1058,7 +1058,7 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Brightness - Reset:
         --------------------------------------------------------------------------------
-        deps.manager.controls:new(v.id .. "SaturationReset", {
+        deps.manager.controls:new(v.id .. "BrightnessReset", {
             group = "fcpx",
             text = format("%s - %s - %s - %s", colorWheel, v.title, brightness, reset),
             subText = i18n("resetsBrightnessUsingAMIDIDevice"),
