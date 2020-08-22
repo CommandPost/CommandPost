@@ -73,7 +73,6 @@ function plugin.init(deps)
     -- Watch for changes:
     --------------------------------------------------------------------------------
     mod._watcher = pathwatcher.new(preferencesPath, function()
-        log.df("files changed")
         mod._handler:reset()
     end):start()
 
