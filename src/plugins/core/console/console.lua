@@ -59,7 +59,7 @@ function mod.show()
     -- If not, use the global one:
     --------------------------------------------------------------------------------
     if not mod.activator then
-        mod.activator = mod.actionmanager.getActivator("core.console"):preloadChoices()
+        mod.activator = mod.actionmanager.getActivator("core.console")
 
         --------------------------------------------------------------------------------
         -- Restrict Allowed Handlers for Activator to current group:

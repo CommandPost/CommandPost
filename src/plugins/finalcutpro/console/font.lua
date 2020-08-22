@@ -228,7 +228,6 @@ function mod.show()
     --------------------------------------------------------------------------------
     if not mod.activator then
         mod.activator = mod.actionmanager.getActivator("finalcutpro.font")
-        mod.activator:preloadChoices()
         mod.activator:allowHandlers("fcpx_fonts")
         mod.activator:onActivate(mod.onActivate)
     end

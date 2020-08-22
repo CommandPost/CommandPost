@@ -91,7 +91,6 @@ local function tangentPanelCallback(id, params)
                 -- Create new Activator:
                 --------------------------------------------------------------------------------
                 mod.activator = mod._actionManager.getActivator("tangentPreferences")
-                mod.activator:preloadChoices()
             end
 
             --------------------------------------------------------------------------------
