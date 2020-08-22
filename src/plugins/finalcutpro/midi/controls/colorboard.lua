@@ -6,7 +6,6 @@ local require           = require
 
 local log               = require "hs.logger".new "cbMIDI"
 
-local eventtap          = require "hs.eventtap"
 local inspect           = require "hs.inspect"
 
 local fcp               = require "cp.apple.finalcutpro"
@@ -15,7 +14,6 @@ local i18n              = require "cp.i18n"
 local deferred          = require "cp.deferred"
 
 local format            = string.format
-local upper             = string.upper
 
 local optionPressed     = tools.optionPressed
 local shiftPressed      = tools.shiftPressed

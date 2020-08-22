@@ -6,7 +6,6 @@ local require = require
 
 local log               = require "hs.logger".new "colorMIDI"
 
-local eventtap          = require "hs.eventtap"
 local inspect           = require "hs.inspect"
 
 local deferred          = require "cp.deferred"
@@ -835,7 +834,7 @@ end
 --
 -- Returns:
 --  * a func
-local function makeMixHueHandler()
+local function makeResetMixHandler()
     return function()
         local wheel = fcp.inspector.color.colorWheels
         wheel:show()
@@ -939,9 +938,11 @@ local plugin = {
 function plugin.init(deps)
 
     local absolute      = i18n("absolute")
+    local brightness    = i18n("brightness")
     local colorWheel    = i18n("colorWheel")
     local horizontal    = i18n("horizontal")
     local hue           = i18n("hue")
+    local mix           = i18n("mix")
     local relativeA     = i18n("relativeA")
     local reset         = i18n("reset")
     local saturation    = i18n("saturation")
@@ -1021,7 +1022,7 @@ function plugin.init(deps)
             group = "fcpx",
             text = format("%s - %s - %s (%s)", colorWheel, v.title, saturation, relativeA),
             subText = holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset,
-            fn = makeAbsoluteSaturationHandler(function() return v.control end, true),
+            fn = makeRelativeASaturationHandler(function() return v.control end, true),
         })
 
         --------------------------------------------------------------------------------
@@ -1052,6 +1053,16 @@ function plugin.init(deps)
             text = format("%s - %s - %s (%s)", colorWheel, v.title, brightness, relativeA),
             subText = holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset,
             fn = makeRelativeABrightnessHandler(function() return v.control end, true),
+        })
+
+        --------------------------------------------------------------------------------
+        -- Brightness - Reset:
+        --------------------------------------------------------------------------------
+        deps.manager.controls:new(v.id .. "SaturationReset", {
+            group = "fcpx",
+            text = format("%s - %s - %s - %s", colorWheel, v.title, brightness, reset),
+            subText = i18n("resetsBrightnessUsingAMIDIDevice"),
+            fn = makeResetBrightnessHandler(function() return v.control end),
         })
     end
 
@@ -1106,7 +1117,7 @@ function plugin.init(deps)
             group = "fcpx",
             text = format("%s - %s - %s", colorWheel, tint, reset),
             subText = i18n("resetsTintUsingAMIDIDevice"),
-            fn = makeRelativeATintHandler(),
+            fn = makeResetTintHandler(),
         })
 
     --------------------------------------------------------------------------------
@@ -1133,7 +1144,7 @@ function plugin.init(deps)
             group = "fcpx",
             text = format("%s - %s - %s", colorWheel, hue, reset),
             subText = i18n("resetsHueUsingAMIDIDevice"),
-            fn = makeRelativeATintHandler(),
+            fn = makeResetHueHandler(),
         })
 
     --------------------------------------------------------------------------------
@@ -1160,7 +1171,7 @@ function plugin.init(deps)
             group = "fcpx",
             text = format("%s - %s - %s", colorWheel, mix, reset),
             subText = i18n("resetsMixUsingAMIDIDevice"),
-            fn = makeRelativeAMixHandler(),
+            fn = makeResetMixHandler(),
         })
 end
 
