@@ -9,6 +9,7 @@ local application       = require "hs.application"
 local config            = require "cp.config"
 local tools             = require "cp.tools"
 
+local mergeTable        = tools.mergeTable
 local unpack            = table.unpack
 
 local mod = {}
@@ -77,12 +78,14 @@ function mod.show()
         --------------------------------------------------------------------------------
         -- Allow specific toolbar icons in the Console:
         --------------------------------------------------------------------------------
+        local defaultSearchConsoleToolbar = mod.appmanager.defaultSearchConsoleToolbar()
         local iconPath = config.basePath .. "/plugins/core/console/images/"
         local toolbarIcons = {
-            global_applications = { path = iconPath .. "apps.png", priority = 1},
             global_menuactions = { path = iconPath .. "menu.png", priority = 2},
         }
-        mod.activator:toolbarIcons(toolbarIcons)
+        local combinedToolbarIcons = mergeTable(defaultSearchConsoleToolbar, toolbarIcons)
+        combinedToolbarIcons["global_shortcuts"] = nil
+        mod.activator:toolbarIcons(combinedToolbarIcons)
 
     end
     mod.activator:toggle()
@@ -94,17 +97,20 @@ local plugin = {
     dependencies    = {
         ["core.commands.global"]        = "global",
         ["core.action.manager"]         = "actionmanager",
+        ["core.application.manager"]    = "appmanager",
     }
 }
 
 function plugin.init(deps)
+    mod.actionmanager = deps.actionmanager
+    mod.appmanager = deps.appmanager
+
     --------------------------------------------------------------------------------
     -- Add the command trigger:
     --------------------------------------------------------------------------------
-    mod.actionmanager = deps.actionmanager
     deps.global:add("cpGlobalConsole")
         :groupedBy("commandPost")
-        :whenActivated(function() mod.show() end)
+        :whenActivated(mod.show)
         :activatedBy():ctrl():option():cmd("space")
 
     return mod
