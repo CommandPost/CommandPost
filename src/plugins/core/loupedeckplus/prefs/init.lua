@@ -435,17 +435,11 @@ local function loupedeckPlusPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 local activeBanks = mod._midi.activeLoupedeckPlusBanks()
 
-                log.df("bank: %s", bank)
-
-                log.df("before: %s", hs.inspect(activeBanks))
-
                 -- Remove the 'fn':
                 if string.sub(bank, -2) == "fn" then
                     bank = string.sub(bank, 1, -3)
                 end
                 activeBanks[app] = bank
-
-                log.df("before: %s", hs.inspect(activeBanks))
 
                 mod._midi.activeLoupedeckPlusBanks(activeBanks)
 
