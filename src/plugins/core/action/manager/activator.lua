@@ -55,6 +55,7 @@ local insert                    = table.insert
 local pack                      = table.pack
 local sort                      = table.sort
 local spairs                    = tools.spairs
+local split                     = tools.split
 local uuid                      = host.uuid
 
 local activator = class("core.action.activator"):include(lazy)
@@ -356,35 +357,61 @@ function activator:enableHandler(id)
     return true
 end
 
---- plugins.core.action.activator:enableAllHandlers() -> none
+--- plugins.core.action.activator:enableAllHandlers([groupID]]) -> none
 --- Method
 --- Enables the all allowed handlers.
 ---
 --- Parameters:
----  * None
+---  * groupID - An optional group ID to only enable all handlers of a specific group
 ---
 --- Returns:
 ---  * None
-function activator:enableAllHandlers()
-    self._disabledHandlers:set(nil)
+function activator:enableAllHandlers(groupID)
+    if groupID then
+        local dh = self:_disabledHandlers()
+        local allowedHandlers = self:allowedHandlers()
+        for id,_ in pairs(allowedHandlers) do
+            local idComponents = split(id, "_")
+            local currentGroupID = idComponents and idComponents[1]
+            if currentGroupID == groupID then
+                dh[id] = nil
+            end
+        end
+        self:_disabledHandlers(dh)
+    else
+        self._disabledHandlers:set(nil)
+    end
     self:refreshChooser()
 end
 
---- plugins.core.action.activator:disableAllHandlers() -> none
+--- plugins.core.action.activator:disableAllHandlers([groupID]) -> none
 --- Method
 --- Disables the all allowed handlers.
 ---
 --- Parameters:
----  * None
+---  * groupID - An optional group ID to only disable all handlers of a specific group
 ---
 --- Returns:
 ---  * None
-function activator:disableAllHandlers()
-    local dh = {}
-    for id,_ in pairs(self:allowedHandlers()) do
-        dh[id] = true
+function activator:disableAllHandlers(groupID)
+    if groupID then
+        local dh = self:_disabledHandlers()
+        local allowedHandlers = self:allowedHandlers()
+        for id,_ in pairs(allowedHandlers) do
+            local idComponents = split(id, "_")
+            local currentGroupID = idComponents and idComponents[1]
+            if currentGroupID == groupID then
+                dh[id] = true
+            end
+        end
+        self:_disabledHandlers(dh)
+    else
+        local dh = {}
+        for id,_ in pairs(self:allowedHandlers()) do
+            dh[id] = true
+        end
+        self:_disabledHandlers(dh)
     end
-    self:_disabledHandlers(dh)
     self:refreshChooser()
 end
 
@@ -841,10 +868,16 @@ activator.reducedTransparency = prop.new(function()
     return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
+--- plugins.core.action.activator:updateSelectedToolbarIcon() -> none
+--- Method
+--- Updates the selected toolbar icon.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function activator:updateSelectedToolbarIcon()
-    --------------------------------------------------------------------------------
-    -- Update toolbar icons:
-    --------------------------------------------------------------------------------
     local allHandlersActive = true
     local toolbarIcons = self._toolbarIcons
     local t = self._toolbar
@@ -1368,34 +1401,92 @@ function activator:rightClickAction(index)
         insert(choiceMenu, { title = i18n("rememberLastQuery"),     fn=function() self.lastQueryRemembered:toggle(); self:refreshChooser() end, checked = self:lastQueryRemembered() })
         insert(choiceMenu, { title = i18n("searchSubtext"),         fn=function() self.searchSubText:toggle(); theChooser:searchSubText(self:searchSubText()); self:refreshChooser(); end, checked = self:searchSubText() })
         insert(choiceMenu, { title = i18n("activatorShowHidden"),   fn=function() self.showHidden:toggle(); self:refreshChooser() end, checked = self:showHidden() })
+        insert(choiceMenu, { title = "-" })
 
         --------------------------------------------------------------------------------
-        -- The 'Sections' menu:
+        -- The 'Show Action Group' menu:
         --------------------------------------------------------------------------------
-        local sections = { title = i18n("consoleSections") }
-        local actionItems = {}
+        local sections = { title = i18n("showActionGroups") }
+
+        --------------------------------------------------------------------------------
+        -- Get list of allowed handler group names:
+        --------------------------------------------------------------------------------
+        local allowedHandlers = self:allowedHandlers()
+        local allowedGroupNames = {}
+        for i,_ in pairs(allowedHandlers) do
+            local idComponents = split(i, "_")
+            local groupID = idComponents and idComponents[1]
+            if not allowedGroupNames[groupID] then
+                allowedGroupNames[groupID] = true
+            end
+        end
+        table.sort(allowedGroupNames)
+
+        --------------------------------------------------------------------------------
+        -- Create sub-menus per action group:
+        --------------------------------------------------------------------------------
         local allEnabled = true
         local allDisabled = true
 
-        for id,_ in pairs(self:allowedHandlers()) do
-            local enabled = not self:isDisabledHandler(id)
-            allEnabled = allEnabled and enabled
-            allDisabled = allDisabled and not enabled
-            actionItems[#actionItems + 1] = {
-                title = i18n(format("%s_action", id)) or id,
-                fn=function()
-                    if enabled then
-                        self:disableHandler(id)
-                    else
-                        self:enableHandler(id)
-                    end
+        local allEnabledInGroup = {}
+        local allDisabledInGroup = {}
+
+        local groupItems = {}
+        for currentGroupID, _ in pairs(allowedGroupNames) do
+
+            allEnabledInGroup[currentGroupID] = true
+            allDisabledInGroup[currentGroupID] = true
+
+            local submenu = {}
+            for id,_ in pairs(allowedHandlers) do
+                local idComponents = split(id, "_")
+                local groupID = idComponents and idComponents[1]
+                if groupID == currentGroupID then
+                    local enabled = not self:isDisabledHandler(id)
+                    allEnabled = allEnabled and enabled
+                    allDisabled = allDisabled and not enabled
+
+                    allEnabledInGroup[groupID] = allEnabledInGroup[groupID] and enabled
+                    allDisabledInGroup[groupID] = allDisabledInGroup[groupID] and not enabled
+
+                    submenu[#submenu + 1] = {
+                        title = i18n(format("%s_action", id)) or id,
+                        fn=function()
+                            if enabled then
+                                self:disableHandler(id)
+                            else
+                                self:enableHandler(id)
+                            end
+                            self:updateSelectedToolbarIcon()
+                        end,
+                        checked = enabled,
+                    }
+                end
+            end
+
+            sort(submenu, function(a, b) return a.title < b.title end)
+
+            local allSubmenu = {
+                { title = i18n("consoleSectionsShowAll"), fn = function()
+                    self:enableAllHandlers(currentGroupID)
                     self:updateSelectedToolbarIcon()
-                end,
-                checked = enabled,
+                end, disabled = allEnabledInGroup[currentGroupID] },
+                { title = i18n("consoleSectionsHideAll"), fn = function()
+                    self:disableAllHandlers(currentGroupID)
+                    self:updateSelectedToolbarIcon()
+                end, disabled = allDisabledInGroup[currentGroupID] },
+                { title = "-" }
+            }
+
+            concat(allSubmenu, submenu)
+
+            groupItems[#groupItems + 1] = {
+                title = i18n(format("%s_command_group", currentGroupID)) or currentGroupID,
+                menu = allSubmenu,
             }
         end
 
-        sort(actionItems, function(a, b) return a.title < b.title end)
+        sort(groupItems, function(a, b) return a.title < b.title end)
 
         local allItems = {
             { title = i18n("consoleSectionsShowAll"), fn = function()
@@ -1408,7 +1499,7 @@ function activator:rightClickAction(index)
             end, disabled = allDisabled },
             { title = "-" }
         }
-        concat(allItems, actionItems)
+        concat(allItems, groupItems)
 
         sections.menu = allItems
 
