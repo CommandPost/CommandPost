@@ -146,7 +146,7 @@ local function makePercentHandlerRelativeA(puckFinderFn)
     return function(metadata)
         if optionPressed() then
             if puck:isShowing() then
-                puck:value(0)
+                puck:reset()
                 value = 0
             else
                 puck:show()
@@ -194,7 +194,7 @@ local function makeAngleHandlerRelativeA(puckFinderFn)
     return function(metadata)
         if optionPressed() then
             if puck:isShowing() then
-                puck:value(0)
+                puck:reset()
                 value = 0
             else
                 puck:show()

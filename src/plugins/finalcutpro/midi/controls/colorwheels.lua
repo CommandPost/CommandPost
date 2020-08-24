@@ -221,6 +221,25 @@ local function makeResetColorWheelHandler(wheelFinderFn)
     end
 end
 
+-- makeResetColorWheelSatAndBrightnessHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for resetting a Color Wheel, Saturation & Brightness.
+--
+-- Parameters:
+--  * puckFinderFn - a function that will return the `ColorPuck` to reset.
+--
+-- Returns:
+--  * a function that will receive the MIDI control metadata table and process it.
+local function makeResetColorWheelSatAndBrightnessHandler(wheelFinderFn)
+    return function()
+        local wheel = wheelFinderFn()
+        wheel:show()
+        wheel:colorOrientation({right=0, up=0})
+        wheel:brightnessValue(0)
+        wheel:saturationValue(1)
+    end
+end
+
 -- makeRelativeAWheelHandler(puckFinderFn) -> function
 -- Function
 -- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
@@ -350,7 +369,7 @@ local function makeRelativeABrightnessHandler(wheelFinderFn)
 
         if optionPressed() then
             if wheel:isShowing() then
-                wheel:brightnessValue(1)
+                wheel:brightnessValue(0)
                 brightnessShift = 0
             else
                 wheel:show()
@@ -523,7 +542,7 @@ local function makeRelativeATemperatureHandler()
             return
         end
 
-        local increment = (shiftPressed() and 0.001) or 0.01
+        local increment = (shiftPressed() and 1) or 25
         local midiValue = metadata.pitchChange or metadata.fourteenBitValue
         if midiValue < 8000 then
             temperatureShift = temperatureShift + increment
@@ -620,7 +639,7 @@ local function makeRelativeATintHandler()
             return
         end
 
-        local increment = (shiftPressed() and 0.001) or 0.01
+        local increment = (shiftPressed() and 0.1) or 1
         local midiValue = metadata.pitchChange or metadata.fourteenBitValue
         if midiValue < 8000 then
             tintShift = tintShift + increment
@@ -717,7 +736,7 @@ local function makeRelativeAHueHandler()
             return
         end
 
-        local increment = (shiftPressed() and 0.001) or 0.01
+        local increment = (shiftPressed() and 0.1) or 5
         local midiValue = metadata.pitchChange or metadata.fourteenBitValue
         if midiValue < 8000 then
             hueShift = hueShift + increment
@@ -805,7 +824,7 @@ local function makeRelativeAMixHandler()
 
         if optionPressed() then
             if wheel:isShowing() then
-                wheel:mix(0)
+                wheel:mix(1)
                 mixShift = 0
             else
                 wheel:show()
@@ -813,7 +832,7 @@ local function makeRelativeAMixHandler()
             return
         end
 
-        local increment = (shiftPressed() and 0.001) or 0.01
+        local increment = (shiftPressed() and 0.01) or 0.05
         local midiValue = metadata.pitchChange or metadata.fourteenBitValue
         if midiValue < 8000 then
             mixShift = mixShift + increment
@@ -838,7 +857,7 @@ local function makeResetMixHandler()
     return function()
         local wheel = fcp.inspector.color.colorWheels
         wheel:show()
-        wheel:mix(0)
+        wheel:mix(1)
     end
 end
 
@@ -949,7 +968,9 @@ function plugin.init(deps)
     local temperature   = i18n("temperature")
     local tint          = i18n("tint")
     local vertical      = i18n("vertical")
+    local resetWheel    = i18n("resetWheel")
 
+    local resetWheelSaturationAndBrightness = i18n("resetWheelSaturationAndBrightness")
     local midiControlColorWheel = i18n("midiControlColorWheel")
     local holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset = i18n("holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset")
 
@@ -1000,9 +1021,19 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         deps.manager.controls:new(v.id .. "Reset", {
             group = "fcpx",
-            text = format("%s - %s - %s", colorWheel, v.title, reset),
+            text = format("%s - %s - %s", colorWheel, v.title, resetWheel),
             subText = i18n("resetsAColorWheelUsingAMIDIDevice"),
             fn = makeResetColorWheelHandler(function() return v.control end),
+        })
+
+        --------------------------------------------------------------------------------
+        -- Color Wheel - Reset Color Wheel, Saturation & Brightness:
+        --------------------------------------------------------------------------------
+        deps.manager.controls:new(v.id .. "ResetWheelSaturationBrightness", {
+            group = "fcpx",
+            text = format("%s - %s - %s", colorWheel, v.title, resetWheelSaturationAndBrightness),
+            subText = i18n("resetsAColorWheelUsingAMIDIDevice"),
+            fn = makeResetColorWheelSatAndBrightnessHandler(function() return v.control end),
         })
 
         --------------------------------------------------------------------------------
