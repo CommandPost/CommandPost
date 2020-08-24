@@ -1562,6 +1562,8 @@
         "resetsTemperatureUsingAMIDIDevice": "Resets the Temperature using a MIDI Device.",
         "resetsTintUsingAMIDIDevice": "Resets the Tint using a MIDI Device.",
         "resetUnit": "Reset Unit",
+        "resetWheel": "Reset Wheel",
+        "resetWheelSaturationAndBrightness": "Reset Wheel, Saturation & Brightness",
         "resolve_application_manager_label": "Application Manager",
         "resolve_group": "DaVinci Resolve",
         "resolve_manager_label": "Resolve Manager",

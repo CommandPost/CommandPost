@@ -80,6 +80,7 @@ function ColorWheels:initialize(parent)
     self.temperatureSlider.value:mirror(self.temperatureTextField.value)
     self.mixSlider.value:mirror(self.mixTextField.value)
     self.tintSlider.value:mirror(self.tintTextField.value)
+    self.hueSlider.value:mirror(self.hueTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs._asm.axuielement; read-only>
@@ -140,14 +141,14 @@ end
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 function ColorWheels.lazy.prop:tint()
-    return self.tintTextField.value
+    return self.tintSlider.value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
 --- The hue for the corrector. A number from `0` to `360`.
 function ColorWheels.lazy.prop:hue()
-    return self.hueTextField.value
+    return self.hueSlider.value
 end
 
 --------------------------------------------------------------------------------
@@ -270,6 +271,9 @@ function ColorWheels.lazy.value:mixSlider()
     )
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.mixTextField <cp.ui.TextField>
+--- Field
+--- A `TextField` that provides access to the 'Mix' slider.
 function ColorWheels.lazy.value:mixTextField()
     return TextField(self,
         function()
@@ -299,6 +303,9 @@ function ColorWheels.lazy.value:temperatureSlider()
     )
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.temperatureTextField <cp.ui.TextField>
+--- Field
+--- A `TextField` that provides access to the 'Temperature' slider.
 function ColorWheels.lazy.value:temperatureTextField()
     return TextField(self,
         function()
@@ -306,7 +313,7 @@ function ColorWheels.lazy.value:temperatureTextField()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
-    )
+    ):forceFocus()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.tintRow <cp.ui.PropertyRow>
@@ -329,6 +336,9 @@ function ColorWheels.lazy.value:tintSlider()
     )
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.tintTextField <cp.ui.TextField>
+--- Field
+--- A `TextField` that provides access to the 'Tint' slider.
 function ColorWheels.lazy.value:tintTextField()
     return TextField(self,
         function()
@@ -347,6 +357,18 @@ function ColorWheels.lazy.value:hueRow()
     return PropertyRow(self, "PAECorrectorEffectHue")
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.hueSlider <cp.ui.Slider>
+--- Field
+--- Returns a `Slider` that provides access to the 'Hue' slider.
+function ColorWheels.lazy.value:hueSlider()
+    return Slider(self,
+        function()
+            local ui = self.hueRow:children()
+            return ui and childMatching(ui, Slider.matches)
+        end
+    )
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hueTextField <cp.ui.TextField>
 --- Field
 --- A `TextField` that provides access to the 'Hue' slider.
@@ -357,7 +379,7 @@ function ColorWheels.lazy.value:hueTextField()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
-    )
+    ):forceFocus()
 end
 
 return ColorWheels
