@@ -253,7 +253,7 @@ function mod.highlightFrame(frame)
     --------------------------------------------------------------------------------
     mod.updateTimer = doEvery(0.01, function()
         local f = fcp.libraries:playhead():frame()
-        if mod.browserHighlight then
+        if mod.browserHighlight and f then
             if displayHighlightShape == SHAPE_RECTANGLE then
                 mod.browserHighlight:setFrame(geometry.rect(f.x, f.y, f.w, f.h - 12))
             elseif displayHighlightShape == SHAPE_CIRCLE then

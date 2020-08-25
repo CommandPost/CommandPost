@@ -1,0 +1,703 @@
+<script>{(js/jscolor.js)}</script>
+<style>{(css/tourbox.css)}</style>
+<script>
+	function updateApplicationAndBank() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "updateApplicationAndBank",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateBankLabel() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "updateBankLabel",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					bankLabel: document.getElementById("bankLabel").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeControl(element, controlType) {
+		// -------------------------------------------------
+		// TRANSLATE CONTROLTYPE TO LABEL:
+		// -------------------------------------------------
+		if (!controlType) {
+			controlType = element.getAttribute("controlType");
+		}
+
+		// -------------------------------------------------
+		// UPDATE LABEL UI:
+		// -------------------------------------------------
+		if (controlType == "side") { label = "Side" };
+		if (controlType == "tour") { label = "Tour" };
+		if (controlType == "dial") { label = "Dial" };
+		if (controlType == "scroll") { label = "Scroll" };
+		if (controlType == "top") { label = "Top" };
+		if (controlType == "c1") { label = "C1" };
+		if (controlType == "c2") { label = "C2" };
+		if (controlType == "knob") { label = "Knob" };
+		if (controlType == "tall") { label = "Tall" };
+		if (controlType == "short") { label = "Short" };
+		if (controlType == "up") { label = "Up" };
+		if (controlType == "down") { label = "Down" };
+		if (controlType == "left") { label = "Left" };
+		if (controlType == "right") { label = "Right" };
+		document.getElementById("label").innerHTML = label;
+
+		// -------------------------------------------------
+		// SUPPORTS CLICK:
+		// -------------------------------------------------
+		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "c1" || controlType == "c2" || controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right" || controlType == "scroll" || controlType == "tour") {
+			document.getElementById("pressActionA").style.display = "table";
+			document.getElementById("pressActionB").style.display = "table";
+			document.getElementById("pressActionC").style.display = "table";
+			document.getElementById("repeatA").style.display = "table";
+		} else {
+			document.getElementById("pressActionA").style.display = "none";
+			document.getElementById("pressActionB").style.display = "none";
+			document.getElementById("pressActionC").style.display = "none";
+			document.getElementById("repeatA").style.display = "none";
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS SCROLL:
+		// -------------------------------------------------
+		if (controlType == "scroll" || controlType == "dial" || controlType == "knob") {
+			document.getElementById("knobA").style.display = "table";
+			document.getElementById("knobB").style.display = "table";
+			document.getElementById("knobC").style.display = "table";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerB").style.display = "table";
+		} else {
+			document.getElementById("knobA").style.display = "none";
+			document.getElementById("knobB").style.display = "none";
+			document.getElementById("knobC").style.display = "none";
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS DOUBLE CLICK:
+		// -------------------------------------------------
+		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short") {
+			document.getElementById("doubleClickA").style.display = "table";
+			document.getElementById("doubleClickB").style.display = "table";
+			document.getElementById("doubleClickC").style.display = "table";
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerB").style.display = "table";
+		} else {
+			document.getElementById("doubleClickA").style.display = "none";
+			document.getElementById("doubleClickB").style.display = "none";
+			document.getElementById("doubleClickC").style.display = "none";
+			document.getElementById("spacerA").style.display = "none";
+			document.getElementById("spacerB").style.display = "none";
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS SCROLL AND CLICK:
+		// -------------------------------------------------
+		if (controlType == "scroll") {
+			document.getElementById("spacerA").style.display = "table";
+			document.getElementById("spacerB").style.display = "table";
+		}
+
+		// -------------------------------------------------
+		// Save the controlType in a hidden field:
+		// -------------------------------------------------
+		document.getElementById("controlType").value = controlType;
+
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "updateUI",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: controlType,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function selectButton(buttonType) {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "updateAction",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					buttonType: buttonType,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function clearButton(buttonType) {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "clearAction",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					buttonType: buttonType,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function importSettings() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "importSettings",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function exportSettings() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "exportSettings",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyControlToAllBanks() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "copyControlToAllBanks",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetControl() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "resetControl",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: document.getElementById("controlType").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetEverything() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "resetEverything",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetApplication() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "resetApplication",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function resetBank() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "resetBank",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyApplication() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "copyApplication",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function copyBank() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "copyBank",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeRepeatPressActionUntilReleased() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "changeRepeatPressActionUntilReleased",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					controlType: document.getElementById("controlType").value,
+					repeatPressActionUntilReleased: document.getElementById("repeatPressActionUntilReleased").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeIgnore() {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "changeIgnore",
+					application: document.getElementById("application").value,
+					ignore: document.getElementById("ignore").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateIgnoreVisibility() {
+		if (document.getElementById("application").value == "All Applications") {
+			document.getElementById("ignoreApp").style.display = "none";
+		} else {
+			document.getElementById("ignoreApp").style.display = "block";
+		}
+	}
+</script>
+<table>
+	<thead>
+		<tr>
+			<th style="padding-left: 20px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="importSettings()">{{ i18n("importSettings") }}</a>
+			</th>
+			<th style="padding-left: 10px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">{{ i18n("exportSettings") }}</a>
+			</th>
+		</tr>
+	</thead>
+</table>
+<hr />
+<table style="width: 1000px; text-align: left; vertical-align: text-bottom; padding-top: 10px; padding-left: 20px">
+	<tr>
+		<th style=text-align: left;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+				<select id="application" style="width: 150px;" onchange="updateApplicationAndBank()">
+					<option value="All Applications">{{ i18n("allApplications") }}</option>
+					<option disabled>──────────</option>
+					{%
+					for id, label in spairs(builtInApps, function(t,a,b) return t[a] < t[b] end) do
+						local selected = ""
+						if lastApplication == id then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{id}}">{{label}}</option>
+					{% end %}
+					<option disabled>──────────</option>
+					{%
+					local atLeastOne = false
+					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
+						if id ~= "All Applications" then
+							atLeastOne = true
+							local selected = ""
+							if lastApplication == id then
+								selected = [[selected=""]]
+							end
+					%}
+					<option {{selected}} value="{{id}}">{{label}}</option>
+					{%
+						end
+					end
+					if atLeastOne then
+					%}
+					<option disabled>──────────</option>
+					{%
+					end
+					%}
+					<option value="Add Application">{{ i18n("addApplication") }}</option>
+				</select>
+			</span>
+		</th>
+		<th style="padding-left: 20px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("bank") }}: </span>
+				<select id="bank" style="width: 100px;" onchange="updateApplicationAndBank()">
+					{%
+					for i=1, numberOfBanks do
+						local selected = ""
+						if lastBank == tostring(i) then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{i}}">{{i}}</option>
+					{% end %}
+					<option disabled>──────────</option>
+					{%
+					for i=1, numberOfBanks do
+						local selected = ""
+						if lastBank == tostring(i) .. "_LeftFn" then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
+					{% end %}
+					<option disabled>──────────</option>
+					{%
+					for i=1, numberOfBanks do
+						local selected = ""
+						if lastBank == tostring(i) .. "_RightFn" then
+							selected = [[selected=""]]
+						end
+					%}
+					<option {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
+					{% end %}
+				</select>
+			</span>
+		</th>
+		<th style="padding-left: 20px;">
+			<span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("label") }}: </span>
+			<input type="text" id="bankLabel" class="tourboxLabel" value="{{ lastBankLabel }}" onchange="updateBankLabel()" placeholder="{{ i18n("none") }}">
+		</th>
+		<th style="padding-left: 20px; width: 200px; vertical-align:bottom;">
+			<span id="ignoreApp">
+				<input type="checkbox" value="ignore" id="ignore" onchange="changeIgnore()">
+		  		<label for="ignore"> <span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("ignoreApplication") }}</span></label>
+	  		</span>
+		</th>
+	</tr>
+</table>
+<table>
+	<thead>
+		<tr>
+			<th width="447px">
+				<div id="TourBoxUI">
+					<div id="TourBox-01"></div>
+					<div id="TourBox-02"></div>
+					<div id="top" controlType="top" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/top.png') }}" width="108" height="44" border="0" alt="Top" />
+					</div>
+					<div id="TourBox-04"></div>
+					<div id="TourBox-05"></div>
+					<div id="side" controlType="side" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/side.png') }}" width="27" height="90" border="0" alt="Side" />
+					</div>
+					<div id="TourBox-07"></div>
+					<div id="scroll" controlType="scroll" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/scroll.png') }}" width="43" height="90" border="0" alt="Scroll" />
+					</div>
+					<div id="TourBox-09"></div>
+					<div id="TourBox-10"></div>
+					<div id="TourBox-11"></div>
+					<div id="c1" controlType="c1" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/c1.png') }}" width="32" height="32" border="0" alt="C1" />
+					</div>
+					<div id="TourBox-13"></div>
+					<div id="c2" controlType="c2" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/c2.png') }}" width="33" height="32" border="0" alt="C2" />
+					</div>
+					<div id="TourBox-15"></div>
+					<div id="TourBox-16"></div>
+					<div id="knob-1" controlType="knob" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/knob-1.png') }}" width="81" height="61" border="0" alt="Knob" />
+					</div>
+					<div id="TourBox-18"></div>
+					<div id="TourBox-19"></div>
+					<div id="TourBox-20"></div>
+					<div id="TourBox-21"></div>
+					<div id="TourBox-22"></div>
+					<div id="TourBox-23"></div>
+					<div id="tour-1" controlType="tour" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tour-1.png') }}" width="23" height="42" border="0" alt="Tour" />
+					</div>
+					<div id="tour-2" controlType="tour" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tour-2.png') }}" width="5" height="19" border="0" alt="Tour" />
+					</div>
+					<div id="TourBox-26"></div>
+					<div id="knob-2" controlType="knob" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/knob-2.png') }}" width="69" height="8" border="0" alt="Knob" />
+					</div>
+					<div id="TourBox-28"></div>
+					<div id="tour-3" controlType="tour" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tour-3.png') }}" width="5" height="11" border="0" alt="Tour" />
+					</div>
+					<div id="TourBox-30"></div>
+					<div id="knob-3" controlType="knob" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/knob-3.png') }}" width="56" height="6" border="0" alt="Knob" />
+					</div>
+					<div id="TourBox-32"></div>
+					<div id="TourBox-33"></div>
+					<div id="dial" controlType="dial" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/dial.png') }}" width="113" height="116" border="0" alt="Dial" />
+					</div>
+					<div id="tour-4" controlType="tour" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tour-4.png') }}" width="7" height="5" border="0" alt="Tour" />
+					</div>
+					<div id="TourBox-36"></div>
+					<div id="knob-4" controlType="knob" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/knob-4.png') }}" width="42" height="5" border="0" alt="Knob" />
+					</div>
+					<div id="TourBox-38"></div>
+					<div id="TourBox-39"></div>
+					<div id="tall" controlType="tall" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tall.png') }}" width="61" height="102" border="0" alt="Tall" />
+					</div>
+					<div id="TourBox-41"></div>
+					<div id="tour-5" controlType="tour" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/tour-5.png') }}" width="17" height="14" border="0" alt="Tour" />
+					</div>
+					<div id="TourBox-43"></div>
+					<div id="TourBox-44"></div>
+					<div id="TourBox-45"></div>
+					<div id="up-1" controlType="up" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/up-1.png') }}" width="27" height="31" border="0" alt="Up" />
+					</div>
+					<div id="TourBox-47"></div>
+					<div id="TourBox-48"></div>
+					<div id="short" controlType="short" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/short.png') }}" width="50" height="74" border="0" alt="Short" />
+					</div>
+					<div id="TourBox-50"></div>
+					<div id="TourBox-51"></div>
+					<div id="left-1" controlType="left" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/left-1.png') }}" width="31" height="27" border="0" alt="Left" />
+					</div>
+					<div id="TourBox-53"></div>
+					<div id="up-2" controlType="up" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/up-2.png') }}" width="18" height="5" border="0" alt="Up" />
+					</div>
+					<div id="TourBox-55"></div>
+					<div id="right-2" controlType="right" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/right-2.png') }}" width="30" height="27" border="0" alt="Right" />
+					</div>
+					<div id="TourBox-57"></div>
+					<div id="left-2" controlType="left" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/left-2.png') }}" width="5" height="15" border="0" alt="Left" />
+					</div>
+					<div id="TourBox-59"></div>
+					<div id="right-1" controlType="right" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/right-1.png') }}" width="7" height="15" border="0" alt="Right" />
+					</div>
+					<div id="TourBox-61"></div>
+					<div id="down-1" controlType="down" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/down-1.png') }}" width="18" height="7" border="0" alt="Down" />
+					</div>
+					<div id="TourBox-63"></div>
+					<div id="TourBox-64"></div>
+					<div id="down-2" controlType="down" onclick="changeControl(this)" style="cursor: pointer;">
+						<img src="{{ insertImage('images/down-2.png') }}" width="27" height="31" border="0" alt="Down" />
+					</div>
+					<div id="TourBox-66"></div>
+					<div id="TourBox-67"></div>
+					<div id="TourBox-68"></div>
+					<div id="TourBox-69"></div>
+					<div id="TourBox-70"></div>
+				</div>
+			</th>
+			<th style="text-align:top; padding-top: 20px;">
+				<p style="text-align: left; font-size:16px; margin: 0px;">
+					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
+				</p>
+
+				<table class="tourbox" style="height: 545px;">
+					<!-- PRESS & RELEASE ACTION: -->
+					<tr id="pressActionA">
+						<th width="229px">{{ i18n("pressAction") }}:</th>
+						<th width="229px">{{ i18n("releaseAction") }}:</th>
+					</tr>
+					<tr id="pressActionB">
+						<td width="229px"><input type="text" id="press_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="release_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr id="pressActionC">
+						<td width="229px"><a id="press_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
+						<td width="229px"><a id="release_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
+					</tr>
+
+					<!-- PRESS REPEAT: -->
+					<tr id="repeatA">
+						<td width="458px">
+							<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
+							<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+						</td>
+					</tr>
+
+					<!-- SPACER: -->
+					<tr id="spacerA">
+						<td>
+							</br>
+						</td>
+					</tr>
+
+					<!-- DOUBLE CLICK: -->
+					<tr id="doubleClickA">
+						<th width="229px">{{ i18n("doubleClickPressAction") }}:</th>
+						<th width="229px">{{ i18n("doubleClickReleaseAction") }}:</th>
+					</tr>
+					<tr id="doubleClickB">
+						<td width="229px"><input type="text" id="double_click_press_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="double_click_release_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr id="doubleClickC">
+						<td width="229px"><a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickPressAction')">{{ i18n("select") }}</a> <a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickPressAction')">{{ i18n("clear") }}</a></td>
+						<td width="229px"><a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickReleaseAction')">{{ i18n("select") }}</a> <a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickReleaseAction')">{{ i18n("clear") }}</a></td>
+					</tr>
+
+					<!-- KNOB LEFT & RIGHT: -->
+					<tr id="knobA">
+						<th width="229px">{{ i18n("turnLeftAction") }}:</th>
+						<th width="229px">{{ i18n("turnRightAction") }}:</th>
+					</tr>
+					<tr id="knobB">
+						<td width="229px"><input type="text" id="left_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="right_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr id="knobC">
+						<td width="229px"><a id="left_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
+						<td width="229px"><a id="right_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
+					</tr>
+
+					<!-- SPACER: -->
+					<tr id="spacerB">
+						<td>
+							</br>
+						</td>
+					</tr>
+
+					<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->
+					<tr style="padding-top: 10px;">
+						<th>
+							<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">{{ i18n("copyControlToAllBanks") }}</a>
+						</th>
+						<th>
+							<a href="#" class="bottomButton" onclick="resetControl()">{{ i18n("resetControl") }}</a>
+						</th>
+					</tr>
+
+				</table>
+			</th>
+		</tr>
+	</thead>
+</table>
+
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetEverything()">{{ i18n("resetEverything") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetApplication()">{{ i18n("resetApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="resetBank()">{{ i18n("resetBank") }}</a>
+		</th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyApplication()">{{ i18n("copyApplication") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="copyBank()">{{ i18n("copyBank") }}</a>
+		</th>
+	</tr>
+</table>
+
+<input type="hidden" id="controlType" value="{{ lastControlType }}">
+
+<script>
+	// Update UI on initial load:
+	changeControl("", "{{ lastControlType }}");
+</script>

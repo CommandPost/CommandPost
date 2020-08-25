@@ -110,7 +110,7 @@ local cachedLeftSideScreen = ""
 -- The last screen data sent.
 local cachedRightSideScreen = ""
 
--- cachedTouchScreenButtonValues -> string
+-- cachedBundleID -> string
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
