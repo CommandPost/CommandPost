@@ -8,9 +8,10 @@ local log                       = require "hs.logger".new "tourBox"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
-local timer                     = require "hs.timer"
-local serial                    = require "hs.serial"
 local bytes                     = require "hs.bytes"
+local eventtap                  = require "hs.eventtap"
+local serial                    = require "hs.serial"
+local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
 local dialog                    = require "cp.dialog"
@@ -19,7 +20,9 @@ local json                      = require "cp.json"
 
 local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
+local doEvery                   = timer.doEvery
 local hexToBytes                = bytes.hexToBytes
+local keyRepeatInterval         = eventtap.keyRepeatInterval
 
 local mod = {}
 
@@ -36,20 +39,30 @@ local defaultFilename = "Default" .. fileExtension
 local DEVICE_ID = "SLAB_USBtoUART"
 
 local lookup = {
-	["01"] 		= {controlType = "side", actionType = "pressAction"},
-	["81"] 		= {controlType = "side", actionType = "releaseAction"},
+	["01"] 		= {controlType = "side", actionType = "pressAction", supportsDoubleClick = true},
+	["81"] 		= {controlType = "side", actionType = "releaseAction", supportsDoubleClick = true},
 	["21"]      = {controlType = "side", actionType = "doubleClickPressAction"},
 	["a1"]      = {controlType = "side", actionType = "doubleClickReleaseAction"},
 
-	["0a"] 		= {controlType = "scroll", actionType = "pressAction"},
-	["8a"] 		= {controlType = "scroll", actionType = "releaseAction"},
+	["0a"] 		= {controlType = "scroll", actionType = "pressAction", supportsDoubleClick = true},
+	["8a"] 		= {controlType = "scroll", actionType = "releaseAction", supportsDoubleClick = true},
 	["0989"] 	= {controlType = "scroll", actionType = "leftAction"},
 	["49c9"] 	= {controlType = "scroll", actionType = "rightAction"},
 
-	["02"] 		= {controlType = "top", actionType = "pressAction"},
-	["82"] 		= {controlType = "top", actionType = "releaseAction"},
+	["02"] 		= {controlType = "top", actionType = "pressAction", supportsDoubleClick = true},
+	["82"] 		= {controlType = "top", actionType = "releaseAction", supportsDoubleClick = true},
 	["1f"] 		= {controlType = "top", actionType = "doubleClickPressAction"},
 	["9f"] 		= {controlType = "top", actionType = "doubleClickReleaseAction"},
+
+	["00"] 		= {controlType = "tall", actionType = "pressAction", supportsDoubleClick = true},
+	["80"] 		= {controlType = "tall", actionType = "releaseAction", supportsDoubleClick = true},
+	["18"] 		= {controlType = "tall", actionType = "doubleClickPressAction"},
+	["98"] 		= {controlType = "tall", actionType = "doubleClickReleaseAction"},
+
+	["03"] 		= {controlType = "short", actionType = "pressAction", supportsDoubleClick = true},
+	["83"] 		= {controlType = "short", actionType = "releaseAction", supportsDoubleClick = true},
+	["1c"] 		= {controlType = "short", actionType = "doubleClickPressAction"},
+	["9c"] 		= {controlType = "short", actionType = "doubleClickReleaseAction"},
 
 	["22"] 		= {controlType = "c1", actionType = "pressAction"},
 	["a2"] 		= {controlType = "c1", actionType = "releaseAction"},
@@ -65,16 +78,6 @@ local lookup = {
 
 	["2a"] 		= {controlType = "tour", actionType = "pressAction"},
 	["aa"] 		= {controlType = "tour", actionType = "releaseAction"},
-
-	["00"] 		= {controlType = "tall", actionType = "pressAction"},
-	["80"] 		= {controlType = "tall", actionType = "releaseAction"},
-	["18"] 		= {controlType = "tall", actionType = "doubleClickPressAction"},
-	["98"] 		= {controlType = "tall", actionType = "doubleClickReleaseAction"},
-
-	["03"] 		= {controlType = "short", actionType = "pressAction"},
-	["83"] 		= {controlType = "short", actionType = "releaseAction"},
-	["1c"] 		= {controlType = "short", actionType = "doubleClickPressAction"},
-	["9c"] 		= {controlType = "short", actionType = "doubleClickReleaseAction"},
 
 	["10"] 		= {controlType = "up", actionType = "pressAction"},
 	["90"] 		= {controlType = "up", actionType = "releaseAction"},
@@ -120,8 +123,13 @@ local function executeAction(thisAction)
     return false
 end
 
+local doubleClickInProgress = {}
+local repeatTimers = {}
 
 local function processMessage(m)
+
+    -- TODO:
+    --  [ ] Add support for modifier keys
 
     local items = mod.items()
     local bundleID = cachedBundleID
@@ -155,15 +163,46 @@ local function processMessage(m)
     local control = bank and bank[m.controlType]
     local action = control and control[m.actionType]
 
-    --[[
-    log.df("%s - %s", m.controlType, m.actionType)
-    log.df("bundleID: %s", bundleID)
-    log.df("action: %s", hs.inspect(action))
-    log.df("-----")
-    --]]
+
+    if m.actionType == "releaseAction" then
+        if repeatTimers[m.controlType] then
+            repeatTimers[m.controlType]:stop()
+            repeatTimers[m.controlType] = nil
+        end
+        if m.supportsDoubleClick then
+            doAfter(0.2, function()
+                if repeatTimers[m.controlType] then
+                    repeatTimers[m.controlType]:stop()
+                    repeatTimers[m.controlType] = nil
+                end
+            end)
+        end
+    end
 
     if action then
-        executeAction(action)
+        if m.supportsDoubleClick then
+            doubleClickInProgress[m.controlType] = true
+            doAfter(0.2, function()
+                if doubleClickInProgress[m.controlType] then
+                    executeAction(action)
+                    doubleClickInProgress[m.controlType] = false
+                    if action.action and control.repeatPressActionUntilReleased then
+                        repeatTimers[m.controlType] = doEvery(keyRepeatInterval(), function()
+                            executeAction(action)
+                        end)
+
+                    end
+                end
+            end)
+        else
+            doubleClickInProgress[m.controlType] = false
+            executeAction(action)
+            if action.action and control.repeatPressActionUntilReleased then
+                repeatTimers[m.controlType] = doEvery(keyRepeatInterval(), function()
+                    executeAction(action)
+                end)
+            end
+        end
     end
 
 end
@@ -194,7 +233,6 @@ local function deviceCallback(callbackType, devices)
     if callbackType == "connected" then
         for _, deviceName in pairs(devices) do
             if deviceName == DEVICE_ID then
-                log.df("TourBox Connected!")
                 setupTourbox()
             end
         end
@@ -206,7 +244,12 @@ end
 --- Is Loupedeck CT support enabled?
 mod.enabled = config.prop("tourbox.enabled", false):watch(function(enabled)
     if enabled then
-        mod._appWatcher:start()
+        mod._appWatcher = appWatcher.new(function(_, event)
+            if event == appWatcher.activated then
+                local frontmostApplication = application.frontmostApplication()
+                cachedBundleID = frontmostApplication:bundleID()
+            end
+        end):start()
         mod.deviceWatcher = serial.deviceCallback(deviceCallback)
         setupTourbox()
     else
@@ -215,6 +258,12 @@ mod.enabled = config.prop("tourbox.enabled", false):watch(function(enabled)
             mod._appWatcher:stop()
             mod._appWatcher = nil
         end
+        if mod.tourBox then
+            mod.tourBox:close()
+            mod.tourBox = nil
+        end
+        collectgarbage()
+        collectgarbage()
     end
 end)
 
@@ -323,16 +372,6 @@ function plugin.init(deps)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
     --]]
-
-    --------------------------------------------------------------------------------
-    -- Watch for application changes:
-    --------------------------------------------------------------------------------
-    mod._appWatcher = appWatcher.new(function(_, event)
-        if event == appWatcher.activated then
-            local frontmostApplication = application.frontmostApplication()
-            cachedBundleID = frontmostApplication:bundleID()
-        end
-    end)
 
     --------------------------------------------------------------------------------
     -- Connect to the TourBox:
