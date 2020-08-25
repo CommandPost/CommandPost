@@ -191,7 +191,7 @@ function mod.highlight()
     --------------------------------------------------------------------------------
     -- Get Browser Persistent Playhead:
     --------------------------------------------------------------------------------
-    local playhead = fcp:libraries():playhead()
+    local playhead = fcp.libraries:playhead()
     if playhead:isShowing() then
         mod.highlightFrame(playhead:frame())
     end
@@ -252,7 +252,7 @@ function mod.highlightFrame(frame)
     -- Update the Highlight position every 0.01 seconds:
     --------------------------------------------------------------------------------
     mod.updateTimer = doEvery(0.01, function()
-        local f = fcp:libraries():playhead():frame()
+        local f = fcp.libraries:playhead():frame()
         if mod.browserHighlight then
             if displayHighlightShape == SHAPE_RECTANGLE then
                 mod.browserHighlight:setFrame(geometry.rect(f.x, f.y, f.w, f.h - 12))

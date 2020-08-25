@@ -28,7 +28,7 @@ function plugin.init(deps)
     deps.console.register(bundleID, function()
         if not mod.activator then
             local actionmanager = deps.actionmanager
-            mod.activator = actionmanager.getActivator("finalcutpro.console"):preloadChoices()
+            mod.activator = actionmanager.getActivator("finalcutpro.console")
 
             --------------------------------------------------------------------------------
             -- Don't show widgets in the Final Cut Pro Search Console:

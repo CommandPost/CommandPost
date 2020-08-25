@@ -41,15 +41,15 @@ function VideoRole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.VIDEO)
 end
 
---- cp.apple.finalcutpro.timeline.VideoRole:subrolesExpanded() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.VideoRole.subrolesExpanded <cp.ui.Button>
+--- Field
 --- A [Button](cp.ui.Button.md) that toggles whether the sub-captions are visible.
 ---
 --- Note:
 --- * This [Button](cp.ui.Button.md) is only visible when the pointer is hovering over the Role.
-function VideoRole.lazy.method:subrolesExpanded()
+function VideoRole.lazy.value:subrolesExpanded()
     return Button(self, self.cellUI:mutate(function(original)
-        return childFromLeft(original(), 1, Button.matches())
+        return childFromLeft(original(), 1, Button.matches)
     end))
 end
 

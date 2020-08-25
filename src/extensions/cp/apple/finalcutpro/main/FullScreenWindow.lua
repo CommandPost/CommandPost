@@ -10,10 +10,15 @@
 local require       = require
 
 local axutils       = require "cp.ui.axutils"
-local prop          = require "cp.prop"
+local SplitGroup    = require "cp.ui.SplitGroup"
 local Window        = require "cp.ui.Window"
 
-local FullScreenWindow = {}
+local cache         = axutils.cache
+local children      = axutils.children
+local childMatching = axutils.childMatching
+local childWithRole = axutils.childWithRole
+
+local FullScreenWindow = Window:subclass("cp.apple.finalcutpro.main.FullScreenWindow")
 
 -- _findWindowUI(windows) -> window | nil
 -- Function
@@ -40,16 +45,14 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function FullScreenWindow.matches(element)
-    if element and element:attributeValue("AXSubrole") == "AXUnknown"
-    and element:attributeValue("AXTitle") == "" then
-        local children = element:attributeValue("AXChildren")
-        return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
-    end
-    return false
+function FullScreenWindow.static.matches(element)
+    return Window.matches(element)
+    and element:attributeValue("AXSubrole") == "AXUnknown"
+    and element:attributeValue("AXTitle") == ""
+    and SplitGroup.matches(children(element)[1])
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.new(app) -> FullScreenWindow
+--- cp.apple.finalcutpro.main.FullScreenWindow(app) -> FullScreenWindow
 --- Constructor
 --- Creates a new FCPX `FullScreenWindow` instance.
 ---
@@ -58,47 +61,56 @@ end
 ---
 --- Returns:
 --- * The new `FullScreenWindow`.
-function FullScreenWindow.new(app)
-    local o = prop.extend({
-        _app = app,
-    }, FullScreenWindow)
-
-    local UI = app.windowsUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
+function FullScreenWindow:initialize(app)
+    local UI = app.windowsUI:mutate(function(original)
+        return cache(self, "_ui", function()
             local windowsUI = original()
             return windowsUI and _findWindowUI(windowsUI)
         end,
         FullScreenWindow.matches)
     end)
 
-    -- provides access to common AXWindow properties.
-    local window = Window(app.app, UI)
-    o._window = window
+    Window.initialize(self, app.app, UI)
+end
 
-    local rootGroupUI = UI:mutate(function(original, self)
-        return axutils.cache(self, "_rootGroup", function()
+--- cp.apple.finalcutpro.main.FullScreenWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The root `AXGroup`.
+function FullScreenWindow.lazy.prop:rootGroupUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_rootGroup", function()
             local ui = original()
-            return ui and axutils.childWithRole(ui, "AXSplitGroup")
+            return ui and childWithRole(ui, "AXSplitGroup")
         end)
     end)
+end
 
-    local viewerGroupUI = rootGroupUI:mutate(function(original)
+--- cp.apple.finalcutpro.main.FullScreenWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The Viewer's group UI element.
+function FullScreenWindow.lazy.prop:viewerGroupUI()
+    return self.rootGroupUI:mutate(function(original)
         local ui = original()
         if ui then
             local group
             if #ui == 1 then
                 group = ui[1]
             else
-                group = axutils.childMatching(ui, function(element) return #element == 2 end)
+                group = childMatching(ui, function(element) return #element == 2 end)
             end
-            if #group == 2 and axutils.childWithRole(group, "AXImage") ~= nil then
+            if #group == 2 and childWithRole(group, "AXImage") ~= nil then
                 return group
             end
         end
         return nil
     end)
+end
 
-    local isFullScreen = rootGroupUI:mutate(
+--- cp.apple.finalcutpro.main.FullScreenWindow.isFullScreen <cp.prop; boolean; read-only; live>
+--- Field
+--- Checks if the window is full-screen.
+function FullScreenWindow.lazy.prop:isFullScreen()
+    return self.rootGroupUI:mutate(
         function(original)
             local ui = original()
             if ui then
@@ -107,10 +119,10 @@ function FullScreenWindow.new(app)
                 if #ui == 1 then
                     group = ui[1]
                 else
-                    group = axutils.childMatching(ui, function(element) return #element == 2 end)
+                    group = childMatching(ui, function(element) return #element == 2 end)
                 end
                 if #group == 2 then
-                    local image = axutils.childWithRole(group, "AXImage")
+                    local image = childWithRole(group, "AXImage")
                     return image ~= nil
                 end
             end
@@ -121,61 +133,6 @@ function FullScreenWindow.new(app)
             if ui then ui:setFullScreen(fullScreen) end
         end
     )
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.main.FullScreenWindow.UI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- The core `axuielement` for the window.
-        UI = UI,
-
---- cp.apple.finalcutpro.main.FullScreenWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- The root `AXGroup`.
-        rootGroupUI = rootGroupUI,
-
---- cp.apple.finalcutpro.main.FullScreenWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- The Viewer's group UI element.
-        viewerGroupUI = viewerGroupUI,
-
---- cp.apple.finalcutpro.main.FullScreenWindow.isShowing <cp.prop; boolean; read-only; live>
---- Field
---- Checks if the window is currently showing.
-        isShowing = window.visible,
-
---- cp.apple.finalcutpro.main.FullScreenWindow.isFullScreen <cp.prop; boolean; read-only; live>
---- Field
---- Checks if the window is full-screen.
-        isFullScreen = isFullScreen,
-    }
-
-    return o
-end
-
---- cp.apple.finalcutpro.main.FullScreenWindow:app() -> cp.apple.finalcutpro
---- Method
---- Returns the FCPX app.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The FCPX app.
-function FullScreenWindow:app()
-    return self._app
-end
-
---- cp.apple.finalcutpro.main.FullScreenWindow:window() -> cp.ui.Window
---- Method
---- Returns the `Window` instance for the full-screen window.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `Window` instance.
-function FullScreenWindow:window()
-    return self._window
 end
 
 --- cp.apple.finalcutpro.main.FullScreenWindow:show() -> cp.apple.finalcutpro
@@ -188,8 +145,22 @@ end
 --- Returns:
 --- * The window instance.
 function FullScreenWindow:show()
-    self:app():selectMenu({"View", "Playback", "Play Full Screen"})
+    self:app().menu:selectMenu({"View", "Playback", "Play Full Screen"})
     return self
+end
+
+--- cp.apple.finalcutpro.main.FullScreenWindow:doShow() -> <cp.rx.go.Statement>
+--- Method
+--- A `Statement` that attempts to show the full screen window.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement` to execute.
+function FullScreenWindow.lazy.method:doShow()
+    return self:app().menu:doSelectMenu({"View", "Playback", "Play Full Screen"})
+    :Label("FullScreenWindow:doShow")
 end
 
 return FullScreenWindow

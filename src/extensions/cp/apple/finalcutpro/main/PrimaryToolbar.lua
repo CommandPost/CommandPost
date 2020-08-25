@@ -4,16 +4,21 @@
 
 local require = require
 
--- local log								= require("hs.logger").new("PrimaryToolbar")
+-- local log								= require "hs.logger".new("PrimaryToolbar")
 
-local axutils							= require("cp.ui.axutils")
-local prop								= require("cp.prop")
+local axutils							= require "cp.ui.axutils"
 
-local Button							= require("cp.ui.Button")
-local CheckBox							= require("cp.ui.CheckBox")
+local Button							= require "cp.ui.Button"
+local CheckBox							= require "cp.ui.CheckBox"
+local Group                             = require "cp.ui.Group"
+local Toolbar                           = require "cp.ui.Toolbar"
 
+local cache                             = axutils.cache
+local childFromLeft                     = axutils.childFromLeft
+local childFromRight                    = axutils.childFromRight
+local childMatching                     = axutils.childMatching
 
-local PrimaryToolbar = {}
+local PrimaryToolbar = Toolbar:subclass("cp.apple.finalcutpro.main.PrimaryToolbar")
 
 --- cp.apple.finalcutpro.main.PrimaryToolbar.matches(element) -> boolean
 --- Function
@@ -24,8 +29,8 @@ local PrimaryToolbar = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function PrimaryToolbar.matches(element)
-    return element and element:attributeValue("AXRole") == "AXToolbar"
+function PrimaryToolbar.static.matches(element)
+    return Toolbar.matches(element)
 end
 
 -- getParent(element) -> none
@@ -41,7 +46,7 @@ local function getParent(element)
     return element and element:attributeValue("AXParent")
 end
 
---- cp.apple.finalcutpro.main.PrimaryToolbar.new(parent) -> PrimaryToolbar
+--- cp.apple.finalcutpro.main.PrimaryToolbar(parent) -> PrimaryToolbar
 --- Constructor
 --- Creates a new `PrimaryToolbar` instance.
 ---
@@ -50,104 +55,39 @@ end
 ---
 --- Returns:
 ---  * A new `PrimaryToolbar` object.
-function PrimaryToolbar.new(parent)
-    local o = prop.extend({_parent = parent}, PrimaryToolbar)
+function PrimaryToolbar:initialize(parent)
 
-    --------------------------------------------------------------------------------
-    -- A CheckBox instance to access the browser button:
-    --------------------------------------------------------------------------------
-    o._browserShowing = CheckBox(o, function()
-        local group = axutils.childFromRight(o:UI(), 4)
-        if group and group:attributeValue("AXRole") == "AXGroup" then
-            return axutils.childWithRole(group, "AXCheckBox")
-        end
-        return nil
+    local UI = parent.UI:mutate(function(original)
+        return cache(self, "_ui", function()
+            return childMatching(original(), PrimaryToolbar.matches)
+        end,
+        PrimaryToolbar.matches)
     end)
 
-    --- cp.apple.finalcutpro.main.PrimaryToolbar.browserShowing <cp.prop: boolean>
-    --- Field
-    --- If `true`, the browser panel is showing. Can be modified or watched.
-    o.browserShowing = o._browserShowing.checked:wrap(o)
+    Toolbar.initialize(self, parent, UI)
 
     --------------------------------------------------------------------------------
     -- Watch for AXValueChanged notifications in the app for this CheckBox:
     --------------------------------------------------------------------------------
-    o:app():notifier():watchFor("AXValueChanged", function(element)
+    self:app():notifier():watchFor("AXValueChanged", function(element)
         if element:attributeValue("AXRole") == "AXImage" then
             local eParent = getParent(element)
             if eParent then
                 --------------------------------------------------------------------------------
                 -- Browser showing check:
                 --------------------------------------------------------------------------------
-                local bsParent = getParent(o._browserShowing:UI())
+                local bsParent = getParent(self.browserShowing:UI())
                 if eParent == bsParent then
                     --------------------------------------------------------------------------------
                     -- Update the checked status for any watchers:
                     --------------------------------------------------------------------------------
                     -- log.df("value changed: parent: %s", _inspect(eParent))
-                    o._browserShowing.checked:update()
+                    self.browserShowing.checked:update()
                 end
             end
         end
     end)
-
-    return o
 end
-
---- cp.apple.finalcutpro.main.PrimaryToolbar:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function PrimaryToolbar:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.main.PrimaryToolbar:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function PrimaryToolbar:app()
-    return self:parent():app()
-end
-
------------------------------------------------------------------------
---
--- TIMELINE UI:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryToolbar:UI() -> axuielementObject
---- Method
---- Gets the Primary Toolbar UI.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `axuielementObject`
-function PrimaryToolbar:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:parent():UI(), PrimaryToolbar.matches)
-    end,
-    PrimaryToolbar.matches)
-end
-
---- cp.apple.finalcutpro.main.PrimaryToolbar.isShowing <cp.prop: boolean>
---- Variable
---- Is the Primary Toolbar showing?
-PrimaryToolbar.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(PrimaryToolbar)
 
 -----------------------------------------------------------------------
 --
@@ -155,42 +95,97 @@ end):bind(PrimaryToolbar)
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryToolbar:shareButton() -> Button
---- Method
---- Gets the Share Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Button` object.
-function PrimaryToolbar:shareButton()
-    if not self._shareButton then
-        self._shareButton = Button(self, function() return axutils.childFromRight(self:UI(), 1) end)
-    end
-    return self._shareButton
+--- cp.apple.finalcutpro.main.PrimaryToolbar.mediaImport <cp.ui.Button>
+--- Field
+--- The `Button` that will open the `MediaImport` dialog
+function PrimaryToolbar.lazy.value:mediaImport()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromLeft(original(), 1, Button.matches)
+    end))
 end
 
---- cp.apple.finalcutpro.main.PrimaryToolbar:browserButton() -> CheckBox
---- Method
---- Gets the Browser Button Checkbox.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `CheckBox` object.
-function PrimaryToolbar:browserButton()
-    if not self._browserButton then
-        self._browserButton = CheckBox(self, function()
-            local group = axutils.childFromRight(self:UI(), 4)
-            if group and group:attributeValue("AXRole") == "AXGroup" then
-                return axutils.childWithRole(group, "AXCheckBox")
-            end
-            return nil
-        end)
-    end
-    return self._browserButton
+--- cp.apple.finalcutpro.main.PrimaryToolbar.keywordEditor <cp.ui.CheckBox>
+--- Field
+--- The `CheckBox` that will open the `KeywordEditor` dialog when checked.
+function PrimaryToolbar.lazy.value:keywordEditor()
+    return CheckBox(self, self.UI:mutate(function(original)
+        -- for some reason some of these buttons are individually wrapped in an AXGroup
+        local group = childFromLeft(original(), 1, Group.matches)
+        if group then
+            return childMatching(group, CheckBox.matches)
+        end
+    end))
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.backgroundTasksWindow <cp.ui.CheckBox>
+--- Field
+--- The `CheckBox` that will open the `BackgroundTasksWindow` dialog
+function PrimaryToolbar.lazy.value:backgroundTasksWindow()
+    return CheckBox(self, self.UI:mutate(function(original)
+        -- for some reason CheckBoxes are individually wrapped in an AXGroup
+        local group = childFromLeft(original(), 2, Group.matches)
+        if group then
+            return childMatching(group, CheckBox.matches)
+        end
+    end))
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.extensions <cp.ui.Button>
+--- Field
+--- The `Button` that will open the "Available Extensions" dialog, or trigger the only extension, if only one is installed.
+function PrimaryToolbar.lazy.value:extensions()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromLeft(original(), 2, Button.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.browserShowing <cp.ui.CheckBox>
+--- Field
+--- The `CheckBox` indicating if the `Browser` is showing
+function PrimaryToolbar.lazy.value:browserShowing()
+    return CheckBox(self, self.UI:mutate(function(original)
+        -- for some reason CheckBoxes are individually wrapped in an AXGroup
+        local group = childFromRight(original(), 4)
+        if Group.matches(group) then
+            return childMatching(group, CheckBox.matches)
+        end
+        return nil
+    end))
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.timelineShowing <cp.ui.CheckBox>
+--- Field
+--- The `CheckBox` indicating if the `Timeline` is showing
+function PrimaryToolbar.lazy.value:timelineShowing()
+    return CheckBox(self, function()
+        -- for some reason CheckBoxes are individually wrapped in an AXGroup
+        local group = childFromRight(self:UI(), 3)
+        if Group.matches(group) then
+            return childMatching(group, CheckBox.matches)
+        end
+        return nil
+    end)
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.inspectorShowing <cp.ui.CheckBox>
+--- Field
+--- The `CheckBox` indicating if the Inspector is showing
+function PrimaryToolbar.lazy.value:inspectorShowing()
+    return CheckBox(self, function()
+        -- for some reason CheckBoxes are individually wrapped in an AXGroup
+        local group = childFromRight(self:UI(), 2)
+        if Group.matches(group) then
+            return childMatching(group, CheckBox.matches)
+        end
+        return nil
+    end)
+end
+
+--- cp.apple.finalcutpro.main.PrimaryToolbar.shareButton <cp.ui.Button>
+--- Field
+--- The Share Button.
+function PrimaryToolbar.lazy.value:shareButton()
+    return Button(self, function() return childFromRight(self:UI(), 1) end)
 end
 
 return PrimaryToolbar

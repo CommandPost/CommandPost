@@ -139,9 +139,9 @@ function Viewer:initialize(app, eventViewer)
     local UI = prop(function()
         return cache(self, "_ui", function()
             if self:isMainViewer() then
-                return findViewerUI(app:secondaryWindow(), app:primaryWindow())
+                return findViewerUI(app.secondaryWindow, app.primaryWindow)
             else
-                return findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
+                return findEventViewerUI(app.secondaryWindow, app.primaryWindow)
             end
         end,
         Viewer.matches)
@@ -322,7 +322,7 @@ function Viewer.lazy.prop:title()
     return self.infoBar.title
 end
 
-function Viewer.lazy.method:viewMenu()
+function Viewer.lazy.value:viewMenu()
     return self.infoBar.viewMenu
 end
 
@@ -442,9 +442,9 @@ end
 --- * The `PrimaryWindow` or the `SecondaryWindow`.
 function Viewer:currentWindow()
     if self:isOnSecondary() then
-        return self:app():secondaryWindow()
+        return self:app().secondaryWindow
     else
-        return self:app():primaryWindow()
+        return self:app().primaryWindow
     end
 end
 
@@ -458,7 +458,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:showOnPrimary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     -----------------------------------------------------------------------
     -- If it is on the secondary, we need to turn it off before
@@ -488,7 +488,7 @@ end
 --- Returns:
 --- * The `Statement`, which resolves to `true`, or sends an error message.
 function Viewer.lazy.method:doShowOnPrimary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         If(self.isOnSecondary):Then(
@@ -514,7 +514,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:showOnSecondary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     if not self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
@@ -540,7 +540,7 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true`, or sending an error message.
 function Viewer.lazy.method:doShowOnSecondary()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return Do(
         If(self.isOnSecondary):Is(false):Then(
@@ -566,7 +566,7 @@ end
 --- Returns:
 --- * Self
 function Viewer:hide()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     if self:isEventViewer() then
         -----------------------------------------------------------------------
@@ -594,7 +594,7 @@ end
 --- Returns:
 --- * The `Statement`, resolving to `true`, or sends an error.
 function Viewer.lazy.method:doHide()
-    local menuBar = self:app():menu()
+    local menuBar = self:app().menu
 
     return If(self.isEventViewer):Then(
         -----------------------------------------------------------------------
@@ -642,7 +642,7 @@ function Viewer.lazy.method:notifier()
 end
 
 function Viewer:__tostring()
-    return string.format("%s: %s", self.class.name, self.eventViewer and "event" or "main")
+    return string.format("%s: %s", self.class.name, self._eventViewer and "event" or "main")
 end
 
 return Viewer

@@ -53,17 +53,17 @@ function ScrollArea.lazy.prop:contentsUI()
     end)
 end
 
---- cp.ui.ScrollArea:verticalScrollBar() -> cp.ui.ScrollBar
---- Method
---- Returns the vertical [ScrollBar](cp.ui.ScrollBar.md).
-function ScrollArea.lazy.method:verticalScrollBar()
+--- cp.ui.ScrollArea.verticalScrollBar <cp.ui.ScrollBar>
+--- Field
+--- The vertical [ScrollBar](cp.ui.ScrollBar.md).
+function ScrollArea.lazy.value:verticalScrollBar()
     return ScrollBar(self, axutils.prop(self.UI, "AXVerticalScrollBar"))
 end
 
---- cp.ui.ScrollArea:horizontalScrollBar() -> cp.ui.ScrollBar
---- Method
---- Returns the horizontal [ScrollBar](cp.ui.ScrollBar.md).
-function ScrollArea.lazy.method:horizontalScrollBar()
+--- cp.ui.ScrollArea.horizontalScrollBar <cp.ui.ScrollBar>
+--- Field
+--- The horizontal [ScrollBar](cp.ui.ScrollBar.md).
+function ScrollArea.lazy.value:horizontalScrollBar()
     return ScrollBar(self, axutils.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
@@ -126,30 +126,28 @@ function ScrollArea:childrenUI(filterFn)
     return nil
 end
 
---- cp.ui.ScrollArea:viewFrame() -> hs.geometry rect
---- Method
---- Returns the Scroll Area frame.
----
---- Parameters:
----  * None
----
---- Return:
----  * The frame in the form of a `hs.geometry` rect object.
-function ScrollArea:viewFrame()
-    local ui = self:UI()
-    local hScroll = self:horizontalScrollBar():frame()
-    local vScroll = self:verticalScrollBar():frame()
+--- cp.ui.ScrollArea.viewFrame <cp.prop:hs.geometry.rect; read-only>
+--- Field
+--- A `cp.prop` reporting the Scroll Area frame as a hs.geometry.rect.
+function ScrollArea.lazy.prop:viewFrame()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        local hScroll = self.horizontalScrollBar:frame()
+        local vScroll = self.verticalScrollBar:frame()
 
-    local frame = ui:frame()
+        local frame = ui:frame()
 
-    if hScroll then
-        frame.h = frame.h - hScroll.h
-    end
+        if hScroll then
+            frame.h = frame.h - hScroll.h
+        end
 
-    if vScroll then
-        frame.w = frame.w - vScroll.w
-    end
-    return frame
+        if vScroll then
+            frame.w = frame.w - vScroll.w
+        end
+        return frame
+    end)
+    :monitor(self.horizontalScrollBar.frame)
+    :monitor(self.verticalScrollBar.frame)
 end
 
 --- cp.ui.ScrollArea:showChild(childUI) -> self
@@ -184,7 +182,7 @@ function ScrollArea:showChild(childUI)
             else
                 vValue = 1.0 - (oFrame.y + oFrame.h - childBottom)/scrollHeight
             end
-            self:verticalScrollBar().value:set(vValue)
+            self.verticalScrollBar.value:set(vValue)
         end
     end
     return self
@@ -279,6 +277,58 @@ function ScrollArea:deselectAll()
     return self
 end
 
+--- cp.ui.ScrollArea:shiftHorizontalBy(amount) -> number
+--- Method
+--- Attempts to shift the horizontal scroll bar by the specified amount.
+---
+--- Parameters:
+---  * amount - The amount to shift
+---
+--- Returns:
+---  * The actual value of the horizontal scroll bar.
+function ScrollArea:shiftHorizontalBy(amount)
+    return self.horizontalScrollBar:shiftValueBy(amount)
+end
+
+--- cp.ui.ScrollArea:shiftHorizontalTo(value) -> number
+--- Method
+--- Attempts to shift the horizontal scroll bar to the specified value.
+---
+--- Parameters:
+---  * value - The new value (typically between `0` and `1`).
+---
+--- Returns:
+---  * The actual value of the horizontal scroll bar.
+function ScrollArea:shiftHorizontalTo(value)
+    return self.horizontalScrollBar:value(value)
+end
+
+--- cp.ui.ScrollArea:shiftVerticalBy(amount) -> number
+--- Method
+--- Attempts to shift the vertical scroll bar by the specified amount.
+---
+--- Parameters:
+---  * amount - The amount to shift
+---
+--- Returns:
+---  * The actual value of the vertical scroll bar.
+function ScrollArea:shiftVerticalBy(amount)
+    return self.verticalScrollBar:shiftValueBy(amount)
+end
+
+--- cp.ui.ScrollArea:shiftVerticalTo(value) -> number
+--- Method
+--- Attempts to shift the vertical scroll bar to the specified value.
+---
+--- Parameters:
+---  * value - The new value (typically between `0` and `1`).
+---
+--- Returns:
+---  * The actual value of the vertical scroll bar.
+function ScrollArea:shiftVerticalTo(value)
+    return self.verticalScrollBar:value(value)
+end
+
 --- cp.ui.ScrollArea:saveLayout() -> table
 --- Method
 --- Saves the current Scroll Area layout to a table.
@@ -291,8 +341,8 @@ end
 function ScrollArea:saveLayout()
     local layout = Element.saveLayout(self)
 
-    layout.horizontalScrollBar = self:horizontalScrollBar():saveLayout()
-    layout.verticalScrollBar = self:verticalScrollBar():saveLayout()
+    layout.horizontalScrollBar = self.horizontalScrollBar:saveLayout()
+    layout.verticalScrollBar = self.verticalScrollBar:saveLayout()
     layout.selectedChildren = self:selectedChildrenUI()
 
     return layout
@@ -311,8 +361,8 @@ function ScrollArea:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedChildren)
 
-        self:verticalScrollBar():loadLayout(layout.verticalScrollBar)
-        self:horizontalScrollBar():loadLayout(layout.horizontalScrollBar)
+        self.verticalScrollBar:loadLayout(layout.verticalScrollBar)
+        self.horizontalScrollBar:loadLayout(layout.horizontalScrollBar)
     end
 end
 

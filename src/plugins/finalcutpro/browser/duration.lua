@@ -36,9 +36,9 @@ local function shiftClipHeight(direction)
     if appearance then
         appearance:show()
         if direction == "up" then
-            appearance:duration():increment()
+            appearance.duration:increment()
         else
-            appearance:duration():decrement()
+            appearance.duration:decrement()
         end
         return true
     else

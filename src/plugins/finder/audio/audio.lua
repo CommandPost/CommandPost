@@ -2,15 +2,17 @@
 ---
 --- Actions for Audio Controls
 
-local require       = require
+local require           = require
 
---local log           = require "hs.logger".new("audio")
+--local log               = require "hs.logger".new("audio")
 
-local osascript     = require "hs.osascript"
+local osascript         = require "hs.osascript"
 
-local i18n          = require "cp.i18n"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
 
-local applescript   = osascript.applescript
+local applescript       = osascript.applescript
+local pressSystemKey    = tools.pressSystemKey
 
 local plugin = {
     id              = "finder.audio",
@@ -28,14 +30,14 @@ function plugin.init(deps)
     global
         :add("increaseVolume")
         :whenActivated(function()
-            applescript([[set volume output volume (output volume of (get volume settings) + 1)]])
+            pressSystemKey("SOUND_UP")
         end)
         :titled(i18n("increase") .. " " .. i18n("volume"))
 
     global
         :add("decreaseVolume")
         :whenActivated(function()
-            applescript([[set volume output volume (output volume of (get volume settings) - 1)]])
+            pressSystemKey("SOUND_DOWN")
         end)
         :titled(i18n("decrease") .. " " .. i18n("volume"))
 
@@ -56,13 +58,7 @@ function plugin.init(deps)
     global
         :add("toggleMuteVolume")
         :whenActivated(function()
-            applescript([[
-                if output muted of (get volume settings) is false then
-                    set volume with output muted
-                else
-                    set volume without output muted
-                end
-            ]])
+            pressSystemKey("MUTE")
         end)
         :titled(i18n("toggle") .. " " .. i18n("mute") .. " " .. i18n("volume"))
 

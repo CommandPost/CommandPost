@@ -24,13 +24,13 @@ local BackgroundTasksDialog = Dialog:subclass("cp.apple.finalcutpro.main.Backgro
 ---
 --- Returns:
 --- * `true` if it matches the pattern for a `BackgroundTasksDialog``.
-function BackgroundTasksDialog.matches(element)
+function BackgroundTasksDialog.static.matches(element)
     if Dialog.matches(element) and #element == 6 then
         local backgroundTasksString = strings:find("FFTranscodeMissingOpticalFlowMessageText")
         local backgroundTasks = backgroundTasksString and string.gsub(backgroundTasksString, "%%@", ".*")
         return axutils.childMatching(element, function(e)
             local value = e:attributeValue("AXValue")
-            return value and value:find(backgroundTasks)
+            return type(value) == "string" and value:find(backgroundTasks)
         end)
     end
 end
@@ -46,10 +46,10 @@ function BackgroundTasksDialog:initialize(cpApp)
     end))
 end
 
---- cp.apple.finalcutpro.main.BackgroundTasksDialog:cancel() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.BackgroundTasksDialog.cancel <cp.ui.Button>
+--- Field
 --- The Cancel button.
-function BackgroundTasksDialog.lazy.method:cancel()
+function BackgroundTasksDialog.lazy.value:cancel()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_cancel", function()
             return childFromLeft(original(), 1, Button.matches)
@@ -57,10 +57,10 @@ function BackgroundTasksDialog.lazy.method:cancel()
     end))
 end
 
---- cp.apple.finalcutpro.main.BackgroundTasksDialog:continue() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.BackgroundTasksDialog.continue <cp.ui.Button>
+--- Field
 --- The Continue button.
-function BackgroundTasksDialog.lazy.method:continue()
+function BackgroundTasksDialog.lazy.value:continue()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_continue", function()
             return childFromLeft(original(), 2, Button.matches)

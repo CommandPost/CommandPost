@@ -71,18 +71,18 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Check FCP Primary Components",
         function()
             -- Test that various UI elements are able to be found.
-            ok(fcp:primaryWindow():isShowing())
-            ok(fcp:browser():isShowing())
-            ok(fcp:timeline():isShowing())
-            ok(fcp:inspector():isShowing())
-            ok(fcp:viewer():isShowing())
-            ok(not fcp:eventViewer():isShowing())
+            ok(fcp.primaryWindow:isShowing())
+            ok(fcp.browser:isShowing())
+            ok(fcp.timeline:isShowing())
+            ok(fcp.inspector:isShowing())
+            ok(fcp.viewer:isShowing())
+            ok(not fcp.eventViewer:isShowing())
         end
     ),
     test(
         "Viewer",
         function()
-            local viewer = fcp:viewer()
+            local viewer = fcp.viewer
 
             ok(viewer:isShowing())
             ok(viewer:infoBar():UI() ~= nil)
@@ -99,15 +99,15 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Event Viewer",
         function()
             -- Turn it on and off.
-            ok(not fcp:eventViewer():isShowing())
-            fcp:eventViewer():showOnPrimary()
-            ok(fcp:eventViewer():isShowing())
-            fcp:eventViewer():hide()
-            ok(not fcp:eventViewer():isShowing())
+            ok(not fcp.eventViewer:isShowing())
+            fcp.eventViewer:showOnPrimary()
+            ok(fcp.eventViewer:isShowing())
+            fcp.eventViewer:hide()
+            ok(not fcp.eventViewer:isShowing())
         end
     ),
     test("Viewer Quality", function()
-        local viewer = fcp:viewer()
+        local viewer = fcp.viewer
 
         ok(viewer:isShowing())
         viewer:usingProxies(true)
@@ -133,19 +133,19 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Command Editor",
         function()
             -- The Command Editor.
-            ok(not fcp:commandEditor():isShowing())
-            fcp:commandEditor():show()
-            ok(fcp:commandEditor():isShowing())
-            ok(fcp:commandEditor():saveButton():UI() ~= nil)
-            fcp:commandEditor():hide()
-            ok(not fcp:commandEditor():isShowing())
+            ok(not fcp.commandEditor:isShowing())
+            fcp.commandEditor:show()
+            ok(fcp.commandEditor:isShowing())
+            ok(fcp.commandEditor.save:UI() ~= nil)
+            fcp.commandEditor:hide()
+            ok(not fcp.commandEditor:isShowing())
         end
     ),
     test(
         "Export Dialog",
         function()
             local _, err
-            local export = fcp:exportDialog()
+            local export = fcp.exportDialog
             -- Export Dialog
             ok(not export:isShowing())
             export:show(1, true, true, true)
@@ -155,7 +155,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(not export:isShowing())
 
             -- switch to viewer > proxy mode, which has an additional warning message
-            fcp:viewer():usingProxies(true)
+            fcp.viewer:usingProxies(true)
             _, err = export:show(1, true, true, true, true)
             ok(err == nil)
             ok(export:isShowing())
@@ -166,10 +166,10 @@ return test.suite("cp.apple.finalcutpro"):with(
             _, err = export:show(1, false, true, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
-            ok(eq(fcp:alert():isShowing(), false))
+            ok(eq(fcp.alert:isShowing(), false))
 
             -- reset proxies mode
-            fcp:viewer():usingProxies(false)
+            fcp.viewer:usingProxies(false)
         end
     ),
     test(
@@ -193,11 +193,11 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Effects Browser",
         function()
-            local browser = fcp:effects()
+            local browser = fcp.effects
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.sidebar:isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -205,11 +205,11 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Transitions Browser",
         function()
-            local browser = fcp:transitions()
+            local browser = fcp.transitions
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.sidebar:isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -217,10 +217,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Media Browser",
         function()
-            local browser = fcp:media()
+            local browser = fcp.media
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
+            ok(browser.sidebar:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -228,11 +228,11 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Generators Browser",
         function()
-            local browser = fcp:generators()
+            local browser = fcp.generators
             browser:show()
             ok(browser:isShowing())
-            ok(browser:sidebar():isShowing())
-            ok(browser:contents():isShowing())
+            ok(browser.sidebar:isShowing())
+            ok(browser.contents:isShowing())
             browser:hide()
             ok(not browser:isShowing())
         end
@@ -240,7 +240,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Inspector",
         function()
-            local inspector = fcp:inspector()
+            local inspector = fcp.inspector
             inspector:show()
             just.doUntil(
                 function()
@@ -256,7 +256,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -265,11 +265,11 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- select the first clip.
             tc:selectClip(clips[1])
 
-            local color = fcp:inspector():color()
+            local color = fcp.inspector.color
             color:show()
             just.doUntil(function() return color:isShowing() end, 1)
             ok(color:isShowing())
-            ok(color:corrections():isShowing())
+            ok(color.corrections:isShowing())
 
             color:hide()
             ok(not color:isShowing())
@@ -278,7 +278,7 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector Corrections Selector",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -288,21 +288,21 @@ return test.suite("cp.apple.finalcutpro"):with(
             tc:selectClip(clips[1])
 
             -- activate the colour inspector
-            local color = fcp:inspector():color()
-            local corrections = color:corrections()
+            local color = fcp.inspector.color
+            local corrections = color.corrections
             corrections:show()
 
             ok(eq(corrections:activate("Color Board"), true))
-            ok(eq(color:colorBoard():isShowing(), true))
+            ok(eq(color.colorBoard:isShowing(), true))
 
             ok(eq(corrections:activate("Color Wheels"), true))
-            ok(eq(color:colorWheels():isShowing(), true))
+            ok(eq(color.colorWheels:isShowing(), true))
         end
     ),
     test(
         "Color Board",
         function()
-            local tc = fcp:timeline():contents()
+            local tc = fcp.timeline.contents
             -- get the set of clips (expand secondary storylines)
             local clips = tc:clipsUI(true)
             if #clips < 1 then
@@ -311,7 +311,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- select the first clip.
             tc:selectClip(clips[1])
 
-            local colorBoard = fcp:colorBoard()
+            local colorBoard = fcp.colorBoard
             colorBoard:show()
             just.doUntil(function()return colorBoard:isShowing()end, 5)
             ok(colorBoard:isShowing())
@@ -339,7 +339,7 @@ return test.suite("cp.apple.finalcutpro"):with(
                 end
             end
 
-            local allAspects = {colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()}
+            local allAspects = {colorBoard.color, colorBoard.saturation, colorBoard.exposure}
 
             local testAspect = function(aspect, hasAngle)
                 aspect:show()
@@ -357,37 +357,37 @@ return test.suite("cp.apple.finalcutpro"):with(
                 end
 
                 -- check the pucks
-                testPuck(aspect:master(), hasAngle)
-                testPuck(aspect:shadows(), hasAngle)
-                testPuck(aspect:midtones(), hasAngle)
-                testPuck(aspect:highlights(), hasAngle)
+                testPuck(aspect.master, hasAngle)
+                testPuck(aspect.shadows, hasAngle)
+                testPuck(aspect.midtones, hasAngle)
+                testPuck(aspect.highlights, hasAngle)
             end
 
             -- check at full height
-            fcp:inspector():isFullHeight(true)
-            testAspect(colorBoard:color(), true)
-            testAspect(colorBoard:saturation(), false)
-            testAspect(colorBoard:exposure(), false)
+            fcp.inspector:isFullHeight(true)
+            testAspect(colorBoard.color, true)
+            testAspect(colorBoard.saturation, false)
+            testAspect(colorBoard.exposure, false)
 
             -- and half-height (in some versions of FCP, puck property rows are hidden unless selected.)
-            -- fcp:inspector():isFullHeight(false)
-            -- testAspect(colorBoard:color(), true)
-            -- testAspect(colorBoard:saturation(), false)
-            -- testAspect(colorBoard:exposure(), false)
+            -- fcp.inspector:isFullHeight(false)
+            -- testAspect(colorBoard.color, true)
+            -- testAspect(colorBoard.saturation, false)
+            -- testAspect(colorBoard.exposure, false)
         end
     ),
     test(
         "Libraries Browser",
         function()
             -- Show it
-            local libraries = fcp:libraries()
+            local libraries = fcp.libraries
             libraries:show()
 
             -- Check UI elements
             ok(libraries:isShowing())
             ok(libraries.toggleViewMode.isShowing())
             ok(libraries.appearanceAndFiltering:isShowing())
-            ok(libraries:sidebar():isShowing())
+            ok(libraries.sidebar:isShowing())
 
             -- Check the search UI
             ok(libraries.searchToggle:isShowing())
@@ -416,34 +416,34 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Libraries Filmstrip",
         function()
-            local libraries = fcp:libraries()
+            local libraries = fcp.libraries
 
             -- Check Filmstrip/List view
-            libraries:filmstrip():show()
-            ok(libraries:filmstrip():isShowing())
-            ok(not libraries:list():isShowing())
+            libraries.filmstrip:show()
+            ok(libraries.filmstrip:isShowing())
+            ok(not libraries.list:isShowing())
         end
     ),
     test(
         "Libraries List",
         function()
-            local libraries = fcp:libraries()
-            local list = libraries:list()
+            local libraries = fcp.libraries
+            local list = libraries.list
 
             list:show()
             ok(list:isShowing())
-            ok(not libraries:filmstrip():isShowing())
+            ok(not libraries.filmstrip:isShowing())
 
             -- Check the sub-components are available.
             ok(list:playerUI() ~= nil)
-            ok(list:contents():isShowing())
+            ok(list.contents:isShowing())
             ok(list:clipsUI() ~= nil)
         end
     ),
     test(
         "Timeline",
         function()
-            local timeline = fcp:timeline()
+            local timeline = fcp.timeline
 
             ok(timeline:isShowing())
             timeline:hide()
@@ -453,11 +453,12 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline Appearance",
         function()
-            local appearance = fcp:timeline():toolbar():appearance()
+            local appearanceToggle = fcp.timeline.toolbar.appearanceToggle
+            local appearance = fcp.timeline.toolbar.appearance
 
-            ok(appearance:toggle():isShowing())
+            ok(appearanceToggle:isShowing())
             ok(not appearance:isShowing())
-            ok(not appearance:clipHeight():isShowing())
+            ok(not appearance.clipHeight:isShowing())
 
             appearance:show()
             ok(
@@ -467,17 +468,17 @@ return test.suite("cp.apple.finalcutpro"):with(
                     end
                 )
             )
-            ok(appearance:clipHeight():isShowing())
+            ok(appearance.clipHeight:isShowing())
 
             appearance:hide()
             ok(not appearance:isShowing())
-            ok(not appearance:clipHeight():isShowing())
+            ok(not appearance.clipHeight:isShowing())
         end
     ),
     test(
         "Timeline Contents",
         function()
-            local contents = fcp:timeline():contents()
+            local contents = fcp.timeline.contents
 
             ok(contents:isShowing())
             ok(contents:scrollAreaUI() ~= nil)
@@ -486,10 +487,10 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Timeline Toolbar",
         function()
-            local toolbar = fcp:timeline():toolbar()
+            local toolbar = fcp.timeline.toolbar
 
             local skimmingId, effectsGroup
-            local version = fcp.version()
+            local version = fcp:version()
 
             ok(version and type(version) == "table")
 
@@ -509,17 +510,17 @@ return test.suite("cp.apple.finalcutpro"):with(
             end
 
             ok(toolbar:isShowing())
-            ok(toolbar:skimming():UI() ~= nil)
-            ok(skimmingId and toolbar:skimming():UI():attributeValue("AXIdentifier") == skimmingId)
+            ok(toolbar.skimming:UI() ~= nil)
+            ok(skimmingId and toolbar.skimming:UI():attributeValue("AXIdentifier") == skimmingId)
 
-            ok(toolbar:effectsGroup():UI() ~= nil)
-            ok(effectsGroup and toolbar:effectsGroup():UI():attributeValue("AXIdentifier") == effectsGroup)
+            ok(toolbar.effectsGroup:UI() ~= nil)
+            ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(
         "PreferencesWindow",
         function()
-            local prefs = fcp:preferencesWindow()
+            local prefs = fcp.preferencesWindow
 
             prefs:show()
             ok(prefs:isShowing())
@@ -531,17 +532,17 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "ImportPanel",
         function()
-            local panel = fcp:preferencesWindow():importPanel()
+            local panel = fcp.preferencesWindow.importPanel
 
             -- Make sure the preferences window is hidden
-            fcp:preferencesWindow():hide()
+            fcp.preferencesWindow:hide()
             ok(not panel:isShowing())
 
             -- Show the import preferences panel
             panel:show()
             ok(panel:isShowing())
-            ok(panel:createProxyMedia():isShowing())
-            ok(panel:createOptimizedMedia():isShowing())
+            ok(panel.createProxyMedia:isShowing())
+            ok(panel.createOptimizedMedia:isShowing())
             ok(panel:copyToMediaFolder():isShowing())
             ok(panel:leaveInPlace():isShowing())
             ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())
@@ -552,16 +553,16 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "PlaybackPanel",
         function()
-            local panel = fcp:preferencesWindow():playbackPanel()
+            local panel = fcp.preferencesWindow.playbackPanel
 
             -- Make sure the preferences window is hidden
-            fcp:preferencesWindow():hide()
+            fcp.preferencesWindow:hide()
             ok(not panel:isShowing())
 
             -- Show the import preferences panel
             panel:show()
             ok(panel:isShowing())
-            ok(panel:createMulticamOptimizedMedia():isShowing())
+            ok(panel.createMulticamOptimizedMedia:isShowing())
             ok(panel:backgroundRender():isShowing())
 
             panel:hide()
@@ -698,11 +699,11 @@ onRun(
         end
 
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
-        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
+        if not just.doUntil(function() return fcp.libraries:selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
             error(format("Unable to open the '%s' Library.", targetLibrary))
         end
 
-        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10, 0.1) then
+        if not just.doUntil(function() return fcp.libraries:openClipTitled("Test Project") end, 10, 0.1) then
             error(format("Unable to open the 'Test Project' clip."))
         end
     end

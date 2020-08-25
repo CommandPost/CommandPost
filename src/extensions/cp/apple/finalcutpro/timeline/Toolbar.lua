@@ -59,10 +59,10 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.timeline.Toolbar:index() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.index <cp.ui.CheckBox>
+--- Field
 --- The [CheckBox](cp.ui.CheckBox.md) which indicates if the Timeline Index is visible.
-function Toolbar.lazy.method:index()
+function Toolbar.lazy.value:index()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_index", function()
             return childFromLeft(original(), 1, CheckBox.matches)
@@ -70,10 +70,10 @@ function Toolbar.lazy.method:index()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:back() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.back <cp.ui.Button>
+--- Field
 --- The [Button](cp.ui.Button.md) for "go back in timeline history".
-function Toolbar.lazy.method:back()
+function Toolbar.lazy.value:back()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_back", function()
             return childFromLeft(original(), 5, Button.matches)
@@ -81,10 +81,10 @@ function Toolbar.lazy.method:back()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:forward() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.forward <cp.ui.Button>
+--- Field
 --- The [Button](cp.ui.Button.md) for "go forward in timeline history".
-function Toolbar.lazy.method:forward()
+function Toolbar.lazy.value:forward()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_forward", function()
             return childFromLeft(original(), 6, Button.matches)
@@ -112,53 +112,53 @@ function Toolbar.Skimming:initialize(toolbar)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Skimming:active() -> cp.ui.CheckBox
---- Method
---- Returns the [CheckBox](cp.ui.CheckBox.md) that indicates if video/audio skimming is active.
-function Toolbar.Skimming.lazy.method:active()
+--- cp.apple.finalcutpro.timeline.Toolbar.Skimming.active <cp.ui.CheckBox>
+--- Field
+--- The [CheckBox](cp.ui.CheckBox.md) that indicates if video/audio skimming is active.
+function Toolbar.Skimming.lazy.value:active()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 2, CheckBox.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Skimming:audio() -> cp.ui.CheckBox
---- Method
---- Returns the [CheckBox](cp.ui.CheckBox.md) that indicates if audio is played while skimming.
-function Toolbar.Skimming.lazy.method:audio()
+--- cp.apple.finalcutpro.timeline.Toolbar.Skimming.audio <cp.ui.CheckBox>
+--- Field
+--- The [CheckBox](cp.ui.CheckBox.md) that indicates if audio is played while skimming.
+function Toolbar.Skimming.lazy.value:audio()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 3, CheckBox.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Skimming:solo() -> cp.ui.CheckBox
---- Method
---- Returns the [CheckBox](cp.ui.CheckBox.md) that indicates if audio is soloing the selected clip(s).
-function Toolbar.Skimming.lazy.method:solo()
+--- cp.apple.finalcutpro.timeline.Toolbar.Skimming.solo <cp.ui.CheckBox>
+--- Field
+--- The [CheckBox](cp.ui.CheckBox.md) that indicates if audio is soloing the selected clip(s).
+function Toolbar.Skimming.lazy.value:solo()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 4, CheckBox.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Skimming:snapping() -> cp.ui.CheckBox
---- Method
---- Returns the [CheckBox](cp.ui.CheckBox.md) that indicates if snapping is enabled.
-function Toolbar.Skimming.lazy.method:snapping()
+--- cp.apple.finalcutpro.timeline.Toolbar.Skimming.snapping <cp.ui.CheckBox>
+--- Field
+--- The [CheckBox](cp.ui.CheckBox.md) that indicates if snapping is enabled.
+function Toolbar.Skimming.lazy.value:snapping()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromLeft(original(), 5, CheckBox.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.skimming() -> cp.apple.finalcutpro.timeline.Toolbar.Skimming
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.skimming <cp.apple.finalcutpro.timeline.Toolbar.Skimming>
+--- Field
 --- The [Skimming](cp.apple.finalcutpro.timeline.Toolbar.Skimming.md) group of checkbox items.
-function Toolbar.lazy.method:skimming()
+function Toolbar.lazy.value:skimming()
     return Toolbar.Skimming(self)
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:skimmingGroup() -> cp.ui.Group
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.skimmingGroup <cp.ui.Group>
+--- Field
 --- A [Group](cp.ui.Group.md) containing buttons relating to mouse skimming behaviour, waveforms, snapping, etc.
-function Toolbar.lazy.method:skimmingGroup()
+function Toolbar.lazy.value:skimmingGroup()
     return Group(self, self.UI:mutate(function(original)
         return cache(self, "_skimmingGroup", function()
             return childFromRight(original(), 1, Group.matches)
@@ -186,28 +186,28 @@ function Toolbar.Browser:initialize(toolbar)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Browser:effects() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.Browser.effects <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) which toggles the 'Effects' browser visibility.
-function Toolbar.Browser.lazy.method:effects()
+function Toolbar.Browser.lazy.value:effects()
     return RadioButton(self, function()
         return childFromLeft(self:UI(), 1)
     end)
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar.Browser:transitions() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.Browser.transitions <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) which toggles the 'Transitions' browser visibility.
-function Toolbar.Browser.lazy.method:transitions()
+function Toolbar.Browser.lazy.value:transitions()
     return RadioButton(self, function()
         return childFromLeft(self:UI(), 2)
     end)
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:browser() -> cp.apple.finalcutpro.timeline.Toolbar.Browser
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.browser <cp.apple.finalcutpro.timeline.Toolbar.Browser>
+--- Field
 --- The [Toolbar.Browser](cp.apple.finalcutpro.timeline.Toolbar.Browser.md) containing buttons that will toggle the Effects/Transitions browsers.
-function Toolbar.lazy.method:browser()
+function Toolbar.lazy.value:browser()
     return Toolbar.Browser(self, self.UI:mutate(function(original)
         return cache(self, "_browser", function()
             return childFromRight(original(), 1, Toolbar.Browser.matches)
@@ -215,16 +215,10 @@ function Toolbar.lazy.method:browser()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:title() -> cp.ui.StaticText
---- Method
---- Returns the title [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
----
---- Parameters:
---- * None.
----
---- Returns:
---- * The [StaticText](cp.ui.StaticText.md) containing the title.
-function Toolbar.lazy.method:title()
+--- cp.apple.finalcutpro.timeline.Toolbar.title <cp.ui.StaticText>
+--- Field
+--- The title [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+function Toolbar.lazy.value:title()
     return StaticText(self, self.UI:mutate(function(original)
         return cache(self, "_titleUI", function()
             return childFromLeft(original(), 1, StaticText.matches)
@@ -232,16 +226,10 @@ function Toolbar.lazy.method:title()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:duration() -> cp.ui.StaticText
---- Method
---- Returns the duration [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
----
---- Parameters:
---- * None.
----
---- Returns:
---- * The [StaticText](cp.ui.StaticText.md) containing the title.
-function Toolbar.lazy.method:duration()
+--- cp.apple.finalcutpro.timeline.Toolbar.duration <cp.ui.StaticText>
+--- Field
+--- The duration [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+function Toolbar.lazy.value:duration()
     return StaticText(self, self.UI:mutate(function(original)
         return cache(self, "_durationUI", function()
             return childFromLeft(original(), 2, StaticText.matches)
@@ -249,14 +237,20 @@ function Toolbar.lazy.method:duration()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Toolbar:appearance() -> cp.apple.finalcutpro.timeline.Appearance
---- Method
+--- cp.apple.finalcutpro.timeline.Toolbar.appearanceToggle <cp.ui.CheckBox>
+--- Field
+--- A `CheckBox` field which will toggle the `appearance` popover.
+function Toolbar.lazy.value:appearanceToggle()
+    return CheckBox(self:parent(), self.UI:mutate(function(original)
+        return childFromRight(original(), 1, CheckBox.matches)
+    end))
+end
+
+--- cp.apple.finalcutpro.timeline.Toolbar.appearance <cp.apple.finalcutpro.timeline.Appearance>
+--- Field
 --- The [Appearance](cp.apple.finalcutpro.timeline.Appearance.md) button/palette control.
----
---- Returns:
---- * The `Appearance` class.
-function Toolbar.lazy.method:appearance()
-    return Appearance.new(self)
+function Toolbar.lazy.value:appearance()
+    return Appearance(self.appearanceToggle)
 end
 
 return Toolbar

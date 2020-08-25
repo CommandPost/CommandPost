@@ -160,7 +160,7 @@ local function batchRename()
     --------------------------------------------------------------------------------
     -- Make sure we're in list view:
     --------------------------------------------------------------------------------
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     if not doUntil(function()
         libraries:show()
         return libraries:isShowing()

@@ -431,6 +431,7 @@ for i=1,maxItems,1 do
 				<select id="button{{ buttonID }}_commandType" style="width:130px;" onchange="changeMidiCommandType('{{ buttonID }}', this.value)">
 					<option value="">{{ i18n("none") }}</option>
 					<option value="noteOn">{{ i18n("noteOn") }}</option>
+					<option value="noteOff">{{ i18n("noteOff") }}</option>
 					<option value="controlChange">{{ i18n("controlChange") }}</option>
 					<option value="pitchWheelChange">{{ i18n("pitchWheelChange") }}</option>
 				</select>

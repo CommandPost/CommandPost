@@ -18,7 +18,7 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local viewer = fcp:viewer()
+    local viewer = fcp.viewer
     local infoBar = viewer:infoBar()
 
     --------------------------------------------------------------------------------

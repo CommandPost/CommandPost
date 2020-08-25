@@ -2,18 +2,18 @@
 ---
 --- A ColorCurve [Element](cp.ui.Element.md).
 
-local axutils                               = require("cp.ui.axutils")
-local Element                               = require("cp.ui.Element")
-local Button                                = require("cp.ui.Button")
-local ColorWell                             = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local axutils                               = require "cp.ui.axutils"
+local Group                                 = require "cp.ui.Group"
+local Button                                = require "cp.ui.Button"
+local List                                  = require "cp.ui.List"
+local ColorWell                             = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 
-local If                                    = require("cp.rx.go.If")
+local If                                    = require "cp.rx.go.If"
 
-local childWithRole                         = axutils.childWithRole
 local childMatching, childrenMatching       = axutils.childMatching, axutils.childrenMatching
 local cache, childFromRight, childFromTop   = axutils.cache, axutils.childFromRight, axutils.childFromTop
 
-local ColorCurve = Element:subclass("ColorCurve")
+local ColorCurve = Group:subclass("cp.apple.finalcutpro.inspector.color.ColorCurve")
 
 ColorCurve.static.TYPE ={
     LUMA = 1,
@@ -32,9 +32,9 @@ ColorCurve.static.TYPE ={
 --- Returns:
 --- * `true` if it matches a ColorCurve element.
 function ColorCurve.static.matches(element)
-    return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
-        and #element == 4 and childWithRole(element, "AXList") ~= nil
-        and childWithRole(element, "AXColorWell") ~= nil
+    return Group.matches(element)
+        and #element == 4 and childMatching(element, List.matches) ~= nil
+        and childMatching(element, ColorWell.matches) ~= nil
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurve(parent, type) -> ColorCurve
@@ -57,7 +57,7 @@ function ColorCurve:initialize(parent, type)
                     -- All Wheels:
                     --------------------------------------------------------------------------------
                     return childFromTop(childrenMatching(ui, ColorCurve.matches), self:type())
-                elseif parent:wheelType():selectedOption() == self:type() then
+                elseif parent.wheelType:selectedOption() == self:type() then
                     --------------------------------------------------------------------------------
                     -- Single Wheels - with only a single wheel visible:
                     --------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ function ColorCurve:initialize(parent, type)
         end, ColorCurve.matches)
     end)
 
-    Element.initialize(self, parent, UI)
+    Group.initialize(self, parent, UI)
     self._type = type
 end
 
@@ -79,12 +79,12 @@ end
 function ColorCurve:show()
     local parent = self:parent()
     parent:show()
-    parent:wheelType():selectedOption(self:type())
+    parent.wheelType:selectedOption(self:type())
 end
 
 function ColorCurve.lazy.method:doShow()
     local parent = self:parent()
-    local wheelType = parent:wheelType()
+    local wheelType = parent.wheelType
     return If(self.isShowing):Is(false):Then(
         parent:doShow()
     ):Then(

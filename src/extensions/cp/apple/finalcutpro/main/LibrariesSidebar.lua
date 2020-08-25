@@ -48,7 +48,7 @@ end
 function LibrariesSidebar:show()
     self:parent():show()
     if not self:isShowing() then
-        self:parent():parent():showLibraries():press()
+        self:parent():parent().showLibraries:press()
     end
     return self
 end

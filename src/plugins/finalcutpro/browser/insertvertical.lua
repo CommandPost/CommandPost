@@ -29,7 +29,7 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local libraries = fcp:browser():libraries()
+    local libraries = fcp.browser.libraries
     deps.fcpxCmds
         :add("insertClipsVerticallyFromBrowserToTimeline")
         :whenActivated(

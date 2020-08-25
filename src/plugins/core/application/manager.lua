@@ -75,14 +75,16 @@ end
 function mod.defaultSearchConsoleToolbar()
     local iconPath = config.basePath .. "/plugins/core/console/images/"
     return {
-        global_applications         = { path = iconPath .. "apps.png",              priority = 50},
-        global_shortcuts            = { path = iconPath .."Keyboard.icns",          priority = 51},
-        global_snippets             = { path = iconPath .. "snippets.png",          priority = 52},
-        global_loupedeckbanks       = { path = iconPath .. "loupedeckplusbank.png", priority = 53},
-        global_loupedeckct_banks    = { path = iconPath .. "loupedeckctbank.png",   priority = 54},
-        global_midibanks            = { path = iconPath .. "midibank.png",          priority = 55},
-        global_streamDeckbanks      = { path = iconPath .. "streamdeckbank.png",    priority = 56},
-        global_touchbarbanks        = { path = iconPath .. "touchbarbank.png",      priority = 57},
+        global_applications             = { path = iconPath .. "apps.png",              priority = 50},
+        global_shortcuts                = { path = iconPath .."Keyboard.icns",          priority = 51},
+        global_snippets                 = { path = iconPath .. "snippets.png",          priority = 52},
+        global_keyboardmaestro_macros   = { path = iconPath .. "keyboardmaestro.icns",  priority = 53},
+        global_loupedeck_banks          = { path = iconPath .. "loupedeckbank.png",     priority = 54},
+        global_loupedeckbanks           = { path = iconPath .. "loupedeckplusbank.png", priority = 55},
+        global_loupedeckct_banks        = { path = iconPath .. "loupedeckctbank.png",   priority = 56},
+        global_midibanks                = { path = iconPath .. "midibank.png",          priority = 57},
+        global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 58},
+        global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 59},
     }
 end
 

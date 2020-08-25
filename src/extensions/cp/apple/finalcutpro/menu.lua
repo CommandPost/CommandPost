@@ -20,7 +20,7 @@ local childWith     = axutils.childWith
 local isEqual       = moses.isEqual
 local trim          = tools.trim
 
-local menu          = fcpApp:menu()
+local menu          = fcpApp.menu
 
 ----------------------------------------------------------------------------------------
 -- Add a finder for Share Destinations:

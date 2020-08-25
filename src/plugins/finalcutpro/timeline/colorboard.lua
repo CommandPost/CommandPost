@@ -32,7 +32,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.startShiftingPuck(puck, property, amount)
-    fcp:colorBoard():show()
+    fcp.colorBoard:show()
     if not puck:select():isShowing() then
         playErrorSound()
         return false
@@ -57,7 +57,7 @@ end
 -- Returns:
 --  * None
 local function shiftPuck(puck, property, amount)
-    fcp:colorBoard():show()
+    fcp.colorBoard:show()
     if not puck:select():isShowing() then
         playErrorSound()
         return false
@@ -95,8 +95,8 @@ function mod.startMousePuck(puck)
     --------------------------------------------------------------------------------
     mod.playhead.deleteHighlight()
 
-    fcp:colorBoard():show()
-    if not fcp:colorBoard():isActive() then
+    fcp.colorBoard:show()
+    if not fcp.colorBoard:isActive() then
         playErrorSound()
         return false
     end
@@ -138,7 +138,7 @@ function mod.nextAspect()
     --------------------------------------------------------------------------------
     -- Show the Color Board if it's hidden:
     --------------------------------------------------------------------------------
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
     if not colorBoard:show():isActive() then
         dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
         return "Failed"
@@ -160,12 +160,12 @@ function plugin.init(deps)
     mod.playhead = deps.playhead
 
     local fcpxCmds = deps.fcpxCmds
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
 
     local colorBoardAspects = {
-        { id = "color", title = "Color", i18n = i18n("color"), control = colorBoard:color(), hasAngle = true },
-        { id = "saturation", title = "Saturation", i18n = i18n("saturation"), control = colorBoard:saturation() },
-        { id = "exposure", title = "Exposure", i18n = i18n("exposure"), control = colorBoard:exposure() },
+        { id = "color", title = "Color", i18n = i18n("color"), control = colorBoard.color, hasAngle = true },
+        { id = "saturation", title = "Saturation", i18n = i18n("saturation"), control = colorBoard.saturation },
+        { id = "exposure", title = "Exposure", i18n = i18n("exposure"), control = colorBoard.exposure },
     }
 
     local pucks = {

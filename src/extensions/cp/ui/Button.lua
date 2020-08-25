@@ -5,11 +5,13 @@
 
 local require       = require
 
-local axutils       = require("cp.ui.axutils")
-local Element       = require("cp.ui.Element")
-local go            = require("cp.rx.go")
+local axutils       = require "cp.ui.axutils"
+local Element       = require "cp.ui.Element"
+local Menu          = require "cp.ui.Menu"
+local go            = require "cp.rx.go"
 
 local If            = go.If
+local WaitUntil     = go.WaitUntil
 
 local Button = Element:subclass("cp.ui.Button")
 
@@ -82,6 +84,37 @@ function Button.lazy.method:doPress()
     :Otherwise(false)
     :ThenYield()
     :Label("Button:doPress")
+end
+
+function Button:showMenu()
+    local ui = self:UI()
+    if ui then
+        ui:performAction("AXShowMenu")
+    end
+end
+
+function Button.lazy.method:doShowMenu()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:performAction("AXShowMenu")
+    end)
+    :Then(WaitUntil(self.menu.isShowing))
+    :Otherwise(false)
+    :Label("Button:doShowMenu")
+end
+
+function Button:cancelMenu()
+    self.menu:cancel()
+end
+
+function Button.lazy.method:doCancelMenu()
+    return self.menu:doCancel()
+end
+
+function Button.lazy.value:menu()
+    return Menu(self, self.UI:mutate(function(original)
+        return axutils.childWithRole(original(), "AXMenu")
+    end))
 end
 
 -- cp.ui.Button:__call() -> self, boolean

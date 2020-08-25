@@ -870,7 +870,7 @@ function mod.volumeSliderParameter(group, param, id, minValue, maxValue, stepSiz
                 end)
             :Then(
                 If(function()
-                    wasPlaying = fcp:timeline():isPlaying()
+                    wasPlaying = fcp.timeline:isPlaying()
                     return wasPlaying
                 end)
                 :Then(fcp:doSelectMenu({"View", "Playback", "Play"}))

@@ -103,17 +103,11 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:corrections() -> CorrectionsBar
---- Method
---- Returns the `CorrectionsBar` instance representing the available corrections,
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.corrections <CorrectionsBar>
+--- Field
+--- The `CorrectionsBar` instance representing the available corrections,
 --- and currently selected correction type.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `CorrectionsBar` instance.
-function ColorInspector.lazy.method:corrections()
+function ColorInspector.lazy.value:corrections()
     return CorrectionsBar(self)
 end
 
@@ -134,7 +128,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:show()
     if not self:isShowing() then
-        self:app():menu():selectMenu({"Window", "Go To", "Color Inspector"})
+        self:app().menu:selectMenu({"Window", "Go To", "Color Inspector"})
     end
     return self
 end
@@ -151,7 +145,7 @@ end
 function ColorInspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(
-        self:app():menu():doSelectMenu({"Window", "Go To", "Color Inspector"})
+        self:app().menu:doSelectMenu({"Window", "Go To", "Color Inspector"})
     )
     :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the Color Inspector"))
     :Otherwise(true)
@@ -169,7 +163,7 @@ end
 --- Returns:
 ---  * ColorInspector object
 function ColorInspector:activateCorrection(correctionType, number)
-    self:corrections():activate(correctionType, number)
+    self.corrections:activate(correctionType, number)
     return self
 end
 
@@ -185,7 +179,7 @@ end
 --- Returns:
 ---  * The `Statement`, which sends a single `true` value if successful, or sends an error if not.
 function ColorInspector:doActivateCorrection(correctionType, number)
-    return self:corrections():doActivate(correctionType, number):Label("ColorInspector:doActivateCorrection")
+    return self.corrections:doActivate(correctionType, number):Label("ColorInspector:doActivateCorrection")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:addCorrection(correctionType) -> self
@@ -198,7 +192,7 @@ end
 --- Returns:
 ---  * ColorInspector object
 function ColorInspector:addCorrection(correctionType)
-    self:corrections():add(correctionType)
+    self.corrections:add(correctionType)
     return self
 end
 
@@ -212,7 +206,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successful, or sending an error if not.
 function ColorInspector:doAddCorrection(correctionType)
-    return self:corrections():doAdd(correctionType):Label("ColorInspector:doAddCorrection")
+    return self.corrections:doAdd(correctionType):Label("ColorInspector:doAddCorrection")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:hide() -> ColorInspector
@@ -237,16 +231,10 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:colorBoard() -> ColorBoard
---- Method
---- Gets the ColorBoard object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A new ColorBoard object
-function ColorInspector.lazy.method:colorBoard()
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.colorBoard <ColorBoard>
+--- Field
+--- The ColorBoard object.
+function ColorInspector.lazy.value:colorBoard()
     return ColorBoard(self)
 end
 
@@ -256,16 +244,10 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:colorWheels() -> ColorWheels
---- Method
---- Gets the ColorWheels object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A new ColorWheels object
-function ColorInspector.lazy.method:colorWheels()
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.colorWheels <ColorWheels>
+--- Field
+--- The ColorWheels object.
+function ColorInspector.lazy.value:colorWheels()
     return ColorWheels(self)
 end
 
@@ -275,16 +257,10 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:colorCurves() -> ColorCurves
---- Method
---- Gets the ColorCurves object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A new ColorCurves object
-function ColorInspector.lazy.method:colorCurves()
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.colorCurves <ColorCurves>
+--- Field
+--- The ColorCurves object.
+function ColorInspector.lazy.value:colorCurves()
     return ColorCurves(self)
 end
 
@@ -294,16 +270,10 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:hueSaturationCurves() -> HueSaturationCurves
---- Method
---- Gets the HueSaturationCurves object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A new HueSaturationCurves object
-function ColorInspector.lazy.method:hueSaturationCurves()
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.hueSaturationCurves <HueSaturationCurves>
+--- Field
+--- The HueSaturationCurves object.
+function ColorInspector.lazy.value:hueSaturationCurves()
     return HueSaturationCurves(self)
 end
 

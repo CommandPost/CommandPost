@@ -1,12 +1,11 @@
 --- === plugins.finalcutpro.midi.controls.colorboard ===
 ---
---- Final Cut Pro MIDI Color Controls.
+--- Final Cut Pro MIDI Color Board Controls.
 
-local require = require
+local require           = require
 
 local log               = require "hs.logger".new "cbMIDI"
 
-local eventtap          = require "hs.eventtap"
 local inspect           = require "hs.inspect"
 
 local fcp               = require "cp.apple.finalcutpro"
@@ -14,28 +13,12 @@ local tools             = require "cp.tools"
 local i18n              = require "cp.i18n"
 local deferred          = require "cp.deferred"
 
-local upper, format     = string.upper, string.format
+local format            = string.format
 
--- shiftPressed() -> boolean
--- Function
--- Is the Shift Key being pressed?
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if the shift key is being pressed, otherwise `false`.
-local function shiftPressed()
-    --------------------------------------------------------------------------------
-    -- Check for keyboard modifiers:
-    --------------------------------------------------------------------------------
-    local mods = eventtap.checkKeyboardModifiers()
-    local result = false
-    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
-        result = true
-    end
-    return result
-end
+local optionPressed     = tools.optionPressed
+local shiftPressed      = tools.shiftPressed
+
+local numberToWord      = tools.numberToWord
 
 --------------------------------------------------------------------------------
 -- MIDI Controller Value (7bit):   0 to 127
@@ -58,7 +41,11 @@ local function makePercentHandler(puckFinderFn)
     local value
     local updateUI = deferred.new(0.01):action(function()
         local puck = puckFinderFn()
-        puck:show():percent(value)
+        if puck:isShowing() then
+            puck:percent(value)
+        else
+            puck:show()
+        end
     end)
     return function(metadata)
         local midiValue
@@ -106,7 +93,11 @@ local function makeAngleHandler(puckFinderFn)
     local value
     local updateUI = deferred.new(0.01):action(function()
         local puck = puckFinderFn()
-        puck:show():angle(value)
+        if puck:isShowing() then
+            puck:angle(value)
+        else
+            puck:show()
+        end
     end)
     return function(metadata)
         local midiValue
@@ -132,6 +123,102 @@ local function makeAngleHandler(puckFinderFn)
     end
 end
 
+-- makePercentHandlerRelativeA(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for percent controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the percentage value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makePercentHandlerRelativeA(puckFinderFn)
+    local value = 0
+    local puck = puckFinderFn()
+    local updateUI = deferred.new(0.01):action(function()
+        if puck:isShowing() then
+            puck:shiftPercent(value)
+            value = 0
+        else
+            puck:show()
+        end
+    end)
+    return function(metadata)
+        if optionPressed() then
+            if puck:isShowing() then
+                puck:reset()
+                value = 0
+            else
+                puck:show()
+            end
+            return
+        end
+
+        local increment = 4
+
+        if shiftPressed() then
+            increment = 1
+        end
+
+        local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+        if midiValue < 8000 then
+            value = value + increment
+        else
+            value = value - increment
+        end
+
+        updateUI()
+    end
+end
+
+-- makeAngleHandlerRelativeA(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for angle controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the angle value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makeAngleHandlerRelativeA(puckFinderFn)
+    local value = 0
+    local puck = puckFinderFn()
+    local updateUI = deferred.new(0.01):action(function()
+        if puck:isShowing() then
+            puck:shiftAngle(value)
+            value = 0
+        else
+            puck:show()
+        end
+    end)
+    return function(metadata)
+        if optionPressed() then
+            if puck:isShowing() then
+                puck:reset()
+                value = 0
+            else
+                puck:show()
+            end
+            return
+        end
+
+        local increment = 4
+
+        if shiftPressed() then
+            increment = 1
+        end
+
+        local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+        if midiValue < 8000 then
+            value = value + increment
+        else
+            value = value - increment
+        end
+
+        updateUI()
+    end
+end
+
 local plugin = {
     id              = "finalcutpro.midi.controls.color",
     group           = "finalcutpro",
@@ -142,56 +229,92 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp.colorBoard
 
     local colorBoardAspects = {
-        { title = i18n("color"),        control = colorBoard:color(),          hasAngle = true },
-        { title = i18n("saturation"),   control = colorBoard:saturation()      },
-        { title = i18n("exposure"),     control = colorBoard:exposure()        },
+        { title = i18n("color"),        control = colorBoard.color,          hasAngle = true },
+        { title = i18n("saturation"),   control = colorBoard.saturation      },
+        { title = i18n("exposure"),     control = colorBoard.exposure        },
     }
 
     local pucks = {
-        { title = "Master",             id = "master"        },
-        { title = "Shadows",            id = "shadows"       },
-        { title = "Midtones",           id = "midtones"      },
-        { title = "Highlights",         id = "highlights"    },
+        { title = i18n("master"),             id = "master"        },
+        { title = i18n("shadows"),            id = "shadows"       },
+        { title = i18n("midtones"),           id = "midtones"      },
+        { title = i18n("highlights"),         id = "highlights"    },
     }
 
     local colorBoardText, puckText, descriptionText = i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
     local angleText, percentageText, colorText = i18n("angle"), i18n("percentage"), i18n("color")
+    local absoluteText = i18n("absolute")
+    local relativeAText = i18n("relativeA")
+    local relativeADescription = i18n("holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset")
 
     for i,puck in ipairs(pucks) do
-        local puckNumber = tools.numberToWord(i)
+        local puckNumber = numberToWord(i)
         --------------------------------------------------------------------------------
-        -- Current Pucks:
+        -- Current Pucks (Absolute):
         --------------------------------------------------------------------------------
         deps.manager.controls:new("puck" .. puckNumber, {
             group = "fcpx",
-            text = format("%s %s %s", colorBoardText, puckText, i),
+            text = format("%s - %s %s (%s)", colorBoardText, puckText, i, absoluteText),
             subText = descriptionText,
             fn = makePercentHandler(function() return colorBoard:current()[puck.id]() end),
         })
 
         --------------------------------------------------------------------------------
-        -- Angle (Color only)
+        -- Current Pucks (Relative A):
         --------------------------------------------------------------------------------
-        deps.manager.controls:new("colorAnglePuck" .. puckNumber, {
+        deps.manager.controls:new("puck" .. puckNumber .. "relativeA", {
             group = "fcpx",
-            text = format("%s %s %s %s (%s)", colorBoardText, colorText, puckText, i, angleText),
-            subText = descriptionText,
-            fn = makeAngleHandler(function() return colorBoard:color()[puck.id]() end),
+            text = format("%s - %s %s (%s)", colorBoardText, puckText, i, relativeAText),
+            subText = relativeADescription,
+            fn = makePercentHandlerRelativeA(function() return colorBoard:current()[puck.id]() end),
         })
 
         --------------------------------------------------------------------------------
-        -- Percentages:
+        -- Angle (Absolute):
+        --------------------------------------------------------------------------------
+        deps.manager.controls:new("colorAnglePuck" .. puckNumber, {
+            group = "fcpx",
+            text = format("%s - %s %s %s - %s (%s)", colorBoardText, colorText, puckText, i, angleText, absoluteText),
+            subText = descriptionText,
+            fn = makeAngleHandler(function() return colorBoard.color[puck.id]() end),
+        })
+
+        --------------------------------------------------------------------------------
+        -- Angle (Relative A):
+        --------------------------------------------------------------------------------
+        deps.manager.controls:new("colorAnglePuck" .. puckNumber .. "relativeA", {
+            group = "fcpx",
+            text = format("%s - %s %s %s - %s (%s)", colorBoardText, colorText, puckText, i, angleText, relativeAText),
+            subText = relativeADescription,
+            fn = makeAngleHandlerRelativeA(function() return colorBoard.color[puck.id]() end),
+        })
+
+        --------------------------------------------------------------------------------
+        -- Percentages (Absolute):
         --------------------------------------------------------------------------------
         for _,aspect in ipairs(colorBoardAspects) do
             local colorPanel = aspect.control:id()
             deps.manager.controls:new(colorPanel .. "PercentagePuck" .. puckNumber, {
                 group = "fcpx",
-                text = format("%s %s %s %s (%s)", colorBoardText, aspect.title, puckText, i, percentageText ),
+                text = format("%s - %s %s %s - %s (%s)", colorBoardText, aspect.title, puckText, i, percentageText, absoluteText),
                 subText = descriptionText,
                 fn = makePercentHandler(function() return aspect.control[puck.id]() end),
+            })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Percentages (Relative A):
+        --------------------------------------------------------------------------------
+        for _,aspect in ipairs(colorBoardAspects) do
+            local colorPanel = aspect.control:id()
+            deps.manager.controls:new(colorPanel .. "PercentagePuck" .. puckNumber .. "relativeA", {
+                group = "fcpx",
+                text = format("%s - %s %s %s - %s (%s)", colorBoardText, aspect.title, puckText, i, percentageText, relativeAText),
+                subText = relativeADescription,
+                fn = makePercentHandlerRelativeA(function() return aspect.control[puck.id]() end),
             })
         end
     end

@@ -226,7 +226,7 @@ local function touchCallback(_, touches)
     --------------------------------------------------------------------------------
     -- Only do stuff if FCPX is active:
     --------------------------------------------------------------------------------
-    if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
+    if not fcp:isFrontmost() or not fcp.timeline:isShowing() then return end
 
     --------------------------------------------------------------------------------
     -- Only allow when ONLY the custom modifier key is held down:
@@ -271,8 +271,8 @@ local function touchCallback(_, touches)
     local mouseButtons = eventtap.checkMouseButtons()
     if next(mouseButtons) then
         mod.lastPosition = nil
-        if fcp:timeline():toolbar():appearance():isShowing() then
-            fcp:timeline():toolbar():appearance():hide()
+        if fcp.timeline.toolbar.appearance:isShowing() then
+            fcp.timeline.toolbar.appearance:hide()
         end
         return
     end
@@ -298,7 +298,7 @@ local function touchCallback(_, touches)
     -- User has broken contact with the Touch Device:
     --------------------------------------------------------------------------------
     if stage == "breakTouch" then
-        fcp:timeline():toolbar():appearance():hide()
+        fcp.timeline.toolbar.appearance:hide()
         return
     end
 
@@ -306,7 +306,7 @@ local function touchCallback(_, touches)
     -- User has made contact with the Touch Device:
     --------------------------------------------------------------------------------
     if stage == "makeTouch" then
-        fcp:timeline():toolbar():appearance():show()
+        fcp.timeline.toolbar.appearance:show()
         mod.lastPosition = currentPosition
     end
 
@@ -318,7 +318,7 @@ local function touchCallback(_, touches)
         --------------------------------------------------------------------------------
         -- Define the appearance popup:
         --------------------------------------------------------------------------------
-        local appearance = fcp:timeline():toolbar():appearance()
+        local appearance = fcp.timeline.toolbar.appearance
 
         --------------------------------------------------------------------------------
         -- If we can't get the appearance popup, then we give up:
@@ -328,7 +328,7 @@ local function touchCallback(_, touches)
         --------------------------------------------------------------------------------
         -- Get current value of the zoom slider:
         --------------------------------------------------------------------------------
-        local currentValue = appearance:zoomAmount():getValue()
+        local currentValue = appearance.zoomAmount:getValue()
 
         --------------------------------------------------------------------------------
         -- If we can't get the zoom value, then we give up:
@@ -355,9 +355,9 @@ local function touchCallback(_, touches)
         -- Adjust the zoom slider:
         --------------------------------------------------------------------------------
         if mod.scrollDirection == "normal" then
-            appearance:zoomAmount():setValue(currentValue + (difference * mod.offset))
+            appearance.zoomAmount:setValue(currentValue + (difference * mod.offset))
         else
-            appearance:zoomAmount():setValue(currentValue - (difference * mod.offset))
+            appearance.zoomAmount:setValue(currentValue - (difference * mod.offset))
         end
 
         --------------------------------------------------------------------------------
@@ -395,13 +395,10 @@ function mod.start()
     -- Setup Mouse Watcher:
     --------------------------------------------------------------------------------
     local distributednotifications = require("hs.distributednotifications")
-    mod.distributedObserver = distributednotifications.new(function(name)
-        if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-            --log.df("New Multi-touch Device Detected. Re-scanning...")
-            mod.stop()
-            mod.update()
-        end
-    end):start()
+    mod.distributedObserver = distributednotifications.new(function()
+        mod.stop()
+        mod.update()
+    end, "com.apple.MultitouchSupport.HID.DeviceAdded"):start()
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Watcher:
@@ -477,7 +474,7 @@ function mod.start()
         end
 
         local mouseButtons = eventtap.checkMouseButtons()
-        if not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
+        if not next(mouseButtons) and fcp.isFrontmost() and fcp.timeline:isShowing() then
             mod.modifierPressed = true
             if mod.foundMagicMouse then
                 --------------------------------------------------------------------------------
@@ -489,8 +486,8 @@ function mod.start()
                 -- Code to handle MECHANICAL MOUSES (i.e. not Magic Mouse):
                 --------------------------------------------------------------------------------
                 local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
-                if fcp:timeline():isShowing() then
-                    local zoomAmount = fcp:timeline():toolbar():appearance():show():zoomAmount()
+                if fcp.timeline:isShowing() then
+                    local zoomAmount = fcp.timeline.toolbar.appearance:show().zoomAmount
                     if mod.scrollDirection == "normal" then
                         if direction >= 1 then
                             zoomAmount:increment()
@@ -525,7 +522,7 @@ function mod.start()
             --------------------------------------------------------------------------------
             -- Hide the Appearance Popup:
             --------------------------------------------------------------------------------
-            local appearance = fcp:timeline():toolbar():appearance()
+            local appearance = fcp.timeline.toolbar.appearance
             if appearance and appearance:isShowing() then
                 appearance:hide()
             end

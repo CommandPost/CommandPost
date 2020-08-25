@@ -57,25 +57,19 @@ function Index:initialize(timeline)
     SplitGroup.initialize(self, timeline, UI)
 end
 
---- cp.apple.finalcutpro.timeline.Index:search() -> cp.ui.SearchField
---- Method
+--- cp.apple.finalcutpro.timeline.Index.search <cp.ui.SearchField>
+--- Field
 --- The [SearchField](cp.ui.SearchField.md) for the Timeline Index.
----
---- Returns:
----  * The SearchField.
-function Index.lazy.method:search()
+function Index.lazy.value:search()
     return SearchField(self, self.UI:mutate(function(original)
         return childMatching(original(), SearchField.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.Index:mode() -> cp.apple.finalcutpro.timeline.IndexMode
---- Method
+--- cp.apple.finalcutpro.timeline.Index.mode <cp.apple.finalcutpro.timeline.IndexMode>
+--- Field
 --- The [IndexMode](cp.apple.finalcutpro.timeline.IndexMode.md) for the Index.
----
---- Returns:
----  * The `IndexMode`.
-function Index.lazy.method:mode()
+function Index.lazy.value:mode()
     return IndexMode(self)
 end
 
@@ -83,41 +77,41 @@ end
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will show the Index if possible.
 function Index.lazy.method:doShow()
-    return self:parent():toolbar():index():doCheck()
+    return self:parent().toolbar.index:doCheck()
 end
 
 --- cp.apple.finalcutpro.timeline.Index:doHide() -> cp.rx.go.Statement
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) which will hide the Index if possible.
 function Index.lazy.method:doHide()
-    return self:parent():toolbar():index():doUncheck()
+    return self:parent().toolbar.index:doUncheck()
 end
 
---- cp.apple.finalcutpro.timeline.Index:clips() -> cp.apple.finalcutpro.timeline.IndexClips
---- Method
+--- cp.apple.finalcutpro.timeline.Index.clips <cp.apple.finalcutpro.timeline.IndexClips>
+--- Field
 --- The [IndexClips](cp.apple.finalcutpro.timeline.IndexClips.md).
-function Index.lazy.method:clips()
+function Index.lazy.value:clips()
     return IndexClips(self)
 end
 
---- cp.apple.finalcutpro.timeline.Index:tags() -> cp.apple.finalcutpro.timeline.IndexTags
---- Method
+--- cp.apple.finalcutpro.timeline.Index.tags <cp.apple.finalcutpro.timeline.IndexTags>
+--- Field
 --- The [IndexTags](cp.apple.finalcutpro.timeline.IndexTags.md).
-function Index.lazy.method:tags()
+function Index.lazy.value:tags()
     return IndexTags(self)
 end
 
---- cp.apple.finalcutpro.timeline.Index:roles() -> cp.apple.finalcutpro.timeline.IndexRoles
---- Method
+--- cp.apple.finalcutpro.timeline.Index.roles <cp.apple.finalcutpro.timeline.IndexRoles>
+--- Field
 --- The [IndexRoles](cp.apple.finalcutpro.timeline.IndexRoles.md).
-function Index.lazy.method:roles()
+function Index.lazy.value:roles()
     return IndexRoles(self)
 end
 
---- cp.apple.finalcutpro.timeline.Index:captions() -> cp.apple.finalcutpro.timeline.IndexCaptions
---- Method
+--- cp.apple.finalcutpro.timeline.Index.captions <cp.apple.finalcutpro.timeline.IndexCaptions>
+--- Field
 --- The [IndexCaptions](cp.apple.finalcutpro.timeline.IndexCaptions.md).
-function Index.lazy.method:captions()
+function Index.lazy.value:captions()
     return IndexCaptions(self)
 end
 
@@ -131,14 +125,14 @@ end
 --- Returns:
 ---  * The active tab or `nil`.
 function Index:activeTab()
-    if self:clips():isShowing() then
-        return self:clips()
-    elseif self:tags():isShowing() then
-        return self:tags()
-    elseif self:roles():isShowing() then
-        return self:roles()
-    elseif self:captions():isShowing() then
-        return self:captions()
+    if self.clips:isShowing() then
+        return self.clips
+    elseif self.tags:isShowing() then
+        return self.tags
+    elseif self.roles:isShowing() then
+        return self.roles
+    elseif self.captions:isShowing() then
+        return self.captions
     end
 end
 
@@ -155,12 +149,12 @@ function Index:saveLayout()
     local layout = SplitGroup.saveLayout(self)
 
     layout.showing = self:isShowing()
-    layout.clips = self:clips():saveLayout()
-    layout.tags = self:tags():saveLayout()
-    layout.roles = self:roles():saveLayout()
-    layout.captions = self:captions():saveLayout()
+    layout.clips = self.clips:saveLayout()
+    layout.tags = self.tags:saveLayout()
+    layout.roles = self.roles:saveLayout()
+    layout.captions = self.captions:saveLayout()
 
-    layout.search = self:search():saveLayout()
+    layout.search = self.search:saveLayout()
 
     return layout
 end
@@ -183,11 +177,11 @@ function Index:doLayout(layout)
         :Then(self:doShow())
         :Otherwise(self:doHide())
     )
-    :Then(self:clips():doLayout(layout.clips))
-    :Then(self:tags():doLayout(layout.tags))
-    :Then(self:roles():doLayout(layout.roles))
-    :Then(self:captions():doLayout(layout.captions))
-    :Then(self:search():doLayout(layout.search))
+    :Then(self.clips:doLayout(layout.clips))
+    :Then(self.tags:doLayout(layout.tags))
+    :Then(self.roles:doLayout(layout.roles))
+    :Then(self.captions:doLayout(layout.captions))
+    :Then(self.search:doLayout(layout.search))
     :Label("Index:doLayout")
 end
 

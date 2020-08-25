@@ -57,7 +57,7 @@ function group.lazy.prop:localActive()
     return prop.THIS(self._localActive == true)
 end
 
---- plugin.core.tangent.manager.group.active <cp.prop: boolean; read-only>
+--- plugins.core.tangent.manager.group.active <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the group is active. It will only be active if
 --- the current group is `enabled` and if the parent group (if present) is `active`.
@@ -79,7 +79,7 @@ function group.static.is(thing)
     return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(group)
 end
 
---- plugin.core.tangent.manager.group:name() -> string
+--- plugins.core.tangent.manager.group:name() -> string
 --- Method
 --- Returns the `name` given to the group.
 ---

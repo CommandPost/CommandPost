@@ -21,7 +21,7 @@ local childMatching     = axutils.childMatching
 local childrenMatching  = axutils.childrenMatching
 
 
-local PropertyRow = Element:subclass("PropertyRow")
+local PropertyRow = Element:subclass("cp.ui.PropertyRow")
 
 -- UI_FINDER -> table
 -- Constant

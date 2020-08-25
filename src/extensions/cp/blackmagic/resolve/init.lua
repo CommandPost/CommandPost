@@ -321,16 +321,10 @@ end
 --
 ----------------------------------------------------------------------------------------
 
---- cp.blackmagic.resolve:primaryWindow() -> primaryWindow object
---- Method
---- Returns the DaVinci Resolve Primary Window.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Primary Window
-function resolve.lazy.method:primaryWindow()
+--- cp.blackmagic.resolve.primaryWindow <PrimaryWindow>
+--- Field
+--- The DaVinci Resolve Primary Window.
+function resolve.lazy.value:primaryWindow()
     return PrimaryWindow(self)
 end
 

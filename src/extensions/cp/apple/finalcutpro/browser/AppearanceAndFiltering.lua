@@ -85,111 +85,69 @@ AppearanceAndFiltering.DURATION = {
 ---  * Self
 function AppearanceAndFiltering:show()
     if not self:isShowing() then
-        self:button():press()
+        self.button:press()
     end
     return self
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:button() -> cp.ui.Button
---- Method
---- Gets the "Clip Appearance & Filtering Menu" button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `Button` object.
-function AppearanceAndFiltering.lazy.method:button()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.button <cp.ui.Button>
+--- Field
+--- The "Clip Appearance & Filtering Menu" button.
+function AppearanceAndFiltering.lazy.value:button()
     return Button(self, self:parent().UI:mutate(function(original)
         return childFromRight(childrenWithRole(original(), "AXButton"), 2)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:clipHeight() -> cp.ui.Slider
---- Method
---- Gets the Clip Height Slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `Slider` object.
-function AppearanceAndFiltering.lazy.method:clipHeight()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.clipHeight <cp.ui.Slider>
+--- Field
+--- The Clip Height Slider.
+function AppearanceAndFiltering.lazy.value:clipHeight()
     return Slider(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXSlider"), 2)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:duration() -> cp.ui.Slider
---- Method
---- Gets the Duration Slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `Slider` object.
-function AppearanceAndFiltering.lazy.method:duration()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.duration <cp.ui.Slider>
+--- Field
+--- The Duration Slider.
+function AppearanceAndFiltering.lazy.value:duration()
     return Slider(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXSlider"), 3)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:groupBy() -> cp.ui.PopUpButton
---- Method
---- Gets the "Group By" popup button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `PopUpButton` object.
-function AppearanceAndFiltering.lazy.method:groupBy()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.groupBy <cp.ui.PopUpButton>
+--- Field
+--- The "Group By" popup button.
+function AppearanceAndFiltering.lazy.value:groupBy()
     return PopUpButton(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXPopUpButton"), 1)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:sortBy() -> cp.ui.PopUpButton
---- Method
---- Gets the "Sort By" popup button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `PopUpButton` object.
-function AppearanceAndFiltering.lazy.method:sortBy()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.sortBy <cp.ui.PopUpButton>
+--- Field
+--- The "Sort By" popup button.
+function AppearanceAndFiltering.lazy.value:sortBy()
     return PopUpButton(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXPopUpButton"), 2)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:waveforms() -> cp.ui.CheckBox
---- Method
---- Gets the Waveforms checkbox.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `CheckBox` object.
-function AppearanceAndFiltering.lazy.method:waveforms()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.waveforms <cp.ui.CheckBox>
+--- Field
+--- The Waveforms checkbox.
+function AppearanceAndFiltering.lazy.value:waveforms()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 1)
     end))
 end
 
---- cp.apple.finalcutpro.browser.AppearanceAndFiltering:continuousPlayback() -> cp.ui.CheckBox
---- Method
---- Gets the Continuous Playback checkbox.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `CheckBox` object.
-function AppearanceAndFiltering.lazy.method:continuousPlayback()
+--- cp.apple.finalcutpro.browser.AppearanceAndFiltering.continuousPlayback <cp.ui.CheckBox>
+--- Field
+--- The Continuous Playback checkbox.
+function AppearanceAndFiltering.lazy.value:continuousPlayback()
     return CheckBox(self, self.UI:mutate(function(original)
         return childFromTop(childrenWithRole(original(), "AXCheckBox"), 2)
     end))

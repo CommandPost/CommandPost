@@ -40,7 +40,7 @@ end
 ---  * None
 function mod.updateInfo()
 
-    local viewer = fcp:viewer()
+    local viewer = fcp.viewer
 
     local mediaText, mediaClass
     local qualityText, qualityClass

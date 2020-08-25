@@ -60,7 +60,7 @@ function HueSaturationCurve:initialize(parent, type)
                     -- All Wheels:
                     --------------------------------------------------------------------------------
                     return axutils.childFromTop(childrenMatching(ui, HueSaturationCurve.matches), self:type())
-                elseif parent:wheelType():selectedOption() == self:type() then
+                elseif parent.wheelType:selectedOption() == self:type() then
                     --------------------------------------------------------------------------------
                     -- Single Wheels - with only a single wheel visible:
                     --------------------------------------------------------------------------------
@@ -82,12 +82,12 @@ end
 function HueSaturationCurve:show()
     local parent = self:parent()
     parent:show()
-    parent:wheelType():selectedOption(self:type())
+    parent.wheelType:selectedOption(self:type())
 end
 
 function HueSaturationCurve.lazy.method:doShow()
     local parent = self:parent()
-    local wheelType = parent:wheelType()
+    local wheelType = parent.wheelType
     return If(self.isShowing):Is(false):Then(
         parent:doShow()
     ):Then(

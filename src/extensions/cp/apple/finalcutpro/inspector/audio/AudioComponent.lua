@@ -228,17 +228,11 @@ function AudioComponent:enabled()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioComponent:channels() -> MenuButton
---- Method
---- Gets the channels popup menu button for the component. This only works for
+--- cp.apple.finalcutpro.inspector.audio.AudioComponent.channels <cp.ui.MenuButton>
+--- Field
+--- The channels popup menu button for the component. This only present for
 --- "Standard" clip types.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` instance.
-function AudioComponent:channels()
+function AudioComponent.lazy.value:channels()
     return MenuButton(self, function()
         local ui                = self:UI()
         local subcomponent      = self._subcomponent
@@ -251,17 +245,11 @@ function AudioComponent:channels()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioComponent:showAs() -> MenuButton
---- Method
---- Gets the subroles popup menu button for the component. This only works for
+--- cp.apple.finalcutpro.inspector.audio.AudioComponent.showAs <cp.ui.MenuButton>
+--- Field
+--- The subroles popup menu button for the component. Only present for
 --- Compound Clips.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` instance.
-function AudioComponent:showAs()
+function AudioComponent.lazy.value:showAs()
     return MenuButton(self, function()
         local ui                = self:UI()
         local subcomponent      = self._subcomponent
@@ -274,17 +262,11 @@ function AudioComponent:showAs()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioComponent:role() -> MenuButton
---- Method
---- Gets the role popup menu button for the subcomponent. This only works for
+--- cp.apple.finalcutpro.inspector.audio.AudioComponent.role <cp.ui.MenuButton>
+--- Field
+--- The role popup menu button for the subcomponent. Only present for
 --- Standard Clips.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` instance.
-function AudioComponent:role()
+function AudioComponent.lazy.value:role()
     return MenuButton(self, function()
         local ui                = self:UI()
         local subcomponent      = self._subcomponent

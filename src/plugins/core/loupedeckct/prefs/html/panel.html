@@ -1,6 +1,8 @@
 <script>{(js/jscolor.js)}</script>
 <style>{(css/loupedeck.css)}</style>
 <script>
+	var selectedWheelMode = "slide";
+
 	function changeColor(value) {
 		document.getElementById('color').jscolor.fromString(value);
 	}
@@ -111,7 +113,7 @@
 				if (id == "6") { label = "Knob 6" }
 			}
 			if (controlType == "jogWheel") {
-				label = "Job Wheel";
+				label = "Jog Wheel";
 			}
 			if (controlType == "wheelScreen") {
 				label = "Wheel Screen";
@@ -138,6 +140,10 @@
 				if (id == "25") { label = "D"}
 				if (id == "26") { label = "E"}
 			}
+			if (controlType == "sideScreen") {
+				if (id == "1") { label = "Left Side Screen" }
+				if (id == "2") { label = "Right Side Screen" }
+			}
 		}
 
 		// -------------------------------------------------
@@ -146,28 +152,87 @@
 		document.getElementById("label").innerHTML = label;
 
 		// -------------------------------------------------
+		// HIDE EVERYTHING:
+		// -------------------------------------------------
+		document.getElementById("wheelModes").style.display = "none";
+
+		document.getElementById("spacerA").style.display = "none";
+		document.getElementById("spacerB").style.display = "none";
+		document.getElementById("spacerC").style.display = "none";
+		document.getElementById("spacerD").style.display = "none";
+		document.getElementById("spacerE").style.display = "none";
+		document.getElementById("spacerF").style.display = "none";
+		document.getElementById("spacerG").style.display = "none";
+		document.getElementById("spacerH").style.display = "none";
+		document.getElementById("spacerI").style.display = "none";
+		document.getElementById("spacerJ").style.display = "none";
+
+		document.getElementById("knobA").style.display = "none";
+		document.getElementById("knobB").style.display = "none";
+		document.getElementById("knobC").style.display = "none";
+
+		document.getElementById("touchWheelA").style.display = "none";
+		document.getElementById("touchWheelB").style.display = "none";
+		document.getElementById("touchWheelC").style.display = "none";
+		document.getElementById("touchWheelD").style.display = "none";
+		document.getElementById("touchWheelE").style.display = "none";
+		document.getElementById("touchWheelF").style.display = "none";
+		document.getElementById("touchWheelG").style.display = "none";
+		document.getElementById("touchWheelH").style.display = "none";
+		document.getElementById("touchWheelI").style.display = "none";
+
+		document.getElementById("pressActionA").style.display = "none";
+		document.getElementById("pressActionB").style.display = "none";
+		document.getElementById("pressActionC").style.display = "none";
+
+		document.getElementById("iconA").style.display = "none";
+		document.getElementById("iconB").style.display = "none";
+		document.getElementById("iconC").style.display = "none";
+
+		document.getElementById("ledColorA").style.display = "none";
+		document.getElementById("ledColorB").style.display = "none";
+
+		document.getElementById("iconLabel").style.display = "none";
+		document.getElementById("iconLabelHeading").style.display = "none";
+
+		document.getElementById("vibrateA").style.display = "none";
+		document.getElementById("vibrateB").style.display = "none";
+
+		document.getElementById("vibrateC").style.display = "none";
+		document.getElementById("vibrateD").style.display = "none";
+
+		document.getElementById("knobResolution").style.display = "none";
+		document.getElementById("sideResolution").style.display = "none";
+		document.getElementById("wheelResolution").style.display = "none";
+		document.getElementById("buttonResolution").style.display = "none";
+
+		document.getElementById("touchWheelPressA").style.display = "none";
+		document.getElementById("touchWheelPressB").style.display = "none";
+		document.getElementById("touchWheelPressC").style.display = "none";
+		document.getElementById("touchWheelPressD").style.display = "none";
+		document.getElementById("touchWheelPressE").style.display = "none";
+		document.getElementById("touchWheelPressF").style.display = "none";
+		document.getElementById("touchWheelPressG").style.display = "none";
+		document.getElementById("touchWheelPressH").style.display = "none";
+		document.getElementById("touchWheelPressI").style.display = "none";
+
+		document.getElementById("wheelSensitivityA").style.display = "none";
+		document.getElementById("wheelSensitivityB").style.display = "none";
+
+		document.getElementById("repeatA").style.display = "none";
+
+		// -------------------------------------------------
 		// KNOB:
 		// -------------------------------------------------
 		if (controlType == "knob") {
 			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "none";
-			document.getElementById("spacerD").style.display = "none";
-			document.getElementById("spacerE").style.display = "block";
+			document.getElementById("spacerB").style.display = "block";
+			document.getElementById("spacerC").style.display = "block";
+			document.getElementById("spacerD").style.display = "block";
 
 			document.getElementById("knobA").style.display = "table";
 			document.getElementById("knobB").style.display = "table";
 			document.getElementById("knobC").style.display = "table";
-
-			document.getElementById("touchWheelA").style.display = "none";
-			document.getElementById("touchWheelB").style.display = "none";
-			document.getElementById("touchWheelC").style.display = "none";
-			document.getElementById("touchWheelD").style.display = "none";
-			document.getElementById("touchWheelE").style.display = "none";
-			document.getElementById("touchWheelF").style.display = "none";
-			document.getElementById("touchWheelG").style.display = "none";
-			document.getElementById("touchWheelH").style.display = "none";
-			document.getElementById("touchWheelI").style.display = "none";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
@@ -177,19 +242,15 @@
 			document.getElementById("iconB").style.display = "block";
 			document.getElementById("iconC").style.display = "block";
 
-			document.getElementById("ledColorA").style.display = "none";
-			document.getElementById("ledColorB").style.display = "none";
-
 			document.getElementById("iconLabel").style.display = "block";
 			document.getElementById("iconLabelHeading").style.display = "table-cell";
 
-			document.getElementById("buttonResolution").style.display = "none";
-			document.getElementById("sideResolution").style.display = "none";
-			document.getElementById("wheelResolution").style.display = "none";
 			document.getElementById("knobResolution").style.display = "block";
 
-			document.getElementById("vibrateA").style.display = "none";
-			document.getElementById("vibrateB").style.display = "none";
+			document.getElementById("vibrateA").style.display = "block";
+			document.getElementById("vibrateB").style.display = "block";
+			document.getElementById("vibrateC").style.display = "block";
+			document.getElementById("vibrateD").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -197,24 +258,7 @@
 		// -------------------------------------------------
 		if (controlType == "touchButton") {
 			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "none";
-			document.getElementById("spacerD").style.display = "none";
-			document.getElementById("spacerE").style.display = "none";
-
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
-
-			document.getElementById("touchWheelA").style.display = "none";
-			document.getElementById("touchWheelB").style.display = "none";
-			document.getElementById("touchWheelC").style.display = "none";
-			document.getElementById("touchWheelD").style.display = "none";
-			document.getElementById("touchWheelE").style.display = "none";
-			document.getElementById("touchWheelF").style.display = "none";
-			document.getElementById("touchWheelG").style.display = "none";
-			document.getElementById("touchWheelH").style.display = "none";
-			document.getElementById("touchWheelI").style.display = "none";
+			document.getElementById("spacerC").style.display = "block";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
@@ -224,19 +268,15 @@
 			document.getElementById("iconB").style.display = "block";
 			document.getElementById("iconC").style.display = "block";
 
-			document.getElementById("ledColorA").style.display = "none";
-			document.getElementById("ledColorB").style.display = "none";
-
 			document.getElementById("buttonResolution").style.display = "block";
-			document.getElementById("sideResolution").style.display = "none";
-			document.getElementById("wheelResolution").style.display = "none";
-			document.getElementById("knobResolution").style.display = "none";
 
 			document.getElementById("iconLabel").style.display = "block";
 			document.getElementById("iconLabelHeading").style.display = "table-cell";
 
 			document.getElementById("vibrateA").style.display = "block";
 			document.getElementById("vibrateB").style.display = "block";
+
+			document.getElementById("repeatA").style.display = "block";
 		}
 
 		// -------------------------------------------------
@@ -244,178 +284,113 @@
 		// -------------------------------------------------
 		if (controlType == "ledButton") {
 			document.getElementById("spacerA").style.display = "block";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "none";
-			document.getElementById("spacerD").style.display = "none";
-			document.getElementById("spacerE").style.display = "none";
-
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
-
-			document.getElementById("touchWheelA").style.display = "none";
-			document.getElementById("touchWheelB").style.display = "none";
-			document.getElementById("touchWheelC").style.display = "none";
-			document.getElementById("touchWheelD").style.display = "none";
-			document.getElementById("touchWheelE").style.display = "none";
-			document.getElementById("touchWheelF").style.display = "none";
-			document.getElementById("touchWheelG").style.display = "none";
-			document.getElementById("touchWheelH").style.display = "none";
-			document.getElementById("touchWheelI").style.display = "none";
+			document.getElementById("spacerC").style.display = "block";
 
 			document.getElementById("pressActionA").style.display = "table";
 			document.getElementById("pressActionB").style.display = "table";
 			document.getElementById("pressActionC").style.display = "table";
 
-			document.getElementById("iconA").style.display = "none";
-			document.getElementById("iconB").style.display = "none";
-			document.getElementById("iconC").style.display = "none";
-
 			document.getElementById("ledColorA").style.display = "block";
 			document.getElementById("ledColorB").style.display = "block";
 
-			document.getElementById("iconLabel").style.display = "none";
-			document.getElementById("iconLabelHeading").style.display = "none";
+			document.getElementById("vibrateA").style.display = "block";
+			document.getElementById("vibrateB").style.display = "block";
 
-			document.getElementById("vibrateA").style.display = "none";
-			document.getElementById("vibrateB").style.display = "none";
+			document.getElementById("repeatA").style.display = "block";
 		}
 
 		// -------------------------------------------------
 		// LEFT/RIGHT SCREENS:
 		// -------------------------------------------------
 		if (controlType == "sideScreen") {
-			document.getElementById("spacerA").style.display = "none";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "block";
-			document.getElementById("spacerD").style.display = "none";
 			document.getElementById("spacerE").style.display = "block";
-
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
+			document.getElementById("spacerG").style.display = "block";
 
 			document.getElementById("touchWheelA").style.display = "block";
 			document.getElementById("touchWheelB").style.display = "block";
 			document.getElementById("touchWheelC").style.display = "block";
-			document.getElementById("touchWheelD").style.display = "none";
-			document.getElementById("touchWheelE").style.display = "none";
-			document.getElementById("touchWheelF").style.display = "none";
 
 			document.getElementById("touchWheelG").style.display = "block";
 			document.getElementById("touchWheelH").style.display = "block";
 			document.getElementById("touchWheelI").style.display = "block";
 
-			document.getElementById("pressActionA").style.display = "none";
-			document.getElementById("pressActionB").style.display = "none";
-			document.getElementById("pressActionC").style.display = "none";
-
 			document.getElementById("iconA").style.display = "block";
 			document.getElementById("iconB").style.display = "block";
 			document.getElementById("iconC").style.display = "block";
 
-			document.getElementById("ledColorA").style.display = "none";
-			document.getElementById("ledColorB").style.display = "none";
-
-			document.getElementById("buttonResolution").style.display = "none";
 			document.getElementById("sideResolution").style.display = "block";
-			document.getElementById("wheelResolution").style.display = "none";
-			document.getElementById("knobResolution").style.display = "none";
-
-			document.getElementById("iconLabel").style.display = "none";
-			document.getElementById("iconLabelHeading").style.display = "none";
-
-			document.getElementById("vibrateA").style.display = "none";
-			document.getElementById("vibrateB").style.display = "none";
 		}
 
 		// -------------------------------------------------
 		// JOG WHEEL:
 		// -------------------------------------------------
 		if (controlType == "jogWheel") {
-			document.getElementById("spacerA").style.display = "none";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "none";
-			document.getElementById("spacerD").style.display = "none";
-			document.getElementById("spacerE").style.display = "none";
+			document.getElementById("spacerB").style.display = "block";
+			document.getElementById("spacerD").style.display = "block";
 
 			document.getElementById("knobA").style.display = "table";
 			document.getElementById("knobB").style.display = "table";
 			document.getElementById("knobC").style.display = "table";
 
-			document.getElementById("touchWheelA").style.display = "none";
-			document.getElementById("touchWheelB").style.display = "none";
-			document.getElementById("touchWheelC").style.display = "none";
-			document.getElementById("touchWheelD").style.display = "none";
-			document.getElementById("touchWheelE").style.display = "none";
-			document.getElementById("touchWheelF").style.display = "none";
-			document.getElementById("touchWheelG").style.display = "none";
-			document.getElementById("touchWheelH").style.display = "none";
-			document.getElementById("touchWheelI").style.display = "none";
+			document.getElementById("vibrateC").style.display = "block";
+			document.getElementById("vibrateD").style.display = "block";
 
-			document.getElementById("pressActionA").style.display = "none";
-			document.getElementById("pressActionB").style.display = "none";
-			document.getElementById("pressActionC").style.display = "none";
-
-			document.getElementById("iconA").style.display = "none";
-			document.getElementById("iconB").style.display = "none";
-			document.getElementById("iconC").style.display = "none";
-
-			document.getElementById("ledColorA").style.display = "none";
-			document.getElementById("ledColorB").style.display = "none";
-
-			document.getElementById("iconLabel").style.display = "none";
-			document.getElementById("iconLabelHeading").style.display = "none";
-
-			document.getElementById("vibrateA").style.display = "none";
-			document.getElementById("vibrateB").style.display = "none";
+			document.getElementById("wheelSensitivityA").style.display = "block";
+			document.getElementById("wheelSensitivityB").style.display = "block";
 		}
 
 		// -------------------------------------------------
 		// WHEEL SCREEN:
 		// -------------------------------------------------
 		if (controlType == "wheelScreen") {
-			document.getElementById("spacerA").style.display = "none";
-			document.getElementById("spacerB").style.display = "none";
-			document.getElementById("spacerC").style.display = "block";
-			document.getElementById("spacerD").style.display = "block";
-			document.getElementById("spacerE").style.display = "block";
+			document.getElementById("wheelModes").style.display = "block";
+			if (selectedWheelMode == "slide") {
+				// -------------------------------------------------
+				// SLIDE ACTIONS:
+				// -------------------------------------------------
+				document.getElementById("spacerE").style.display = "block";
+				document.getElementById("spacerF").style.display = "block";
+				document.getElementById("spacerG").style.display = "block";
 
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
+				document.getElementById("touchWheelA").style.display = "block";
+				document.getElementById("touchWheelB").style.display = "block";
+				document.getElementById("touchWheelC").style.display = "block";
+				document.getElementById("touchWheelD").style.display = "block";
+				document.getElementById("touchWheelE").style.display = "block";
+				document.getElementById("touchWheelF").style.display = "block";
+				document.getElementById("touchWheelG").style.display = "block";
+				document.getElementById("touchWheelH").style.display = "block";
+				document.getElementById("touchWheelI").style.display = "block";
 
-			document.getElementById("touchWheelA").style.display = "block";
-			document.getElementById("touchWheelB").style.display = "block";
-			document.getElementById("touchWheelC").style.display = "block";
-			document.getElementById("touchWheelD").style.display = "block";
-			document.getElementById("touchWheelE").style.display = "block";
-			document.getElementById("touchWheelF").style.display = "block";
-			document.getElementById("touchWheelG").style.display = "block";
-			document.getElementById("touchWheelH").style.display = "block";
-			document.getElementById("touchWheelI").style.display = "block";
+				document.getElementById("iconA").style.display = "block";
+				document.getElementById("iconB").style.display = "block";
+				document.getElementById("iconC").style.display = "block";
 
-			document.getElementById("pressActionA").style.display = "none";
-			document.getElementById("pressActionB").style.display = "none";
-			document.getElementById("pressActionC").style.display = "none";
+				document.getElementById("wheelResolution").style.display = "block";
+			} else {
+				// -------------------------------------------------
+				// PRESS ACTIONS:
+				// -------------------------------------------------
+				document.getElementById("iconA").style.display = "block";
+				document.getElementById("iconB").style.display = "block";
+				document.getElementById("iconC").style.display = "block";
 
-			document.getElementById("iconA").style.display = "block";
-			document.getElementById("iconB").style.display = "block";
-			document.getElementById("iconC").style.display = "block";
+				document.getElementById("spacerH").style.display = "block";
+				document.getElementById("spacerI").style.display = "block";
+				document.getElementById("spacerJ").style.display = "block";
 
-			document.getElementById("ledColorA").style.display = "none";
-			document.getElementById("ledColorB").style.display = "none";
+				document.getElementById("touchWheelPressA").style.display = "block";
+				document.getElementById("touchWheelPressB").style.display = "block";
+				document.getElementById("touchWheelPressC").style.display = "block";
+				document.getElementById("touchWheelPressD").style.display = "block";
+				document.getElementById("touchWheelPressE").style.display = "block";
+				document.getElementById("touchWheelPressF").style.display = "block";
+				document.getElementById("touchWheelPressG").style.display = "block";
+				document.getElementById("touchWheelPressH").style.display = "block";
+				document.getElementById("touchWheelPressI").style.display = "block";
 
-			document.getElementById("buttonResolution").style.display = "none";
-			document.getElementById("sideResolution").style.display = "none";
-			document.getElementById("wheelResolution").style.display = "block";
-			document.getElementById("knobResolution").style.display = "none";
-
-			document.getElementById("iconLabel").style.display = "none";
-			document.getElementById("iconLabelHeading").style.display = "none";
-
-			document.getElementById("vibrateA").style.display = "none";
-			document.getElementById("vibrateB").style.display = "none";
+				document.getElementById("wheelResolution").style.display = "block";
+			}
 		}
 
 		// -------------------------------------------------
@@ -441,6 +416,16 @@
 		} catch(err) {
 			alertErrorMessage(err);
 		}
+	}
+
+	function setWheelMode(mode) {
+		selectedWheelMode = mode;
+
+		label = document.getElementById("selectedControl").value;
+		id = document.getElementById("id").value;
+		controlType = document.getElementById("controlType").value;
+
+		changeControl("", label, controlType, id)
 	}
 
 	function updateColor() {
@@ -746,17 +731,141 @@
 		}
 	}
 
-	function updateVibrate() {
+	function openKeyCreator() {
 		try {
 			var result = {
 				id: "loupedeckCTPanelCallback",
 				params: {
-					type: "updateVibrate",
+					type: "openKeyCreator",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function buyMoreIcons() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "buyMoreIcons",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateVibratePress() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateVibratePress",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					id: document.getElementById("id").value,
 					controlType: document.getElementById("controlType").value,
-					value: document.getElementById("vibrate").value,
+					value: document.getElementById("vibratePress").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateVibrateRelease() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateVibrateRelease",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("vibrateRelease").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeRepeatPressActionUntilReleased() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "changeRepeatPressActionUntilReleased",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					repeatPressActionUntilReleased: document.getElementById("repeatPressActionUntilReleased").checked,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateWheelSensitivity() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateWheelSensitivity",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("wheelSensitivity").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function updateVibrateLeft() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateVibrateLeft",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("vibrateLeft").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+
+	function updateVibrateRight() {
+		try {
+			var result = {
+				id: "loupedeckCTPanelCallback",
+				params: {
+					type: "updateVibrateRight",
+					application: document.getElementById("application").value,
+					bank: document.getElementById("bank").value,
+					id: document.getElementById("id").value,
+					controlType: document.getElementById("controlType").value,
+					value: document.getElementById("vibrateRight").value,
 				},
 			}
 			postMessage(result);
@@ -956,6 +1065,12 @@
 			<th style="padding-left: 10px;">
 				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="exportSettings()">{{ i18n("exportSettings") }}</a>
 			</th>
+			<th style="padding-left: 10px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="openKeyCreator()">{{ i18n("openKeyCreator") }}</a>
+			</th>
+			<th style="padding-left: 10px;">
+				<a class="button importSettings" href="#" style="font-weight: normal;" onclick="buyMoreIcons()">{{ i18n("buyMoreIcons") }}</a>
+			</th>
 		</tr>
 	</thead>
 </table>
@@ -980,14 +1095,16 @@
 					{%
 					local atLeastOne = false
 					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
-						atLeastOne = true
-						local selected = ""
-						if lastApplication == id then
-							selected = [[selected=""]]
-						end
+						if id ~= "All Applications" then
+							atLeastOne = true
+							local selected = ""
+							if lastApplication == id then
+								selected = [[selected=""]]
+							end
 					%}
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{%
+						end
 					end
 					if atLeastOne then
 					%}
@@ -1202,36 +1319,38 @@
 							</th>
 						</tr>
 					</table>
-					<table class="loupedeck" style="height: 526px; display: none;" id="yesLoupedeck">
-						<!-- PRESS ACTION, LED COLOR & VIBRATE: -->
+					<table class="loupedeck" style="height: 545px; display: none;" id="yesLoupedeck">
+
+						<!-- WHEEL MODES -->
+						<tr id ="wheelModes">
+							<th>
+								<a href="#" class="bottomButton" onclick="setWheelMode('slide')">{{ i18n("slideActions") }}</a>
+							</th>
+							<th>
+								<a href="#" class="bottomButton" onclick="setWheelMode('press')">{{ i18n("pressActions") }}</a>
+							</th>
+						</tr>
+
+						<!-- PRESS & RELEASE ACTION: -->
 						<tr id="pressActionA">
 							<th width="229px">{{ i18n("pressAction") }}:</th>
-							<th width="229px" id="ledColorA">{{ i18n("ledColor") }}:</th>
-							<th width="229px" id="vibrateA">{{ i18n("vibrateWhenPressed") }}:</th>
+							<th width="229px">{{ i18n("releaseAction") }}:</th>
 						</tr>
 						<tr id="pressActionB">
 							<td width="229px"><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-							<td width="229px" id="ledColorB">
-								<div>
-									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
-								</div>
-							</td>
-							<td width="229px" id="vibrateB">
-								<select id="vibrate" style="width: 210px;" onchange="updateVibrate()">
-									<option value="">{{ i18n("none") }}</option>
-									{%
-									for id, label in pairs(vibrationIndex) do
-									%}
-									<option value="{{id}}">{{label}}</option>
-									{%
-									end
-									%}
-								</select>
-							</td>
+							<td width="229px"><input type="text" id="release_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 						</tr>
 						<tr id="pressActionC">
 							<td width="229px"><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
-							<td width="229px"></td>
+							<td width="229px"><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- PRESS REPEAT: -->
+						<tr id="repeatA">
+							<td width="458px">
+								<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
+								<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+							</td>
 						</tr>
 
 						<!-- SPACER: -->
@@ -1262,6 +1381,97 @@
 							</td>
 						</tr>
 
+						<!-- VIBRATE WHEN PRESSED / RELEASED: -->
+						<tr id="vibrateA">
+							<th width="229px">{{ i18n("vibrateWhenPressed") }}:</th>
+							<th width="229px">{{ i18n("vibrateWhenReleased") }}:</th>
+						</tr>
+						<tr id="vibrateB">
+							<td width="229px">
+								<select id="vibratePress" style="width: 210px;" onchange="updateVibratePress()">
+									<option value="">{{ i18n("none") }}</option>
+									{%
+									for id, label in pairs(vibrationIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
+							</td>
+							<td width="229px">
+								<select id="vibrateRelease" style="width: 210px;" onchange="updateVibrateRelease()">
+									<option value="">{{ i18n("none") }}</option>
+									{%
+									for id, label in pairs(vibrationIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
+							</td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerC">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- VIBRATE WHEN TURNED LEFT / RIGHT: -->
+						<tr id="vibrateC">
+							<th width="229px">{{ i18n("vibrateWhenTurnedLeft") }}:</th>
+							<th width="229px">{{ i18n("vibrateWhenTurnedRight") }}:</th>
+						</tr>
+						<tr id="vibrateD">
+							<td width="229px">
+								<select id="vibrateLeft" style="width: 210px;" onchange="updateVibrateLeft()">
+									<option value="">{{ i18n("none") }}</option>
+									{%
+									for id, label in pairs(vibrationIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
+							</td>
+							<td width="229px">
+								<select id="vibrateRight" style="width: 210px;" onchange="updateVibrateRight()">
+									<option value="">{{ i18n("none") }}</option>
+									{%
+									for id, label in pairs(vibrationIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
+							</td>
+						</tr>
+
+						<!-- LED COLOR -->
+						<tr id="ledColorA">
+							<th width="229px">{{ i18n("ledColor") }}:</th>
+						</tr>
+
+						<tr id="ledColorB">
+							<td width="229px">
+								<div>
+									<input id="color" class="loupedeckActionTextbox jscolor {hash:true, borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}" onchange="updateColor()" value="">
+								</div>
+							</td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerD">
+							<td>
+								</br>
+							</td>
+						</tr>
+
 						<!-- TOUCH WHEEL UP & DOWN : -->
 						<tr id="touchWheelA">
 							<th width="229px">{{ i18n("slideUpAction") }}:</th>
@@ -1277,7 +1487,7 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr id="spacerC">
+						<tr id="spacerE">
 							<td>
 								</br>
 							</td>
@@ -1298,13 +1508,13 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr id="spacerD">
+						<tr id="spacerF">
 							<td>
 								</br>
 							</td>
 						</tr>
 
-						<!-- TOUCH WHEEL DOUBLE TAP & TWO FINGER TAP : -->
+						<!-- TOUCH WHEEL DOUBLE TAP & TWO FINGER TAP: -->
 						<tr id="touchWheelG">
 							<th width="229px">{{ i18n("doubleTap") }}:</th>
 							<th width="229px">{{ i18n("twoFingerTap") }}:</th>
@@ -1319,7 +1529,70 @@
 						</tr>
 
 						<!-- SPACER: -->
-						<tr id="spacerE">
+						<tr id="spacerG">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- TOUCH WHEEL - PRESS TOP/BOTTOM LEFT: -->
+						<tr id="touchWheelPressA">
+							<th width="229px">{{ i18n("pressTopLeft") }}:</th>
+							<th width="229px">{{ i18n("pressBottomLeft") }}:</th>
+						</tr>
+						<tr id="touchWheelPressB">
+							<td width="229px"><input type="text" id="top_left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="bottom_left_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="touchWheelPressC">
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topLeftAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomLeftAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomLeftAction')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerH">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- TOUCH WHEEL - PRESS TOP/BOTTOM MIDDLE:: -->
+						<tr id="touchWheelPressD">
+							<th width="229px">{{ i18n("pressTopMiddle") }}:</th>
+							<th width="229px">{{ i18n("pressBottomMiddle") }}:</th>
+						</tr>
+						<tr id="touchWheelPressE">
+							<td width="229px"><input type="text" id="top_middle_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="bottom_middle_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="touchWheelPressF">
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topMiddleAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomMiddleAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomMiddleAction')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerI">
+							<td>
+								</br>
+							</td>
+						</tr>
+
+						<!-- TOUCH WHEEL - PRESS TOP/BOTTOM RIGHT: -->
+						<tr id="touchWheelPressG">
+							<th width="229px">{{ i18n("pressTopRight") }}:</th>
+							<th width="229px">{{ i18n("pressBottomRight") }}:</th>
+						</tr>
+						<tr id="touchWheelPressH">
+							<td width="229px"><input type="text" id="top_right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+							<td width="229px"><input type="text" id="bottom_right_action" class="loupedeckActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						</tr>
+						<tr id="touchWheelPressI">
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('topRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('topRightAction')">{{ i18n("clear") }}</a></td>
+							<td width="229px"><a href="#" class="button loupedeckActionButton" onclick="selectButton('bottomRightAction')">{{ i18n("select") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearButton('bottomRightAction')">{{ i18n("clear") }}</a></td>
+						</tr>
+
+						<!-- SPACER: -->
+						<tr id="spacerJ">
 							<td>
 								</br>
 							</td>
@@ -1352,6 +1625,27 @@
 								<a href="#" class="button loupedeckActionButton" onclick="iconHistory()">{{ i18n("history") }}</a> <a href="#" class="button loupedeckActionButton" onclick="clearIcon()">{{ i18n("clear") }}</a>
 							</th>
 						</tr>
+
+						<!-- WHEEL SENSITIVITY: -->
+						<tr id="wheelSensitivityA">
+							<th width="229px">{{ i18n("wheelSensitivity") }}:</th>
+						</tr>
+						<tr id="wheelSensitivityB">
+							<td width="229px">
+								<select id="wheelSensitivity" style="width: 210px;" onchange="updateWheelSensitivity()">
+									<option value="">{{ i18n("none") }}</option>
+									{%
+									for id, label in pairs(wheelSensitivityIndex) do
+									%}
+									<option value="{{id}}">{{label}}</option>
+									{%
+									end
+									%}
+								</select>
+							</td>
+						</tr>
+
+						<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->
 						<tr style="padding-top: 10px;">
 							<th>
 								<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">{{ i18n("copyControlToAllBanks") }}</a>

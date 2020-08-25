@@ -29,10 +29,10 @@ local displayMessage        = dialog.displayMessage
 -- Returns:
 --  * None
 local function doSpatialConformType(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local libraries = fcp:browser():libraries()
-    local spatialConformType = fcp:inspector():video():spatialConform():type()
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local libraries = fcp.browser.libraries
+    local spatialConformType = fcp.inspector.video:spatialConform():type()
 
     return Do(function()
         if timeline:isFocused() then
@@ -76,9 +76,9 @@ end
 -- Returns:
 --  * None
 local function doBlendMode(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local blendMode = fcp:inspector():video():compositing():blendMode()
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local blendMode = fcp.inspector.video:compositing():blendMode()
 
     return Do(function()
         --------------------------------------------------------------------------------
@@ -111,9 +111,9 @@ end
 -- Returns:
 --  * None
 local function doStabilization(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local stabilization = fcp:inspector():video():stabilization().enabled
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local stabilization = fcp.inspector.video:stabilization().enabled
 
     return Do(function()
         --------------------------------------------------------------------------------
@@ -152,10 +152,10 @@ end
 -- Returns:
 --  * None
 local function doStabilizationMethod(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local stabilization = fcp:inspector():video():stabilization()
-    local method = fcp:inspector():video():stabilization():method()
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local stabilization = fcp.inspector.video:stabilization()
+    local method = fcp.inspector.video:stabilization():method()
 
     return If(function()
         --------------------------------------------------------------------------------
@@ -210,9 +210,9 @@ end
 -- Returns:
 --  * None
 local function doRollingShutter(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local rollingShutter = fcp:inspector():video():rollingShutter().enabled
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local rollingShutter = fcp.inspector.video:rollingShutter().enabled
 
     return Do(function()
         --------------------------------------------------------------------------------
@@ -251,9 +251,9 @@ end
 -- Returns:
 --  * None
 local function doRollingShutterAmount(value)
-    local timeline = fcp:timeline()
-    local timelineContents = timeline:contents()
-    local rollingShutter = fcp:inspector():video():rollingShutter()
+    local timeline = fcp.timeline
+    local timelineContents = timeline.contents
+    local rollingShutter = fcp.inspector.video:rollingShutter()
     local amount = rollingShutter:amount()
 
     return If(function()
@@ -308,6 +308,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    local SHIFT_AMOUNTS = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
+
     --------------------------------------------------------------------------------
     -- Stabilization:
     --------------------------------------------------------------------------------
@@ -352,7 +355,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Rolling Shutter Amount:
     --------------------------------------------------------------------------------
-    local rollingShutterAmounts = fcp:inspector():video().ROLLING_SHUTTER_AMOUNTS
+    local rollingShutterAmounts = fcp.inspector.video.ROLLING_SHUTTER_AMOUNTS
     local rollingShutterTitle = i18n("rollingShutter")
     local rollingShutterAmount = i18n("amount")
     for _, v in pairs(rollingShutterAmounts) do
@@ -380,7 +383,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Blend Modes:
     --------------------------------------------------------------------------------
-    local blendModes = fcp:inspector():video().BLEND_MODES
+    local blendModes = fcp.inspector.video.BLEND_MODES
     for _, v in pairs(blendModes) do
         if v.flexoID ~= nil then
             fcpxCmds
@@ -393,65 +396,95 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Position:
     --------------------------------------------------------------------------------
-    local shiftAmounts = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
+    local posX = 0
+    local posY = 0
 
-    local shiftXPositionValue = 0
-    local updateShiftXPositionValue = deferred.new(0.01):action(function()
-        local position = fcp:inspector():video():transform():position()
-        position:show()
-        local originalPosition = position:x()
-        position:x(originalPosition + shiftXPositionValue)
-        shiftXPositionValue = 0
+    local video = fcp.inspector.video
+    local transform = video:transform()
+    local position = transform:position()
+
+    local updatePosition = deferred.new(0.01)
+    local posUpdating = false
+    updatePosition:action(function()
+        return If(function() return not posUpdating and (posX ~= 0 or posY ~= 0) end)
+        :Then(
+            Do(position:doShow())
+            :Then(function()
+                posUpdating = true
+                if posX ~= 0 then
+                    local current = position:x()
+                    if current then
+                        position:x(current + posX)
+                    end
+                    posX = 0
+                end
+                if posY ~= 0 then
+                    local current = position:y()
+                    if current then
+                        position:y(current + posY)
+                    end
+                    posY = 0
+                end
+                posUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updatePosition")
+        :Now()
     end)
-    local shiftXPosition = function(value)
-        shiftXPositionValue = shiftXPositionValue + value
-        updateShiftXPositionValue()
-    end
 
-    local shiftYPositionValue = 0
-    local updateShiftYPositionValue = deferred.new(0.01):action(function()
-        local position = fcp:inspector():video():transform():position()
-        position:show()
-        local originalPosition = position:y()
-        position:y(originalPosition + shiftYPositionValue)
-        shiftYPositionValue = 0
-    end)
-    local shiftYPosition = function(value)
-        shiftYPositionValue = shiftYPositionValue + value
-        updateShiftYPositionValue()
-    end
-
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftPositionLeftPixels" .. shiftAmount  .. "Pixels")
             :titled(i18n("shiftPositionLeftPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftXPosition(shiftAmount * -1) end)
-            :whenRepeated(function() shiftXPosition(shiftAmount * -1) end)
+            :whenPressed(function()
+                posX = posX - shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posX = posX - shiftAmount
+                updatePosition()
+            end)
 
         fcpxCmds:add("shiftPositionRightPixels" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionRightPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftXPosition(shiftAmount) end)
-            :whenRepeated(function() shiftXPosition(shiftAmount) end)
+            :whenPressed(function()
+                posX = posX + shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posX = posX + shiftAmount
+                updatePosition()
+            end)
 
         fcpxCmds:add("shiftPositionUp" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionUpPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftYPosition(shiftAmount) end)
-            :whenRepeated(function() shiftYPosition(shiftAmount) end)
-
+            :whenPressed(function()
+                posY = posY + shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posY = posY + shiftAmount
+                updatePosition()
+            end)
         fcpxCmds:add("shiftPositionDown" .. shiftAmount .. "Pixels")
             :titled(i18n("shiftPositionDownPixels", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
-            :whenPressed(function() shiftYPosition(shiftAmount * -1) end)
-            :whenRepeated(function() shiftYPosition(shiftAmount * -1) end)
-   end
+            :whenPressed(function()
+                posY = posY - shiftAmount
+                updatePosition()
+            end)
+            :whenRepeated(function()
+                posY = posY - shiftAmount
+                updatePosition()
+            end)
+    end
 
     fcpxCmds:add("resetPositionX")
         :titled(i18n("reset") .. " " .. i18n("position") .. " X")
         :groupedBy("timeline")
         :whenPressed(function()
-            local position = fcp:inspector():video():transform():position()
             position:show()
             position:x(0)
         end)
@@ -460,7 +493,6 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("position") .. " Y")
         :groupedBy("timeline")
         :whenPressed(function()
-            local position = fcp:inspector():video():transform():position()
             position:show()
             position:y(0)
         end)
@@ -468,19 +500,31 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Scale All:
     --------------------------------------------------------------------------------
+    local scaleAll = transform:scaleAll()
+    local shiftScaleUpdating = false
     local shiftScaleValue = 0
     local updateShiftScale = deferred.new(0.01):action(function()
-        local scaleAll = fcp:inspector():video():transform():scaleAll()
-        scaleAll:show()
-        local original = scaleAll:value()
-        scaleAll:value(original + shiftScaleValue)
-        shiftScaleValue = 0
+        return If(function() return not shiftScaleUpdating and shiftScaleValue ~= 0 end)
+        :Then(
+            Do(scaleAll:doShow())
+            :Then(function()
+                shiftScaleUpdating = true
+                local currentValue = scaleAll:value()
+                if currentValue then
+                    scaleAll:value(currentValue + shiftScaleValue)
+                    shiftScaleValue = 0
+                end
+                shiftScaleUpdating = false
+            end)
+        )
+        :Label("plugins.finalcutpro.inspector.video.updateShiftScale")
+        :Now()
     end)
     local shiftScale = function(value)
         shiftScaleValue = shiftScaleValue + value
         updateShiftScale()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftScaleUp" .. shiftAmount)
             :titled(i18n("shiftScaleUp", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
@@ -498,7 +542,6 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("scale") .. " " .. i18n("all"))
         :groupedBy("timeline")
         :whenPressed(function()
-            local scaleAll = fcp:inspector():video():transform():scaleAll()
             scaleAll:show()
             scaleAll:value(100)
         end)
@@ -508,7 +551,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local shiftRotationValue = 0
     local updateShiftRotation = deferred.new(0.01):action(function()
-        local rotation = fcp:inspector():video():transform():rotation()
+        local rotation = fcp.inspector.video:transform():rotation()
         rotation:show()
         local original = rotation:value()
         rotation:value(original + shiftRotationValue)
@@ -518,7 +561,7 @@ function plugin.init(deps)
         shiftRotationValue = shiftRotationValue + value
         updateShiftRotation()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftRotationLeft" .. shiftAmount)
             :titled(i18n("shiftRotationLeft", {amount=shiftAmount, count=shiftAmount}))
             :groupedBy("timeline")
@@ -536,7 +579,7 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("rotation"))
         :groupedBy("timeline")
         :whenPressed(function()
-            local rotation = fcp:inspector():video():transform():rotation()
+            local rotation = fcp.inspector.video:transform():rotation()
             rotation:show()
             rotation:value(0)
         end)
@@ -546,7 +589,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local shiftOpacityValue = 0
     local updateShiftOpacity = deferred.new(0.01):action(function()
-        local opacity = fcp:inspector():video():compositing():opacity()
+        local opacity = fcp.inspector.video:compositing():opacity()
         opacity:show()
         local original = opacity:value()
         opacity:value(original + shiftOpacityValue)
@@ -556,7 +599,7 @@ function plugin.init(deps)
         shiftOpacityValue = shiftOpacityValue + value
         updateShiftOpacity()
     end
-    for _, shiftAmount in pairs(shiftAmounts) do
+    for _, shiftAmount in pairs(SHIFT_AMOUNTS) do
         fcpxCmds:add("shiftOpacityLeft" .. shiftAmount)
             :titled(i18n("decreaseOpacity", {amount=shiftAmount}))
             :groupedBy("timeline")
@@ -574,7 +617,7 @@ function plugin.init(deps)
         :titled(i18n("reset") .. " " .. i18n("opacity"))
         :groupedBy("timeline")
         :whenPressed(function()
-            local opacity = fcp:inspector():video():compositing():opacity()
+            local opacity = fcp.inspector.video:compositing():opacity()
             opacity:show()
             opacity:value(100)
         end)
@@ -582,12 +625,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Crop:
     --------------------------------------------------------------------------------
-    local CROP_TYPES = fcp:inspector():video().CROP_TYPES
+    local CROP_TYPES = fcp.inspector.video.CROP_TYPES
     for _, c in pairs(CROP_TYPES) do
         fcpxCmds:add("cropType" .. c.i18n)
             :titled(i18n("cropType") .. ": " .. i18n(c.i18n))
             :whenPressed(function()
-                local cropType = fcp:inspector():video():crop():type()
+                local cropType = fcp.inspector.video:crop():type()
                 cropType:doShow():Then(
                     cropType:doSelectValue(fcp:string(c.flexoID))
                 ):Now()
@@ -596,7 +639,7 @@ function plugin.init(deps)
 
     local cropLeftValue = 0
     local updateCropLeft = deferred.new(0.01):action(function()
-        local cropLeft = fcp:inspector():video():crop():left()
+        local cropLeft = fcp.inspector.video:crop():left()
         cropLeft:show()
         local original = cropLeft:value()
         cropLeft:value(original + cropLeftValue)
@@ -605,7 +648,7 @@ function plugin.init(deps)
 
     local cropRightValue = 0
     local updateCropRight = deferred.new(0.01):action(function()
-        local cropRight = fcp:inspector():video():crop():right()
+        local cropRight = fcp.inspector.video:crop():right()
         cropRight:show()
         local original = cropRight:value()
         cropRight:value(original + cropRightValue)
@@ -614,7 +657,7 @@ function plugin.init(deps)
 
     local cropTopValue = 0
     local updateCropTop = deferred.new(0.01):action(function()
-        local cropTop = fcp:inspector():video():crop():top()
+        local cropTop = fcp.inspector.video:crop():top()
         cropTop:show()
         local original = cropTop:value()
         cropTop:value(original + cropTopValue)
@@ -623,7 +666,7 @@ function plugin.init(deps)
 
     local cropBottomValue = 0
     local updateCropBottom = deferred.new(0.01):action(function()
-        local cropBottom = fcp:inspector():video():crop():bottom()
+        local cropBottom = fcp.inspector.video:crop():bottom()
         cropBottom:show()
         local original = cropBottom:value()
         cropBottom:value(original + cropBottomValue)
@@ -692,25 +735,25 @@ function plugin.init(deps)
     fcpxCmds:add("cropResetLeft")
         :titled(i18n("crop") .. " " .. i18n("left") .. " " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():crop():left():show():value(0)
+            fcp.inspector.video:crop():left():show():value(0)
         end)
 
     fcpxCmds:add("cropResetRight")
         :titled(i18n("crop") .. " " .. i18n("right") .. " " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():crop():right():show():value(0)
+            fcp.inspector.video:crop():right():show():value(0)
         end)
 
     fcpxCmds:add("cropResetTop")
         :titled(i18n("crop") .. " " .. i18n("top") .. " " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():crop():top():show():value(0)
+            fcp.inspector.video:crop():top():show():value(0)
         end)
 
     fcpxCmds:add("cropResetBottom")
         :titled(i18n("crop") .. " " .. i18n("bottom") .. " " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():crop():bottom():show():value(0)
+            fcp.inspector.video:crop():bottom():show():value(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -718,7 +761,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local distortBottomLeftXValue = 0
     local updateDistortBottomLeftX = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():bottomLeft().x
+        local d = fcp.inspector.video:distort():bottomLeft().x
         d:show()
         local original = d:value()
         d:value(original + distortBottomLeftXValue)
@@ -727,7 +770,7 @@ function plugin.init(deps)
 
     local distortBottomLeftYValue = 0
     local updateDistortBottomLeftY = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():bottomLeft().x
+        local d = fcp.inspector.video:distort():bottomLeft().x
         d:show()
         local original = d:value()
         d:value(original + distortBottomLeftYValue)
@@ -736,7 +779,7 @@ function plugin.init(deps)
 
     local distortBottomRightXValue = 0
     local updateDistortBottomRightX = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():bottomRight().x
+        local d = fcp.inspector.video:distort():bottomRight().x
         d:show()
         local original = d:value()
         d:value(original + distortBottomRightXValue)
@@ -745,7 +788,7 @@ function plugin.init(deps)
 
     local distortBottomRightYValue = 0
     local updateDistortBottomRightY = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():bottomRight().x
+        local d = fcp.inspector.video:distort():bottomRight().x
         d:show()
         local original = d:value()
         d:value(original + distortBottomRightYValue)
@@ -755,7 +798,7 @@ function plugin.init(deps)
 
     local distortTopLeftXValue = 0
     local updateDistortTopLeftX = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():topLeft().x
+        local d = fcp.inspector.video:distort():topLeft().x
         d:show()
         local original = d:value()
         d:value(original + distortTopLeftXValue)
@@ -764,7 +807,7 @@ function plugin.init(deps)
 
     local distortTopLeftYValue = 0
     local updateDistortTopLeftY = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():topLeft().x
+        local d = fcp.inspector.video:distort():topLeft().x
         d:show()
         local original = d:value()
         d:value(original + distortTopLeftYValue)
@@ -773,7 +816,7 @@ function plugin.init(deps)
 
     local distortTopRightXValue = 0
     local updateDistortTopRightX = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():topRight().x
+        local d = fcp.inspector.video:distort():topRight().x
         d:show()
         local original = d:value()
         d:value(original + distortTopRightXValue)
@@ -782,7 +825,7 @@ function plugin.init(deps)
 
     local distortTopRightYValue = 0
     local updateDistortTopRightY = deferred.new(0.01):action(function()
-        local d = fcp:inspector():video():distort():topRight().x
+        local d = fcp.inspector.video:distort():topRight().x
         d:show()
         local original = d:value()
         d:value(original + distortTopRightYValue)
@@ -907,49 +950,49 @@ function plugin.init(deps)
     fcpxCmds:add("distortBottomLeftXReset")
         :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("left") .. " X " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():bottomLeft().x:show():value(0)
+            fcp.inspector.video:distort():bottomLeft().x:show():value(0)
         end)
 
     fcpxCmds:add("distortBottomLeftYReset")
         :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("left") .. " Y " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():bottomLeft().y:show():value(0)
+            fcp.inspector.video:distort():bottomLeft().y:show():value(0)
         end)
 
     fcpxCmds:add("distortBottomRightXReset")
         :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("right") .. " X " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():bottomRight().x:show():value(0)
+            fcp.inspector.video:distort():bottomRight().x:show():value(0)
         end)
 
     fcpxCmds:add("distortBottomRightYReset")
         :titled(i18n("distort") .. " ".. i18n("bottom") .. " " .. i18n("right") .. " Y " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():bottomRight().y:show():value(0)
+            fcp.inspector.video:distort():bottomRight().y:show():value(0)
         end)
 
     fcpxCmds:add("distortTopLeftXReset")
         :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("left") .. " X " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():topLeft().x:show():value(0)
+            fcp.inspector.video:distort():topLeft().x:show():value(0)
         end)
 
     fcpxCmds:add("distortTopLeftYReset")
         :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("left") .. " Y " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():topLeft().y:show():value(0)
+            fcp.inspector.video:distort():topLeft().y:show():value(0)
         end)
 
     fcpxCmds:add("distortTopRightXReset")
         :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("right") .. " X " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():topRight().x:show():value(0)
+            fcp.inspector.video:distort():topRight().x:show():value(0)
         end)
 
     fcpxCmds:add("distortTopRightYReset")
         :titled(i18n("distort") .. " ".. i18n("top") .. " " .. i18n("right") .. " Y " .. i18n("reset"))
         :whenPressed(function()
-            fcp:inspector():video():distort():topRight().y:show():value(0)
+            fcp.inspector.video:distort():topRight().y:show():value(0)
         end)
 
     --------------------------------------------------------------------------------
@@ -958,8 +1001,8 @@ function plugin.init(deps)
     fcpxCmds:add("toggleSelectedEffect")
         :titled(i18n("toggle") .. " " .. i18n("selected") .. " " .. i18n("effect"))
         :whenPressed(function()
-            fcp:inspector():video():show()
-            local checkbox = fcp:inspector():video():selectedEffectCheckBox()
+            fcp.inspector.video:show()
+            local checkbox = fcp.inspector.video:selectedEffectCheckBox()
             if checkbox then
                 checkbox:performAction("AXPress")
             end
@@ -969,8 +1012,8 @@ function plugin.init(deps)
         fcpxCmds:add("toggleEffect" .. i)
             :titled(i18n("toggle") .. " " .. i18n("effect") .. " " .. i)
             :whenPressed(function()
-                fcp:inspector():video():show()
-                local checkboxes = fcp:inspector():video():effectCheckBoxes()
+                fcp.inspector.video:show()
+                local checkboxes = fcp.inspector.video:effectCheckBoxes()
                 if checkboxes and checkboxes[i] then
                     checkboxes[i]:performAction("AXPress")
                 end

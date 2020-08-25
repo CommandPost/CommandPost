@@ -1,12 +1,20 @@
 --- === cp.ui.Menu ===
 ---
---- UI Group.
+--- UI for AXMenus.
 
-local require = require
+local require               = require
 
-local Element = require("cp.ui.Element")
+local Element               = require("cp.ui.Element")
 
+local go                    = require "cp.rx.go"
+local If, WaitUntil         = go.If, go.WaitUntil
 
+local find                  = string.find
+
+-- TIMEOUT_AFTER -> number
+-- Constant
+-- The common timeout amount in milliseconds.
+local TIMEOUT_AFTER = 3000
 
 --- cp.ui.Menu(parent, uiFinder) -> Menu
 --- Constructor
@@ -33,7 +41,7 @@ function Menu.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXMenu"
 end
 
---- cp.ui.Menu:close() -> self
+--- cp.ui.Menu:cancel() -> self
 --- Method
 --- Closes a menu.
 ---
@@ -42,12 +50,101 @@ end
 ---
 --- Returns:
 ---  * Self
-function Menu:close()
+function Menu:cancel()
     local ui = self:UI()
     if ui then
         ui:performAction("AXCancel")
     end
     return self
+end
+
+function Menu:doCancel()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:performAction("AXCancel")
+    end)
+    :Then(WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER))
+    :Otherwise(false)
+    :Label("Menu:doCancel")
+end
+
+--- cp.ui.Menu:doSelectItem(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by index.
+---
+--- Parameters:
+---  * index - The index number of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function Menu:doSelectItem(index)
+    return If(self.UI)
+    :Then(function(ui)
+        local item = ui[index]
+        if item then
+            item:doPress()
+            return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+        else
+            return self:doCancel()
+        end
+    end)
+    :Then()
+    :Otherwise(false)
+    :Label("Menu:doSelectItem")
+end
+
+
+--- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `Menu` by value.
+---
+--- Parameters:
+---  * value - The value of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function Menu:doSelectValue(value)
+    return If(self.UI)
+    :Then(function(ui)
+        for _,item in ipairs(ui) do
+            if item:title() == value then
+                item:doPress()
+                return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+            end
+        end
+        return self:doCancel():Then(false)
+    end)
+    :Otherwise(false)
+    :Label("Menu:doSelectValue")
+end
+
+--- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `Menu` by value.
+---
+--- Parameters:
+---  * value - The value of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function Menu:doSelectItemMatching(pattern)
+    return If(self.UI)
+    :Then(function(ui)
+        for _,item in ipairs(ui) do
+            local title = item:attributeValue("AXTitle")
+            if title then
+                local s,e = find(title, pattern)
+                if s == 1 and e == title:len() then
+                    -- perfect match
+                    item:doPress()
+                    return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+                end
+            end
+        end
+        return self:doCancel():Then(false)
+    end)
+    :Otherwise(false)
+    :Label("Menu:doSelectItemMatching")
 end
 
 return Menu

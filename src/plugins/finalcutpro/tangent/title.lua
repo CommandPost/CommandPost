@@ -19,6 +19,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup:
@@ -33,7 +37,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- GENERATOR INSPECTOR:
     --------------------------------------------------------------------------------
-    local title                     = fcp:inspector():title()
+    local title                     = fcp.inspector.text
     local titleGroup                = fcpGroup:group(i18n("title") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------

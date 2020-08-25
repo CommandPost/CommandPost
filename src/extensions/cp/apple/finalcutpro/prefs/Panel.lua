@@ -1,76 +1,96 @@
-local require = require
-local prop              = require("cp.prop")
-local axutils           = require("cp.ui.axutils")
-local strings           = require("cp.apple.finalcutpro.strings")
+--- === cp.apple.finalcutpro.prefs.Panel ===
+---
+--- Preferences Panel.
 
-local Button            = require("cp.ui.Button")
+local require           = require
 
-local If                = require("cp.rx.go").If
+local strings           = require "cp.apple.finalcutpro.strings"
 
-local Panel = {}
-Panel.mt = {}
-Panel.mt.__index = Panel.mt
+local axutils           = require "cp.ui.axutils"
+local Button            = require "cp.ui.Button"
+local Group             = require "cp.ui.Group"
 
-function Panel.is(thing)
-    return type(thing) == "table" and (thing == Panel.mt or Panel.is(getmetatable(thing)))
+local If                = require "cp.rx.go".If
+
+local childMatching     = axutils.childMatching
+local childWith         = axutils.childWith
+
+local Panel = Group:subclass("cp.apple.finalcutpro.prefs.Panel")
+
+function Panel:initialize(parent, titleKey)
+    self._titleKey = titleKey
+
+    local UI = parent.UI:mutate(function(original)
+        if self:isShowing() then
+            local group = childMatching(original(), Group.matches)
+            -- The group conains another single group that contains the actual checkboxes, etc.
+            return group and #group == 1 and group[1] or nil
+        end
+    end)
+
+    Group.initialize(self, parent, UI)
 end
 
-function Panel.new(parent, titleKey, subclass)
-    if subclass and not Panel.is(subclass) then
-        error("Parameter #3 must be a Panel subclass")
-    end
-    local o = prop.extend({
-        _parent = parent,
-        _toolbar = parent.toolbar,
-        _titleKey = titleKey,
-    }, subclass or Panel)
+function Panel.lazy.prop:isShowing()
+    return self.toolbar.selectedTitle:mutate(function(original)
+        return original() == self:title()
+    end)
+end
 
-    local buttonUI = parent.toolbar.UI:mutate(function(original)
+function Panel.lazy.value:toolbar()
+    return self:parent().toolbar
+end
+
+function Panel.lazy.value:toolbarItem()
+    return Button(self, self.toolbar.UI:mutate(function(original)
         local ui = original()
-        return ui and axutils.childWith(ui, "AXTitle", o:title())
-    end)
-
-    local isShowing = parent.toolbar.selectedTitle:mutate(function(original)
-        return original() == o:title()
-    end)
-
-    prop.bind(o) {
-        UI = buttonUI,
-        buttonUI = buttonUI,
-
-        isShowing = isShowing,
-
-        contentsUI = prop.OR(isShowing:AND(parent.groupUI), prop.NIL),
-    }
-
-    o.button = Button(o, buttonUI)
-
-    return o
+        return ui and childWith(ui, "AXTitle", self:title())
+    end))
 end
 
-function Panel.mt:parent()
-    return self._parent
-end
-
-function Panel.mt:app()
-    return self._app
-end
-
-function Panel.mt:toolbar()
-    return self._toolbar
-end
-
-function Panel.mt:title()
+function Panel:title()
     return strings:find(self._titleKey)
 end
 
-function Panel.mt:doShow()
+
+--- cp.apple.finalcutpro.prefs.Panel:show() -> self
+--- Function
+--- Shows the Panel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function Panel:show()
+    local parent = self:parent()
+    -- show the parent.
+    if parent:show():isShowing() then
+        self.toolbarItem:press()
+    end
+    return self
+end
+
+--- cp.apple.finalcutpro.prefs.Panel:hide() -> self
+--- Function
+--- Hides the General Preferences Panel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function Panel:hide()
+    return self:parent():hide()
+end
+
+function Panel.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doShow())
     :Then(self.button:doPress())
 end
 
-function Panel.mt:doHide()
+function Panel.lazy.method:doHide()
     return If(self.isShowing)
     :Then(self:parent():doHide())
 end

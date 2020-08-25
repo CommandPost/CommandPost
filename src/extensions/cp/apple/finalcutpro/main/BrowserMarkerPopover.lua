@@ -4,18 +4,18 @@
 
 local require = require
 
---local log                             = require("hs.logger").new("browser")
+--local log                             = require "hs.logger".new("browser")
 
---local inspect                         = require("hs.inspect")
+--local inspect                         = require "hs.inspect"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local Button							= require("cp.ui.Button")
-local CheckBox                          = require("cp.ui.CheckBox")
-local just                              = require("cp.just")
-local RadioButton					    = require("cp.ui.RadioButton")
-local RadioGroup                        = require("cp.ui.RadioGroup")
-local TextField							= require("cp.ui.TextField")
+local axutils                           = require "cp.ui.axutils"
+local Element                           = require "cp.ui.Element"
+local Button							= require "cp.ui.Button"
+local CheckBox                          = require "cp.ui.CheckBox"
+local just                              = require "cp.just"
+local RadioButton					    = require "cp.ui.RadioButton"
+local RadioGroup                        = require "cp.ui.RadioGroup"
+local TextField							= require "cp.ui.TextField"
 
 local cache, childMatching              = axutils.cache, axutils.childMatching
 local childFromLeft, childWithRole      = axutils.childFromLeft, axutils.childWithRole
@@ -102,7 +102,7 @@ end
 --
 -----------------------------------------------------------------------
 
-function BrowserMarkerPopover.lazy.method:type()
+function BrowserMarkerPopover.lazy.value:type()
     return RadioGroup(self, self.UI:mutate(function(original)
         return cache(self, "_type", function()
             return childMatching(original(), RadioGroup.matches)
@@ -112,47 +112,29 @@ function BrowserMarkerPopover.lazy.method:type()
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:standard() -> RadioButton
---- Method
---- Gets the "Standard" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
-function BrowserMarkerPopover.lazy.method:standard()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.standard <cp.ui.RadioButton>
+--- Field
+--- The "Standard" Marker button.
+function BrowserMarkerPopover.lazy.value:standard()
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 1)
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:toDo() -> RadioButton
---- Method
---- Gets the "To Do" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
-function BrowserMarkerPopover.lazy.method:toDo()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.toDo <cp.ui.RadioButton>
+--- Field
+--- The "To Do" Marker button.
+function BrowserMarkerPopover.lazy.value:toDo()
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 2)
     end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.chapter() -> RadioButton
---- Method
---- Gets the "Chapter" Marker button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `RadioButton` object.
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.chapter <cp.ui.RadioButton>
+--- Field
+--- The "Chapter" Marker button.
 function BrowserMarkerPopover.lazy.method:chapter()
-    return RadioButton(self, self:type().UI:mutate(function(original)
+    return RadioButton(self, self.type.UI:mutate(function(original)
         return childFromLeft(original(), 3)
     end))
 end

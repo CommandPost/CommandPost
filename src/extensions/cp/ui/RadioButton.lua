@@ -109,6 +109,38 @@ function RadioButton.lazy.method:doToggle()
     :Label("RadioButton:doToggle")
 end
 
+--- cp.ui.RadioButton:doCheck() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will check the button value when executed, if available at the time.
+--- If not an `error` is sent.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will toggle the button when executed.
+function RadioButton.lazy.method:doCheck()
+    return If(self.UI):Then(function()
+        self:checked(true)
+    end)
+end
+
+--- cp.ui.RadioButton:doUncheck() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will uncheck the button value when executed, if available at the time.
+--- If not an `error` is sent.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will toggle the button when executed.
+function RadioButton.lazy.method:doUncheck()
+    return If(self.UI):Then(function()
+        self:checked(false)
+    end)
+end
+
 --- cp.ui.RadioButton:press() -> self
 --- Method
 --- Attempts to press the button. May fail if the `UI` is not available.

@@ -35,8 +35,8 @@ function plugin.init(deps)
     fcpxCmds
         :add("selectMiddleOfNextClipInSameLane")
         :whenActivated(function()
-            local timeline = fcp:timeline()
-            local contents = timeline:contents()
+            local timeline = fcp.timeline
+            local contents = timeline.contents
             local selectedClips = contents:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]
@@ -65,7 +65,7 @@ function plugin.init(deps)
                     -- Annoyingly, we can't work out the timecode of clips in a secondary storyline.
                     --------------------------------------------------------------------------------
                     if nextClip:attributeValue("AXParent"):attributeValue("AXRole") == "AXLayoutArea" then
-                        local frameRate = fcp:viewer():framerate() or 25
+                        local frameRate = fcp.viewer:framerate() or 25
 
                         local startTC = nextClip:attributeValue("AXChildren")[1]:attributeValue("AXValue")
                         local endTC = nextClip:attributeValue("AXChildren")[2]:attributeValue("AXValue")
@@ -79,7 +79,7 @@ function plugin.init(deps)
 
                         local newPositionInTC = newPosition:toTimecode(frameRate, ":")
 
-                        timeline:playhead():timecode(newPositionInTC)
+                        timeline.playhead:timecode(newPositionInTC)
                     end
                 end
             else
@@ -94,8 +94,8 @@ function plugin.init(deps)
     fcpxCmds
         :add("selectMiddleOfPreviousClipInSameLane")
         :whenActivated(function()
-            local timeline = fcp:timeline()
-            local contents = timeline:contents()
+            local timeline = fcp.timeline
+            local contents = timeline.contents
             local selectedClips = contents:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
                 local selectedClip = selectedClips[1]
@@ -124,7 +124,7 @@ function plugin.init(deps)
                     -- Annoyingly, we can't work out the timecode of clips in a secondary storyline.
                     --------------------------------------------------------------------------------
                     if previousClip:attributeValue("AXParent"):attributeValue("AXRole") == "AXLayoutArea" then
-                        local frameRate = fcp:viewer():framerate() or 25
+                        local frameRate = fcp.viewer:framerate() or 25
 
                         local startTC = previousClip:attributeValue("AXChildren")[1]:attributeValue("AXValue")
                         local endTC = previousClip:attributeValue("AXChildren")[2]:attributeValue("AXValue")
@@ -138,7 +138,7 @@ function plugin.init(deps)
 
                         local newPositionInTC = newPosition:toTimecode(frameRate, ":")
 
-                        timeline:playhead():timecode(newPositionInTC)
+                        timeline.playhead:timecode(newPositionInTC)
                     end
                 end
             else

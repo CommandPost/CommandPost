@@ -148,8 +148,8 @@ end
 -- Returns:
 --  * A table of active column names or an empty table if something goes wrong.
 local function getActiveColumnsNames()
-    local libraries = fcp:libraries()
-    local listUI = libraries:list():UI()
+    local libraries = fcp.libraries
+    local listUI = libraries.list:UI()
     local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
     local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
     local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
@@ -182,16 +182,16 @@ local function showColumn(column)
         return false
     end
 
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     if not doUntil(function()
-        libraries:list():columns():show()
-        return libraries:list():columns():isMenuShowing()
+        libraries.list:columns():show()
+        return libraries.list:columns():isMenuShowing()
     end) then
         log.ef("showColumn: Failed to activate the columns menu popup when restoring column data.")
         return false
     end
 
-    local menu = libraries:list():columns():menu()
+    local menu = libraries.list:columns().menu
     if not menu then
         log.ef("showColumn: Failed to get the columns menu popup.")
         return false
@@ -219,7 +219,7 @@ local function showColumn(column)
         if menuItem:attributeValue("AXTitle") == columnNames[column] then
             local result = menuItem:performAction("AXPress")
             if not doUntil(function()
-                return not libraries:list():columns():isMenuShowing()
+                return not libraries.list:columns():isMenuShowing()
             end) then
                 log.ef("showColumn: Failed to close menu after pressing a button.")
                 return
@@ -317,16 +317,16 @@ local function process(cell, row, searchString, isProject)
         })
     then
         fcp:launch()
-        if not fcp:libraries():isFocused() then
+        if not fcp.libraries:isFocused() then
             fcp:selectMenu({"Window", "Go To", "Libraries"})
         end
-        fcp:libraries():list():contents():selectRow(row)
-        fcp:libraries():list():contents():showRow(row)
+        fcp.libraries.list.contents:selectRow(row)
+        fcp.libraries.list.contents:showRow(row)
         if openProject and isProject then
             fcp:selectMenu({"Clip", "Open Clip"})
         end
         if playAfterFind then
-            if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+            if not fcp.viewer:isPlaying() and not fcp.eventViewer:isPlaying() then
                 fcp:selectMenu({"View", "Playback", "Play"})
             end
         end
@@ -371,9 +371,9 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     -- Make sure we're in list view:
     --------------------------------------------------------------------------------
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     if not doUntil(function()
-        libraries:list():show()
+        libraries.list:show()
         return libraries:isListView()
     end) then
         popupMessage(i18n("selectedColumnNotShown"), i18n("selectedColumnNotShownDescription"))
@@ -384,11 +384,11 @@ local function find(searchString, column, findNext, findPrevious)
     -- Search Entire Library:
     --------------------------------------------------------------------------------
     if mod.searchEntireLibrary() then
-        local browser = fcp:browser()
-        if not libraries:sidebar():isShowing() then
-            browser:showLibraries():press()
+        local browser = fcp.browser
+        if not libraries.sidebar:isShowing() then
+            browser.showLibraries:press()
         end
-        local scrollArea = libraries:sidebar():UI()
+        local scrollArea = libraries.sidebar:UI()
         local outline = scrollArea and scrollArea[1]
         if outline and outline:attributeValue("AXRole") == "AXOutline" then
             local children = outline:attributeValue("AXChildren")
@@ -447,7 +447,7 @@ local function find(searchString, column, findNext, findPrevious)
     --------------------------------------------------------------------------------
     local columnID
     if column ~= i18n("allVisibleColumns") then
-        local listUI = fcp:libraries():list():UI()
+        local listUI = fcp.libraries.list:UI()
         local scrollAreaUI = listUI and childWithRole(listUI, "AXScrollArea")
         local outlineUI = scrollAreaUI and childWithRole(scrollAreaUI, "AXOutline")
         local groupUI = outlineUI and childWithRole(outlineUI, "AXGroup")
@@ -475,7 +475,7 @@ local function find(searchString, column, findNext, findPrevious)
     local loopSearch = mod.loopSearch()
     local firstAttempt = true
     local currentRowID
-    local contents = fcp:libraries():list():contents()
+    local contents = fcp.libraries.list.contents
     local contentUI = contents:contentUI() -- Returns an AXOutline, which holds the rows
     if contentUI then
 

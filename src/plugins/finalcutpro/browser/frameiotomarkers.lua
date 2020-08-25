@@ -82,7 +82,7 @@ local function process()
     --------------------------------------------------------------------------------
     -- Make sure the browser is showing:
     --------------------------------------------------------------------------------
-    if not fcp:browser():isShowing() then
+    if not fcp.browser:isShowing() then
         dialog.displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
     end
@@ -90,7 +90,7 @@ local function process()
     --------------------------------------------------------------------------------
     -- Make sure only one clip is selected in the browser:
     --------------------------------------------------------------------------------
-    local selectedClips = fcp:browser():libraries():selectedClips()
+    local selectedClips = fcp.browser.libraries:selectedClips()
     if not selectedClips or #selectedClips == 0 then
         dialog.displayAlertMessage(i18n("atLeastOneBrowserClipMustBeSelected"))
         return
@@ -106,7 +106,7 @@ local function process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        local result = fcp:viewer():timecode(v.timecode)
+        local result = fcp.viewer:timecode(v.timecode)
         if not result then
             log.df("Current Line: %s", v)
             dialog.displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
@@ -116,7 +116,7 @@ local function process()
         --------------------------------------------------------------------------------
         -- Add Marker & Modify:
         --------------------------------------------------------------------------------
-        local markerPopover = fcp:browser():markerPopover()
+        local markerPopover = fcp.browser.markerPopover
         markerPopover:show()
         result = just.doUntil(function() return markerPopover:isShowing() end)
         if not result then

@@ -212,7 +212,7 @@ end
 function mod.getActivator(activatorId)
     local a = mod._activators[activatorId]
     if not a then
-        a = activator.new(activatorId, mod)
+        a = activator(activatorId, mod)
         mod._activators[activatorId] = a
     end
     return a

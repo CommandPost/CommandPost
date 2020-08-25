@@ -18,6 +18,7 @@ local mouse             = require "hs.mouse"
 local osascript         = require "hs.osascript"
 local screen            = require "hs.screen"
 local sound             = require "hs.sound"
+local text              = require "hs.text"
 local timer             = require "hs.timer"
 local window            = require "hs.window"
 
@@ -29,8 +30,11 @@ local event             = eventtap.event
 local insert            = table.insert
 local locale            = host.locale
 local map               = keycodes.map
-local newKeyEvent       = event.newKeyEvent
 local usleep            = timer.usleep
+local utf16             = text.utf16
+
+local newKeyEvent       = event.newKeyEvent
+local newSystemKeyEvent = event.newSystemKeyEvent
 
 local tools = {}
 
@@ -138,6 +142,42 @@ function tools.keyStroke(modifiers, character, app)
     end
 end
 
+--- cp.tools.pressSystemKey(key) -> none
+--- Method
+--- Virtually presses a system key.
+---
+--- Parameters:
+---  * key - The key to use.
+---
+--- Returns:
+---  * Supported key values are:
+---   * SOUND_UP
+---   * SOUND_DOWN
+---   * MUTE
+---   * BRIGHTNESS_UP
+---   * BRIGHTNESS_DOWN
+---   * CONTRAST_UP
+---   * CONTRAST_DOWN
+---   * POWER
+---   * LAUNCH_PANEL
+---   * VIDMIRROR
+---   * PLAY
+---   * EJECT
+---   * NEXT
+---   * PREVIOUS
+---   * FAST
+---   * REWIND
+---   * ILLUMINATION_UP
+---   * ILLUMINATION_DOWN
+---   * ILLUMINATION_TOGGLE
+---   * CAPS_LOCK
+---   * HELP
+---   * NUM_LOCK
+function tools.pressSystemKey(key)
+    newSystemKeyEvent(key, true):post()
+    newSystemKeyEvent(key, false):post()
+end
+
 --- cp.tools.shiftPressed() -> boolean
 --- Function
 --- Is the Shift Key being pressed?
@@ -154,6 +194,24 @@ function tools.shiftPressed()
     else
         return false
     end
+end
+
+--- cp.tools.optionPressed() -> boolean
+--- Function
+--- Is the Option Key being pressed?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the option key is being pressed, otherwise `false`.
+function tools.optionPressed()
+    local mods = eventtap.checkKeyboardModifiers()
+    local result = false
+    if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        result = true
+    end
+    return result
 end
 
 --- cp.tools.writeToFile(path, data) -> none
@@ -1579,6 +1637,56 @@ function tools.numberToWord(number)
     return nil
 end
 
+--- cp.tools.upper(str) -> string
+--- Function
+--- Converts the supplied string to uppercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.upper(str)
+    if type(str) == "string" then
+        return tostring(utf16.new(str):upper())
+    end
+end
+
+--- cp.tools.lower(str) -> string
+--- Function
+--- Converts the supplied string to lowercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.lower(str)
+    if type(str) == "string" then
+        return tostring(utf16.new(str):lower())
+    end
+end
+
+--- cp.tools.camelCase(str) -> string
+--- Function
+--- Converts the supplied string to camelcase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.camelCase(str)
+    if type(str) == "string" then
+        local result = str:gsub("(%a)([%w_']*)", function(first, rest)
+           return tools.upper(first) .. tools.lower(rest)
+        end)
+        if result then
+            return result
+        end
+    end
+end
+
 --- cp.tools.firstToUpper(str) -> string
 --- Function
 --- Makes the first letter of a string uppercase.
@@ -1589,7 +1697,7 @@ end
 --- Returns:
 ---  * A string
 function tools.firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
+    return (str:gsub("^%l", tools.upper))
 end
 
 --- cp.tools.iconFallback(paths) -> string
@@ -1810,7 +1918,7 @@ end
 ---
 --- Returns:
 ---  * A string
-function tools.stringToHexString(value)
+function tools.hexStringToString(value)
     local hexToChar = {}
     for idx = 0, 255 do
         hexToChar[("%02X"):format(idx)] = string.char(idx)

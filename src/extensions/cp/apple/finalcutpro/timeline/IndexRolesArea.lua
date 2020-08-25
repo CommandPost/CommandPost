@@ -29,10 +29,10 @@ function IndexRolesArea.static.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.timeline.IndexRolesArea:list() -> cp.ui.Outline
---- Method
+--- cp.apple.finalcutpro.timeline.IndexRolesArea.list <cp.ui.Outline>
+--- Field
 --- The [Outline](cp.ui.Outline.md) that serves as the list of the scroll area.
-function IndexRolesArea.lazy.method:list()
+function IndexRolesArea.lazy.value:list()
     return IndexRolesList(self, self.UI:mutate(function(original)
         return childMatching(original(), IndexRolesList.matches)
     end))
@@ -41,7 +41,7 @@ end
 function IndexRolesArea:saveLayout()
     local layout = ScrollArea.saveLayout(self)
 
-    layout.list = self:list():saveLayout()
+    layout.list = self.list:saveLayout()
 
     return layout
 end
@@ -49,7 +49,7 @@ end
 function IndexRolesArea:loadLayout(layout)
     layout = layout or {}
     ScrollArea.loadLayout(self, layout)
-    self:list():loadLayout(layout.list)
+    self.list:loadLayout(layout.list)
 end
 
 return IndexRolesArea

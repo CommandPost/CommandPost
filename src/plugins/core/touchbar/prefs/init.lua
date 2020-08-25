@@ -167,7 +167,6 @@ local function touchBarPanelCallback(id, params)
                         end
                     end
                     mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Allow specific toolbar icons in the Console:

@@ -4,36 +4,35 @@
 
 local require = require
 
-local log								= require("hs.logger").new("timelineContents")
+local log								= require "hs.logger".new("timelineContents")
 
-local fnutils							= require("hs.fnutils")
+local fnutils							= require "hs.fnutils"
 
-local prop								= require("cp.prop")
-local tools                             = require("cp.tools")
-local axutils							= require("cp.ui.axutils")
+local prop								= require "cp.prop"
+local tools                             = require "cp.tools"
+local axutils							= require "cp.ui.axutils"
 
-local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
+local Element                           = require "cp.ui.Element"
+local ScrollArea                        = require "cp.ui.ScrollArea"
+local Playhead							= require "cp.apple.finalcutpro.main.Playhead"
 
-local go                                = require("cp.rx.go")
-local If, WaitUntil                     = go.If, go.WaitUntil
+local go                                = require "cp.rx.go"
+local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 
 
-local Contents = {}
+local Contents = Element:subclass("cp.apple.finalcutpro.timeline.Contents")
 
 -- TODO: Add documentation
-function Contents.matches(element)
-    return element
+function Contents.static.matches(element)
+    return Element.matches(element)
         and element:attributeValue("AXRole") == "AXLayoutArea"
         and element:attributeValueCount("AXAuditIssues") < 1
 end
 
 -- TODO: Add documentation
-function Contents.new(parent)
-    local o = prop.extend({
-        _parent = parent
-    }, Contents)
+function Contents:initialize(parent)
+    self._parent = parent
 
-    -- TODO: Add documentation
     local scrollAreaUI = parent.mainUI:mutate(function(original)
         local main = original()
         if main then
@@ -47,11 +46,8 @@ function Contents.new(parent)
         end
         return nil
     end)
-    o:app():notifier():watchFor("AXUIElementDestroyed", function() scrollAreaUI:update() end)
-    o:app():notifier():watchFor("AXCreated", function() scrollAreaUI:update() end)
 
-    -- TODO: Add documentation
-    local UI = scrollAreaUI:mutate(function(original, self)
+    local UI = scrollAreaUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local scrollArea = original()
             if scrollArea then
@@ -62,132 +58,87 @@ function Contents.new(parent)
         Contents.matches)
     end)
 
-    local isFocused = UI:mutate(function(original)
-        local ui = original()
-        return ui ~= nil and ui:attributeValue("AXFocused") == true
-    end)
+    Element.initialize(self, parent, UI)
 
-    local horizontalScrollBarUI = scrollAreaUI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXHorizontalScrollBar")
-    end)
-
-    local verticalScrollBarUI = scrollAreaUI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXVerticalScrollBar")
-    end)
-
-    local viewFrame = scrollAreaUI:mutate(function(original)
-        local ui = original()
-
-        if not ui then return nil end
-
-        local hScroll = horizontalScrollBarUI()
-        local vScroll = verticalScrollBarUI()
-
-        local frame = ui:frame()
-
-        if hScroll then
-            frame.h = frame.h - hScroll:frame().h
-        end
-
-        if vScroll then
-            frame.w = frame.w - vScroll:frame().w
-        end
-        return frame
-    end):monitor(horizontalScrollBarUI, verticalScrollBarUI)
-
-    local timelineFrame = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:frame()
-    end)
-
-    local children = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXChildren")
-    end):preWatch(function(self, theProp)
-        self:app():notifier():watchFor("AXUIElementDestroyed", function()
-            theProp:update()
-        end)
-    end)
-
-    local selectedChildren = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXSelectedChildren")
-    end):preWatch(function(self, theProp)
-        self:app():notifier():watchFor("AXUIElementDestroyed", function()
-            theProp:update()
-        end)
-    end)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.timeline.Contents.UI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- The main UI of the Timeline Contents area.
-        UI = UI,
+    prop.bind(self) {
 
 --- cp.apple.finalcutpro.timeline.Contents.scrollAreaUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The parent `ScrollArea` UI of the Timeline Contents area.
-        scrollAreaUI = scrollAreaUI,
+        scrollAreaUI = scrollAreaUI
+    }
 
---- cp.apple.finalcutpro.timeline.Contents.isShowing <cp.prop: booelan; read-only; live>
---- Field
---- Checks if the Timeline is currently showing.
-        isShowing = UI:ISNOT(nil),
-
---- cp.apple.finalcutpro.timeline.Contents.isLoaded <cp.prop: booelan; read-only; live>
---- Field
---- Checks if the Timeline has content loaded.
-        isLoaded = scrollAreaUI:ISNOT(nil),
+    self:app():notifier():watchFor("AXUIElementDestroyed", function() scrollAreaUI:update() end)
+    self:app():notifier():watchFor("AXCreated", function() scrollAreaUI:update() end)
+end
 
 --- cp.apple.finalcutpro.timeline.Contents.isFocused <cp.prop: booelan; read-only>
 --- Field
 --- Checks if the Timeline is currently the focused panel.
-        isFocused = isFocused,
+function Contents.lazy.prop:isFocused()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and ui:attributeValue("AXFocused") == true
+    end)
+end
 
---- cp.apple.finalcutpro.timeline.Contents.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.scrollArea <cp.ui.ScrollArea>
 --- Field
---- The `AXHorizontalScrolLbar` for the Timeline Contents area.
-        horizontalScrollBarUI = horizontalScrollBarUI,
-
---- cp.apple.finalcutpro.timeline.Contents.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- The `AXVerticalScrollBar` for the Timeline Contents area.
-        verticalScrollBarUI = verticalScrollBarUI,
+--- The `ScrollArea` for the Contents element.
+function Contents.lazy.value:scrollArea()
+    return ScrollArea(self, self.scrollAreaUI)
+end
 
 --- cp.apple.finalcutpro.timeline.Contents.viewFrame <cp.prop: table; read-only; live>
 --- Field
 --- The current 'frame' of the scroll area, inside the scroll bars (if present),  or `nil` if not available.
-        viewFrame = viewFrame,
+function Contents.lazy.prop:viewFrame()
+    return self.scrollArea.viewFrame
+end
 
 --- cp.apple.finalcutpro.timeline.Contents.viewFrame <cp.prop: table; read-only; live>
 --- Field
 --- The current 'frame' of the internal timeline content,  or `nil` if not available.
-        timelineFrame = timelineFrame,
+function Contents.lazy.prop:timelineFrame()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:frame()
+    end)
+end
 
 --- cp.apple.finalcutpro.timeline.Contents.children <cp.prop: table; read-only; live>
 --- Field
 --- The current set of child elements in the Contents.
-        children = children,
+function Contents.lazy.prop:children()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXChildren")
+    end):preWatch(function(_, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
+end
 
 --- cp.apple.finalcutpro.timeline.Contents.selectedChildren <cp.prop: table; read-only; live>
 --- Field
 --- The current set of selected child elements in the Contents.
-        selectedChildren = selectedChildren,
-    }
-
-    return o
+function Contents.lazy.prop:selectedChildren()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXSelectedChildren")
+    end):preWatch(function(_, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
 end
 
--- TODO: Add documentation
-function Contents:parent()
-    return self._parent
-end
-
--- TODO: Add documentation
-function Contents:app()
-    return self:parent():app()
+--- cp.apple.finalcutpro.timeline.Contents.isLoaded <cp.prop: booelan; read-only; live>
+--- Field
+--- Checks if the Timeline has content loaded.
+function Contents.lazy.prop:isLoaded()
+    return self.scrollAreaUI:ISNOT(nil)
 end
 
 -----------------------------------------------------------------------
@@ -208,7 +159,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`.
-function Contents:doShow()
+function Contents.lazy.method:doShow()
     return self:parent():doShow()
 end
 
@@ -224,7 +175,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`.
-function Contents:doHide()
+function Contents.lazy.method:doHide()
     return self:parent():doHide()
 end
 
@@ -234,20 +185,18 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Contents:playhead()
-    if not self._playhead then
-        self._playhead = Playhead(self, false, self.UI)
-    end
-    return self._playhead
+--- cp.apple.finalcutpro.timeline.Contents.playhead <cp.apple.finalcutpro.main.Playhead>
+--- Field
+--- The main Playhead.
+function Contents.lazy.value:playhead()
+    return Playhead(self, false, self.UI)
 end
 
--- TODO: Add documentation
-function Contents:skimmingPlayhead()
-    if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead(self, true, self.UI)
-    end
-    return self._skimmingPlayhead
+--- cp.apple.finalcutpro.timeline.Contents.skimmingPlayhead <cp.apple.finalcutpro.main.Playhead>
+--- Field
+--- The Playhead that tracks with the mouse pointer.
+function Contents.lazy.value:skimmingPlayhead()
+    return Playhead(self, true, self.UI)
 end
 
 -----------------------------------------------------------------------
@@ -257,28 +206,11 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function Contents:scrollHorizontalBy(shift)
-    local ui = self:horizontalScrollBarUI()
-    if ui then
-        local indicator = ui[1]
-        local value = indicator:attributeValue("AXValue")
-        indicator:setAttributeValue("AXValue", value + shift)
-    end
+function Contents:shiftHorizontalTo(value)
+    return self.scrollArea:shiftHorizontalTo(value)
 end
 
--- TODO: Add documentation
-function Contents:scrollHorizontalTo(value)
-    local ui = self:horizontalScrollBarUI()
-    if ui then
-        local indicator = ui[1]
-        value = math.max(0, math.min(1, value))
-        if indicator:attributeValue("AXValue") ~= value then
-            indicator:setAttributeValue("AXValue", value)
-        end
-    end
-end
-
-function Contents:scrollHorizontalToX(x)
+function Contents:shiftHorizontalToX(x)
     -- update the scrollbar position
     local timelineFrame = self:timelineFrame()
     local scrollWidth = timelineFrame.w - self:viewFrame().w
@@ -286,41 +218,7 @@ function Contents:scrollHorizontalToX(x)
 
     local scrollTarget = scrollPoint/scrollWidth
 
-    self:scrollHorizontalTo(scrollTarget)
-end
-
--- TODO: Add documentation
-function Contents:getScrollHorizontal()
-    local ui = self:horizontalScrollBarUI()
-    return ui and ui[1] and ui[1]:attributeValue("AXValue")
-end
-
--- TODO: Add documentation
-function Contents:scrollVerticalBy(shift)
-    local ui = self:verticalScrollBarUI()
-    if ui then
-        local indicator = ui[1]
-        local value = indicator:attributeValue("AXValue")
-        indicator:setAttributeValue("AXValue", value + shift)
-    end
-end
-
--- TODO: Add documentation
-function Contents:scrollVerticalTo(value)
-    local ui = self:verticalScrollBarUI()
-    if ui then
-        local indicator = ui[1]
-        value = math.max(0, math.min(1, value))
-        if indicator:attributeValue("AXValue") ~= value then
-            indicator:setAttributeValue("AXValue", value)
-        end
-    end
-end
-
--- TODO: Add documentation
-function Contents:getScrollVertical()
-    local ui = self:verticalScrollBarUI()
-    return ui and ui[1] and ui[1]:attributeValue("AXValue")
+    self:shiftHorizontalTo(scrollTarget)
 end
 
 -----------------------------------------------------------------------
@@ -415,7 +313,7 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function Contents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self:playhead():position()
+    local playheadPosition = self.playhead:position()
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip:frame()
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
@@ -540,13 +438,16 @@ end
 --- * The `Statement`.
 function Contents:doFocus(show)
     show = show or false
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
-    return If(self.isFocused):Is(false):Then(
-        menu:doSelectMenu({"Window", "Go To", "Timeline"}) --:Debug("Go To Timeline")
+    return Do(If(show):Then(self:doShow()))
+    :Then(
+        If(self.isFocused):Is(false):Then(
+            menu:doSelectMenu({"Window", "Go To", "Timeline"}) --:Debug("Go To Timeline")
+        )
+        :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
+        :Otherwise(true)
     )
-    :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
-    :Otherwise(true)
     :Label("Contents:doFocus")
 end
 
@@ -597,7 +498,7 @@ function Contents:selectClipInAngle(angleNumber)
     if clipsUI then
         local angleUI = clipsUI[angleNumber]
 
-        local playheadPosition = self:playhead():position()
+        local playheadPosition = self.playhead:position()
         local clipUI = axutils.childMatching(angleUI, function(child)
             local frame = child:frame()
             return child:attributeValue("AXRole") == "AXLayoutItem"

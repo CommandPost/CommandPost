@@ -1,7 +1,3 @@
-if package.searchpath("hs._asm.coroutineshim", package.path) then
-    require"hs._asm.coroutineshim"
-end
-
 --- === hs._asm.undocumented.touchbar ===
 ---
 --- This module and its submodules provide support for manipulating the Apple Touch Bar on newer Macbook Pro laptops. For machines that do not have a touchbar, the `hs._asm.undocumented.touchbar.virtual` submodule provides a method for mimicing one on screen.

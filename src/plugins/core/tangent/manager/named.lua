@@ -21,7 +21,7 @@ local named = class "core.tangent.manager.named" :include(lazy)
 
 local NAMES_KEY = {}
 
---- hub.named(id, name[, parent]) -> named
+--- plugins.core.tangent.manager.named(id, name[, parent]) -> named
 --- Constructor
 --- Creates a new `named` instance, with the specified base name.
 ---
@@ -34,17 +34,17 @@ function named:initialize(id, name, parent)
     self._name = name
 end
 
--- --- plugins.core.tangent.manager.parameter.enabled <cp.prop: boolean>
--- --- Field
--- --- Indicates if the parameter is enabled.
+--- plugins.core.tangent.manager.named.enabled <cp.prop: boolean>
+--- Field
+--- Indicates if the parameter is enabled.
 function named.lazy.prop.enabled()
     return prop.TRUE()
 end
 
--- --- plugin.core.tangent.manager.parameter.active <cp.prop: boolean; read-only>
--- --- Field
--- --- Indicates if the parameter is active. It will only be active if
--- --- the current parameter is `enabled` and if the parent group (if present) is `active`.
+--- plugins.core.tangent.manager.named.active <cp.prop: boolean; read-only>
+--- Field
+--- Indicates if the parameter is active. It will only be active if
+--- the current parameter is `enabled` and if the parent group (if present) is `active`.
 function named.lazy.prop:active()
     local parent = self:parent()
     return parent and parent.active:AND(self.enabled) or self.enabled:IMMUTABLE()

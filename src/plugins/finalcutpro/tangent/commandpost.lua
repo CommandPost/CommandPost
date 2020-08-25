@@ -2,11 +2,12 @@
 ---
 --- Final Cut Pro CommandPost Actions for Tangent
 
-local require = require
+local require   = require
 
---local log                   = require "hs.logger".new "tangentVideo"
+--local log       = require "hs.logger".new "tangentVideo"
 
-local i18n                  = require "cp.i18n"
+local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.commandpost",
@@ -33,6 +34,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup:

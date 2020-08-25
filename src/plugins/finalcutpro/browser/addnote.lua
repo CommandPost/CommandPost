@@ -58,7 +58,7 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Make sure the Browser is visible:
     --------------------------------------------------------------------------------
-    local libraries = fcp:browser():libraries()
+    local libraries = fcp.browser.libraries
     if not doUntil(function()
         libraries:show()
         return libraries:show()
@@ -70,8 +70,8 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Check to see if Timeline has focus.
     --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
-    local contents = timeline:contents()
+    local timeline = fcp.timeline
+    local contents = timeline.contents
     local selectedTimelineClips = contents:selectedClipsUI()
     local timelineMode = false
     if timeline:isFocused() then
@@ -130,7 +130,7 @@ function mod.addNoteToSelectedClips()
     --------------------------------------------------------------------------------
     -- Check to see if the playhead is moving:
     --------------------------------------------------------------------------------
-    local wasPlaying = fcp:timeline():isPlaying()
+    local wasPlaying = fcp.timeline:isPlaying()
 
     --------------------------------------------------------------------------------
     -- Check to see if we're in Filmstrip or List View:
@@ -139,7 +139,7 @@ function mod.addNoteToSelectedClips()
     if libraries:isFilmstripView() then
         filmstripView = true
         libraries:toggleViewMode()
-        if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end
+        if wasPlaying then fcp.menu:selectMenu({"View", "Playback", "Play"}) end
     end
 
     --------------------------------------------------------------------------------
@@ -310,7 +310,7 @@ function mod.addNoteToSelectedClips()
             libraries:toggleViewMode()
         end
 
-        if wasPlaying then fcp:menu():selectMenu({"View", "Playback", "Play"}) end
+        if wasPlaying then fcp.menu:selectMenu({"View", "Playback", "Play"}) end
 
     end):bgDark(true):query(existingValue):queryChangedCallback(function()
         --------------------------------------------------------------------------------

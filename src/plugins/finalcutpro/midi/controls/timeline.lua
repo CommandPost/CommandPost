@@ -20,7 +20,6 @@ local rescale           = tools.rescale
 -- Maximum 14bit Limit (16383)
 local MAX_14BIT = 0x3FFF
 
-
 -- MAX_7BIT -> number
 -- Constant
 -- Maximum 7bit Limit (127)
@@ -126,10 +125,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local updateTimelineScrollValue
     local updateTimelineScroll = deferred.new(0.01):action(function()
-        local scrollBar = fcp:timeline():contents():horizontalScrollBarUI()
-        if scrollBar then
-            scrollBar:setAttributeValue("AXValue", tonumber(updateTimelineScrollValue))
-        end
+        fcp.timeline.contents.horizontalScrollBar:value(tonumber(updateTimelineScrollValue))
     end)
     manager.controls:new("horizontalTimelineScroll", {
         group = "fcpx",

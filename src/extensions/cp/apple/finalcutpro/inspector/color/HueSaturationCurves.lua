@@ -83,7 +83,7 @@ function HueSaturationCurves:initialize(parent)
 
     -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
     -- link these fields so they mirror each other.
-    self:mixSlider().value:mirror(self:mixTextField().value)
+    self.mixSlider.value:mirror(self.mixTextField.value)
 end
 
 --------------------------------------------------------------------------------
@@ -128,16 +128,10 @@ function HueSaturationCurves.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:viewModeButton() -> MenuButton
---- Method
---- Returns the [MenuButton](cp.ui.MenuButton.md) for the View Mode.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `MenuButton` for the View Mode.
-function HueSaturationCurves.lazy.method:viewModeButton()
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.viewModeButton <cp.ui.MenuButton>
+--- Field
+--- The [MenuButton](cp.ui.MenuButton.md) for the View Mode.
+function HueSaturationCurves.lazy.value:viewModeButton()
     return MenuButton(self, function()
         local ui = self:contentUI()
         if ui then
@@ -166,25 +160,19 @@ function HueSaturationCurves.lazy.prop:viewingAllCurves()
         function(allCurves, _, theProp)
             local current = theProp:get()
             if allCurves and not current then
-                self:viewModeButton():selectItem(1)
+                self.viewModeButton:selectItem(1)
             elseif not allCurves and current then
-                self:viewModeButton():selectItem(2)
+                self.viewModeButton:selectItem(2)
             end
         end
     ):monitor(self.contentUI)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:curveType() -> RadioGroup
---- Method
---- Returns the `RadioGroup` that allows selection of the curve type. Only available when
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.wheelType <RadioGroup>
+--- Field
+--- The `RadioGroup` that allows selection of the curve type. Only available when
 --- [viewingAllCurves](#viewingAllCurves) is `true`.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `RadioGroup`.
-function HueSaturationCurves.lazy.method:wheelType()
+function HueSaturationCurves.lazy.value:wheelType()
     return RadioGroup(self,
         function()
             if not self:viewingAllCurves() then
@@ -197,127 +185,79 @@ function HueSaturationCurves.lazy.method:wheelType()
     )
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsHue() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.hueVsHue <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the 'HUE vs HUE' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:hueVsHue()
+function HueSaturationCurves.lazy.value:hueVsHue()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_HUE)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsSat() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.hueVsSat <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the 'HUE vs SAT' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:hueVsSat()
+function HueSaturationCurves.lazy.value:hueVsSat()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_SAT)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsLuma() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.hueVsLuma <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the 'HUE vs LUMA' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:hueVsLuma()
+function HueSaturationCurves.lazy.value:hueVsLuma()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_LUMA)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:lumaVsSat() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.lumaVsSat <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the 'LUMA vs SAT' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:lumaVsSat()
+function HueSaturationCurves.lazy.value:lumaVsSat()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.LUMA_VS_SAT)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:satVsSat() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.satVsSat <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the 'SAT vs SAT' color settings.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:satVsSat()
+function HueSaturationCurves.lazy.value:satVsSat()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.SAT_VS_SAT)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:colorVsSat() -> HueSaturationCurve
---- Method
---- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.colorVsSat <HueSaturationCurve>
+--- Field
+--- A [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
 --- that allows control of the '<COLOR> vs SAT' color settings. The color is variable, but typically
 --- starts with 'ORANGE'.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `HueSaturationCurve`.
-function HueSaturationCurves.lazy.method:colorVsSat()
+function HueSaturationCurves.lazy.value:colorVsSat()
     return HueSaturationCurve(self, HueSaturationCurve.TYPE.COLOR_VS_SAT)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mixRow() -> cp.ui.PropertyRow
---- Method
---- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.mixRow <cp.ui.PropertyRow>
+--- Field
+--- A `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
 --- values for that row.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `PropertyRow`.
-function HueSaturationCurves.lazy.method:mixRow()
+function HueSaturationCurves.lazy.value:mixRow()
     return PropertyRow(self, "FFChannelMixName")
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mixSlider() -> cp.ui.Slider
---- Method
---- Returns a `Slider` that provides access to the 'Mix' slider.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Mix `Slider`.
-function HueSaturationCurves.lazy.method:mixSlider()
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.mixSlider <cp.ui.Slider>
+--- Field
+--- A `Slider` that provides access to the 'Mix' slider.
+function HueSaturationCurves.lazy.value:mixSlider()
     return Slider(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, Slider.matches)
         end
     )
 end
 
-function HueSaturationCurves.lazy.method:mixTextField()
+function HueSaturationCurves.lazy.value:mixTextField()
     return TextField(self,
         function()
-            local ui = self:mixRow():children()
+            local ui = self.mixRow:children()
             return ui and childMatching(ui, TextField.matches)
         end,
         toRegionalNumber, toRegionalNumberString
@@ -328,7 +268,7 @@ end
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 function HueSaturationCurves.lazy.prop:mix()
-    return self:mixSlider().value
+    return self.mixSlider.value
 end
 
 return HueSaturationCurves

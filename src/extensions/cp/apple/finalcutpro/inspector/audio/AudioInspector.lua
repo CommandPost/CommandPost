@@ -25,7 +25,7 @@
 ---
 --- For example:
 --- ```lua
---- local audio = fcp:inspector():audio()
+--- local audio = fcp.inspector.audio
 --- -- Menu Property:
 --- audio:compositing():blendMode():value("Subtract")
 --- -- Slider Property:
@@ -93,7 +93,7 @@ function AudioInspector:initialize(parent)
     BasePanel.initialize(self, parent, "Audio")
 end
 
-function AudioInspector.lazy.method:content()
+function AudioInspector.lazy.value:content()
     return SplitGroup(self, self.UI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local ui = original()
@@ -106,9 +106,9 @@ function AudioInspector.lazy.method:content()
     end))
 end
 
-function AudioInspector.lazy.method:topProperties()
+function AudioInspector.lazy.value:topProperties()
     local topProps = Group(self, function()
-        return axutils.childFromTop(self:content():UI(), 1)
+        return axutils.childFromTop(self.content:UI(), 1)
     end)
 
     prop.bind(topProps) {
@@ -127,9 +127,9 @@ function AudioInspector.lazy.method:topProperties()
     return topProps
 end
 
-function AudioInspector.lazy.method:mainProperties()
+function AudioInspector.lazy.value:mainProperties()
     local mainProps = Group(self, function()
-        return axutils.childFromTop(self:content():UI(), 2)
+        return axutils.childFromTop(self.content:UI(), 2)
     end)
 
     prop.bind(mainProps) {
@@ -199,40 +199,34 @@ end
 --- Field
 --- Volume
 function AudioInspector.lazy.prop:volume()
-    return self:topProperties().volume
+    return self.topProperties.volume
 end
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.audioEnhancements <cp.prop: PropertyRow>
 --- Field
 --- Audio Enhancements
 function AudioInspector.lazy.prop:audioEnhancements()
-    return self:mainProperties().audioEnhancements
+    return self.mainProperties.audioEnhancements
 end
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.pan <cp.prop: PropertyRow>
 --- Field
 --- Pan
 function AudioInspector.lazy.prop:pan()
-    return self:mainProperties().pan
+    return self.mainProperties.pan
 end
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.effects <cp.prop: PropertyRow>
 --- Field
 --- Effects
 function AudioInspector.lazy.prop:effects()
-    return self:mainProperties().effects
+    return self.mainProperties.effects
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioInspector:audioConfiguration() -> AudioConfiguration
---- Method
---- Returns the `AudioConfiguration` instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `CorrectionsBar` instance.
-function AudioInspector.lazy.method:audioConfiguration()
+--- cp.apple.finalcutpro.inspector.audio.AudioInspector.audioConfiguration <AudioConfiguration>
+--- Field
+--- The `AudioConfiguration` instance.
+function AudioInspector.lazy.value:audioConfiguration()
     return AudioConfiguration(self)
 end
 

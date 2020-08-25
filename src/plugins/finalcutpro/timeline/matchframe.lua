@@ -61,7 +61,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     mod.browserPlayhead.deleteHighlight()
 
-    local contents = fcp:timeline():contents()
+    local contents = fcp.timeline.contents
 
     --------------------------------------------------------------------------------
     -- Store the originally-selected clips
@@ -92,7 +92,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Open in Angle Editor:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
         menuBar:selectMenu({"Clip", "Open in Angle Editor"})
     else
@@ -113,7 +113,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Ensure the playhead is visible:
     --------------------------------------------------------------------------------
-    contents:playhead():show()
+    contents.playhead:show()
 
     contents:selectClipInAngle(multicamAngle)
 
@@ -240,7 +240,7 @@ local function soloClip()
     --------------------------------------------------------------------------------
     -- Give FCPX time to find the clip
     --------------------------------------------------------------------------------
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
     local selectedClips = nil
     just.doUntil(function()
         selectedClips = libraries:selectedClipsUI()
@@ -267,7 +267,7 @@ local function soloClip()
     --------------------------------------------------------------------------------
     -- Get Clip Name from the Viewer
     --------------------------------------------------------------------------------
-    local clipName = fcp:viewer():title()
+    local clipName = fcp.viewer:title()
 
     if clipName then
         --------------------------------------------------------------------------------
@@ -300,7 +300,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Check the option is available in the current context
     --------------------------------------------------------------------------------
-    if not fcp:menu():isEnabled({"File", "Reveal in Browser"}) then
+    if not fcp.menu:isEnabled({"File", "Reveal in Browser"}) then
         return nil
     end
 
@@ -309,7 +309,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     mod.browserPlayhead.deleteHighlight()
 
-    local libraries = fcp:libraries()
+    local libraries = fcp.libraries
 
     --------------------------------------------------------------------------------
     -- Clear the selection first
@@ -319,7 +319,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Trigger the menu item to reveal the clip
     --------------------------------------------------------------------------------
-    fcp:menu():selectMenu({"File", "Reveal in Browser"})
+    fcp.menu:selectMenu({"File", "Reveal in Browser"})
 
     --------------------------------------------------------------------------------
     -- Solo Clip:
@@ -347,7 +347,7 @@ end
 local function selectKeywordCollection(keyword, solo)
     fcp:selectMenu({"File", "Reveal in Browser"})
 
-    local sidebar = fcp:libraries():sidebar()
+    local sidebar = fcp.libraries.sidebar
 
     local selectedRowsUI = sidebar:selectedRowsUI()
     local selectedRowUI = selectedRowsUI and selectedRowsUI[1]
@@ -631,7 +631,7 @@ local function revealInKeywordCollection(solo)
             --------------------------------------------------------------------------------
             -- If no keywords on the clip, just "Reveal in Browser":
             --------------------------------------------------------------------------------
-            fcp:menu():selectMenu({"File", "Reveal in Browser"})
+            fcp.menu:selectMenu({"File", "Reveal in Browser"})
 
             --------------------------------------------------------------------------------
             -- Solo the clip if necessary:

@@ -3,7 +3,7 @@
 	function changeIgnore() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "changeIgnore",
 					application: document.getElementById("application").value,
@@ -19,7 +19,7 @@
 	function clickButton(callbackType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: callbackType,
 					application: document.getElementById("application").value,
@@ -35,7 +35,7 @@
 	function updateApplicationAndBank() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
@@ -51,7 +51,7 @@
 	function updateUI() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
@@ -89,7 +89,7 @@
 		}
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "changeControl",
 					application: document.getElementById("application").value,
@@ -108,7 +108,7 @@
 	function selectButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateAction",
 					application: document.getElementById("application").value,
@@ -125,7 +125,7 @@
 	function clearButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "clearAction",
 					application: document.getElementById("application").value,
@@ -142,7 +142,7 @@
 	function updateBankLabel() {
 		try {
 			var result = {
-				id: "loupedeckPanelCallback",
+				id: "loupedeckPlusPanelCallback",
 				params: {
 					type: "updateBankLabel",
 					application: document.getElementById("application").value,
@@ -190,14 +190,16 @@
 					{%
 					local atLeastOne = false
 					for id, label in spairs(userApps, function(t,a,b) return t[a] < t[b] end) do
-						atLeastOne = true
-						local selected = ""
-						if lastApplication == id then
-							selected = [[selected=""]]
-						end
+						if id ~= "All Applications" then
+							atLeastOne = true
+							local selected = ""
+							if lastApplication == id then
+								selected = [[selected=""]]
+							end
 					%}
 					<option {{selected}} value="{{id}}">{{label}}</option>
 					{%
+						end
 					end
 					if atLeastOne then
 					%}
@@ -339,21 +341,30 @@
 	<table class="loupedeck">
 		<thead>
 			<tr>
-				<th>{{ i18n("buttonPress") }}</th>
-				<th><span id="textLeft" style="display: {{ textVisibility }}">{{ i18n("turnLeftDown") }}</span></th>
-				<th><span id="textRight" style="display: {{ textVisibility }}">{{ i18n("turnRightUp") }}</span></th>
+				<th>{{ i18n("pressAction") }}</th>
+				<th><span id="textLeft" style="display: {{ textVisibility }}">{{ i18n("turnLeftDownAction") }}</span></th>
+				<th><span id="textRight" style="display: {{ textVisibility }}">{{ i18n("turnRightUpAction") }}</span></th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
-				<td><input type="text" id="press_action" class="loupedeckActionTextbox" value="{{ lastPressValue }}" disabled=""></td>
-				<td><input type="text" id="left_action" class="loupedeckActionTextbox" value="{{ lastLeftValue }}" disabled="" style="display: {{ textVisibility }}"></td>
-				<td><input type="text" id="right_action" class="loupedeckActionTextbox" value="{{ lastRightValue }}" disabled="" style="display: {{ textVisibility }}"></td>
+				<td><input type="text" id="press_action" class="loupedeckActionTextbox" value="" disabled=""></td>
+				<td><input type="text" id="left_action" class="loupedeckActionTextbox" value="" disabled="" style="display: {{ textVisibility }}"></td>
+				<td><input type="text" id="right_action" class="loupedeckActionTextbox" value="" disabled="" style="display: {{ textVisibility }}"></td>
 			</tr>
 			<tr>
 				<td><a id="press_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Press')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Press')">{{ i18n("clear") }}</a></td>
 				<td><a id="left_actionButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="selectButton('Left')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="clearButton('Left')">{{ i18n("clear") }}</a></td>
 				<td><a id="right_actionButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="selectButton('Right')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button loupedeckActionButton" style="display: {{ buttonVisibility }}" onclick="clearButton('Right')">{{ i18n("clear") }}</a></td>
+			</tr>
+			<tr>
+				<th style="font-size:12px; padding-top: 15px;">{{ i18n("releaseAction") }}</th>
+			</tr>
+			<tr>
+				<td><input type="text" id="release_action" class="loupedeckActionTextbox" value="{{ lastReleaseValue }}" disabled=""></td>
+			</tr>
+			<tr>
+				<td><a id="release_actionButton" href="#" class="button loupedeckActionButton" onclick="selectButton('Release')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button loupedeckActionButton" onclick="clearButton('Release')">{{ i18n("clear") }}</a></td>
 			</tr>
 		</tbody>
 	</table>

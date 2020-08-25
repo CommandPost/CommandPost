@@ -2,17 +2,14 @@
 ---
 --- Display Controls.
 
-local require                   = require
+local require           = require
 
---local log                       = require "hs.logger".new("display")
+--local log               = require "hs.logger".new("display")
 
-local brightness                = require "hs.brightness"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
 
-local dialog                    = require "cp.dialog"
-local i18n                      = require "cp.i18n"
-
-local displayNotification       = dialog.displayNotification
-local format                    = string.format
+local pressSystemKey    = tools.pressSystemKey
 
 local plugin = {
     id = "core.display",
@@ -23,26 +20,14 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    --------------------------------------------------------------------------------
-    -- Commands:
-    --------------------------------------------------------------------------------
     deps.global
         :add("brightnessIncrease")
-        :whenActivated(function()
-            -- TODO: This is set to 2 because of a bug in Hammerspoon: https://github.com/Hammerspoon/hammerspoon/issues/2312
-            if brightness.set(brightness.get() + 2) then
-                displayNotification(format(i18n("brightness") .. ": %s", brightness.get()))
-            end
-        end)
+        :whenActivated(function() pressSystemKey("BRIGHTNESS_UP") end)
         :titled(i18n("increase") .. " " .. i18n("brightness"))
 
     deps.global
         :add("brightnessDecrease")
-        :whenActivated(function()
-            if brightness.set(brightness.get() - 1) then
-                displayNotification(format(i18n("brightness") .. ": %s", brightness.get()))
-            end
-        end)
+        :whenActivated(function() pressSystemKey("BRIGHTNESS_DOWN") end)
         :titled(i18n("decrease") .. " " .. i18n("brightness"))
 
 end
