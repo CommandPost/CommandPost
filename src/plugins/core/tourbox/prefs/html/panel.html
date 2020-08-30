@@ -35,6 +35,16 @@
 		}
 	}
 
+	function setStyleDisplayByClass(className, value) {
+		var x, i;
+		x = document.querySelectorAll("." + className);
+		for (i = 0; i < x.length; i++) {
+			x[i].style.display = value;
+		}
+	}
+
+	var currentPage = {{ lastPage }};
+
 	function changeControl(element, controlType) {
 		// -------------------------------------------------
 		// TRANSLATE CONTROLTYPE TO LABEL:
@@ -63,60 +73,97 @@
 		document.getElementById("label").innerHTML = label;
 
 		// -------------------------------------------------
+		// HIDE EVERYTHING:
+		// -------------------------------------------------
+		setStyleDisplayByClass("doubleClick", "none");
+		setStyleDisplayByClass("downKnob", "none");
+		setStyleDisplayByClass("knob", "none");
+		setStyleDisplayByClass("leftKnob", "none");
+		setStyleDisplayByClass("pressAction", "none");
+		setStyleDisplayByClass("pressSideAction", "none");
+		setStyleDisplayByClass("pressTallAction", "none");
+		setStyleDisplayByClass("pressTopAction", "none");
+		setStyleDisplayByClass("rightKnob", "none");
+		setStyleDisplayByClass("shortKnob", "none");
+		setStyleDisplayByClass("sideKnob", "none");
+		setStyleDisplayByClass("tallKnob", "none");
+		setStyleDisplayByClass("topKnob", "none");
+		setStyleDisplayByClass("upKnob", "none");
+
+		// -------------------------------------------------
 		// SUPPORTS CLICK:
 		// -------------------------------------------------
-		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "c1" || controlType == "c2" || controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right" || controlType == "scroll" || controlType == "tour") {
-			document.getElementById("pressActionA").style.display = "table";
-			document.getElementById("pressActionB").style.display = "table";
-			document.getElementById("pressActionC").style.display = "table";
-			document.getElementById("repeatA").style.display = "table";
-		} else {
-			document.getElementById("pressActionA").style.display = "none";
-			document.getElementById("pressActionB").style.display = "none";
-			document.getElementById("pressActionC").style.display = "none";
-			document.getElementById("repeatA").style.display = "none";
+		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "c1" || controlType == "c2" || controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right" || controlType == "tour") {
+			setStyleDisplayByClass("pressAction", "table");
 		}
 
 		// -------------------------------------------------
 		// SUPPORTS SCROLL:
 		// -------------------------------------------------
-		if (controlType == "scroll" || controlType == "dial" || controlType == "knob") {
-			document.getElementById("knobA").style.display = "table";
-			document.getElementById("knobB").style.display = "table";
-			document.getElementById("knobC").style.display = "table";
-			document.getElementById("spacerA").style.display = "table";
-			document.getElementById("spacerB").style.display = "table";
-		} else {
-			document.getElementById("knobA").style.display = "none";
-			document.getElementById("knobB").style.display = "none";
-			document.getElementById("knobC").style.display = "none";
-			document.getElementById("spacerA").style.display = "none";
-			document.getElementById("spacerB").style.display = "none";
+		if (controlType == "dial" || controlType == "knob") {
+			setStyleDisplayByClass("knob", "table");
 		}
 
 		// -------------------------------------------------
 		// SUPPORTS DOUBLE CLICK:
 		// -------------------------------------------------
 		if (controlType == "side" || controlType == "top" || controlType == "tall" || controlType == "short") {
-			document.getElementById("doubleClickA").style.display = "table";
-			document.getElementById("doubleClickB").style.display = "table";
-			document.getElementById("doubleClickC").style.display = "table";
-			document.getElementById("spacerA").style.display = "table";
-			document.getElementById("spacerB").style.display = "table";
-		} else {
-			document.getElementById("doubleClickA").style.display = "none";
-			document.getElementById("doubleClickB").style.display = "none";
-			document.getElementById("doubleClickC").style.display = "none";
-			document.getElementById("spacerA").style.display = "none";
-			document.getElementById("spacerB").style.display = "none";
+			setStyleDisplayByClass("doubleClick", "table");
 		}
 
 		// -------------------------------------------------
-		// SUPPORTS SCROLL AND CLICK:
+		// SUPPORTS SIDE MODIFIER (BUTTON):
 		// -------------------------------------------------
-		if (controlType == "scroll") {
-			document.getElementById("spacerA").style.display = "table";
-			document.getElementById("spacerB").style.display = "table";
+		if (controlType == "top" || controlType == "tall" || controlType == "short" || controlType == "left" || controlType == "right" || controlType == "up" || controlType == "down") {
+			setStyleDisplayByClass("pressSideAction", "table");
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS TALL MODIFIER (BUTTON):
+		// -------------------------------------------------
+		if (controlType == "c1") {
+			setStyleDisplayByClass("pressTallAction", "table");
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS TOP MODIFIER (BUTTON):
+		// -------------------------------------------------
+		if (controlType == "up" || controlType == "down" || controlType == "left" || controlType == "right") {
+			setStyleDisplayByClass("pressTopAction", "table");
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS VARIOUS MODIFIERS (KNOB):
+		// -------------------------------------------------
+		if (controlType == "knob" ) {
+			setStyleDisplayByClass("sideKnob", "table");
+			setStyleDisplayByClass("topKnob", "table");
+			setStyleDisplayByClass("tallKnob", "table");
+			setStyleDisplayByClass("shortKnob", "table");
+		}
+
+		// -------------------------------------------------
+		// SCROLL HAS PAGE BUTTONS:
+		// -------------------------------------------------
+		if (controlType == "scroll" ) {
+			setStyleDisplayByClass("pageButtons", "table");
+		} else {
+			setStyleDisplayByClass("pageButtons", "none");
+		}
+		if (controlType == "scroll" ) {
+			if (currentPage == 1) {
+				setStyleDisplayByClass("pressAction", "table");
+				setStyleDisplayByClass("knob", "table");
+				setStyleDisplayByClass("sideKnob", "table");
+				setStyleDisplayByClass("topKnob", "table");
+				setStyleDisplayByClass("tallKnob", "table");
+			} else {
+				setStyleDisplayByClass("shortKnob", "table");
+				setStyleDisplayByClass("leftKnob", "table");
+				setStyleDisplayByClass("rightKnob", "table");
+				setStyleDisplayByClass("upKnob", "table");
+				setStyleDisplayByClass("downKnob", "table");
+			}
 		}
 
 		// -------------------------------------------------
@@ -138,6 +185,24 @@
 		} catch(err) {
 			alertErrorMessage(err);
 		}
+	}
+
+	function changePage(page) {
+		try {
+			var result = {
+				id: "tourBoxPanelCallback",
+				params: {
+					type: "updatePage",
+					value: page,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+
+		currentPage = page;
+		changeControl("", document.getElementById("controlType").value);
 	}
 
 	function selectButton(buttonType) {
@@ -312,16 +377,17 @@
 		}
 	}
 
-	function changeRepeatPressActionUntilReleased() {
+	function repeatCheckbox(element, actionType) {
 		try {
 			var result = {
 				id: "tourBoxPanelCallback",
 				params: {
-					type: "changeRepeatPressActionUntilReleased",
+					type: "repeatCheckbox",
 					application: document.getElementById("application").value,
 					bank: document.getElementById("bank").value,
 					controlType: document.getElementById("controlType").value,
-					repeatPressActionUntilReleased: document.getElementById("repeatPressActionUntilReleased").checked,
+					actionType: actionType,
+					value: element.checked,
 				},
 			}
 			postMessage(result);
@@ -567,73 +633,325 @@
 					<strong>{{ i18n("selectedControl") }}:</strong> <span id="label" style="font-weight: normal;"></span>
 				</p>
 
-				<table class="tourbox" style="height: 545px;">
+				<table class="tourbox" style="height: 602px;">
+					<!-- PAGE BUTTONS: -->
+					<tr class="pageButtons">
+						<th>
+							<a href="#" class="bottomButton" onclick="changePage(1)">{{ i18n("pageOne") }}</a>
+						</th>
+						<th>
+							<a href="#" class="bottomButton" onclick="changePage(2)">{{ i18n("pageTwo") }}</a>
+						</th>
+					</tr>
+					<tr class="pageButtons"><td></br></td></tr>
+
 					<!-- PRESS & RELEASE ACTION: -->
-					<tr id="pressActionA">
+					<tr class="pressAction">
 						<th width="229px">{{ i18n("pressAction") }}:</th>
 						<th width="229px">{{ i18n("releaseAction") }}:</th>
 					</tr>
-					<tr id="pressActionB">
-						<td width="229px"><input type="text" id="press_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-						<td width="229px"><input type="text" id="release_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					<tr class="pressAction">
+						<td width="229px"><input type="text" id="pressAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="releaseAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 					</tr>
-					<tr id="pressActionC">
-						<td width="229px"><a id="press_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a> <a id="press_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a></td>
-						<td width="229px"><a id="release_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a> <a id="release_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a></td>
-					</tr>
-
-					<!-- PRESS REPEAT: -->
-					<tr id="repeatA">
-						<td width="458px">
-							<input type="checkbox" value="true" id="repeatPressActionUntilReleased" onchange="changeRepeatPressActionUntilReleased()">
-							<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeatPressActionUntilReleased") }}</span></label>
+					<tr class="pressAction">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="pressActionRepeat" onchange="repeatCheckbox(this, 'pressAction')" style="margin-left:55px;">
+							<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a id="release_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('releaseAction')">{{ i18n("select") }}</a>
+							<a id="release_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('releaseAction')">{{ i18n("clear") }}</a>
 						</td>
 					</tr>
-
-					<!-- SPACER: -->
-					<tr id="spacerA">
-						<td>
-							</br>
-						</td>
-					</tr>
+					<tr class="pressAction"><td></br></td></tr>
 
 					<!-- DOUBLE CLICK: -->
-					<tr id="doubleClickA">
+					<tr class="doubleClick">
 						<th width="229px">{{ i18n("doubleClickPressAction") }}:</th>
 						<th width="229px">{{ i18n("doubleClickReleaseAction") }}:</th>
 					</tr>
-					<tr id="doubleClickB">
-						<td width="229px"><input type="text" id="double_click_press_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-						<td width="229px"><input type="text" id="double_click_release_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					<tr class="doubleClick">
+						<td width="229px"><input type="text" id="doubleClickPressAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="doubleClickReleaseAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 					</tr>
-					<tr id="doubleClickC">
-						<td width="229px"><a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickPressAction')">{{ i18n("select") }}</a> <a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickPressAction')">{{ i18n("clear") }}</a></td>
-						<td width="229px"><a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickReleaseAction')">{{ i18n("select") }}</a> <a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickReleaseAction')">{{ i18n("clear") }}</a></td>
+					<tr class="doubleClick">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickPressAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickPressAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="doubleClickPressActionRepeat" onchange="repeatCheckbox(this, 'doubleClickPressAction')" style="margin-left:55px;">
+							<label for="repeatPressActionUntilReleased"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('doubleClickReleaseAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('doubleClickReleaseAction')">{{ i18n("clear") }}</a>
+						</td>
 					</tr>
+					<tr class="doubleClick"><td></br></td></tr>
+
+					<!-- PRESS & RELEASE ACTION (SIDE MODIFIER): -->
+					<tr class="pressSideAction">
+						<th width="229px">{{ i18n("pressActionSideModifier") }}:</th>
+						<th width="229px">{{ i18n("releaseActionSideModifier") }}:</th>
+					</tr>
+					<tr class="pressSideAction">
+						<td width="229px"><input type="text" id="pressSideAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="releaseSideAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="pressSideAction">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressSideAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressSideAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="pressSideActionRepeat" onchange="repeatCheckbox(this, 'pressSideAction')" style="margin-left:55px;">
+							<label for="pressSideActionRepeat"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('releaseSideAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('releaseSideAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="pressSideAction"><td></br></td></tr>
+
+					<!-- PRESS & RELEASE ACTION (TALL MODIFIER): -->
+					<tr class="pressTallAction">
+						<th width="229px">{{ i18n("pressActionTallModifier") }}:</th>
+						<th width="229px">{{ i18n("releaseActionTallModifier") }}:</th>
+					</tr>
+					<tr class="pressTallAction">
+						<td width="229px"><input type="text" id="pressTallAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="releaseTallAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="pressTallAction">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressTallAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressTallAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="pressTallActionRepeat" onchange="repeatCheckbox(this, 'pressTallAction')" style="margin-left:55px;">
+							<label for="pressTallActionRepeat"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('releaseTallAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('releaseTallAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="pressTallAction"><td></br></td></tr>
+
+					<!-- PRESS & RELEASE ACTION (TOP MODIFIER): -->
+					<tr class="pressTopAction">
+						<th width="229px">{{ i18n("pressActionTopModifier") }}:</th>
+						<th width="229px">{{ i18n("releaseActionTopModifier") }}:</th>
+					</tr>
+					<tr class="pressTopAction">
+						<td width="229px"><input type="text" id="pressTopAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="releaseTopAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="pressTopAction">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressTopAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressTopAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="pressTallActionRepeat" onchange="repeatCheckbox(this, 'pressTopAction')" style="margin-left:55px;">
+							<label for="pressTallActionRepeat"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('releaseTopAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('releaseTopAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="pressTopAction"><td></br></td></tr>
 
 					<!-- KNOB LEFT & RIGHT: -->
-					<tr id="knobA">
+					<tr class="knob">
 						<th width="229px">{{ i18n("turnLeftAction") }}:</th>
 						<th width="229px">{{ i18n("turnRightAction") }}:</th>
 					</tr>
-					<tr id="knobB">
-						<td width="229px"><input type="text" id="left_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
-						<td width="229px"><input type="text" id="right_action" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					<tr class="knob">
+						<td width="229px"><input type="text" id="leftAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
 					</tr>
-					<tr id="knobC">
-						<td width="229px"><a id="left_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a> <a id="left_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a></td>
-						<td width="229px"><a id="right_actionButton" href="#" class="button tourboxActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a> <a id="right_clearButton" href="#" class="button tourboxActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a></td>
-					</tr>
-
-					<!-- SPACER: -->
-					<tr id="spacerB">
-						<td>
-							</br>
+					<tr class="knob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightAction')">{{ i18n("clear") }}</a>
 						</td>
 					</tr>
+					<tr class="knob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (SIDE MODIFIER): -->
+					<tr class="sideKnob">
+						<th width="229px">{{ i18n("turnLeftActionSideModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionSideModifier") }}:</th>
+					</tr>
+					<tr class="sideKnob">
+						<td width="229px"><input type="text" id="leftSideAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightSideAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="sideKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftSideAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftSideAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightSideAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightSideAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="sideKnob"><td></br></td></tr>
+
+
+					<!-- KNOB LEFT & RIGHT (TOP MODIFIER): -->
+					<tr class="topKnob">
+						<th width="229px">{{ i18n("turnLeftActionTopModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionTopModifier") }}:</th>
+					</tr>
+					<tr class="topKnob">
+						<td width="229px"><input type="text" id="leftTopAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightTopAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="topKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftTopAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftTopAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightTopAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightTopAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="topKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (TALL MODIFIER): -->
+					<tr class="tallKnob">
+						<th width="229px">{{ i18n("turnLeftActionTallModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionTallModifier") }}:</th>
+					</tr>
+					<tr class="tallKnob">
+						<td width="229px"><input type="text" id="leftTallAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightTallAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="tallKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftTallAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftTallAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightTallAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightTallAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="tallKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (SHORT MODIFIER): -->
+					<tr class="shortKnob">
+						<th width="229px">{{ i18n("turnLeftActionShortModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionShortModifier") }}:</th>
+					</tr>
+					<tr class="shortKnob">
+						<td width="229px"><input type="text" id="leftShortAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightShortAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="shortKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftShortAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftShortAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightShortAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightShortAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="shortKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (LEFT MODIFIER): -->
+					<tr class="leftKnob">
+						<th width="229px">{{ i18n("turnLeftActionLeftModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionLeftModifier") }}:</th>
+					</tr>
+					<tr class="leftKnob">
+						<td width="229px"><input type="text" id="leftLeftAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightLeftAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="leftKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftLeftAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftLeftAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightLeftAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightLeftAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="leftKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (RIGHT MODIFIER): -->
+					<tr class="rightKnob">
+						<th width="229px">{{ i18n("turnLeftActionRightModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionRightModifier") }}:</th>
+					</tr>
+					<tr class="rightKnob">
+						<td width="229px"><input type="text" id="leftRightAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightRightAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="rightKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftRightAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftRightAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightRightAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightRightAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="rightKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (UP MODIFIER): -->
+					<tr class="upKnob">
+						<th width="229px">{{ i18n("turnLeftActionUpModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionUpModifier") }}:</th>
+					</tr>
+					<tr class="upKnob">
+						<td width="229px"><input type="text" id="leftUpAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightUpAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="upKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftUpAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftUpAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightUpAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightUpAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="upKnob"><td></br></td></tr>
+
+					<!-- KNOB LEFT & RIGHT (DOWN MODIFIER): -->
+					<tr class="downKnob">
+						<th width="229px">{{ i18n("turnLeftActionDownModifier") }}:</th>
+						<th width="229px">{{ i18n("turnRightActionDownModifier") }}:</th>
+					</tr>
+					<tr class="downKnob">
+						<td width="229px"><input type="text" id="leftDownAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="rightDownAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="downKnob">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('leftDownAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('leftDownAction')">{{ i18n("clear") }}</a>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('rightDownAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('rightDownAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="downKnob"><td></br></td></tr>
 
 					<!-- COPY CONTROL TO ALL BANKS & RESET CONTROL -->
-					<tr style="padding-top: 10px;">
+					<tr>
 						<th>
 							<a href="#" class="bottomButton" onclick="copyControlToAllBanks()">{{ i18n("copyControlToAllBanks") }}</a>
 						</th>

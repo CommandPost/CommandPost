@@ -43,6 +43,11 @@ mod.lastApplication = config.prop("tourbox.preferences.lastApplication", "All Ap
 --- Last Bank used in the Preferences Panel.
 mod.lastBank = config.prop("tourbox.preferences.lastBank", "1")
 
+--- plugins.core.tourbox.prefs.lastPage <cp.prop: number>
+--- Field
+--- Last Page used in the Preferences Panel.
+mod.lastPage = config.prop("tourbox.preferences.lastPage", 1)
+
 --- plugins.core.tourbox.prefs.lastControlType <cp.prop: string>
 --- Field
 --- Last Selected Control Type used in the Preferences Panel.
@@ -138,6 +143,7 @@ local function generateContent()
         lastBank                    = mod.lastBank(),
 
         lastControlType             = mod.lastControlType(),
+        lastPage                    = mod.lastPage(),
 
         insertImage                 = insertImage,
     }
@@ -155,6 +161,9 @@ end
 --  * controlType - The control type as a string
 --  * valueA - The value of the item as a string
 --  * valueB - An optional value
+--
+-- Returns:
+--  * None
 local function setItem(app, bank, controlType, valueA, valueB)
     local items = mod.items()
 
@@ -162,7 +171,7 @@ local function setItem(app, bank, controlType, valueA, valueB)
     if type(items[app][bank]) ~= "table" then items[app][bank] = {} end
     if type(items[app][bank][controlType]) ~= "table" then items[app][bank][controlType] = {} end
 
-    if valueB then
+    if type(valueB) ~= nil then
         if not items[app][bank][controlType][valueA] then items[app][bank][controlType][valueA] = {} end
         items[app][bank][controlType][valueA] = valueB
     else
@@ -205,29 +214,75 @@ local function updateUI(params)
 
     local selectedApp = items[app]
 
-    local ignoreValue = (selectedApp and selectedApp.ignore) or false
+    local ignore = (selectedApp and selectedApp.ignore) or false
     local selectedBank = selectedApp and selectedApp[bank]
     local selectedControlType = selectedBank and selectedBank[controlType]
 
-    local leftValue = selectedControlType and selectedControlType.leftAction and selectedControlType.leftAction.actionTitle or ""
-    local rightValue = selectedControlType and selectedControlType.rightAction and selectedControlType.rightAction.actionTitle or ""
-    local pressValue = selectedControlType and selectedControlType.pressAction and selectedControlType.pressAction.actionTitle or ""
-    local releaseValue = selectedControlType and selectedControlType.releaseAction and selectedControlType.releaseAction.actionTitle or ""
-    local doubleClickPressValue = selectedControlType and selectedControlType.doubleClickPressAction and selectedControlType.doubleClickPressAction.actionTitle or ""
-    local doubleClickReleaseValue = selectedControlType and selectedControlType.doubleClickReleaseAction and selectedControlType.doubleClickReleaseAction.actionTitle or ""
-    local repeatPressActionUntilReleasedValue = selectedControlType and selectedControlType.repeatPressActionUntilReleased or false
+    local doubleClickPressAction = selectedControlType and selectedControlType.doubleClickPressAction and selectedControlType.doubleClickPressAction.actionTitle or ""
+    local doubleClickReleaseAction = selectedControlType and selectedControlType.doubleClickReleaseAction and selectedControlType.doubleClickReleaseAction.actionTitle or ""
+    local leftAction = selectedControlType and selectedControlType.leftAction and selectedControlType.leftAction.actionTitle or ""
+    local leftDownAction = selectedControlType and selectedControlType.leftDownAction and selectedControlType.leftDownAction.actionTitle or ""
+    local leftLeftAction = selectedControlType and selectedControlType.leftLeftAction and selectedControlType.leftLeftAction.actionTitle or ""
+    local leftRightAction = selectedControlType and selectedControlType.leftRightAction and selectedControlType.leftRightAction.actionTitle or ""
+    local leftShortAction = selectedControlType and selectedControlType.leftShortAction and selectedControlType.leftShortAction.actionTitle or ""
+    local leftSideAction = selectedControlType and selectedControlType.leftSideAction and selectedControlType.leftSideAction.actionTitle or ""
+    local leftTallAction = selectedControlType and selectedControlType.leftTallAction and selectedControlType.leftTallAction.actionTitle or ""
+    local leftTopAction = selectedControlType and selectedControlType.leftTopAction and selectedControlType.leftTopAction.actionTitle or ""
+    local leftUpAction = selectedControlType and selectedControlType.leftUpAction and selectedControlType.leftUpAction.actionTitle or ""
+    local pressAction = selectedControlType and selectedControlType.pressAction and selectedControlType.pressAction.actionTitle or ""
+    local pressActionRepeat = selectedControlType and selectedControlType.pressActionRepeat or false
+    local pressSideAction = selectedControlType and selectedControlType.pressSideAction and selectedControlType.pressSideAction.actionTitle or ""
+    local pressSideActionRepeat = selectedControlType and selectedControlType.pressSideActionRepeat or false
+    local pressTopAction = selectedControlType and selectedControlType.pressTopAction and selectedControlType.pressTopAction.actionTitle or ""
+    local releaseAction = selectedControlType and selectedControlType.releaseAction and selectedControlType.releaseAction.actionTitle or ""
+    local releaseSideAction = selectedControlType and selectedControlType.releaseSideAction and selectedControlType.releaseSideAction.actionTitle or ""
+    local releaseTopAction = selectedControlType and selectedControlType.releaseTopAction and selectedControlType.releaseTopAction.actionTitle or ""
+    local rightAction = selectedControlType and selectedControlType.rightAction and selectedControlType.rightAction.actionTitle or ""
+    local rightDownAction = selectedControlType and selectedControlType.rightDownAction and selectedControlType.rightDownAction.actionTitle or ""
+    local rightLeftAction = selectedControlType and selectedControlType.rightLeftAction and selectedControlType.rightLeftAction.actionTitle or ""
+    local rightRightAction = selectedControlType and selectedControlType.rightRightAction and selectedControlType.rightRightAction.actionTitle or ""
+    local rightShortAction = selectedControlType and selectedControlType.rightShortAction and selectedControlType.rightShortAction.actionTitle or ""
+    local rightSideAction = selectedControlType and selectedControlType.rightSideAction and selectedControlType.rightSideAction.actionTitle or ""
+    local rightTallAction = selectedControlType and selectedControlType.rightTallAction and selectedControlType.rightTallAction.actionTitle or ""
+    local rightTopAction = selectedControlType and selectedControlType.rightTopAction and selectedControlType.rightTopAction.actionTitle or ""
+    local rightUpAction = selectedControlType and selectedControlType.rightUpAction and selectedControlType.rightUpAction.actionTitle or ""
+
+    local doubleClickPressActionRepeat = selectedControlType and selectedControlType.doubleClickPressActionRepeat or false
+
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
     injectScript([[
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
-        changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
-        changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
-        changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
-        changeValueByID('release_action', `]] .. escapeTilda(releaseValue) .. [[`);
-        changeValueByID('double_click_press_action', `]] .. escapeTilda(doubleClickPressValue) .. [[`);
-        changeValueByID('double_click_release_action', `]] .. escapeTilda(doubleClickReleaseValue) .. [[`);
-        changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
-        changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleasedValue) .. [[);
+        changeCheckedByID('doubleClickPressActionRepeat', ]] .. tostring(doubleClickPressActionRepeat) .. [[);
+        changeCheckedByID('ignore', ]] .. tostring(ignore) .. [[);
+        changeCheckedByID('pressActionRepeat', ]] .. tostring(pressActionRepeat) .. [[);
+        changeCheckedByID('pressSideActionRepeat', ]] .. tostring(pressSideActionRepeat) .. [[);
+        changeValueByID('doubleClickPressAction', `]] .. escapeTilda(doubleClickPressAction) .. [[`);
+        changeValueByID('doubleClickReleaseAction', `]] .. escapeTilda(doubleClickReleaseAction) .. [[`);
+        changeValueByID('leftAction', `]] .. escapeTilda(leftAction) .. [[`);
+        changeValueByID('leftDownAction', `]] .. escapeTilda(leftDownAction) .. [[`);
+        changeValueByID('leftLeftAction', `]] .. escapeTilda(leftLeftAction) .. [[`);
+        changeValueByID('leftRightAction', `]] .. escapeTilda(leftRightAction) .. [[`);
+        changeValueByID('leftShortAction', `]] .. escapeTilda(leftShortAction) .. [[`);
+        changeValueByID('leftSideAction', `]] .. escapeTilda(leftSideAction) .. [[`);
+        changeValueByID('leftTallAction', `]] .. escapeTilda(leftTallAction) .. [[`);
+        changeValueByID('leftTopAction', `]] .. escapeTilda(leftTopAction) .. [[`);
+        changeValueByID('leftUpAction', `]] .. escapeTilda(leftUpAction) .. [[`);
+        changeValueByID('pressAction', `]] .. escapeTilda(pressAction) .. [[`);
+        changeValueByID('pressSideAction', `]] .. escapeTilda(pressSideAction) .. [[`);
+        changeValueByID('pressTopAction', `]] .. escapeTilda(pressTopAction) .. [[`);
+        changeValueByID('releaseAction', `]] .. escapeTilda(releaseAction) .. [[`);
+        changeValueByID('releaseSideAction', `]] .. escapeTilda(releaseSideAction) .. [[`);
+        changeValueByID('releaseTopAction', `]] .. escapeTilda(releaseTopAction) .. [[`);
+        changeValueByID('rightAction', `]] .. escapeTilda(rightAction) .. [[`);
+        changeValueByID('rightDownAction', `]] .. escapeTilda(rightDownAction) .. [[`);
+        changeValueByID('rightLeftAction', `]] .. escapeTilda(rightLeftAction) .. [[`);
+        changeValueByID('rightRightAction', `]] .. escapeTilda(rightRightAction) .. [[`);
+        changeValueByID('rightShortAction', `]] .. escapeTilda(rightShortAction) .. [[`);
+        changeValueByID('rightSideAction', `]] .. escapeTilda(rightSideAction) .. [[`);
+        changeValueByID('rightTallAction', `]] .. escapeTilda(rightTallAction) .. [[`);
+        changeValueByID('rightTopAction', `]] .. escapeTilda(rightTopAction) .. [[`);
+        changeValueByID('rightUpAction', `]] .. escapeTilda(rightUpAction) .. [[`);
         updateIgnoreVisibility();
     ]])
 end
@@ -282,7 +337,7 @@ local function tourBoxPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
                     --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
+                    mod.activator[groupID] = mod._actionmanager.getActivator("tourBoxPreferences" .. groupID)
 
                     --------------------------------------------------------------------------------
                     -- Restrict Allowed Handlers for Activator to current group (and global):
@@ -451,6 +506,12 @@ local function tourBoxPanelCallback(id, params)
             end
         elseif callbackType == "updateUI" then
             updateUI(params)
+        elseif callbackType == "updatePage" then
+            --------------------------------------------------------------------------------
+            -- Update Page:
+            --------------------------------------------------------------------------------
+            local page = params["value"]
+            mod.lastPage(page)
         elseif callbackType == "updateBankLabel" then
             --------------------------------------------------------------------------------
             -- Update Bank Label:
@@ -649,7 +710,7 @@ local function tourBoxPanelCallback(id, params)
                     mod._tourboxManager.reset()
                     mod._manager.refresh()
                 end
-            end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("tourBoxResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetApplication" then
             --------------------------------------------------------------------------------
             -- Reset Application:
@@ -665,7 +726,7 @@ local function tourBoxPanelCallback(id, params)
                     mod.items(items)
                     mod._manager.refresh()
                 end
-            end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("tourBoxResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetBank" then
             --------------------------------------------------------------------------------
             -- Reset Bank:
@@ -684,7 +745,7 @@ local function tourBoxPanelCallback(id, params)
                     mod.items(items)
                     mod._manager.refresh()
                 end
-            end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+            end, i18n("tourBoxResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "copyApplication" then
             --------------------------------------------------------------------------------
             -- Copy Application:
@@ -760,13 +821,13 @@ local function tourBoxPanelCallback(id, params)
             items[app]["ignore"] = ignore
 
             mod.items(items)
-        elseif callbackType == "changeRepeatPressActionUntilReleased" then
+        elseif callbackType == "repeatCheckbox" then
             local app = params["application"]
             local bank = params["bank"]
             local controlType = params["controlType"]
-            local repeatPressActionUntilReleased = params["repeatPressActionUntilReleased"]
-
-            setItem(app, bank, controlType, "repeatPressActionUntilReleased", repeatPressActionUntilReleased)
+            local actionType = params["actionType"]
+            local value = params["value"] or false
+            setItem(app, bank, controlType, actionType .. "Repeat", value)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -878,10 +939,9 @@ function plugin.init(deps, env)
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 970,
+        height          = 1040,
     })
         :addHeading(6, i18n("tourBox"))
-
         :addCheckbox(7.1,
             {
                 label       = i18n("enableTourBoxSupport"),
@@ -900,10 +960,9 @@ function plugin.init(deps, env)
                 end,
             }
         )
-
-        :addParagraph(12, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
-
-        :addContent(13, generateContent, false)
+        :addParagraph(12, html.span {class="tip"} (html(i18n("tourBoxRequirementsTip"), false) ) .. "\n\n")
+        :addParagraph(13, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
+        :addContent(14, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
