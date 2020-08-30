@@ -865,30 +865,6 @@ local function tourBoxPanelCallback(id, params)
                 })
             end
 
-            table.insert(menu, {
-                title = "-",
-                disabled = true,
-            })
-
-            for i=1, numberOfBanks do
-                table.insert(menu, {
-                    title = tostring(i) .. " (Left Fn)",
-                    fn = function() copyToBank(i .. "_LeftFn") end
-                })
-            end
-
-            table.insert(menu, {
-                title = "-",
-                disabled = true,
-            })
-
-            for i=1, numberOfBanks do
-                table.insert(menu, {
-                    title = tostring(i) .. " (Right Fn)",
-                    fn = function() copyToBank(i .. "_RightFn") end
-                })
-            end
-
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.getAbsolutePosition(), true)
