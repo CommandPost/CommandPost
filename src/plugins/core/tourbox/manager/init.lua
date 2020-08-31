@@ -10,7 +10,6 @@ local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local bytes                     = require "hs.bytes"
 local eventtap                  = require "hs.eventtap"
-local host                      = require "hs.host"
 local image                     = require "hs.image"
 local serial                    = require "hs.serial"
 local timer                     = require "hs.timer"
@@ -720,8 +719,6 @@ function plugin.init(deps, env)
                         end
                     end
                 end
-
-                local newBank = activeBanks[bundleID]
 
                 mod.activeBanks(activeBanks)
 
