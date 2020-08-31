@@ -251,12 +251,10 @@ end
 function mod.onChoices(choices)
 
     --------------------------------------------------------------------------------
-    -- Load Final Cut Pro Fonts:
+    -- Load Final Cut Pro Fonts (if FCPX is running):
     --------------------------------------------------------------------------------
     if fcp:isRunning() then
         loadFinalCutProFonts()
-    else
-        return
     end
 
     --------------------------------------------------------------------------------
@@ -386,10 +384,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add the command trigger:
     --------------------------------------------------------------------------------
+    local icon = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/font.png")
     deps.fcpxCmds
         :add("cpFontConsole")
         :groupedBy("commandPost")
         :whenActivated(mod.show)
+        :image(icon)
 
     return mod
 end

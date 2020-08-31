@@ -27,6 +27,7 @@ local widgets           = require "widgets"
 
 local copy              = fnutils.copy
 local execute           = hs.execute
+local imageFromPath     = image.imageFromPath
 
 local mod = {}
 
@@ -886,18 +887,21 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/touchbar.icns"))
     local global = deps.global
     global:add("cpTouchBar")
         :whenActivated(mod.toggle)
         :groupedBy("commandPost")
+        :image(icon)
 
     return mod.init(deps, env)
 end
 
-function plugin.postInit(deps)
+function plugin.postInit(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/touchbar.icns"))
     mod._handlers = {}
     local widgetGroups = widgets.allGroups()
     for _, groupID in pairs(widgetGroups) do
@@ -921,6 +925,7 @@ function plugin.postInit(deps)
                             :subText(i18n("touchBarWidget") .. ": " .. params.subText)
                             :params(action)
                             :id(id)
+                            :image(icon)
                     end
 
                 end

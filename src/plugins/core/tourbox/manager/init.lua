@@ -11,6 +11,7 @@ local appWatcher                = require "hs.application.watcher"
 local bytes                     = require "hs.bytes"
 local eventtap                  = require "hs.eventtap"
 local host                      = require "hs.host"
+local image                     = require "hs.image"
 local serial                    = require "hs.serial"
 local timer                     = require "hs.timer"
 
@@ -19,11 +20,14 @@ local dialog                    = require "cp.dialog"
 local i18n                      = require "cp.i18n"
 local json                      = require "cp.json"
 
+local applicationsForBundleID   = application.applicationsForBundleID
 local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
 local doEvery                   = timer.doEvery
 local hexToBytes                = bytes.hexToBytes
+local imageFromPath             = image.imageFromPath
 local keyRepeatInterval         = eventtap.keyRepeatInterval
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 
 local mod = {}
 
@@ -41,6 +45,11 @@ local defaultFilename = "Default" .. fileExtension
 -- Constant
 -- The device ID of the TourBox.
 local DEVICE_ID = "SLAB_USBtoUART"
+
+-- TOURBOX_CONSOLE_BUNDLE_ID -> string
+-- Constant
+-- The TourBox Console Bundle ID.
+local TOURBOX_CONSOLE_BUNDLE_ID = "com.tourbox.ui.launch"
 
 -- lockup -> table
 -- Variable
@@ -64,6 +73,8 @@ local lookup = {
 	["98"] 		= {controlType = "tall", actionType = "doubleClickReleaseAction"},
 	["1b"] 		= {controlType = "tall", actionType = "pressSideAction"},
 	["9b"] 		= {controlType = "tall", actionType = "releaseSideAction"},
+	["1a"]      = {controlType = "tall", actionType = "pressShortAction"},
+	["9a"]      = {controlType = "tall", actionType = "releaseShortAction"},
 
 	["03"] 		= {controlType = "short", actionType = "pressAction", supportsDoubleClick = true},
 	["83"] 		= {controlType = "short", actionType = "releaseAction", supportsDoubleClick = true},
@@ -84,17 +95,17 @@ local lookup = {
 	["0b8b"]    = {controlType = "scroll", actionType = "rightTallAction"},
 	["4ccc"]    = {controlType = "scroll", actionType = "leftShortAction"},
 	["0c8c"]    = {controlType = "scroll", actionType = "rightShortAction"},
-	["26a6"]    = {controlType = "scroll", actionType = "leftUpAction"},
-	["66e6"]    = {controlType = "scroll", actionType = "rightUpAction"},
-	["28a8"]    = {controlType = "scroll", actionType = "leftLeftAction"},
-	["68e8"]    = {controlType = "scroll", actionType = "rightLeftAction"},
-	["27a7"]    = {controlType = "scroll", actionType = "leftDownAction"},
-	["67e7"]    = {controlType = "scroll", actionType = "rightDownAction"},
-	["29a9"]    = {controlType = "scroll", actionType = "leftRightAction"},
-	["69e9"]    = {controlType = "scroll", actionType = "rightRightAction"},
+	["66e6"]    = {controlType = "scroll", actionType = "leftUpAction"},
+	["26a6"]    = {controlType = "scroll", actionType = "rightUpAction"},
+	["68e8"]    = {controlType = "scroll", actionType = "leftLeftAction"},
+	["28a8"]    = {controlType = "scroll", actionType = "rightLeftAction"},
+	["67e7"]    = {controlType = "scroll", actionType = "leftDownAction"},
+	["27a7"]    = {controlType = "scroll", actionType = "rightDownAction"},
+	["69e9"]    = {controlType = "scroll", actionType = "leftRightAction"},
+	["29a9"]    = {controlType = "scroll", actionType = "rightRightAction"},
 
-	["44c4"] 	= {controlType = "knob", actionType = "leftAction"},
-	["0484"] 	= {controlType = "knob", actionType = "rightAction"},
+	["0484"] 	= {controlType = "knob", actionType = "leftAction"},
+	["44c4"] 	= {controlType = "knob", actionType = "rightAction"},
 	["48c8"] 	= {controlType = "knob", actionType = "leftSideAction"},
 	["0888"] 	= {controlType = "knob", actionType = "rightSideAction"},
 	["47c7"] 	= {controlType = "knob", actionType = "leftTopAction"},
@@ -112,8 +123,8 @@ local lookup = {
 	["23"] 		= {controlType = "c2", actionType = "pressAction"},
 	["a3"] 		= {controlType = "c2", actionType = "releaseAction"},
 
-	["0f8f"] 	= {controlType = "dial", actionType = "leftAction"},
-	["4fcf"] 	= {controlType = "dial", actionType = "rightAction"},
+	["4fcf"] 	= {controlType = "dial", actionType = "leftAction"},
+	["0f8f"] 	= {controlType = "dial", actionType = "rightAction"},
 
 	["2a"] 		= {controlType = "tour", actionType = "pressAction"},
 	["aa"] 		= {controlType = "tour", actionType = "releaseAction"},
@@ -193,7 +204,9 @@ local repeatTimers = {}
 -- A table containing all the delay timers
 local delayTimers = {}
 
-
+-- ignoreNextReleaseAction -> table
+-- Variable
+-- A table containing all the release actions to ignore.
 local ignoreNextReleaseAction = {}
 
 -- processMessage(message) -> none
@@ -271,7 +284,7 @@ local function processMessage(m)
     end
 
     --------------------------------------------------------------------------------
-    -- Workaround for release action on the arrow keys:
+    -- Ignore the release action when Arrow Keys pressed with Side/Top Modifiers:
     --------------------------------------------------------------------------------
     if controlType == "up" or controlType == "down" or controlType == "left" or controlType == "right" then
         if actionType == "releaseAction" and ignoreNextReleaseAction[controlType] then
@@ -281,6 +294,20 @@ local function processMessage(m)
         if actionType == "releaseTopAction" or actionType == "releaseSideAction" then
             ignoreNextReleaseAction[controlType] = true
         end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Ignore the release action when Tall button pressed with Short Modifier:
+    --------------------------------------------------------------------------------
+    if controlType == "tall" then
+        if actionType == "releaseAction" and ignoreNextReleaseAction[controlType] then
+            ignoreNextReleaseAction[controlType] = false
+            return
+        end
+        if actionType == "releaseShortAction" then
+            ignoreNextReleaseAction[controlType] = true
+        end
+
     end
 
     --log.df("%s - %s", controlType, actionType)
@@ -351,34 +378,52 @@ end
 --
 -- Returns:
 --  * None
-local function tourBoxCallback(_, messageType, _, messageHexString)
+local function tourBoxCallback(obj, messageType, message, messageHexString)
     if messageType == "opened" then
+        --------------------------------------------------------------------------------
+        -- These are the magic bytes that initialise the TourBox. What they mean, or
+        -- what they do, remain a mystery.
+        --------------------------------------------------------------------------------
         mod.tourBox:sendData(hexToBytes("5500072cd8001afe"))
         mod.tourBox:sendData(hexToBytes("a5001f2cd80001ffffffffffffffff0001ffffffffffffff0100ff01000000fe"))
+    elseif messageType == "error" then
+        if not obj:isOpen() then
+            --------------------------------------------------------------------------------
+            -- This most likely means the resource is busy, so lets retry:
+            --------------------------------------------------------------------------------
+            mod.connectToTourBox()
+        else
+            log.ef("Unexpected TourBox Error: %s", message)
+        end
     else
         if messageHexString and lookup[messageHexString] then
             processMessage(lookup[messageHexString])
         else
-            print(string.format("Unknown TourBox Command > Type: '%s', Hex: '%s'", messageType, messageHexString))
+            print(string.format("Unexpected TourBox Message (%s): '%s'", messageType, messageHexString))
         end
     end
-
 end
 
--- setupTourbox() -> none
--- Function
--- Initialises the TourBox interface.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function setupTourbox()
-    local tourBox = serial.newFromName(DEVICE_ID)
-    if tourBox then
-        tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
-        mod.tourBox = tourBox
+--- plugins.core.tourbox.manager.connectToTourBox() -> none
+--- Function
+--- Attempts to establish the TourBox serial connection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.connectToTourBox()
+    if not mod.tourBox then
+        local tourBox = serial.newFromName(DEVICE_ID)
+        if tourBox then
+            mod.resetTimers()
+            tourBox:baudRate(115200):parity("none"):callback(tourBoxCallback):open()
+            mod.tourBox = tourBox
+        end
+    else
+        mod.resetTimers()
+        mod.tourBox:open()
     end
 end
 
@@ -395,10 +440,35 @@ local function deviceCallback(callbackType, devices)
     if callbackType == "connected" then
         for _, deviceName in pairs(devices) do
             if deviceName == DEVICE_ID then
-                setupTourbox()
+                mod.connectToTourBox()
             end
         end
     end
+end
+
+--- plugins.core.tourbox.manager.resetTimers() -> none
+--- Function
+--- Resets all the various timers and memories.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.resetTimers()
+    doubleClickInProgress = {}
+
+    for _, v in pairs(repeatTimers) do
+        v:stop()
+    end
+    repeatTimers = {}
+
+    for _, v in pairs(delayTimers) do
+        v:stop()
+    end
+    delayTimers = {}
+
+    ignoreNextReleaseAction = {}
 end
 
 --- plugins.core.tourbox.manager.enabled <cp.prop: boolean>
@@ -410,10 +480,16 @@ mod.enabled = config.prop("tourbox.enabled", false):watch(function(enabled)
             if event == appWatcher.activated then
                 local frontmostApplication = application.frontmostApplication()
                 cachedBundleID = frontmostApplication:bundleID()
+                mod.resetTimers()
             end
         end):start()
         mod.deviceWatcher = serial.deviceCallback(deviceCallback)
-        setupTourbox()
+        mod.connectToTourBox()
+
+        --------------------------------------------------------------------------------
+        -- Check again in 5 seconds, just case TourBox Console took a while to close:
+        --------------------------------------------------------------------------------
+        doAfter(5, mod.connectToTourBox)
     else
         mod.deviceWatcher = nil
         if mod._appWatcher then
@@ -424,6 +500,9 @@ mod.enabled = config.prop("tourbox.enabled", false):watch(function(enabled)
             mod.tourBox:close()
             mod.tourBox = nil
         end
+
+        mod.resetTimers()
+
         collectgarbage()
         collectgarbage()
     end
@@ -443,6 +522,11 @@ mod.defaultLayout = json.read(defaultLayoutPath)
 --- Field
 --- Enable or disable the automatic switching of applications.
 mod.automaticallySwitchApplications = config.prop("tourbox.automaticallySwitchApplications", false)
+
+--- plugins.core.tourbox.manager.displayMessageWhenChangingBanks <cp.prop: boolean>
+--- Field
+--- Display message when changing banks?
+mod.displayMessageWhenChangingBanks = config.prop("tourbox.displayMessageWhenChangingBanks", true)
 
 --- plugins.core.tourbox.manager.automaticallySwitchApplications <cp.prop: boolean>
 --- Field
@@ -484,46 +568,62 @@ local plugin = {
     }
 }
 
-function plugin.init(deps)
+function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
     mod._actionmanager = deps.actionmanager
 
     --------------------------------------------------------------------------------
+    -- TourBox Icon:
+    --------------------------------------------------------------------------------
+    local tourBoxIcon = imageFromPath(env:pathToAbsolute("/../prefs/images/TourBox.icns"))
+
+    --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    --[[
     local global = deps.global
     global
-        :add("enableLoupedeckCT")
+        :add("enableTourBox")
         :whenActivated(function()
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckCTSupport"))
+        :image(tourBoxIcon)
+        :titled(i18n("enableTourBoxSupport"))
 
     global
-        :add("disableLoupedeckCT")
+        :add("disableTourBox")
         :whenActivated(function()
             mod.enabled(false)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("disableLoupedeckCTSupport"))
+        :image(tourBoxIcon)
+        :titled(i18n("disableTourBoxSupport"))
 
     global
-        :add("disableLoupedeckCTandLaunchLoupedeckApp")
+        :add("toggleTourBox")
         :whenActivated(function()
-            mod.enabled(false)
-            launchOrFocusByBundleID(LD_BUNDLE_ID)
+            mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
-        :titled(i18n("disableLoupedeckCTSupportAndLaunchLoupedeckApp"))
+        :image(tourBoxIcon)
+        :titled(i18n("toggleTourBoxSupport"))
 
     global
-        :add("enableLoupedeckCTandKillLoupedeckApp")
+        :add("disableTourBoxAndLaunchTourBoxConsole")
         :whenActivated(function()
-            local apps = applicationsForBundleID(LD_BUNDLE_ID)
+            mod.enabled(false)
+            launchOrFocusByBundleID(TOURBOX_CONSOLE_BUNDLE_ID)
+        end)
+        :groupedBy("commandPost")
+        :image(tourBoxIcon)
+        :titled(i18n("disableTourBoxAndLaunchTourBoxConsole"))
+
+    global
+        :add("enableTourBoxSupportQuitTourBoxConsole")
+        :whenActivated(function()
+            local apps = applicationsForBundleID(TOURBOX_CONSOLE_BUNDLE_ID)
             if apps then
                 for _, app in pairs(apps) do
                     app:kill9()
@@ -532,8 +632,8 @@ function plugin.init(deps)
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
-    --]]
+        :image(tourBoxIcon)
+        :titled(i18n("enableTourBoxSupportQuitTourBoxConsole"))
 
     --------------------------------------------------------------------------------
     -- Connect to the TourBox:
@@ -548,21 +648,26 @@ function plugin.init(deps)
     actionmanager.addHandler("global_tourbox_banks")
         :onChoices(function(choices)
             for i=1, numberOfBanks do
-                choices:add(i18n("tourBox") .. " " .. i18n("bank") .. " " .. tostring(i))
-                    :subText(i18n("loupedeckCTBankDescription"))
+                choices
+                    :add(i18n("tourBox") .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n("tourBoxBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(tourBoxIcon)
             end
 
-            choices:add(i18n("next") .. " " .. i18n("tourBox") .. " " .. i18n("bank"))
-                :subText(i18n("loupedeckCTBankDescription"))
+            choices
+                :add(i18n("next") .. " " .. i18n("tourBox") .. " " .. i18n("bank"))
+                :subText(i18n("tourBoxBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(tourBoxIcon)
 
             choices:add(i18n("previous") .. " " .. i18n("tourBox") .. " " .. i18n("bank"))
-                :subText(i18n("loupedeckCTBankDescription"))
+                :subText(i18n("tourBoxBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(tourBoxIcon)
 
             return choices
         end)
@@ -620,11 +725,24 @@ function plugin.init(deps)
 
                 mod.activeBanks(activeBanks)
 
-                mod.refresh()
+                --------------------------------------------------------------------------------
+                -- Reset any timers:
+                --------------------------------------------------------------------------------
+                mod.resetTimers()
 
-                items = mod.items() -- Reload items
-                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-                displayNotification(i18n("tourBox") .. " " .. i18n("bank") .. ": " .. label)
+                --------------------------------------------------------------------------------
+                -- Display a notification if enabled:
+                --------------------------------------------------------------------------------
+                if mod.displayMessageWhenChangingBanks() then
+                    local newBank = activeBanks[bundleID]
+                    items = mod.items() -- Reload items
+                    local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"]
+                    if label then
+                        displayNotification(label)
+                    else
+                        displayNotification(i18n("tourBox") .. " " .. i18n("bank") .. ": " .. newBank)
+                    end
+                end
             end
         end)
         :onActionId(function(action) return "tourBoxBank" .. action.id end)

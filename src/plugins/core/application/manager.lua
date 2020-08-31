@@ -85,6 +85,7 @@ function mod.defaultSearchConsoleToolbar()
         global_midibanks                = { path = iconPath .. "midibank.png",          priority = 57},
         global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 58},
         global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 59},
+        global_tourbox_banks            = { path = iconPath .. "tourboxbank.png",       priority = 60},
     }
 end
 

@@ -230,11 +230,11 @@ local function updateUI(params)
     local leftTopAction = selectedControlType and selectedControlType.leftTopAction and selectedControlType.leftTopAction.actionTitle or ""
     local leftUpAction = selectedControlType and selectedControlType.leftUpAction and selectedControlType.leftUpAction.actionTitle or ""
     local pressAction = selectedControlType and selectedControlType.pressAction and selectedControlType.pressAction.actionTitle or ""
-    local pressActionRepeat = selectedControlType and selectedControlType.pressActionRepeat or false
+    local pressShortAction = selectedControlType and selectedControlType.pressShortAction and selectedControlType.pressShortAction.actionTitle or ""
     local pressSideAction = selectedControlType and selectedControlType.pressSideAction and selectedControlType.pressSideAction.actionTitle or ""
-    local pressSideActionRepeat = selectedControlType and selectedControlType.pressSideActionRepeat or false
     local pressTopAction = selectedControlType and selectedControlType.pressTopAction and selectedControlType.pressTopAction.actionTitle or ""
     local releaseAction = selectedControlType and selectedControlType.releaseAction and selectedControlType.releaseAction.actionTitle or ""
+    local releaseShortAction = selectedControlType and selectedControlType.releaseShortAction and selectedControlType.releaseShortAction.actionTitle or ""
     local releaseSideAction = selectedControlType and selectedControlType.releaseSideAction and selectedControlType.releaseSideAction.actionTitle or ""
     local releaseTopAction = selectedControlType and selectedControlType.releaseTopAction and selectedControlType.releaseTopAction.actionTitle or ""
     local rightAction = selectedControlType and selectedControlType.rightAction and selectedControlType.rightAction.actionTitle or ""
@@ -248,15 +248,25 @@ local function updateUI(params)
     local rightUpAction = selectedControlType and selectedControlType.rightUpAction and selectedControlType.rightUpAction.actionTitle or ""
 
     local doubleClickPressActionRepeat = selectedControlType and selectedControlType.doubleClickPressActionRepeat or false
+    local pressActionRepeat = selectedControlType and selectedControlType.pressActionRepeat or false
+    local pressSideActionRepeat = selectedControlType and selectedControlType.pressSideActionRepeat or false
+    local pressTopActionRepeat = selectedControlType and selectedControlType.pressTopActionRepeat or false
+    local pressTallActionRepeat = selectedControlType and selectedControlType.pressTallActionRepeat or false
+
 
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
     injectScript([[
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
-        changeCheckedByID('doubleClickPressActionRepeat', ]] .. tostring(doubleClickPressActionRepeat) .. [[);
+
         changeCheckedByID('ignore', ]] .. tostring(ignore) .. [[);
+
+        changeCheckedByID('doubleClickPressActionRepeat', ]] .. tostring(doubleClickPressActionRepeat) .. [[);
         changeCheckedByID('pressActionRepeat', ]] .. tostring(pressActionRepeat) .. [[);
         changeCheckedByID('pressSideActionRepeat', ]] .. tostring(pressSideActionRepeat) .. [[);
+        changeCheckedByID('pressTallActionRepeat', ]] .. tostring(pressTallActionRepeat) .. [[);
+        changeCheckedByID('pressTopActionRepeat', ]] .. tostring(pressTopActionRepeat) .. [[);
+
         changeValueByID('doubleClickPressAction', `]] .. escapeTilda(doubleClickPressAction) .. [[`);
         changeValueByID('doubleClickReleaseAction', `]] .. escapeTilda(doubleClickReleaseAction) .. [[`);
         changeValueByID('leftAction', `]] .. escapeTilda(leftAction) .. [[`);
@@ -269,9 +279,11 @@ local function updateUI(params)
         changeValueByID('leftTopAction', `]] .. escapeTilda(leftTopAction) .. [[`);
         changeValueByID('leftUpAction', `]] .. escapeTilda(leftUpAction) .. [[`);
         changeValueByID('pressAction', `]] .. escapeTilda(pressAction) .. [[`);
+        changeValueByID('pressShortAction', `]] .. escapeTilda(pressShortAction) .. [[`);
         changeValueByID('pressSideAction', `]] .. escapeTilda(pressSideAction) .. [[`);
         changeValueByID('pressTopAction', `]] .. escapeTilda(pressTopAction) .. [[`);
         changeValueByID('releaseAction', `]] .. escapeTilda(releaseAction) .. [[`);
+        changeValueByID('releaseShortAction', `]] .. escapeTilda(releaseShortAction) .. [[`);
         changeValueByID('releaseSideAction', `]] .. escapeTilda(releaseSideAction) .. [[`);
         changeValueByID('releaseTopAction', `]] .. escapeTilda(releaseTopAction) .. [[`);
         changeValueByID('rightAction', `]] .. escapeTilda(rightAction) .. [[`);
@@ -283,6 +295,7 @@ local function updateUI(params)
         changeValueByID('rightTallAction', `]] .. escapeTilda(rightTallAction) .. [[`);
         changeValueByID('rightTopAction', `]] .. escapeTilda(rightTopAction) .. [[`);
         changeValueByID('rightUpAction', `]] .. escapeTilda(rightUpAction) .. [[`);
+
         updateIgnoreVisibility();
     ]])
 end
@@ -915,10 +928,10 @@ function plugin.init(deps, env)
         label           = i18n("tourBox"),
         image           = imageFromPath(env:pathToAbsolute("/images/TourBox.icns")),
         tooltip         = i18n("tourBox"),
-        height          = 1040,
+        height          = 1060,
     })
-        :addHeading(6, i18n("tourBox"))
-        :addCheckbox(7.1,
+        :addHeading(1, i18n("tourBox"))
+        :addCheckbox(2,
             {
                 label       = i18n("enableTourBoxSupport"),
                 checked     = mod.enabled,
@@ -927,7 +940,7 @@ function plugin.init(deps, env)
                 end,
             }
         )
-        :addCheckbox(10,
+        :addCheckbox(3,
             {
                 label       = i18n("automaticallySwitchApplications"),
                 checked     = mod.automaticallySwitchApplications,
@@ -936,9 +949,16 @@ function plugin.init(deps, env)
                 end,
             }
         )
-        :addParagraph(12, html.span {class="tip"} (html(i18n("tourBoxRequirementsTip"), false) ) .. "\n\n")
-        :addParagraph(13, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
-        :addContent(14, generateContent, false)
+        :addCheckbox(4,
+            {
+                label       = i18n("displayMessageWhenChangingBanks"),
+                checked     = mod._tourboxManager.displayMessageWhenChangingBanks,
+                onchange    = function(_, params) mod._tourboxManager.displayMessageWhenChangingBanks(params.checked) end,
+            }
+        )
+        :addParagraph(5, html.span {class="tip"} (html(i18n("tourBoxRequirementsTip"), false) ) .. "\n\n")
+        :addParagraph(6, html.span {class="tip"} (html(i18n("tourBoxAppTip"), false) ) .. "\n\n")
+        :addContent(7, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

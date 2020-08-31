@@ -9,6 +9,7 @@ local log                   = require "hs.logger".new "midiManager"
 local application           = require "hs.application"
 local applicationwatcher    = require "hs.application.watcher"
 local fnutils               = require "hs.fnutils"
+local image                 = require "hs.image"
 local midi                  = require "hs.midi"
 local timer                 = require "hs.timer"
 
@@ -24,6 +25,7 @@ local controls              = require "controls"
 local displayNotification   = dialog.displayNotification
 local doAfter               = timer.doAfter
 local doesFileExist         = tools.doesFileExist
+local imageFromPath         = image.imageFromPath
 
 local mod = {}
 
@@ -903,7 +905,10 @@ local plugin = {
     }
 }
 
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+    local ldIcon = imageFromPath(env:pathToAbsolute("/../../loupedeck/prefs/images/loupedeck.icns"))
+    local midiIcon = imageFromPath(env:pathToAbsolute("/../prefs/images/AudioMIDISetup.icns"))
 
     --------------------------------------------------------------------------------
     -- Watch for application changes for AudioSwift workaround:
@@ -1034,6 +1039,7 @@ function plugin.init(deps)
             mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
+        :image(midiIcon)
 
     --------------------------------------------------------------------------------
     -- Setup MIDI Bank Actions:
@@ -1047,17 +1053,20 @@ function plugin.init(deps)
                     :subText(i18n("midiBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(midiIcon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("midi") .. " " .. i18n("bank"))
                 :subText(i18n("midiBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(midiIcon)
 
             choices:add(i18n("previous") .. " " .. i18n("midi") .. " " .. i18n("bank"))
                 :subText(i18n("midiBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(midiIcon)
 
             return choices
         end)
@@ -1143,17 +1152,20 @@ function plugin.init(deps)
                     :subText(i18n("loupedeckBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(ldIcon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("loupedeck") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(ldIcon)
 
             choices:add(i18n("previous") .. " " .. i18n("loupedeck") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(ldIcon)
 
             return choices
         end)
@@ -1221,17 +1233,20 @@ function plugin.init(deps)
                     :subText(i18n("loupedeckPlusBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(ldIcon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckPlusBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(ldIcon)
 
             choices:add(i18n("previous") .. " " .. i18n("loupedeckPlus") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckPlusBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(ldIcon)
 
             return choices
         end)
@@ -1292,10 +1307,11 @@ function plugin.init(deps)
     return mod
 end
 
-function plugin.postInit(deps)
+function plugin.postInit(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Actions:
     --------------------------------------------------------------------------------
+    local midiIcon = imageFromPath(env:pathToAbsolute("/../prefs/images/AudioMIDISetup.icns"))
     mod._handlers = {}
     local controlGroups = controls.allGroups()
     for _, groupID in pairs(controlGroups) do
@@ -1319,6 +1335,7 @@ function plugin.postInit(deps)
                             :subText(params.subText)
                             :params(action)
                             :id(id)
+                            :image(midiIcon)
                     end
 
                 end

@@ -80,6 +80,7 @@
 		setStyleDisplayByClass("knob", "none");
 		setStyleDisplayByClass("leftKnob", "none");
 		setStyleDisplayByClass("pressAction", "none");
+		setStyleDisplayByClass("pressShortAction", "none");
 		setStyleDisplayByClass("pressSideAction", "none");
 		setStyleDisplayByClass("pressTallAction", "none");
 		setStyleDisplayByClass("pressTopAction", "none");
@@ -123,6 +124,13 @@
 		// -------------------------------------------------
 		if (controlType == "c1") {
 			setStyleDisplayByClass("pressTallAction", "table");
+		}
+
+		// -------------------------------------------------
+		// SUPPORTS SHORT MODIFIER (BUTTON):
+		// -------------------------------------------------
+		if (controlType == "tall") {
+			setStyleDisplayByClass("pressShortAction", "table");
 		}
 
 		// -------------------------------------------------
@@ -750,7 +758,7 @@
 						<td width="229px">
 							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressTopAction')">{{ i18n("select") }}</a>
 							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressTopAction')">{{ i18n("clear") }}</a>
-							<input type="checkbox" value="true" id="pressTallActionRepeat" onchange="repeatCheckbox(this, 'pressTopAction')" style="margin-left:55px;">
+							<input type="checkbox" value="true" id="pressTopActionRepeat" onchange="repeatCheckbox(this, 'pressTopAction')" style="margin-left:55px;">
 							<label for="pressTallActionRepeat"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
 						</td>
 						<td width="229px">
@@ -759,6 +767,29 @@
 						</td>
 					</tr>
 					<tr class="pressTopAction"><td></br></td></tr>
+
+					<!-- PRESS & RELEASE ACTION (SHORT MODIFIER): -->
+					<tr class="pressShortAction">
+						<th width="229px">{{ i18n("pressActionShortModifier") }}:</th>
+						<th width="229px">{{ i18n("releaseActionShortModifier") }}:</th>
+					</tr>
+					<tr class="pressShortAction">
+						<td width="229px"><input type="text" id="pressShortAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+						<td width="229px"><input type="text" id="releaseShortAction" class="tourboxActionTextbox" value="" disabled="" placeholder="{{ i18n("none") }}"></td>
+					</tr>
+					<tr class="pressShortAction">
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('pressShortAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('pressShortAction')">{{ i18n("clear") }}</a>
+							<input type="checkbox" value="true" id="pressShortActionRepeat" onchange="repeatCheckbox(this, 'pressShortAction')" style="margin-left:55px;">
+							<label for="pressTallActionRepeat"><span style="font-weight:normal; font-size:13px; padding-left:5px;">{{ i18n("repeat") }}</span></label>
+						</td>
+						<td width="229px">
+							<a href="#" class="button tourboxActionButton" onclick="selectButton('releaseShortAction')">{{ i18n("select") }}</a>
+							<a href="#" class="button tourboxActionButton" onclick="clearButton('releaseShortAction')">{{ i18n("clear") }}</a>
+						</td>
+					</tr>
+					<tr class="pressShortAction"><td></br></td></tr>
 
 					<!-- KNOB LEFT & RIGHT: -->
 					<tr class="knob">

@@ -57,13 +57,12 @@ end
 -- Returns:
 --  * None
 local function shiftPuck(puck, property, amount)
-    fcp.colorBoard:show()
-    if not puck:select():isShowing() then
-        playErrorSound()
-        return false
+    if puck:isShowing() then
+        local value = property()
+        if value ~= nil then property(value + amount) end
+    else
+        puck:show()
     end
-    local value = property()
-    if value ~= nil then property(value + amount) end
 end
 
 --- plugins.finalcutpro.timeline.colorboard.stopShiftingPuck() -> none
