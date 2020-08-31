@@ -188,6 +188,8 @@ local plugin = {
 
 function plugin.init(deps, env)
 
+    local icon = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns")
+
     mod._manager = deps.manager
 
     local actionmanager = deps.actionmanager
@@ -196,7 +198,7 @@ function plugin.init(deps, env)
         priority    = 2049,
         id          = "scripting",
         label       = i18n("scripting"),
-        image       = imageFromPath(config.bundledPluginsPath .. "/core/preferences/panels/images/SEScriptEditorX.icns"),
+        image       = icon,
         tooltip     = i18n("scripting"),
         height      = 660,
     })
@@ -377,6 +379,7 @@ function plugin.init(deps, env)
                         id = label,
                     })
                     :id("global_snippets_" .. label)
+                    :image(icon)
             end
         end)
         :onExecute(function(action)

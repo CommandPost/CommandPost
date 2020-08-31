@@ -24,6 +24,7 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
+local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local mergeTable                = tools.mergeTable
@@ -786,6 +787,9 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/images/loupedeck.icns"))
+
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
@@ -811,6 +815,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckPlusSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckPlus")
@@ -819,6 +824,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckPlusSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckPlusandLaunchLoupedeckApp")
@@ -828,6 +834,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckPlusSupportAndLaunchLoupedeckApp"))
+        :image(icon)
 
     global
         :add("enableLoupedeckPlusandKillLoupedeckApp")
@@ -842,6 +849,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckPlusSupportQuitLoupedeckApp"))
+        :image(icon)
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
@@ -850,7 +858,7 @@ function plugin.init(deps, env)
         priority        = 2033,
         id              = "loupedeckplus",
         label           = i18n("loupedeckPlus"),
-        image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
+        image           = icon,
         tooltip         = i18n("loupedeckPlus"),
         height          = 910,
     })

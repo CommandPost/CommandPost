@@ -1386,7 +1386,7 @@ function plugin.init(deps, env)
         priority        = 2032,
         id              = "streamdeck",
         label           = i18n("streamdeckPanelLabel"),
-        image           = imageFromPath(tools.iconFallback(env:pathToAbsolute("images/streamdeck.icns"))),
+        image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
         height          = 880,
     })

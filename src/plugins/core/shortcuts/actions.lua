@@ -7,16 +7,19 @@ local require           = require
 local log               = require "hs.logger".new "actions"
 
 local eventtap          = require "hs.eventtap"
+local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local keycodes          = require "hs.keycodes"
 local osascript         = require "hs.osascript"
 
+local config            = require "cp.config"
 local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 
 local applescript       = osascript.applescript
 local keyStroke         = tools.keyStroke
 local pressSystemKey    = tools.pressSystemKey
+local imageFromPath     = image.imageFromPath
 
 local event             = eventtap.event
 local newKeyEvent       = event.newKeyEvent
@@ -32,6 +35,8 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/Keyboard.icns")
 
     local holdKey = function(key, isDown)
         applescript([[tell application "System Events" to ]] .. key .. [[ key ]] .. (isDown and "down" or "up"))
@@ -121,6 +126,7 @@ function plugin.init(deps)
                             id = keycode,
                         })
                         :id("global_shortcuts_" .. keycode)
+                        :image(icon)
 
                     --------------------------------------------------------------------------------
                     -- With Modifier(s):
@@ -135,6 +141,7 @@ function plugin.init(deps)
                                 id = modifier.label .. "_" .. keycode,
                             })
                             :id("global_shortcuts_" .. modifier.label .. "_" .. keycode)
+                            :image(icon)
                     end
                 end
             end
@@ -150,6 +157,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_pressControl"
             })
             :id("global_shortcuts_pressControl")
+            :image(icon)
 
         choices
             :add(i18n("release") .. " CONTROL " .. i18n("modifierKey"))
@@ -159,6 +167,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_releaseControl"
             })
             :id("global_shortcuts_releaseControl")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Press & Hold OPTION:
@@ -171,6 +180,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_pressOption"
             })
             :id("global_shortcuts_pressOption")
+            :image(icon)
 
         choices
             :add(i18n("release") .. " OPTION " .. i18n("modifierKey"))
@@ -180,6 +190,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_releaseOption"
             })
             :id("global_shortcuts_releaseOption")
+            :image(icon)
 
 
         --------------------------------------------------------------------------------
@@ -193,6 +204,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_pressCommand"
             })
             :id("global_shortcuts_pressCommand")
+            :image(icon)
 
         choices
             :add(i18n("release") .. " COMMAND " .. i18n("modifierKey"))
@@ -202,6 +214,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_releaseCommand"
             })
             :id("global_shortcuts_releaseCommand")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Press & Hold SHIFT:
@@ -214,6 +227,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_pressShift"
             })
             :id("global_shortcuts_pressShift")
+            :image(icon)
 
         choices
             :add(i18n("release") .. " SHIFT " .. i18n("modifierKey"))
@@ -223,6 +237,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_releaseShift"
             })
             :id("global_shortcuts_releaseShift")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Press & Hold TILDA:
@@ -235,6 +250,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_pressTilda"
             })
             :id("global_shortcuts_pressTilda")
+            :image(icon)
 
         choices
             :add(i18n("release") .. " TILDA")
@@ -244,6 +260,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_releaseTilda"
             })
             :id("global_shortcuts_releaseTilda")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Play:
@@ -270,6 +287,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_next"
             })
             :id("global_shortcuts_next")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Previous:
@@ -283,6 +301,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_previous"
             })
             :id("global_shortcuts_previous")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Fast:
@@ -296,6 +315,7 @@ function plugin.init(deps)
                 id = "global_shortcuts_fast"
             })
             :id("global_shortcuts_fast")
+            :image(icon)
 
         --------------------------------------------------------------------------------
         -- Rewind:
@@ -310,6 +330,7 @@ function plugin.init(deps)
 
             })
             :id("global_shortcuts_rewind")
+            :image(icon)
 
         end)
         :onExecute(function(action)

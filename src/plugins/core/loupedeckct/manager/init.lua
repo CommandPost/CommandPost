@@ -33,6 +33,7 @@ local doesFileExist             = tools.doesFileExist
 local doEvery                   = timer.doEvery
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
+local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
@@ -110,7 +111,7 @@ local cachedLeftSideScreen = ""
 -- The last screen data sent.
 local cachedRightSideScreen = ""
 
--- cachedTouchScreenButtonValues -> string
+-- cachedBundleID -> string
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
@@ -1111,7 +1112,10 @@ local plugin = {
     }
 }
 
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/loupedeck.icns"))
+
     --------------------------------------------------------------------------------
     -- Refresh mod.items:
     --------------------------------------------------------------------------------
@@ -1133,6 +1137,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckCTSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckCT")
@@ -1141,6 +1146,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckCTSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckCTandLaunchLoupedeckApp")
@@ -1150,6 +1156,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckCTSupportAndLaunchLoupedeckApp"))
+        :image(icon)
 
     global
         :add("enableLoupedeckCTandKillLoupedeckApp")
@@ -1164,6 +1171,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
+        :image(icon)
 
     --------------------------------------------------------------------------------
     -- Setup the Loupedeck CT callback:
@@ -1203,17 +1211,20 @@ function plugin.init(deps)
                     :subText(i18n("loupedeckCTBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(icon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckCTBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(icon)
 
             choices:add(i18n("previous") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckCTBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(icon)
 
             return choices
         end)

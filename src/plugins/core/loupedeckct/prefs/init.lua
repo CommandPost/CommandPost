@@ -28,6 +28,7 @@ local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local execute                   = os.execute
 local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
@@ -2230,7 +2231,7 @@ function plugin.init(deps, env)
         priority        = 2033.1,
         id              = "loupedeckct",
         label           = "Loupedeck CT",
-        image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
         height          = 1055,
     })
