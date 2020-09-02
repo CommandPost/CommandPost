@@ -1,1 +1,6 @@
 0.8.3alpha
+with added debugging code including:
+https://github.com/asmagill/hs._asm.undocumented.touchbar/blob/master/bar.m#L56-L108
+
+discussed here:
+https://github.com/asmagill/hs._asm.undocumented.touchbar/issues/1#issuecomment-685320646
