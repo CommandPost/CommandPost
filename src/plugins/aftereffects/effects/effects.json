@@ -1,0 +1,5137 @@
+[
+   {
+      "displayName":"Cryptomatte",
+      "matchName":"Cryptomatte",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"CC Ball Action",
+      "matchName":"CC Ball Action",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Bend It",
+      "matchName":"CC Bend It",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Bender",
+      "matchName":"CC Bender",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Blobbylize",
+      "matchName":"CC Blobbylize",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Block Load",
+      "matchName":"CS BlockLoad",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Bubbles",
+      "matchName":"CC Bubbles",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Burn Film",
+      "matchName":"CC Burn Film",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Color Neutralizer",
+      "matchName":"CS Color Neutralizer",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"CC Color Offset",
+      "matchName":"CC Color Offset",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"CC Composite",
+      "matchName":"CC Composite",
+      "category":"Channel"
+   },
+   {
+      "displayName":"CC Cross Blur",
+      "matchName":"CS CrossBlur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"CC Cylinder",
+      "matchName":"CC Cylinder",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"CC Drizzle",
+      "matchName":"CC Drizzle",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Environment",
+      "matchName":"CC Environment",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"CC Flo Motion",
+      "matchName":"CC Flo Motion",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Force Motion Blur",
+      "matchName":"CC Force Motion Blur",
+      "category":"Time"
+   },
+   {
+      "displayName":"CC Glass",
+      "matchName":"CC Glass",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Glass Wipe",
+      "matchName":"CC Glass Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Glue Gun",
+      "matchName":"CC Glue Gun",
+      "category":"Generate"
+   },
+   {
+      "displayName":"CC Grid Wipe",
+      "matchName":"CC Grid Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Griddler",
+      "matchName":"CC Griddler",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Hair",
+      "matchName":"CC Hair",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC HexTile",
+      "matchName":"CS HexTile",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Image Wipe",
+      "matchName":"CC Image Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Jaws",
+      "matchName":"CC Jaws",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Kaleida",
+      "matchName":"CC Kaleida",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Kernel",
+      "matchName":"CS Kernel",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"CC Lens",
+      "matchName":"CC Lens",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Light Burst 2.5",
+      "matchName":"CC Light Burst 2.5",
+      "category":"Generate"
+   },
+   {
+      "displayName":"CC Light Rays",
+      "matchName":"CC Light Rays",
+      "category":"Generate"
+   },
+   {
+      "displayName":"CC Light Sweep",
+      "matchName":"CC Light Sweep",
+      "category":"Generate"
+   },
+   {
+      "displayName":"CC Light Wipe",
+      "matchName":"CC Light Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Line Sweep",
+      "matchName":"CS LineSweep",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Mr. Mercury",
+      "matchName":"CC Mr. Mercury",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Mr. Smoothie",
+      "matchName":"CC Mr. Smoothie",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Overbrights",
+      "matchName":"CC Overbrights",
+      "category":"Utility"
+   },
+   {
+      "displayName":"CC PS Classic (obsolete)",
+      "matchName":"CC PS Classic",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC PS LE Classic (obsolete)",
+      "matchName":"CC PS LE Classic",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC Page Turn",
+      "matchName":"CC Page Turn",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Particle Systems II",
+      "matchName":"CC Particle Systems II",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Particle World",
+      "matchName":"CC Particle World",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Pixel Polly",
+      "matchName":"CC Pixel Polly",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Plastic",
+      "matchName":"CC Plastic",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Power Pin",
+      "matchName":"CC Power Pin",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Radial Blur",
+      "matchName":"CC Radial Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"CC Radial Fast Blur",
+      "matchName":"CC Radial Fast Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"CC Radial ScaleWipe",
+      "matchName":"CC Radial ScaleWipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Rain",
+      "matchName":"CC Rain",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC Rainfall",
+      "matchName":"CSRainfall",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC RepeTile",
+      "matchName":"CC RepeTile",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Ripple Pulse",
+      "matchName":"CC Ripple Pulse",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Scale Wipe",
+      "matchName":"CC Scale Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Scatterize",
+      "matchName":"CC Scatterize",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Simple Wire Removal",
+      "matchName":"CC Simple Wire Removal",
+      "category":"Keying"
+   },
+   {
+      "displayName":"CC Slant",
+      "matchName":"CC Slant",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Smear",
+      "matchName":"CC Smear",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Snow",
+      "matchName":"CC Snow",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC Snowfall",
+      "matchName":"CSSnowfall",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Sphere",
+      "matchName":"CC Sphere",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"CC Split",
+      "matchName":"CC Split",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Split 2",
+      "matchName":"CC Split 2",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Spotlight",
+      "matchName":"CC Spotlight",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"CC Star Burst",
+      "matchName":"CC Star Burst",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"CC Threads",
+      "matchName":"CS Threads",
+      "category":"Generate"
+   },
+   {
+      "displayName":"CC Threshold",
+      "matchName":"CC Threshold",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Threshold RGB",
+      "matchName":"CC Threshold RGB",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC Tiler",
+      "matchName":"CC Tiler",
+      "category":"Distort"
+   },
+   {
+      "displayName":"CC Time Blend",
+      "matchName":"CC Time Blend",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC Time Blend FX",
+      "matchName":"CC Time Blend FX",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"CC Toner",
+      "matchName":"CC Toner",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"CC Twister",
+      "matchName":"CC Twister",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Vector Blur",
+      "matchName":"CC Vector Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"CC Vignette",
+      "matchName":"CS Vignette",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"CC WarpoMatic",
+      "matchName":"CC WarpoMatic",
+      "category":"Transition"
+   },
+   {
+      "displayName":"CC Wide Time",
+      "matchName":"CC Wide Time",
+      "category":"Time"
+   },
+   {
+      "displayName":"EXtractoR",
+      "matchName":"EXtractoR",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"IDentifier",
+      "matchName":"IDentifier",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Keylight (1.2)",
+      "matchName":"Keylight 906",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Mocha AE",
+      "matchName":"mochaAECC",
+      "category":"Boris FX Mocha"
+   },
+   {
+      "displayName":"mocha shape",
+      "matchName":"ISL MochaShapeImporter",
+      "category":"Matte"
+   },
+   {
+      "displayName":"Lockdown",
+      "matchName":"Vranos Lockdown",
+      "category":"Vranos"
+   },
+   {
+      "displayName":"CINEWARE",
+      "matchName":"CINEMA 4D Effect",
+      "category":"CINEMA 4D"
+   },
+   {
+      "displayName":"Nodes 3",
+      "matchName":"Pz6K7RgmSi+pmrdYNlvDzQ==",
+      "category":"Yanobox"
+   },
+   {
+      "displayName":"Caption Burner",
+      "matchName":"umYRL39QTIyMx2qjoz0eYg==",
+      "category":"Caption Burner"
+   },
+   {
+      "displayName":"Fast Makeup Artist",
+      "matchName":"BC7E4steSYKMYFDE4jwtmg==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Zombie Makeup Artist",
+      "matchName":"Wek/5jWmQPSlOd5+Q7ia0A==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Makeup Artist",
+      "matchName":"fGIltCX3Se2GBykV8VVBtA==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Perfect Skin",
+      "matchName":"oExJqpydT82aUEB0uT2Oig==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Cover Up II",
+      "matchName":"sOlmlxPfS/SHECKeLODl5Q==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Cover Up",
+      "matchName":"t/lXc/67R7GVluRUWIiS1w==",
+      "category":"Sheffield Makeup Artist 3"
+   },
+   {
+      "displayName":"Nodes 2",
+      "matchName":"4ta0GCz0TxqncE8P4jFVZA==",
+      "category":"Yanobox"
+   },
+   {
+      "displayName":"Blur Dissolve",
+      "matchName":"BY+mVnslS8CwPR2EjZBLwQ==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Flip",
+      "matchName":"C3qkL0BrQT6d+WkO9nslpg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Mod",
+      "matchName":"KzZXfIZgQkOK7n10LEm/Dw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Zoom",
+      "matchName":"Mb2QIIMeS6+5vlQw6wtBLQ==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Accordion",
+      "matchName":"OjW8Q5oHS7ugcgg8b94dXg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Origami",
+      "matchName":"Q1Q/R3lsSG2S0MbwDjiMvA==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Blocks Dissolve",
+      "matchName":"UrKCuy5VTVuzqVN427J8Xg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Glow Dissolve",
+      "matchName":"XNaTZAIbRDSfiTerKQ/5MQ==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Channel Switch",
+      "matchName":"X+pH5AkgSB686WQNvlz9CQ==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Copy Machine",
+      "matchName":"YI9lp/HBQdOvIm0y7jXI8g==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Pixelate",
+      "matchName":"ksn8GmgAQfKE/gxk6EWCig==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Slice",
+      "matchName":"mIJK2e/uTlumINTUSdQhgg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Scatter",
+      "matchName":"nv9j51M0RKywBn23eSkMZw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Doorway",
+      "matchName":"pH1/veEVR3W46X9cIm4Ihw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Defocus Wipe",
+      "matchName":"qKfapxZnT5SwZaqaNf2m+Q==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Filmic Dissolve",
+      "matchName":"r8EBJ4r3QHaOdXlZvstTKw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Flash",
+      "matchName":"shX8gHPeR8+72l6jQrtXYg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Push",
+      "matchName":"taHOh2YYS0Kie9os+nBLAg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Whoosh",
+      "matchName":"tupuVZr5S9W9EPhxsQ8bdw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Genie",
+      "matchName":"t4baebMDSPC4fhvfVq9JNg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Dissolve",
+      "matchName":"t7lflWIYR9CdvbUoyaUQDg==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Reprographics",
+      "matchName":"1If+wXZZTkqbXY6VVpbA3Q==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Cube",
+      "matchName":"6ftq6E2aSyuF3V6pVd/Pgw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Radial Wipe",
+      "matchName":"8kA9g5eQR2SeCocfx2hPaw==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Twirl",
+      "matchName":"9yTvD5G7Ry++JimkNOo49w==",
+      "category":"Photo Montage"
+   },
+   {
+      "displayName":"Mosaic",
+      "matchName":"f4qZEoeLROulkNVO4s085g==",
+      "category":"Yanobox"
+   },
+   {
+      "displayName":"Rolling Credits",
+      "matchName":"Pr4ehg/KTby5V8MBtHqJtA==",
+      "category":"SUGARfx Rolling Credits"
+   },
+   {
+      "displayName":"Rolling Credits",
+      "matchName":"lhyemqdxRHybwTK1356bgA==",
+      "category":"SUGARfx Rolling Credits"
+   },
+   {
+      "displayName":"Motype",
+      "matchName":"A24TP1flTz+dxfA/aPlhEg==",
+      "category":"Yanobox"
+   },
+   {
+      "displayName":"Motype (Obsolete)",
+      "matchName":"LxbDXPKqSXu88tX1uGIZPA==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Motype (Obsolete)",
+      "matchName":"qBdiVSTFTRu7eU9NNn6tyw==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Hawaiki AutoSplit Classic",
+      "matchName":"B9I/VKGsQC6UylYjZY+qyA==",
+      "category":"Hawaiki AutoSplit"
+   },
+   {
+      "displayName":"Hawaiki AutoSplit Extended",
+      "matchName":"GxGcNpDrQiGf6DUQ6pXy0g==",
+      "category":"Hawaiki AutoSplit"
+   },
+   {
+      "displayName":"Organic Dissolve",
+      "matchName":"ABu3+VEaQQGYCpu5ojnXKA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Hexagon Wipe",
+      "matchName":"AGYrKdjJS56kgG7wJKVYaw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Slideshow",
+      "matchName":"As6eLhTUTXG5bplwjwnVAg==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Text Dissolve",
+      "matchName":"BarQ6ZBjR4CG33X07ly0QQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Glow Dissolve",
+      "matchName":"BxpJ+lMGTh+DTIbQaQs+bQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Whoosh",
+      "matchName":"B72htn64QbuaAIQVHeTHKg==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Dots Pattern",
+      "matchName":"CoBGqIZXRWK5K2l4oId7dA==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Threshold RGB",
+      "matchName":"DKL6Odh+SxCjsuOAJh4xTg==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Hexagons",
+      "matchName":"DxXwnSkWR4C7HABrLcAXaA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Sharpen Luminance",
+      "matchName":"DyhMZ7yYQGi0t9GfG3p1/w==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Blur Edges",
+      "matchName":"EBx9V7MCR1KPm/zwxtGVbQ==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Artist Sketch Color",
+      "matchName":"ETvEXVWHTnGavfandxBHVw==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Timecode (Obsolete)",
+      "matchName":"ErZAkWwHSDisnlsEoKQTwQ==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Soften Frame",
+      "matchName":"Ettkw0OWRHyYQ94m3pPF0w==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Random Close-Up",
+      "matchName":"EwvEmm0sRSOHxsEwZTHW4g==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Analog TV",
+      "matchName":"E5XWCiylQ1W7KKvi3VUeTw==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Blur Chroma",
+      "matchName":"Fujeczm0Q3yzp1ui6/CMWg==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Light Rays Edges",
+      "matchName":"F3G/eI+ITMa9Jo/H/oxfdw==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Depth Blur",
+      "matchName":"GA3yxBq7SfWVA+e76PFaqA==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Edge Work",
+      "matchName":"HQSUbcxURT2CAmQVUdMykg==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Twirl Wipe",
+      "matchName":"HgjrYNZ/Rk2aY3GPue00Sw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Rounded Rectangle",
+      "matchName":"Hq/tm5nETI+g+dPztnTa9w==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Emboss Text",
+      "matchName":"H1Uwx7epRE+SjdPSbFZ1OA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Flash",
+      "matchName":"IAG9gUTqQF6+csyL0awWLA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Lenticular Halo",
+      "matchName":"JTIM5l/GRWC5r/3okgoNtw==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Cartoon",
+      "matchName":"Jp93eaUSTDilvQfmLlVM0g==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Glow (Box-shaped)",
+      "matchName":"Jp+izmftSmahsVUHvrHq7Q==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Zebra",
+      "matchName":"J0+76b0nRIyxQDnGl1Xynw==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Perspective Reflection",
+      "matchName":"Km4XaNw5TN68PRxam21zqQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Threshold With Colors",
+      "matchName":"K53eBkY5QyqCDZlLASWkbw==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Zoom Dissolve",
+      "matchName":"LFopFlCsRpiaDPw3ZZKczA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Sun",
+      "matchName":"LbI8spKlQFaTmVle1sQSgQ==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Glow Edges",
+      "matchName":"LgOclUpOTFSjWmQNaoxW5Q==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Reflected Tile (Eightfold)",
+      "matchName":"LotKelRmRUKL9EPcKrkoDQ==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Replace Range",
+      "matchName":"MY9QsMgaSK+H8OVAbuFZYg==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Waves Wipe",
+      "matchName":"MdWwlgZrTj6UuqIa3BjBAQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Mask With Geometry",
+      "matchName":"NY1wWNm1QgSgvio2WhqiKQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Banding-free Gradient",
+      "matchName":"NjsL3chbTj6721gTxcpK1g==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Channel Geometry",
+      "matchName":"Ny1R/aoVTJGzPR8/IHeRxg==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Zoom Blur Chroma",
+      "matchName":"N0whfcsQRt29dHlmvUNU6A==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Blocks Dissolve",
+      "matchName":"N6qSSUYMTVe8kY7cEDlQpw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Blur RGB",
+      "matchName":"OGpQbN+HQmSvPnz2oHrZ3Q==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Flip",
+      "matchName":"OVwsE3krQXeFOGpyq5eZoQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Scanlines",
+      "matchName":"Os5cqdp2S6W6ZgBsr9u14Q==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Dot Screen",
+      "matchName":"OxLw+gv8QBq2wUllo7s6kw==",
+      "category":"FxFactory Pro Halftones"
+   },
+   {
+      "displayName":"Sharpen Chroma",
+      "matchName":"PJTOl08PSK+E+5atVRIolA==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Color Accent",
+      "matchName":"PO8xhjAIRliRQYzXLBNY0Q==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Pencil Sketch",
+      "matchName":"PzGg011wQEKV9v8Rbw/MtA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Spot Light (Single)",
+      "matchName":"P00qkerwSS+Gxls0y/iBWQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Circular Screen",
+      "matchName":"P+/YK+NOTR65YrF+nKq2sA==",
+      "category":"FxFactory Pro Halftones"
+   },
+   {
+      "displayName":"Frame Info",
+      "matchName":"QOi0U+XSQ5asPqw2yq9mFw==",
+      "category":"FxFactory Pro Video"
+   },
+   {
+      "displayName":"Rotated Tile (Sixfold)",
+      "matchName":"QrUF01dLQa+3f3wyoIyIOg==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Local Contrast",
+      "matchName":"Q0TzEZgbSLG5z4n2FbdgBw==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Color Fill",
+      "matchName":"Q8vs9rxERoK82K5+H3bppw==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Vibrance",
+      "matchName":"Q9BNxH3uSGOIl9oe0hBEcg==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Crystallize",
+      "matchName":"RXE1CXJdRfG810rqRn2JrQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"CMYK Halftone",
+      "matchName":"RzRQYMz5RwSpXTswiskL/A==",
+      "category":"FxFactory Pro Halftones"
+   },
+   {
+      "displayName":"Agent (Obsolete)",
+      "matchName":"R9tLGaarTjCfLm+StBgozg==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Paint Wipe",
+      "matchName":"S+jGxtOgRxmOO9NEnTDcxA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Circle Splash",
+      "matchName":"S/exmVWLSX+nSfBWJObaEQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Reflected Tile (Fourfold)",
+      "matchName":"TJb3arotTwmXoK4snvpTmA==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Glow (Disc-shaped)",
+      "matchName":"TxjInPleQv+zhOKN7YCFww==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Noise Reduction",
+      "matchName":"VC1EHpr4QrS2HNQ1oMd3Qw==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Timecode",
+      "matchName":"VGwdaUKtQt6/2xyN9tSlbQ==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Stars",
+      "matchName":"VQh2DRPLQkivsRnkpDFjOw==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Light Streaks",
+      "matchName":"Vd2cS6HITbaW3UXoyzjaDw==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Heat",
+      "matchName":"VuK/QbftT/GzgWZ4k4DRIg==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Dots",
+      "matchName":"V6VHPSfzRhqIWCee+is+0A==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Genie",
+      "matchName":"WDmTBsafTJ+EabE5e+K/Qw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Slice",
+      "matchName":"WYndkg+BRvO2WiyFvIZKuQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Mod",
+      "matchName":"W4hP0w6DSHC0EL8Sl517Bw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Clone (Obsolete)",
+      "matchName":"X5+k8svhQIOopjV9Zk2ThA==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Random Noise",
+      "matchName":"X8+2JTV4RpO/k8USSxRBQQ==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Doorway",
+      "matchName":"YqH9yVtfRUeU1QaXnOxc+A==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Origami (Triangle)",
+      "matchName":"Y3hD63vtRMKxZmHosLtApw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Chromatic Aberration",
+      "matchName":"ZGjqRQQqRdypCOlx3YyQ0g==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Neon Circles",
+      "matchName":"ZHDV99h4QZCWpBrizjXjYQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Film Process",
+      "matchName":"aHnhA4DMT0CHMhQYq0OLEw==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Rotated Tile (Fourfold)",
+      "matchName":"aQYZAboFQ+KRyZ0lATOsGw==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Blur Two Axes",
+      "matchName":"anGD31NKS5G3DuBEDChpPw==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Glow Text",
+      "matchName":"a0b1ph6hRkKk7OuGU/ZmLg==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Torus Lens",
+      "matchName":"bDcawCrqSxu+W7zgI48RjA==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Blur (Box-shaped)",
+      "matchName":"bI2cpmkSSzeI1buDGuKv2g==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Alpha Merger",
+      "matchName":"bWqpZ12eQZ6UZYYg25obPw==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Artist Sketch",
+      "matchName":"bn0iokRkTrynzWpe8cQobA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Hatched Screen",
+      "matchName":"b6S3RegwSw+o2rtx5qTlnA==",
+      "category":"FxFactory Pro Halftones"
+   },
+   {
+      "displayName":"Reflected Tile (Sixfold)",
+      "matchName":"cGtyy9N8TLeqMzH5ryiH9g==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Neon Edges",
+      "matchName":"cLLi8GBrRwykOtkVuEfbtQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Depth Blur (Obsolete)",
+      "matchName":"cNDFyXneRcmhzfyunhXFeQ==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Blur Dissolve",
+      "matchName":"c5MSvcdLQGOgpYJOtBSDFg==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Blur",
+      "matchName":"c+G8vlTHTJe0Xzv6/IM8Ug==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Light Rays",
+      "matchName":"dIEzvLp3SKC1RKamANdApA==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Pop Art",
+      "matchName":"dSCMTVxIQbW0zbCfe3E4Yg==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Circle",
+      "matchName":"d8DZFimmTZegmiHeKFjI5Q==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Stripes",
+      "matchName":"d+gSxeUwSOOhzCUyfn9rHw==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Free Distort",
+      "matchName":"eJm2rotvSCusw4v6v6VgSQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Three Color Gradient",
+      "matchName":"em8EhRamQ7utIeO2tbhllQ==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Videoconference (Obsolete)",
+      "matchName":"e4ZUkGsFRzCRFh1tsOg6Aw==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Cell Phone Browser",
+      "matchName":"fe+BoNBRSOK+hZhPyHg0fA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Camera Shake",
+      "matchName":"gC5TsLqtTcGo4J9kmzgIFg==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Clone",
+      "matchName":"gzQC3rGQTOi563evrmNDQQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Op Tile",
+      "matchName":"g19lKsKASmCp/osJgvIqXg==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Sharpen Edges",
+      "matchName":"hNxjthe1T8+MpJxO3QO5Wg==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Funhouse Mirror",
+      "matchName":"hhHlD6FmRkuEHi/F103TSw==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"RSS World News (Obsolete)",
+      "matchName":"hivcMYGES/OJDsioxP3cAw==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Triangle Tile",
+      "matchName":"h1pW4lGlTX20T13uTZbxrA==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Blur (Disc-shaped)",
+      "matchName":"iDOz8xb1R1W7VVZGmxlyRQ==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Vortex",
+      "matchName":"i0M2WkyGSRO/PWujhkEdKQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Bleach Bypass",
+      "matchName":"ja8G6+clTfWdQZtHeOVZyQ==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Crush Color",
+      "matchName":"jlF1K4HXRfef7lSfd3MA0w==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Videoconference",
+      "matchName":"jwlr1HISTU+VhU23EGCM9g==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Pinch",
+      "matchName":"j31wKM7/T0eYtp3i0Z+mhg==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Agent",
+      "matchName":"j/Av7BV+QHO2WFWXdhAAGQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Edge Dissolve",
+      "matchName":"k33icsfIQvKdpkz8Zkx38g==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Light Rays Text",
+      "matchName":"k9MidwSeRbSS8YBbpe6aHQ==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Random Crop",
+      "matchName":"lKlnXZ6CSi6yVx6IeEcf3A==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Line Screen",
+      "matchName":"lY9u18+8Qr6fewnMk8d8Sg==",
+      "category":"FxFactory Pro Halftones"
+   },
+   {
+      "displayName":"Glow",
+      "matchName":"llvV/kUDR6Gfs/Hhmrc4LA==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Channel Swap",
+      "matchName":"mdUXOlgVQpKVQk4neU7R8w==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Upscale",
+      "matchName":"ms19UTfaRXa9lCvI39PAXw==",
+      "category":"FxFactory Pro Video"
+   },
+   {
+      "displayName":"Origami (Square)",
+      "matchName":"mt8sWD4lQcagix3rhzB4+g==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Perlin Noise",
+      "matchName":"ngRB6bMlQJysri0UI2Pjnw==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Output Levels",
+      "matchName":"ns3Z7ok6TFC3uLAgl2RFDQ==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Stars Edges",
+      "matchName":"n/RKqX57R4mZy71nsZX/OQ==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Bloom",
+      "matchName":"oOqpIY19S2SrGB7Y8gBYYA==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Glide Reflection",
+      "matchName":"on5XvljLSBud84Ew5AZEPQ==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Radial Wipe",
+      "matchName":"ps/UHQHJQymgrWSheBDT/Q==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Bars Wipe",
+      "matchName":"p2JPbBQ/Qi+IdZALAvWV8Q==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"PDF Animator",
+      "matchName":"qD5Nm9ewRrOkF6QYyiNkSw==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Rounded Corners",
+      "matchName":"qKESpX67TCSnRtlDvNBBFQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Sharpen RGB",
+      "matchName":"rymn3inCQNqBNHOVhiLzkA==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Scatter",
+      "matchName":"r1sHXeAAQraY+Ip5xeWU1A==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Translated Tile",
+      "matchName":"r8n7AlUKSiyCWwjUdYHODQ==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Star Shine",
+      "matchName":"r85cmEa6T6++vAFMpVlX/A==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Glass Lozenge",
+      "matchName":"seY4cLcSS4iyoT8dgr4kcg==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Accordion",
+      "matchName":"sgwh5p7ASnu3bSZgkkDHQw==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Particle System",
+      "matchName":"tBmw9DpIRNqA6rRXbk49tQ==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Disintegrate With Dots",
+      "matchName":"tniD9hQ2To2IM0CjNxB1xg==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Sun Rays",
+      "matchName":"uGqjfO/6ShWjt30t8FgyIA==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Frame Overlay",
+      "matchName":"uMbwUXvKSrm3sDU0yI/Keg==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Checkerboard",
+      "matchName":"ucUIJW7sTQeWi+3Ldmubnw==",
+      "category":"FxFactory Pro Generators"
+   },
+   {
+      "displayName":"Despeckle",
+      "matchName":"vBlRXv92ROy60EqCVp6FnQ==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Emboss",
+      "matchName":"vBzEK6DaSGyjZycf/YtFfA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Copy Machine",
+      "matchName":"vSDumSXpTRWT0o/FV12BRQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"LED Lights",
+      "matchName":"vtGKYQ2gQsesjljszGpKcQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Vintage TV",
+      "matchName":"vvFQUJVQSyuGc2TECcns4Q==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Vignette (Obsolete)",
+      "matchName":"v6+MAsbhQWq0m7YysyIpkw==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Sobel Edge",
+      "matchName":"wJzY3Ez6QF+X2cw/Bem8/A==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Comic Book",
+      "matchName":"wrQuAy3ZTJKeZTyRrh+KQg==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Erode/Dilate",
+      "matchName":"xK3yjPGxSEaJl/wLKCsfKQ==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Synthesizer",
+      "matchName":"xMKMgYcYR+CJMBGOqIxhFQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Mask From Color",
+      "matchName":"xVCFNoUURFSHiT9X72m5Rg==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Playback Ready",
+      "matchName":"xuRDBqr6TTeKbP7mAAwWnA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Pointillize",
+      "matchName":"x55k/LlTTLuU8IVPCWES1A==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Spot Light (Multiple)",
+      "matchName":"yPC2NlmARC6Zdp0PpKTw7Q==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Luminance To Alpha",
+      "matchName":"zi1EDm5FRR2oGBKBprQlKA==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Channel Switch",
+      "matchName":"zntqEoa5S3isfK655Ot0ZQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Blur Luminance",
+      "matchName":"z6CJ6L6wQ5ytvmRzalTjxw==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Luminance Dissolve",
+      "matchName":"0IxUMWVXTRWhGaq0IFyljA==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Disintegrate With Tiles",
+      "matchName":"0gvDyMTTTC6sG0XyVtRp+Q==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Bloom With Threshold",
+      "matchName":"0kfUE5R4REqG98VQQJUH3A==",
+      "category":"FxFactory Pro Glow"
+   },
+   {
+      "displayName":"Mask Dissolve",
+      "matchName":"1vVH/1QJTduz8Nh4T4xOCg==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Perspective Reflection (Obsolet",
+      "matchName":"2FXKoFacQ2G0G1wwGldfVA==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Fade Out",
+      "matchName":"28A1kSsJQsmtdaeUR6gGCQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Tile Dissolve",
+      "matchName":"3NGi/fUURcWfOCmnikgz6Q==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Vignette",
+      "matchName":"3TE7fWydQQubDs2CzD4eUg==",
+      "category":"FxFactory Pro Color Correction"
+   },
+   {
+      "displayName":"Sharpen Range",
+      "matchName":"3poqd/3iRhKZ/M1Dow4cTA==",
+      "category":"FxFactory Pro Sharpen"
+   },
+   {
+      "displayName":"Bezier Distort",
+      "matchName":"3wW9d9y8S1CPOpf5JzIXyA==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Page Flip",
+      "matchName":"46Fh7c+gTbiF9p2Hr4yAng==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Polka Dots",
+      "matchName":"5dzw5bWJRRCc3oU8YeVJ6Q==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Fade In",
+      "matchName":"5n+ESLcHQcKkjPMSvDs2jg==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Reflected Tile (Twelvefold)",
+      "matchName":"7T+7ALW/QeSd6yCIy3UlsA==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Circular Wrap",
+      "matchName":"72w3OOPWQdqkinDeekrlWA==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Zoom Blur Luminance",
+      "matchName":"7/Ups1SVRiGxlmCz4X7RYg==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Cube",
+      "matchName":"8lpMxKkyTGm52CXJzv6GvQ==",
+      "category":"FxFactory Pro Transitions"
+   },
+   {
+      "displayName":"Watercolor",
+      "matchName":"83CSbdaHTx2F29SL2JNRFw==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Zoom Blur RGB",
+      "matchName":"9NggTSo5TE2taP6m05aWwA==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Night Vision",
+      "matchName":"9V0JrHVTQtS0AIfTsurlZQ==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Slideshow (Obsolete)",
+      "matchName":"9ygle5+gRsSCSjozt+PVHw==",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Genie",
+      "matchName":"+GVhm15QTlKygZgAJa0cMg==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Kaleidoscope",
+      "matchName":"+H7dP0BCR3WluljbOcoRsg==",
+      "category":"FxFactory Pro Tiling"
+   },
+   {
+      "displayName":"Add Noise",
+      "matchName":"+SThKc4VQIOiZ7mNqIwfdg==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Hole",
+      "matchName":"+pyY2cxsRS2TFXU6k/IKmQ==",
+      "category":"FxFactory Pro Distort"
+   },
+   {
+      "displayName":"Zoom Blur",
+      "matchName":"+9NTUATUSlGlrpyEFc+V8Q==",
+      "category":"FxFactory Pro Blur"
+   },
+   {
+      "displayName":"Pixellate",
+      "matchName":"/VJ6BtNLRsyaf00jgVkDxA==",
+      "category":"FxFactory Pro Stylize"
+   },
+   {
+      "displayName":"Auto Cinemabar",
+      "matchName":"Auto Cinemabar",
+      "category":"ProductionCrate"
+   },
+   {
+      "displayName":"Mocha Pro",
+      "matchName":"mochaProAE",
+      "category":"Boris FX Mocha"
+   },
+   {
+      "displayName":"Mocha VR (legacy)",
+      "matchName":"mochaVRAE",
+      "category":"Boris FX Mocha"
+   },
+   {
+      "displayName":"Blur Fade - Free",
+      "matchName":"807DC1A0-8DAB-4FC2-B67B-74C0F11",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Fade InOut - Free",
+      "matchName":"13194BB7-FA69-42E7-94BB-F79AD2F",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Glow InOut - Free",
+      "matchName":"143E5446-79D9-4F6B-887C-14410EB",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Liquid Text - Free",
+      "matchName":"4FED018C-8979-4441-9F37-47FC9AA",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Lower Third Gradient - Free",
+      "matchName":"508DE174-7706-4FE7-BBBF-4A92CF4",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Neon Burn - Free",
+      "matchName":"DEC605DE-C579-4A91-BFF3-1264086",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Slice Blur - Free",
+      "matchName":"C5759236-86A0-431B-AD9E-9F7C492",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Text Explode - Free",
+      "matchName":"47FC1727-2E63-469F-92B4-0C848D3",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Text Rays - Free",
+      "matchName":"E3218A63-5D0D-4AFC-A5A2-F9F0C76",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Track InOut - Free",
+      "matchName":"DF095D90-D647-4912-B2E5-470D28F",
+      "category":"C2 Active Text"
+   },
+   {
+      "displayName":"Acid Blotches *",
+      "matchName":"9A80B1B6-D37E-4AD3-8BCB-D382367",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Blur In Out *",
+      "matchName":"8CF0CEDB-023A-4CDB-8867-EADA2CC",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Bubbles Dissolve *",
+      "matchName":"AC2FC422-E887-4C99-829A-EE1BC33",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Cellular Wipe *",
+      "matchName":"B7E947B2-34FE-4422-A814-27B9CE0",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Channel Change *",
+      "matchName":"989313B2-BE6B-4A51-A165-FC714FA",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Chroma Blur In Out *",
+      "matchName":"4ACEFC4C-1615-4C87-B0E7-7727641",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Color Blocks Dissolve *",
+      "matchName":"10E04082-0769-4422-973B-125112D",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Digital Glitch Dissolve *",
+      "matchName":"B9773DF3-CD57-4A75-A00E-32B839D",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Digital Glitch Fade InOut *",
+      "matchName":"CDD3CCFF-E1AC-4DD7-ACF6-8A9B4F7",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Dream Haze *",
+      "matchName":"B3F8119B-5211-44F2-985A-6446BEE",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Explode and Spinback *",
+      "matchName":"8817067B-C6BD-44C3-879A-2C9AEB1",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Fast User Switch *",
+      "matchName":"8D72892A-2745-45EF-AB11-7B299C6",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Genie *",
+      "matchName":"05BA7CF5-148A-4B4E-BFBC-EB19212",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Glass Fracture *",
+      "matchName":"0E2B3845-D7AB-481D-8AF8-0A0388A",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Glass Slices *",
+      "matchName":"2F7E7841-60AB-48C3-A747-9647455",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Glitch Blocks Fade *",
+      "matchName":"AB6790C5-FFBD-457C-8384-766ED19",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Liquid Dissolve *",
+      "matchName":"2A211053-C287-4559-8BC5-359E822",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Mirror Flipper *",
+      "matchName":"0D6A7F86-1853-4647-9BCD-2100DBA",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Pixelate CrossFade *",
+      "matchName":"45CB7606-8B19-416F-A9BD-E6CEADB",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Plasma Wipe *",
+      "matchName":"9A545216-369C-4FA1-9C80-E95C621",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Projector Malfunction - Free *",
+      "matchName":"0C775584-3019-4BAF-BC97-7941B4D",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Push Away and Spin *",
+      "matchName":"D86A9DA1-AC2C-4972-B1FA-9D13E80",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Random Cloud Transition *",
+      "matchName":"3E71199E-A107-4591-9B8D-47B2394",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Random Crop Transition - Free *",
+      "matchName":"44A97C58-4F39-42A1-A295-905212E",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Roulette *",
+      "matchName":"3582128E-7F72-486E-BD39-12A00C6",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Slice Across *",
+      "matchName":"A6AEF8EA-F878-4A71-9AA4-FE3DA38",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Slot Machine *",
+      "matchName":"1488AB9A-01BD-45A7-AEE8-FA13D2E",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Tilt n Fly Transition *",
+      "matchName":"D43802BD-AED5-40DC-997F-44360B8",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Twisted Dissolve *",
+      "matchName":"674BA295-0D41-40B1-9363-3695C5C",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Video Screens 2Way - Free *",
+      "matchName":"68115767-0BA3-4D78-AE6E-CF7F23A",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Video Screens 4Way *",
+      "matchName":"F50473B5-1E93-45DC-BDF8-B06C779",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Video Wall In Out *",
+      "matchName":"8CF74889-6A4D-4001-9E17-DCBDAE0",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"VideoScreens Collapse *",
+      "matchName":"F3E40AA0-A44A-4D99-95C2-A585C38",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"Waterdrop Distort Wipe *",
+      "matchName":"AB1EF9B0-31CA-45AC-A979-ADE8E5B",
+      "category":"C2 Delta V - Motion Transitions"
+   },
+   {
+      "displayName":"3 Color Key",
+      "matchName":"6A7C141C-A0DC-421B-83ED-96F16BA",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"4 Point Mask Layer",
+      "matchName":"8F014E4C-2262-43D1-BA10-B8DE1FC",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Advanced Reflection",
+      "matchName":"40027C69-705F-474E-83B2-DF17296",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Barcode Wipe *",
+      "matchName":"DC727F58-E838-4CD0-A796-4DD7082",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Barcode",
+      "matchName":"B2E4A688-95B7-4D16-B04B-8639460",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Blow Out Crossfade *",
+      "matchName":"A26FD8F8-C95D-40CC-B4DA-5713AD6",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Blur Circle MinMax",
+      "matchName":"F0F2088B-1D51-4D76-BA6B-404F973",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Blur Gradient MinMax",
+      "matchName":"F7B1E1C5-7D77-418E-A671-CF6F3B9",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Camera Shake",
+      "matchName":"CEE8FF70-5A73-4A56-8883-917FD18",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Cheshire Fade *",
+      "matchName":"FDEFAF6A-9996-4458-8F63-F2A16FC",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Clone Layer",
+      "matchName":"3C748D8E-45B2-4742-A892-4DC90AB",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Debayer",
+      "matchName":"9EC46270-7F14-4E68-8821-4F2D194",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Dewrinkler",
+      "matchName":"802D4809-5057-4EA7-932E-BEE9EE6",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Diffusion",
+      "matchName":"9A1AA1E6-E602-4B9E-8532-36C2487",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Directional Spotlight",
+      "matchName":"9F184AD1-0D74-41D4-995F-B0C4857",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Explode Away *",
+      "matchName":"CBF5134A-3073-4B5E-A8A0-4092EEE",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Film Dissolve *",
+      "matchName":"6FEAB6F3-27DB-49D6-A5A7-82DC7D8",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Heat Haze",
+      "matchName":"577FF78F-AA24-4BA8-9794-614CCF8",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Image Mask Wipe *",
+      "matchName":"A8319713-1694-4342-8F80-1526C82",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Local Contrast",
+      "matchName":"8FE22410-52FC-4DDC-BD2D-5FE92A4",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Mask and Frame",
+      "matchName":"85DD2981-BA1C-40AE-9EDC-8889F47",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Matte Shape Generator",
+      "matchName":"B71A781B-7360-4A56-9760-46843E6",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Noise Limiter",
+      "matchName":"0A664BC4-5FE6-43D3-9034-2B3A107",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Old TV",
+      "matchName":"0DD3AEE0-0335-489F-A2EE-BAF0565",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Panels Mix Off *",
+      "matchName":"4F99B935-2ED1-402B-BC94-DF36D24",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"PsychoMod *",
+      "matchName":"B88C6E74-A7D2-4C57-BAF9-77D5C72",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Radial Mask Wipe *",
+      "matchName":"EA4D6DFB-E814-4004-802D-9102449",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Shaded Background",
+      "matchName":"AAE2EA2F-67CA-46BD-9DD8-E28101D",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Shape Mask Layer",
+      "matchName":"2576E839-C47C-4CA3-999C-62967A7",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Spill Suppression",
+      "matchName":"728B6AA3-A375-4C55-A377-55F9856",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Spinner *",
+      "matchName":"071E4458-D02C-428A-B59C-22D9298",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Texture Dissolve *",
+      "matchName":"78E4905A-6E29-4AFF-9CAE-C67E7BB",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Witness Protection",
+      "matchName":"492038AB-BCE0-4CC4-AA2F-6F02BD5",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Zipper *",
+      "matchName":"9A09FC38-967B-4A40-A372-5A67AE5",
+      "category":"C2 Gadget - Editors Tools"
+   },
+   {
+      "displayName":"Blur Fade",
+      "matchName":"07FE7AA3-8F6E-4CA1-9278-32D7FD1",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Card Flow",
+      "matchName":"9BF2C1A5-EE39-4B72-9F64-6D06105",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Carousel - Free",
+      "matchName":"654B32E3-C1FE-4A51-B9DA-134E646",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Circle Around",
+      "matchName":"CB4751F6-0877-454D-91EB-E90E152",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Continuous Random Pan - Free",
+      "matchName":"496C1648-0066-4657-BC47-95C61D1",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Curl Images",
+      "matchName":"7C7AE1B5-53C4-47E6-A2E9-FAEB215",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Dissolve Over",
+      "matchName":"6C35D58D-2275-4F3E-B3D4-66F1766",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Drop and Squash",
+      "matchName":"7477E62A-154C-4380-B9EC-2F58DE7",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Fall Forward",
+      "matchName":"7EA09441-653D-49D7-A81C-9643C4C",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Falling Cards",
+      "matchName":"070C4D25-1007-482B-9425-1A02A31",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Flashcard",
+      "matchName":"6977982C-8203-4080-884C-B437A62",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Image Bricks",
+      "matchName":"D0118CB2-3554-44CD-ACB2-7271802",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Image FilmStrip - Free",
+      "matchName":"851E6F78-4A72-4E16-9A05-5BAD404",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Image Grid - Free",
+      "matchName":"B398EDAB-6F76-49CF-B7E1-7AFC00F",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Image Stack",
+      "matchName":"EBA25793-A25A-4AA3-980C-50AB190",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Layers to Camera",
+      "matchName":"F50CBE79-24DE-4EEF-BED0-AD43F60",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Light Wipe",
+      "matchName":"644A7F9F-EB2D-4FB7-A046-F1C2B3D",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Liquify In",
+      "matchName":"BF1DDEEE-D2E0-4E16-9C9E-6797230",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Multi Pop Forward - Free",
+      "matchName":"17EE37DB-73C3-49EA-9D7A-C639B8B",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"MultiSwoosh",
+      "matchName":"81CB645F-7829-44F9-A1CD-70538F9",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Multifader",
+      "matchName":"B3CBDCDB-B577-4763-A90E-464AE1F",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Multigrow",
+      "matchName":"CEE91DD5-377B-460D-964A-B498987",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Panels Transition",
+      "matchName":"1A7EB0EC-5520-4DD3-9502-CA52739",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Polaroids",
+      "matchName":"1A9A21B3-911D-4DB3-BE60-D64EE7E",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Random Move Over",
+      "matchName":"B2BE1984-A632-4AF0-BF49-7B760D7",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Shutter Images",
+      "matchName":"3979A377-4C43-43B7-84B0-9B02483",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Slice Images",
+      "matchName":"72A570B4-4977-460A-8972-A641E2D",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"VideoWall Zoom",
+      "matchName":"2591DB9B-1B3F-4DB2-AD82-0E66AC7",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Zoom In and Stop",
+      "matchName":"08791C9B-8CD8-4A5F-8886-A3A5CDC",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Zoom Up",
+      "matchName":"5C1F6431-2369-45D0-A4B3-5D99FCD",
+      "category":"C2 ImageFlow - Instant Montages"
+   },
+   {
+      "displayName":"Lock and Load X",
+      "matchName":"LocknLoad_X1",
+      "category":"C2 Lock and Load"
+   },
+   {
+      "displayName":"Beat Matte",
+      "matchName":"E4DAF1D2-2B02-4767-A33E-713F842",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Blowout",
+      "matchName":"A7D2C2A2-6AB7-4551-84A6-45830F6",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Blur Chroma",
+      "matchName":"F562B153-32FD-4F93-819D-53AEC1A",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Blur Luminance",
+      "matchName":"B099B303-3293-40EF-A51F-9D4CD6E",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Blur RGB",
+      "matchName":"B19E77EE-05FE-4013-83EC-4B0881E",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Camera Defocus Z Mask",
+      "matchName":"782FEB2F-CD17-4232-A4B8-854AABC",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Camera Defocus",
+      "matchName":"4902FB2E-721E-4CA1-8565-BB000F8",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Chromatic Glow",
+      "matchName":"C46741AF-4126-4187-9FA2-8AEA1D4",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Chrono Trails",
+      "matchName":"564CB46A-4297-4F18-8EEA-4C4482D",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Contour Lines Over",
+      "matchName":"2306EEAA-FAE3-485E-B897-CF8B4BE",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Contours",
+      "matchName":"F23508B6-4AC2-4422-AA3D-BBA1EA6",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Core Glow",
+      "matchName":"044F8F17-C6D5-4ECA-B1B3-C852694",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Depth Blur Z Mask",
+      "matchName":"33741D21-E88D-46FD-B015-AB6DD07",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Fast Angle Blur",
+      "matchName":"9FDFB1F7-2FF7-45F0-90B1-AB7F6C3",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Fastblur XY",
+      "matchName":"CE270D46-16AC-428C-A6C3-703706B",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Fastblur",
+      "matchName":"3E195856-C9BD-43A8-A0B4-972B2EC",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Glow Waves",
+      "matchName":"434B6D4B-942F-47FE-9BBA-0E80C8E",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Godrays",
+      "matchName":"91F252BD-7149-49B9-A608-1AB0D36",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Gradient Rays",
+      "matchName":"3C112255-01C7-4ED4-96C0-015E2F8",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Light Wrap",
+      "matchName":"84D14ECA-041F-463C-8E36-4E497E7",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Optical Glow Across",
+      "matchName":"157CD5D7-5618-4E9F-A57E-9EACC67",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Optical Glow Edges",
+      "matchName":"A9B18581-E00D-422A-9AF5-898E59B",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Optical Glow",
+      "matchName":"A7D027E7-61B6-4305-919C-8B797FC",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Plasma Ribbon",
+      "matchName":"EACF2668-33B7-4A36-8344-6FF42D2",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Plasmatic Waves",
+      "matchName":"4C2392E0-202E-43FC-AB93-8CD5AE0",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Pulsate and Flicker",
+      "matchName":"B232FE67-41FC-4302-AB19-ED89B14",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"RGB Trails",
+      "matchName":"2873FD3E-0068-428D-9D2D-809EC1E",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Sparkle Edges",
+      "matchName":"A5AC2CAA-E535-4FA9-A971-ADB917E",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Sparkles",
+      "matchName":"FDE08138-7313-41D8-A339-54FA1A6",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Thick Edges",
+      "matchName":"E858D199-D4E1-4051-A6C0-3F6C7FF",
+      "category":"C2 Luminous - Glows and Blurs"
+   },
+   {
+      "displayName":"Advanced Vignette",
+      "matchName":"BE33B68D-CD6B-41D6-B510-10D6CA9",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Bleach Bypass",
+      "matchName":"F5BCF67C-2E39-4BEC-B759-5213ED6",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Channel Swap RGBHSL",
+      "matchName":"B3841A2E-2904-4CEE-97F9-70AD35E",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Channel Swap RGBYUV",
+      "matchName":"75A54F5D-4A78-4A8D-BE30-AA91CEE",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Color Temperature",
+      "matchName":"8DC64DD7-16EF-4477-9774-EDAA9F8",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Day for Night",
+      "matchName":"AAC5C627-88E1-43E1-8098-E5EFFB1",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Filmic Look",
+      "matchName":"B2E388C7-30A3-47A1-B963-793EA8D",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Flicker Tool",
+      "matchName":"15E63502-3BE5-4089-A7B5-F27E893",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"HSL Levels and Curves",
+      "matchName":"BEC94F7B-21A4-47C8-9C3A-5367312",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Luma Levels and Curves",
+      "matchName":"AB81FA12-1578-4C6F-8ACB-7EA4581",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Luma S Curve",
+      "matchName":"EF450B6A-7F22-447A-B7F1-8C3507F",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Match Grade",
+      "matchName":"258DD542-AB45-4499-B9A0-D961084",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Night Vision",
+      "matchName":"4A4F145C-2C72-4EAD-86F0-F36D9A9",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Pass Color",
+      "matchName":"FF6783B5-DB06-4D07-B657-6A4E6E3",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Purple Fringe Reduction",
+      "matchName":"C9BCE519-C15D-429C-B5F6-ACDD5C3",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"RGB Levels and Curves",
+      "matchName":"283C9C12-7337-48C6-B7F7-7650C75",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Secondary Grader",
+      "matchName":"C9CB9CE4-5E1B-4815-9C87-0400858",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Secondary HSL Grader",
+      "matchName":"551E6199-C8A3-4C11-9CB1-5340420",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Sky Replace",
+      "matchName":"08513495-4D58-4B8E-98AE-127E3B3",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Swap Colorspace",
+      "matchName":"A8AC46FF-75A5-4CB9-AFA3-C5B1C2F",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Threshold Hi Lo Color",
+      "matchName":"3E6C67D2-375E-4D13-8966-1853401",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Threshold Hi Lo",
+      "matchName":"40BE01B4-6A59-4BF9-9BDA-73865DF",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"Tint Through Gradient",
+      "matchName":"E8D75369-8539-48CE-A225-DFEC6F8",
+      "category":"C2 Pigment - Color Tools"
+   },
+   {
+      "displayName":"3D Image Grid Gen",
+      "matchName":"01DBEF92-123A-4446-9EB1-C0631D9",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Image Grid",
+      "matchName":"2B12CFE6-A50B-4889-9A02-7B6995B",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Image Random Spacing Gen",
+      "matchName":"3A78BAE7-8DB9-4764-BC19-3426544",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Image Random Spacing",
+      "matchName":"8CEA3081-C40C-43DB-987F-DC59773",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Infinite Scroller",
+      "matchName":"C64BF72B-EA21-4720-9D9D-F94DAD3",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Lit Sphere",
+      "matchName":"23891D32-13E1-42EE-B193-93DA678",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Shatter",
+      "matchName":"EF99DF90-85E6-4B68-BACE-78348F0",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Sphere Map",
+      "matchName":"35C4741C-E3CF-4005-9EE2-05F3D6B",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Text Cloud",
+      "matchName":"2592E53D-3B71-47B0-8CED-1D25C5A",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Text Grid",
+      "matchName":"EEA44286-29C3-4918-AACC-05FD74B",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Ventilator Shaft Gen",
+      "matchName":"7D4267C1-F4C5-452A-B15F-057F3B9",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"3D Ventilator Shaft",
+      "matchName":"9881D63E-619B-426A-8379-A4A3528",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"80s music video",
+      "matchName":"F4027DB0-E7B0-4177-AF68-8DF1772",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Analog Glitch",
+      "matchName":"611FCBF3-0DF7-4549-B011-DDFDC62",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Codec Damage",
+      "matchName":"D99144A9-9DA0-48AA-B4F1-C624610",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Color Blocks",
+      "matchName":"A5C8180D-60FA-46DF-8E3A-3745860",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Digital Glitch",
+      "matchName":"7C1586F5-47B5-4DCD-95C7-A68E532",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Cellular",
+      "matchName":"4021774C-4FE7-4D20-9E7F-3BAB58A",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Liquid Metal",
+      "matchName":"124A58CE-B5B4-4738-9B33-75EC3C7",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Liquid Vision",
+      "matchName":"4EFA70E0-4DA2-4EF5-98C2-B08D7E2",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Pond",
+      "matchName":"4E2064AB-54B8-4AAA-837D-5562653",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Raindrops",
+      "matchName":"7F0072B8-0FBF-4109-9794-82ECA44",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Ripple Across",
+      "matchName":"BC982619-B821-4B4F-9296-D9202CD",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Shower Door",
+      "matchName":"98FBC465-470B-47C1-AA20-692648D",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Water Drop",
+      "matchName":"D2E4B745-DF50-4262-A9E5-714F1C4",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Distort Waves",
+      "matchName":"0916A238-0CB5-443E-B080-38C0923",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Grunge Border",
+      "matchName":"3AB3F5A7-3EAC-4458-83BF-B945248",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Panel Vision",
+      "matchName":"A46E81C9-C225-4762-A6CE-EB82983",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Scanner",
+      "matchName":"C858A4FC-60A9-4660-B668-A8B6228",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Slice Layer",
+      "matchName":"8EE1EFE2-79E4-4440-A3E2-714CE08",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Slices",
+      "matchName":"7529CB17-CD7E-4926-8BDE-EB07D1E",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Vintage Newsprint",
+      "matchName":"42B90BD8-3161-42EE-9FA9-6FB754C",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Wrap Around",
+      "matchName":"210644AB-3B68-454F-B952-797B341",
+      "category":"C2 Shatter - Grunge and Stylise"
+   },
+   {
+      "displayName":"Additive Dissolve *",
+      "matchName":"F7384ABA-67A1-4F9B-A1BA-620609A",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Blend Mode Dissolve - Free *",
+      "matchName":"93908972-AAE3-413A-83EB-C18F156",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Blocks Fade In Fade Out *",
+      "matchName":"72D952DF-D688-46F9-8B1C-A61AE23",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Blocks Reveal *",
+      "matchName":"FBAE9BC1-C64A-43BE-B11A-57F08EB",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Camera Shutter *",
+      "matchName":"CFFE28DC-36EB-427E-9D2F-D39DDF1",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Chroma Delay Dissolve *",
+      "matchName":"AA16BEAF-C48A-4803-A155-FB3A557",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Chroma Drain Dissolve *",
+      "matchName":"7E87CCA8-46EC-4D99-A8B7-A2C9371",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Chroma Grow Shrink *",
+      "matchName":"85941759-84A6-4457-B8AD-3D941BF",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Chroma Key Fade *",
+      "matchName":"7F56A56C-227D-47BE-8D2C-7BD406F",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Cross Dissolve *",
+      "matchName":"C59679D5-9580-4C96-9719-42455C0",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Curl Apart - Free *",
+      "matchName":"9E7F9E66-B8EE-48FA-8459-BD0ECE1",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Dip To Color *",
+      "matchName":"AB90BE38-380F-4727-9A4E-64BA494",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Dither Dissolve *",
+      "matchName":"F4E0E357-22ED-4032-A7BD-07D720A",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Expose Darks *",
+      "matchName":"415D29AB-6599-49BE-BAA8-15298A3",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Exposure Flash - Free *",
+      "matchName":"774AE313-2605-4358-928D-9B457AC",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Fade In Fade out *",
+      "matchName":"37067D7F-D0EF-4106-9B3B-3269A9F",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Film Blowout Wipe *",
+      "matchName":"EA1A5744-2532-42A3-AF0B-78B89B3",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Filmstrip *",
+      "matchName":"A80B6137-9A8B-48F0-982C-437FFD4",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Focus Pull Dissolve *",
+      "matchName":"6E864EEB-6CD7-4BCD-85BB-F45FAF5",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Lab Film Blowout *",
+      "matchName":"C557EFB2-EAB9-4CF4-A3FC-3180074",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Lab Film Dissolve *",
+      "matchName":"1EE49FEC-6FFE-476A-853D-5A2B57B",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Light Burn *",
+      "matchName":"B8448588-8BFA-4A21-941D-A9A3212",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Light Streaks *",
+      "matchName":"9B2FF966-4F58-4906-B0E0-644F840",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Light Wash *",
+      "matchName":"BE59C1DE-E28F-4D31-B4BE-EAFE191",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Lights Out *",
+      "matchName":"D67BEC85-1BCE-43FA-BE27-7B55C65",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Non Additive Dissolve *",
+      "matchName":"5CD61D70-0448-42F6-A327-1F56387",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Page Curl Strips *",
+      "matchName":"2986C082-D4DF-4E18-967E-912F50A",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Page Curl *",
+      "matchName":"936B03C9-93D8-48DF-820A-31C2D9F",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Shapes Grow *",
+      "matchName":"D79818FC-3916-4657-9951-1B27C9E",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Sliders *",
+      "matchName":"603F2C67-7E82-4DD6-AE25-FFD575B",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Soft Edge Wipe - Free *",
+      "matchName":"A3D8A028-FD4D-41A4-80C1-DB6E285",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Spotlight Fade In Out *",
+      "matchName":"2677AEBF-8E61-43DE-A992-95B8844",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"Strobe Transition *",
+      "matchName":"FA2C81EC-72D5-49CC-894D-AEBA4EC",
+      "category":"C2 TRX - Filmic Transitions"
+   },
+   {
+      "displayName":"EQ 127 Band Linear",
+      "matchName":"A1D9AB8C-42EE-41F3-A2F5-496242F",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ 16 Band Quad",
+      "matchName":"4C40F7A9-F117-4C74-A9AA-64CD6D6",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ 8 Band Log",
+      "matchName":"23BAAC0C-FBBD-42B1-906D-1DD7A4D",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ Line Segments",
+      "matchName":"B08BE7B2-EAA4-4D50-8D26-225692E",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ Pixelstix 3D",
+      "matchName":"AB8CDF56-BA9F-4421-BFDE-AF2052B",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ Simple 3D",
+      "matchName":"8F297871-0778-4045-AC91-AA19B2C",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"EQ Tower Cities 3D",
+      "matchName":"C97C8AF1-4CB5-47CC-B198-A94AB70",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"VU Analog",
+      "matchName":"30B392EB-35F0-4F70-B91C-A323FEA",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"VU Digital",
+      "matchName":"B88BE0C0-BBF6-480D-AF87-41731A2",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"VU Rolling Gauge",
+      "matchName":"C4857FBB-1F28-4B0A-87D1-5EA4E89",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"WV Audio Radar",
+      "matchName":"3B52F9A5-4365-4902-88A2-80B352D",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"WV Oscilloscope",
+      "matchName":"1FCCBE97-274F-467D-A079-1C33AE5",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"WV Voiceprint",
+      "matchName":"E8CB520F-5726-4058-BDD8-ED560D6",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"WV Waveforms 3D",
+      "matchName":"29FC7C00-CAED-42D4-ADE7-E5045AA",
+      "category":"C2 VeeYou - EQ and VU Animation"
+   },
+   {
+      "displayName":"Instant 4K",
+      "matchName":"DGE Instant 4K",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"ReSizer",
+      "matchName":"Digital Anarchy Resizer",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Looks",
+      "matchName":"MB LookSuite3",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Colorista IV",
+      "matchName":"RG MB COLORISTA IV",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Cosmo II",
+      "matchName":"RG Cosmo_II",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Denoiser III",
+      "matchName":"RG Denoiser3",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Film",
+      "matchName":"Magic_Bullet_Suite_Magic_Bullet",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Broadcast Spec",
+      "matchName":"ADBE MB Broadcast Spec",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Deartifacter",
+      "matchName":"MBS Deartifacter",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Frames Plus",
+      "matchName":"ADBE Magic Bullet SD",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Letterboxer",
+      "matchName":"ADBE MB Letterboxer",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Frames",
+      "matchName":"RG_Deinterlace2Film",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Opticals",
+      "matchName":"MB Opticals",
+      "category":"RG Shooter Suite"
+   },
+   {
+      "displayName":"Mojo II",
+      "matchName":"Magic_Bullet_Mojo_II",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"Renoiser",
+      "matchName":"Magic_Bullet_Renoiser",
+      "category":"RG Magic Bullet"
+   },
+   {
+      "displayName":"RGS Grow Bounds",
+      "matchName":"Red Giant GrowBounds",
+      "category":"Red Giant"
+   },
+   {
+      "displayName":"uni.Blur",
+      "matchName":"Universe_Blur_Blur_Premium",
+      "category":"RG Universe Blur"
+   },
+   {
+      "displayName":"uni.Compound Blur",
+      "matchName":"Universe_Compound_Blur_Premium",
+      "category":"RG Universe Blur"
+   },
+   {
+      "displayName":"uni.Spot Blur",
+      "matchName":"Universe_Blur_Spot_Blur",
+      "category":"RG Universe Blur"
+   },
+   {
+      "displayName":"uni.Finisher",
+      "matchName":"Universe_CrumplePop_Finisher",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Fisheye Fixer",
+      "matchName":"Universe_CrumplePop_Fisheye_Fix",
+      "category":"RG Universe Utilities"
+   },
+   {
+      "displayName":"uni.Grain16",
+      "matchName":"Universe_CrumplePop_Grain16",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.OverLight",
+      "matchName":"Universe_CrumplePop_OverLight",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.ShrinkRay",
+      "matchName":"Universe_CrumplePop_ShrinkRay",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Camera Shake",
+      "matchName":"Universe_Distort_Camera_Shake_P",
+      "category":"RG Universe Utilities"
+   },
+   {
+      "displayName":"uni.Chromatic Aberration",
+      "matchName":"Universe_Distort_Chromatic_Aber",
+      "category":"RG Universe Distort"
+   },
+   {
+      "displayName":"uni.Heatwave",
+      "matchName":"Universe_Distort_Heatwave",
+      "category":"RG Universe Distort"
+   },
+   {
+      "displayName":"uni.Picture in Picture",
+      "matchName":"Universe_Distort_Picture_in_Pic",
+      "category":"RG Universe Utilities"
+   },
+   {
+      "displayName":"uni.Prism Displacement",
+      "matchName":"Universe_Distort_Prism_Displace",
+      "category":"RG Universe Distort"
+   },
+   {
+      "displayName":"uni.RGB Separation",
+      "matchName":"Universe_Distort_RGB_Separation",
+      "category":"RG Universe Distort"
+   },
+   {
+      "displayName":"uni.Fractal Background",
+      "matchName":"Universe_Generators_Fractal_Bac",
+      "category":"RG Universe Generators"
+   },
+   {
+      "displayName":"uni.Gradient Ramp",
+      "matchName":"Universe_Generators_Gradient_Ra",
+      "category":"RG Universe Generators"
+   },
+   {
+      "displayName":"uni.Soft Gradient Background",
+      "matchName":"Universe_Generators_Soft_Gradie",
+      "category":"RG Universe Generators"
+   },
+   {
+      "displayName":"uni.Spectralicious",
+      "matchName":"Universe_Generators_Spectralici",
+      "category":"RG Universe Generators"
+   },
+   {
+      "displayName":"uni.Chromatic Glow",
+      "matchName":"Universe_Glow_Chromatic_Glow",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Edge Glow",
+      "matchName":"Universe_Glow_Edge_Glow_Premium",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Glimmer",
+      "matchName":"Universe_Glow_Glimmer",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Glo Fi",
+      "matchName":"Universe_Glow_Glo_Fi_Premium",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Glow",
+      "matchName":"Universe_Glow_Glow",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Point Zoom",
+      "matchName":"Universe_Glow_Point_Zoom",
+      "category":"RG Universe Glow"
+   },
+   {
+      "displayName":"uni.Array Gun",
+      "matchName":"Universe_M_G_Array_Gun",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.HUD Components",
+      "matchName":"Universe_Visualizations_HUD_Com",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.Line",
+      "matchName":"Universe_Motion_Graphics_Draw_P",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.Progresso",
+      "matchName":"Universe_M_G_Progresso",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.Reframe",
+      "matchName":"RG_UNI_M_G_Reframe",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.Turbulence Noise",
+      "matchName":"Universe_Generators_TurNoise",
+      "category":"RG Universe Generators"
+   },
+   {
+      "displayName":"uni.Carousel",
+      "matchName":"Universe_Stylize_Carousel",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Glitch",
+      "matchName":"Universe_Stylize_Glitch",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Holomatrix II",
+      "matchName":"Universe_Distort_Holomatrix",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Knoll Light Factory EZ",
+      "matchName":"Universe_Knoll_Light_Factory_EZ",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.MisFire",
+      "matchName":"Universe_Misfire_Premium",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Multitone",
+      "matchName":"RG_UNI_Stylize_Multitone",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Noir Moderne",
+      "matchName":"Universe_Stylize_Noir_Moderne",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.RetroGrade",
+      "matchName":"Universe_CrumplePop_RetroGrade",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Texturize",
+      "matchName":"Universe_Stylize_Texturize",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.VHS",
+      "matchName":"Universe_Stylize_VHS",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.AV Club",
+      "matchName":"Universe_Text_AV_Club",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Ecto",
+      "matchName":"Universe_Text_Ecto",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Glo Fi II",
+      "matchName":"Universe_Text_Glo_Fi_II",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Hacker Text",
+      "matchName":"Universe_Text_Hacker_Text",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Long Shadow",
+      "matchName":"Universe_Text_Long_Shadow",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Luster",
+      "matchName":"Universe_Text_Luster",
+      "category":"RG Universe Stylize"
+   },
+   {
+      "displayName":"uni.Numbers",
+      "matchName":"Universe_Text_Numbers",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Screen Text",
+      "matchName":"Universe_Text_Screen_Text",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Text Tile",
+      "matchName":"Universe_Text_Text_Tile",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Title Motion",
+      "matchName":"Universe_Utilities_Title_Motion",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Type Cast",
+      "matchName":"Universe_Text_Type_Cast",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Type On",
+      "matchName":"Universe_Text_Type_On",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Typographic",
+      "matchName":"RG_UNI_Text_Typographic",
+      "category":"RG Universe Text"
+   },
+   {
+      "displayName":"uni.Blinds",
+      "matchName":"Universe_Transitions_Blinds",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Camera Shake Transition",
+      "matchName":"Universe_Transitions_Camera_Sha",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Carousel Transition",
+      "matchName":"Universe_Transitions_Carousel_T",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Channel Blur",
+      "matchName":"Universe_Transitions_Channel_Bl",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Channel Surf",
+      "matchName":"Universe_Transitions_Channel_Su",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Clock Wipe",
+      "matchName":"Universe_Transitions_Clock_Wipe",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Color Mosaic Transition",
+      "matchName":"Universe_Transitions_Color_Mosa",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Color Stripe",
+      "matchName":"Universe_Transitions_Color_Stri",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Cube",
+      "matchName":"Universe_Transitions_Cube",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Diamond Wave",
+      "matchName":"Universe_Transitions_Diamond_Wa",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Dolly Fade",
+      "matchName":"Universe_Transitions_Dolly_Fade",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Exposure Blur",
+      "matchName":"Universe_Exposure_Blur_Premium",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Film Transition",
+      "matchName":"Universe_Transitions_Film_Trans",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Flicker Cut",
+      "matchName":"Universe_Transitions_Flicker_Cu",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Fold",
+      "matchName":"Universe_Transitions_Fold",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Glitch Transition",
+      "matchName":"Universe_Transitions_Glitch_Tra",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.HalfLight",
+      "matchName":"Universe_Transitions_HalfLight",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Inside Cube",
+      "matchName":"Universe_Transitions_Inside_Cub",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Knoll Light Transition",
+      "matchName":"Universe_Transitions_Knoll_Ligh",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Linear Wipe",
+      "matchName":"Universe_Transitions_Linear_Wip",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.RetroGrade Transition",
+      "matchName":"Universe_Transitions_RetroGrade",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Rubix Cube",
+      "matchName":"Universe_Transitions_Rubics_Cub",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Shape Wipe",
+      "matchName":"Universe_Transitions_Shape_Wipe",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Slide",
+      "matchName":"Universe_Transitions_Slide",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Soft Edge Wipe",
+      "matchName":"Universe_Soft_Edge_Wipe_Premium",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Spectralicious Transition",
+      "matchName":"Universe_Transitions_Spectralic",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Swish Pan",
+      "matchName":"Universe_Swish_Pan_Premium",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Triangle Wave",
+      "matchName":"Universe_Transitions_Triangle_W",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Turbulence Transition",
+      "matchName":"Universe_Transitions_Turbulence",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Unfold",
+      "matchName":"Universe_Transitions_Unfold",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.VHS Transition",
+      "matchName":"Universe_Transitions_VHS_Transi",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Warp",
+      "matchName":"RG_UNI_Transition_Warp",
+      "category":"RG Universe Transitions"
+   },
+   {
+      "displayName":"uni.Logo Motion",
+      "matchName":"Universe_Utilities_Logo_Motion",
+      "category":"RG Universe Motion Graphics"
+   },
+   {
+      "displayName":"uni.Socialize",
+      "matchName":"RG_UNI_Utilities_Socialize",
+      "category":"RG Universe Utilities"
+   },
+   {
+      "displayName":"uni.Unmult",
+      "matchName":"Universe_Utilities_Unmult_Premi",
+      "category":"RG Universe Utilities"
+   },
+   {
+      "displayName":"Chromatic Displacement",
+      "matchName":"RG_VFX_ChromaDisp_AE",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"King Pin Tracker",
+      "matchName":"RG_KingPin_Tracker",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Knoll Light Factory",
+      "matchName":"KNSW Custom Flare",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Optical Glow",
+      "matchName":"RG_VFX_OpticalGlow_AE",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Primatte Keyer 6",
+      "matchName":"Photron Primatte6",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Reflection",
+      "matchName":"rg.vfx.reflection",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Shadow",
+      "matchName":"rg.vfx.shadow",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Spot Clone Tracker",
+      "matchName":"RG_VFX_SpotClone_Tracker_AE",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"Supercomp",
+      "matchName":"RG_VFX_Supernova_AE",
+      "category":"RG VFX"
+   },
+   {
+      "displayName":"3D Stroke",
+      "matchName":"tc 3DStrokePath",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Echospace",
+      "matchName":"tc Echospace",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Form",
+      "matchName":"tc Form",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Horizon",
+      "matchName":"tc Trapcode Horizon",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Lux",
+      "matchName":"tc Lux",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Mir",
+      "matchName":"tc Mir",
+      "category":"Trapcode"
+   },
+   {
+      "displayName":"Mir 3",
+      "matchName":"rg Mir",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Particular",
+      "matchName":"tc Particular",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Shine",
+      "matchName":"tc Shine",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Sound Keys",
+      "matchName":"tc Sound Keys",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Starglow",
+      "matchName":"tc Starglow",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Tao",
+      "matchName":"tc Tao",
+      "category":"RG Trapcode"
+   },
+   {
+      "displayName":"Transform",
+      "matchName":"ADBE Geometry2",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Transform",
+      "matchName":"ADBE Geometry",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Brush Strokes",
+      "matchName":"ADBE Brush Strokes",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Photoshop Solid Fill",
+      "matchName":"ADBE PSL Solid Fill",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Gradient Ramp",
+      "matchName":"ADBE Ramp",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Echo",
+      "matchName":"ADBE Echo",
+      "category":"Time"
+   },
+   {
+      "displayName":"Advanced Spill Suppressor",
+      "matchName":"ADBE Spill2",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Warp",
+      "matchName":"ADBE WRPMESH",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Solid Composite",
+      "matchName":"ADBE Solid Composite",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Turbulent Displace",
+      "matchName":"ADBE Turbulent Displace",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Delay",
+      "matchName":"ADBE Aud Delay",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Reshape",
+      "matchName":"ADBE RESHAPE",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Lightning",
+      "matchName":"ADBE Lightning",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Turbulent Noise",
+      "matchName":"ADBE AIF Perlin Noise 3D",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Roughen Edges",
+      "matchName":"ADBE Roughen Edges",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Paint Bucket",
+      "matchName":"ADBE Paint Bucket",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Brightness & Contrast",
+      "matchName":"ADBE Brightness & Contrast 2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Vibrance",
+      "matchName":"ADBE Vibrance",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Black & White",
+      "matchName":"ADBE Black&White",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Median",
+      "matchName":"ADBE PS Median",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Photo Filter",
+      "matchName":"ADBE PhotoFilterPS",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Selective Color",
+      "matchName":"ADBE SelectiveColor",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Compound Arithmetic",
+      "matchName":"ADBE Compound Arithmetic",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Add Grain",
+      "matchName":"VISINF Grain Implant",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Photoshop Drop Shadow",
+      "matchName":"ADBE PSL Drop Shadow",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"3D Camera Tracker",
+      "matchName":"ADBE 3D Tracker",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"Lens Flare",
+      "matchName":"ADBE Lens Flare",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Key Cleaner",
+      "matchName":"ADBE KeyCleaner",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Sharpen",
+      "matchName":"ADBE Sharpen",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"ID Matte",
+      "matchName":"ADBE ID MATTE",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Bevel Alpha",
+      "matchName":"ADBE Bevel Alpha",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"Time Difference",
+      "matchName":"ADBE Difference",
+      "category":"Time"
+   },
+   {
+      "displayName":"Bass & Treble",
+      "matchName":"ADBE Aud BT",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Beam",
+      "matchName":"ADBE Laser",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Vector Paint",
+      "matchName":"ADBE Vector Paint",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Motion Tile",
+      "matchName":"ADBE Tile",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Hue/Saturation",
+      "matchName":"ADBE HUE SATURATION",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"VR De-Noise",
+      "matchName":"Mettle SkyBox Denoise",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Gaussian Blur",
+      "matchName":"ADBE Gaussian Blur 2",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Exposure",
+      "matchName":"ADBE Exposure2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Exposure",
+      "matchName":"ADBE Exposure",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"HDR Compander",
+      "matchName":"ADBE Compander",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Find Edges",
+      "matchName":"ADBE Find Edges",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Noise HLS",
+      "matchName":"ADBE Noise HLS2",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Noise HLS",
+      "matchName":"ADBE Noise HLS",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Color Link",
+      "matchName":"ADBE Color Link",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Fractal Noise",
+      "matchName":"ADBE Fractal Noise",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Mirror",
+      "matchName":"ADBE Mirror",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Noise HLS Auto",
+      "matchName":"ADBE Noise HLS Auto2",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Noise HLS Auto",
+      "matchName":"ADBE Noise HLS Auto",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Smart Blur",
+      "matchName":"ADBE Smart Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Blend",
+      "matchName":"ADBE Blend",
+      "category":"Channel"
+   },
+   {
+      "displayName":"VR Color Gradients",
+      "matchName":"Mettle SkyBox Color Gradients",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Gamma/Pedestal/Gain",
+      "matchName":"ADBE Gamma/Pedestal/Gain2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Cineon Converter",
+      "matchName":"ADBE Cineon Converter2",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Cineon Converter",
+      "matchName":"ADBE Cineon Converter",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Channel Combiner",
+      "matchName":"ADBE Channel Combiner",
+      "category":"Channel"
+   },
+   {
+      "displayName":"VR Fractal Noise",
+      "matchName":"Mettle SkyBox Fractal Noise",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Auto Color",
+      "matchName":"ADBE AutoColor",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Inner/Outer Key",
+      "matchName":"ADBE ATG Extract",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Median (Legacy)",
+      "matchName":"ADBE Median",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Vegas",
+      "matchName":"APC Vegas",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Colorama",
+      "matchName":"APC Colorama",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Camera Lens Blur",
+      "matchName":"ADBE Camera Lens Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Bulge",
+      "matchName":"ADBE Bulge",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Threshold",
+      "matchName":"ADBE Threshold2",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Threshold",
+      "matchName":"ADBE Threshold",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"VR Glow",
+      "matchName":"Mettle SkyBox Glow",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Simple Choker",
+      "matchName":"ADBE Simple Choker",
+      "category":"Matte"
+   },
+   {
+      "displayName":"Linear Color Key",
+      "matchName":"ADBE Linear Color Key2",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Set Channels",
+      "matchName":"ADBE Set Channels",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Brightness & Contrast",
+      "matchName":"ADBE Brightness & Contrast",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Levels",
+      "matchName":"ADBE Easy Levels2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Levels",
+      "matchName":"ADBE Easy Levels",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Levels (Individual Controls)",
+      "matchName":"ADBE Pro Levels2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Levels (Individual Controls)",
+      "matchName":"ADBE Pro Levels",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Bevel Edges",
+      "matchName":"ADBE Bevel Edges",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"Minimax",
+      "matchName":"ADBE Minimax",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Corner Pin",
+      "matchName":"ADBE Corner Pin",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Eyedropper Fill",
+      "matchName":"ADBE Eyedropper Fill",
+      "category":"Generate"
+   },
+   {
+      "displayName":"VR Sharpen",
+      "matchName":"Mettle SkyBox Sharpen",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Fast Box Blur",
+      "matchName":"ADBE Box Blur2",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Box Blur",
+      "matchName":"ADBE Box Blur",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"4-Color Gradient",
+      "matchName":"ADBE 4ColorGradient",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Broadcast Colors",
+      "matchName":"ADBE Broadcast Colors",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Color Key",
+      "matchName":"ADBE Color Key",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"VR Chromatic Aberrations",
+      "matchName":"Mettle SkyBox Chromatic Aberrat",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Photo Filter",
+      "matchName":"ADBE Photo Filter",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Ellipse",
+      "matchName":"ADBE ELLIPSE",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Parametric EQ",
+      "matchName":"ADBE Param EQ",
+      "category":"Audio"
+   },
+   {
+      "displayName":"High-Low Pass",
+      "matchName":"ADBE Aud HiLo",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Auto Contrast",
+      "matchName":"ADBE AutoContrast",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Posterize Time",
+      "matchName":"ADBE Posterize Time",
+      "category":"Time"
+   },
+   {
+      "displayName":"Bezier Warp",
+      "matchName":"ADBE BEZMESH",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Backwards",
+      "matchName":"ADBE Aud Reverse",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Radial Wipe",
+      "matchName":"ADBE Radial Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Displacement Map",
+      "matchName":"ADBE Displacement Map",
+      "category":"Distort"
+   },
+   {
+      "displayName":"VR Converter",
+      "matchName":"Mettle SkyBox Converter",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Basic 3D",
+      "matchName":"ADBE Basic 3D",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Noise Alpha",
+      "matchName":"ADBE Noise Alpha",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Noise Alpha",
+      "matchName":"ADBE Noise Alpha2",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Auto Levels",
+      "matchName":"ADBE AutoLevels",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Remove Grain",
+      "matchName":"VISINF Grain Removal",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Polar Coordinates",
+      "matchName":"ADBE Polar Coordinates",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Timecode",
+      "matchName":"ADBE Timecode",
+      "category":"Text"
+   },
+   {
+      "displayName":"Scatter",
+      "matchName":"ADBE Scatter",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Particle Playground",
+      "matchName":"ADBE Playgnd",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"3D Channel Extract",
+      "matchName":"ADBE AUX CHANNEL EXTRACT",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Write-on",
+      "matchName":"ADBE Write-on",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Checkerboard",
+      "matchName":"ADBE Checkerboard",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Warp Stabilizer",
+      "matchName":"ADBE SubspaceStabilizer",
+      "category":"Distort"
+   },
+   {
+      "displayName":"PS Arbitrary Map",
+      "matchName":"ADBE PS Arbitrary Map",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"VR Digital Glitch",
+      "matchName":"Mettle SkyBox Digital Glitch",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Unsharp Mask",
+      "matchName":"ADBE Unsharp Mask",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Unsharp Mask",
+      "matchName":"ADBE Unsharp Mask2",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Extract",
+      "matchName":"ADBE Extract",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Depth Matte",
+      "matchName":"ADBE DEPTH MATTE",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Texturize",
+      "matchName":"ADBE Texturize",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Linear Wipe",
+      "matchName":"ADBE Linear Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Color Balance",
+      "matchName":"ADBE Color Balance 2",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Advanced Lightning",
+      "matchName":"ADBE Lightning 2",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Scribble",
+      "matchName":"ADBE Scribble Fill",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Stroke",
+      "matchName":"ADBE Stroke",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Invert",
+      "matchName":"ADBE Invert",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Reverb",
+      "matchName":"ADBE Aud Reverb",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Grid",
+      "matchName":"ADBE Grid",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Grow Bounds",
+      "matchName":"ADBE GROW BOUNDS",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Venetian Blinds",
+      "matchName":"ADBE Venetian Blinds",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Modulator",
+      "matchName":"ADBE Aud Modulator",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Equalize",
+      "matchName":"ADBE Equalize",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Flange & Chorus",
+      "matchName":"ADBE Aud_Flange",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Card Wipe",
+      "matchName":"APC CardWipeCam",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Noise",
+      "matchName":"ADBE Noise2",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Noise",
+      "matchName":"ADBE Noise",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Strobe Light",
+      "matchName":"ADBE Strobe",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Wave World",
+      "matchName":"APC Wave World",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"Shift Channels",
+      "matchName":"ADBE Shift Channels",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Matte Choker",
+      "matchName":"ADBE Matte Choker",
+      "category":"Matte"
+   },
+   {
+      "displayName":"Radial Shadow",
+      "matchName":"ADBE Radial Shadow",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"Tritone",
+      "matchName":"ADBE Tritone",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Channel Mixer",
+      "matchName":"ADBE CHANNEL MIXER",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Curves",
+      "matchName":"ADBE CurvesCustom",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Luma Key",
+      "matchName":"ADBE Luma Key",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Smear",
+      "matchName":"ADBE SCHMEAR",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Color Difference Key",
+      "matchName":"ADBE Color Difference Key",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Foam",
+      "matchName":"APC Foam",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"Color Balance (HLS)",
+      "matchName":"ADBE Color Balance (HLS)",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Caustics",
+      "matchName":"APC Caustics",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"Photoshop Bevel And Emboss",
+      "matchName":"ADBE PSL Bevel Emboss",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Channel Blur",
+      "matchName":"ADBE Channel Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Wave Warp",
+      "matchName":"ADBE Wave Warp",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Color Stabilizer",
+      "matchName":"ADBE Deflicker",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Spill Suppressor",
+      "matchName":"ADBE Spill Suppressor",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Optics Compensation",
+      "matchName":"ADBE Optics Compensation",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Timewarp",
+      "matchName":"ADBE Timewarp",
+      "category":"Time"
+   },
+   {
+      "displayName":"Pixel Motion Blur",
+      "matchName":"ADBE OFMotionBlur",
+      "category":"Time"
+   },
+   {
+      "displayName":"Rolling Shutter Repair",
+      "matchName":"ADBE Rolling Shutter",
+      "category":"Distort"
+   },
+   {
+      "displayName":"VR Rotate Sphere",
+      "matchName":"Mettle SkyBox Rotate Sphere",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Apply Color LUT",
+      "matchName":"ADBE Apply Color LUT2",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Apply Color LUT",
+      "matchName":"ADBE Apply Color LUT",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Mosaic",
+      "matchName":"ADBE Mosaic",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Tint",
+      "matchName":"ADBE Tint",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Card Dance",
+      "matchName":"APC CardDanceCam",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"Gaussian Blur (Legacy)",
+      "matchName":"ADBE Gaussian Blur",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Lumetri Color",
+      "matchName":"ADBE Lumetri",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Fill",
+      "matchName":"ADBE Fill",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Shatter",
+      "matchName":"APC Shatter",
+      "category":"Simulation"
+   },
+   {
+      "displayName":"Set Matte",
+      "matchName":"ADBE Set Matte2",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Set Matte",
+      "matchName":"ADBE Set Matte3",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Compound Blur",
+      "matchName":"ADBE Compound Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Liquify",
+      "matchName":"ADBE LIQUIFY",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Three-Way Color Corrector",
+      "matchName":"ADBE Three-Way Color Corrector",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Iris Wipe",
+      "matchName":"ADBE IRIS_WIPE",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Drop Shadow",
+      "matchName":"ADBE Drop Shadow",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"Tone",
+      "matchName":"ADBE Aud Tone",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Basic Text",
+      "matchName":"ADBE Basic Text2",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Audio Waveform",
+      "matchName":"ADBE AudWave",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Audio Spectrum",
+      "matchName":"ADBE AudSpect",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Magnify",
+      "matchName":"ADBE Magnify",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Bilateral Blur",
+      "matchName":"ADBE Bilateral",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"VR Blur",
+      "matchName":"Mettle SkyBox Blur",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Mesh Warp",
+      "matchName":"ADBE MESH WARP",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Match Grain",
+      "matchName":"VISINF Grain Duplication",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Detail-preserving Upscale",
+      "matchName":"ADBE Upscale",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Twirl",
+      "matchName":"ADBE Twirl",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Fog 3D",
+      "matchName":"ADBE FOG_3D",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Color Emboss",
+      "matchName":"ADBE Color Emboss",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"3D Glasses",
+      "matchName":"ADBE 3D Glasses2",
+      "category":"Perspective"
+   },
+   {
+      "displayName":"3D Glasses (Obsolete)",
+      "matchName":"ADBE 3D Glasses",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Change Color",
+      "matchName":"ADBE Change Color",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Circle",
+      "matchName":"ADBE Circle",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Glow",
+      "matchName":"ADBE Glo2",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Photoshop Inner Glow",
+      "matchName":"ADBE PSL Inner Glow",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Leave Color",
+      "matchName":"ADBE Leave Color",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Photoshop Inner Shadow",
+      "matchName":"ADBE PSL Inner Shadow",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Calculations",
+      "matchName":"ADBE Calculations",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Time Displacement",
+      "matchName":"ADBE Time Displacement",
+      "category":"Time"
+   },
+   {
+      "displayName":"Difference Matte",
+      "matchName":"ADBE Difference Matte2",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Block Dissolve",
+      "matchName":"ADBE Block Dissolve",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Cell Pattern",
+      "matchName":"ADBE Cell Pattern",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Directional Blur",
+      "matchName":"ADBE Motion Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Spherize",
+      "matchName":"ADBE Spherize",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Emboss",
+      "matchName":"ADBE Emboss",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Gradient Wipe",
+      "matchName":"ADBE Gradient Wipe",
+      "category":"Transition"
+   },
+   {
+      "displayName":"Radio Waves",
+      "matchName":"APC Radio Waves",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Radial Blur",
+      "matchName":"ADBE Radial Blur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"VR Sphere To Plane",
+      "matchName":"Mettle SkyBox Viewer",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Photoshop Outer Glow",
+      "matchName":"ADBE PSL Outer Glow",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Reduce Interlace Flicker",
+      "matchName":"ADBE Reduce Interlace Flicker",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Fast Blur (Legacy)",
+      "matchName":"ADBE Fast Blur",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Shadow/Highlight",
+      "matchName":"ADBE ShadowHighlight",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"VR Plane to Sphere",
+      "matchName":"Mettle SkyBox Project 2D",
+      "category":"Immersive Video"
+   },
+   {
+      "displayName":"Layer Control",
+      "matchName":"ADBE Layer Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Angle Control",
+      "matchName":"ADBE Angle Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Color Control",
+      "matchName":"ADBE Color Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Dropdown Menu Control",
+      "matchName":"ADBE Dropdown Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Point Control",
+      "matchName":"ADBE Point Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"3D Point Control",
+      "matchName":"ADBE Point3D Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Slider Control",
+      "matchName":"ADBE Slider Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Checkbox Control",
+      "matchName":"ADBE Checkbox Control",
+      "category":"Expression Controls"
+   },
+   {
+      "displayName":"Color Range",
+      "matchName":"ADBE Color Range",
+      "category":"Keying"
+   },
+   {
+      "displayName":"Cartoon",
+      "matchName":"ADBE Cartoonify",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"HDR Highlight Compression",
+      "matchName":"ADBE HDR ToneMap",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Color Profile Converter",
+      "matchName":"ADBE ProfileToProfile",
+      "category":"Utility"
+   },
+   {
+      "displayName":"Arithmetic",
+      "matchName":"ADBE Arithmetic",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Dust & Scratches",
+      "matchName":"ADBE Dust & Scratches",
+      "category":"Noise & Grain"
+   },
+   {
+      "displayName":"Video Limiter",
+      "matchName":"ADBE DigitalVideoLimiter",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Ripple",
+      "matchName":"ADBE Ripple",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Change to Color",
+      "matchName":"ADBE Change To Color",
+      "category":"Color Correction"
+   },
+   {
+      "displayName":"Numbers",
+      "matchName":"ADBE Numbers2",
+      "category":"Text"
+   },
+   {
+      "displayName":"Fractal",
+      "matchName":"ADBE Fractal",
+      "category":"Generate"
+   },
+   {
+      "displayName":"Offset",
+      "matchName":"ADBE Offset",
+      "category":"Distort"
+   },
+   {
+      "displayName":"Stereo Mixer",
+      "matchName":"ADBE Aud Stereo Mixer",
+      "category":"Audio"
+   },
+   {
+      "displayName":"Camera-Shake Deblur",
+      "matchName":"ADBE CameraShakeDeblur",
+      "category":"Blur & Sharpen"
+   },
+   {
+      "displayName":"Alpha Levels",
+      "matchName":"ADBE Alpha Levels3",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Alpha Levels",
+      "matchName":"ADBE Alpha Levels2",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Color Balance",
+      "matchName":"ADBE Color Balance",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Remove Color Matting",
+      "matchName":"ADBE Remove Color Matting",
+      "category":"Channel"
+   },
+   {
+      "displayName":"Posterize",
+      "matchName":"ADBE Posterize",
+      "category":"Stylize"
+   },
+   {
+      "displayName":"Path Text",
+      "matchName":"ADBE Path Text",
+      "category":"Obsolete"
+   },
+   {
+      "displayName":"Depth of Field",
+      "matchName":"ADBE DEPTH FIELD",
+      "category":"3D Channel"
+   },
+   {
+      "displayName":"Refine Hard Matte",
+      "matchName":"ADBE RefineRBMatte",
+      "category":"Matte"
+   },
+   {
+      "displayName":"Refine Matte",
+      "matchName":"ADBE RefineMatte",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Refine Soft Matte",
+      "matchName":"ADBE RefineMatte2",
+      "category":"Matte"
+   },
+   {
+      "displayName":"Roto Brush & Refine Edge",
+      "matchName":"ADBE Samurai",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Paint",
+      "matchName":"ADBE Paint",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Puppet",
+      "matchName":"ADBE FreePin3",
+      "category":"_Obsolete"
+   },
+   {
+      "displayName":"Color Swirl",
+      "matchName":"ADBE Color Swirl",
+      "category":""
+   },
+   {
+      "displayName":"Getting Jiggy",
+      "matchName":"ADBE Getting Jiggy",
+      "category":""
+   },
+   {
+      "displayName":"Separate XYZ Position",
+      "matchName":"ADBE Separate XYZ Position",
+      "category":""
+   },
+   {
+      "displayName":"Inset Video - framed",
+      "matchName":"ADBE CM InsetVideoFramed",
+      "category":""
+   },
+   {
+      "displayName":"Inset Video - torn edges",
+      "matchName":"ADBE CM InsetVideoTorn",
+      "category":""
+   },
+   {
+      "displayName":"Mood Lighting - amorphous",
+      "matchName":"ADBE CM MoodLightAmorph",
+      "category":""
+   },
+   {
+      "displayName":"Mood Lighting - digital",
+      "matchName":"ADBE CM MoodLightDigital",
+      "category":""
+   },
+   {
+      "displayName":"Mood Lighting - streaks",
+      "matchName":"ADBE CM MoodLightStreaks",
+      "category":""
+   },
+   {
+      "displayName":"Cracked Tiles",
+      "matchName":"ADBE CM CrackedTiles",
+      "category":""
+   },
+   {
+      "displayName":"Light Leaks - layer markers",
+      "matchName":"ADBE CM LightLeaksMarkers",
+      "category":""
+   },
+   {
+      "displayName":"Light Leaks - random",
+      "matchName":"ADBE CM LightLeaksRandom",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Flash - layer markers",
+      "matchName":"ADBE CM OpacityFlashMarkers",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Flash - random",
+      "matchName":"ADBE CM OpacityFlashRandom",
+      "category":""
+   },
+   {
+      "displayName":"Crop Edges",
+      "matchName":"ADBE CM CropEdges",
+      "category":""
+   },
+   {
+      "displayName":"Autoscroll - horizontal",
+      "matchName":"ADBE CM AutoscrollHorizontal",
+      "category":""
+   },
+   {
+      "displayName":"Autoscroll - vertical",
+      "matchName":"ADBE CM AutoscrollVertical",
+      "category":""
+   },
+   {
+      "displayName":"Drift Over Time",
+      "matchName":"ADBE CM Throw",
+      "category":""
+   },
+   {
+      "displayName":"Fade In+Out - frames",
+      "matchName":"ADBE CM FadeInOutFrames",
+      "category":""
+   },
+   {
+      "displayName":"Fade In+Out - msec",
+      "matchName":"ADBE CM FadeInOutmsec",
+      "category":""
+   },
+   {
+      "displayName":"Rotate Over Time",
+      "matchName":"ADBE CM Spin",
+      "category":""
+   },
+   {
+      "displayName":"Scale Bounce - layer markers",
+      "matchName":"ADBE CM ScaleBounceMarkers",
+      "category":""
+   },
+   {
+      "displayName":"Scale Bounce - random",
+      "matchName":"ADBE CM ScaleBounceRandom",
+      "category":""
+   },
+   {
+      "displayName":"Wiggle - gelatin",
+      "matchName":"ADBE CM WiggleGelatin",
+      "category":""
+   },
+   {
+      "displayName":"Wiggle - position",
+      "matchName":"ADBE CM WigglePosition",
+      "category":""
+   },
+   {
+      "displayName":"Wiggle - rotation",
+      "matchName":"ADBE CM WiggleRotation",
+      "category":""
+   },
+   {
+      "displayName":"Wiggle - scale",
+      "matchName":"ADBE CM WiggleScale",
+      "category":""
+   },
+   {
+      "displayName":"Wiggle - shear",
+      "matchName":"ADBE CM WiggleShear",
+      "category":""
+   },
+   {
+      "displayName":"Wigglerama",
+      "matchName":"ADBE CM Wigglerama",
+      "category":""
+   },
+   {
+      "displayName":"Dissolve - unmelt",
+      "matchName":"ADBE CM DissolveUnmelt",
+      "category":""
+   },
+   {
+      "displayName":"Zoom - 2D spin",
+      "matchName":"ADBE CM Zoom2DSpin",
+      "category":""
+   },
+   {
+      "displayName":"Zoom - 3D tumble",
+      "matchName":"ADBE CM Zoom3DTumble",
+      "category":""
+   },
+   {
+      "displayName":"Zoom - wobble",
+      "matchName":"ADBE CM ZoomWobble",
+      "category":""
+   },
+   {
+      "displayName":"Zoom - bubble",
+      "matchName":"ADBE CM ZoomBubble",
+      "category":""
+   },
+   {
+      "displayName":"Zoom - spiral",
+      "matchName":"ADBE CM ZoomSpiral",
+      "category":""
+   },
+   {
+      "displayName":"Slide - variable",
+      "matchName":"ADBE CM SlideVariable",
+      "category":""
+   },
+   {
+      "displayName":"Fly to Inset",
+      "matchName":"ADBE CM FlyToInset",
+      "category":""
+   },
+   {
+      "displayName":"Corner Reveal",
+      "matchName":"ADBE CM CornerReveal",
+      "category":""
+   },
+   {
+      "displayName":"Grid Wipe",
+      "matchName":"ADBE CM GridWipe",
+      "category":""
+   },
+   {
+      "displayName":"Transition Master Control",
+      "matchName":"ADBE CM TransComplete",
+      "category":""
+   },
+   {
+      "displayName":"Stretch Master Control",
+      "matchName":"ADBE CM TransStretch",
+      "category":""
+   },
+   {
+      "displayName":"Dissolve Master Control",
+      "matchName":"ADBE CM TransDissolve",
+      "category":""
+   },
+   {
+      "displayName":"Fade Master Control",
+      "matchName":"ADBE CM TransFade",
+      "category":""
+   },
+   {
+      "displayName":"Mask Fade Controls",
+      "matchName":"ADBE CM TransFadeMask",
+      "category":""
+   },
+   {
+      "displayName":"Wipe Master Control",
+      "matchName":"ADBE CM TransWipe",
+      "category":""
+   },
+   {
+      "displayName":"Wipe Master Controls",
+      "matchName":"ADBE CM TransWipeFeath",
+      "category":""
+   },
+   {
+      "displayName":"Card Wipe Master Control",
+      "matchName":"ADBE CM TransCard",
+      "category":""
+   },
+   {
+      "displayName":"Slide Master Control",
+      "matchName":"ADBE CM TransSlide",
+      "category":""
+   },
+   {
+      "displayName":"Stretch Master Control(corner)",
+      "matchName":"ADBE CM TransCorner",
+      "category":""
+   },
+   {
+      "displayName":"Stretch Master Control (edge)",
+      "matchName":"ADBE CM TransDirection",
+      "category":""
+   },
+   {
+      "displayName":"Iris Wipe Master Controls",
+      "matchName":"ADBE CM TransIris",
+      "category":""
+   },
+   {
+      "displayName":"Radial Wipe Master Controls",
+      "matchName":"ADBE CM TransRadial",
+      "category":""
+   },
+   {
+      "displayName":"Jiggle",
+      "matchName":"ADBE DE Jiggle",
+      "category":""
+   },
+   {
+      "displayName":"Jiggle At Marker",
+      "matchName":"ADBE DE Jiggle At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Jiggle On Beat",
+      "matchName":"ADBE DE Jiggle On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Jiggle Random",
+      "matchName":"ADBE DE Jiggle Random",
+      "category":""
+   },
+   {
+      "displayName":"Pulse",
+      "matchName":"ADBE DE Pulse",
+      "category":""
+   },
+   {
+      "displayName":"Pulse At Marker",
+      "matchName":"ADBE DE Pulse At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Pulse On Beat",
+      "matchName":"ADBE DE Pulse On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Pulse Random",
+      "matchName":"ADBE DE Pulse Random",
+      "category":""
+   },
+   {
+      "displayName":"Bounce",
+      "matchName":"ADBE DE Bounce",
+      "category":""
+   },
+   {
+      "displayName":"Bounce At Marker",
+      "matchName":"ADBE DE Bounce At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Bounce On Beat",
+      "matchName":"ADBE DE Bounce On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Bounce Random",
+      "matchName":"ADBE DE Bounce Random",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Pulse",
+      "matchName":"ADBE DE Opacity Pulse",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Pulse At Marker",
+      "matchName":"ADBE DE Opacity Pulse At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Pulse On Beat",
+      "matchName":"ADBE DE Opacity Pulse On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Opacity Pulse Random",
+      "matchName":"ADBE DE Opacity Pulse Random",
+      "category":""
+   },
+   {
+      "displayName":"Oscillate",
+      "matchName":"ADBE DE Oscillate",
+      "category":""
+   },
+   {
+      "displayName":"Oscillate At Marker",
+      "matchName":"ADBE DE Oscillate At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Oscillate On Beat",
+      "matchName":"ADBE DE Oscillate On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Oscillate Random",
+      "matchName":"ADBE DE Oscillate Random",
+      "category":""
+   },
+   {
+      "displayName":"Pendulum",
+      "matchName":"ADBE DE Pendulum",
+      "category":""
+   },
+   {
+      "displayName":"Pendulum At Marker",
+      "matchName":"ADBE DE Pendulum At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Pendulum On Beat",
+      "matchName":"ADBE DE Pendulum On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Pendulum Random",
+      "matchName":"ADBE DE Pendulum Random",
+      "category":""
+   },
+   {
+      "displayName":"Swarm",
+      "matchName":"ADBE DE Swarm",
+      "category":""
+   },
+   {
+      "displayName":"Follow",
+      "matchName":"ADBE DE Follow",
+      "category":""
+   },
+   {
+      "displayName":"Orbit",
+      "matchName":"ADBE DE Orbit",
+      "category":""
+   },
+   {
+      "displayName":"Orbit 3D",
+      "matchName":"ADBE DE Orbit 3D",
+      "category":""
+   },
+   {
+      "displayName":"Random Motion 1D",
+      "matchName":"ADBE DE Random Motion 1D",
+      "category":""
+   },
+   {
+      "displayName":"Random Motion",
+      "matchName":"ADBE DE Random Motion",
+      "category":""
+   },
+   {
+      "displayName":"Random Rotation",
+      "matchName":"ADBE DE Random Rotation",
+      "category":""
+   },
+   {
+      "displayName":"Random Rotation 3D",
+      "matchName":"ADBE DE Random Rotation 3D",
+      "category":""
+   },
+   {
+      "displayName":"Random Opacity",
+      "matchName":"ADBE DE Random Opacity",
+      "category":""
+   },
+   {
+      "displayName":"Random Scale",
+      "matchName":"ADBE DE Random Scale",
+      "category":""
+   },
+   {
+      "displayName":"Random Fill Color",
+      "matchName":"ADBE DE Random Fill Color",
+      "category":""
+   },
+   {
+      "displayName":"Z Spring",
+      "matchName":"ADBE DE Z Spring",
+      "category":""
+   },
+   {
+      "displayName":"Z Spring At Marker",
+      "matchName":"ADBE DE Z Spring At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Wobble Bounce",
+      "matchName":"ADBE DE Wobble Bounce",
+      "category":""
+   },
+   {
+      "displayName":"Wobble Bounce At Marker",
+      "matchName":"ADBE DE Wobble Bounce At Marker",
+      "category":""
+   },
+   {
+      "displayName":"Wobble Bounce On Beat",
+      "matchName":"ADBE DE Wobble Bounce On Beat",
+      "category":""
+   },
+   {
+      "displayName":"Wobble Bounce Random",
+      "matchName":"ADBE DE Wobble Bounce Random",
+      "category":""
+   },
+   {
+      "displayName":"Animated Shape Control",
+      "matchName":"ADBE CM Animated Shape Control",
+      "category":""
+   },
+   {
+      "displayName":"Chaser Control",
+      "matchName":"ADBE CM Animated Shape 2",
+      "category":""
+   },
+   {
+      "displayName":"Animated Shape Control",
+      "matchName":"ADBE CM Animated Shape 3",
+      "category":""
+   },
+   {
+      "displayName":"Sample Image",
+      "matchName":"ADBE Sample Image",
+      "category":""
+   },
+   {
+      "displayName":"Stereo 3D Controls",
+      "matchName":"ADBE Stereo 3D Controls",
+      "category":""
+   },
+   {
+      "displayName":"Face Track Points",
+      "matchName":"Pseudo/ADBE Animal Head66",
+      "category":""
+   },
+   {
+      "displayName":"Face Measurements",
+      "matchName":"Pseudo/ADBE Animal Head14",
+      "category":""
+   },
+   {
+      "displayName":"Trace Path",
+      "matchName":"Pseudo/ADBE Trace Path",
+      "category":""
+   }
+]

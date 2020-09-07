@@ -7,10 +7,13 @@ local require                   = require
 --local log                       = require "hs.logger".new "actions"
 
 local application               = require "hs.application"
+local image                     = require "hs.image"
 
---local i18n                      = require "cp.i18n"
+local config                    = require "cp.config"
+local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
+local imageFromPath             = image.imageFromPath
 local keyStroke                 = tools.keyStroke
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local playErrorSound            = tools.playErrorSound
@@ -227,18 +230,21 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Handler:
     --------------------------------------------------------------------------------
+    local icon = imageFromPath(config.basePath .. "/plugins/skype/console/images/shortcut.png")
     local actionmanager = deps.actionmanager
+    local description = i18n("skypeShortcutDescription")
     mod._handler = actionmanager.addHandler("skype_shortcuts", "skype")
         :onChoices(function(choices)
             for _, v in pairs(shortcuts) do
                 choices
                     :add(v.title)
-                    :subText("Triggers a shortcut key within Skype")
+                    :subText(description)
                     :params({
                         modifiers = v.modifiers,
                         character = v.character,
                         id = v.title
                     })
+                    :image(icon)
                     :id("skype_shortcuts_" .. "pressControl")
             end
         end)

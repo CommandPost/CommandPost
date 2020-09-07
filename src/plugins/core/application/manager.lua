@@ -76,7 +76,7 @@ function mod.defaultSearchConsoleToolbar()
     local iconPath = config.basePath .. "/plugins/core/console/images/"
     return {
         global_applications             = { path = iconPath .. "apps.png",              priority = 50},
-        global_shortcuts                = { path = iconPath .."Keyboard.icns",          priority = 51},
+        global_shortcuts                = { path = iconPath .. "Keyboard.icns",         priority = 51},
         global_snippets                 = { path = iconPath .. "snippets.png",          priority = 52},
         global_keyboardmaestro_macros   = { path = iconPath .. "keyboardmaestro.icns",  priority = 53},
         global_loupedeck_banks          = { path = iconPath .. "loupedeckbank.png",     priority = 54},
