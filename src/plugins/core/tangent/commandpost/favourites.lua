@@ -233,7 +233,7 @@ function mod.clearAction(buttonID)
     if mod._favourites[buttonID] then
         mod._favourites[buttonID] = nil
     end
-    saveToFile()
+    saveToFile(mod._favourites)
     mod.updateControls()
 end
 

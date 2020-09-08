@@ -4,15 +4,18 @@
 
 local require = require
 
-local log         = require "hs.logger".new "tangentPref"
+local log           = require "hs.logger".new "tangentPref"
 
-local dialog      = require "hs.dialog"
-local image       = require "hs.image"
+local dialog        = require "hs.dialog"
+local image         = require "hs.image"
 
-local html        = require "cp.web.html"
-local i18n        = require "cp.i18n"
+local html          = require "cp.web.html"
+local i18n          = require "cp.i18n"
+local tools         = require "cp.tools"
 
-local moses       = require "moses"
+local moses         = require "moses"
+
+local escapeTilda   = tools.escapeTilda
 
 local mod = {}
 
@@ -110,8 +113,14 @@ local function tangentPanelCallback(id, params)
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
                     mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
-                    injectScript("setTangentAction(" .. buttonID .. ", '" .. actionTitle .. "')")
+                    injectScript("setTangentAction(" .. buttonID .. ", `" .. escapeTilda(actionTitle) .. "`)")
                 end)
+
+            --------------------------------------------------------------------------------
+            -- Setup Search Console Icons:
+            --------------------------------------------------------------------------------
+            local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
+            mod.activator:toolbarIcons(defaultSearchConsoleToolbar)
 
             --------------------------------------------------------------------------------
             -- Show Activator:
@@ -147,9 +156,10 @@ function mod.init(deps, env)
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
     mod._actionManager  = deps.actionManager
+    mod._appmanager     = deps.appManager
+    mod._favourites     = deps.favourites
     mod._prefsManager   = deps.prefsManager
     mod._tangentManager = deps.tangentManager
-    mod._favourites     = deps.favourites
     mod._env            = env
 
     --------------------------------------------------------------------------------
@@ -275,6 +285,7 @@ local plugin = {
         ["core.tangent.manager"]                = "tangentManager",
         ["core.tangent.commandpost.favourites"] = "favourites",
         ["core.action.manager"]                 = "actionManager",
+        ["core.application.manager"]            = "appManager",
     }
 }
 
