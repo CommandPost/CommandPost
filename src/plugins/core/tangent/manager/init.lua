@@ -657,7 +657,14 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             mod.disableFinalCutProInTangentHub()
             tangent.callback(callback)
-            local ok, errorMessage = tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
+
+            --------------------------------------------------------------------------------
+            -- NOTE: If we change Tangent Layout names, we'll need to migrate settings
+            --       across for legacy users.
+            --------------------------------------------------------------------------------
+            --local ok, errorMessage = tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
+
+            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
