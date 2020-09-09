@@ -6,6 +6,7 @@ local require               = require
 
 local application           = require "hs.application"
 
+local config                = require "cp.config"
 local ae                    = require "cp.adobe.aftereffects"
 
 local infoForBundleID       = application.infoForBundleID
@@ -19,12 +20,19 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    local iconPath = config.basePath .. "/plugins/core/console/images/"
+    local searchConsoleToolbar = {
+        aftereffects_effects    = { path = iconPath .. "fx.png",        priority = 1},
+        aftereffects_shortcuts  = { path = iconPath .. "shortcut.png",  priority = 2},
+    }
+
     local bundleID = ae:bundleID()
     if infoForBundleID(bundleID) then
         deps.manager.registerApplication({
             bundleID = bundleID,
             displayName = "Adobe After Effects",
             legacyGroupID = "aftereffects",
+            searchConsoleToolbar = searchConsoleToolbar,
         })
     end
 end

@@ -57,6 +57,14 @@ function mod.show()
     end
 
     --------------------------------------------------------------------------------
+    -- Get the group ID of the current application:
+    --------------------------------------------------------------------------------
+    local apps = mod.appmanager.getApplications()
+    local selectedApp = apps and apps[bundleID] and apps[bundleID] and apps[bundleID]
+    local handlerID = selectedApp and selectedApp.legacyGroupID or bundleID
+    local searchConsoleToolbar = selectedApp and selectedApp.searchConsoleToolbar
+
+    --------------------------------------------------------------------------------
     -- If not, use the global one:
     --------------------------------------------------------------------------------
     if not mod.activator then
@@ -69,8 +77,10 @@ function mod.show()
         local handlerIds = mod.actionmanager.handlerIds()
         for _,id in pairs(handlerIds) do
             local handlerTable = tools.split(id, "_")
-            if handlerTable[2]~= "widgets" and handlerTable[1] == "global" and id ~= "global_shortcuts" then
-                table.insert(allowedHandlers, id)
+            if handlerTable[1] == "global" or handlerTable[1] == handlerID then
+                if handlerTable[2]~= "widgets" and id ~= "global_shortcuts" then
+                    table.insert(allowedHandlers, id)
+                end
             end
         end
         mod.activator:allowHandlers(unpack(allowedHandlers))
@@ -79,6 +89,9 @@ function mod.show()
         -- Allow specific toolbar icons in the Console:
         --------------------------------------------------------------------------------
         local defaultSearchConsoleToolbar = mod.appmanager.defaultSearchConsoleToolbar()
+        if searchConsoleToolbar then
+            defaultSearchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, searchConsoleToolbar)
+        end
         local iconPath = config.basePath .. "/plugins/core/console/images/"
         local toolbarIcons = {
             global_menuactions = { path = iconPath .. "menu.png", priority = 2},

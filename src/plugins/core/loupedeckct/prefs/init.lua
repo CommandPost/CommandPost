@@ -560,7 +560,8 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
-            if not mod.activator then
+            local activatorID = params["application"]
+            if not mod.activator or mod.activator and not mod.activator[activatorID] then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
 
@@ -625,7 +626,6 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:

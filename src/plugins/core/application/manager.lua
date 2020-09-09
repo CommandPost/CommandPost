@@ -4,7 +4,11 @@
 
 local require   = require
 
+local fnutils   = require "hs.fnutils"
+
 local config    = require "cp.config"
+
+local copy      = fnutils.copy
 
 local mod = {}
 
@@ -47,7 +51,7 @@ end
 --- Returns:
 ---  * A table of all the registered applications.
 function mod.getApplications()
-    return applications
+    return copy(applications)
 end
 
 --- plugins.core.application.manager.getSearchConsoleToolbar(bundleID) -> table

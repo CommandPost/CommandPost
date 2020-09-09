@@ -21,6 +21,7 @@ local require                   = require
 
 local log                       = require "hs.logger".new "activator"
 
+local application               = require "hs.application"
 local chooser                   = require "hs.chooser"
 local drawing                   = require "hs.drawing"
 local eventtap                  = require "hs.eventtap"
@@ -37,7 +38,8 @@ local toolbar                   = require "hs.webview.toolbar"
 local config                    = require "cp.config"
 local Do                        = require "cp.rx.go.Do"
 local Given                     = require "cp.rx.go.Given"
-local Observable                = require "cp.rx" .Observable
+local rx                        = require "cp.rx"
+
 local i18n                      = require "cp.i18n"
 local idle                      = require "cp.idle"
 local prop                      = require "cp.prop"
@@ -51,7 +53,9 @@ local concat                    = fnutils.concat
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local imageFromPath             = image.imageFromPath
+local infoForBundleID           = application.infoForBundleID
 local insert                    = table.insert
+local Observable                = rx.Observable
 local pack                      = table.pack
 local sort                      = table.sort
 local spairs                    = tools.spairs
@@ -1139,6 +1143,11 @@ function activator:isVisible()
     return theChooser and theChooser:isVisible()
 end
 
+-- plugins.core.action._refreshWatchers -> table
+-- Variable
+-- A table of all the refresh watchers.
+activator._refreshWatchers = {}
+
 --- plugins.core.action.activator:show() -> boolean
 --- Method
 --- Shows a chooser listing the available actions. When selected by the user,
@@ -1150,6 +1159,25 @@ end
 --- Returns:
 ---  * `true` if successful
 function activator:show()
+    --------------------------------------------------------------------------------
+    -- Watch for any handler updates that might happen after the Search Console
+    -- has already loaded (for example, menubar actions which might take a while
+    -- to populate):
+    --------------------------------------------------------------------------------
+    local allowedHandlers = self._allowedHandlers()
+    for id, _ in pairs(allowedHandlers) do
+        if not self._refreshWatchers[id] then
+            self._refreshWatchers[id] = true
+            local handler = self._manager.getHandler(id)
+            handler.choices:watch(function()
+                if self:isVisible() then
+                    doAfter(0.1, function()
+                        self:refreshChooser()
+                    end)
+                end
+            end)
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Get Chooser:
@@ -1449,8 +1477,11 @@ function activator:rightClickAction(index)
                     allEnabledInGroup[groupID] = allEnabledInGroup[groupID] and enabled
                     allDisabledInGroup[groupID] = allDisabledInGroup[groupID] and not enabled
 
+                    local handler = self._manager.getHandler(id)
+                    local title = handler:label() or i18n(format("%s_action", id)) or id
+
                     submenu[#submenu + 1] = {
-                        title = i18n(format("%s_action", id)) or id,
+                        title = title,
                         fn=function()
                             if enabled then
                                 self:disableHandler(id)
@@ -1480,8 +1511,14 @@ function activator:rightClickAction(index)
 
             concat(allSubmenu, submenu)
 
+            local title = i18n(format("%s_command_group", currentGroupID))
+            if not title then
+                local info = infoForBundleID(currentGroupID)
+                title = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+            end
+
             groupItems[#groupItems + 1] = {
-                title = i18n(format("%s_command_group", currentGroupID)) or currentGroupID,
+                title = title or currentGroupID,
                 menu = allSubmenu,
             }
         end
