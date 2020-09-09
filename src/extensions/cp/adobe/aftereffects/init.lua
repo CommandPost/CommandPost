@@ -254,13 +254,13 @@ function aftereffects:shortcutsPreferences()
                         -- Continuation of a multi-line value:
                         --------------------------------------------------------------------------------
                         local start, finish = line:find([[".-"]])
-                        local value = line:sub(start + 1, finish - 1)
+                        local v = line:sub(start + 1, finish - 1)
                         if line:sub(-1) == [["]] then
                             --------------------------------------------------------------------------------
                             -- End of a multi-line value:
                             --------------------------------------------------------------------------------
                             local id = lastID
-                            lastValue = lastValue .. value
+                            lastValue = lastValue .. v
 
                             local s, f = lastValue:find([[%(.-%)]])
                             local value = lastValue:sub(s + 1, f - 1)
@@ -273,7 +273,7 @@ function aftereffects:shortcutsPreferences()
                             --------------------------------------------------------------------------------
                             -- Middle of a multi-line value:
                             --------------------------------------------------------------------------------
-                            lastValue = lastValue .. value
+                            lastValue = lastValue .. v
                         end
                     end
                 end
