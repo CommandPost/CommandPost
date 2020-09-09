@@ -23,7 +23,7 @@ function plugin.init(deps)
     deps.fcpxCmds:add("renameClip")
         :whenActivated(function()
             local selectedClip
-            local content = fcp:timeline():contents()
+            local content = fcp.timeline.contents
             local selectedClips = content:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
                 selectedClip = selectedClips[1]

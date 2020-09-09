@@ -136,7 +136,7 @@ local function generateContent()
     local virtualMidiDevices = mod._midi.virtualDevices()
     local devices = {}
     for _, device in pairs(midiDevices) do
-        if device ~= "Loupedeck+" then
+        if device ~= "Loupedeck" and device ~= "Loupedeck+" then
             table.insert(devices, device)
         end
     end
@@ -276,7 +276,7 @@ local function updateUI(highlightRow)
 
         local foundDevice = false
         for _, deviceName in ipairs(midiDevices) do
-            if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
                 local selected = ""
                 if device == deviceName then
                     selected = [[selected=""]]
@@ -305,7 +305,7 @@ local function updateUI(highlightRow)
         ]]
         local foundVirtualDevice = false
         for _, deviceName in ipairs(virtualMidiDevices) do
-            if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+            if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
                 local selected = ""
                 if device == "virtual_" .. deviceName then
                     selected = [[selected=""]]
@@ -318,7 +318,7 @@ local function updateUI(highlightRow)
         end
         if device ~= "" and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
             dc = dc .. [[
-                    <option selected="" value="virtual_]] .. device .. [[">]] .. device .. [[ (Offline)</option>
+                    <option selected="" value="virtual_]] .. device .. [[">]] .. string.sub(device, 9) .. [[ (Offline)</option>
             ]]
         elseif #virtualMidiDevices == 0 then
             dc = dc .. [[
@@ -503,7 +503,7 @@ local function startLearning(params)
         --------------------------------------------------------------------------------
         -- Prevent Loupedeck+'s from appearing in the MIDI Preferences:
         --------------------------------------------------------------------------------
-        if deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
+        if deviceName ~= "Loupedeck" and deviceName ~= "virtual_Loupedeck" and deviceName ~= "Loupedeck+" and deviceName ~= "virtual_Loupedeck+" then
             if string.sub(deviceName, 1, 8) == "virtual_" then
                 learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
             else
@@ -630,7 +630,7 @@ local function startLearning(params)
 
                         if commandType == "noteOff" or commandType == "noteOn" then
                             setItem("number", learnButton, learnApplication, learnBank, metadata.note)
-                            setItem("value", learnButton, learnApplication, learnBank, "")
+                            setItem("value", learnButton, learnApplication, learnBank, metadata.velocity)
                         elseif commandType == "controlChange" then
                             setItem("number", learnButton, learnApplication, learnBank, metadata.controllerNumber)
                             setItem("value", learnButton, learnApplication, learnBank, controllerValue)
@@ -671,7 +671,8 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
-            if not mod.activator then
+            local activatorID = params["application"]
+            if not mod.activator or mod.activator and not mod.activator[activatorID] then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
 
@@ -722,7 +723,6 @@ local function midiPanelCallback(id, params)
                     end
                     local unpack = table.unpack
                     mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:
@@ -737,7 +737,6 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
@@ -1354,7 +1353,7 @@ function plugin.init(deps, env)
         label           = i18n("midi"),
         image           = imageFromPath(config.bundledPluginsPath .. "/core/midi/prefs/images/AudioMIDISetup.icns"),
         tooltip         = i18n("midi"),
-        height          = 800,
+        height          = 820,
         closeFn         = destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
@@ -1368,12 +1367,15 @@ function plugin.init(deps, env)
             {
                 label       = i18n("enableMIDI"),
                 checked     = mod._midi.enabled,
-                onchange    = function(_, params)
-                    --------------------------------------------------------------------------------
-                    -- Toggle Preference:
-                    --------------------------------------------------------------------------------
-                    mod._midi.enabled(params.checked)
-                end,
+                onchange    = function(_, params) mod._midi.enabled(params.checked) end,
+            }
+        )
+
+        :addCheckbox(3,
+            {
+                label       = i18n("displayMessageWhenChangingBanks"),
+                checked     = mod._midi.displayMessageWhenChangingBanks,
+                onchange    = function(_, params) mod._midi.displayMessageWhenChangingBanks(params.checked) end,
             }
         )
 

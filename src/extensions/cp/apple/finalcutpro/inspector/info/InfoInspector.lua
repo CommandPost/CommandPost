@@ -129,7 +129,7 @@ end
 function InfoInspector.lazy.prop:metadataView()
     return prop(
         function()
-            local text = self:metadataViewButton():getTitle()
+            local text = self.metadataViewButton:getTitle()
             if text then
                 local app = self:app()
                 for k,v in pairs(InfoInspector.metadataViews) do
@@ -144,21 +144,15 @@ function InfoInspector.lazy.prop:metadataView()
             self:show()
             local key = InfoInspector.metadataViews[value]
             local text = self:app():string(key)
-            self:metadataViewButton():selectItemMatching(text)
+            self.metadataViewButton:selectItemMatching(text)
         end
     )
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoInspector:show() -> MenuButton
---- Method
---- Gets the Info Inspector Metadata View Button.
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `MenuButton` object.
-function InfoInspector.lazy.method:metadataViewButton()
+--- cp.apple.finalcutpro.inspector.info.InfoInspector.metadataViewButton <cp.io.MenuButton>
+--- Field
+--- The Info Inspector Metadata View Button.
+function InfoInspector.lazy.value:metadataViewButton()
     return MenuButton(self, function()
         local ui = self:parent():bottomBarUI()
         local menu = childFromLeft(ui, 1)

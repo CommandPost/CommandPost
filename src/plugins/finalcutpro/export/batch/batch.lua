@@ -12,6 +12,7 @@ local fs                    = require "hs.fs"
 local geometry              = require "hs.geometry"
 local image                 = require "hs.image"
 local mouse                 = require "hs.mouse"
+local osascript             = require "hs.osascript"
 
 local compressor            = require "cp.apple.compressor"
 local config                = require "cp.config"
@@ -42,9 +43,9 @@ local trim                  = tools.trim
 local doUntil               = just.doUntil
 local wait                  = just.wait
 
+local applescript           = osascript.applescript
 local imageFromPath         = image.imageFromPath
 local insert                = table.insert
-
 local pathToAbsolute        = fs.pathToAbsolute
 
 local mod = {}
@@ -158,8 +159,8 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             return (t[a]:attributeValue("AXValueDescription") or "") < (t[b]:attributeValue("AXValueDescription") or "")
         end
     end
-    local playhead = fcp:timeline():playhead()
-    local timelineContents = fcp:timeline():contents()
+    local playhead = fcp.timeline.playhead
+    local timelineContents = fcp.timeline.contents
     for _,clip in spairs(clips, sortFn) do
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -177,7 +178,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp:timeline():contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -264,7 +265,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if not doUntil(function()
             fcp:selectMenu({"Window", "Go To", "Timeline"})
-            return fcp:timeline():contents():isFocused()
+            return fcp.timeline.contents:isFocused()
         end, 5, 0.1) then
             displayErrorMessage("Failed to focus on timeline.")
             return false
@@ -285,7 +286,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
-            local exportDialog = fcp:exportDialog()
+            local exportDialog = fcp.exportDialog
             local errorMessage
             _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
             if errorMessage then
@@ -295,7 +296,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- Get the file extension for later:
             --------------------------------------------------------------------------------
-            local fileExtension = exportDialog:fileExtension():value()
+            local fileExtension = exportDialog:fileExtension()
 
             --------------------------------------------------------------------------------
             -- Press 'Next':
@@ -305,13 +306,13 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             --------------------------------------------------------------------------------
             -- If 'Next' has been clicked (as opposed to 'Share'):
             --------------------------------------------------------------------------------
-            local saveSheet = exportDialog:saveSheet()
+            local saveSheet = exportDialog.saveSheet
             if exportDialog:isShowing() then
 
                 --------------------------------------------------------------------------------
                 -- Click 'Save' on the save sheet:
                 --------------------------------------------------------------------------------
-                if not doUntil(function() return saveSheet:isShowing() end) then
+                if not doUntil(function() return saveSheet:isShowing() end, 5) then
                     displayErrorMessage("Failed to open the 'Save' window." .. errorFunction)
                     return false
                 end
@@ -323,7 +324,47 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 if firstTime then
                     local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
                     if not NSNavLastRootDirectory or (pathToAbsolute(NSNavLastRootDirectory) ~= pathToAbsolute(exportPath)) then
-                        saveSheet:setPath(exportPath)
+                        --------------------------------------------------------------------------------
+                        -- NOTE: We shouldn't have to do this. We should just be able to press
+                        --       the shortcut key using `hs.eventtap` and it should just work, but
+                        --       alas, for some weird reason it doesn't. It also takes several goes
+                        --       before the shortcut key is triggered. Why? I have no idea.
+                        --------------------------------------------------------------------------------
+                        local prompt = saveSheet.goToPrompt
+                        if not doUntil(function()
+                            saveSheet:UI():performAction("AXRaise")
+                            applescript([[tell application "System Events" to keystroke "g" using {shift down, command down}]])
+                            return prompt:isShowing()
+                        end, 5) then
+                            displayErrorMessage("Failed to open the 'Go to the folder' prompt." .. errorFunction)
+                            return false
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Set the path value:
+                        --------------------------------------------------------------------------------
+                        prompt:value(exportPath)
+
+                        --------------------------------------------------------------------------------
+                        -- Make sure the value is actually set:
+                        --------------------------------------------------------------------------------
+                        if not doUntil(function() return prompt:value() == exportPath end, 5) then
+                            displayErrorMessage("Failed to set the 'Go to the folder' path." .. errorFunction)
+                            return false
+                        end
+
+                        --------------------------------------------------------------------------------
+                        -- Press Go:
+                        --------------------------------------------------------------------------------
+                        prompt:go()
+
+                        --------------------------------------------------------------------------------
+                        -- Wait until the 'Go to the folder' prompt is closed:
+                        --------------------------------------------------------------------------------
+                        if not doUntil(function() return not prompt:isShowing() end, 5) then
+                            displayErrorMessage("Failed to close the 'Go to the folder' prompt." .. errorFunction)
+                            return false
+                        end
                     end
                     firstTime = false
                 end
@@ -331,7 +372,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 --------------------------------------------------------------------------------
                 -- Make sure we don't already have a clip with the same name in the batch:
                 --------------------------------------------------------------------------------
-                local filename = saveSheet:filename():getValue()
+                local filename = saveSheet:filename()
                 if filename then
                     local newFilename = clipName
 
@@ -373,7 +414,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                     -- Update the filename and save it for comparison of next clip:
                     --------------------------------------------------------------------------------
                     if filename ~= newFilename then
-                        saveSheet:filename():setValue(newFilename)
+                        saveSheet:filename(newFilename)
                     end
                     table.insert(mod._existingClipNames, newFilename)
                 end
@@ -381,7 +422,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
                 --------------------------------------------------------------------------------
                 -- Click 'Save' on the save sheet:
                 --------------------------------------------------------------------------------
-                saveSheet:pressSave()
+                saveSheet:save()
 
             end
 
@@ -389,13 +430,13 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             -- Make sure Save Window is closed:
             --------------------------------------------------------------------------------
             while saveSheet:isShowing() do
-                local replaceAlert = saveSheet:replaceAlert()
+                local replaceAlert = saveSheet.replaceAlert
                 if mod.replaceExistingFiles() and replaceAlert:isShowing() then
                     replaceAlert:pressReplace()
                 else
                     replaceAlert:pressCancel()
 
-                    local originalFilename = saveSheet:filename():getValue()
+                    local originalFilename = saveSheet:filename()
                     if originalFilename == nil then
                         displayErrorMessage("Failed to get the original Filename." .. errorFunction)
                         return false
@@ -403,8 +444,8 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
 
                     local newFilename = incrementFilename(originalFilename)
 
-                    saveSheet:filename():setValue(newFilename)
-                    saveSheet:pressSave()
+                    saveSheet:filename(newFilename)
+                    saveSheet:save()
                 end
             end
 
@@ -422,7 +463,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             -- Wait until the "Preparing" modal dialog closes or the
             -- Background Tasks Dialog opens:
             --------------------------------------------------------------------------------
-            local backgroundTasksDialog = fcp:backgroundTasksDialog()
+            local backgroundTasksDialog = fcp.backgroundTasksDialog
             if fcp:isModalDialogOpen() then
                 doUntil(function()
                     return backgroundTasksDialog:isShowing() or fcp:isModalDialogOpen() == false
@@ -435,9 +476,9 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
             local ignoreBackgroundTasks = mod.ignoreBackgroundTasks()
             if backgroundTasksDialog:isShowing() then
                 if ignoreBackgroundTasks then
-                    backgroundTasksDialog:continue():press()
+                    backgroundTasksDialog:continue()
                 else
-                    backgroundTasksDialog:cancel():press()
+                    backgroundTasksDialog:cancel()
                     displayMessage(i18n("batchExportBackgroundTasksDetected"))
                     return false
                 end
@@ -603,7 +644,7 @@ function mod.getDestinationPreset()
     -- If there's no existing destination, then try use the Default Destination:
     --------------------------------------------------------------------------------
     if destinationPreset == nil then
-        local defaultItem = fcp:menu():findMenuUI({"File", "Share", function(menuItem)
+        local defaultItem = fcp.menu:findMenuUI({"File", "Share", function(menuItem)
             return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
         end})
         if defaultItem ~= nil then
@@ -625,7 +666,7 @@ function mod.getDestinationPreset()
     -- If that fails, try the first item on the list:
     --------------------------------------------------------------------------------
     if destinationPreset == nil then
-        local firstItem = fcp:menu():findMenuUI({"File", "Share", 1})
+        local firstItem = fcp.menu:findMenuUI({"File", "Share", 1})
         if firstItem ~= nil then
             local title = firstItem:attributeValue("AXTitle")
             if title then
@@ -683,7 +724,7 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Check if we have any currently-selected clips:
     --------------------------------------------------------------------------------
-    local timelineContents = fcp:timeline():contents()
+    local timelineContents = fcp.timeline.contents
     local selectedClips = timelineContents:selectedClipsUI(true)
 
     if not selectedClips or #selectedClips == 0 then
@@ -799,6 +840,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     --------------------------------------------------------------------------------
     -- Create the Batch Export window:
     --------------------------------------------------------------------------------

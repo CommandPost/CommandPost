@@ -45,10 +45,10 @@ function FindAndReplace:initialize(cpApp)
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:findText() -> cp.ui.TextField
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.findText <cp.ui.TextField>
+--- Field
 --- The "Find" search field, as a [TextField](cp.ui.TextField.md)
-function FindAndReplace.lazy.method:findText()
+function FindAndReplace.lazy.value:findText()
     return TextField(self, self.UI:mutate(function(original)
         return cache(self, "_findText", function()
             return childFromTop(original(), 1, TextField.matches)
@@ -56,10 +56,10 @@ function FindAndReplace.lazy.method:findText()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:replaceText() -> cp.ui.TextField
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.replaceText <cp.ui.TextField>
+--- Field
 --- The "Replace" search field, as a [TextField](cp.ui.TextField.md)
-function FindAndReplace.lazy.method:replaceText()
+function FindAndReplace.lazy.value:replaceText()
     return TextField(self, self.UI:mutate(function(original)
         return cache(self, "_replaceText", function()
             return childFromTop(original(), 2, TextField.matches)
@@ -67,10 +67,10 @@ function FindAndReplace.lazy.method:replaceText()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:searchIn() -> cp.ui.PopUpButton
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.searchIn <cp.ui.PopUpButton>
+--- Field
 --- The "Search In" [PopUpButton](cp.ui.PopUpButton.md).
-function FindAndReplace.lazy.method:searchIn()
+function FindAndReplace.lazy.value:searchIn()
     return PopUpButton(self, self.UI:mutate(function(original)
         return cache(self, "_searchIn", function()
             return childMatching(original(), PopUpButton.matches)
@@ -78,10 +78,10 @@ function FindAndReplace.lazy.method:searchIn()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:matchCase() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.matchCase <cp.ui.CheckBox>
+--- Field
 --- The "Match case" [CheckBox](cp.ui.CheckBox.md).
-function FindAndReplace.lazy.method:matchCase()
+function FindAndReplace.lazy.value:matchCase()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_matchCase", function()
             return childFromTop(original(), 1, CheckBox.matches)
@@ -89,10 +89,10 @@ function FindAndReplace.lazy.method:matchCase()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:wholeWords() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.wholeWords <cp.ui.CheckBox>
+--- Field
 --- The "Whole words" [CheckBox](cp.ui.CheckBox.md).
-function FindAndReplace.lazy.method:wholeWords()
+function FindAndReplace.lazy.value:wholeWords()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_wholeWords", function()
             return childFromTop(original(), 2, CheckBox.matches)
@@ -100,10 +100,10 @@ function FindAndReplace.lazy.method:wholeWords()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:loopSearch() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.loopSearch <cp.ui.CheckBox>
+--- Field
 --- The "Loop search" [CheckBox](cp.ui.CheckBox.md).
-function FindAndReplace.lazy.method:loopSearch()
+function FindAndReplace.lazy.value:loopSearch()
     return CheckBox(self, self.UI:mutate(function(original)
         return cache(self, "_loopSearch", function()
             return childFromTop(original(), 3, CheckBox.matches)
@@ -111,57 +111,57 @@ function FindAndReplace.lazy.method:loopSearch()
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:replaceAll() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.replaceAll <cp.ui.Button>
+--- Field
 --- The "Replace All" [Button](cp.ui.Button.md).
-function FindAndReplace.lazy.method:replaceAll()
+function FindAndReplace.lazy.value:replaceAll()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_replaceAll", function()
-            return childFromLeft(childrenBelow(original(), self:findText():UI()), 1, Button.matches)
+            return childFromLeft(childrenBelow(original(), self.findText:UI()), 1, Button.matches)
         end, Button.matches)
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:replace() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.replace <cp.ui.Button>
+--- Field
 --- The "Replace" [Button](cp.ui.Button.md).
-function FindAndReplace.lazy.method:replace()
+function FindAndReplace.lazy.value:replace()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_replace", function()
-            return childFromLeft(childrenBelow(original(), self:findText():UI()), 2, Button.matches)
+            return childFromLeft(childrenBelow(original(), self.findText:UI()), 2, Button.matches)
         end, Button.matches)
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:replaceAndFind() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.replaceAndFind <cp.ui.Button>
+--- Field
 --- The "Replace & Find" [Button](cp.ui.Button.md).
-function FindAndReplace.lazy.method:replaceAndFind()
+function FindAndReplace.lazy.value:replaceAndFind()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_replaceAndFind", function()
-            return childFromLeft(childrenBelow(original(), self:findText():UI()), 3, Button.matches)
+            return childFromLeft(childrenBelow(original(), self.findText:UI()), 3, Button.matches)
         end, Button.matches)
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:previous() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.previous <cp.ui.Button>
+--- Field
 --- The "Previous" [Button](cp.ui.Button.md).
-function FindAndReplace.lazy.method:previous()
+function FindAndReplace.lazy.value:previous()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_previous", function()
-            return childFromRight(childrenBelow(original(), self:findText():UI()), 2, Button.matches)
+            return childFromRight(childrenBelow(original(), self.findText:UI()), 2, Button.matches)
         end, Button.matches)
     end))
 end
 
---- cp.apple.finalcutpro.main.FindAndReplaceTitleText:next() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.main.FindAndReplaceTitleText.next <cp.ui.Button>
+--- Field
 --- The "Next" [Button](cp.ui.Button.md).
-function FindAndReplace.lazy.method:next()
+function FindAndReplace.lazy.value:next()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_next", function()
-            return childFromRight(childrenBelow(original(), self:findText():UI()), 1, Button.matches)
+            return childFromRight(childrenBelow(original(), self.findText:UI()), 1, Button.matches)
         end, Button.matches)
     end))
 end
@@ -172,7 +172,7 @@ end
 function FindAndReplace.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:app():doLaunch())
-    :Then(self:app():menu():doSelectMenu({"Edit", "Find and Replace Title Text..."}))
+    :Then(self:app().menu:doSelectMenu({"Edit", "Find and Replace Title Text..."}))
     :Otherwise(false)
     :ThenYield()
     :Label("FindAndReplaceTitleText:doShow")
@@ -206,27 +206,27 @@ end
 
 function FindAndReplace.lazy.method:doReplaceAll()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self:replaceAll()):Label("FindAndReplaceTitleText:doReplaceAll")
+    return doNinjaPress(self.replaceAll):Label("FindAndReplaceTitleText:doReplaceAll")
 end
 
 function FindAndReplace.lazy.method:doReplace()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self:replaceAll()):Label("FindAndReplaceTitleText:doReplace")
+    return doNinjaPress(self.replaceAll):Label("FindAndReplaceTitleText:doReplace")
 end
 
 function FindAndReplace.lazy.method:doReplaceAndFind()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self:replaceAndFind()):Label("FindAndReplaceTitleText:doReplaceAndFind")
+    return doNinjaPress(self.replaceAndFind):Label("FindAndReplaceTitleText:doReplaceAndFind")
 end
 
 function FindAndReplace.lazy.method:doPrevious()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self:previous()):Label("FindAndReplaceTitleText:doPrevious")
+    return doNinjaPress(self.previous):Label("FindAndReplaceTitleText:doPrevious")
 end
 
 function FindAndReplace.lazy.method:doNext()
     -- TODO: Figure out why 'doPress' doesn't work for these buttons.
-    return doNinjaPress(self:next()):Label("FindAndReplaceTitleText:doNext")
+    return doNinjaPress(self.next):Label("FindAndReplaceTitleText:doNext")
 end
 
 --- cp.apple.finalcutpro.main.FindAndReplaceTitleText:doFindAndReplaceAll(find, replace) -> cp.rx.go.Statement
@@ -239,8 +239,8 @@ function FindAndReplace:doFindAndReplaceAll(find, replace)
             self.isShowing,
             self:doShow())
         :Then(function(wasShowing)
-            self:findText().value:set(find)
-            self:replaceText().value:set(replace)
+            self.findText.value:set(find)
+            self.replaceText.value:set(replace)
 
             log.df("About to replaceAll():doPress()...")
             local result = self:doReplaceAll()

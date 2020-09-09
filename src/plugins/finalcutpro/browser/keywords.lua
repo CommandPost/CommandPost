@@ -9,6 +9,7 @@ local pasteboard            = require "hs.pasteboard"
 local config                = require "cp.config"
 local dialog                = require "cp.dialog"
 local fcp                   = require "cp.apple.finalcutpro"
+local KeywordEditor         = require "cp.apple.finalcutpro.main.KeywordEditor"
 local i18n                  = require "cp.i18n"
 local tools                 = require "cp.tools"
 
@@ -26,7 +27,7 @@ mod.NUMBER_OF_PRESETS = 9
 --- plugins.finalcutpro.browser.keywords.NUMBER_OF_SHORTCUTS -> number
 --- Constant
 --- The number of Keyword Keyboard shortcuts available.
-mod.NUMBER_OF_SHORTCUTS = 9
+mod.NUMBER_OF_SHORTCUTS = KeywordEditor.NUMBER_OF_SHORTCUTS
 
 --- plugins.finalcutpro.browser.keywords.save(preset) -> none
 --- Function
@@ -41,12 +42,13 @@ function mod.save(preset)
     --------------------------------------------------------------------------------
     -- Get Keyword Shortcuts from Preferences & Save Them to Preset Group:
     --------------------------------------------------------------------------------
-    local keywordGroups = fcp.preferences.FFKeywordGroups
-    if keywordGroups and #keywordGroups == mod.NUMBER_OF_SHORTCUTS then
-        local savedKeywords = {}
-        for i=1, mod.NUMBER_OF_PRESETS do
-            table.insert(savedKeywords, keywordGroups[i])
-        end
+    if preset < 1 or preset > mod.NUMBER_OF_PRESETS then
+        displayErrorMessage(i18n("keywordPresetInvalid", {preset = preset}))
+        return
+    end
+
+    local savedKeywords = fcp.keywordEditor:saveShortcuts()
+    if savedKeywords then
         config.set("savedKeywords" .. tostring(preset), savedKeywords)
 
         --------------------------------------------------------------------------------
@@ -81,29 +83,7 @@ function mod.restore(preset)
     --------------------------------------------------------------------------------
     -- Open the Keyword Editor:
     --------------------------------------------------------------------------------
-    local keywordEditor = fcp:keywordEditor()
-    keywordEditor:show()
-    if not keywordEditor:isShowing() then
-        dialog.displayMessage(i18n("keywordEditorNotOpened"))
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Open the Keyboard Shortcuts section:
-    --------------------------------------------------------------------------------
-    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
-    keyboardShortcuts:show()
-    if not keyboardShortcuts:isShowing() then
-        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
-        return nil
-    end
-
-    --------------------------------------------------------------------------------
-    -- Restore Values to Keyword Editor:
-    --------------------------------------------------------------------------------
-    for i=1, mod.NUMBER_OF_SHORTCUTS do
-        keyboardShortcuts:keyword(i, savedKeywords[i])
-    end
+    fcp.keywordEditor:loadShortcuts(savedKeywords)
 
     --------------------------------------------------------------------------------
     -- Display Notification:
@@ -146,12 +126,12 @@ function plugin.init(deps)
         :whenActivated(function()
             local value = pasteboard.readString()
             if value then
-                local keywordEditor = fcp:keywordEditor()
+                local keywordEditor = fcp.keywordEditor
                 local wasShowing = keywordEditor:isShowing()
                 keywordEditor:show()
-                local keywords = keywordEditor:keyword() or {}
+                local keywords = keywordEditor:keywords() or {}
                 table.insert(keywords, value)
-                keywordEditor:keyword(keywords)
+                keywordEditor:keywords(keywords)
                 if not wasShowing then
                     keywordEditor:hide()
                 end

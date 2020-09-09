@@ -101,7 +101,7 @@ end
 --- Returns:
 ---  * A [Statement](cp.rx.go.Statement.md) to be executed.
 function mod.doPasteHistoryItem(index)
-    local timeline = fcp:timeline()
+    local timeline = fcp.timeline
     local originalContents = mod._manager.readFCPXData()
     return If(function()
         return mod.history()[index]
@@ -120,7 +120,7 @@ function mod.doPasteHistoryItem(index)
                 mod._manager.writeFCPXData(data, true)
             end)
             :Then(function()
-                return Do(fcp:menu():doSelectMenu({"Edit", "Paste"}))
+                return Do(fcp.menu:doSelectMenu({"Edit", "Paste"}))
                 :Then(function()
                     --------------------------------------------------------------------------------
                     -- Restore the original Pasteboard Contents:

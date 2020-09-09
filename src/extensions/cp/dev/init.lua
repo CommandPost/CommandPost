@@ -21,6 +21,32 @@ local pathToAbsolute    = fs.pathToAbsolute
 
 local mod = {}
 
+local function _inspectElement(e)
+    mod.highlight(e)
+
+    local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
+
+    local id = e:attributeValue("AXIdentifier")
+    if id then
+        out = out.. "\n      Identifier = " .. inspect(id)
+    end
+
+    out = out.. "\n      Children   = " .. inspect(#e)
+
+    out = out.. "\n==============================================" ..
+                "\n"
+
+    local result = {}
+
+    for _,name in ipairs(e:attributeNames()) do
+        result[name] = e:attributeValue(name)
+    end
+
+    out = out .. inspect(result)
+
+    return out
+end
+
 --- cp.dev.hotkey(fn) -> none
 --- Function
 --- Assigns a function to the CONTROL+OPTION+COMMAND+SHIFT+Q keyboard combination.
@@ -129,15 +155,16 @@ function mod.elementAtMouse()
     return ax.systemElementAtPosition(mouse.getAbsolutePosition())
 end
 
---- cp.dev.inspectAtMouse(options) -> string
+--- cp.dev.inspectAtMouse(options) -> none
 --- Function
 --- Inspects an AX element under the current mouse position.
+--- Writes results to Debug Console.
 ---
 --- Parameters:
 ---  * options - Any additional options to pass along to `cp.dev.inspectElement`.
 ---
 --- Returns:
----  * A string containing the results.
+---  * None
 function mod.inspectAtMouse(options)
     options = options or {}
     local element = mod.elementAtMouse()
@@ -151,15 +178,17 @@ function mod.inspectAtMouse(options)
         local result = ""
         if options.type == "path" then
             local path = element:path()
-            for i,e in ipairs(path) do
-                result = result .. mod.inspectElement(e, options, i)
+            for _,e in ipairs(path) do
+                result = result .. _inspectElement(e, options)
             end
             return result
         else
-            return inspect(element:buildTree(options.depth))
+            element:buildTree(function(msg, results)
+                log.df("msg: %s\n\n results: %s", msg, inspect(results))
+            end, options.depth)
         end
     else
-        return "<no element found>"
+        log.df("<no element found>")
     end
 end
 
@@ -182,10 +211,12 @@ function mod.inspect(e, options)
             local result = ""
             for i=1,#e do
                 item = e[i]
-                result = result ..
-                         "\n= " .. string.format("%3d", i) ..
-                         " ========================================" ..
-                         mod.inspect(item, options)
+                if item ~= e then
+                    result = result ..
+                            "\n= " .. string.format("%3d", i) ..
+                            " ========================================" ..
+                            mod.inspect(item, options)
+                end
             end
             return result
         else
@@ -196,28 +227,35 @@ function mod.inspect(e, options)
         end
     else
         return "\n==============================================" ..
-               mod.inspectElement(e, options)
+               _inspectElement(e, options)
     end
 end
 
---- cp.dev.inspectElement() -> string
+--- cp.dev.inspectElement(element[, options]) -> none
 --- Function
---- Inspect an AX element.
+--- Inspect an AX element. Writes results to Debug Console.
 ---
 --- Parameters:
 ---  * element - The element to inspect.
 ---  * options - A table containing any optional values.
 ---
 --- Returns:
----  * The results as a string.
+---  * None.
 ---
 --- Notes:
 ---  * The options table accepts the following parameters:
 ---   * depth - A number representing the maximum depth to recurse into variable.
 function mod.inspectElement(e, options)
-    mod.highlight(e)
 
     local depth = options and options.depth or 1
+    local write = options and options.write or log.d
+
+    if not e or e.attributeValue == nil then
+        write(inspect(e))
+        return
+    end
+
+    mod.highlight(e)
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
 
     local id = e:attributeValue("AXIdentifier")
@@ -228,9 +266,12 @@ function mod.inspectElement(e, options)
     out = out.. "\n      Children   = " .. inspect(#e)
 
     out = out.. "\n==============================================" ..
-                "\n" .. inspect(e:buildTree(depth)) .. "\n"
+                "\n"
 
-    return out
+    e:buildTree(function(_, results)
+        out = out .. inspect(results)
+        write(out)
+    end, depth)
 end
 
 --- cp.dev.highlight(element) -> axuielementObject

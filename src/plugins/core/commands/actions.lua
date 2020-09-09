@@ -81,6 +81,7 @@ function mod.onChoices(choices)
                 :subText(subtext)
                 :params(action)
                 :id(mod.getId(action))
+                :image(cmd:getImage())
         end
     end
 end

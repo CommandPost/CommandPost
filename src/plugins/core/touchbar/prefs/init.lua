@@ -2,22 +2,24 @@
 ---
 --- Touch Bar Preferences Panel
 
-local require = require
+local require           = require
 
-local log             = require "hs.logger".new "prefsTouchBar"
+local log               = require "hs.logger".new "prefsTouchBar"
 
-local canvas          = require "hs.canvas"
-local dialog          = require "hs.dialog"
-local image           = require "hs.image"
+local canvas            = require "hs.canvas"
+local dialog            = require "hs.dialog"
+local image             = require "hs.image"
 
-local commands        = require "cp.commands"
-local config          = require "cp.config"
-local fcp             = require "cp.apple.finalcutpro"
-local tools           = require "cp.tools"
-local html            = require "cp.web.html"
-local i18n            = require "cp.i18n"
+local commands          = require "cp.commands"
+local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
+local html              = require "cp.web.html"
+local i18n              = require "cp.i18n"
 
-local moses           = require "moses"
+local moses             = require "moses"
+
+local imageFromPath     = image.imageFromPath
 
 local mod = {}
 
@@ -167,7 +169,6 @@ local function touchBarPanelCallback(id, params)
                         end
                     end
                     mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Allow specific toolbar icons in the Console:
@@ -590,7 +591,7 @@ function mod.init(deps, env)
         priority        = 2031,
         id              = "touchbar",
         label           = i18n("touchbarPanelLabel"),
-        image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/touchbar.icns")),
         tooltip         = i18n("touchbarPanelTooltip"),
         height          = 750,
     })

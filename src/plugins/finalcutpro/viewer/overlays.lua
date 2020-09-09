@@ -211,7 +211,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     mod.hide()
 
-    local fcpFrame = fcp:viewer():contentsUI()
+    local fcpFrame = fcp.viewer:contentsUI()
     if fcpFrame then
         local frame = fcpFrame:attributeValue("AXFrame")
         if frame then
@@ -936,7 +936,7 @@ end
 -- Returns:
 --  * None
 local function contextualMenu(event)
-    local ui = fcp:viewer():UI()
+    local ui = fcp.viewer:UI()
     local topBar = ui and axutils.childFromTop(ui, 1)
     if topBar then
         local barFrame = topBar:attributeValue("AXFrame")
@@ -976,9 +976,9 @@ function mod.update()
         if fcp.isFrontmost()
             and fcp.viewer:isShowing()
             and not fcp.isModalDialogOpen()
-            and not fcp:fullScreenWindow():isShowing()
-            and not fcp:commandEditor():isShowing()
-            and not fcp:preferencesWindow():isShowing()
+            and not fcp.fullScreenWindow:isShowing()
+            and not fcp.commandEditor:isShowing()
+            and not fcp.preferencesWindow:isShowing()
         then
             --------------------------------------------------------------------------------
             -- Start the Mouse Watcher:
@@ -1154,7 +1154,7 @@ end
 --- Returns:
 ---  * None
 function mod.saveMemory(id)
-    local viewer = fcp:viewer():contentsUI()
+    local viewer = fcp.viewer:contentsUI()
     local result = false
     if viewer then
         local path = mod.getStillsFolderPath()
@@ -1666,19 +1666,19 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     fcp.isFrontmost:watch(deferredUpdate)
     fcp.isModalDialogOpen:watch(deferredUpdate)
-    fcp:fullScreenWindow().isShowing:watch(deferredUpdate)
-    fcp:commandEditor().isShowing:watch(deferredUpdate)
-    fcp:preferencesWindow().isShowing:watch(deferredUpdate)
+    fcp.fullScreenWindow.isShowing:watch(deferredUpdate)
+    fcp.commandEditor.isShowing:watch(deferredUpdate)
+    fcp.preferencesWindow.isShowing:watch(deferredUpdate)
 
     --------------------------------------------------------------------------------
     -- Update Canvas one second after going full-screen:
     --------------------------------------------------------------------------------
-    fcp:primaryWindow().isFullScreen:watch(function() doAfter(1, mod.update) end)
+    fcp.primaryWindow.isFullScreen:watch(function() doAfter(1, mod.update) end)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro's Viewer is resized or moved:
     --------------------------------------------------------------------------------
-    fcp:viewer().frame:watch(function(value)
+    fcp.viewer.frame:watch(function(value)
         if value then
             deferredUpdate()
         end

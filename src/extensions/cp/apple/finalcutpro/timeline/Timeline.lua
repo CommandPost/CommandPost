@@ -26,6 +26,7 @@ local childrenWithRole                  = axutils.childrenWithRole
 local childWithRole                     = axutils.childWithRole
 
 local Do                                = go.Do
+local Done                              = go.Done
 local If                                = go.If
 local WaitUntil                         = go.WaitUntil
 
@@ -111,10 +112,10 @@ function Timeline:initialize(app)
 
     local UI = app.UI:mutate(function()
         return cache(self, "_ui", function()
-            return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
+            return Timeline._findTimeline(app.secondaryWindow, app.primaryWindow)
         end,
         Timeline.matches)
-    end):monitor(app:primaryWindow().UI, app:secondaryWindow().UI)
+    end):monitor(app.primaryWindow.UI, app.secondaryWindow.UI)
 
     Element.initialize(self, app, UI)
 end
@@ -166,7 +167,7 @@ end
 --- Field
 --- Is the timeline playing?
 function Timeline.lazy.prop:isPlaying()
-    return self:app():viewer().isPlaying
+    return self:app().viewer.isPlaying
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.isLockedPlayhead <cp.prop: boolean>
@@ -187,21 +188,21 @@ end
 --- Field
 --- Checks if the Timeline has finished loading.
 function Timeline.lazy.prop:isLoaded()
-    return self:contents().isLoaded
+    return self.contents.isLoaded
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.isFocused <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the Timeline is the focused panel.
 function Timeline.lazy.prop:isFocused()
-    return self:contents().isFocused
+    return self.contents.isFocused
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:doFocus() -> cp.rx.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will attempt to focus on the Timeline.
 function Timeline.lazy.method:doFocus()
-    return self:app():menu():doSelectMenu({"Window", "Go To", "Timeline"})
+    return self:app().menu:doSelectMenu({"Window", "Go To", "Timeline"})
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline:app() -> App
@@ -256,7 +257,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnPrimary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
@@ -280,7 +281,7 @@ end
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline.lazy.method:doShowOnPrimary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         Do(
@@ -308,7 +309,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnSecondary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if not self:isOnSecondary() then
@@ -328,7 +329,7 @@ end
 --- Returns:
 ---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline.lazy.method:doShowOnSecondary()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         If(self.isOnSecondary):Is(false)
@@ -349,7 +350,7 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:hide()
-    local menu = self:app():menu()
+    local menu = self:app().menu
     -- Uncheck it from the primary workspace
     if self:isOnSecondary() then
         menu:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
@@ -371,7 +372,7 @@ end
 --- Returns:
 ---  * A `Statement` ready to run.
 function Timeline.lazy.method:doHide()
-    local menu = self:app():menu()
+    local menu = self:app().menu
 
     return If(self:app().isRunning):Then(
         Do(
@@ -401,7 +402,7 @@ end
 --- Returns:
 --- * The `Statement`.
 function Timeline:doFocus(show)
-    return self:contents():doFocus(show)
+    return self.contents:doFocus(show)
     :Label("Timeline:doFocus")
 end
 
@@ -413,161 +414,71 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.timeline.Timeline:contents() -> TimelineContent
---- Method
---- Gets the Timeline Contents. The Content is the main body of the timeline,
+--- cp.apple.finalcutpro.timeline.Timeline.contents <cp.apple.finalcutpro.timeline.Contents>
+--- Field
+--- The Timeline Contents. The Content is the main body of the timeline,
 --- containing the Timeline Index, the Content, and the Effects/Transitions panels.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `TimelineContent` object.
-function Timeline.lazy.method:contents()
-    return Contents.new(self)
+function Timeline.lazy.value:contents()
+    return Contents(self)
 end
 
------------------------------------------------------------------------
---
--- EFFECTS BROWSER:
--- The (sometimes hidden) Effects Browser.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:effects() -> EffectsBrowser
---- Method
---- Gets the (sometimes hidden) Effect Browser.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `EffectsBrowser` object.
-function Timeline.lazy.method:effects()
-    return EffectsBrowser.new(self, EffectsBrowser.EFFECTS)
+--- cp.apple.finalcutpro.timeline.Timeline.effects <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The (sometimes hidden) Effect Browser.
+function Timeline.lazy.value:effects()
+    return EffectsBrowser(self, EffectsBrowser.EFFECTS)
 end
 
------------------------------------------------------------------------
---
--- TRANSITIONS BROWSER:
--- The (sometimes hidden) Transitions Browser.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:transitions() -> EffectsBrowser
---- Method
---- Gets the (sometimes hidden) Transitions Browser.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `EffectsBrowser` object.
-function Timeline.lazy.method:transitions()
-    return EffectsBrowser.new(self, EffectsBrowser.TRANSITIONS)
+--- cp.apple.finalcutpro.timeline.Timeline.transitions <cp.apple.finalcutpro.main.EffectsBrowser>
+--- Field
+--- The (sometimes hidden) Transitions Browser.
+function Timeline.lazy.value:transitions()
+    return EffectsBrowser(self, EffectsBrowser.TRANSITIONS)
 end
 
------------------------------------------------------------------------
---
--- PLAYHEAD:
--- The timeline Playhead.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:playhead() -> Playhead
---- Method
---- Gets the Timeline Playhead.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Playhead` object.
-function Timeline:playhead()
-    return self:contents():playhead()
+--- cp.apple.finalcutpro.timeline.Timeline.playhead <Playhead>
+--- Field
+--- The Timeline Playhead.
+function Timeline.lazy.value:playhead()
+    return self.contents.playhead
 end
 
------------------------------------------------------------------------
---
--- SKIMMING PLAYHEAD:
--- The Playhead that tracks under the mouse while skimming.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:skimmingPlayhead() -> Playhead
---- Method
---- Gets the Playhead that tracks under the mouse while skimming.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Playhead` object.
-function Timeline:skimmingPlayhead()
-    return self:contents():skimmingPlayhead()
+--- cp.apple.finalcutpro.timeline.Timeline.skimmingPlayhead <Playhead>
+--- Field
+--- The Playhead that tracks under the mouse while skimming.
+function Timeline.lazy.value:skimmingPlayhead()
+    return self.contents.skimmingPlayhead
 end
 
------------------------------------------------------------------------
---
--- TOOLBAR:
--- The bar at the top of the timeline.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:toolbar() -> Toolbar
---- Method
---- Gets the bar at the top of the timeline.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Toolbar` object.
-function Timeline.lazy.method:toolbar()
+--- cp.apple.finalcutpro.timeline.Timeline.toolbar <Toolbar>
+--- Field
+--- The bar at the top of the timeline.
+function Timeline.lazy.value:toolbar()
     return Toolbar(self)
 end
 
---- cp.apple.finalcutpro.timeline.Timeline:title() -> cp.ui.StaticText
---- Method
---- Returns the [StaticText](cp.ui.StaticText.md) containing the title.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `StaticText` object.
-function Timeline:title()
-    return self:toolbar():title()
+--- cp.apple.finalcutpro.timeline.Timeline.title <cp.ui.StaticText>
+--- Field
+--- The [StaticText](cp.ui.StaticText.md) containing the title.
+function Timeline.lazy.value:title()
+    return self.toolbar.title
 end
 
 --- cp.apple.finalcutpro.timeline.Timeline.rangeSelected <cp.prop: boolean; read-only>
 --- Field
 --- Checks if a range is selected in the timeline.
 function Timeline.lazy.prop:rangeSelected()
-    return self:toolbar():duration().UI:mutate(function(original)
+    return self.toolbar.duration.UI:mutate(function(original)
         local ui = original()
         local value = ui and ui:attributeValue("AXValue")
         return value and (value:find("/") ~= nil or value:find("／") ~= nil)
     end)
 end
 
------------------------------------------------------------------------
---
--- INDEX:
--- The Timeline Index.
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.timeline.Timeline:index() -> Index
---- Method
+--- cp.apple.finalcutpro.timeline.Timeline.index <cp.apple.finalcutpro.timeline.Index>
+--- Field
 --- The [Index](cp.apple.finalcutpro.timeline.Index.md).
----
---- Parameters:
----  * None
----
---- Returns:
----  * `Index` object.
-function Timeline.lazy.method:index()
+function Timeline.lazy.value:index()
     return Index(self)
 end
 
@@ -577,7 +488,15 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.timeline.Timeline:openProject(title) -> none
+local function _doOpenProjectIn(button, pattern)
+    return If(button.isEnabled)
+    :Then(button:doShowMenu())
+    :Then(button.menu:doSelectItemMatching(pattern))
+    :Otherwise(false)
+    :Label("Timeline:_doOpenProjectIn")
+end
+
+--- cp.apple.finalcutpro.timeline.Timeline:doOpenProject(title) -> cp.rx.go.Statement
 --- Method
 --- Opens a project from the timeline navigation popups.
 ---
@@ -585,54 +504,25 @@ end
 ---  * title - The title of the project you want to open.
 ---
 --- Returns:
----  * None
+---  * The `Statement` to run.
 ---
 --- Notes:
 ---  * The title supports patterns, so you can do things like:
----    `require("cp.apple.finalcutpro"):timeline():openProject("Audio.*")`
-function Timeline:openProject(title)
-    local backButton = self:toolbar():back():UI()
-    local forwardButton = self:toolbar():forward():UI()
-    if backButton and backButton:attributeValue("AXEnabled") then
-        backButton:performAction("AXShowMenu")
-        local menu = childWithRole(backButton, "AXMenu")
-        if menu then
-            local children = menu:attributeValue("AXChildren")
-            for _, item in pairs(children) do
-                if string.match(item:attributeValue("AXTitle"), title) then
-                    item:performAction("AXPress")
-                    return
-                end
-            end
-        end
-        menu:performAction("AXCancel")
-    end
-    if forwardButton and forwardButton:attributeValue("AXEnabled") then
-        forwardButton:performAction("AXShowMenu")
-        local menu = childWithRole(forwardButton, "AXMenu")
-        if menu then
-            local children = menu:attributeValue("AXChildren")
-            for _, item in pairs(children) do
-                if string.match(item:attributeValue("AXTitle"), title) then
-                    item:performAction("AXPress")
-                    return
-                end
-            end
-        end
-        menu:performAction("AXCancel")
-    end
-    playErrorSound()
-end
+---    `require("cp.apple.finalcutpro").timeline:doOpenProject("Audio.*"):Now()`
+function Timeline:doOpenProject(title)
+    local back, forward = self.toolbar.back, self.toolbar.forward
 
------------------------------------------------------------------------
---
--- SPEED POPOVER:
---
------------------------------------------------------------------------
+    return If(_doOpenProjectIn(back, title)):Then(Done())
+    :Otherwise(
+        If(_doOpenProjectIn(forward, title)):Then(Done())
+        :Otherwise(playErrorSound)
+    )
+    :Label("Timeline:doOpenProject")
+end
 
 --- cp.apple.finalcutpro.timeline.Timeline.speedPopover <cp.apple.finalcutpro.timeline.SpeedPopover>
 --- Field
---- Provides the [SpeedPopover](cp.apple.finalcutpro.timeline.SpeedPopover.md).
+--- The [SpeedPopover](cp.apple.finalcutpro.timeline.SpeedPopover.md).
 function Timeline.lazy.value:speedPopover()
     return SpeedPopover(self)
 end

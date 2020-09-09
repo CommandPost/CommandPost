@@ -9,6 +9,7 @@ local application       = require "hs.application"
 local config            = require "cp.config"
 local tools             = require "cp.tools"
 
+local mergeTable        = tools.mergeTable
 local unpack            = table.unpack
 
 local mod = {}
@@ -56,10 +57,18 @@ function mod.show()
     end
 
     --------------------------------------------------------------------------------
+    -- Get the group ID of the current application:
+    --------------------------------------------------------------------------------
+    local apps = mod.appmanager.getApplications()
+    local selectedApp = apps and apps[bundleID] and apps[bundleID] and apps[bundleID]
+    local handlerID = selectedApp and selectedApp.legacyGroupID or bundleID
+    local searchConsoleToolbar = selectedApp and selectedApp.searchConsoleToolbar
+
+    --------------------------------------------------------------------------------
     -- If not, use the global one:
     --------------------------------------------------------------------------------
     if not mod.activator then
-        mod.activator = mod.actionmanager.getActivator("core.console"):preloadChoices()
+        mod.activator = mod.actionmanager.getActivator("core.console")
 
         --------------------------------------------------------------------------------
         -- Restrict Allowed Handlers for Activator to current group:
@@ -68,8 +77,10 @@ function mod.show()
         local handlerIds = mod.actionmanager.handlerIds()
         for _,id in pairs(handlerIds) do
             local handlerTable = tools.split(id, "_")
-            if handlerTable[2]~= "widgets" and handlerTable[1] == "global" and id ~= "global_shortcuts" then
-                table.insert(allowedHandlers, id)
+            if handlerTable[1] == "global" or handlerTable[1] == handlerID then
+                if handlerTable[2]~= "widgets" and id ~= "global_shortcuts" then
+                    table.insert(allowedHandlers, id)
+                end
             end
         end
         mod.activator:allowHandlers(unpack(allowedHandlers))
@@ -77,12 +88,17 @@ function mod.show()
         --------------------------------------------------------------------------------
         -- Allow specific toolbar icons in the Console:
         --------------------------------------------------------------------------------
+        local defaultSearchConsoleToolbar = mod.appmanager.defaultSearchConsoleToolbar()
+        if searchConsoleToolbar then
+            defaultSearchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, searchConsoleToolbar)
+        end
         local iconPath = config.basePath .. "/plugins/core/console/images/"
         local toolbarIcons = {
-            global_applications = { path = iconPath .. "apps.png", priority = 1},
             global_menuactions = { path = iconPath .. "menu.png", priority = 2},
         }
-        mod.activator:toolbarIcons(toolbarIcons)
+        local combinedToolbarIcons = mergeTable(defaultSearchConsoleToolbar, toolbarIcons)
+        combinedToolbarIcons["global_shortcuts"] = nil
+        mod.activator:toolbarIcons(combinedToolbarIcons)
 
     end
     mod.activator:toggle()
@@ -94,17 +110,20 @@ local plugin = {
     dependencies    = {
         ["core.commands.global"]        = "global",
         ["core.action.manager"]         = "actionmanager",
+        ["core.application.manager"]    = "appmanager",
     }
 }
 
 function plugin.init(deps)
+    mod.actionmanager = deps.actionmanager
+    mod.appmanager = deps.appmanager
+
     --------------------------------------------------------------------------------
     -- Add the command trigger:
     --------------------------------------------------------------------------------
-    mod.actionmanager = deps.actionmanager
     deps.global:add("cpGlobalConsole")
         :groupedBy("commandPost")
-        :whenActivated(function() mod.show() end)
+        :whenActivated(mod.show)
         :activatedBy():ctrl():option():cmd("space")
 
     return mod

@@ -125,7 +125,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Make sure Inspector is open:
         --------------------------------------------------------------------------------
-        local inspector = fcp:inspector()
+        local inspector = fcp.inspector
         inspector:show()
         if not just.doUntil(function() return inspector:isShowing() end) then
             displayErrorMessage("Failed to open the Inspector.")
@@ -135,7 +135,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Make sure the Text Inspector is open:
         --------------------------------------------------------------------------------
-        local text = inspector:text()
+        local text = inspector.text
         text:show()
         if not just.doUntil(function() return text:isShowing() end) then
             displayMessage(i18n("pleaseSelectATitle"))
@@ -208,7 +208,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- Show the Inspector:
     --------------------------------------------------------------------------------
-    local inspector = fcp:inspector()
+    local inspector = fcp.inspector
     inspector:show()
     if not just.doUntil(function() return inspector:isShowing() end) then
         displayErrorMessage("Failed to open the Inspector.")
@@ -228,7 +228,6 @@ function mod.show()
     --------------------------------------------------------------------------------
     if not mod.activator then
         mod.activator = mod.actionmanager.getActivator("finalcutpro.font")
-        mod.activator:preloadChoices()
         mod.activator:allowHandlers("fcpx_fonts")
         mod.activator:onActivate(mod.onActivate)
     end
@@ -252,12 +251,10 @@ end
 function mod.onChoices(choices)
 
     --------------------------------------------------------------------------------
-    -- Load Final Cut Pro Fonts:
+    -- Load Final Cut Pro Fonts (if FCPX is running):
     --------------------------------------------------------------------------------
     if fcp:isRunning() then
         loadFinalCutProFonts()
-    else
-        return
     end
 
     --------------------------------------------------------------------------------
@@ -387,10 +384,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add the command trigger:
     --------------------------------------------------------------------------------
+    local icon = imageFromPath(config.basePath .. "/plugins/finalcutpro/console/images/font.png")
     deps.fcpxCmds
         :add("cpFontConsole")
         :groupedBy("commandPost")
         :whenActivated(mod.show)
+        :image(icon)
 
     return mod
 end

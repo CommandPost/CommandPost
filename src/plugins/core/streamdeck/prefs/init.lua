@@ -544,7 +544,8 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
-            if not mod.activator then
+            local activatorID = params["application"]
+            if not mod.activator or mod.activator and not mod.activator[activatorID] then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
 
@@ -600,7 +601,6 @@ local function streamDeckPanelCallback(id, params)
                     end
                     local unpack = table.unpack
                     mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:
@@ -615,7 +615,6 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
@@ -1387,7 +1386,7 @@ function plugin.init(deps, env)
         priority        = 2032,
         id              = "streamdeck",
         label           = i18n("streamdeckPanelLabel"),
-        image           = imageFromPath(tools.iconFallback(env:pathToAbsolute("images/streamdeck.icns"))),
+        image           = imageFromPath(env:pathToAbsolute("images/streamdeck.icns")),
         tooltip         = i18n("streamdeckPanelTooltip"),
         height          = 880,
     })

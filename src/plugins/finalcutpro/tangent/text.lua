@@ -19,6 +19,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup:
@@ -40,7 +44,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- TEXT INSPECTOR:
     --------------------------------------------------------------------------------
-    local text = fcp:inspector():text()
+    local text = fcp.inspector.text
     local textGroup = fcpGroup:group(i18n("text") .. " " .. i18n("inspector"))
 
         --------------------------------------------------------------------------------
@@ -58,17 +62,17 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Save Format Attributes:
             --------------------------------------------------------------------------------
-            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save Format"), i18n("saveFormatAttributes"))
+            id = popupParameter(presetsGroup, text.preset, id, fcp:string("Text Style Save Format"), i18n("saveFormatAttributes"))
 
             --------------------------------------------------------------------------------
             -- Save Appearance Attributes:
             --------------------------------------------------------------------------------
-            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save Style"), i18n("saveAppearanceAttributes"))
+            id = popupParameter(presetsGroup, text.preset, id, fcp:string("Text Style Save Style"), i18n("saveAppearanceAttributes"))
 
             --------------------------------------------------------------------------------
             -- Save All Format and Appearance Attributes:
             --------------------------------------------------------------------------------
-            id = popupParameter(presetsGroup, text:preset(), id, fcp:string("Text Style Save All"), i18n("saveAllFormatAndAppearanceAttributes"))
+            id = popupParameter(presetsGroup, text.preset, id, fcp:string("Text Style Save All"), i18n("saveAllFormatAndAppearanceAttributes"))
 
             --------------------------------------------------------------------------------
             -- 2D Styles:
@@ -427,7 +431,7 @@ function plugin.init(deps)
                     --------------------------------------------------------------------------------
                     -- Saturation:
                     --------------------------------------------------------------------------------
-                    id = sliderParameter(environmentGroup, environment:saturation(), id, 0, 100, 0.1, 100, "saturation")
+                    id = sliderParameter(environmentGroup, environment.saturation, id, 0, 100, 0.1, 100, "saturation")
 
                     --------------------------------------------------------------------------------
                     -- Anisotropic:
@@ -662,9 +666,9 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         local textLayerGroup = textGroup:group(i18n("textLayer"))
 
-        id = buttonParameter(textLayerGroup, text:textLayerLeft(), id, "leftTextLayer")
-        id = buttonParameter(textLayerGroup, text:textLayerRight(), id, "rightTextLayer")
-        buttonParameter(textLayerGroup, text:deselectAll(), id, "deselectAll")
+        id = buttonParameter(textLayerGroup, text.textLayerLeft, id, "leftTextLayer")
+        id = buttonParameter(textLayerGroup, text.textLayerRight, id, "rightTextLayer")
+        buttonParameter(textLayerGroup, text.deselectAll, id, "deselectAll")
 
 end
 

@@ -5,9 +5,6 @@
 --- A description of module.
 
 -- maybe save some pain, if the shim is installed; otherwise, expect an objc dump to console when this loads on stock Hammerspoon without pull #2308 applied
-if package.searchpath("hs._asm.coroutineshim", package.path) then
-    require"hs._asm.coroutineshim"
-end
 
 local module   = require("hs._asm.xml.internal")
 local internal = hs.getObjectMetatable("hs._asm.xml")

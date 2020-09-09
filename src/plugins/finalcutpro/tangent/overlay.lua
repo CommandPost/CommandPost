@@ -23,7 +23,6 @@ mod.group = nil
 --- Returns:
 ---  * None
 function mod.init(fcpGroup, overlays)
-
     local baseID = 0x00120000
 
     mod.group = fcpGroup:group(i18n("viewerOverlay"))
@@ -61,7 +60,6 @@ function mod.init(fcpGroup, overlays)
     end
 
 end
-
 
 local plugin = {
     id = "finalcutpro.tangent.overlay",

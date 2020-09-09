@@ -33,7 +33,7 @@ end
 ---  * None
 function mod.commandEditor()
     fcp:launch()
-    fcp:commandEditor():show()
+    fcp.commandEditor:show()
 end
 
 local plugin = {

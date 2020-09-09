@@ -4,160 +4,113 @@
 
 local require = require
 
--- local log							= require("hs.logger").new("PrefsDlg")
+-- local log							= require "hs.logger" .new("PrefsDlg")
 
--- local inspect						= require("hs.inspect")
+-- local inspect						= require "hs.inspect"
 
-local axutils						= require("cp.ui.axutils")
-local just							= require("cp.just")
-local prop							= require("cp.prop")
-local go                            = require("cp.rx.go")
-local Window                        = require("cp.ui.Window")
-local Toolbar                       = require("cp.ui.Toolbar")
+local axutils						= require "cp.ui.axutils"
+local just							= require "cp.just"
+local go                            = require "cp.rx.go"
+local Dialog                        = require "cp.ui.Dialog"
+local Group                         = require "cp.ui.Group"
+local StaticText                    = require "cp.ui.StaticText"
+local Toolbar                       = require "cp.ui.Toolbar"
 
-local GeneralPanel                  = require("cp.apple.finalcutpro.prefs.GeneralPanel")
-local PlaybackPanel					= require("cp.apple.finalcutpro.prefs.PlaybackPanel")
-local ImportPanel					= require("cp.apple.finalcutpro.prefs.ImportPanel")
+local GeneralPanel                  = require "cp.apple.finalcutpro.prefs.GeneralPanel"
+local EditingPanel                  = require "cp.apple.finalcutpro.prefs.EditingPanel"
+local PlaybackPanel					= require "cp.apple.finalcutpro.prefs.PlaybackPanel"
+local ImportPanel					= require "cp.apple.finalcutpro.prefs.ImportPanel"
 
+local cache                         = axutils.cache
+local childMatching                 = axutils.childMatching
 
 local If, WaitUntil                 = go.If, go.WaitUntil
 
+local PreferencesWindow = Dialog:subclass("cp.apple.finalcutpro.prefs.PreferencesWindow")
 
-local PreferencesWindow = {}
-
-function PreferencesWindow.matches(element)
-    return element:attributeValue("AXSubrole") == "AXDialog"
+function PreferencesWindow.static.matches(element)
+    return Dialog.matches(element)
         and not element:attributeValue("AXModal")
         and element:attributeValue("AXTitle") ~= ""
-        and axutils.childWithRole(element, "AXToolbar") ~= nil
-        and axutils.childWithRole(element, "AXGroup") ~= nil
+        and childMatching(element, Toolbar.matches) ~= nil
+        and childMatching(element, Group.matches) ~= nil
 end
 
 -- TODO: Add documentation
-function PreferencesWindow._findWindowUI(windows)
-    return axutils.childMatching(windows, PreferencesWindow.matches)
-end
-
--- TODO: Add documentation
-function PreferencesWindow.new(app)
-    local o = prop.extend({_app = app}, PreferencesWindow)
-
-    local UI = app.windowsUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
-            local windowsUI = original()
-            return windowsUI and PreferencesWindow._findWindowUI(windowsUI)
+function PreferencesWindow:initialize(app)
+    local UI = app.windowsUI:mutate(function(original)
+        return cache(self, "_ui", function()
+            return childMatching(original(), PreferencesWindow.matches)
         end)
     end)
 
-    -- provides access to common AXWindow properties.
-    local window = Window(app.app, UI)
-    o._window = window
+    Dialog.initialize(self, app.app, UI)
+end
 
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.prefs.PreferencesWindow.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.title <cp.ui.StaticText>
 --- Field
---- The `axuielement` instance for the window.
-        UI = UI,
-
---- cp.apple.finalcutpro.prefs.PreferencesWindow.hsWindow <cp.prop: hs.window; read-only>
---- Field
---- The `hs.window` instance for the window, or `nil` if it can't be found.
-        hsWindow = window.hsWindow,
-
---- cp.apple.finalcutpro.prefs.PreferencesWindow.isShowing <cp.prop: boolean; live>
---- Field
---- Is `true` if the window is visible.
-        isShowing = window.visible,
-
---- cp.apple.finalcutpro.prefs.PreferencesWindow.isFullScreen <cp.prop: boolean; live>
---- Field
---- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
-
---- cp.apple.finalcutpro.prefs.PreferencesWindow.frame <cp.prop: frame; live>
---- Field
---- The current position (x, y, width, height) of the window.
-        frame = window.frame,
-
-        -- TODO: Add documentation
-        -- Returns the UI for the AXToolbar containing this panel's buttons
-        toolbarUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_toolbar", function()
-                local ax = original()
-                return ax and axutils.childWithRole(ax, "AXToolbar") or nil
-            end)
-        end),
-
-        -- TODO: Add documentation
-        -- Returns the UI for the AXGroup containing this panel's elements
-        groupUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_group", function()
-                local ui = original()
-                local group = ui and axutils.childWithRole(ui, "AXGroup")
-                -- The group conains another single group that contains the actual checkboxes, etc.
-                return group and #group == 1 and group[1] or nil
-            end)
-        end),
-    }
+--- The `StaticText` for the Preferences Window title.
+function PreferencesWindow.lazy.value:title()
+    return StaticText(self, self.UI:mutate(function(original)
+        return cache(self, "_title", function()
+            return childMatching(original(), StaticText.matches)
+        end, StaticText.matches)
+    end))
+end
 
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.toolbar <cp.ui.Toolbar>
 --- Field
 --- The `Toolbar` for the Preferences Window.
-    o.toolbar = Toolbar(o, o.toolbarUI)
-
-    return o
+function  PreferencesWindow.lazy.value:toolbar()
+    return Toolbar(self, self.UI:mutate(function(original)
+        return cache(self, "_toolbar", function()
+            return childMatching(original(), Toolbar.matches)
+        end)
+    end))
 end
 
--- TODO: Add documentation
-function PreferencesWindow:app()
-    return self._app
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.generalPanel <GeneralPanel>
+--- Field
+--- The `GeneralPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:generalPanel()
+    return GeneralPanel(self)
 end
 
---- cp.apple.finalcutpro.prefs.PreferencesWindow:window() -> cp.ui.Window
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.editingPanel <EditingPanel>
+--- Field
+--- The `EditingPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:editingPanel()
+    return EditingPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.playbackPanel <PlaybackPanel>
+--- Field
+--- The `PlaybackPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:playbackPanel()
+    return PlaybackPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow.importPanel <ImportPanel>
+--- Field
+--- The `ImportPanel` for the Preferences Window.
+function PreferencesWindow.lazy.value:importPanel()
+    return ImportPanel(self)
+end
+
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:show() -> PreferencesWindow
 --- Method
---- Returns the `Window` for the Preferences Window.
+--- Attempts to show the Preferences window.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The `Window`.
-function PreferencesWindow:window()
-    return self._window
-end
-
--- TODO: Add documentation
-function PreferencesWindow:playbackPanel()
-    if not self._playbackPanel then
-        self._playbackPanel = PlaybackPanel.new(self)
-    end
-    return self._playbackPanel
-end
-
--- TODO: Add documentation
-function PreferencesWindow:importPanel()
-    if not self._importPanel then
-        self._importPanel = ImportPanel.new(self)
-    end
-    return self._importPanel
-end
-
--- TODO: Add documentation
-function PreferencesWindow:generalPanel()
-    if not self._generalPanel then
-        self._generalPanel = GeneralPanel.new(self)
-    end
-    return self._generalPanel
-end
-
--- TODO: Add documentation
--- Ensures the PreferencesWindow is showing
+---  * The same `PreferencesWindow`, for chaining.
 function PreferencesWindow:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menu():isEnabled({"Final Cut Pro", "Preferences…"}) then
-            self:app():menu():selectMenu({"Final Cut Pro", "Preferences…"})
+        if self:app().menu:isEnabled({"Final Cut Pro", "Preferences…"}) then
+            self:app().menu:selectMenu({"Final Cut Pro", "Preferences…"})
             -- wait for it to open.
             just.doUntil(function() return self:UI() end)
         end
@@ -165,15 +118,32 @@ function PreferencesWindow:show()
     return self
 end
 
-function PreferencesWindow:doShow()
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:doShow() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that attempts to show the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function PreferencesWindow.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
-        self:app():menu():doSelectMenu({"Final Cut Pro", "Preferences…"})
+        self:app().menu:doSelectMenu({"Final Cut Pro", "Preferences…"})
     ):Then(
         WaitUntil(self.isShowing)
     )
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:hide() -> PreferencesWindow
+--- Method
+--- Attempts to hide the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The same `PreferencesWindow`, for chaining.
 function PreferencesWindow:hide()
     local hsWindow = self:hsWindow()
     if hsWindow then
@@ -184,7 +154,16 @@ function PreferencesWindow:hide()
     return self
 end
 
-function PreferencesWindow:doHide()
+--- cp.apple.finalcutpro.prefs.PreferencesWindow:doHide() -> cp.rx.go.Statement
+--- Method
+--- A `Statement` that attempts to hide the Preferences window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function PreferencesWindow.lazy.method:doHide()
     return If(self.isShowing)
     :Then(function()
         self:hsWindow():close()

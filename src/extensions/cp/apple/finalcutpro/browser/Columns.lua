@@ -78,19 +78,13 @@ end
 --- Returns:
 ---  * `true` if the columns menu popup is showing, otherwise `false`
 function Columns:isMenuShowing()
-    return self:menu():isShowing()
+    return self.menu:isShowing()
 end
 
---- cp.apple.finalcutpro.browser.Columns:menu() -> cp.ui.Menu
---- Method
---- Gets the Columns menu object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `Menu` object.
-function Columns.lazy.method:menu()
+--- cp.apple.finalcutpro.browser.Columns.menu <cp.ui.Menu>
+--- Field
+--- The Columns menu object.
+function Columns.lazy.value:menu()
     return Menu(self, self.UI:mutate(function(original)
         return childWithRole(childWithRole(childWithRole(original(), "AXOutline"), "AXGroup"), "AXMenu")
     end))

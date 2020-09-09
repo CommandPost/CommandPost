@@ -21,8 +21,8 @@ local mod = {}
 ---  * `true` if successful otherwise `false`
 function mod.selectAllTimelineClips(forwards)
 
-    local content = fcp:timeline():contents()
-    local playheadX = content:playhead():position()
+    local content = fcp.timeline.contents
+    local playheadX = content.playhead:position()
 
     local clips = content:clipsUI(true, function(clip)
         local frame = clip:frame()

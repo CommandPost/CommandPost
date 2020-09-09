@@ -29,6 +29,7 @@ local int16be           = bytes.int16be
 local int8              = bytes.int8
 local remainder         = bytes.remainder
 local uint16be          = bytes.uint16be
+local uint16le          = bytes.uint16le
 local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
 local uint8             = bytes.uint8
@@ -98,7 +99,7 @@ end
 -- Returns:
 -- * The 16-bit integer for the colour value.
 local function rgbToInt16(r, g, b)
-    return (((b >> 3) & 0x1F) << 8) | (((r >> 3) & 0x1F) << 3) | ((g >> 5) & 0x07)
+    return (((r >> 3) & 0x1F) << 11) | (((g >> 2) & 0x3F) << 5) | ((b >> 3) & 0x1F)
 end
 
 -- colorToInt16(colorTable) -> number
@@ -467,7 +468,48 @@ mod.ignoreResponses = {
     [0x041B] = true, -- Vibration confirmation
     [0x0409] = true, -- Reset Device
     [0x0819] = true, -- Flash Drive confirmation
+    [0x041e] = true, -- Wheel Sensitivity confirmation
 }
+
+-- convertWheelXandYtoButtonID(x, y) -> number
+-- Function
+-- Converts X and Y coordinates into a button ID for the wheel touch screen.
+--
+-- Parameters:
+--  * x - The x-axis as a number
+--  * y - The y-axis as a number
+--
+-- Returns:
+--  * A button ID as a number. Left to right, top to bottom.
+local function convertWheelXandYtoButtonID(x, y)
+    local button = 0
+
+    -- Left Column:
+    if x >= 0 and x <= 79 then
+        if y >= 0 and y <= 119 then
+            button = 1
+        else
+            button = 4
+        end
+    end
+    -- Middle Column:
+    if x >= 80 and x <= 159 then
+        if y >= 0 and y <= 119 then
+            button = 2
+        else
+            button = 5
+        end
+    end
+    -- Middle Column:
+    if x >= 160 and x <= 240 then
+        if y >= 0 and y <= 119 then
+            button = 3
+        else
+            button = 6
+        end
+    end
+    return button
+end
 
 -- convertXandYtoButtonID(x, y) -> number
 -- Function
@@ -610,6 +652,13 @@ mod.responseHandler = {
     [mod.event.WHEEL_PRESSED] = function(response)
         response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
+
+        -- Get button ID:
+        local buttonID = convertWheelXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
     end,
 
@@ -622,6 +671,13 @@ mod.responseHandler = {
     [mod.event.WHEEL_RELEASED] = function(response)
         response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
+
+        -- Get button ID:
+        local buttonID = convertWheelXandYtoButtonID(response.x, response.y)
+        if buttonID > 0 then
+            response.buttonID = buttonID
+        end
+
         triggerCallback(response)
     end,
 
@@ -1011,9 +1067,9 @@ function mod.updateVibraWaveformIndex(value, callbackFn)
     end)
 end
 
---- hs.loupedeckct.updateBacklightLevel(value[, callbackFn]) -> boolean
+--- hs.loupedeckct.saveBacklightLevel(value[, callbackFn]) -> boolean
 --- Function
---- Sends a request to the Loupedeck CT to update the Vibra waveform index.
+--- Sends a request to the Loupedeck CT to save the backlight level in the register.
 ---
 --- Parameters:
 ---  * value - an 8-bit number with the new backlight level.
@@ -1021,10 +1077,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
----
---- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.updateBacklightLevel(value, callbackFn)
+function mod.saveBacklightLevel(value, callbackFn)
     return mod.requestRegister(2, function(response)
         processRegisterResponse(response)
         if response.backlightLevel ~= value then
@@ -1036,6 +1089,44 @@ function mod.updateBacklightLevel(value, callbackFn)
         end
     end)
 end
+
+--- hs.loupedeckct.updateBacklightLevel(backlightLevel[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to update the backlight level.
+---
+--- Parameters:
+---  * value - an 8-bit number with the new backlight level.
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+function mod.updateBacklightLevel(backlightLevel, callbackFn)
+    return sendCommand(
+        0x0409,
+        callbackFn and function(response)
+            callbackFn(response)
+        end,
+        uint8(backlightLevel)
+    )
+end
+
+--- hs.loupedeckct.wheelSensitivityIndex -> number
+-- Constant
+-- The default wheel sensitivity index.
+mod.defaultWheelSensitivityIndex = 4
+
+--- hs.loupedeckct.wheelSensitivityIndex -> table
+--- Constant
+--- Descriptions of all the wheel sensitivity indexes.
+mod.wheelSensitivityIndex = {
+    [1] = "Very Sensitive",
+    [4] = "Default",
+    [8] = "Less Sensitive",
+    [64] = "0.3 Revolutions",
+    [100] = "0.5 Revolutions",
+    [192] = "1 Revolution",
+    [255] = "1.5 Revolutions",
+}
 
 --- hs.loupedeckct.requestWheelSensitivity([callbackFn]) -> boolean
 --- Function
@@ -1053,9 +1144,39 @@ function mod.requestWheelSensitivity(callbackFn)
     return sendCommand(
         0x041E,
         callbackFn and function(response)
-            response.wheelSensitivity = uint8(response.data)
+            local wheelSensitivity = uint8(response.data)
+            response.wheelSensitivity = wheelSensitivity
+            if wheelSensitivity then
+                response.wheelSensitivityLabel = mod.wheelSensitivityIndex[wheelSensitivity]
+            end
             callbackFn(response)
-        end)
+        end,
+        uint8(0))
+end
+
+--- hs.loupedeckct.updateWheelSensitivity(wheelSensitivity[, callbackFn]) -> boolean
+--- Function
+--- Sends a request to the Loupedeck CT to update the wheel sensitivity index.
+---
+--- Parameters:
+---  * value - an 8-bit number with the new wheel sensitivity index (see `hs.loupedeckct.wheelSensitivityIndex`).
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
+---
+--- Returns:
+---  * `true` if the device is connected and the message was sent.
+function mod.updateWheelSensitivity(wheelSensitivity, callbackFn)
+    return sendCommand(
+        0x041E,
+        callbackFn and function(response)
+            local result = uint8(response.data)
+            response.wheelSensitivity = result
+            if result then
+                response.wheelSensitivityLabel = mod.wheelSensitivityIndex[result]
+            end
+            callbackFn(response)
+        end,
+        uint8(wheelSensitivity)
+    )
 end
 
 --- hs.loupedeckct.resetDevice([callbackFn]) -> boolean
@@ -1253,7 +1374,7 @@ end
 -- * A byte string containing the image data for the provided with/height
 local function solidColorBytes(width, height, color)
     local color16 = toInt16Color(color)
-    local colorBytes = uint16be(color16)
+    local colorBytes = uint16le(color16)
     local result = {}
     for i=1,width*height do
         result[i] = colorBytes

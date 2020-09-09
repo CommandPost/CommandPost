@@ -19,6 +19,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup:
@@ -37,7 +41,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local viewerGroup = fcpGroup:group(i18n("viewer"))
 
-    local viewer = fcp:viewer()
+    local viewer = fcp.viewer
     local infoBar = viewer:infoBar()
 
         --------------------------------------------------------------------------------
@@ -64,7 +68,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local eventViewerGroup = fcpGroup:group(i18n("eventViewer"))
 
-    local eventViewer = fcp:eventViewer()
+    local eventViewer = fcp.eventViewer
     local eventViewerInfoBar = eventViewer:infoBar()
 
         --------------------------------------------------------------------------------

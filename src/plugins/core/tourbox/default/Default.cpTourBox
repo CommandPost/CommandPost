@@ -1,0 +1,1031 @@
+{
+  "com.skype.skype" : {
+    "ignore" : true
+  },
+  "com.apple.motionapp" : {
+    "ignore" : true
+  },
+  "com.apple.finder" : {
+    "ignore" : true
+  },
+  "com.apple.systempreferences" : {
+    "ignore" : true
+  },
+  "com.blackmagic-design.DaVinciResolve" : {
+    "ignore" : true
+  },
+  "All Applications" : {
+    "10" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "2" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "15" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "3" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "11" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "4" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "12" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "5" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "6" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "13" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "7" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "8" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "14" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "1" : {
+      "tall" : {
+        "pressAction" : {
+          "actionTitle" : "RETURN",
+          "action" : {
+            "id" : "return",
+            "character" : "return",
+            "modifiers" : [
+
+            ]
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "up" : {
+        "pressActionRepeat" : true,
+        "pressAction" : {
+          "actionTitle" : "UP",
+          "action" : {
+            "id" : "up",
+            "character" : "up",
+            "modifiers" : [
+
+            ]
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "left" : {
+        "pressActionRepeat" : true,
+        "pressAction" : {
+          "actionTitle" : "LEFT",
+          "action" : {
+            "id" : "left",
+            "character" : "left",
+            "modifiers" : [
+
+            ]
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "right" : {
+        "pressActionRepeat" : true,
+        "pressAction" : {
+          "actionTitle" : "RIGHT",
+          "action" : {
+            "id" : "right",
+            "character" : "right",
+            "modifiers" : [
+
+            ]
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "knob" : {
+        "leftAction" : {
+          "actionTitle" : "Decrease Brightness",
+          "action" : {
+            "id" : "brightnessDecrease"
+          },
+          "handlerID" : "global_cmds"
+        },
+        "rightSideAction" : [
+
+        ],
+        "leftSideAction" : [
+
+        ],
+        "rightAction" : {
+          "actionTitle" : "Increase Brightness",
+          "action" : {
+            "id" : "brightnessIncrease"
+          },
+          "handlerID" : "global_cmds"
+        }
+      },
+      "side" : {
+        "releaseAction" : {
+          "actionTitle" : "Release SHIFT Modifier Key",
+          "action" : {
+            "id" : "global_shortcuts_releaseShift",
+            "action" : "releaseShift"
+          },
+          "handlerID" : "global_shortcuts"
+        },
+        "pressAction" : {
+          "actionTitle" : "Press and hold SHIFT Modifier Key",
+          "action" : {
+            "id" : "global_shortcuts_pressShift",
+            "action" : "pressShift"
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "short" : {
+        "pressAction" : {
+          "actionTitle" : "Launch Final Cut Pro",
+          "action" : {
+            "id" : "cpLaunchFinalCutPro"
+          },
+          "handlerID" : "global_cmds"
+        }
+      },
+      "down" : {
+        "pressActionRepeat" : true,
+        "pressAction" : {
+          "actionTitle" : "DOWN",
+          "action" : {
+            "id" : "down",
+            "character" : "down",
+            "modifiers" : [
+
+            ]
+          },
+          "handlerID" : "global_shortcuts"
+        }
+      },
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "bankLabel" : "System",
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "scroll" : {
+        "rightAction" : {
+          "actionTitle" : "Decrease Volume",
+          "action" : {
+            "id" : "decreaseVolume"
+          },
+          "handlerID" : "global_cmds"
+        },
+        "leftAction" : {
+          "actionTitle" : "Increase Volume",
+          "action" : {
+            "id" : "increaseVolume"
+          },
+          "handlerID" : "global_cmds"
+        },
+        "pressAction" : {
+          "actionTitle" : "Toggle Mute Volume",
+          "action" : {
+            "id" : "toggleMuteVolume"
+          },
+          "handlerID" : "global_cmds"
+        }
+      }
+    },
+    "9" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    }
+  },
+  "org.latenitefilms.CommandPost" : {
+    "ignore" : true
+  },
+  "com.apple.FinalCut" : {
+    "10" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "2" : {
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "bankLabel" : "Color Board Exposure",
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "scroll" : {
+        "rightDownAction" : {
+          "actionTitle" : "Select Exposure Puck 3 & Up",
+          "action" : {
+            "id" : "cpGenericExposurePuckThreeUp"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "leftRightAction" : {
+          "actionTitle" : "Select Exposure Puck 4 & Down",
+          "action" : {
+            "id" : "cpGenericExposurePuckFourDown"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "leftLeftAction" : {
+          "actionTitle" : "Select Exposure Puck 1 & Down",
+          "action" : {
+            "id" : "cpGenericExposurePuckOneDown"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "rightLeftAction" : {
+          "actionTitle" : "Select Exposure Puck 1 & Up",
+          "action" : {
+            "id" : "cpGenericExposurePuckOneUp"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "rightUpAction" : {
+          "actionTitle" : "Select Exposure Puck 2 & Up",
+          "action" : {
+            "id" : "cpGenericExposurePuckTwoUp"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "rightRightAction" : {
+          "actionTitle" : "Select Exposure Puck 4 & Up",
+          "action" : {
+            "id" : "cpGenericExposurePuckFourUp"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "leftUpAction" : {
+          "actionTitle" : "Select Exposure Puck 2 & Down",
+          "action" : {
+            "id" : "cpGenericExposurePuckTwoDown"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "leftDownAction" : {
+          "actionTitle" : "Select Exposure Puck 3 & Down",
+          "action" : {
+            "id" : "cpGenericExposurePuckThreeDown"
+          },
+          "handlerID" : "fcpx_cmds"
+        }
+      }
+    },
+    "15" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "3" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "bankLabel" : "Color Board Saturation",
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "11" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "4" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "12" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "5" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "6" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "13" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "7" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "8" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "14" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "1" : {
+      "scroll" : {
+        "leftAction" : {
+          "handlerID" : "fcpx_cmds",
+          "actionTitle" : "Timeline Zoom Increase",
+          "action" : {
+            "id" : "timelineZoomIncrease"
+          }
+        },
+        "leftSideAction" : [
+
+        ],
+        "pressAction" : {
+          "handlerID" : "fcpx_shortcuts",
+          "actionTitle" : "Zoom to Fit",
+          "action" : "ZoomToFit"
+        },
+        "rightAction" : {
+          "handlerID" : "fcpx_cmds",
+          "actionTitle" : "Timeline Zoom Decrease",
+          "action" : {
+            "id" : "timelineZoomDecrease"
+          }
+        }
+      },
+      "tall" : {
+        "pressSideAction" : {
+          "actionTitle" : "Connect to Primary Storyline - Backtimed",
+          "action" : "AnchorWithSelectedMediaBacktimed",
+          "handlerID" : "fcpx_shortcuts"
+        },
+        "pressAction" : {
+          "actionTitle" : "Connect to Primary Storyline",
+          "action" : "AnchorWithSelectedMedia",
+          "handlerID" : "fcpx_shortcuts"
+        }
+      },
+      "knob" : {
+        "rightAction" : {
+          "actionTitle" : "Go to Next Frame",
+          "action" : "JumpToNextFrame",
+          "handlerID" : "fcpx_shortcuts"
+        },
+        "leftAction" : {
+          "actionTitle" : "Go to Previous Frame",
+          "action" : "JumpToPreviousFrame",
+          "handlerID" : "fcpx_shortcuts"
+        }
+      },
+      "dial" : {
+        "rightAction" : {
+          "actionTitle" : "Shift Position Right 1 Pixel",
+          "action" : {
+            "id" : "shiftPositionRightPixels1Pixels"
+          },
+          "handlerID" : "fcpx_cmds"
+        },
+        "leftAction" : {
+          "actionTitle" : "Shift Position Left 1 Pixel",
+          "action" : {
+            "id" : "shiftPositionLeftPixels1Pixels"
+          },
+          "handlerID" : "fcpx_cmds"
+        }
+      },
+      "bankLabel" : "Editing",
+      "short" : {
+        "pressSideAction" : {
+          "actionTitle" : "Append to Storyline",
+          "action" : "AppendWithSelectedMedia",
+          "handlerID" : "fcpx_shortcuts"
+        },
+        "pressAction" : {
+          "actionTitle" : "Insert",
+          "action" : "InsertMedia",
+          "handlerID" : "fcpx_shortcuts"
+        }
+      },
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "left" : {
+        "pressAction" : {
+          "actionTitle" : "Set Range Start",
+          "action" : "SetSelectionStart",
+          "handlerID" : "fcpx_shortcuts"
+        }
+      },
+      "top" : {
+        "pressAction" : {
+          "handlerID" : "fcpx_cmds",
+          "actionTitle" : "Zoom to Selection",
+          "action" : {
+            "id" : "cpZoomToSelection"
+          }
+        }
+      },
+      "right" : {
+        "pressAction" : {
+          "actionTitle" : "Set Range End",
+          "action" : "SetSelectionEnd",
+          "handlerID" : "fcpx_shortcuts"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    },
+    "9" : {
+      "c1" : {
+        "releaseAction" : [
+
+        ],
+        "pressAction" : {
+          "actionTitle" : "Previous TourBox Bank",
+          "action" : {
+            "id" : "previous"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      },
+      "c2" : {
+        "pressAction" : {
+          "actionTitle" : "Next TourBox Bank",
+          "action" : {
+            "id" : "next"
+          },
+          "handlerID" : "global_tourbox_banks"
+        }
+      }
+    }
+  },
+  "com.microsoft.teams" : {
+    "ignore" : true
+  },
+  "us.zoom.xos" : {
+    "ignore" : true
+  },
+  "com.apple.DiskUtility" : {
+    "ignore" : true
+  },
+  "com.apple.Compressor" : {
+    "ignore" : true
+  },
+  "com.apple.TextEdit" : {
+    "ignore" : true
+  }
+}

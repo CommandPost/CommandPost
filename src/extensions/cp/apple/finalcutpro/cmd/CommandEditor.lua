@@ -8,9 +8,8 @@ local log                           = require("hs.logger").new("PrefsDlg")
 
 local axutils                       = require("cp.ui.axutils")
 local Button                        = require("cp.ui.Button")
-local Window                        = require("cp.ui.Window")
+local Dialog                        = require("cp.ui.Dialog")
 local just                          = require("cp.just")
-local prop                          = require("cp.prop")
 
 local strings                       = require("cp.apple.finalcutpro.strings")
 
@@ -19,7 +18,7 @@ local Throw                         = require("cp.rx.go.Throw")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
 
-local CommandEditor = {}
+local CommandEditor = Dialog:subclass("cp.apple.finalcutpro.cmd.CommandEditor")
 
 -- _findWindowUI(windows) -> window | nil
 -- Function
@@ -46,17 +45,16 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function CommandEditor.matches(element)
-    if element then
-        return element:attributeValue("AXSubrole") == "AXDialog"
-           and element:attributeValue("AXModal")
+function CommandEditor.static.matches(element)
+    if Dialog.matches(element) then
+        return element:attributeValue("AXModal")
            and axutils.childWithRole(element, "AXPopUpButton") ~= nil
            and #axutils.childrenWithRole(element, "AXGroup") == 4
     end
     return false
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor.new(app) -> CommandEditor
+--- cp.apple.finalcutpro.cmd.CommandEditor(app) -> CommandEditor
 --- Constructor
 --- Creates a new Command Editor object.
 ---
@@ -65,10 +63,13 @@ end
 ---
 --- Returns:
 ---  * A new `CommandEditor` object.
-function CommandEditor.new(app)
-    local o = prop.extend({_app = app}, CommandEditor)
+function CommandEditor:initialize(app)
+    self._app = app
 
-    local UI = app.windowsUI:mutate(function(original, self)
+--- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
+--- Field
+--- The `axuielement` for the window.
+    local UI = app.windowsUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local windowsUI = original()
             return windowsUI and _findWindowUI(windowsUI)
@@ -76,52 +77,25 @@ function CommandEditor.new(app)
         CommandEditor.matches)
     end)
 
-    -- provides access to common AXWindow properties.
-    local window = Window(app.app, UI)
-    o._window = window
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
---- Field
---- The `axuielement` for the window.
-        UI = UI,
-
---- cp.apple.finalcutpro.cmd.CommandEditor.hsWindow <cp.prop: hs.window; read-only>
---- Field
---- The `hs.window` instance for the window, or `nil` if it can't be found.
-        hsWindow = window.hsWindow,
-
---- cp.apple.finalcutpro.cmd.CommandEditor.isShowing <cp.prop: boolean; live>
---- Field
---- Is `true` if the window is visible.
-        isShowing = window.visible,
-
---- cp.apple.finalcutpro.cmd.CommandEditor.isFullScreen <cp.prop: boolean; live>
---- Field
---- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
-
---- cp.apple.finalcutpro.cmd.CommandEditor.frame <cp.prop: frame; live>
---- Field
---- The current position (x, y, width, height) of the window.
-        frame = window.frame,
-    }
+    Dialog.initialize(self, app.app, UI)
+end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
 --- Field
 --- The "Save" [Button](cp.ui.Button.md).
-    o.save = Button(o, UI:mutate(function(original)
+function CommandEditor.lazy.value:save()
+    return Button(self, self.UI:mutate(function(original)
         return axutils.childFromRight(original(), 1, Button.matches)
     end))
+end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.close <cp.ui.Button>
 --- Field
 --- The "Close" [Button](cp.ui.Button.md).
-    o.close = Button(o, UI:mutate(function(original)
+function CommandEditor.lazy.value:close()
+    return Button(self, self.UI:mutate(function(original)
         return axutils.childFromRight(original(), 2, Button.matches)
     end))
-
-    return o
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:app() -> App
@@ -137,19 +111,6 @@ function CommandEditor:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:window() -> cp.ui.Window
---- Method
---- Returns the `Window` for the Command Editor.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Window`.
-function CommandEditor:window()
-    return self._window
-end
-
 --- cp.apple.finalcutpro.cmd.CommandEditor:show() -> cp.apple.finalcutpro.cmd.CommandEditor
 --- Method
 --- Shows the Command Editor.
@@ -162,8 +123,8 @@ end
 function CommandEditor:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menu():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
-            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+        if self:app().menu:isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
+            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
             just.doUntil(function() return self:UI() end)
         end
     end
@@ -179,10 +140,10 @@ end
 ---
 --- Returns:
 --- * The `Statement`, which will resolve to `true` if the CommandEditor is showing or `false` if not.
-function CommandEditor:doShow()
+function CommandEditor.lazy.method:doShow()
     return If(self:app().isRunning):Then(
         If(self.isShowing):Is(false):Then(
-            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+            self:app().menu:selectMenu({"Final Cut Pro", "Commands", "Customize…"})
         ):Then(
             WaitUntil(self.isShowing)
         ):Otherwise(true)
@@ -223,11 +184,11 @@ end
 ---
 --- Returns:
 --- * The `Statement`, which will resolve to `true` if the CommandEditor is not showing or `false` if not.
-function CommandEditor:doHide()
+function CommandEditor.lazy.method:doHide()
     local alert = self:alert()
     local isHidden = self.isShowing:NOT()
     return If(self.isShowing):Then(
-        self:window():doClose()
+        self:doClose()
     ):Then(
         WaitUntil(isHidden:OR(alert.isShowing))
     ):Then(
@@ -250,19 +211,6 @@ function CommandEditor:doHide()
     :Label("CommandEditor:doHide")
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:saveButton() -> axuielementObject | nil
---- Method
---- Gets the Command Editor Save Button AX item.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `axuielementObject` of the Save Button or nil.
-function CommandEditor:saveButton()
-    return self.save
-end
-
 --- cp.apple.finalcutpro.cmd.CommandEditor:doSave() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Save button in the Command Editor.
@@ -272,48 +220,21 @@ end
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
-function CommandEditor:doSave()
+function CommandEditor.lazy.method:doSave()
     return self.save:doPress()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
 --- Method
---- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Save button in the Command Editor.
+--- Returns a [Statement](cp.rx.go.Statement.md) that triggers the Close button in the Command Editor.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
-function CommandEditor:doSave()
-    return self.save:doPress()
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor:getTitle() -> string | nil
---- Method
---- The title of the Command Editor window or `nil`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Command Editor window as a string or `nil`.
-function CommandEditor:getTitle()
-    local ui = self:UI()
-    return ui and ui:title()
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor:alert() -> cp.ui.Alert
---- Method
---- The [Alert](cp.ui.Alert.md) for the Command Editor window.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `Alert`.
-function CommandEditor:alert()
-    return self:window():alert()
+function CommandEditor.lazy.method:doClose()
+    return self.close:doPress()
 end
 
 return CommandEditor

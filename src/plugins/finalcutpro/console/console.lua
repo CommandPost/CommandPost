@@ -28,23 +28,25 @@ function plugin.init(deps)
     deps.console.register(bundleID, function()
         if not mod.activator then
             local actionmanager = deps.actionmanager
-            mod.activator = actionmanager.getActivator("finalcutpro.console"):preloadChoices()
+            mod.activator = actionmanager.getActivator("finalcutpro.console")
 
             --------------------------------------------------------------------------------
-            -- Don't show widgets in the Final Cut Pro Search Console:
+            -- Allow specific handlers in the Search Console:
             --------------------------------------------------------------------------------
             local allowedHandlers = {}
             local handlerIds = actionmanager.handlerIds()
             for _,id in pairs(handlerIds) do
                 local handlerTable = tools.split(id, "_")
-                if handlerTable[2]~= "widgets" and id ~= "global_menuactions" and id ~= "global_shortcuts" then
-                    table.insert(allowedHandlers, id)
+                if handlerTable[1] == "global" or handlerTable[1] == "fcpx" then
+                    if handlerTable[2]~= "widgets" and id ~= "global_menuactions" and id ~= "global_shortcuts" then
+                        table.insert(allowedHandlers, id)
+                    end
                 end
             end
             mod.activator:allowHandlers(table.unpack(allowedHandlers))
 
             --------------------------------------------------------------------------------
-            -- Allow specific toolbar icons in the Console:
+            -- Allow specific toolbar icons in the Search Console:
             --------------------------------------------------------------------------------
             local coreIconPath = config.basePath .. "/plugins/core/console/images/"
             local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"

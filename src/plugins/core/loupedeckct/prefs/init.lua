@@ -26,7 +26,9 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
+local execute                   = os.execute
 local getFilenameFromPath       = tools.getFilenameFromPath
+local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
@@ -37,6 +39,16 @@ local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
+
+-- KEY_CREATOR_URL -> string
+-- Constant
+-- URL to Key Creator Website
+local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
+
+-- BUY_MORE_ICONS_URL -> string
+-- Constant
+-- URL to SideshowFX Website
+local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
 
 --- plugins.core.loupedeckct.prefs.supportedExtensions -> string
 --- Variable
@@ -184,6 +196,7 @@ local function generateContent()
         insertImage                 = insertImage,
 
         vibrationIndex              = loupedeckct.vibrationIndex,
+        wheelSensitivityIndex       = loupedeckct.wheelSensitivityIndex,
     }
 
     return renderPanel(context)
@@ -384,9 +397,17 @@ local function updateUI(params)
     local selectedControlType = selectedBank and selectedBank[controlType]
     local selectedID = selectedControlType and selectedControlType[bid]
 
+    local topLeftValue = selectedID and selectedID.topLeftAction and selectedID.topLeftAction.actionTitle or ""
+    local bottomLeftValue = selectedID and selectedID.bottomLeftAction and selectedID.bottomLeftAction.actionTitle or ""
+    local topMiddleValue = selectedID and selectedID.topMiddleAction and selectedID.topMiddleAction.actionTitle or ""
+    local bottomMiddleValue = selectedID and selectedID.bottomMiddleAction and selectedID.bottomMiddleAction.actionTitle or ""
+    local topRightValue = selectedID and selectedID.topRightAction and selectedID.topRightAction.actionTitle or ""
+    local bottomRightValue = selectedID and selectedID.bottomRightAction and selectedID.bottomRightAction.actionTitle or ""
+
     local leftValue = selectedID and selectedID.leftAction and selectedID.leftAction.actionTitle or ""
     local rightValue = selectedID and selectedID.rightAction and selectedID.rightAction.actionTitle or ""
     local pressValue = selectedID and selectedID.pressAction and selectedID.pressAction.actionTitle or ""
+    local releaseValue = selectedID and selectedID.releaseAction and selectedID.releaseAction.actionTitle or ""
     local upValue = selectedID and selectedID.upAction and selectedID.upAction.actionTitle or ""
     local downValue = selectedID and selectedID.downAction and selectedID.downAction.actionTitle or ""
     local doubleTapValue = selectedID and selectedID.doubleTapAction and selectedID.doubleTapAction.actionTitle or ""
@@ -394,7 +415,15 @@ local function updateUI(params)
     local colorValue = selectedID and selectedID.led or "FFFFFF"
     local encodedIcon = selectedID and selectedID.encodedIcon or ""
     local iconLabel = selectedID and selectedID.iconLabel or ""
-    local vibrateValue = selectedID and selectedID.vibrate or ""
+
+    local vibratePressValue = selectedID and selectedID.vibratePress or ""
+    local vibrateReleaseValue = selectedID and selectedID.vibrateRelease or ""
+    local vibrateLeftValue = selectedID and selectedID.vibrateLeft or ""
+    local vibrateRightValue = selectedID and selectedID.vibrateRight or ""
+
+    local repeatPressActionUntilReleasedValue = selectedID and selectedID.repeatPressActionUntilReleased or false
+
+    local wheelSensitivityValue = selectedID and selectedID.wheelSensitivity or tostring(loupedeckct.defaultWheelSensitivityIndex)
 
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
@@ -485,17 +514,29 @@ local function updateUI(params)
     injectScript([[
         changeValueByID('bankLabel', `]] .. escapeTilda(bankLabel) .. [[`);
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
+        changeValueByID('release_action', `]] .. escapeTilda(releaseValue) .. [[`);
         changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
         changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('top_left_action', `]] .. escapeTilda(topLeftValue) .. [[`);
+        changeValueByID('bottom_left_action', `]] .. escapeTilda(bottomLeftValue) .. [[`);
+        changeValueByID('top_middle_action', `]] .. escapeTilda(topMiddleValue) .. [[`);
+        changeValueByID('bottom_middle_action', `]] .. escapeTilda(bottomMiddleValue) .. [[`);
+        changeValueByID('top_right_action', `]] .. escapeTilda(topRightValue) .. [[`);
+        changeValueByID('bottom_right_action', `]] .. escapeTilda(bottomRightValue) .. [[`);
         changeValueByID('up_touch_action', `]] .. escapeTilda(upValue) .. [[`);
         changeValueByID('down_touch_action', `]] .. escapeTilda(downValue) .. [[`);
         changeValueByID('left_touch_action', `]] .. escapeTilda(leftValue) .. [[`);
         changeValueByID('right_touch_action', `]] .. escapeTilda(rightValue) .. [[`);
         changeValueByID('double_tap_touch_action', `]] .. escapeTilda(doubleTapValue) .. [[`);
         changeValueByID('two_finger_touch_action', `]] .. escapeTilda(twoFingerTapValue) .. [[`);
-        changeValueByID('vibrate', ']] .. vibrateValue .. [[');
+        changeValueByID('vibratePress', ']] .. vibratePressValue .. [[');
+        changeValueByID('vibrateRelease', ']] .. vibrateReleaseValue .. [[');
+        changeValueByID('vibrateLeft', ']] .. vibrateLeftValue .. [[');
+        changeValueByID('vibrateRight', ']] .. vibrateRightValue .. [[');
+        changeValueByID('wheelSensitivity', ']] .. wheelSensitivityValue .. [[');
         changeValueByID('iconLabel', `]] .. iconLabel .. [[`);
         changeCheckedByID('ignore', ]] .. tostring(ignoreValue) .. [[);
+        changeCheckedByID('repeatPressActionUntilReleased', ]] .. tostring(repeatPressActionUntilReleasedValue) .. [[);
         changeColor(']] .. colorValue .. [[');
         setIcon("]] .. encodedIcon .. [[");
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
@@ -519,7 +560,8 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
-            if not mod.activator then
+            local activatorID = params["application"]
+            if not mod.activator or mod.activator and not mod.activator[activatorID] then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
 
@@ -570,7 +612,6 @@ local function loupedeckCTPanelCallback(id, params)
                     end
                     local unpack = table.unpack
                     mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:
@@ -585,7 +626,6 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
@@ -618,6 +658,8 @@ local function loupedeckCTPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 if params["buttonType"] == "pressAction" then
                     injectScript("changeValueByID('press_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "releaseAction" then
+                    injectScript("changeValueByID('release_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "leftAction" then
                     injectScript("changeValueByID('left_action', `" .. escapeTilda(actionTitle) .. "`);")
                     injectScript("changeValueByID('left_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
@@ -632,6 +674,18 @@ local function loupedeckCTPanelCallback(id, params)
                     injectScript("changeValueByID('double_tap_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
                 elseif params["buttonType"] == "twoFingerTapAction" then
                     injectScript("changeValueByID('two_finger_touch_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "topLeftAction" then
+                    injectScript("changeValueByID('top_left_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "bottomLeftAction" then
+                    injectScript("changeValueByID('bottom_left_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "topMiddleAction" then
+                    injectScript("changeValueByID('top_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "bottomMiddleAction" then
+                    injectScript("changeValueByID('bottom_middle_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "topRightAction" then
+                    injectScript("changeValueByID('top_right_action', `" .. escapeTilda(actionTitle) .. "`);")
+                elseif params["buttonType"] == "bottomRightAction" then
+                    injectScript("changeValueByID('bottom_right_action', `" .. escapeTilda(actionTitle) .. "`);")
                 end
             end)
 
@@ -774,9 +828,9 @@ local function loupedeckCTPanelCallback(id, params)
             items[app][bank]["bankLabel"] = params["bankLabel"]
 
             mod.items(items)
-        elseif callbackType == "updateVibrate" then
+        elseif callbackType == "updateVibratePress" then
             --------------------------------------------------------------------------------
-            -- Update Vibrate:
+            -- Update Vibrate Press:
             --------------------------------------------------------------------------------
             local app = params["application"]
             local bank = params["bank"]
@@ -784,7 +838,56 @@ local function loupedeckCTPanelCallback(id, params)
             local bid = params["id"]
             local value = params["value"]
 
-            setItem(app, bank, controlType, bid, "vibrate", value)
+            setItem(app, bank, controlType, bid, "vibratePress", value)
+        elseif callbackType == "updateVibrateRelease" then
+            --------------------------------------------------------------------------------
+            -- Update Vibrate Release:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "vibrateRelease", value)
+        elseif callbackType == "updateVibrateLeft" then
+            --------------------------------------------------------------------------------
+            -- Update Vibrate Left:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "vibrateLeft", value)
+        elseif callbackType == "updateVibrateRight" then
+            --------------------------------------------------------------------------------
+            -- Update Vibrate Right:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "vibrateRight", value)
+        elseif callbackType == "updateWheelSensitivity" then
+            --------------------------------------------------------------------------------
+            -- Update Wheel Sensitivity:
+            --------------------------------------------------------------------------------
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local value = params["value"]
+
+            setItem(app, bank, controlType, bid, "wheelSensitivity", value)
+
+            --------------------------------------------------------------------------------
+            -- Refresh the hardware:
+            --------------------------------------------------------------------------------
+            mod._ctmanager.refresh()
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
@@ -1614,6 +1717,7 @@ local function loupedeckCTPanelCallback(id, params)
             if data then
                 for b=1, mod.numberOfBanks do
                     b = tostring(b) .. suffix
+
                     if not items[app] then items[app] = {} end
                     if not items[app][b] then items[app][b] = {} end
                     if not items[app][b][controlType] then items[app][b][controlType] = {} end
@@ -1623,9 +1727,57 @@ local function loupedeckCTPanelCallback(id, params)
                             items[app][b][controlType][bid][i] = v
                         end
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- Generate an Encoded Icon Label if needed:
+                    --------------------------------------------------------------------------------
+                    local value = items[app][b][controlType][bid].iconLabel
+                    if value then
+                        --------------------------------------------------------------------------------
+                        -- Set screen limitations:
+                        --------------------------------------------------------------------------------
+                        local width, height = getScreenSizeFromControlType(controlType)
+
+                        --------------------------------------------------------------------------------
+                        -- Make an icon using the label:
+                        --------------------------------------------------------------------------------
+                        local v = canvas.new{x = 0, y = 0, w = width, h = height }
+                        v[1] = {
+                            --------------------------------------------------------------------------------
+                            -- Force Black background:
+                            --------------------------------------------------------------------------------
+                            frame = { h = "100%", w = "100%", x = 0, y = 0 },
+                            fillColor = { alpha = 1, red = 0, green = 0, blue = 0 },
+                            type = "rectangle",
+                        }
+
+                        v[2] = {
+                            frame = { h = 100, w = 100, x = 0, y = 0 },
+                            text = value,
+                            textAlignment = "left",
+                            textColor = { white = 1.0 },
+                            textSize = 15,
+                            type = "text",
+                        }
+
+                        local img = v:imageFromCanvas()
+                        local encodedImg = img:encodeAsURLString(true)
+
+                        items[app][b][controlType][bid].encodedIconLabel = encodedImg
+                    end
                 end
             end
             mod.items(items)
+
+            --------------------------------------------------------------------------------
+            -- Update Knob Images:
+            --------------------------------------------------------------------------------
+            if controlType == "knob" then
+                for b=1, mod.numberOfBanks do
+                    b = tostring(b) .. suffix
+                    generateKnobImages(app, b, bid)
+                end
+            end
         elseif callbackType == "resetControl" then
             --------------------------------------------------------------------------------
             -- Reset Control:
@@ -1785,6 +1937,15 @@ local function loupedeckCTPanelCallback(id, params)
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
             mod._ctmanager.refresh()
+
+        elseif callbackType == "changeRepeatPressActionUntilReleased" then
+            local app = params["application"]
+            local bank = params["bank"]
+            local controlType = params["controlType"]
+            local bid = params["id"]
+            local repeatPressActionUntilReleased = params["repeatPressActionUntilReleased"]
+
+            setItem(app, bank, controlType, bid, "repeatPressActionUntilReleased", repeatPressActionUntilReleased)
         elseif callbackType == "copyBank" then
             --------------------------------------------------------------------------------
             -- Copy Bank:
@@ -1990,6 +2151,16 @@ local function loupedeckCTPanelCallback(id, params)
             local popup = menubar.new()
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.getAbsolutePosition(), true)
+        elseif callbackType == "openKeyCreator" then
+            --------------------------------------------------------------------------------
+            -- Open Key Creator:
+            --------------------------------------------------------------------------------
+            execute('open "' .. KEY_CREATOR_URL .. '"')
+        elseif callbackType == "buyMoreIcons" then
+            --------------------------------------------------------------------------------
+            -- Buy More Icons:
+            --------------------------------------------------------------------------------
+            execute('open "' .. BUY_MORE_ICONS_URL .. '"')
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -1998,23 +2169,6 @@ local function loupedeckCTPanelCallback(id, params)
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
-    end
-end
-
--- plugins.core.loupedeckct.prefs._displayBooleanToString(value) -> none
--- Function
--- Converts a boolean to a string for use in the CSS block style value.
---
--- Parameters:
---  * value - a boolean value
---
--- Returns:
---  * A string
-function mod._displayBooleanToString(value)
-    if value then
-        return "block"
-    else
-        return "none"
     end
 end
 
@@ -2033,19 +2187,21 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
-    mod._appmanager             = deps.appmanager
-    mod._manager                = deps.manager
-    mod._webviewLabel           = deps.manager.getLabel()
-    mod._actionmanager          = deps.actionmanager
-    mod._env                    = env
+    mod._appmanager                         = deps.appmanager
+    mod._manager                            = deps.manager
+    mod._webviewLabel                       = deps.manager.getLabel()
+    mod._actionmanager                      = deps.actionmanager
+    mod._env                                = env
 
-    mod._ctmanager              = deps.ctmanager
-    mod.items                   = deps.ctmanager.items
-    mod.enabled                 = deps.ctmanager.enabled
-    mod.loadSettingsFromDevice  = deps.ctmanager.loadSettingsFromDevice
-    mod.enableFlashDrive        = deps.ctmanager.enableFlashDrive
+    mod._ctmanager                          = deps.ctmanager
+    mod.items                               = deps.ctmanager.items
+    mod.enabled                             = deps.ctmanager.enabled
+    mod.loadSettingsFromDevice              = deps.ctmanager.loadSettingsFromDevice
+    mod.enableFlashDrive                    = deps.ctmanager.enableFlashDrive
+    mod.automaticallySwitchApplications     = deps.ctmanager.automaticallySwitchApplications
+    mod.screensBacklightLevel               = deps.ctmanager.screensBacklightLevel
 
-    mod.numberOfBanks           = deps.manager.NUMBER_OF_BANKS
+    mod.numberOfBanks                       = deps.manager.NUMBER_OF_BANKS
 
     --------------------------------------------------------------------------------
     -- Watch for Loupedeck CT connections and disconnects:
@@ -2075,9 +2231,9 @@ function plugin.init(deps, env)
         priority        = 2033.1,
         id              = "loupedeckct",
         label           = "Loupedeck CT",
-        image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
+        image           = imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = "Loupedeck CT",
-        height          = 990,
+        height          = 1055,
     })
         :addHeading(6, "Loupedeck CT")
 
@@ -2130,9 +2286,43 @@ function plugin.init(deps, env)
             }
         )
 
-        :addParagraph(10, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+        :addCheckbox(10,
+            {
+                label       = i18n("automaticallySwitchApplications"),
+                checked     = mod.automaticallySwitchApplications,
+                onchange    = function(_, params)
+                    mod.automaticallySwitchApplications(params.checked)
+                end,
+            }
+        )
 
-        :addContent(11, generateContent, false)
+
+        :addSelect(11,
+            {
+                label       =   i18n("screensBacklightLevel"),
+                value       =   mod.screensBacklightLevel,
+                options     =   function()
+                                    local options = {}
+                                    for i=1, 10 do
+                                        table.insert(options, {
+                                            value = tostring(i),
+                                            label = tostring(i)
+                                        })
+                                    end
+                                    return options
+                                end,
+                required    =   true,
+                onchange    =   function(_, params)
+                                    mod.screensBacklightLevel(params.value)
+                                    loupedeckct.updateBacklightLevel(tonumber(params.value))
+                                end,
+            }
+        )
+
+
+        :addParagraph(12, html.span {class="tip"} (html(i18n("loupedeckAppTip"), false) ) .. "\n\n")
+
+        :addContent(13, generateContent, false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

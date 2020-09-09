@@ -89,19 +89,12 @@ function Playhead:initialize(parent, skimming, containerUI, useEventViewer)
     Element.initialize(self, parent, UI)
 end
 
-function Playhead.lazy.method:viewer()
-    return self:app():viewer()
+function Playhead.lazy.value:viewer()
+    return self:app().viewer
 end
 
-function Playhead.lazy.method:eventViewer()
-    return self:app():eventViewer()
-end
-
---- cp.apple.finalcutpro.main.Playhead.isShowing <cp.prop: boolean; read-only; live?>
---- Field
---- Is the playhead showing?
-function Playhead.lazy.prop:isShowing()
-    return self.UI:ISNOT(nil)
+function Playhead.lazy.value:eventViewer()
+    return self:app().eventViewer
 end
 
 --- cp.apple.finalcutpro.main.Playhead.isPersistent <cp.prop: boolean; read-only>
@@ -115,7 +108,7 @@ end
 --- Field
 --- Gets the frame of the playhead.
 function Playhead.lazy.prop:frame()
-    return  self.UI:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and ui:frame()
     end)
@@ -147,14 +140,14 @@ end
 --- depending on the Playhead instance and whether the Event Viewer is enabled.
 function Playhead.lazy.prop:currentViewer()
     local currentViewer = prop.new(function()
-        if self._useEventViewer and self:eventViewer():isShowing() then
-            return self:eventViewer()
+        if self._useEventViewer and self.eventViewer:isShowing() then
+            return self.eventViewer
         else
-            return self:viewer()
+            return self.viewer
         end
     end)
     if self._useEventViewer then
-        currentViewer:monitor(self:eventViewer().isShowing)
+        currentViewer:monitor(self.eventViewer.isShowing)
     end
     return currentViewer
 end
@@ -171,25 +164,12 @@ function Playhead.lazy.prop:timecode()
         function(newTimecode, original)
             original():timecode(newTimecode)
         end
-    ):monitor(self:viewer().timecode)
+    ):monitor(self.viewer.timecode)
 
     if self._useEventViewer then
-        timecode:monitor(self:eventViewer().timecode)
+        timecode:monitor(self.eventViewer.timecode)
     end
     return timecode
-end
-
---- cp.apple.finalcutpro.main.Playhead:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function Playhead:app()
-    return self:parent():app()
 end
 
 -----------------------------------------------------------------------
@@ -227,7 +207,7 @@ function Playhead:show()
                 local scrollWidth = timelineFrame.w - viewFrame.w
                 local scrollPoint = position - viewFrame.w/2 - timelineFrame.x
                 local scrollTarget = scrollPoint/scrollWidth
-                parent:scrollHorizontalTo(scrollTarget)
+                parent:shiftHorizontalTo(scrollTarget)
             end
         end
     end

@@ -4,12 +4,8 @@
 
 local require = require
 
-local axutils                       = require("cp.ui.axutils")
-local Sheet                         = require("cp.ui.Sheet")
-local Button                        = require("cp.ui.Button")
-
-local If                            = require("cp.rx.go.If")
-local WaitUntil                     = require("cp.rx.go.WaitUntil")
+local axutils                       = require "cp.ui.axutils"
+local Sheet                         = require "cp.ui.Sheet"
 
 
 local Alert = Sheet:subclass("cp.ui.Alert")

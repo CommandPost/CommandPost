@@ -41,21 +41,21 @@ function CaptionsRole:initialize(parent, uiFinder)
     Role.initialize(self, parent, uiFinder, Role.TYPE.CAPTION)
 end
 
---- cp.apple.finalcutpro.timeline.CaptionsRole:visibleInViewer() -> cp.ui.CheckBox
---- Method
+--- cp.apple.finalcutpro.timeline.CaptionsRole.visibleInViewer <cp.ui.CheckBox>
+--- Field
 --- A [CheckBox](cp.ui.CheckBox.md) that toggles whether captions are visible in the [Viewer](cp.apple.finalcutpro.viewer.Viewer.md).
-function CaptionsRole.lazy.method:visibleInViewer()
+function CaptionsRole.lazy.value:visibleInViewer()
     return CheckBox(self, self.cellUI:mutate(function(original)
         return childFromLeft(original(), 1, CheckBox.matches)
     end))
 end
 
---- cp.apple.finalcutpro.timeline.CaptionsRole:expand() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.CaptionsRole.subrolesExpanded <cp.ui.Button>
+--- Field
 --- A [Button](cp.ui.Button.md) that toggles whether the sub-captions are visible.
 function CaptionsRole.lazy.method:subrolesExpanded()
     return Button(self, self.cellUI:mutate(function(original)
-        return childFromLeft(original(), 1, CheckBox.matches())
+        return childFromLeft(original(), 1, CheckBox.matches)
     end))
 end
 

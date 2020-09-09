@@ -8,11 +8,10 @@ local require           = require
 
 local axutils           = require "cp.ui.axutils"
 local Element           = require "cp.ui.Element"
+local Menu              = require "cp.ui.Menu"
 local go                = require "cp.rx.go"
 local just              = require "cp.just"
 
-local Do                = go.Do
-local Done              = go.Done
 local find              = string.find
 local If                = go.If
 local WaitUntil         = go.WaitUntil
@@ -94,6 +93,10 @@ function MenuButton.lazy.prop:menuUI()
     end)
 end
 
+function MenuButton.lazy.value:menu()
+    return Menu(self, self.menuUI())
+end
+
 --- cp.ui.MenuButton.title <cp.prop: string; read-only>
 --- Field
 --- Returns the title for the MenuButton.
@@ -158,20 +161,8 @@ end
 --- Returns:
 ---  * the `Statement`.
 function MenuButton:doSelectItem(index)
-    return If(self.UI)
-    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
-    :Then(function(menuUI)
-        local item = menuUI[index]
-        if item then
-            item:doPress()
-            return true
-        else
-            item:doCancel()
-            return false
-        end
-    end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
+    return If(self:doShowMenu())
+    :Then(self.menu:doSelectItem(index))
     :Otherwise(false)
     :Label("MenuButton:doSelectItem")
 end
@@ -186,31 +177,8 @@ end
 --- Returns:
 ---  * the `Statement`.
 function MenuButton:doSelectValue(value)
-    return If(self.UI)
-    :Then(function()
-        --------------------------------------------------------------------------------
-        -- Don't bother pressing it if it's already active:
-        --------------------------------------------------------------------------------
-        local ui = self.UI()
-        if ui:attributeValue("AXTitle") == value then
-            return Done()
-        else
-            return true
-        end
-    end)
-    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
-    :Then(function(menuUI)
-        for _,item in ipairs(menuUI) do
-            if item:title() == value then
-                item:doPress()
-                return true
-            end
-        end
-        menuUI:doCancel()
-        return false
-    end)
-    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(TIMEOUT_AFTER))
+    return If(self:doShowMenu())
+    :Then(self.menu:doSelectValue(value))
     :Otherwise(false)
     :Label("MenuButton:doSelectValue")
 end
@@ -237,10 +205,10 @@ function MenuButton:selectItemMatching(pattern)
         if items then
             local found = false
             for _,item in ipairs(items) do
-                local title = item:attributeValue("AXTitle")
-                if title then
-                    local s,e = find(title, pattern)
-                    if s == 1 and e == title:len() then
+                local itemTitle = item:attributeValue("AXTitle")
+                if itemTitle then
+                    local s,e = find(itemTitle, pattern)
+                    if s == 1 and e == itemTitle:len() then
                         -- perfect match
                         item:doPress()
                         found = true
@@ -261,31 +229,20 @@ function MenuButton:selectItemMatching(pattern)
     return false
 end
 
+--- cp.ui.MenuButton:doSelectItemMatching(pattern) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by pattern.
+---
+--- Parameters:
+---  * pattern - The pattern to match.
+---
+--- Returns:
+---  * the `Statement`.
 function MenuButton:doSelectItemMatching(pattern)
-    return If(self.UI)
-    :Then(If(self.menuUI):Is(nil):Then(self:doPress()))
-    :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
-    :Then(function(menuUI)
-        for _,item in ipairs(menuUI) do
-            local title = item:attributeValue("AXTitle")
-            if title then
-                local s,e = find(title, pattern)
-                if s == 1 and e == title:len() then
-                    -- perfect match
-                    item:doPress()
-                    return true
-                end
-            end
-        end
-        menuUI:doCancel()
-        return false
-    end)
-    :Then(function(success)
-        return Do(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(3000))
-        :Then(success)
-    end)
+    return If(self:doShowMenu())
+    :Then(self.menu:doSelectItemMatching(pattern))
     :Otherwise(false)
-    :Label("MeuButton:doSelectItemMatching")
+    :Label("MenuButton:doSelectItemMatching")
 end
 
 --- cp.ui.MenuButton:getTitle() -> string | nil
@@ -358,9 +315,27 @@ function MenuButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
         ui:doPress()
+        return true
     end)
     :ThenYield()
+    :Otherwise(false)
     :Label("MenuButton:doPress")
+end
+
+--- cp.ui.MenuButton:doShowMenu() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that presses the `MenuButton` if the menu is not showing.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MenuButton.lazy.method:doShowMenu()
+    return If(self.menu.isShowing):Is(false)
+    :Then(If(self:doPress()):Then(WaitUntil(self.menu.isShowing):TimeoutAfter(TIMEOUT_AFTER)))
+    :Otherwise(true)
+    :Label("MenuButton:doShowMenu")
 end
 
 --- cp.ui.MenuButton:saveLayout() -> table
@@ -411,24 +386,6 @@ end
 
 function MenuButton:__tostring()
     return string.format("cp.ui.MenuButton: %s (%s)", self:title(), self:parent())
-end
-
---- cp.ui.MenuButton:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
---- * path      - (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
-function MenuButton:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return MenuButton

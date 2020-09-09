@@ -41,7 +41,7 @@ local FULLSCREEN_KEYS = {
 --- Returns:
 ---  * None
 function mod.update()
-    if mod.enabled() and fcp:fullScreenWindow():isShowing() then
+    if mod.enabled() and fcp.fullScreenWindow:isShowing() then
         if mod.keyUpWatcher then
             mod.keyUpWatcher:start()
         end
@@ -66,7 +66,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watc
         --------------------------------------------------------------------------------
         -- Watch for the full screen window:
         --------------------------------------------------------------------------------
-        fcp:fullScreenWindow().isFullScreen:watch(mod.update)
+        fcp.fullScreenWindow.isFullScreen:watch(mod.update)
 
         mod.watcherWorking = false
 
@@ -89,7 +89,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", false):watc
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        fcp:fullScreenWindow().isFullScreen:unwatch(mod.update)
+        fcp.fullScreenWindow.isFullScreen:unwatch(mod.update)
         if mod.keyUpWatcher then
             mod.keyUpWatcher:stop()
             mod.keyUpWatcher = nil
@@ -176,7 +176,7 @@ function mod.checkCommand(whichModifier, whichKey)
     --------------------------------------------------------------------------------
     -- Only Continue if in Full Screen Playback Mode:
     --------------------------------------------------------------------------------
-    if fcp:fullScreenWindow():isShowing() then
+    if fcp.fullScreenWindow:isShowing() then
 
         --------------------------------------------------------------------------------
         -- Get Active Command Set:

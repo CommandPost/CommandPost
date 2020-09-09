@@ -18,6 +18,7 @@ local activator	        = require "activator"
 local handler			= require "handler"
 
 local copy		        = fnutils.copy
+local displayMessage    = dialog.displayMessage
 local format	        = string.format
 local insert            = table.insert
 
@@ -106,7 +107,7 @@ function mod.init()
     -- Unknown command handler:
     --------------------------------------------------------------------------------
     urlevent.bind(UNDEFINED, function()
-        dialog.displayMessage(i18n("actionUndefinedError"))
+        displayMessage(i18n("actionUndefinedError"))
     end)
 end
 
@@ -119,7 +120,7 @@ end
 ---  * `action` The action table
 ---
 --- Returns:
---- * A string
+---  * A string
 function mod.getURL(handlerId, action)
     local theHandler = mod.getHandler(handlerId)
     if theHandler and action then
@@ -135,16 +136,18 @@ end
 --- Adds a new action handler with the specified unique ID and returns it for further configuration.
 ---
 --- Parameters:
---- * `id`		- The unique ID
+---  * `id`		- The unique ID
+---  * `group`   - The group the handler belongs to.
+---  * `label`   - An optional label for the handler (over-riding a supplied i18n value)
 ---
 --- Returns:
---- * The `handler` instance.
-function mod.addHandler(id)
+---  * The `handler` instance.
+function mod.addHandler(id, group, label)
     if mod._handlers[id] then
         error("Duplicate Action Handler ID: "..id)
     end
 
-    local h = handler.new(id)
+    local h = handler.new(id, group, label)
     mod._handlers[id] = h
 
     --------------------------------------------------------------------------------
@@ -153,7 +156,7 @@ function mod.addHandler(id)
     urlevent.bind(id, function(eventName, params)
         if eventName ~= id then
             -- Mismatch!
-            dialog.displayMessage(i18n("actionMismatchError", {expected = id, actual = eventName}))
+            displayMessage(i18n("actionMismatchError", {expected = id, actual = eventName}))
             return
         end
         params = thawParams(params)
@@ -191,10 +194,10 @@ end)
 --- Returns an existing handler with the specified ID.
 ---
 --- Parameters:
---- * `id`			- The unique ID of the action handler.
+---  * `id`			- The unique ID of the action handler.
 ---
 --- Returns:
---- * The action handler, or `nil`
+---  * The action handler, or `nil`
 function mod.getHandler(id)
     return mod._handlers[id]
 end
@@ -205,14 +208,14 @@ end
 --- Future calls to get the same ID, and it will return the same instance each time.
 ---
 --- Parameters:
---- * `activatorId`		- The unique ID of the activator.
+---  * `activatorId`		- The unique ID of the activator.
 ---
 --- Returns:
---- * The activator with the specified ID.
+---  * The activator with the specified ID.
 function mod.getActivator(activatorId)
     local a = mod._activators[activatorId]
     if not a then
-        a = activator.new(activatorId, mod)
+        a = activator(activatorId, mod)
         mod._activators[activatorId] = a
     end
     return a

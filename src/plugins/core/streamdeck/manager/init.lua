@@ -20,6 +20,7 @@ local config                = require "cp.config"
 local json                  = require "cp.json"
 
 local displayNotification   = dialog.displayNotification
+local imageFromPath         = image.imageFromPath
 local imageFromURL          = image.imageFromURL
 local spairs                = tools.spairs
 
@@ -395,18 +396,23 @@ local plugin = {
     }
 }
 
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/streamdeck.icns"))
+
     mod._actionmanager = deps.actionmanager
 
     --------------------------------------------------------------------------------
     -- Setup action:
     --------------------------------------------------------------------------------
     local global = deps.global
-    global:add("cpStreamDeck")
+    global
+        :add("cpStreamDeck")
         :whenActivated(function()
             mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
+        :image(icon)
 
     --------------------------------------------------------------------------------
     -- Setup Bank Actions:
@@ -437,6 +443,7 @@ function plugin.init(deps)
                                 id = device .. "_" .. unit .. "_" .. tostring(bank),
                             })
                             :id(device .. "_" .. unit .. "_" .. tostring(bank))
+                            :image(icon)
                     end
 
                     choices
@@ -449,6 +456,7 @@ function plugin.init(deps)
                             id = device .. "_" .. unit .. "_nextBank"
                         })
                         :id(device .. "_" .. unit .. "_nextBank")
+                        :image(icon)
 
                     choices
                         :add(i18n("previous") .. " Stream Deck " .. deviceLabel .. i18n("bank") .. " (Unit " .. unit .. ")")
@@ -460,6 +468,7 @@ function plugin.init(deps)
                             id = device .. "_" .. unit .. "_previousBank",
                         })
                         :id(device .. "_" .. unit .. "_previousBank")
+                        :image(icon)
                 end
             end
             return choices

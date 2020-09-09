@@ -33,11 +33,7 @@ local Throw                 = go.Throw
 local Given                 = go.Given
 local Done                  = go.Done
 
-local Inspector = Element:subclass("Inspector")
-
-function Inspector.__tostring()
-    return "cp.apple.finalcutpro.inspector.Inspector"
-end
+local Inspector = Element:subclass("cp.apple.finalcutpro.inspector.Inspector")
 
 --- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant
@@ -214,7 +210,7 @@ function Inspector.lazy.prop:isFullHeight()
             self:show()
             local currentValue = thisProp:get()
             if newValue ~= currentValue then
-                self:app():menu():selectMenu({"View", "Toggle Inspector Height"})
+                self:app().menu:selectMenu({"View", "Toggle Inspector Height"})
             end
         end
     )
@@ -257,7 +253,7 @@ function Inspector:show(tab)
         -- Show the parent:
         -----------------------------------------------------------------------
         if parent and parent:show() and parent:show():isShowing() and not self:isShowing() then
-            local menuBar = self:app():menu()
+            local menuBar = self:app().menu
             -----------------------------------------------------------------------
             -- Enable it in the primary:
             -----------------------------------------------------------------------
@@ -278,7 +274,7 @@ end
 function Inspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doShow())
-    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing):TimeoutAfter(5000))
     :Otherwise(true)
     :Label("Inspector:doShow")
@@ -295,7 +291,7 @@ end
 ---  * The `Inspector` instance.
 function Inspector:hide()
     if self:isShowing() then
-        local menuBar = self:app():menu()
+        local menuBar = self:app().menu
         -- Uncheck it from the primary workspace
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end
@@ -310,7 +306,7 @@ end
 --- * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
 function Inspector.lazy.method:doHide()
     return If(self.isShowing):Is(true)
-    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(self:app().menu:doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
     :Otherwise(true)
     :Label("Inspector:doHide")

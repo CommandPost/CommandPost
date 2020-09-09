@@ -4,6 +4,8 @@
 
 local require = require
 
+-- local log                       = require "hs.logger" .new "TextField"
+
 local go                        = require "cp.rx.go"
 local axutils                   = require "cp.ui.axutils"
 local Element                   = require "cp.ui.Element"
@@ -73,11 +75,8 @@ function TextField.lazy.prop:value()
         function(value, original)
             local ui = original()
             if ui then
-                if value and self._setConvertFn then
-                    value = self._setConvertFn(value)
-                else
-                    value = tostring(value)
-                end
+                local convert = self._setConvertFn or tostring
+                value = convert(value)
                 local focused
                 if self._forceFocus then
                     focused = self:focused()

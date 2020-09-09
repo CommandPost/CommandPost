@@ -70,8 +70,8 @@ mod.NUMBER_OF_PASTEBOARD_BUFFERS = 9
 
 --- plugins.finalcutpro.pasteboard.manager.RESTART_DELAY -> number
 --- Constant
---- How long to wait until we restart any Pasteboard Watchers.
-mod.RESTART_DELAY = 0.5
+--- How long to wait until we restart any Pasteboard Watchers in milliseconds.
+mod.RESTART_DELAY = 1000
 
 --- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
@@ -279,7 +279,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
@@ -530,7 +530,28 @@ function mod.doWaitForFreshData(oldData)
         if d and d ~= oldData then
             return d
         else
-            return Throw("Copy failed.")
+            return Throw("Waited 10 seconds for new pasteboard data, but none was detected.")
+        end
+    end):DelayedBy(100):UpTo(100)
+end
+
+--- plugins.finalcutpro.pasteboard.manager.doWaitForData(newData) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to appear
+--- on the clipboard. If none is found, an error is sent.
+---
+--- Parameters:
+---  * newData - The new Pasteboard data.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md)
+function mod.doWaitForData(newData)
+    return Retry(function()
+        local d = mod.readFCPXData()
+        if d and d == newData then
+            return d
+        else
+            return Throw("Waited 10 seconds for new pasteboard data, but none was detected.")
         end
     end):DelayedBy(100):UpTo(100)
 end
@@ -545,7 +566,7 @@ end
 --- Returns:
 ---  * A [Statement](cp.rx.go.Statement.md)
 function mod.doSaveToBuffer(id)
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
 
     return Do(
         Require(menuBar:doIsEnabled({"Edit", "Copy"}))
@@ -623,13 +644,24 @@ function mod.doRestoreFromBuffer(id)
             mod.stopWatching()
         end
 
+        --------------------------------------------------------------------------------
+        -- Hide the HUD if triggered from the HUD:
+        --------------------------------------------------------------------------------
+        if mod.hudManager.enabled() then
+            mod.hudManager._webview:hide()
+        end
+
         local originalContents = mod.readFCPXData()
-
-        mod.writeFCPXData(data)
-
-        return Do(fcp:doShortcut("Paste"))
+        return Do(function() return mod.writeFCPXData(data) end)
+        :Then(mod.doWaitForData(data))
+        :Then(fcp:doShortcut("Paste"))
         :Then(function()
             Do(function()
+                --------------------------------------------------------------------------------
+                -- Show the HUD if triggered from the HUD:
+                --------------------------------------------------------------------------------
+                mod.hudManager.update()
+
                 if originalContents then
                     mod.writeFCPXData(originalContents)
                 end
@@ -673,7 +705,7 @@ function mod.ninjaPasteboardCopy()
     --------------------------------------------------------------------------------
     -- Trigger 'copy' from Menubar:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menu()
+    local menuBar = fcp.menu
     if menuBar:isEnabled({"Edit", "Copy"}) then
         menuBar:selectMenu({"Edit", "Copy"})
     else
@@ -727,10 +759,16 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]    = "fcpxCmds",
+        ["finalcutpro.hud.manager"] = "hudManager",
     }
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Manage dependancies:
+    --------------------------------------------------------------------------------
+    mod.hudManager = deps.hudManager
+
     --------------------------------------------------------------------------------
     -- Copy with Custom Label:
     --------------------------------------------------------------------------------

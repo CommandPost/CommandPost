@@ -19,22 +19,19 @@ local If                    = go.If
 
 local IndexCaptions = IndexSection:subclass("cp.apple.finalcutpro.timeline.IndexCaptions")
 
---- cp.apple.finalcutpro.timeline.IndexCaptions:activate() -> cp.ui.RadioButton
---- Method
+--- cp.apple.finalcutpro.timeline.IndexCaptions.activate <cp.ui.RadioButton>
+--- Field
 --- The [RadioButton](cp.ui.RadioButton.md) that activates the 'Captions' section.
-function IndexCaptions.lazy.method:activate()
-    return self:index():mode():captions()
+function IndexCaptions.lazy.value:activate()
+    return self.index.mode.captions
 end
 
---- cp.apple.finalcutpro.timeline.IndexCaptions:list() -> cp.ui.Table
---- Method
---- Returns the list of captions as a [Table](cp.ui.Table.md).
----
---- Returns:
---- * The [Table](cp.ui.Table.md).
-function IndexCaptions.lazy.method:list()
+--- cp.apple.finalcutpro.timeline.IndexCaptions.list <cp.ui.Table>
+--- Field
+--- The list of captions as a [Table](cp.ui.Table.md).
+function IndexCaptions.lazy.value:list()
     return Table(self, self.UI:mutate(function(original)
-        if self:activate():checked() then
+        if self.activate:checked() then
             return cache(self, "_list", function()
                 local scrollArea = childWithRole(original(), "AXScrollArea")
                 return scrollArea and childMatching(scrollArea, Table.matches)
@@ -43,10 +40,10 @@ function IndexCaptions.lazy.method:list()
     end))
 end
 
---- cp.apple.finalcutpro.timeline.IndexCaptions:viewErrors() -> cp.ui.Button
---- Method
+--- cp.apple.finalcutpro.timeline.IndexCaptions.viewErrors <cp.ui.Button>
+--- Field
 --- The [Button](cp.ui.Button.md) that will allow viewing errors in the Captions list.
-function IndexCaptions.lazy.method:viewErrors()
+function IndexCaptions.lazy.value:viewErrors()
     return Button(self, self.UI:mutate(function(original)
         return cache(self, "_viewErrors", function()
             return childFromBottom(original(), 1, Button.matches)

@@ -14,7 +14,7 @@ local rescale           = tools.rescale
 local function createAbsoluteMIDIOpacitySlider()
     local value
     local updateUI = deferred.new(0.01):action(function()
-        fcp:inspector():video():compositing():opacity():show():value(value)
+        fcp.inspector.video:compositing():opacity():show():value(value)
     end)
     return function(metadata)
         if metadata.fourteenBitCommand or metadata.pitchChange then
@@ -128,7 +128,7 @@ end
 local function createAbsoluteMIDIRotationSlider()
     local value
     local updateUI = deferred.new(0.01):action(function()
-        fcp:inspector():video():show():transform():rotation():show():value(value)
+        fcp.inspector.video:show():transform():rotation():show():value(value)
     end)
     return function(metadata)
         if metadata.fourteenBitCommand or metadata.pitchChange then
@@ -190,7 +190,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleX() end),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp.inspector.video:show():transform():scaleX() end),
     })
 
     --------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleY() end),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp.inspector.video:show():transform():scaleY() end),
     })
 
     --------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("scale") .. " " .. i18n("all") .. " (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIScaleSlider(function() return fcp:inspector():video():show():transform():scaleAll() end),
+        fn = createAbsoluteMIDIScaleSlider(function() return fcp.inspector.video:show():transform():scaleAll() end),
     })
 
     --------------------------------------------------------------------------------
@@ -220,7 +220,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("position") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():position().x end),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().x end),
     })
 
     --------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("position") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():position().y end),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():position().y end),
     })
 
     --------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("anchor") .. " X (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():anchor().x end),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():anchor().x end),
     })
 
     --------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ function plugin.init(deps)
         group = "fcpx",
         text = i18n("transform") .. " - " .. i18n("anchor") .. " Y (" .. i18n("absolute") .. ")",
         subText = i18n("midiVideoInspector"),
-        fn = createAbsoluteMIDIPositionSlider(function() return fcp:inspector():video():show():transform():anchor().y end),
+        fn = createAbsoluteMIDIPositionSlider(function() return fcp.inspector.video:show():transform():anchor().y end),
     })
 
 end

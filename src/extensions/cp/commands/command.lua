@@ -58,10 +58,10 @@ end
 --- Returns the ID for this command.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The ID.
+---  * The ID.
 function command.mt:id()
     return self._id
 end
@@ -71,10 +71,10 @@ end
 --- Returns the parent command group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns
---- * The parent `cp.commands`.
+---  * The parent `cp.commands`.
 function command.mt:parent()
     return self._parent
 end
@@ -147,10 +147,10 @@ end
 --- Returns the command title in the current language, if availalbe. If not, the ID is returned.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns
---- * The human-readable command title.
+---  * The human-readable command title.
 function command.mt:getTitle()
     if self._title then
         return self._title
@@ -167,7 +167,10 @@ end
 --- Anything set here will override it in all langauges.
 ---
 --- Parameters:
---- * `subtitle`	- The new subtitle.
+---  * `subtitle`	- The new subtitle.
+---
+--- Returns:
+---  * The `cp.commands.command` instance.
 function command.mt:subtitled(subtitle)
     self._subtitle = subtitle
     return self
@@ -179,10 +182,10 @@ end
 --- If nothing is available, it will return `nil`.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The subtitle value or `nil`.
+---  * The subtitle value or `nil`.
 function command.mt:getSubtitle()
     if self._subtitle then
         return self._subtitle
@@ -191,16 +194,43 @@ function command.mt:getSubtitle()
     end
 end
 
+--- cp.commands.command:image(img) -> cp.commands.command
+--- Method
+--- Sets the specified image and returns the `cp.commands.command` instance.
+---
+--- Parameters:
+---  * `img` - The `hs.image` to use.
+---
+--- Returns:
+---  * The `cp.commands.command` instance.
+function command.mt:image(img)
+    self._image = img
+    return self
+end
+
+--- cp.commands.command:getImage() -> hs.image object
+--- Method
+--- Returns the current image.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A hs.image object or `nil` if not is specified.
+function command.mt:getImage()
+    return self._image
+end
+
 --- cp.commands.command:groupedBy(group) -> cp.commands.command
 --- Method
 --- Specifies that the command is grouped by a specific value.
 --- Note: This is different to the command group/parent value.
 ---
 --- Parameters:
---- * `group`	- The group ID.
+---  * `group`	- The group ID.
 ---
 --- Returns:
---- * The `cp.commands.command` instance.
+---  * The `cp.commands.command` instance.
 function command.mt:groupedBy(group)
     self._group = group
     return self
@@ -211,10 +241,10 @@ end
 --- Returns the group ID for the command.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The group ID.
+---  * The group ID.
 function command.mt:getGroup()
     return self._group
 end
@@ -225,9 +255,9 @@ end
 --- This method can be called multiple times, and multiple key combinations will be registered for the command.
 --- To remove existing key combinations, call the `command:deleteShortcuts()` method.
 ---
---- * If the `keyCode` is provided, no modifiers need to be pressed to activate and the `command` is returned.
---- * If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
---- * If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
+---  * If the `keyCode` is provided, no modifiers need to be pressed to activate and the `command` is returned.
+---  * If the `modifiers` and `keyCode` are provided, the combination is created and the `command` is returned.
+---  * If no `keyCode` is provided, a `modifier` is returned, which lets you specify keyboard combinations.
 ---
 --- For example:
 ---
@@ -289,10 +319,10 @@ end
 --- Deletes any existing shortcuts and applies the new set of shortcuts in the table.
 ---
 --- Parameters:
---- * shortcuts		- The set of `cp.commands.shortcuts` to apply to this command.
+---  * shortcuts		- The set of `cp.commands.shortcuts` to apply to this command.
 ---
 --- Returns:
---- * The `cp.commands.command` instance.
+---  * The `cp.commands.command` instance.
 function command.mt:setShortcuts(shortcuts)
     self:deleteShortcuts()
     for _,newShortcut in ipairs(shortcuts) do
@@ -492,10 +522,10 @@ end
 --- Enables the command.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.commands.command` instance.
+---  * The `cp.commands.command` instance.
 function command.mt:enable()
     self:isEnabled(true)
     return self
@@ -506,10 +536,10 @@ end
 --- Disables the command.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.commands.command` instance.
+---  * The `cp.commands.command` instance.
 function command.mt:disable()
     self:isEnabled(false)
     return self

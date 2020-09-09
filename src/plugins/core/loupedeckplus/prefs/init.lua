@@ -24,6 +24,7 @@ local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
+local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local mergeTable                = tools.mergeTable
@@ -200,6 +201,7 @@ local function updateUI()
     local pressValue = i18n("none")
     local leftValue = i18n("none")
     local rightValue = i18n("none")
+    local releaseValue = i18n("none")
 
     if bankData then
         if bankData[note .. "Press"] and bankData[note .. "Press"]["actionTitle"] then
@@ -211,11 +213,15 @@ local function updateUI()
         if bankData[note .. "Right"] and bankData[note .. "Right"]["actionTitle"] then
             rightValue = bankData[note .. "Right"]["actionTitle"]
         end
+        if bankData[note .. "Release"] and bankData[note .. "Release"]["actionTitle"] then
+            releaseValue = bankData[note .. "Release"]["actionTitle"]
+        end
     end
     script = script .. [[
         changeValueByID('press_action', `]] .. escapeTilda(pressValue) .. [[`);
         changeValueByID('left_action', `]] .. escapeTilda(leftValue) .. [[`);
         changeValueByID('right_action', `]] .. escapeTilda(rightValue) .. [[`);
+        changeValueByID('release_action', `]] .. escapeTilda(releaseValue) .. [[`);
     ]]
 
     --------------------------------------------------------------------------------
@@ -224,7 +230,7 @@ local function updateUI()
     injectScript(script)
 end
 
--- loupedeckPanelCallback() -> none
+-- loupedeckPlusPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
 --
@@ -234,7 +240,7 @@ end
 --
 -- Returns:
 --  * None
-local function loupedeckPanelCallback(id, params)
+local function loupedeckPlusPanelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
     if callbackType then
@@ -242,7 +248,8 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
-            if not mod.activator then
+            local activatorID = params["application"]
+            if not mod.activator or mod.activator and not mod.activator[activatorID] then
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
 
@@ -274,7 +281,8 @@ local function loupedeckPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Create new Activator:
                     --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("loupedeckCTPreferences" .. groupID)
+                    local appActivator = mod._actionmanager.getActivator("loupedeckPlusPreferences" .. groupID)
+                    mod.activator[groupID] = appActivator
 
                     --------------------------------------------------------------------------------
                     -- Restrict Allowed Handlers for Activator to current group (and global):
@@ -292,8 +300,7 @@ local function loupedeckPanelCallback(id, params)
                         end
                     end
                     local unpack = table.unpack
-                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
+                    appActivator:allowHandlers(unpack(allowedHandlers))
 
                     --------------------------------------------------------------------------------
                     -- Gather Toolbar Icons for Search Console:
@@ -301,14 +308,13 @@ local function loupedeckPanelCallback(id, params)
                     local defaultSearchConsoleToolbar = mod._appmanager.defaultSearchConsoleToolbar()
                     local appSearchConsoleToolbar = mod._appmanager.getSearchConsoleToolbar(groupID) or {}
                     local searchConsoleToolbar = mergeTable(defaultSearchConsoleToolbar, appSearchConsoleToolbar)
-                    mod.activator[groupID]:toolbarIcons(searchConsoleToolbar)
+                    appActivator:toolbarIcons(searchConsoleToolbar)
                 end
             end
 
             --------------------------------------------------------------------------------
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
-            local activatorID = params["application"]
             mod.activator[activatorID]:onActivate(function(handler, action, text)
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
@@ -348,7 +354,7 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local app = params["application"]
             local bank = params["bank"]
-            local button = params["button"]
+            local button = params["buttonID"]
 
             local items = mod.items()
 
@@ -428,14 +434,15 @@ local function loupedeckPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Change the bank:
                 --------------------------------------------------------------------------------
-                local activeBanks = mod._midi.activeLoupedeckBanks()
+                local activeBanks = mod._midi.activeLoupedeckPlusBanks()
 
                 -- Remove the 'fn':
                 if string.sub(bank, -2) == "fn" then
                     bank = string.sub(bank, 1, -3)
                 end
                 activeBanks[app] = bank
-                mod._midi.activeLoupedeckBanks(activeBanks)
+
+                mod._midi.activeLoupedeckPlusBanks(activeBanks)
 
                 --------------------------------------------------------------------------------
                 -- Update the UI:
@@ -603,7 +610,7 @@ local function loupedeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
-                    local default = copy(mod._midi.defaultLoupedeckLayout)
+                    local default = copy(mod._midi.defaultLoupedeckPlusLayout)
                     mod.items(default)
 
                     updateUI()
@@ -619,7 +626,7 @@ local function loupedeckPanelCallback(id, params)
 
                     local items = mod.items()
 
-                    local default = mod._midi.defaultLoupedeckLayout[app] or {}
+                    local default = mod._midi.defaultLoupedeckPlusLayout[app] or {}
                     items[app] = copy(default)
 
                     mod.items(items)
@@ -642,7 +649,7 @@ local function loupedeckPanelCallback(id, params)
                     if not items[app] then items[app] = {} end
                     if not items[app][bank] then items[app][bank] = {} end
 
-                    local default = mod._midi.defaultLoupedeckLayout[app] and mod._midi.defaultLoupedeckLayout[app][bank] or {}
+                    local default = mod._midi.defaultLoupedeckPlusLayout[app] and mod._midi.defaultLoupedeckPlusLayout[app][bank] or {}
                     items[app][bank] = copy(default)
 
                     mod.items(items)
@@ -780,6 +787,9 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/images/loupedeck.icns"))
+
     --------------------------------------------------------------------------------
     -- Inter-plugin Connectivity:
     --------------------------------------------------------------------------------
@@ -789,8 +799,8 @@ function plugin.init(deps, env)
     mod._actionmanager  = deps.actionmanager
     mod._env            = env
 
-    mod.items           = mod._midi.loupedeckItems
-    mod.enabled         = mod._midi.enabledLoupedeck
+    mod.items           = mod._midi.loupedeckPlusItems
+    mod.enabled         = mod._midi.enabledLoupedeckPlus
 
     mod.numberOfBanks   = deps.manager.NUMBER_OF_BANKS
 
@@ -805,6 +815,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckPlusSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckPlus")
@@ -813,6 +824,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckPlusSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckPlusandLaunchLoupedeckApp")
@@ -822,6 +834,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckPlusSupportAndLaunchLoupedeckApp"))
+        :image(icon)
 
     global
         :add("enableLoupedeckPlusandKillLoupedeckApp")
@@ -836,22 +849,23 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckPlusSupportQuitLoupedeckApp"))
+        :image(icon)
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
     mod._panel          =  deps.manager.addPanel({
         priority        = 2033,
-        id              = "loupedeck",
+        id              = "loupedeckplus",
         label           = i18n("loupedeckPlus"),
-        image           = image.imageFromPath(env:pathToAbsolute("/images/loupedeck.icns")),
+        image           = icon,
         tooltip         = i18n("loupedeckPlus"),
-        height          = 805,
+        height          = 910,
     })
-        :addHeading(6, "Loupedeck+")
+        :addHeading(6, i18n("loupedeckPlus"))
         :addCheckbox(7,
             {
-                label       = i18n("enableLoupdeckSupport"),
+                label       = i18n("enableLoupedeckPlusSupport"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
                     mod.enabled(params.checked)
@@ -863,7 +877,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
-    mod._panel:addHandler("onchange", "loupedeckPanelCallback", loupedeckPanelCallback)
+    mod._panel:addHandler("onchange", "loupedeckPlusPanelCallback", loupedeckPlusPanelCallback)
 
     return mod
 end

@@ -2,9 +2,13 @@
 ---
 --- Playback Plugin.
 
-local require = require
+local require           = require
 
-local fcp = require "cp.apple.finalcutpro"
+local fcp               = require "cp.apple.finalcutpro"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+
+local playErrorSound    = tools.playErrorSound
 
 local mod = {}
 
@@ -18,8 +22,10 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.play()
-    if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
-        fcp:doShortcut("PlayPause")
+    if not fcp.viewer:isPlaying() and not fcp.eventViewer:isPlaying() then
+        fcp:doShortcut("PlayPause"):Now()
+    else
+        playErrorSound()
     end
 end
 
@@ -33,17 +39,18 @@ end
 --- Returns:
 ---  * None
 function mod.pause()
-    if fcp:viewer():isPlaying() or fcp:eventViewer():isPlaying() then
-        fcp:doShortcut("PlayPause")
+    if fcp.viewer:isPlaying() or fcp.eventViewer:isPlaying() then
+        fcp:doShortcut("PlayPause"):Now()
+    else
+        playErrorSound()
     end
 end
-
 
 local plugin = {
     id = "finalcutpro.timeline.playback",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.commands"]	= "fcpxCmds",
+        ["finalcutpro.commands"] = "fcpxCmds",
     }
 }
 
@@ -51,13 +58,13 @@ function plugin.init(deps)
     local cmds = deps.fcpxCmds
     cmds
         :add("cpPlay")
+        :subtitled(i18n("thisWillOnlyTriggerThePlayShortcutKeyIfAlreadyStopped"))
         :whenActivated(mod.play)
 
     cmds
         :add("cpPause")
+        :subtitled(i18n("thisWillOnlyTriggerThePauseShortcutKeyIfAlreadyPlaying"))
         :whenActivated(mod.pause)
-
-    return mod
 end
 
 return plugin

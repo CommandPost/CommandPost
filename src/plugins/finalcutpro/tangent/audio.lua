@@ -19,6 +19,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup:
@@ -42,7 +46,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- AUDIO INSPECTOR:
     --------------------------------------------------------------------------------
-    local audio                         = fcp:inspector():audio()
+    local audio                         = fcp.inspector.audio
     local audioGroup                    = fcpGroup:group(i18n("audio") .. " " .. i18n("inspector"))
 
     local PAN_MODES                     = audio.PAN_MODES
@@ -236,7 +240,7 @@ function plugin.init(deps)
         -- Effects:
         --
         --------------------------------------------------------------------------------
-        local effects = audio:effects()
+        local effects = audio.effects
         local effectsGroup = audioGroup:group(i18n("effects"))
 
             --------------------------------------------------------------------------------
@@ -257,7 +261,7 @@ function plugin.init(deps)
         -- Audio Configuration:
         --
         --------------------------------------------------------------------------------
-        local audioConfiguration = audio:audioConfiguration()
+        local audioConfiguration = audio.audioConfiguration
         local audioConfigurationGroup = audioGroup:group(i18n("audioConfiguration"))
 
             --------------------------------------------------------------------------------

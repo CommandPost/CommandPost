@@ -72,7 +72,7 @@ function mod.widget()
     widgetCanvas:canvasMouseEvents(true, true, false, true)
         :mouseCallback(function(_,m,_,x,_)
 
-            if not fcp.isFrontmost() or not fcp:libraries():isShowing() then return end
+            if not fcp.isFrontmost() or not fcp.libraries:isShowing() then return end
 
             widgetCanvas.circle.center = {
                 x = x,
@@ -95,7 +95,7 @@ function mod.widget()
                 --------------------------------------------------------------------------------
                 local value = x/(canvasWidth/10)
                 value = (value * (135 - 32) / 10) + 32
-                fcp.libraries.appearanceAndFiltering:show():clipHeight():value(value)
+                fcp.libraries.appearanceAndFiltering:show().clipHeight:value(value)
             elseif m == "mouseUp" then
                 fcp.libraries.appearanceAndFiltering:hide()
             end

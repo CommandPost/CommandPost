@@ -11,6 +11,7 @@ local hs                        = hs
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
 local ct                        = require "hs.loupedeckct"
+local eventtap                  = require "hs.eventtap"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local plist                     = require "hs.plist"
@@ -29,9 +30,12 @@ local displayNotification       = dialog.displayNotification
 local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
+local doEvery                   = timer.doEvery
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local execute                   = hs.execute
+local imageFromPath             = image.imageFromPath
 local imageFromURL              = image.imageFromURL
+local keyRepeatInterval         = eventtap.keyRepeatInterval
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
 
@@ -107,7 +111,7 @@ local cachedLeftSideScreen = ""
 -- The last screen data sent.
 local cachedRightSideScreen = ""
 
--- cachedTouchScreenButtonValues -> string
+-- cachedBundleID -> string
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
@@ -254,7 +258,7 @@ end
 --- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
 --- Field
 --- Enable or disable the Loupedeck CT Flash Drive.
-mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(function(enabled)
+mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", false):watch(function(enabled)
     ct.updateFlashDrive(enabled)
     if not enabled then
         local path = getFlashDrivePath()
@@ -263,6 +267,21 @@ mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", true):watch(f
         end
     end
 end)
+
+--- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", false):watch(function() mod.refresh() end)
+
+--- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+--- Field
+--- Enable or disable the automatic switching of applications.
+mod.lastBundleID = config.prop("loupedeckct.lastBundleID", "All Applications")
+
+--- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
+--- Field
+--- Screens Backlight Level
+mod.screensBacklightLevel = config.prop("loupedeckct.screensBacklightLevel", "9")
 
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
@@ -343,6 +362,11 @@ function mod.reset()
     mod.items(mod.defaultLayout)
 end
 
+-- repeatTimers -> table
+-- Variable
+-- A table containing `hs.timer` objects.
+local repeatTimers = {}
+
 --- plugins.core.loupedeckct.manager.refresh()
 --- Function
 --- Refreshes the Loupedeck CT screens and LED buttons.
@@ -369,6 +393,14 @@ function mod.refresh(dueToAppChange)
         cachedBundleID = bundleID
     end
 
+    --------------------------------------------------------------------------------
+    -- Stop any stray repeat timers:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(repeatTimers) do
+        v:stop()
+        v = nil -- luacheck: ignore
+    end
+
     local items = mod.items()
 
     --------------------------------------------------------------------------------
@@ -381,8 +413,15 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- Ignore if ignored:
     --------------------------------------------------------------------------------
-    if items[bundleID].ignore and items[bundleID].ignore == true then
+    if items[bundleID] and items[bundleID].ignore and items[bundleID].ignore == true then
         bundleID = "All Applications"
+    end
+
+    --------------------------------------------------------------------------------
+    -- If not Automatically Switching Applications:
+    --------------------------------------------------------------------------------
+    if not mod.automaticallySwitchApplications() then
+        bundleID = mod.lastBundleID()
     end
 
     local activeBanks = mod.activeBanks()
@@ -399,6 +438,13 @@ function mod.refresh(dueToAppChange)
 
     local item = items[bundleID]
     local bank = item and item[bankID]
+
+    --------------------------------------------------------------------------------
+    -- UPDATE WHEEL SENSITIVITY:
+    --------------------------------------------------------------------------------
+    local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
+    local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or ct.defaultWheelSensitivityIndex
+    ct.updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -540,10 +586,13 @@ local function executeAction(thisAction)
         local action = thisAction.action
         if handlerID and action then
             local handler = mod._actionmanager.getHandler(handlerID)
-            handler:execute(action)
-            return true
+            if handler then
+                doAfter(0, function()
+                    handler:execute(action)
+                end)
+                return true
+            end
         end
-
     end
     return false
 end
@@ -558,6 +607,14 @@ end
 -- Returns:
 --  * None
 local function clearCache()
+    --------------------------------------------------------------------------------
+    -- Stop any stray repeat timers:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(repeatTimers) do
+        v:stop()
+        v = nil -- luacheck: ignore
+    end
+
     cacheWheelYAxis = nil
     cacheWheelXAxis = nil
 
@@ -601,6 +658,8 @@ local function callback(data)
         mod.refresh()
         hasLoaded = true
         mod.enableFlashDrive:update()
+
+        ct.updateBacklightLevel(tonumber(mod.screensBacklightLevel()))
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
@@ -611,8 +670,7 @@ local function callback(data)
         return
     end
 
-    local frontmostApplication = application.frontmostApplication()
-    local bundleID = frontmostApplication:bundleID()
+    local bundleID = cachedBundleID
 
     local items = mod.items()
 
@@ -630,33 +688,59 @@ local function callback(data)
         bundleID = "All Applications"
     end
 
+    --------------------------------------------------------------------------------
+    -- If not Automatically Switching Applications:
+    --------------------------------------------------------------------------------
+    if not mod.automaticallySwitchApplications() then
+        bundleID = mod.lastBundleID()
+    end
+
     local activeBanks = mod.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
 
     local buttonID = tostring(data.buttonID)
 
+    local item = items[bundleID]
+
     --------------------------------------------------------------------------------
-    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
+    -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS AS LONG AS A PRESS ACTION
+    -- ISN'T ASSIGNED TO THEM (IN WHICH CASE THEY BECOME NORMAL BUTTONS):
     --------------------------------------------------------------------------------
     local functionButtonPressed = false
     if data.id == ct.event.BUTTON_PRESS then
         if data.direction == "up" then
             if data.buttonID == ct.buttonID.LEFT_FN then
-                leftFnPressed = false
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["20"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    leftFnPressed = false
+                    mod.refresh()
+                end
             elseif data.buttonID == ct.buttonID.RIGHT_FN then
-                rightFnPressed = false
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["23"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    rightFnPressed = false
+                    mod.refresh()
+                end
             end
         elseif data.direction == "down" then
             if data.buttonID == ct.buttonID.LEFT_FN then
-                functionButtonPressed = true
-                leftFnPressed = true
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["20"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    functionButtonPressed = true
+                    leftFnPressed = true
+                    mod.refresh()
+                end
             elseif data.buttonID == ct.buttonID.RIGHT_FN then
-                functionButtonPressed = true
-                rightFnPressed = true
-                mod.refresh()
+                local button = item[bankID]["ledButton"]["23"]
+                local pressAction = button and button["pressAction"]
+                if not pressAction or (pressAction and next(pressAction) == nil) then
+                    functionButtonPressed = true
+                    rightFnPressed = true
+                    mod.refresh()
+                end
             end
         end
     end
@@ -672,7 +756,6 @@ local function callback(data)
         end
     end
 
-    local item = items[bundleID]
     local bank = item and item[bankID]
 
     if bank then
@@ -682,7 +765,20 @@ local function callback(data)
             --------------------------------------------------------------------------------
             local thisButton = bank.ledButton and bank.ledButton[buttonID]
             if thisButton and executeAction(thisButton.pressAction) then
+
+                -- Repeat if necessary:
+                if thisButton.repeatPressActionUntilReleased then
+                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                        executeAction(thisButton.pressAction)
+                    end)
+                end
+
                 return
+            end
+
+            -- Vibrate if needed:
+            if thisButton and thisButton.vibratePress then
+                ct.vibrate(tonumber(thisButton.vibratePress))
             end
 
             --------------------------------------------------------------------------------
@@ -692,15 +788,74 @@ local function callback(data)
             if thisKnob and executeAction(thisKnob.pressAction) then
                 return
             end
+
+            -- Vibrate if needed:
+            if thisKnob and thisKnob.vibratePress then
+                ct.vibrate(tonumber(thisKnob.vibratePress))
+            end
+        elseif data.id == ct.event.BUTTON_PRESS and data.direction == "up" then
+            --------------------------------------------------------------------------------
+            -- LED BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisButton = bank.ledButton and bank.ledButton[buttonID]
+
+            -- Stop repeating:
+            if thisButton and thisButton.repeatPressActionUntilReleased then
+                if repeatTimers[buttonID] then
+                    repeatTimers[buttonID]:stop()
+                    repeatTimers[buttonID] = nil
+                end
+            end
+
+            if thisButton and executeAction(thisButton.releaseAction) then
+                return
+            end
+
+            -- Vibrate if needed:
+            if thisButton and thisButton.vibrateRelease then
+                ct.vibrate(tonumber(thisButton.vibrateRelease))
+            end
+
+            --------------------------------------------------------------------------------
+            -- KNOB BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisKnob = bank.knob and bank.knob[buttonID]
+            if thisKnob and executeAction(thisKnob.releaseAction) then
+                return
+            end
+
+            -- Vibrate if needed:
+            if thisKnob and thisKnob.vibrateRelease then
+                ct.vibrate(tonumber(thisKnob.vibrateRelease))
+            end
         elseif data.id == ct.event.ENCODER_MOVE then
+            --------------------------------------------------------------------------------
+            -- KNOB TURN:
+            --------------------------------------------------------------------------------
             local thisKnob = bank.knob and bank.knob[buttonID]
             if thisKnob and executeAction(thisKnob[data.direction.."Action"]) then
                 return
             end
 
+            -- Vibrate if needed:
+            if data.direction == "left" and thisKnob and thisKnob.vibrateLeft then
+                ct.vibrate(tonumber(thisKnob.vibrateLeft))
+            end
+            if data.direction == "right" and thisKnob and thisKnob.vibrateRight then
+                ct.vibrate(tonumber(thisKnob.vibrateRight))
+            end
+
             local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
             if thisJogWheel and executeAction(thisJogWheel[data.direction.."Action"]) then
                 return
+            end
+
+            -- Vibrate if needed:
+            if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft then
+                ct.vibrate(tonumber(thisJogWheel.vibrateLeft))
+            end
+            if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight then
+                ct.vibrate(tonumber(thisJogWheel.vibrateRight))
             end
         elseif data.id == ct.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
@@ -709,11 +864,19 @@ local function callback(data)
             local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
 
             -- Vibrate if needed:
-            if thisTouchButton and thisTouchButton.vibrate then
-                ct.vibrate(tonumber(thisTouchButton.vibrate))
+            if thisTouchButton and thisTouchButton.vibratePress then
+                ct.vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
+
+                -- Repeat if necessary:
+                if thisTouchButton.repeatPressActionUntilReleased then
+                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                        executeAction(thisTouchButton.pressAction)
+                    end)
+                end
+
                 return
             end
 
@@ -763,7 +926,6 @@ local function callback(data)
                 end
             end
 
-
             --------------------------------------------------------------------------------
             -- RIGHT TOUCH SCREEN:
             --------------------------------------------------------------------------------
@@ -810,13 +972,60 @@ local function callback(data)
                 end
             end
         elseif data.id == ct.event.SCREEN_RELEASED then
+            --------------------------------------------------------------------------------
+            -- SCREEN RELEASED:
+            --------------------------------------------------------------------------------
             cacheLeftScreenYAxis = nil
             cacheRightScreenYAxis = nil
             tookFingerOffLeftScreen = true
             tookFingerOffRightScreen = true
+
+            --------------------------------------------------------------------------------
+            -- TOUCH SCREEN BUTTON RELEASE:
+            --------------------------------------------------------------------------------
+            local thisTouchButton = bank.touchButton and bank.touchButton[buttonID]
+
+            -- Stop repeating:
+            if thisTouchButton and thisTouchButton.repeatPressActionUntilReleased then
+                if repeatTimers[buttonID] then
+                    repeatTimers[buttonID]:stop()
+                    repeatTimers[buttonID] = nil
+                end
+            end
+
+            -- Vibrate if needed:
+            if thisTouchButton and thisTouchButton.vibrateRelease then
+                ct.vibrate(tonumber(thisTouchButton.vibrateRelease))
+            end
+
+            if thisTouchButton and executeAction(thisTouchButton.releaseAction) then
+                return
+            end
         elseif data.id == ct.event.WHEEL_PRESSED then
             local wheelScreen = bank.wheelScreen and bank.wheelScreen["1"]
             if wheelScreen then
+                --------------------------------------------------------------------------------
+                -- BUTTON PRESS:
+                --------------------------------------------------------------------------------
+                if wheelScreen.topLeftAction and buttonID == "1" then
+                    executeAction(wheelScreen.topLeftAction)
+                end
+                if wheelScreen.topMiddleAction and buttonID == "2" then
+                    executeAction(wheelScreen.topMiddleAction)
+                end
+                if wheelScreen.topRightAction and buttonID == "3" then
+                    executeAction(wheelScreen.topRightAction)
+                end
+                if wheelScreen.bottomLeftAction and buttonID == "4" then
+                    executeAction(wheelScreen.bottomLeftAction)
+                end
+                if wheelScreen.bottomMiddleAction and buttonID == "5" then
+                    executeAction(wheelScreen.bottomMiddleAction)
+                end
+                if wheelScreen.bottomRightAction and buttonID == "6" then
+                    executeAction(wheelScreen.bottomRightAction)
+                end
+
                 --------------------------------------------------------------------------------
                 -- DRAG WHEEL:
                 --------------------------------------------------------------------------------
@@ -903,7 +1112,10 @@ local plugin = {
     }
 }
 
-function plugin.init(deps)
+function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/loupedeck.icns"))
+
     --------------------------------------------------------------------------------
     -- Refresh mod.items:
     --------------------------------------------------------------------------------
@@ -925,6 +1137,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckCTSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckCT")
@@ -933,6 +1146,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckCTSupport"))
+        :image(icon)
 
     global
         :add("disableLoupedeckCTandLaunchLoupedeckApp")
@@ -942,6 +1156,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("disableLoupedeckCTSupportAndLaunchLoupedeckApp"))
+        :image(icon)
 
     global
         :add("enableLoupedeckCTandKillLoupedeckApp")
@@ -956,6 +1171,7 @@ function plugin.init(deps)
         end)
         :groupedBy("commandPost")
         :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
+        :image(icon)
 
     --------------------------------------------------------------------------------
     -- Setup the Loupedeck CT callback:
@@ -995,17 +1211,20 @@ function plugin.init(deps)
                     :subText(i18n("loupedeckCTBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(icon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckCTBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(icon)
 
             choices:add(i18n("previous") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
                 :subText(i18n("loupedeckCTBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(icon)
 
             return choices
         end)
@@ -1029,6 +1248,13 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 if items[bundleID].ignore and items[bundleID].ignore == true then
                     bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- If not Automatically Switching Applications:
+                --------------------------------------------------------------------------------
+                if not mod.automaticallySwitchApplications() then
+                    bundleID = mod.lastBundleID()
                 end
 
                 local activeBanks = mod.activeBanks()

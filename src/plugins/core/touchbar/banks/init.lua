@@ -4,23 +4,32 @@
 
 local require               = require
 
-local dialog                = require("cp.dialog")
-local i18n                  = require("cp.i18n")
+local image                 = require "hs.image"
+
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
 
 local displayNotification   = dialog.displayNotification
+local imageFromPath         = image.imageFromPath
 
 local mod = {}
 
---- plugins.core.touchbar.banks.init() -> nil
---- Function
---- Initialise the module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.init()
+local plugin = {
+    id              = "core.touchbar.banks",
+    group           = "core",
+    dependencies    = {
+        ["core.touchbar.manager"]   = "manager",
+        ["core.action.manager"]	= "actionmanager",
+    }
+}
+
+function plugin.init(deps, env)
+
+    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/touchbar.icns"))
+
+    mod._manager = deps.manager
+    mod._actionmanager = deps.actionmanager
+
     mod._handler = mod._actionmanager.addHandler("global_touchbarbanks")
         :onChoices(function(choices)
             for i=1, mod._manager.numberOfSubGroups do
@@ -28,17 +37,20 @@ function mod.init()
                     :subText(i18n("touchBarBankDescription"))
                     :params({ id = i })
                     :id(i)
+                    :image(icon)
             end
 
             choices:add(i18n("next") .. " " .. i18n("touchBar") .. " " .. i18n("bank"))
                 :subText(i18n("touchBarBankDescription"))
                 :params({ id = "next" })
                 :id("next")
+                :image(icon)
 
             choices:add(i18n("previous") .. " " .. i18n("touchBar") .. " " .. i18n("bank"))
                 :subText(i18n("touchBarBankDescription"))
                 :params({ id = "previous" })
                 :id("previous")
+                :image(icon)
 
             return choices
         end)
@@ -58,7 +70,7 @@ function mod.init()
                 if activeGroup and activeSubGroup then
                     local bankLabel = mod._manager.getBankLabel(activeGroup .. activeSubGroup)
                     if bankLabel then
-                        displayNotification(i18n("switchingTo") .. " " .. i18n("midi") .. " " .. i18n("bank") .. ": " .. bankLabel)
+                        displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. bankLabel)
                     else
                         displayNotification(i18n("switchingTo") .. " " .. i18n("touchBar") .. " " .. i18n("bank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
                     end
@@ -68,21 +80,6 @@ function mod.init()
         end)
         :onActionId(function(action) return "touchbarBank" .. action.id end)
     return mod
-end
-
-local plugin = {
-    id              = "core.touchbar.banks",
-    group           = "core",
-    dependencies    = {
-        ["core.touchbar.manager"]   = "manager",
-        ["core.action.manager"]	= "actionmanager",
-    }
-}
-
-function plugin.init(deps)
-    mod._manager = deps.manager
-    mod._actionmanager = deps.actionmanager
-    return mod.init()
 end
 
 return plugin
