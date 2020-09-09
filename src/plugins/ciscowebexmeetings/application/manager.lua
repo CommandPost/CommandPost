@@ -1,6 +1,6 @@
 --- === plugins.zoom.application.manager ===
 ---
---- Registers Zoom with the Core Application Manager if installed.
+--- Registers Cisco Webex Meetings with the Core Application Manager if installed.
 
 local require               = require
 
@@ -9,20 +9,19 @@ local application           = require "hs.application"
 local infoForBundleID       = application.infoForBundleID
 
 local plugin = {
-    id              = "zoom.application.manager",
-    group           = "zoom",
+    id              = "ciscowebexmeetings.application.manager",
+    group           = "ciscowebexmeetings",
     dependencies    = {
         ["core.application.manager"] = "manager",
     }
 }
 
 function plugin.init(deps)
-    local bundleID = "us.zoom.xos"
+    local bundleID = "com.cisco.webexmeetingsapp"
     if infoForBundleID(bundleID) then
         deps.manager.registerApplication({
             bundleID = bundleID,
-            displayName = "Zoom",
-            legacyGroupID = "zoom",
+            displayName = "Cisco Webex Meetings",
         })
     end
 end
