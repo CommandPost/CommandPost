@@ -566,14 +566,25 @@ mod.interrupted = prop(function()
         end
     end
     return false
-end):watch(function(value)
-    if value == false then
-        --------------------------------------------------------------------------------
-        -- Force Tangent Hub to restart when an interruption is completed so that
-        -- CommandPost regains focus in Tangent Mapper:
-        --------------------------------------------------------------------------------
-        execute("launchctl unload " .. mod.LAUNCH_AGENT_PATH)
-        execute("launchctl load " .. mod.LAUNCH_AGENT_PATH)
+end):watch(function(interrupted)
+    -- log.df("Tangent Hub interrupted: %s", value)
+    if interrupted then
+        if tangent.supportsFocusRequest() then
+            tangent.disconnect()
+        end
+    else
+        if tangent.supportsFocusRequest() then
+            -- log.df("Sending Focus Request...")
+            tangent.connect()
+        else
+            --------------------------------------------------------------------------------
+            -- Force Tangent Hub to restart when an interruption is completed so that
+            -- CommandPost regains focus in Tangent Mapper:
+            --------------------------------------------------------------------------------
+            -- log.df("Restarting Tangent Hub...")
+            execute("launchctl unload " .. mod.LAUNCH_AGENT_PATH)
+            execute("launchctl load " .. mod.LAUNCH_AGENT_PATH)
+        end
     end
 end)
 
@@ -646,7 +657,14 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             mod.disableFinalCutProInTangentHub()
             tangent.callback(callback)
-            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath)
+
+            --------------------------------------------------------------------------------
+            -- NOTE: If we change Tangent Layout names, we'll need to migrate settings
+            --       across for legacy users.
+            --------------------------------------------------------------------------------
+            --local ok, errorMessage = tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
+
+            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
@@ -659,10 +677,15 @@ mod.connected = prop(
     end
 )
 
+--- plugins.core.tangent.manager.focusable <cp.prop: boolean; read-only>
+--- Variable
+--- Is the Tangent connected and supports focus requests?
+mod.focusable = prop.AND(mod.connected, prop(tangent.supportsFocusRequest))
+
 --- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
 --- Variable
 --- Is the Tangent Enabled, Not Interrupted, and the Tangent Hub Installed?
-mod.connectable = mod.enabled:AND(mod.tangentHubInstalled):AND(prop.NOT(mod.interrupted))
+mod.connectable = mod.enabled:AND(mod.tangentHubInstalled):AND(prop.OR(mod.focusable, prop.NOT(mod.interrupted)))
 
 -- Tries to reconnect to Tangent Hub when disconnected.
 local ensureConnection = timer.new(1.0, function()
