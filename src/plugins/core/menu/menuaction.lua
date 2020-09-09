@@ -6,7 +6,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "menuaction"
+--local log                   = require "hs.logger".new "menuaction"
 
 local application           = require "hs.application"
 local fnutils               = require "hs.fnutils"
@@ -234,7 +234,7 @@ function plugin.postInit(deps)
     local streamDeckItems       = deps.streamdeckmanager.items
     local tourBoxItems          = deps.tourboxmanager.items
 
-    local registeredApps        = deps.applicationmanager.getApplications()
+    local registeredApps        = appManager.getApplications()
 
     local setupHandler = function(bundleID)
         if not mod._handlers[bundleID] then

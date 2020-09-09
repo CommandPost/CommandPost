@@ -4,7 +4,7 @@
 
 local require           = require
 
-local log				= require "hs.logger".new "ae"
+--local log				        = require "hs.logger".new "ae"
 
 local osascript         = require "hs.osascript"
 
@@ -17,11 +17,9 @@ local lazy              = require "cp.lazy"
 local tools             = require "cp.tools"
 
 local class             = require "middleclass"
-local v                 = require "semver"
 
 local applescript       = osascript.applescript
 local readFromFile      = tools.readFromFile
-local lines             = tools.lines
 
 local aftereffects = class("cp.adobe.aftereffects")
     :include(lazy)
