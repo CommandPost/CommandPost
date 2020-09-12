@@ -24,16 +24,16 @@
 
     ],
     "doc" : "Stuff about the module",
-    "Method" : [
-
-    ],
-    "Command" : [
+    "items" : [
 
     ],
     "Field" : [
 
     ],
-    "items" : [
+    "Method" : [
+
+    ],
+    "Command" : [
 
     ],
     "name" : "hs._asm.cfpreferences"
