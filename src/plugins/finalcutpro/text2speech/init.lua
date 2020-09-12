@@ -643,7 +643,7 @@ function mod._completeProcess()
 
         local wantedValue = "Audio-Clip:" .. textToSpeakValue
         wantedValue = wantedValue:sub(1, 193)
-        for i, clip in ipairs(clips) do
+        for _, clip in ipairs(clips) do
             local currentValue = clip:attributeValue("AXDescription"):sub(1, 193)
             if currentValue == wantedValue then
                 clipToSelect = clip
