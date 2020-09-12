@@ -8,6 +8,8 @@ local fcp           = require "cp.apple.finalcutpro"
 local i18n          = require "cp.i18n"
 local prop          = require "cp.prop"
 
+local semver        = require "semver"
+
 local mod = {}
 
 --- plugins.finalcutpro.advanced.fcpxml.importEnabled <cp.prop: boolean>
@@ -59,23 +61,28 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Menubar Preferences Panel:
+    -- Sadly, this feature stopped working in 10.4.9:
     --------------------------------------------------------------------------------
-    local panel = deps.prefs.panel
-    if panel then
-        panel
-              :addCheckbox(2205,
-              {
-                  label = i18n("showHiddenFCPXMLImportOptions"),
-                  onchange = function(_, params) mod.importEnabled(params.checked) end,
-                  checked = mod.importEnabled,
-              })
-              :addCheckbox(2206,
-              {
-                  label = i18n("showHiddenFCPXMLExportOptions"),
-                  onchange = function(_, params) mod.exportEnabled(params.checked) end,
-                  checked = mod.exportEnabled,
-              })
+    if fcp.version() <= semver("10.4.8") then
+        --------------------------------------------------------------------------------
+        -- Setup Menubar Preferences Panel:
+        --------------------------------------------------------------------------------
+        local panel = deps.prefs.panel
+        if panel then
+            panel
+                  :addCheckbox(2205,
+                  {
+                      label = i18n("showHiddenFCPXMLImportOptions"),
+                      onchange = function(_, params) mod.importEnabled(params.checked) end,
+                      checked = mod.importEnabled,
+                  })
+                  :addCheckbox(2206,
+                  {
+                      label = i18n("showHiddenFCPXMLExportOptions"),
+                      onchange = function(_, params) mod.exportEnabled(params.checked) end,
+                      checked = mod.exportEnabled,
+                  })
+        end
     end
     return mod
 end

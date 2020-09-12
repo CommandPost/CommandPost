@@ -7,6 +7,8 @@ local require   = require
 local fcp       = require "cp.apple.finalcutpro"
 local i18n      = require "cp.i18n"
 
+local semver    = require "semver"
+
 local mod = {}
 
 --- plugins.finalcutpro.advanced.showtimelineinviewers.enabled <cp.prop: boolean; live>
@@ -28,26 +30,32 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- Setup Menubar Preferences Panel:
+    -- Sadly, this feature stopped working in 10.4.9:
     --------------------------------------------------------------------------------
-    local panel = deps.prefs.panel
-    if panel then
-        panel
-            :addCheckbox(2204.2,
-            {
-                label = i18n("showTimelineInViewers"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = function() return mod.enabled() end,
-            })
+    if fcp.version() <= semver("10.4.8") then
+        --------------------------------------------------------------------------------
+        -- Setup Menubar Preferences Panel:
+        --------------------------------------------------------------------------------
+        local panel = deps.prefs.panel
+        if panel then
+            panel
+                :addCheckbox(2204.2,
+                {
+                    label = i18n("showTimelineInViewers"),
+                    onchange = function(_, params) mod.enabled(params.checked) end,
+                    checked = function() return mod.enabled() end,
+                })
+        end
+
+        --------------------------------------------------------------------------------
+        -- Setup Commands:
+        --------------------------------------------------------------------------------
+        if not unsupported then
+            deps.fcpxCmds
+                :add("cpShowTimelineInViewers")
+                :whenActivated(function() mod.enabled:toggle() end)
+        end
     end
-
-    --------------------------------------------------------------------------------
-    -- Setup Commands:
-    --------------------------------------------------------------------------------
-    deps.fcpxCmds
-        :add("cpShowTimelineInViewers")
-        :whenActivated(function() mod.enabled:toggle() end)
-
     return mod
 end
 
