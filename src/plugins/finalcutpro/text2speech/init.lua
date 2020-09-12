@@ -34,6 +34,9 @@ local displayErrorMessage               = dialog.displayErrorMessage
 local displaySmallNumberTextBoxMessage  = dialog.displaySmallNumberTextBoxMessage
 local displayTextBoxMessage             = dialog.displayTextBoxMessage
 
+local urlFromPath                       = fs.urlFromPath
+local replace                           = tools.replace
+
 local mod = {}
 
 -- DELETE_DELAY
@@ -70,6 +73,11 @@ mod.replaceSpaceWithUnderscore = config.prop("replaceSpaceWithUnderscore", false
 --- Variable
 --- Option to Add Text to Notes Field After Importing
 mod.addTextToNotesFieldAfterImport = config.prop("addTextToNotesFieldAfterImport", false)
+
+--- plugins.finalcutpro.text2speech.addCaption
+--- Variable
+--- Option to Add Text to Notes Field After Importing
+mod.addCaption = config.prop("addCaption", false)
 
 --- plugins.finalcutpro.text2speech.deleteFileAfterImport
 --- Variable
@@ -317,7 +325,6 @@ end
 -- Returns:
 --  * None
 function mod._completeProcess()
-
     --------------------------------------------------------------------------------
     -- Cache Preferences:
     --------------------------------------------------------------------------------
@@ -335,14 +342,25 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Add Finder Tag(s):
     --------------------------------------------------------------------------------
+    local originalImportTags = fcp.preferences.FFImportTagsAsKeywordCollectionsKey
+    fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", true)
+    if not fs.tagsAdd(savePath, {mod.tag()}) then
+        log.ef("Failed to add Finder Tag (%s) to: %s", mod.tag(), savePath)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Assign Audio Role:
+    --------------------------------------------------------------------------------
+    local originalRole = fcp.preferences.FFImportAudioRoleGroupOverrideRoleDef
     if mod.createRoleForVoice() then
-        if not fs.tagsAdd(savePath, {mod.tag(), tools.firstToUpper(mod.voice())}) then
-            log.ef("Failed to add Finder Tags (%s & %s) to: %s", mod.tag(), tools.firstToUpper(mod.voice()), savePath)
-        end
-    else
-        if not fs.tagsAdd(savePath, {mod.tag()}) then
-            log.ef("Failed to add Finder Tag (%s) to: %s", mod.tag(), savePath)
-        end
+        local voice = mod.voice()
+
+        -- Roles cannot include a dot or a question mark:
+        voice = replace(voice, ".", "-")
+        voice = replace(voice, "?", "-")
+
+        local role = "a." .. voice .. "._"
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", role)
     end
 
     --------------------------------------------------------------------------------
@@ -360,7 +378,8 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Write URL to Pasteboard:
     --------------------------------------------------------------------------------
-    local safeSavePath = "file://" .. http.encodeForQuery(savePath)
+    local safeSavePath = "file://" .. urlFromPath(savePath)
+
     local result = pasteboard.writeObjects({url=safeSavePath})
     if not result then
         displayErrorMessage("The URL could not be written to the Pasteboard.")
@@ -613,13 +632,56 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
-    -- Restore original Pasteboard Content:
+    -- Add Caption:
     --------------------------------------------------------------------------------
+    if mod.addCaption() then
+        local textToSpeakValue = mod._lastTextToSpeak
+
+        local clips = fcp:timeline():contents():clipsUI()
+        table.sort(clips, function(a, b) return a:position().x < b:position().x end)
+        local clipToSelect = nil
+
+        local wantedValue = "Audio-Clip:" .. textToSpeakValue
+        wantedValue = wantedValue:sub(1, 193)
+        for _, clip in ipairs(clips) do
+            local currentValue = clip:attributeValue("AXDescription"):sub(1, 193)
+            if currentValue == wantedValue then
+                clipToSelect = clip
+                break
+            end
+        end
+        if clipToSelect then
+            local originalMousePoint = mouse.getAbsolutePosition()
+            local point = { x = clipToSelect:position().x + clipToSelect:frame().w/2, y = clipToSelect:position().y + clipToSelect:frame().h/2}
+            mouse.setAbsolutePosition(point)
+            eventtap.leftClick(point)
+            fcp:selectMenu({"Mark", "Set Clip Range"})
+            fcp:selectMenu({"Edit", "Captions", "Add Caption"})
+            pasteboard.setContents(textToSpeakValue)
+            fcp:selectMenu({"Edit", "Paste"})
+            eventtap.leftClick(point)
+            mouse.setAbsolutePosition(originalMousePoint)
+        end
+    end
+
     doAfter(2, function()
+        --------------------------------------------------------------------------------
+        -- Restore original Pasteboard Content:
+        --------------------------------------------------------------------------------
         pasteboard.writeAllData(originalPasteboard)
         if mod.pasteboardManager then
             mod.pasteboardManager.startWatching()
         end
+
+        --------------------------------------------------------------------------------
+        -- Restore audio role:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+
+        --------------------------------------------------------------------------------
+        -- Restore Finder Tags setting:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
     end)
 
     --------------------------------------------------------------------------------
@@ -721,6 +783,12 @@ function mod._rightClickCallback()
             checked = mod.addTextToNotesFieldAfterImport(),
             fn = function()
                 mod.addTextToNotesFieldAfterImport:toggle()
+            end,
+        },
+        { title = i18n("addCaption"),
+            checked = mod.addCaption(),
+            fn = function()
+                mod.addCaption:toggle()
             end,
         },
         { title = i18n("createRoleForVoice"), checked = mod.createRoleForVoice(),

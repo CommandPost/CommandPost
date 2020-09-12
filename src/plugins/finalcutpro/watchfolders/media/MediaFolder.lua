@@ -27,6 +27,7 @@ local WaitUntil         = go.WaitUntil
 
 local fileExists        = tools.doesFileExist
 local insert            = table.insert
+local urlFromPath       = fs.urlFromPath
 
 -- the FCP copy/leave in place preference
 local copyMedia = fcp.app.preferences:prop("FFImportCopyToMediaFolder", true)
@@ -690,7 +691,7 @@ function MediaFolder.mt:doImportNext()
             --------------------------------------------------------------------------------
             local objects = {}
             for _, v in pairs(files) do
-                objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
+                objects[#objects + 1] = { url = "file://" .. urlFromPath(v) }
             end
             local result = pasteboard.writeObjects(objects)
             if not result then
