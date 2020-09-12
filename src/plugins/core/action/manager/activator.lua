@@ -1164,18 +1164,20 @@ function activator:show()
     -- has already loaded (for example, menubar actions which might take a while
     -- to populate):
     --------------------------------------------------------------------------------
-    local allowedHandlers = self._allowedHandlers()
-    for id, _ in pairs(allowedHandlers) do
-        if not self._refreshWatchers[id] then
-            self._refreshWatchers[id] = true
-            local handler = self._manager.getHandler(id)
-            handler.choices:watch(function()
-                if self:isVisible() then
-                    doAfter(0.1, function()
-                        self:refreshChooser()
-                    end)
-                end
-            end)
+    local allowedHandlers = self._allowedHandlers() or {}
+    if next(allowedHandlers) then
+        for id, _ in pairs(allowedHandlers) do
+            if not self._refreshWatchers[id] then
+                self._refreshWatchers[id] = true
+                local handler = self._manager.getHandler(id)
+                handler.choices:watch(function()
+                    if self:isVisible() then
+                        doAfter(0.1, function()
+                            self:refreshChooser()
+                        end)
+                    end
+                end)
+            end
         end
     end
 
