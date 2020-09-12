@@ -25,6 +25,8 @@ local i18n                  = require "cp.i18n"
 local just                  = require "cp.just"
 local tools                 = require "cp.tools"
 
+local semver                = require "semver"
+
 local displayChooseFolder   = dialog.displayChooseFolder
 local displayChooseFromList = dialog.displayChooseFromList
 local displayErrorMessage   = dialog.displayErrorMessage
@@ -276,9 +278,19 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if sendToCompressor then
             --------------------------------------------------------------------------------
+            -- Workaround for FCPX 10.4.9:
+            --------------------------------------------------------------------------------
+            local menuItem
+            if fcp.version() <= semver("10.4.8") then
+                menuItem = {"File", "Send to Compressor"}
+            else
+                menuItem = {"File", "Send to Compressor", "New Batch"}
+            end
+
+            --------------------------------------------------------------------------------
             -- Trigger Export:
             --------------------------------------------------------------------------------
-            if not fcp:selectMenu({"File", "Send to Compressor"}) then
+            if not fcp:selectMenu(menuItem) then
                 displayErrorMessage("Could not trigger 'Send to Compressor'.")
                 return false
             end

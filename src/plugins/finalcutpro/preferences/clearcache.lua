@@ -26,11 +26,11 @@ function plugin.init(deps)
     local panel = deps.prefs.panel
     if panel then
         panel
-            :addHeading(2008.2, i18n("pluginCache"))
+            :addHeading(2008.2, i18n("motionTemplates"))
             :addParagraph(2008.3, html.span { class="tbTip" } ( i18n("pluginCacheDescription") .. "<br /><br />", false ).. "\n\n")
             :addButton(2008.4,
                 {
-                    label = i18n("clearPluginCache"),
+                    label = i18n("scanMotionTemplates"),
                     width = 200,
                     onclick = function()
                         dialog.webviewAlert(deps.manager.getWebview(), function(result)
@@ -52,3 +52,5 @@ function plugin.init(deps)
 end
 
 return plugin
+
+
