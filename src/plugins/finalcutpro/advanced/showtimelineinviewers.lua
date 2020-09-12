@@ -50,11 +50,9 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- Setup Commands:
         --------------------------------------------------------------------------------
-        if not unsupported then
-            deps.fcpxCmds
-                :add("cpShowTimelineInViewers")
-                :whenActivated(function() mod.enabled:toggle() end)
-        end
+        deps.fcpxCmds
+            :add("cpShowTimelineInViewers")
+            :whenActivated(function() mod.enabled:toggle() end)
     end
     return mod
 end
