@@ -165,6 +165,105 @@
                             </Mapping>
                         </Control>
                     </Bank>
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0004000F</Key> <!-- Zoom to Selection -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x03000001"> <!-- Resolve -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840043</Key> <!-- A Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840044</Key> <!-- B Button -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Button">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Bt Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840037</Key> <!-- Button 01 -->
+                                <CustomName>Sizing</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Bt Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840038</Key> <!-- Button 02 -->
+                                <CustomName>Primary</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Bt Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840039</Key> <!-- Button 03 -->
+                                <CustomName>Log</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Bt Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003A</Key> <!-- Button 04 -->
+                                <CustomName>Curves</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="4"> <!-- Element-Bt Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003B</Key> <!-- Button 05 -->
+                                <CustomName>H Clip</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="5"> <!-- Element-Bt Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003C</Key> <!-- Button 06 -->
+                                <CustomName>L Clip</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="6"> <!-- Element-Bt Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003D</Key> <!-- Button 07 -->
+                                <CustomName>Node</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Bt Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003E</Key> <!-- Button 08 -->
+                                <CustomName>Primary Adj</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Bt Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84003F</Key> <!-- Button 09 -->
+                                <CustomName>-</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Bt Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840040</Key> <!-- Button 10 -->
+                                <CustomName>-</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="10"> <!-- Element-Bt Button 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840041</Key> <!-- Button 11 -->
+                                <CustomName>-</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Element-Bt Button 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840042</Key> <!-- Button 12 -->
+                                <CustomName>-</CustomName>
+                            </Mapping>
+                        </Control>
+                    </Bank>
                 </ControlBank>
             </Mode>
         </Panel>

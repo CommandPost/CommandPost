@@ -353,6 +353,86 @@
                     </Bank>
                 </ControlBank>
             </Mode>
+            <Mode id="0x03000001"> <!-- Resolve -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840035</Key> <!-- A Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840036</Key> <!-- B Button -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Encoder">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840029</Key> <!-- Knob 01 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002A</Key> <!-- Knob 02 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002B</Key> <!-- Knob 03 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002C</Key> <!-- Knob 04 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002D</Key> <!-- Knob 05 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Element-Kb Knob 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002E</Key> <!-- Knob 06 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84002F</Key> <!-- Knob 07 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840030</Key> <!-- Knob 08 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Element-Kb Knob 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840031</Key> <!-- Knob 09 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840032</Key> <!-- Knob 10 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840033</Key> <!-- Knob 11 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="11"> <!-- Element-Kb Knob 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840034</Key> <!-- Knob 12 -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
         </Panel>
     </Panels>
 </TangentWave>
