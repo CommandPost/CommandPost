@@ -18,6 +18,7 @@ function plugin.init(deps)
     deps.manager.registerApplication({
         bundleID = resolve:bundleID(),
         displayName = "DaVinci Resolve",
+        legacyGroupID = "resolve",
     })
 end
 

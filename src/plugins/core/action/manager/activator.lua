@@ -1516,7 +1516,9 @@ function activator:rightClickAction(index)
             local title = i18n(format("%s_command_group", currentGroupID))
             if not title then
                 local info = infoForBundleID(currentGroupID)
-                title = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+                if info then
+                    title = info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+                end
             end
 
             groupItems[#groupItems + 1] = {

@@ -73,7 +73,7 @@
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
-                                <Key>0x0F810001</Key> <!-- Activate Console -->
+                                <Key>0x0F810001</Key> <!-- Activate Search Console -->
                                 <CustomName>Console</CustomName>
                             </Mapping>
                         </Control>
@@ -199,6 +199,216 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x03000001"> <!-- Resolve -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840020</Key> <!-- A Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- Element-Mf Play Reverse -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840021</Key> <!-- Play Reverse Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="14"> <!-- Element-Mf Stop -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840022</Key> <!-- Stop Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="15"> <!-- Element-Mf Play Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840023</Key> <!-- Play Forward Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="16"> <!-- Element-Mf Inch Reverse -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840024</Key> <!-- Inch Reverse Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="17"> <!-- Element-Mf Inch Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840025</Key> <!-- Inch Forward Button -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840026</Key> <!-- B Button -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Button">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840014</Key> <!-- Button 01 -->
+                                <CustomName>Prev FM</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840015</Key> <!-- Button 02 -->
+                                <CustomName>Next FM</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840016</Key> <!-- Button 03 -->
+                                <CustomName>Undo</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840017</Key> <!-- Button 04 -->
+                                <CustomName>First FM</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="4"> <!-- Element-Mf Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840018</Key> <!-- Button 05 -->
+                                <CustomName>Last FM</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="5"> <!-- Element-Mf Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840019</Key> <!-- Button 06 -->
+                                <CustomName>Redo</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001A</Key> <!-- Button 07 -->
+                                <CustomName>Prev KF</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001B</Key> <!-- Button 08 -->
+                                <CustomName>Next KF</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001C</Key> <!-- Button 09 -->
+                                <CustomName>Loop</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001D</Key> <!-- Button 10 -->
+                                <CustomName>Dynamic</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001E</Key> <!-- Button 11 -->
+                                <CustomName>Static KF</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001F</Key> <!-- Button 12 -->
+                                <CustomName>Save</CustomName>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840014</Key> <!-- Button 01 -->
+                                <CustomName>Add Ser.</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840015</Key> <!-- Button 02 -->
+                                <CustomName>Add Par.</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840016</Key> <!-- Button 03 -->
+                                <CustomName>Add Lay.</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840017</Key> <!-- Button 04 -->
+                                <CustomName>En/Dis All</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="4"> <!-- Element-Mf Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840018</Key> <!-- Button 05 -->
+                                <CustomName>En/Dis Node</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="5"> <!-- Element-Mf Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840019</Key> <!-- Button 06 -->
+                                <CustomName>Del Node</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001A</Key> <!-- Button 07 -->
+                                <CustomName>Grab Still</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001B</Key> <!-- Button 08 -->
+                                <CustomName>Play Still</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001C</Key> <!-- Button 09 -->
+                                <CustomName>UnMix</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001D</Key> <!-- Button 10 -->
+                                <CustomName>Prev Node</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001E</Key> <!-- Button 11 -->
+                                <CustomName>Next Node</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F84001F</Key> <!-- Button 12 -->
+                                <CustomName>Base Mem</CustomName>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Mf Trackerball X -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840011</Key> <!-- Wheel 1 - Horizontal -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Mf Trackerball Y -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840012</Key> <!-- Wheel 1 - Vertical -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
+                            <Mapping mode="Std">
+                                <Key>0x0F840013</Key> <!-- Wheel 1 - Ring -->
                             </Mapping>
                         </Control>
                     </Bank>
