@@ -8,36 +8,38 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
-local require           = require
+local require               = require
 
-local hs                = hs
+local hs                    = hs
 
-local log               = require "hs.logger".new "tangentMan"
+local log                   = require "hs.logger".new "tangentMan"
 
-local application       = require "hs.application"
-local fs                = require "hs.fs"
-local inspect           = require "hs.inspect"
-local tangent           = require "hs.tangent"
-local timer             = require "hs.timer"
+local application           = require "hs.application"
+local fs                    = require "hs.fs"
+local inspect               = require "hs.inspect"
+local tangent               = require "hs.tangent"
+local timer                 = require "hs.timer"
 
-local config            = require "cp.config"
-local fcp               = require "cp.apple.finalcutpro"
-local is                = require "cp.is"
-local prop              = require "cp.prop"
-local tools             = require "cp.tools"
-local x                 = require "cp.web.xml"
+local config                = require "cp.config"
+local fcp                   = require "cp.apple.finalcutpro"
+local is                    = require "cp.is"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
+local x                     = require "cp.web.xml"
 
-local action            = require "action"
-local controls          = require "controls"
-local menu              = require "menu"
-local mode              = require "mode"
-local parameter         = require "parameter"
+local action                = require "action"
+local controls              = require "controls"
+local menu                  = require "menu"
+local mode                  = require "mode"
+local parameter             = require "parameter"
 
-local doAfter           = timer.doAfter
-local execute           = hs.execute
-local format            = string.format
-local insert            = table.insert
-local sort              = table.sort
+local doAfter               = timer.doAfter
+local doesDirectoryExist    = tools.doesDirectoryExist
+local doesFileExist         = tools.doesFileExist
+local execute               = hs.execute
+local format                = string.format
+local insert                = table.insert
+local sort                  = table.sort
 
 local mod = {}
 
@@ -150,7 +152,7 @@ function mod.writeControlsXML()
         --------------------------------------------------------------------------------
         -- Create folder if it doesn't exist:
         --------------------------------------------------------------------------------
-        if not tools.doesDirectoryExist(mod.configPath) then
+        if not doesDirectoryExist(mod.configPath) then
             --log.df("Tangent Settings folder did not exist, so creating one.")
             fs.mkdir(mod.configPath)
         end
@@ -480,6 +482,7 @@ local fromHub = {
         log.df("Connection To Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
         mod._connectionConfirmed = true
         mod.connected:update()
+        mod.supportsFocusRequest = tangent.supportsFocusRequest()
     end,
 
     [tangent.fromHub.disconnected] = function(metadata)
@@ -499,8 +502,8 @@ local fromHub = {
 --- Returns:
 ---  * None
 function mod.disableFinalCutProInTangentHub()
-    if tools.doesDirectoryExist(mod.FCP_KEYPRESS_APPS_PATH) then
-        if tools.doesFileExist(mod.HIDE_FILE_PATH) then
+    if doesDirectoryExist(mod.FCP_KEYPRESS_APPS_PATH) then
+        if doesFileExist(mod.HIDE_FILE_PATH) then
             --------------------------------------------------------------------------------
             -- Read existing Hide file:
             --------------------------------------------------------------------------------
@@ -541,9 +544,6 @@ function mod.disableFinalCutProInTangentHub()
                 log.ef("Failed to create new Hide File for Tangent Mapper: %s (%s)", errorMessage, errorNumber)
             end
         end
-    else
-        log.ef("Final Cut Pro preset doesn't exist in Tangent Hub.")
-        return
     end
 end
 
@@ -567,21 +567,17 @@ mod.interrupted = prop(function()
     end
     return false
 end):watch(function(interrupted)
-    -- log.df("Tangent Hub interrupted: %s", value)
-    if interrupted then
-        if tangent.supportsFocusRequest() then
+    --------------------------------------------------------------------------------
+    -- If Tangent Hub doesn't support focus requests, do it manually:
+    --------------------------------------------------------------------------------
+    if not mod.supportsFocusRequest then
+        if interrupted then
             tangent.disconnect()
-        end
-    else
-        if tangent.supportsFocusRequest() then
-            -- log.df("Sending Focus Request...")
-            tangent.connect()
         else
             --------------------------------------------------------------------------------
             -- Force Tangent Hub to restart when an interruption is completed so that
             -- CommandPost regains focus in Tangent Mapper:
             --------------------------------------------------------------------------------
-            -- log.df("Restarting Tangent Hub...")
             execute("launchctl unload " .. mod.LAUNCH_AGENT_PATH)
             execute("launchctl load " .. mod.LAUNCH_AGENT_PATH)
         end
@@ -722,7 +718,7 @@ end, true)
 --- Returns:
 ---  * `true` if mapping files are installed otherwise `false`
 function mod.areMappingsInstalled()
-    return tools.doesFileExist(mod.configPath .. "/controls.xml")
+    return doesFileExist(mod.configPath .. "/controls.xml")
 end
 
 -- plugins.core.tangent.manager._test(...) -> boolean
