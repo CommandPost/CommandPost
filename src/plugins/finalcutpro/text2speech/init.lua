@@ -34,8 +34,11 @@ local displayErrorMessage               = dialog.displayErrorMessage
 local displaySmallNumberTextBoxMessage  = dialog.displaySmallNumberTextBoxMessage
 local displayTextBoxMessage             = dialog.displayTextBoxMessage
 
-local urlFromPath                       = fs.urlFromPath
+local doesDirectoryExist                = tools.doesDirectoryExist
+local playErrorSound                    = tools.playErrorSound
 local replace                           = tools.replace
+
+local urlFromPath                       = fs.urlFromPath
 
 local mod = {}
 
@@ -378,8 +381,7 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Write URL to Pasteboard:
     --------------------------------------------------------------------------------
-    local safeSavePath = "file://" .. urlFromPath(savePath)
-
+    local safeSavePath = urlFromPath(savePath)
     local result = pasteboard.writeObjects({url=safeSavePath})
     if not result then
         displayErrorMessage("The URL could not be written to the Pasteboard.")
@@ -428,6 +430,7 @@ function mod._completeProcess()
             fcp:selectMenu({"Edit", "Paste as Connected Clip"})
         else
             displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
+            log.ef("text: %s\nsavePath: %s\n safeSavePath: %s", mod._lastTextToSpeak, savePath, safeSavePath)
             return nil
         end
     end
@@ -935,7 +938,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- If directory doesn't exist then prompt user to select a new folder:
     --------------------------------------------------------------------------------
-    if not tools.doesDirectoryExist(mod.path()) then
+    if not doesDirectoryExist(mod.path()) then
         local folderResult = mod.chooseFolder()
         if not folderResult then
             return nil
@@ -986,7 +989,7 @@ function mod.insertFromPasteboard()
         --------------------------------------------------------------------------------
         -- If directory doesn't exist then prompt user to select a new folder:
         --------------------------------------------------------------------------------
-        if not tools.doesDirectoryExist(mod.path()) then
+        if not doesDirectoryExist(mod.path()) then
             local folderResult = mod.chooseFolder()
             if not folderResult then
                 return nil
@@ -1013,7 +1016,7 @@ function mod.insertFromPasteboard()
         --------------------------------------------------------------------------------
         mod._completionFn(result)
     else
-        tools.playErrorSound()
+        playErrorSound()
     end
 end
 

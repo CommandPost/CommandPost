@@ -691,7 +691,7 @@ function MediaFolder.mt:doImportNext()
             --------------------------------------------------------------------------------
             local objects = {}
             for _, v in pairs(files) do
-                objects[#objects + 1] = { url = "file://" .. urlFromPath(v) }
+                objects[#objects + 1] = { url = urlFromPath(v) }
             end
             local result = pasteboard.writeObjects(objects)
             if not result then
