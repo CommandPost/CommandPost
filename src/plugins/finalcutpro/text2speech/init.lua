@@ -35,6 +35,9 @@ local displaySmallNumberTextBoxMessage  = dialog.displaySmallNumberTextBoxMessag
 local displayTextBoxMessage             = dialog.displayTextBoxMessage
 
 local doesDirectoryExist                = tools.doesDirectoryExist
+local doesFileExist                     = tools.doesFileExist
+local firstToUpper                      = tools.firstToUpper
+local getFilenameFromPath               = tools.getFilenameFromPath
 local playErrorSound                    = tools.playErrorSound
 local replace                           = tools.replace
 
@@ -122,10 +125,20 @@ mod.customPrefix = config.prop("text2speechCustomPrefix", "Custom Prefix")
 --- If `true` then an underscore will be used in the Custom Prefix filename otherwise a dash will be used.
 mod.useUnderscore = config.prop("text2speechUseUnderscore", false)
 
---- plugins.finalcutpro.text2speech.createRoleForVoice
+--- plugins.finalcutpro.text2speech.assignClipAudioRoleToVoiceName
+--- Variable
+--- Assign Clip Audio Role to Voice Name
+mod.assignClipAudioRoleToVoiceName = config.prop("text2speechCreateRoleForVoice", true)
+
+--- plugins.finalcutpro.text2speech.addKeywordForVoiceName
 --- Variable
 --- Boolean that sets whether or not a tag should be added for the voice.
-mod.createRoleForVoice = config.prop("text2speechCreateRoleForVoice", true)
+mod.addKeywordForVoiceName = config.prop("text2speech_addKeywordForVoiceName", true)
+
+--- plugins.finalcutpro.text2speech.addCustomKeyword
+--- Variable
+--- Boolean that sets whether or not to add a custom keyword.
+mod.addCustomKeyword = config.prop("text2speech_addCustomKeyword", true)
 
 --- plugins.finalcutpro.text2speech.chooseFolder() -> string or false
 --- Function
@@ -258,7 +271,7 @@ function mod._completionFn(result)
         end
         savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. filename) .. ".aif"
         mod._lastFilename = tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. filename)
-        if tools.doesFileExist(savePath) then
+        if doesFileExist(savePath) then
             local newPathCount = 1
             repeat
                 local currentIncrementalNumber = mod.currentIncrementalNumber()
@@ -266,7 +279,7 @@ function mod._completionFn(result)
                 newPathCount = newPathCount + 1
                 savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount)) .. ".aif"
                 mod._lastFilename = tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount))
-            until not tools.doesFileExist(savePath)
+            until not doesFileExist(savePath)
         end
         local currentIncrementalNumber = mod.currentIncrementalNumber()
         mod.currentIncrementalNumber(currentIncrementalNumber + 1)
@@ -281,13 +294,13 @@ function mod._completionFn(result)
         filename = noCustomTextToSpeak or i18n("generatedVoiceOver")
         savePath = mod.path() .. tools.safeFilename(filename) .. ".aif"
         mod._lastFilename = tools.safeFilename(filename)
-        if tools.doesFileExist(savePath) then
+        if doesFileExist(savePath) then
             local newPathCount = 0
             repeat
                 newPathCount = newPathCount + 1
                 savePath = mod.path() .. tools.safeFilename(filename .. " " .. string.format("%04d", newPathCount)) .. ".aif"
                 mod._lastFilename = tools.safeFilename(filename .. " " .. string.format("%04d", newPathCount))
-            until not tools.doesFileExist(savePath)
+            until not doesFileExist(savePath)
         end
     end
 
@@ -337,9 +350,9 @@ function mod._completeProcess()
     -- Get the last Save Path:
     --------------------------------------------------------------------------------
     local savePath = mod._lastSavePath
-    if not tools.doesFileExist(savePath) then
+    if not doesFileExist(savePath) then
         displayErrorMessage("The generated Text to Speech file could not be found.")
-        return nil
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -347,15 +360,26 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     local originalImportTags = fcp.preferences.FFImportTagsAsKeywordCollectionsKey
     fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", true)
-    if not fs.tagsAdd(savePath, {mod.tag()}) then
-        log.ef("Failed to add Finder Tag (%s) to: %s", mod.tag(), savePath)
+    local tags = {}
+    if mod.addCustomKeyword() then
+        table.insert(tags, mod.tag())
+    end
+    if mod.addKeywordForVoiceName() then
+        table.insert(tags, firstToUpper(mod.voice()))
+    end
+    if next(tags) then
+        if not fs.tagsAdd(savePath, tags) then
+            log.ef("Failed to add Finder Tags to: %s\n%s", savePath, hs.inspect(tags))
+            displayErrorMessage("The generated Text to Speech file could not be found.")
+            return
+        end
     end
 
     --------------------------------------------------------------------------------
     -- Assign Audio Role:
     --------------------------------------------------------------------------------
     local originalRole = fcp.preferences.FFImportAudioRoleGroupOverrideRoleDef
-    if mod.createRoleForVoice() then
+    if mod.assignClipAudioRoleToVoiceName() then
         local voice = mod.voice()
 
         -- Roles cannot include a dot or a question mark:
@@ -384,8 +408,17 @@ function mod._completeProcess()
     local safeSavePath = urlFromPath(savePath)
     local result = pasteboard.writeObjects({url=safeSavePath})
     if not result then
-        displayErrorMessage("The URL could not be written to the Pasteboard.")
-        return nil
+        --------------------------------------------------------------------------------
+        -- Restore audio role & Finder Tags Setting:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+        -------------------------------------------------------------------------------
+        -- Display Error Message:
+        --------------------------------------------------------------------------------
+        displayErrorMessage("The Text to Speech tool could not write a URL to the Pasteboard, and therefore has aborted.")
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -400,8 +433,17 @@ function mod._completeProcess()
         end
     end, 0.5)
     if not pasteboardCheckResult then
-        displayErrorMessage("The URL on the pasteboard was not the same as what we wrote to the Pasteboard.")
-        return nil
+        --------------------------------------------------------------------------------
+        -- Restore audio role & Finder Tags Setting:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+        -------------------------------------------------------------------------------
+        -- Display Error Message:
+        --------------------------------------------------------------------------------
+        displayErrorMessage("The Text to Speech tool failed to detect the URL that was just inserted on the Pasteboard, and therefore has aborted.")
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -411,8 +453,17 @@ function mod._completeProcess()
     if result then
         fcp:selectMenu({"Window", "Go To", "Timeline"})
     else
-        displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
-        return nil
+        --------------------------------------------------------------------------------
+        -- Restore audio role & Finder Tags Setting:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+        -------------------------------------------------------------------------------
+        -- Display Error Message:
+        --------------------------------------------------------------------------------
+        displayErrorMessage("The Text to Speech tool failed to trigger the 'Window > Go To > Timeline' menu item, and therefore has aborted.")
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -429,17 +480,26 @@ function mod._completeProcess()
         if takeTwo then
             fcp:selectMenu({"Edit", "Paste as Connected Clip"})
         else
-            displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
-            log.ef("text: %s\nsavePath: %s\n safeSavePath: %s", mod._lastTextToSpeak, savePath, safeSavePath)
-            return nil
+            --------------------------------------------------------------------------------
+            -- Restore audio role & Finder Tags Setting:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+            fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+            -------------------------------------------------------------------------------
+            -- Display Error Message:
+            --------------------------------------------------------------------------------
+            displayErrorMessage("The Text to Speech tool failed to trigger the 'Paste as Connected Clip' Shortcut, and therefore has aborted.")
+            return
         end
     end
 
     --------------------------------------------------------------------------------
-    -- Add Text to Notes Field After Import:
+    -- If "Add Text to Notes Field After Import" or "Add Caption" then find the
+    -- clip on the timeline:
     --------------------------------------------------------------------------------
-    if mod.addTextToNotesFieldAfterImport() then
-
+    local lastClip
+    if mod.addTextToNotesFieldAfterImport() or mod.addCaption() then
         --------------------------------------------------------------------------------
         -- Go back two frames:
         --------------------------------------------------------------------------------
@@ -458,7 +518,16 @@ function mod._completeProcess()
         end)
 
         if clips == nil then
-            displayErrorMessage("No clips detected.")
+            --------------------------------------------------------------------------------
+            -- Restore audio role & Finder Tags Setting:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+            fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+            -------------------------------------------------------------------------------
+            -- Display Error Message:
+            --------------------------------------------------------------------------------
+            displayErrorMessage("The Text to Speech tool could not detect any clips it just inserted into the timeline, and therefore has aborted.")
             return false
         end
 
@@ -473,22 +542,40 @@ function mod._completeProcess()
         local clip
         if #clips > 0 then
             for _, v in ipairs(clips) do
-                local description = v:attributeValue("AXDescription")
-                if description and description == "Audio-Clip:" .. mod._lastFilename then
+                local wantedValue = "Audio-Clip:" .. mod._lastFilename
+                wantedValue = wantedValue:sub(1, 193)
+                local currentValue = v:attributeValue("AXDescription"):sub(1, 193)
+                if currentValue == wantedValue then
                     clip = v
                     break
                 end
             end
         end
         if not clip then
-            displayErrorMessage("No clip found.")
+            --------------------------------------------------------------------------------
+            -- Restore audio role & Finder Tags Setting:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+            fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+            -------------------------------------------------------------------------------
+            -- Display Error Message:
+            --------------------------------------------------------------------------------
+            displayErrorMessage("The Text to Speech tool could not detect the clip it just inserted into the timeline, and therefore has aborted.")
             return
         end
+        lastClip = clip
+    end
 
+    --------------------------------------------------------------------------------
+    -- Add Text to Notes Field After Import:
+    --------------------------------------------------------------------------------
+    if mod.addTextToNotesFieldAfterImport() then
         --------------------------------------------------------------------------------
         -- Select clip:
         --------------------------------------------------------------------------------
-        content:selectClip(clip)
+        local content = fcp.timeline.contents
+        content:selectClip(lastClip)
 
         --------------------------------------------------------------------------------
         -- Reveal in Browser:
@@ -499,8 +586,18 @@ function mod._completeProcess()
         -- Make sure the Browser is visible:
         --------------------------------------------------------------------------------
         local libraries = fcp.browser.libraries
+        libraries:show()
         if not libraries:isShowing() then
-            displayErrorMessage("Library Panel is closed.")
+            --------------------------------------------------------------------------------
+            -- Restore audio role & Finder Tags Setting:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+            fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+            -------------------------------------------------------------------------------
+            -- Display Error Message:
+            --------------------------------------------------------------------------------
+            displayErrorMessage("The Text to Speech tool could not open the Libraries Browser, and therefore has aborted.")
             return false
         end
 
@@ -517,7 +614,16 @@ function mod._completeProcess()
             fcp:selectMenu({"File", "Reveal in Browser"})
             clips = libraries:selectedClipsUI()
             if #clips ~= 1 then
-                displayErrorMessage("Wrong number of clips selected.")
+                --------------------------------------------------------------------------------
+                -- Restore audio role & Finder Tags Setting:
+                --------------------------------------------------------------------------------
+                fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+                fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+                -------------------------------------------------------------------------------
+                -- Display Error Message:
+                --------------------------------------------------------------------------------
+                displayErrorMessage("The Text to Speech tool could not find the newly created clip in the Browser, and therefore has aborted.")
                 return false
             end
         end
@@ -581,7 +687,16 @@ function mod._completeProcess()
         -- If the 'Notes' column is missing then error:
         --------------------------------------------------------------------------------
         if notesFieldID == nil then
-            displayErrorMessage("Could not find the Notes Column.")
+            --------------------------------------------------------------------------------
+            -- Restore audio role & Finder Tags Setting:
+            --------------------------------------------------------------------------------
+            fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+            fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+            -------------------------------------------------------------------------------
+            -- Display Error Message:
+            --------------------------------------------------------------------------------
+            displayErrorMessage("The Text to Speech tool could not find the Notes column in the browser, and therefore has aborted.")
             return
         end
 
@@ -602,72 +717,96 @@ function mod._completeProcess()
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
         if not mod.insertIntoTimeline() then
-
             --------------------------------------------------------------------------------
             -- Check if Timeline can be enabled:
             --------------------------------------------------------------------------------
             if fcp.menu:isEnabled({"Window", "Go To", "Timeline"}) then
                 fcp:selectMenu({"Window", "Go To", "Timeline"})
             else
-                displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
-                return nil
+                --------------------------------------------------------------------------------
+                -- Restore audio role & Finder Tags Setting:
+                --------------------------------------------------------------------------------
+                fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+                fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+                -------------------------------------------------------------------------------
+                -- Display Error Message:
+                --------------------------------------------------------------------------------
+                displayErrorMessage("The Text to Speech tool failed to trigger the 'Window > Go To Timeline' menu item, and therefore has aborted.")
+                return
             end
 
             --------------------------------------------------------------------------------
             -- Delete the clip:
             --------------------------------------------------------------------------------
             fcp:selectMenu({"Edit", "Delete"})
-
         end
-
     else
-
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
         if not mod.insertIntoTimeline() then
             if not fcp:selectMenu({"Edit", "Undo Paste"}, {pressAll = true}) then
-                displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
-                return nil
+                --------------------------------------------------------------------------------
+                -- Restore audio role & Finder Tags Setting:
+                --------------------------------------------------------------------------------
+                fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+                fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+                -------------------------------------------------------------------------------
+                -- Display Error Message:
+                --------------------------------------------------------------------------------
+                displayErrorMessage("The Text to Speech tool failed to trigger the 'Undo Paste' Shortcut, and therefore has aborted.")
+                return
             end
         end
-
     end
 
     --------------------------------------------------------------------------------
     -- Add Caption:
     --------------------------------------------------------------------------------
     if mod.addCaption() then
-            end
-        end
-        if clipToSelect then
-            local originalMousePoint = mouse.getAbsolutePosition()
-            local point = { x = clipToSelect:position().x + clipToSelect:frame().w/2, y = clipToSelect:position().y + clipToSelect:frame().h/2}
-            mouse.setAbsolutePosition(point)
-            eventtap.leftClick(point)
-            fcp:selectMenu({"Mark", "Set Clip Range"})
-            fcp:selectMenu({"Edit", "Captions", "Add Caption"})
-            pasteboard.setContents(textToSpeakValue)
-            fcp:selectMenu({"Edit", "Paste"})
-            eventtap.leftClick(point)
-            mouse.setAbsolutePosition(originalMousePoint)
-        end
+        fcp:selectMenu({"View", "Zoom to Fit"})
+        local originalMousePoint = mouse.getAbsolutePosition()
+        local point = { x = lastClip:position().x + lastClip:frame().w/2, y = lastClip:position().y + lastClip:frame().h/2}
+        mouse.setAbsolutePosition(point)
+        eventtap.leftClick(point)
+        fcp:selectMenu({"Mark", "Set Clip Range"})
+        fcp:selectMenu({"Edit", "Captions", "Add Caption"})
+        pasteboard.setContents(mod._lastTextToSpeak)
+        fcp:selectMenu({"Edit", "Paste"})
+        eventtap.leftClick(point)
+        mouse.setAbsolutePosition(originalMousePoint)
     end
 
+    --------------------------------------------------------------------------------
+    -- We previous went back two frames, so lets go forward to frames to correct:
+    --------------------------------------------------------------------------------
+    if mod.addTextToNotesFieldAfterImport() or mod.addCaption() then
+        --------------------------------------------------------------------------------
+        -- Go back two frames:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"Mark", "Next", "Frame"})
+        fcp:selectMenu({"Mark", "Next", "Frame"})
+    end
+
+    --------------------------------------------------------------------------------
+    -- After a two second delay...
+    --------------------------------------------------------------------------------
     doAfter(2, function()
         --------------------------------------------------------------------------------
+        -- Restore audio role & Finder Tags Setting:
+        --------------------------------------------------------------------------------
+        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
+        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
+
+        --------------------------------------------------------------------------------
+        -- Restore original Pasteboard Content:
         --------------------------------------------------------------------------------
         pasteboard.writeAllData(originalPasteboard)
         if mod.pasteboardManager then
             mod.pasteboardManager.startWatching()
         end
-
-        --------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------
-        fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
-
-        --------------------------------------------------------------------------------
-        --------------------------------------------------------------------------------
     end)
 
     --------------------------------------------------------------------------------
@@ -748,6 +887,7 @@ function mod._rightClickCallback()
     voicesMenu[2] = { title = "-" }
     for _, v in ipairs(availableVoices) do
         voicesMenu[#voicesMenu + 1] = {
+            title = firstToUpper(v),
             fn = function()
                 mod.voice(v)
             end,
@@ -757,116 +897,142 @@ function mod._rightClickCallback()
     local rightClickMenu = {
         { title = i18n("selectVoice"), menu = voicesMenu },
         { title = "-" },
-        { title = i18n("insertIntoTimeline"),
-            checked = mod.insertIntoTimeline(),
-            fn = function()
-                mod.insertIntoTimeline:toggle()
-            end,
+        { title = i18n("importOptions"),
+            menu = {
+                { title = i18n("insertIntoTimeline"),
+                    checked = mod.insertIntoTimeline(),
+                    fn = function()
+                        mod.insertIntoTimeline:toggle()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("addCaption"),
+                    checked = mod.addCaption(),
+                    fn = function()
+                        mod.addCaption:toggle()
+                    end,
+                },
+                { title = i18n("addTextToNotesFieldAfterImport"),
+                    checked = mod.addTextToNotesFieldAfterImport(),
+                    fn = function()
+                        mod.addTextToNotesFieldAfterImport:toggle()
+                    end,
+                },
+                { title = i18n("assignClipAudioRoleToVoiceName"), checked = mod.assignClipAudioRoleToVoiceName(),
+                    fn = function()
+                        mod.assignClipAudioRoleToVoiceName:toggle()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("deleteFileAfterImport"),
+                    disabled = not mod.copyToMediaFolder(),
+                    checked = mod.copyToMediaFolder() and mod.deleteFileAfterImport(),
+                    fn = function()
+                        mod.deleteFileAfterImport:toggle()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("changeDestinationFolder"),
+                    fn = function()
+                        mod.chooser:hide()
+                        mod.chooseFolder()
+                        mod.chooser:show()
+                    end,
+                },
+            }
         },
-        { title = i18n("addTextToNotesFieldAfterImport"),
-            checked = mod.addTextToNotesFieldAfterImport(),
-            fn = function()
-                mod.addTextToNotesFieldAfterImport:toggle()
-            end,
+        { title = i18n("keywordOptions"),
+            menu = {
+                { title = i18n("addKeywordForVoiceName"), checked = mod.addKeywordForVoiceName(),
+                    fn = function()
+                        mod.addKeywordForVoiceName:toggle()
+                    end,
+                },
+                { title = i18n("addCustomKeyword"), checked = mod.addCustomKeyword(),
+                    fn = function()
+                        mod.addCustomKeyword:toggle()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("setCustomKeyword"), fn = function()
+                        mod.chooser:hide()
+                        local result = displayTextBoxMessage(i18n("enterCustomKeyword"), i18n("enterCustomKeywordError"), mod.tag(), mod._tagValidation)
+                        if result then
+                            mod.tag(result)
+                        end
+                        mod.chooser:show()
+                    end,
+                },
+            },
         },
-        { title = i18n("addCaption"),
-            checked = mod.addCaption(),
-            fn = function()
-                mod.addCaption:toggle()
-            end,
-        },
-            fn = function()
-            end,
-        },
-        { title = "-" },
-        { title = i18n("customiseFinderTag"), fn = function()
-                mod.chooser:hide()
-                local result = displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), mod._tagValidation)
-                if result then
-                    mod.tag(result)
-                end
-                mod.chooser:show()
-            end,
-        },
-        { title = i18n("changeDestinationFolder"),
-            fn = function()
-                mod.chooser:hide()
-                mod.chooseFolder()
-                mod.chooser:show()
-            end,
-        },
-        { title = "-" },
-        { title = i18n("deleteFileAfterImport"),
-            disabled = not mod.copyToMediaFolder(),
-            checked = mod.copyToMediaFolder() and mod.deleteFileAfterImport(),
-            fn = function()
-                mod.deleteFileAfterImport:toggle()
-            end,
-        },
-        { title = "-" },
-        { title = string.format(string.upper(i18n("currentIncrementalNumber")) .. ": %s", string.format("%04d",mod.currentIncrementalNumber())),
-            disabled = true,
-        },
-        { title = string.format(string.upper(i18n("prefix")) .. ": %s", mod.customPrefix()),
-            disabled = true,
-        },
-        { title = "-" },
-        { title = i18n("enableFilenamePrefix"),
-            checked = mod.enableCustomPrefix(),
-            fn = function()
-                mod.enableCustomPrefix:toggle()
-            end,
-        },
-        { title = i18n("includeTextInFilename"),
-            disabled = not mod.enableCustomPrefix(),
-            checked = not mod.enableCustomPrefix() or mod.includeTextInFilename(),
-            fn = function()
-                mod.includeTextInFilename:toggle()
-            end,
-        },
-        { title = i18n("useUnderscore"),
-            checked = mod.useUnderscore(),
-            fn = function()
-                mod.useUnderscore:toggle()
-            end,
-        },
-        { title = i18n("replaceSpaceWithUnderscore"),
-            checked = mod.replaceSpaceWithUnderscore(),
-            fn = function()
-                mod.replaceSpaceWithUnderscore:toggle()
-            end,
-        },
-        { title = "-" },
-        { title = i18n("resetIncrementalNumber"),
-            fn = function()
-                mod.currentIncrementalNumber(1)
-            end,
-        },
-        { title = i18n("setIncrementalNumber"),
-            fn = function()
-                mod.chooser:hide()
-                local result = displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())
-                if type(result) == "number" then
-                    mod.currentIncrementalNumber(result)
-                end
-                mod.chooser:show()
-            end,
-        },
-        { title = i18n("setFilenamePrefix"),
-            fn = function()
-                mod.chooser:hide()
-                local result = mod.customPrefix(displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", i18n("customPrefixError"), mod.customPrefix(), function(value)
-                    if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
-                        return true
-                    else
-                        return false
-                    end
-                end))
-                if type(result) == "string" then
-                    mod.customPrefix(result)
-                end
-                mod.chooser:show()
-            end,
+        { title = i18n("clipNamingOptions"),
+            menu = {
+                { title = string.format(string.upper(i18n("currentIncrementalNumber")) .. ": %s", string.format("%04d",mod.currentIncrementalNumber())),
+                    disabled = true,
+                },
+                { title = string.format(string.upper(i18n("prefix")) .. ": %s", mod.customPrefix()),
+                    disabled = true,
+                },
+                { title = "-" },
+                { title = i18n("enableFilenamePrefix"),
+                    checked = mod.enableCustomPrefix(),
+                    fn = function()
+                        mod.enableCustomPrefix:toggle()
+                    end,
+                },
+                { title = i18n("includeTextInFilename"),
+                    disabled = not mod.enableCustomPrefix(),
+                    checked = not mod.enableCustomPrefix() or mod.includeTextInFilename(),
+                    fn = function()
+                        mod.includeTextInFilename:toggle()
+                    end,
+                },
+                { title = i18n("useUnderscore"),
+                    checked = mod.useUnderscore(),
+                    fn = function()
+                        mod.useUnderscore:toggle()
+                    end,
+                },
+                { title = i18n("replaceSpaceWithUnderscore"),
+                    checked = mod.replaceSpaceWithUnderscore(),
+                    fn = function()
+                        mod.replaceSpaceWithUnderscore:toggle()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("setFilenamePrefix"),
+                    fn = function()
+                        mod.chooser:hide()
+                        local result = mod.customPrefix(displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", i18n("customPrefixError"), mod.customPrefix(), function(value)
+                            if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+                                return true
+                            else
+                                return false
+                            end
+                        end))
+                        if type(result) == "string" then
+                            mod.customPrefix(result)
+                        end
+                        mod.chooser:show()
+                    end,
+                },
+                { title = i18n("setIncrementalNumber"),
+                    fn = function()
+                        mod.chooser:hide()
+                        local result = displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())
+                        if type(result) == "number" then
+                            mod.currentIncrementalNumber(result)
+                        end
+                        mod.chooser:show()
+                    end,
+                },
+                { title = "-" },
+                { title = i18n("resetIncrementalNumber"),
+                    fn = function()
+                        mod.currentIncrementalNumber(1)
+                    end,
+                },
+            },
         },
         { title = "-" },
         { title = i18n("clearHistory"), fn = function()
@@ -920,7 +1086,7 @@ function mod.show()
     if not doesDirectoryExist(mod.path()) then
         local folderResult = mod.chooseFolder()
         if not folderResult then
-            return nil
+            return
         else
             mod.path(folderResult)
         end
@@ -971,7 +1137,7 @@ function mod.insertFromPasteboard()
         if not doesDirectoryExist(mod.path()) then
             local folderResult = mod.chooseFolder()
             if not folderResult then
-                return nil
+                return
             else
                 mod.path(folderResult)
             end
