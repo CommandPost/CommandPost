@@ -638,19 +638,6 @@ function mod._completeProcess()
     -- Add Caption:
     --------------------------------------------------------------------------------
     if mod.addCaption() then
-        local textToSpeakValue = mod._lastTextToSpeak
-
-        local clips = fcp:timeline():contents():clipsUI()
-        table.sort(clips, function(a, b) return a:position().x < b:position().x end)
-        local clipToSelect = nil
-
-        local wantedValue = "Audio-Clip:" .. textToSpeakValue
-        wantedValue = wantedValue:sub(1, 193)
-        for _, clip in ipairs(clips) do
-            local currentValue = clip:attributeValue("AXDescription"):sub(1, 193)
-            if currentValue == wantedValue then
-                clipToSelect = clip
-                break
             end
         end
         if clipToSelect then
@@ -669,7 +656,6 @@ function mod._completeProcess()
 
     doAfter(2, function()
         --------------------------------------------------------------------------------
-        -- Restore original Pasteboard Content:
         --------------------------------------------------------------------------------
         pasteboard.writeAllData(originalPasteboard)
         if mod.pasteboardManager then
@@ -677,14 +663,11 @@ function mod._completeProcess()
         end
 
         --------------------------------------------------------------------------------
-        -- Restore audio role:
         --------------------------------------------------------------------------------
         fcp.preferences:set("FFImportAudioRoleGroupOverrideRoleDef", originalRole)
 
         --------------------------------------------------------------------------------
-        -- Restore Finder Tags setting:
         --------------------------------------------------------------------------------
-        fcp.preferences:set("FFImportTagsAsKeywordCollectionsKey", originalImportTags)
     end)
 
     --------------------------------------------------------------------------------
@@ -695,7 +678,6 @@ function mod._completeProcess()
             os.remove(savePath)
         end)
     end
-
 end
 
 -- plugins.finalcutpro.text2speech._queryChangedCallback() -> none
@@ -766,7 +748,6 @@ function mod._rightClickCallback()
     voicesMenu[2] = { title = "-" }
     for _, v in ipairs(availableVoices) do
         voicesMenu[#voicesMenu + 1] = {
-            title = tools.firstToUpper(v),
             fn = function()
                 mod.voice(v)
             end,
@@ -794,9 +775,7 @@ function mod._rightClickCallback()
                 mod.addCaption:toggle()
             end,
         },
-        { title = i18n("createRoleForVoice"), checked = mod.createRoleForVoice(),
             fn = function()
-                mod.createRoleForVoice:toggle()
             end,
         },
         { title = "-" },

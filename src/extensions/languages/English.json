@@ -586,7 +586,8 @@
         "createMulticamOptimizedMedia": "Create Multicam Optimized Media",
         "createOptimizedMedia": "Create Optimized Media",
         "createProxyMedia": "Create Proxy Media",
-        "createRoleForVoice": "Assign Voice Role",
+        "assignClipAudioRoleToVoiceName": "Assign Clip Audio Role to Voice Name",
+        "addKeywordForVoiceName": "Add Keyword for Voice Name",
         "createSpace": "Create Space",
         "createSpace9": "C Space",
         "createStoryline": "Create Storyline",
@@ -604,7 +605,9 @@
         "currentUnit": "Current Unit",
         "custom": "Custom",
         "customFilename": "Custom Filename",
-        "customiseFinderTag": "Customise Finder Tag",
+
+        "setCustomKeyword": "Set Custom Keyword",
+
         "customiseShortcuts": "Customise Shortcuts",
         "customPrefixError": "This prefix looks invalid. Please try again.",
         "customTouchBar": "Custom Touch Bar",
@@ -720,8 +723,17 @@
         "english": "English",
         "enterCustomFilename": "Please enter a custom filename below.\n\nYou can also use these optional variables:\n\n{original} = Original Clip Name\n{yyyy} = Year\n{yy} = Year\n{mm} = Month\n{dd} = Day\n{hh} = Hour\n{mm} = Minutes\n{ss} = Seconds",
         "enterCustomFilenameError": "This filename looks invalid. Please try again.",
-        "enterFinderTag": "Please enter the Finder Tag you want to use:",
-        "enterFinderTagError": "This Finder Tag looks invalid.\n\nPlease try again.",
+
+
+        "enterCustomKeyword": "Please enter the Custom Keyword you want to use:",
+
+        "enterCustomKeywordError": "This Custom Keyword looks invalid.\n\nPlease try again.",
+        "addCustomKeyword": "Add Custom Keyword",
+		"importOptions": "Import Options",
+		"keywordOptions": "Keyword Options",
+		"clipNamingOptions": "Clip Naming Options",
+
+
         "environment": "Environment",
         "equalization": "Equalization",
         "errorProcessingThePasteboard": "There was an error processing the Pasteboard.",
