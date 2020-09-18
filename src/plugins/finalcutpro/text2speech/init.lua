@@ -37,7 +37,6 @@ local displayTextBoxMessage             = dialog.displayTextBoxMessage
 local doesDirectoryExist                = tools.doesDirectoryExist
 local doesFileExist                     = tools.doesFileExist
 local firstToUpper                      = tools.firstToUpper
-local getFilenameFromPath               = tools.getFilenameFromPath
 local playErrorSound                    = tools.playErrorSound
 local replace                           = tools.replace
 
