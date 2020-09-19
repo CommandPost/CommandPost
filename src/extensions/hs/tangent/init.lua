@@ -22,9 +22,12 @@ local socket                                    = require("hs.socket")
 local timer                                     = require("hs.timer")
 
 local unpack, pack, format                      = string.unpack, string.pack, string.format
+local insert                                    = table.insert
 
 
 local mod = {}
+mod.mt = {}
+mod.mt.__index = mod.mt
 
 --------------------------------------------------------------------------------
 -- MODULE CONSTANTS:
@@ -392,7 +395,7 @@ end
 -- Returns:
 --  * A string
 local function numberToByteString(n)
-    if type(n) ~= "number" then
+    if not isNumber(n) then
         log.ef("numberToByteString() was fed something other than a number")
         return nil
     end
@@ -409,7 +412,7 @@ end
 -- Returns:
 --  * A string
 local function floatToByteString(n)
-    if type(n) ~= "number" then
+    if not isNumber(n) then
         log.ef("floatToByteString() was fed something other than a number")
         return nil
     end
@@ -433,36 +436,27 @@ local function booleanToByteString(value)
     end
 end
 
--- validCallback() -> boolean
--- Function
--- Checks to see if the callback is valid.
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if valid otherwise `false`.
-local function validCallback()
-    return type(mod._callback) == "function"
-end
-
--- processCommands(commands) -> none
--- Function
+-- hs.tangent:processCommand(commands) -> none
+-- Method
 -- Triggers the callback using the contents of the buffer.
 --
 -- Parameters:
---  * None
+--  * command - the command to process
 --
 -- Returns:
---  * None
-local function processCommands(commands)
+--  * Nothing
+function mod.mt:processCommand(command)
+
     --------------------------------------------------------------------------------
     -- Trigger the callback:
     --------------------------------------------------------------------------------
-    if mod._callback then
-        local success, result = xpcall(function() mod._callback(commands) end, debug.traceback)
-        if not success then
-            log.ef("Error in Tangent Callback: %s", result)
+    local commandHandlers = self._handlers[command.id]
+    if commandHandlers then
+        for _,handler in ipairs(commandHandlers) do
+            local success, result = xpcall(function() handler(command) end, debug.traceback)
+            if not success then
+                log.ef("Error in Tangent Callback: %s", result)
+            end
         end
     end
 end
@@ -511,25 +505,16 @@ local receiveHandler = {
         protocolRev, offset = byteStringToNumber(data, offset, 4)
         numberOfPanels, offset = byteStringToNumber(data, offset, 4)
 
-        mod._protocolRev = protocolRev
-
-        --------------------------------------------------------------------------------
-        -- Send Application Definition?
-        --------------------------------------------------------------------------------
-        if mod.automaticallySendApplicationDefinition == true then
-            mod.sendApplicationDefinition()
-        end
-
         --------------------------------------------------------------------------------
         -- Trigger callback:
         --------------------------------------------------------------------------------
-        if protocolRev and numberOfPanels and validCallback() then
+        if protocolRev and numberOfPanels then
             local panels = {}
             for _ = 1,numberOfPanels do
                 local currentPanelID, currentPanelType
                 currentPanelType, offset = byteStringToNumber(data, offset, 4)
                 currentPanelID, offset = byteStringToNumber(data, offset, 4)
-                table.insert(panels, {
+                insert(panels, {
                     panelID = currentPanelID,
                     panelType = getPanelType(currentPanelType),
                 })
@@ -562,7 +547,7 @@ local receiveHandler = {
         local paramID, increment
         paramID, offset = byteStringToNumber(data, offset, 4)
         increment, offset = byteStringToFloat(data, offset)
-        if paramID and increment and validCallback() then
+        if paramID and increment then
             return {
                 paramID = paramID,
                 increment = increment,
@@ -1116,47 +1101,39 @@ local receiveHandler = {
 --  * data - The raw data from the socket.
 --
 -- Returns:
---  * None
+--  * command - The `table` containing the `id` and other metadata.
 local function processHubCommand(data, offset)
-    local id, command
+    local id, result
 
     id, offset = byteStringToNumber(data, offset, 4)
     -- log.df("Processing command %#010x, offset: %d", id, offset)
 
     local fn = receiveHandler[id]
     if fn then
-        local result
         result, offset = fn(data, offset)
         if offset == ERROR_OFFSET then
-            command = {
+            result = {
                 id = ERROR_OFFSET,
-                metadata = {
-                    details = format("Error while processing command ID: %#010x", id),
-                    data = data,
-                    offset = offset,
-                }
-            }
-        else
-            command = {
-                id = id,
-                metadata = result
-            }
-        end
-    else
-        command = {
-            id = ERROR_OFFSET,
-            metadata = {
-                details = format("Unrecognised command ID: %#010x", id),
+                details = format("Error while processing command ID: %#010x", id),
                 data = data,
                 offset = offset,
             }
+        else
+            result.id = id
+        end
+    else
+        result = {
+            id = ERROR_OFFSET,
+            details = format("Unrecognised command ID: %#010x", id),
+            data = data,
+            offset = offset,
         }
     end
 
-    return command, offset
+    return result, offset
 end
 
--- processDataFromHub(data) -> none
+-- hs.tangent:processDataFromHub(data) -> none
 -- Function
 -- Separates multiple Hub Commands for processing.
 --
@@ -1165,82 +1142,112 @@ end
 --
 -- Returns:
 --  * None
-local function processDataFromHub(data)
-    if not validCallback() then
-        --------------------------------------------------------------------------------
-        -- There's no callback setup, so abort:
-        --------------------------------------------------------------------------------
-        return
-    end
-    local commands = {}
+function mod.mt:processDataFromHub(data)
     local len = string.len(data)
     local offset = 1
     while offset > 0 and offset < len do
         local command
         command, offset = processHubCommand(data, offset)
         if command then
-            commands[#commands + 1] = command
+            --------------------------------------------------------------------------------
+            -- Process the buffer:
+            --------------------------------------------------------------------------------
+            self:processCommand(command)
         end
     end
-
-    --------------------------------------------------------------------------------
-    -- Process the buffer:
-    --------------------------------------------------------------------------------
-    processCommands(commands)
 end
 
 --------------------------------------------------------------------------------
 -- PRIVATE VARIABLES:
 --------------------------------------------------------------------------------
 
+--- hs.tangent.new([ipAddress][, port]]) -> hs.tangent
+--- Constructor
+--- Creates a new `hs.tangent` instance with the specified application name, IP address and port.
+--- Parameters:
+---  * applicationName - The human-readable name of the application connecting.
+---  * ipAddress - A string containing the IP address of the Tangent Hub. Defaults to "127.0.0.1"
+---  * port - A port `number`. Defaults to `64246`
+function mod.new(ipAddress, port)
+    local o = {
 -- hs.tangent._buffer -> table
 -- Variable
 -- The commands buffer.
-mod._buffer = {}
+        _buffer = {},
 
 -- hs.tangent._readBytesRemaining -> number
--- Variable
+-- Field
 -- Number of read bytes remaining.
-mod._readBytesRemaining = 0
+        _readBytesRemaining = 0,
 
 -- hs.tangent._applicationName -> string
--- Variable
--- Application name as specified in `hs.tangent.connect()`
-mod._applicationName = nil
+-- Field
+-- Application name as specified in `hs.tangent:connect()`
+        _applicationName = nil,
 
 -- hs.tangent._systemPath -> string
--- Variable
+-- Field
 -- A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
-mod._systemPath = nil
+        _systemPath = nil,
 
 -- hs.tangent._userPath -> string
--- Variable
+-- Field
 -- A string containing the absolute path of the directory that contains the User’s Default Map XML files.
-mod._userPath = nil
+        _userPath = nil,
 
 -- hs.tangent._protocolRev -> number
--- Variable
+-- Field
 -- The most recent protocolRev value returned when an InitiatComms is received.
-mod._protocolRev = nil
+        _protocolRev = nil,
 
---------------------------------------------------------------------------------
--- PUBLIC FUNCTIONS & METHODS:
---------------------------------------------------------------------------------
+-- hs.tangent._handlers -> list mapping `fromHub` ids to a list of functions that handle them.
+-- Field
+-- The list of handlers
+        _handlers = {},
 
 --- hs.tangent.ipAddress -> number
 --- Variable
 --- IP Address that the Tangent Hub is located at. Defaults to 127.0.0.1.
-mod.ipAddress = "127.0.0.1"
+        ipAddress = ipAddress or "127.0.0.1",
 
 --- hs.tangent.port -> number
 --- Variable
 --- The port that Tangent Hub monitors. Defaults to 64246.
-mod.port = 64246
+        port = port or 64246,
 
 --- hs.tangent.automaticallySendApplicationDefinition -> boolean
 --- Variable
 --- Automatically send the "Application Definition" response. Defaults to `true`.
-mod.automaticallySendApplicationDefinition = true
+        automaticallySendApplicationDefinition = true
+    }
+
+-- hs.tangent._connectionWatcher -> timer
+-- Variable
+-- Tracks the Tangent socket connection.
+    o._connectionWatcher = timer.new(1.0, function()
+        if not o:connected() then
+            o._socket = nil
+            o:notifyDisconnected()
+        end
+    end)
+
+    -- record the protocol rev and potentially automatically send the app definition.
+    o:handle(mod.fromHub.initiateComms, function(command)
+        o._protocolRev = command.protocolRev
+        --------------------------------------------------------------------------------
+        -- Send Application Definition?
+        --------------------------------------------------------------------------------
+        if o.automaticallySendApplicationDefinition == true then
+            o:sendApplicationDefinition()
+        end
+    end)
+
+    return setmetatable(o, mod.mt)
+end
+
+--------------------------------------------------------------------------------
+-- PUBLIC FUNCTIONS & METHODS:
+--------------------------------------------------------------------------------
 
 --- hs.tangent.setLogLevel(loglevel) -> none
 --- Function
@@ -1273,8 +1280,8 @@ function mod.isTangentHubInstalled()
     end
 end
 
---- hs.tangent.callback() -> boolean
---- Function
+--- hs.tangent:callback([callbackFn]) -> boolean
+--- Method
 --- Sets a callback when new messages are received.
 ---
 --- Parameters:
@@ -1344,21 +1351,145 @@ end
 ---    * `panelConnectionState`
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `state` - The connected state of the panel, `true` if connected, `false` if disconnected.
-function mod.callback(callbackFn)
+function mod.mt:callback(callbackFn)
     if type(callbackFn) == "function" then
-        mod._callback = callbackFn
+        self._callback = callbackFn
         return true
     elseif type(callbackFn) == "nil" then
-        mod._callback = nil
+        self._callback = nil
         return true
     else
-        log.ef("Callback recieved an invalid type: %s", type(callbackFn))
+        log.ef("Callback received an invalid type: %s", type(callbackFn))
         return false
     end
 end
 
---- hs.tangent.connected() -> boolean
---- Function
+--- hs.tangent:handle(messageID, handlerFn) -> hs.tangent
+--- Method
+--- Adds a handler function for the provided `messageID`.
+--- The handler will be sent the `messageID` and the data `table` for that message type. Multiple handlers for any message can
+--- be specified, and they will be called in the order in which they were added. A single handler can also be reused across
+--- multiple `messageID`s.
+---
+--- Parameters:
+---  * messageID - the `messageID` to register the handler for.
+---  * handlerFn - The handler `function`.
+---
+--- Returns:
+---  * Nothing.
+---
+--- Notes:
+---  * Full documentation for the Tangent API can be downloaded [here](http://www.tangentwave.co.uk/download/developer-support-pack/).
+---  * The handler function should expect 1 argument and should not return anything.
+---  * The 1 argument will be a `metadata` table. It contains an `id` field (containing the message ID, listed in the `fromHub` table) and the other related data, as listed below:
+---    * `connected` - Connection to Tangent Hub successfully established.
+---      * `ipAddress` - The Hub's IP address.
+---      * `port` - The Hub's port.
+---    * `disconnected` - The connection to Tangent Hub was dropped.
+---      * `ipAddress` - The Hub's IP address.
+---      * `port` - The Hub's port.
+---    * `initiateComms` - Initiates communication between the Hub and the application.
+---      * `protocolRev` - The revision number of the protocol.
+---      * `numberOfPanels` - The number of panels connected.
+---      * `panels`
+---        * `panelID` - The ID of the panel.
+---        * `panelType` - The type of panel connected.
+---      * `data` - The raw data from the Tangent Hub
+---    * `parameterChange` - Requests that the application increment a parameter.
+---      * `paramID` - The ID value of the parameter.
+---      * `increment` - The incremental value which should be applied to the parameter.
+---    * `parameterReset` - Requests that the application changes a parameter to its reset value.
+---      * `paramID` - The ID value of the parameter.
+---    * `parameterValueRequest` - Requests that the application sends a `ParameterValue (0x82)` command to the Hub.
+---      * `paramID` - The ID value of the parameter.
+---    * `menuChange` - Requests the application change a menu index by +1 or -1.
+---      * `menuID` - The ID value of the menu.
+---      * `increment` - The incremental amount by which the menu index should be changed which will always be an integer value of +1 or -1.
+---    * `menuReset` - Requests that the application changes a menu to its reset value.
+---      * `menuID` - The ID value of the menu.
+---    * `menuStringRequest` - Requests that the application sends a `MenuString (0x83)` command to the Hub.
+---      * `menuID` - The ID value of the menu.
+---    * `actionOn` - Requests that the application performs the specified action.
+---      * `actionID` - The ID value of the action.
+---    * `modeChange` - Requests that the application changes to the specified mode.
+---      * `modeID` - The ID value of the mode.
+---    * `transport` - Requests the application to move the currently active transport.
+---      * `jogValue` - The number of jog steps to move the transport.
+---      * `shuttleValue` - An incremental value to add to the shuttle speed.
+---    * `actionOff` - Requests that the application cancels the specified action.
+---      * `actionID` - The ID value of the action.
+---    * `unmanagedPanelCapabilities` - Only used when working in Unmanaged panel mode. Sent in response to a `UnmanagedPanelCapabilitiesRequest (0xA0)` command.
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---      * `numButtons` - The number of buttons on the panel.
+---      * `numEncoders` - The number of encoders on the panel.
+---      * `numDisplays` - The number of displays on the panel.
+---      * `numDisplayLines` - The number of lines for each display on the panel.
+---      * `numDisplayChars` - The number of characters on each line of each display on the panel.
+---    * `unmanagedButtonDown` - Only used when working in Unmanaged panel mode. Issued when a button has been pressed.
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---      * `buttonID` - The hardware ID of the button
+---    * `unmanagedButtonUp` - Only used when working in Unmanaged panel mode. Issued when a button has been released.
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---      * `buttonID` - The hardware ID of the button.
+---    * `unmanagedEncoderChange` - Only used when working in Unmanaged panel mode. Issued when an encoder has been moved.
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---      * `paramID` - The hardware ID of the encoder.
+---      * `increment` - The incremental value.
+---    * `unmanagedDisplayRefresh` - Only used when working in Unmanaged panel mode. Issued when a panel has been connected or the focus of the panel has been returned to your application.
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---    * `panelConnectionState`
+---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
+---      * `state` - The connected state of the panel, `true` if connected, `false` if disconnected.
+---    * `customParameterChange` - A custom parameter has changed.
+---      * `controlID` - A `string` with the control's custom identifier.
+---      * `increment` - The incremental value.
+---    * `customParameterReset` - A custom parameter has reset.
+---      * `controlID` - A `string` with the control's custom identifier.
+---    * `customParameterValueRequest` - The hu wants to know the current value of a specified custom parameter.
+---      * `controlID` - A `string` with the control's custom identifier.
+---    * `customMenuChange` - A custom menu control has changed.
+---      * `controlID` - A `string` with the control's custom identifier.
+---      * `increment` - The incremental amount by which the menu index should be changed. Always an integer value of `+1` or `-1`.
+---    * `customMenuReset` - A custom menu has been reset.
+---      * `controlID` - A `string` with the control's custom identifier.
+---    * `customMenuStringRequest` - The hub wants the current value of the specified control.
+---      * `controlID` - A `string` with the control's custom identifier.
+---    * `customActionOn` - A custom action button has been pressed.
+---      * `controlID` - A `string` with the control's custom identifier.
+---    * `customActionOff` - A custom action button has been released.
+---      * `controlID` - A `string` with the control's custom identifier.
+
+function mod.mt:handle(messageID, handlerFn)
+    local cmdHandlers = self._handlers[messageID]
+    if not cmdHandlers then
+        cmdHandlers = {}
+        self._handlers[messageID] = cmdHandlers
+    end
+    insert(cmdHandlers, handlerFn)
+end
+
+--- hs.tangent:handleError(handlerFn)
+--- Method
+--- Sets a function to be called when there is a transmission.
+--- It will be passed a `table` (details below).
+---
+--- Parameters:
+---  * handlerFn - The `function` to get called when an error occurs.
+---
+--- Returns:
+---  * Nothing
+---
+--- Notes:
+---  * The `table` passed into the function will contain:
+---    * `details` - Information about the error.
+---    * `data` - The original byte `string`.
+---    * `offset` - The index in the byte string where the error occured.
+function mod.mt:handleError(handlerFn)
+    self:handle(ERROR_OFFSET, handlerFn)
+end
+
+--- hs.tangent:connected() -> boolean
+--- Method
 --- Checks to see whether or not you're successfully connected to the Tangent Hub.
 ---
 --- Parameters:
@@ -1366,12 +1497,12 @@ end
 ---
 --- Returns:
 ---  * `true` if connected, otherwise `false`
-function mod.connected()
-    return mod._socket ~= nil and mod._socket:connected()
+function mod.mt:connected()
+    return self._socket ~= nil and self._socket:connected()
 end
 
---- hs.tangent.protocolRev() -> number | nil
---- Function
+--- hs.tangent:protocolRev() -> number | nil
+--- Method
 --- Returns the protocolRev for the connected Tangent Hub, or `nil` if not connected.
 ---
 --- Parameters:
@@ -1379,12 +1510,12 @@ end
 ---
 --- Returns:
 ---  * `true` if connected, otherwise `false`
-function mod.protocolRev()
-    return mod.connected() and mod._protocolRev or nil
+function mod.mt:protocolRev()
+    return self:connected() and self._protocolRev or nil
 end
 
---- hs.tangent.send(byteString) -> boolean, string
---- Function
+--- hs.tangent:send(byteString) -> boolean, string
+--- Method
 --- Sends a "bytestring" message to the Tangent Hub. This should be a full
 --- encoded string for the command you want to send, withouth the leading 'size' section,
 --- which the function will calculate automatically.
@@ -1402,20 +1533,20 @@ end
 ---
 --- Notes:
 ---  * Full documentation for the Tangent API can be downloaded [here](http://www.tangentwave.co.uk/download/developer-support-pack/).
-function mod.send(byteString)
-    if mod.connected() then
+function mod.mt:send(byteString)
+    if self:connected() then
         if byteString == nil or #byteString == 0 then
             return false, "No byte string provided"
         end
 
-        mod._socket:send(numberToByteString(#byteString)..byteString)
+        self._socket:send(numberToByteString(#byteString)..byteString)
         return true
     end
     return false, "Not connected"
 end
 
---- hs.tangent.sendApplicationDefinition([appName, systemPath, userPath[, task]]) -> boolean, string
---- Function
+--- hs.tangent:sendApplicationDefinition([appName, systemPath, userPath[, task]]) -> boolean, string
+--- Method
 --- Sends the application details to the Tangent Hub.
 --- If no details are provided the ones stored in the module are used.
 ---
@@ -1427,11 +1558,11 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, `false` and an error message if there was a problem.
-function mod.sendApplicationDefinition(appName, systemPath, userPath, task)
-    appName = appName or mod._applicationName
-    systemPath = systemPath or mod._systemPath
-    userPath = userPath or mod._userPath
-    task = task or mod._task
+function mod.mt:sendApplicationDefinition(appName, systemPath, userPath, task)
+    appName = appName or self._applicationName
+    systemPath = systemPath or self._systemPath
+    userPath = userPath or self._userPath
+    task = task or self._task
 
     if not appName then
         return false, format("Missing or invalid application name: %s", inspect(appName))
@@ -1443,10 +1574,10 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath, task)
         return false, format("Missing or invalid userPath: %s", inspect(userPath))
     end
 
-    mod._applicationName = appName
-    mod._systemPath = systemPath
-    mod._userPath = userPath
-    mod._task = task
+    self._applicationName = appName
+    self._systemPath = systemPath
+    self._userPath = userPath
+    self._task = task
 
     --------------------------------------------------------------------------------
     -- Format: 0x81, <appStrLen>, <appStr>, <sysDirStrLen>, <sysDirStr>, <userDirStrLen>, <userDirStr>
@@ -1473,7 +1604,7 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath, task)
                         numberToByteString(userPath and #userPath or 0) ..
                         (userPath ~= nil and userPath or "")
 
-    if mod._protocolRev and mod._protocolRev >= 7 then
+    if self._protocolRev and self._protocolRev >= 7 then
         if task then
             byteString =    byteString ..
                             numberToByteString(#task) ..
@@ -1484,25 +1615,25 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath, task)
         end
     end
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.supportsFocusRequest() -> boolean
---- Function
---- Checks if the Tangeng Hub is connected and supports a `sendFocusRequest()` call.
+--- hs.tangent:supportsFocusRequest() -> boolean
+--- Method
+--- Checks if the Tangent Hub is connected and supports a `sendFocusRequest()` call.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * `true` if focus request be requested, otherwise `false`.
-function mod.supportsFocusRequest()
-    local protocolRev = mod.protocolRev()
+function mod.mt:supportsFocusRequest()
+    local protocolRev = self:protocolRev()
     return protocolRev and protocolRev >= 7
 end
 
---- hs.tangent.sendFocusRequest([task]) -> boolean, string
---- Function
+--- hs.tangent:sendFocusRequest([task]) -> boolean, string
+--- Method
 --- Sends a request to the Tangent Hub to become the target of the Hub's messages. This is typically used when switching between multiple apps that want the Hub's attention.
 ---
 --- Parameters:
@@ -1510,12 +1641,12 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, `false` and an error message if there was a problem.
-function mod.sendFocusRequest(task)
-    return mod.sendApplicationDefinition(mod._applicationName, mod._systemPath, mod._userPath, task or mod._task)
+function mod.mt:sendFocusRequest(task)
+    return self:sendApplicationDefinition(self._applicationName, self._systemPath, self._userPath, task or self._task)
 end
 
---- hs.tangent.sendParameterValue(paramID, value[, atDefault]) -> boolean, string
---- Function
+--- hs.tangent:sendParameterValue(paramID, value[, atDefault]) -> boolean, string
+--- Method
 --- Updates the Hub with a parameter value.
 --- The Hub then updates the displays of any panels which are currently
 --- showing the parameter value.
@@ -1527,7 +1658,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendParameterValue(paramID, value, atDefault)
+function mod.mt:sendParameterValue(paramID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0x82, <paramID>, <value>, <atDefault>
     --
@@ -1548,11 +1679,11 @@ function mod.sendParameterValue(paramID, value, atDefault)
                     floatToByteString(value) ..
                     booleanToByteString(atDefault)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendMenuString(menuID, value[, atDefault]) -> boolean, string
---- Function
+--- hs.tangent:sendMenuString(menuID, value[, atDefault]) -> boolean, string
+--- Method
 --- Updates the Hub with a menu value.
 --- The Hub then updates the displays of any panels which are currently
 --- showing the menu.
@@ -1566,7 +1697,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendMenuString(menuID, value, atDefault)
+function mod.mt:sendMenuString(menuID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0x83, <menuID>, <valueStrLen>, <valueStr>, <atDefault>
     --
@@ -1587,11 +1718,11 @@ function mod.sendMenuString(menuID, value, atDefault)
                         value  ..
                         booleanToByteString(atDefault)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendAllChange() -> boolean, string
---- Function
+--- hs.tangent:sendAllChange() -> boolean, string
+--- Method
 --- Tells the Hub that a large number of software-controls have changed.
 --- The Hub responds by requesting all the current values of
 --- software-controls it is currently controlling.
@@ -1601,16 +1732,16 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendAllChange()
+function mod.mt:sendAllChange()
     --------------------------------------------------------------------------------
     -- Format: 0x84
     --------------------------------------------------------------------------------
     local byteString = numberToByteString(mod.toHub.allChange)
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendModeValue(modeID) -> boolean, string
---- Function
+--- hs.tangent:sendModeValue(modeID) -> boolean, string
+--- Method
 --- Updates the Hub with a mode value.
 --- The Hub then changes mode and requests all the current values of
 --- software-controls it is controlling.
@@ -1620,7 +1751,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendModeValue(modeID)
+function mod.mt:sendModeValue(modeID)
     --------------------------------------------------------------------------------
     -- Format: 0x85, <modeID>
     --
@@ -1632,11 +1763,11 @@ function mod.sendModeValue(modeID)
     local byteString = numberToByteString(mod.toHub.modeValue) ..
                         numberToByteString(modeID)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendDisplayText(messages[, doubleHeight]) -> boolean, string
---- Function
+--- hs.tangent:sendDisplayText(messages[, doubleHeight]) -> boolean, string
+--- Method
 ---  * Updates the Hub with a number of character strings that will be displayed
 ---   on connected panels if there is space.
 ---  * Strings may either be 32 character, single height or 16 character
@@ -1653,7 +1784,8 @@ end
 --- Example:
 ---
 --- ```lua
---- hs.tangent.sendDisplayText(
+--- local tangent = hs.tangent.new("My App")
+--- tangent:sendDisplayText(
 ---     { "Single Height", "Double Height" }, {false, true}
 --- )
 --- ```
@@ -1666,7 +1798,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendDisplayText(messages, doubleHeight)
+function mod.mt:sendDisplayText(messages, doubleHeight)
     --------------------------------------------------------------------------------
     -- DisplayText (0x86)
     --  * Updates the Hub with a number of character strings that will be displayed
@@ -1721,11 +1853,11 @@ function mod.sendDisplayText(messages, doubleHeight)
         end
     end
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendArcDisplayText(message1[, message2]) -> boolean, string
---- Function
+--- hs.tangent:sendArcDisplayText(message1[, message2]) -> boolean, string
+--- Method
 ---  * Updates the Arc Hub with one or two character strings that will be displayed
 ---   on connected panels if there is space.
 ---  * Messages will be truncated to 19 characters long.
@@ -1733,7 +1865,8 @@ end
 --- Example:
 ---
 --- ```lua
---- hs.tangent.sendArcDisplayText("message 1", "message 2")
+--- local tangent = hs.tangent.new("My App")
+--- tangent:sendArcDisplayText("message 1", "message 2")
 --- ```
 ---
 --- Parameters:
@@ -1742,7 +1875,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendArcDisplayText(message1, message2)
+function mod.mt:sendArcDisplayText(message1, message2)
     --------------------------------------------------------------------------------
     -- ArcDisplayText (0x87)
     --  * Updates the Hub with a number of character strings that will be shown on
@@ -1788,11 +1921,11 @@ function mod.sendArcDisplayText(message1, message2)
         end
     end
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendUnmanagedPanelCapabilitiesRequest(panelID) -> boolean, string
---- Function
+--- hs.tangent:sendUnmanagedPanelCapabilitiesRequest(panelID) -> boolean, string
+--- Method
 ---  * Only used when working in Unmanaged panel mode
 ---  * Requests the Hub to respond with an UnmanagedPanelCapabilities (0x30) command.
 ---
@@ -1801,7 +1934,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendUnmanagedPanelCapabilitiesRequest(panelID)
+function mod.mt:sendUnmanagedPanelCapabilitiesRequest(panelID)
     --------------------------------------------------------------------------------
     -- Format: 0xA0, <panelID>
     --
@@ -1813,11 +1946,11 @@ function mod.sendUnmanagedPanelCapabilitiesRequest(panelID)
     local byteString = numberToByteString(mod.toHub.unmanagedPanelCapabilitiesRequest) ..
                         numberToByteString(panelID)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message) -> boolean, string
---- Function
+--- hs.tangent:sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message) -> boolean, string
+--- Method
 ---  * Only used when working in Unmanaged panel mode.
 ---  * Updates the Hub with text that will be displayed on a specific panel at
 ---   the given line and starting position where supported by the panel capabilities.
@@ -1833,7 +1966,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, or `false` and an error message if not.
-function mod.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message)
+function mod.mt:sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message)
     --------------------------------------------------------------------------------
     -- Format: 0xA1, <panelID>, <displayID>, <lineNum>, <pos>, <dispStrLen>, <dispStr>
     --
@@ -1868,11 +2001,11 @@ function mod.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message
                         numberToByteString(#message) ..
                         message
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendRenameControl(targetID, newName) -> boolean, string
---- Function
+--- hs.tangent:sendRenameControl(targetID, newName) -> boolean, string
+--- Method
 ---  * Renames a control dynamically.
 ---  * The string supplied will replace the normal text which has been
 ---   derived from the Controls XML file.
@@ -1888,7 +2021,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful, `false` and an error message if not.
-function mod.sendRenameControl(targetID, newName)
+function mod.mt:sendRenameControl(targetID, newName)
     --------------------------------------------------------------------------------
     -- Format: 0xA2, <targetID>, <nameStrLen>, <nameStr>
     --
@@ -1907,11 +2040,11 @@ function mod.sendRenameControl(targetID, newName)
                         numberToByteString(#newName) ..
                         newName
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendHighlightControl(targetID, active) -> boolean, string
---- Function
+--- hs.tangent:sendHighlightControl(targetID, active) -> boolean, string
+--- Method
 ---  * Highlights the control on any panel where this feature is available.
 ---  * When applied to Modes, buttons which are mapped to the reserved "Go To
 ---   Mode" action for this particular mode will highlight.
@@ -1922,7 +2055,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if no.
-function mod.sendHighlightControl(targetID, active)
+function mod.mt:sendHighlightControl(targetID, active)
     --------------------------------------------------------------------------------
     -- targetID: The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
     -- state: The state to set. 1 for highlighted, 0 for clear (Unsigned Int)
@@ -1936,11 +2069,11 @@ function mod.sendHighlightControl(targetID, active)
                         numberToByteString(targetID) ..
                         numberToByteString(state)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendIndicateControl(targetID, indicated) -> boolean, string
---- Function
+--- hs.tangent:sendIndicateControl(targetID, indicated) -> boolean, string
+--- Method
 ---  * Sets the Indicator of the control on any panel where this feature is
 ---   available.
 ---  * This indicator is driven by the `atDefault` argument for Parameters and
@@ -1955,7 +2088,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if no.
-function mod.sendIndicateControl(targetID, active)
+function mod.mt:sendIndicateControl(targetID, active)
     --------------------------------------------------------------------------------
     -- Format: 0xA4, <targetID>, <state>
     --
@@ -1971,11 +2104,11 @@ function mod.sendIndicateControl(targetID, active)
                         numberToByteString(targetID) ..
                         numberToByteString(state)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendPanelConnectionStatesRequest() -> boolean, string
---- Function
+--- hs.tangent:sendPanelConnectionStatesRequest() -> boolean, string
+--- Method
 ---  Requests the Hub to respond with a sequence of PanelConnectionState
 --- (0x35) commands to report the connected/disconnected status of each
 --- configured panel. A single request may result in multiple state responses.
@@ -1985,17 +2118,17 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendPanelConnectionStatesRequest()
+function mod.mt:sendPanelConnectionStatesRequest()
     --------------------------------------------------------------------------------
     -- Format: 0xA5
     --------------------------------------------------------------------------------
     local byteString = numberToByteString(mod.toHub.panelConnectionStatesRequest)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendCustomParameterValue(controlID, value, atDefault) -> boolean, string
---- Function
+--- hs.tangent:sendCustomParameterValue(controlID, value, atDefault) -> boolean, string
+--- Method
 --- Updates the Hub with a custom parameter value. The Hub then updates the displays
 --- of any panels which are currently showing the parameter value.
 ---
@@ -2006,7 +2139,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendCustomParameterValue(controlID, value, atDefault)
+function mod.mt:sendCustomParameterValue(controlID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0xA6, <controlStrLen>, <controlStr>, <value>, <atDefault>
     --
@@ -2025,11 +2158,11 @@ function mod.sendCustomParameterValue(controlID, value, atDefault)
                         floatToByteString(value) ..
                         booleanToByteString(atDefault)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendCustomMenuString(controlID, value, atDefault) -> boolean, string
---- Function
+--- hs.tangent:sendCustomMenuString(controlID, value, atDefault) -> boolean, string
+--- Method
 --- Updates the Hub with a custom menu value. The Hub then updates the displays of any panels which are
 --- currently showing the menu. If the value is `nil` or an empty string, the Hub will not attempt to
 --- display a value for the menu. However the `atDefault` flag will still be recognised.
@@ -2041,7 +2174,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendCustomMenuString(controlID, value, atDefault)
+function mod.mt:sendCustomMenuString(controlID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0xA7, <controlStrLen>, <controlStr>, <valueStrLen>, <valueStr>, <atDefault>
     --
@@ -2063,11 +2196,11 @@ function mod.sendCustomMenuString(controlID, value, atDefault)
                         value ..
                         booleanToByteString(atDefault)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendRenameCustomControl(controlID, name) -> boolean, string
---- Function
+--- hs.tangent:sendRenameCustomControl(controlID, name) -> boolean, string
+--- Method
 --- Renames a custom control dynamically. The string supplied will replace the normal.
 --- To remove any existing replacement name set name to `nil`, this will remove
 --- any renaming and return the system to the normal display text.
@@ -2078,7 +2211,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendRenameCustomControl(controlID, name)
+function mod.mt:sendRenameCustomControl(controlID, name)
     --------------------------------------------------------------------------------
     -- Format: 0xA8, <controlStrLen>, <controlStr>, <nameStrLen>, <nameStr>
     --
@@ -2098,11 +2231,11 @@ function mod.sendRenameCustomControl(controlID, name)
                         numberToByteString(name:len()) ..
                         name
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendHighlightCustomControl(controlID, highlighted) -> boolean, string
---- Function
+--- hs.tangent:sendHighlightCustomControl(controlID, highlighted) -> boolean, string
+--- Method
 --- Highlights the control on any panel where this feature is available.
 ---
 --- Parameters:
@@ -2111,7 +2244,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendHighlightCustomControl(controlID, enabled)
+function mod.mt:sendHighlightCustomControl(controlID, enabled)
     --------------------------------------------------------------------------------
     -- Format: 0xA9, <controlStrLen>, <controlStr>, <state>
     --
@@ -2128,11 +2261,11 @@ function mod.sendHighlightCustomControl(controlID, enabled)
                         controlID ..
                         numberToByteString(enabled and 1 or 0)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
---- hs.tangent.sendIndicateCustomControl(controlID, enabled) -> boolean, string
---- Function
+--- hs.tangent:sendIndicateCustomControl(controlID, enabled) -> boolean, string
+--- Method
 --- Sets the Indicator of the control on any panel where this feature is available.
 --- This indicator is driven by the atDefault argument for Parameters and Menus.
 --- This command therefore only applies to controls mapped to Actions.
@@ -2143,7 +2276,7 @@ end
 ---
 --- Returns:
 ---  * `true` if sent successfully, `false` and an error message if not.
-function mod.sendIndicateCustomControl(controlID, enabled)
+function mod.mt:sendIndicateCustomControl(controlID, enabled)
     --------------------------------------------------------------------------------
     -- Format: 0xAA, <controlStrLen>, <controlStr>, <state>
     --
@@ -2160,11 +2293,11 @@ function mod.sendIndicateCustomControl(controlID, enabled)
                         controlID ..
                         numberToByteString(enabled and 1 or 0)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
--- hs.tangent.sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID) -> boolean, string
--- Function
+-- hs.tangent:sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID) -> boolean, string
+-- Method
 -- Sends a button down message to an app from an unmanaged panel.
 --
 -- Parameters:
@@ -2174,7 +2307,7 @@ end
 --
 -- Returns:
 --  * `true` if successful, `false` and an error message if not.
-function mod.sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID)
+function mod.mt:sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID)
     --------------------------------------------------------------------------------
     -- Format: 0xAD, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>
     --
@@ -2199,11 +2332,11 @@ function mod.sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID)
                         numberToByteString(panelID) ..
                         numberToByteString(buttonID)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
--- hs.tangent.sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID) -> boolean, string
--- Function
+-- hs.tangent:sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID) -> boolean, string
+-- Method
 -- Sends a button down message to an app from an unmanaged panel.
 --
 -- Parameters:
@@ -2213,7 +2346,7 @@ end
 --
 -- Returns:
 --  * `true` if successful, `false` and an error message if not.
-function mod.sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID)
+function mod.mt:sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID)
     --------------------------------------------------------------------------------
     -- Format: 0xAE, <appNameStrLen>, <appNameStr>, <panelID>, <buttonID>
     --
@@ -2238,11 +2371,11 @@ function mod.sendShamUnmanagedButtonUp(appNameStr, panelID, buttonID)
                         numberToByteString(panelID) ..
                         numberToByteString(buttonID)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
--- hs.tangent.sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, increment) -> boolean, string
--- Function
+-- hs.tangent:sendShamUnmanagedEncoderChange(appNameStr, panelID, buttonID, increment) -> boolean, string
+-- Method
 -- Sends a encoder change message to an app from an unmanaged panel.
 --
 -- Parameters:
@@ -2253,7 +2386,7 @@ end
 --
 -- Returns:
 --  * `true` if successful, `false` and an error message if not.
-function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, encoderID, increment)
+function mod.mt:sendShamUnmanagedEncoderChange(appNameStr, panelID, encoderID, increment)
     --------------------------------------------------------------------------------
     -- Format: 0xAF, <appNameStrLen>, <appNameStr>, <panelID>, <encoderID>, <increment>
     --
@@ -2283,11 +2416,11 @@ function mod.sendShamUnmanagedEncoderChange(appNameStr, panelID, encoderID, incr
                         numberToByteString(encoderID) ..
                         floatToByteString(increment)
 
-    return mod.send(byteString)
+    return self:send(byteString)
 end
 
--- notifyDisconnected() -> none
--- Function
+-- hs.tangent:notifyDisconnected() -> none
+-- Method
 -- Triggers the disconnection notification callback and stops the Connection Watcher.
 --
 -- Parameters:
@@ -2295,25 +2428,15 @@ end
 --
 -- Returns:
 --  * None
-local function notifyDisconnected()
-    if mod._callback then
-        mod._callback({{id=mod.fromHub.disconnected, metadata={
+function mod.mt:notifyDisconnected()
+    if self._callback then
+        self._callback({{id=mod.fromHub.disconnected, metadata={
             ipAddress = mod.ipAddress,
             port = mod.port,
         }}})
     end
-    if mod._connectionWatcher then mod._connectionWatcher:stop() end
+    if self._connectionWatcher then self._connectionWatcher:stop() end
 end
-
--- hs.tangent._connectionWatcher -> timer
--- Variable
--- Tracks the Tangent socket connection.
-mod._connectionWatcher = timer.new(1.0, function()
-    if not mod.connected() then
-        mod._socket = nil
-        notifyDisconnected()
-    end
-end)
 
 --- hs.tangent.disconnect() -> none
 --- Function
@@ -2324,12 +2447,12 @@ end)
 ---
 --- Returns:
 ---  * None
-function mod.disconnect()
-    if mod._socket then
-        mod._socket:disconnect()
-        mod._socket = nil
-        notifyDisconnected()
-        mod._connectionWatcher:stop()
+function mod.mt:disconnect()
+    if self._socket then
+        self._socket:disconnect()
+        self._socket = nil
+        self:notifyDisconnected()
+        self._connectionWatcher:stop()
     end
 end
 
@@ -2343,49 +2466,8 @@ local MESSAGE_SIZE = 1
 -- Message Body.
 local MESSAGE_BODY = 2
 
--- socketCallback(data, tag) -> none
--- Function
--- Tangent Socket Callback Function.
---
--- Parameters:
---  * data - The data read from the socket as a string
---  * tag - The integer tag associated with the read call, which defaults to -1
---
--- Returns:
---  * None
-local function socketCallback(data, tag)
-    --log.df("Received data: size=%s; tag=%s", #data, inspect(tag))
-    if tag == MESSAGE_SIZE then
-        --------------------------------------------------------------------------------
-        -- Each message starts with an integer value indicating the number of bytes.
-        --------------------------------------------------------------------------------
-        local messageSize = byteStringToNumber(data, 1, 4)
-        if mod._socket then
-            mod._socket:read(messageSize, MESSAGE_BODY)
-        else
-            log.ef("Tangent: The Socket doesn't exist anymore.")
-        end
-    elseif tag == MESSAGE_BODY then
-        --------------------------------------------------------------------------------
-        -- We've read the rest of series of commands:
-        --------------------------------------------------------------------------------
-        processDataFromHub(data)
-
-        --------------------------------------------------------------------------------
-        -- Get set up for the next series of commands:
-        --------------------------------------------------------------------------------
-        if mod._socket then
-            mod._socket:read(4, MESSAGE_SIZE)
-        else
-            log.ef("Tangent: The Socket doesn't exist anymore.")
-        end
-    else
-        log.ef("Tangent: Unknown Tag or Data from Socket.")
-    end
-end
-
---- hs.tangent.connect(applicationName, systemPath[, userPath[, task]]) -> boolean, errorMessage
---- Function
+--- hs.tangent:connect(applicationName, systemPath[, userPath[, task]]) -> boolean, errorMessage
+--- Method
 --- Connects to the Tangent Hub.
 ---
 --- Parameters:
@@ -2401,10 +2483,10 @@ end
 --- Returns:
 ---  * success - `true` on success, otherwise `nil`
 ---  * errorMessage - The error messages as a string or `nil` if `success` is `true`.
-function mod.connect(applicationName, systemPath, userPath, task)
+function mod.mt:connect(applicationName, systemPath, userPath, task)
 
     --------------------------------------------------------------------------------
-    -- Check Paramaters:
+    -- Check Parameters:
     --------------------------------------------------------------------------------
     if not applicationName or type(applicationName) ~= "string" then
         return nil, "applicationName is a required string."
@@ -2427,23 +2509,64 @@ function mod.connect(applicationName, systemPath, userPath, task)
     --------------------------------------------------------------------------------
     -- Save values for later:
     --------------------------------------------------------------------------------
-    mod._applicationName = applicationName or mod._applicationName
-    mod._systemPath = systemPath or mod._systemPath
-    mod._userPath = userPath or mod._userPath
-    mod._task = task or mod._task
+    self._applicationName = applicationName or self._applicationName
+    self._systemPath = systemPath or self._systemPath
+    self._userPath = userPath or self._userPath
+    self._task = task or self._task
 
     --------------------------------------------------------------------------------
     -- Connect to Tangent Hub:
     --------------------------------------------------------------------------------
-    mod._socket = socket.new()
-    if mod._socket then
-        mod._socket:setCallback(socketCallback)
-        :connect(mod.ipAddress, mod.port, function()
+    self._socket = socket.new()
+    if self._socket then
+        -- socketCallback(data, tag) -> none
+        -- Function
+        -- Tangent Socket Callback Function.
+        --
+        -- Parameters:
+        --  * data - The data read from the socket as a string
+        --  * tag - The integer tag associated with the read call, which defaults to -1
+        --
+        -- Returns:
+        --  * None
+        local function socketCallback(data, tag)
+            --log.df("Received data: size=%s; tag=%s", #data, inspect(tag))
+            if tag == MESSAGE_SIZE then
+                --------------------------------------------------------------------------------
+                -- Each message starts with an integer value indicating the number of bytes.
+                --------------------------------------------------------------------------------
+                local messageSize = byteStringToNumber(data, 1, 4)
+                if self._socket then
+                    self._socket:read(messageSize, MESSAGE_BODY)
+                else
+                    log.ef("Tangent: The Socket doesn't exist anymore.")
+                end
+            elseif tag == MESSAGE_BODY then
+                --------------------------------------------------------------------------------
+                -- We've read the rest of series of commands:
+                --------------------------------------------------------------------------------
+                self:processDataFromHub(data)
+
+                --------------------------------------------------------------------------------
+                -- Get set up for the next series of commands:
+                --------------------------------------------------------------------------------
+                if self._socket then
+                    self._socket:read(4, MESSAGE_SIZE)
+                else
+                    log.ef("Tangent: The Socket doesn't exist anymore.")
+                end
+            else
+                log.ef("Tangent: Unknown Tag or Data from Socket.")
+            end
+        end
+
+        self._socket:setCallback(socketCallback)
+        :connect(self.ipAddress, self.port, function()
             --------------------------------------------------------------------------------
             -- Trigger Callback when connected:
             --------------------------------------------------------------------------------
-            if mod._callback then
-                mod._callback({{id=mod.fromHub.connected, metadata={
+            if self._callback then
+                self._callback({{id=mod.fromHub.connected, metadata={
                     ipAddress = mod.ipAddress,
                     port = mod.port,
                 }}})
@@ -2452,15 +2575,15 @@ function mod.connect(applicationName, systemPath, userPath, task)
             --------------------------------------------------------------------------------
             -- Watch for disconnections:
             --------------------------------------------------------------------------------
-            mod._connectionWatcher:start()
+            self._connectionWatcher:start()
 
             --------------------------------------------------------------------------------
             -- Read the first 4 bytes, which will trigger the callback:
             --------------------------------------------------------------------------------
-            mod._socket:read(4, MESSAGE_SIZE)
+            self._socket:read(4, MESSAGE_SIZE)
         end)
     end
-    return mod._socket ~= nil or nil
+    return self._socket ~= nil or nil
 
 end
 

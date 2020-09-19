@@ -10,7 +10,7 @@
 
 local require               = require
 
-local hs                    = hs
+local hs                    = _G.hs
 
 local log                   = require "hs.logger".new "tangentMan"
 
@@ -81,7 +81,7 @@ mod._connectionConfirmed = false
 --- plugins.core.tangent.manager.controls
 --- Constant
 --- The set of controls currently registered.
-mod.controls = controls()
+mod.controls = controls(mod)
 
 local controlsXML
 
@@ -271,7 +271,7 @@ mod.activeMode = mod.activeModeID:mutate(
             if m._activate then
                 m._activate()
             end
-            tangent.sendModeValue(newMode.id)
+            mod._tangent:sendModeValue(newMode.id)
             original(newMode.id)
         else
             error("Expected a `mode` or a valid mode `ID`: %s", inspect(newMode))
@@ -572,7 +572,7 @@ end):watch(function(interrupted)
     --------------------------------------------------------------------------------
     if not mod.supportsFocusRequest then
         if interrupted then
-            tangent.disconnect()
+            mod._tangent:disconnect()
         else
             --------------------------------------------------------------------------------
             -- Force Tangent Hub to restart when an interruption is completed so that
@@ -606,68 +606,35 @@ function mod.interruptWhen(aProp)
     aProp:watch(function() mod.interrupted:update() end)
 end
 
--- plugins.core.tangent.manager.callback(id, metadata) -> none
--- Function
--- Tangent Manager Callback Function
---
--- Parameters:
---  * commands - A table of Tangent commands.
---
--- Returns:
---  * None
-local function callback(commands)
-    --------------------------------------------------------------------------------
-    -- Process each individual command in the callback table:
-    --------------------------------------------------------------------------------
-    for _, command in ipairs(commands) do
-
-        local id = command.id
-        local metadata = command.metadata
-
-        local fn = fromHub[id]
-        if fn then
-            doAfter(0, function()
-                local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
-                if not ok then
-                    log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
-                end
-            end)
-        else
-            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
-        end
-    end
-end
-
 --- plugins.core.tangent.manager.connected <cp.prop: boolean>
 --- Variable
 --- A `cp.prop` that tracks the connection status to the Tangent Hub.
 mod.connected = prop(
     function()
-        return mod._connectionConfirmed and tangent.connected()
+        return mod._connectionConfirmed and mod._tangent:connected()
     end,
     function(value)
-        if value and not tangent.connected() then
+        if value and (not mod._tangent or not mod._tangent:connected()) then
             mod.writeControlsXML()
             --------------------------------------------------------------------------------
             -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
             --------------------------------------------------------------------------------
             mod.disableFinalCutProInTangentHub()
-            tangent.callback(callback)
 
             --------------------------------------------------------------------------------
             -- NOTE: If we change Tangent Layout names, we'll need to migrate settings
             --       across for legacy users.
             --------------------------------------------------------------------------------
-            --local ok, errorMessage = tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
+            --local ok, errorMessage = mod._tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
 
-            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
+            local ok, errorMessage = mod._tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
             end
         elseif not value then
-            if tangent.connected() then
-                tangent.disconnect()
+            if mod._tangent:connected() then
+                mod._tangent:disconnect()
             end
         end
     end
@@ -676,7 +643,7 @@ mod.connected = prop(
 --- plugins.core.tangent.manager.focusable <cp.prop: boolean; read-only>
 --- Variable
 --- Is the Tangent connected and supports focus requests?
-mod.focusable = prop.AND(mod.connected, prop(tangent.supportsFocusRequest))
+mod.focusable = prop.AND(mod.connected, prop(function() return mod._tangent:supportsFocusRequest() end))
 
 --- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
 --- Variable
@@ -741,6 +708,34 @@ function mod._spec(name)
     return result
 end
 
+--- plugins.core.tangent.manager.connection() -> hs.tangent
+--- Function
+--- Returns the `hs.tangent` instance for the manager.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `hs.tangent` connection.
+function mod.connection()
+    return mod._tangent
+end
+
+function mod.init()
+    local t = tangent.new()
+    mod._tangent = t
+
+    -- Error logger
+    t:handleError(function(data)
+        log.ef("Error while processing Tangent Message: '%#010x':\n%s", data.id, data)
+    end)
+
+    -- Register the handlers
+    for id,fn in pairs(fromHub) do
+        t:handle(id, fn)
+    end
+end
+
 local plugin = {
     id          = "core.tangent.manager",
     group       = "core",
@@ -753,6 +748,8 @@ function plugin.init(_, env)
     --------------------------------------------------------------------------------
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
     mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
+
+    mod.init()
 
     --------------------------------------------------------------------------------
     -- Return Module:

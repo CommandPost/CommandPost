@@ -63,6 +63,19 @@ function named:parent()
     return self._parent
 end
 
+--- plugins.core.tangent.manager.named:tangent() -> hs.tangent
+--- Method
+--- The Tangent Hub connection for this value, from the `parent`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `hs.tangent`, if available.
+function named:tangent()
+    return self:parent():tangent()
+end
+
 --- plugins.core.tangent.manager.named:controls()
 --- Method
 --- Returns the `controls` the parameter belongs to.

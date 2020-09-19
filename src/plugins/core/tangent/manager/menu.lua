@@ -206,7 +206,7 @@ end
 --- * `true` if the update was sent.
 function menu:update()
     if self:active() then
-        return tangent.sendMenuString(self.id, self:get())
+        return self:tangent():sendMenuString(self.id, self:get())
     end
     return false
 end
