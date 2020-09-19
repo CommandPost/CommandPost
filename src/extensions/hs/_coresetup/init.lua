@@ -4,14 +4,39 @@
 
 return {
     setup = function(...)
-        local modpath, _, _, configdir, docstringspath, _, autoload_extensions = ...
-        local tostring, pack, tconcat, sformat = tostring, table.pack, table.concat, string.format
+        local modpath, prettypath, fullpath, configdir, docstringspath, hasinitfile, autoload_extensions = ... -- luacheck: ignore
+        local tostring, pack, tconcat, sformat, tsort = tostring, table.pack, table.concat, string.format, table.sort
+        local traceback = debug.traceback
+
+          -- define hs.printf before requiring anything because it's used by some of the modules
+          -- for logging and console messages.
+
+        --- hs.printf(format, ...)
+        --- Function
+        --- Prints formatted strings to the Console
+        ---
+        --- Parameters:
+        ---  * format - A format string
+        ---  * ... - Zero or more arguments to fill the placeholders in the format string
+        ---
+        --- Returns:
+        ---  * None
+        ---
+        --- Notes:
+        ---  * This is a simple wrapper around the Lua code `print(string.format(...))`.
+          function hs.printf(fmt,...) return print(sformat(fmt,...)) end -- luacheck: ignore
+
+        -- load these first so logs can be captured and randomizer can be seeded
         local crashLog = require("hs.crash").crashLog
-        local fnutils = require("hs.fnutils")
         local hsmath = require("hs.math")
 
         -- seed RNG before we do anything else
         math.randomseed(math.floor(hsmath.randomFloat()*100000000000000))
+
+        -- now regular require locals for use later on in _coresetup
+        local fnutils = require("hs.fnutils")
+        local host = require("hs.host")
+        local timer = require("hs.timer")
 
         -- setup core functions
 
@@ -97,12 +122,12 @@ return {
         local resumeTimers = {} -- luacheck: ignore
 
         hs.coroutineApplicationYield = function(delay)
-            delay = delay or require"hs.math".minFloat
+            delay = delay or hsmath.minFloat
 
             local thread, isMain = coroutine.running()
             if not isMain then
-                local uuid = require"hs.host".uuid()
-                resumeTimers[uuid] = require"hs.timer".doAfter(delay, function()
+                local uuid = host.uuid()
+                resumeTimers[uuid] = timer.doAfter(delay, function()
                     resumeTimers[uuid] = nil
                     local status, msg = coroutine.resume(thread)
                     if not status then
@@ -145,7 +170,7 @@ return {
                 -- DEBUG MODE:
                 --------------------------------------------------------------------------------
                 hs._notify("CommandPost Error")
-                -- print(debug.traceback())
+                -- print(traceback())
                 print("*** ERROR: " .. err)
                 hs.focus()
                 hs.openConsole()
@@ -233,23 +258,6 @@ return {
 
             local str = tconcat(vals, "\t") .. "\n"
             logmessage(str)
-        end
-
-        --- hs.printf(format, ...)
-        --- Function
-        --- Prints formatted strings to the Console
-        ---
-        --- Parameters:
-        ---  * format - A format string
-        ---  * ... - Zero or more arguments to fill the placeholders in the format string
-        ---
-        --- Returns:
-        ---  * None
-        ---
-        --- Notes:
-        ---  * This is a simple wrapper around the Lua code `print(string.format(...))`.
-        function hs.printf(fmt, ...)
-            return print(sformat(fmt, ...))
         end
 
         --- hs.execute(command[, with_user_env]) -> output, status, type, rc
@@ -402,9 +410,8 @@ return {
         ---    * the identifier `lua._man` provides the table of contents for the Lua 5.3 manual.  You can pull up a specific section of the lua manual by including the chapter (and subsection) like this: `lua._man._3_4_8`.
         ---    * the identifier `lua._C` will provide information specifically about the Lua C API for use when developing modules which require external libraries.
 
-        -- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
-        --hs.help = require("hs.doc")
-        --_G.help = hs.help
+        hs.help = require("hs.doc")
+        _G.help = hs.help
 
         --- hs.hsdocs([identifier])
         --- Function
@@ -422,13 +429,11 @@ return {
         ---  * See `hs.doc.hsdocs` for more information about the available settings for the documentation browser.
         ---  * This function provides documentation for Hammerspoon modules, functions, and methods similar to the Hammerspoon Dash docset, but does not require any additional software.
         ---  * This currently only provides documentation for the built in Hammerspoon modules, functions, and methods.  The Lua documentation and third-party modules are not presently supported, but may be added in a future release.
-        -- CHRIS DISABLED TO SPEED UP RELOAD TIMES:
-        --[[
         local hsdocsMetatable
         hsdocsMetatable = {
             __index = function(self, key)
                 local label = (self.__node == "") and key or (self.__node .. "." .. key)
-                return setmetatable({__action = self.__action, __node = label}, hsdocsMetatable)
+                return setmetatable({ __action = self.__action, __node = label }, hsdocsMetatable)
             end,
             __call = function(self, ...)
                 if type(self.__action) == "function" then
@@ -443,17 +448,13 @@ return {
             end
         }
 
-        hs.hsdocs =
-            setmetatable(
-            {
-                __node = "",
-                __action = function(what)
-                    require("hs.doc.hsdocs").help((what ~= "") and what or nil)
-                end
-            },
-            hsdocsMetatable
-        )
-        --]]
+        hs.hsdocs = setmetatable({
+            __node = "",
+            __action = function(what)
+                local hsdocs = require("hs.doc.hsdocs")
+                hsdocs.help((what ~= "") and what or nil)
+            end
+        }, hsdocsMetatable)
 
         --setup lazy loading
         if autoload_extensions then
@@ -473,7 +474,7 @@ return {
             local levelLabels = {"ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"}
             -- may change in the future if this fills crashlog with too much useless stuff
             if level ~= 5 then
-                crashLog(string.format("(%s) %s", (levelLabels[level] or tostring(level)), message))
+                crashLog(sformat("(%s) %s", (levelLabels[level] or tostring(level)), message))
             end
 
             if level == 5 then
@@ -503,7 +504,7 @@ return {
             end
 
             local str = ""
-            local results = pack(xpcall(fn, debug.traceback))
+            local results = pack(xpcall(fn, traceback))
             for i = 2, results.n do
                 if i > 2 then
                     str = str .. "\t"
@@ -539,7 +540,7 @@ return {
             end
 
             local str = ""
-            local results = pack(xpcall(fn, debug.traceback))
+            local results = pack(xpcall(fn, traceback))
             for i = 2, results.n do
                 if i > 2 then
                     str = str .. "\t"
@@ -561,6 +562,13 @@ return {
             return res
         end
 
+        --[[ local function tablesMerge(t1, t2)
+            for i = 1, #t2 do
+                t1[#t1 + 1] = t2[i]
+            end
+            return t1
+        end --]]
+
         local function tableKeys(t)
             local keyset = {}
             local n = 0
@@ -570,7 +578,7 @@ return {
                     keyset[n] = k
                 end
             end
-            table.sort(keyset)
+            tsort(keyset)
             return keyset
         end
 
@@ -687,6 +695,13 @@ return {
   end
 --]]
         local hscrash = require("hs.crash")
+
+        -- These three modules are so tightly coupled that we will unconditionally preload them
+        require("hs.application.internal")
+        require("hs.uielement")
+        require("hs.window")
+        require("hs.application")
+
         rawrequire = require
         _G.require = function(modulename)
             local result = rawrequire(modulename)
@@ -744,6 +759,25 @@ return {
             )
             return result
         end
+
+          -- Set up the default Console toolbar
+        --- hs.console.defaultToolbar
+        --- Constant
+        --- Default toolbar for the Console window
+        ---
+        --- Notes:
+        ---  * This is an `hs.toolbar` object that is shown by default in the Hammerspoon Console
+        ---  * You can remove this toolbar by adding `hs.console.toolbar(nil)` to your config, or you can replace it with your own `hs.webview.toolbar` object
+        local toolbar = require("hs.webview.toolbar")
+        local console = require("hs.console")
+        local image = require("hs.image")
+            console.defaultToolbar = toolbar.new("Console Default", {
+                { id="prefs", label="Preferences", image=image.imageFromName("NSPreferencesGeneral"), tooltip="Open Preferences", fn=function() hs.openPreferences() end },
+                { id="reload", label="Reload config", image=image.imageFromName("NSSynchronize"), tooltip="Reload configuration", fn=function() hs.reload() end },
+                { id="help", label="Help", image=image.imageFromName("NSInfo"), tooltip="Open API docs browser", fn=function() hs.doc.hsdocs.help() end }
+            }):canCustomize(true):autosaves(true)
+        console.toolbar(console.defaultToolbar)
+
         hscrash.crashLog("Loaded from: " .. modpath)
 
         --------------------------------------------------------------------------------
@@ -791,7 +825,7 @@ return {
             return hs.completionsForInputString, runstring
         end
 
-        ok, err = xpcall(fn, debug.traceback)
+        ok, err = xpcall(fn, traceback)
         if not ok then
             hs.showError(err)
             return hs.completionsForInputString, runstring
