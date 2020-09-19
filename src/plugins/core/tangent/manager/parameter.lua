@@ -224,10 +224,10 @@ end
 --- Returns:
 --- * Nothing.
 function parameter:update()
-    if self:active() and self:connection():connected() then
+    if self:active() and self:tangent():connected() then
         local value = self:get()
         if value ~= nil then
-            self:connection():sendParameterValue(self.id, value)
+            self:tangent():sendParameterValue(self.id, value)
         end
     end
 end

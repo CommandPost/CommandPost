@@ -40,7 +40,7 @@ end
 --- Returns:
 ---  * The `hs.tangent`.
 function controls:tangent()
-    return self._manager:connection()
+    return self._manager.connection()
 end
 
 --- plugins.core.tangent.manager.controls.enabled <cp.prop: boolean>

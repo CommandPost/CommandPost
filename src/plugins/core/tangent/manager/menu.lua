@@ -6,8 +6,6 @@
 
 local require = require
 
-local tangent           = require "hs.tangent"
-
 local x                 = require "cp.web.xml"
 local is                = require "cp.is"
 
