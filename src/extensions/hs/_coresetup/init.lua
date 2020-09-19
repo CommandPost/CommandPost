@@ -4,7 +4,7 @@
 
 return {
     setup = function(...)
-        local modpath, prettypath, fullpath, configdir, docstringspath, hasinitfile, autoload_extensions = ...
+        local modpath, prettypath, fullpath, configdir, docstringspath, hasinitfile, autoload_extensions = ... -- luacheck: ignore
         local tostring, pack, tconcat, sformat, tsort = tostring, table.pack, table.concat, string.format, table.sort
         local traceback = debug.traceback
 
@@ -119,7 +119,7 @@ return {
         ---  * unlike `coroutine.yield`, this function does not allow the passing of (new) information to or from the coroutine while it is running; this function is to allow long running tasks to yield time to the Hammerspoon application so other timers and scheduled events can occur without requiring the programmer to add code for an explicit resume.
         ---
         ---  * this function is added to the lua `coroutine` library as `coroutine.applicationYield` as an alternative name.
-        local resumeTimers = {}
+        local resumeTimers = {} -- luacheck: ignore
 
         hs.coroutineApplicationYield = function(delay)
             delay = delay or hsmath.minFloat
@@ -140,7 +140,7 @@ return {
             end
         end
 
-        coroutine.applicationYield = hs.coroutineApplicationYield
+        coroutine.applicationYield = hs.coroutineApplicationYield -- luacheck: ignore
 
         --- hs.docstrings_json_file
         --- Constant
@@ -170,7 +170,7 @@ return {
                 -- DEBUG MODE:
                 --------------------------------------------------------------------------------
                 hs._notify("CommandPost Error")
-                -- print(debug.traceback())
+                -- print(traceback())
                 print("*** ERROR: " .. err)
                 hs.focus()
                 hs.openConsole()
@@ -504,7 +504,7 @@ return {
             end
 
             local str = ""
-            local results = pack(xpcall(fn, debug.traceback))
+            local results = pack(xpcall(fn, traceback))
             for i = 2, results.n do
                 if i > 2 then
                     str = str .. "\t"
@@ -540,7 +540,7 @@ return {
             end
 
             local str = ""
-            local results = pack(xpcall(fn, debug.traceback))
+            local results = pack(xpcall(fn, traceback))
             for i = 2, results.n do
                 if i > 2 then
                     str = str .. "\t"
@@ -562,12 +562,12 @@ return {
             return res
         end
 
-        local function tablesMerge(t1, t2)
+        --[[ local function tablesMerge(t1, t2)
             for i = 1, #t2 do
                 t1[#t1 + 1] = t2[i]
             end
             return t1
-        end
+        end --]]
 
         local function tableKeys(t)
             local keyset = {}
@@ -825,7 +825,7 @@ return {
             return hs.completionsForInputString, runstring
         end
 
-        ok, err = xpcall(fn, debug.traceback)
+        ok, err = xpcall(fn, traceback)
         if not ok then
             hs.showError(err)
             return hs.completionsForInputString, runstring
