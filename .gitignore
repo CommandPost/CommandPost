@@ -73,6 +73,7 @@ build
 temp
 
 .vscode
+.nova
 
 # FCP Libraries
 .lock-dir
