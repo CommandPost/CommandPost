@@ -6,8 +6,6 @@ local require           = require
 
 --local log               = require "hs.logger".new "fcp_tangent"
 
-local tangent           = require "hs.tangent"
-
 local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 local deferred          = require "cp.deferred"
 local fcp               = require "cp.apple.finalcutpro"
@@ -261,9 +259,9 @@ function plugin.init(deps)
             local colorValue = w:colorValue()
             if colorValue then
                 local offset = 255
-                tangent.sendParameterValue(id + 3, round(colorValue.red * offset))
-                tangent.sendParameterValue(id + 1, round(colorValue.green * offset))
-                tangent.sendParameterValue(id + 2, round(colorValue.blue * offset))
+                manager.connection():sendParameterValue(id + 3, round(colorValue.red * offset))
+                manager.connection():sendParameterValue(id + 1, round(colorValue.green * offset))
+                manager.connection():sendParameterValue(id + 2, round(colorValue.blue * offset))
             end
         end
 

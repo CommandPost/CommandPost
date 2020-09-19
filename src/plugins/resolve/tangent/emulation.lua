@@ -7,16 +7,11 @@ local require                           = require
 local log                               = require "hs.logger".new "actions"
 
 local image                             = require "hs.image"
-local tangent                           = require "hs.tangent"
 
 local config                            = require "cp.config"
 local i18n                              = require "cp.i18n"
 
 local imageFromPath                     = image.imageFromPath
-
-local sendShamUnmanagedButtonDown       = tangent.sendShamUnmanagedButtonDown
-local sendShamUnmanagedButtonUp         = tangent.sendShamUnmanagedButtonUp
-local sendShamUnmanagedEncoderChange    = tangent.sendShamUnmanagedEncoderChange
 
 local mod = {}
 
@@ -30,6 +25,8 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    local tangentManager = deps.tangentManager
+
     --------------------------------------------------------------------------------
     -- Constants:
     --------------------------------------------------------------------------------
@@ -554,13 +551,13 @@ function plugin.init(deps)
         :onExecute(function(action)
             if action.button then
                 if action.down then
-                    sendShamUnmanagedButtonDown(APP_ID, action.panel, action.button)
+                    tangentManager.connection():sendShamUnmanagedButtonDown(APP_ID, action.panel, action.button)
                 else
-                    sendShamUnmanagedButtonUp(APP_ID, action.panel, action.button)
+                    tangentManager.connection():sendShamUnmanagedButtonUp(APP_ID, action.panel, action.button)
                 end
             elseif action.encoder then
                 log.df("increase by: %s", action.increment)
-                sendShamUnmanagedEncoderChange(APP_ID, action.panel, action.encoder, action.increment)
+                tangentManager.connection():sendShamUnmanagedEncoderChange(APP_ID, action.panel, action.encoder, action.increment)
             end
         end)
         :onActionId(function(params)
@@ -570,7 +567,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Tangent Mapper Actions:
     --------------------------------------------------------------------------------
-    local tangentManager = deps.tangentManager
     local resolveGroup = tangentManager.controls:group("DaVinci Resolve")
     local emuationGroup = resolveGroup:group("Emulation")
     local tkGroup = emuationGroup:group("Element-TK")
@@ -1008,19 +1004,19 @@ function plugin.init(deps)
                     return 1
                 end)
                 :onChange(function(increment)
-                    sendShamUnmanagedEncoderChange(APP_ID, v.panel, v.encoder, increment)
+                    tangentManager.connection():sendShamUnmanagedEncoderChange(APP_ID, v.panel, v.encoder, increment)
                 end)
                 :onReset(function()
-                    sendShamUnmanagedButtonDown(APP_ID, v.panel, v.reset)
-                    sendShamUnmanagedButtonUp(APP_ID, v.panel, v.reset)
+                    tangentManager.connection():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.reset)
+                    tangentManager.connection():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.reset)
                 end)
         else
             group:action(currentID, v.title)
                 :onPress(function()
-                    sendShamUnmanagedButtonDown(APP_ID, v.panel, v.button)
+                    tangentManager.connection():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.button)
                 end)
                 :onRelease(function()
-                    sendShamUnmanagedButtonUp(APP_ID, v.panel, v.button)
+                    tangentManager.connection():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.button)
                 end)
         end
         currentID = currentID + 1

@@ -6,8 +6,6 @@ local require = require
 
 local log               = require "hs.logger" .new "tng_param"
 
-local tangent           = require "hs.tangent"
-
 local x                 = require "cp.web.xml"
 local is                = require "cp.is"
 
@@ -226,10 +224,10 @@ end
 --- Returns:
 --- * Nothing.
 function parameter:update()
-    if self:active() and tangent.connected() then
+    if self:active() and self:connection():connected() then
         local value = self:get()
         if value ~= nil then
-            tangent.sendParameterValue(self.id, value)
+            self:connection():sendParameterValue(self.id, value)
         end
     end
 end
