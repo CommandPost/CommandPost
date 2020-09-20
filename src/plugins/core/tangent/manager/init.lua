@@ -479,14 +479,14 @@ local fromHub = {
     end,
 
     [tangent.fromHub.connected] = function(metadata)
-        log.df("Connection To Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
+        log.df("Connection to Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
         mod._connectionConfirmed = true
         mod.connected:update()
         mod.supportsFocusRequest = mod._tangent:supportsFocusRequest()
     end,
 
     [tangent.fromHub.disconnected] = function(metadata)
-        log.df("Connection To Tangent Hub (%s:%s) closed.", metadata.ipAddress, metadata.port)
+        log.df("Connection to Tangent Hub (%s:%s) closed.", metadata.ipAddress, metadata.port)
         mod._connectionConfirmed = false
         mod.connected:update()
     end,
@@ -614,7 +614,7 @@ mod.connected = prop(
         return mod._connectionConfirmed and mod._tangent:connected()
     end,
     function(value)
-        if value and (not mod._tangent or not mod._tangent:connected()) then
+        if value and not mod._tangent:connected() then
             mod.writeControlsXML()
             --------------------------------------------------------------------------------
             -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:

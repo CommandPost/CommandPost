@@ -446,13 +446,11 @@ end
 -- Returns:
 --  * Nothing
 function mod.mt:processCommand(command)
-
-    --------------------------------------------------------------------------------
-    -- Trigger the callback:
-    --------------------------------------------------------------------------------
+    log.df("received command: %s", hs.inspect(command))
     local commandHandlers = self._handlers[command.id]
     if commandHandlers then
         for _,handler in ipairs(commandHandlers) do
+            log.df("found handler for command: %s", command.id)
             local success, result = xpcall(function() handler(command) end, debug.traceback)
             if not success then
                 log.ef("Error in Tangent Callback: %s", result)
@@ -1278,90 +1276,6 @@ function mod.isTangentHubInstalled()
     if doesFileExist("/Library/Application Support/Tangent/Hub/TangentHub") then
         return true
     else
-        return false
-    end
-end
-
---- hs.tangent:callback([callbackFn]) -> boolean
---- Method
---- Sets a callback when new messages are received.
----
---- Parameters:
----  * callbackFn - a function to set as the callback for `hs.tangent`. If the value provided is `nil`, any currently existing callback function is removed.
----
---- Returns:
----  * `true` if successful otherwise `false`
----
---- Notes:
----  * Full documentation for the Tangent API can be downloaded [here](http://www.tangentwave.co.uk/download/developer-support-pack/).
----  * The callback function should expect 1 argument and should not return anything.
----  * The 1 argument will be a table, which can contain one or many commands. Each command is it's own table with the following contents:
----    * id - the message ID of the incoming message
----    * metadata - A table of data for the Tangent command (see below).
----  * The metadata table will return the following, depending on the `id` for the callback:
----    * `connected` - Connection to Tangent Hub successfully established.
----    * `disconnected` - The connection to Tangent Hub was dropped.
----    * `initiateComms` - Initiates communication between the Hub and the application.
----      * `protocolRev` - The revision number of the protocol.
----      * `numPanels` - The number of panels connected.
----      * `panels`
----        * `panelID` - The ID of the panel.
----        * `panelType` - The type of panel connected.
----      * `data` - The raw data from the Tangent Hub
----    * `parameterChange` - Requests that the application increment a parameter.
----      * `paramID` - The ID value of the parameter.
----      * `increment` - The incremental value which should be applied to the parameter.
----    * `parameterReset` - Requests that the application changes a parameter to its reset value.
----      * `paramID` - The ID value of the parameter.
----    * `parameterValueRequest` - Requests that the application sends a `ParameterValue (0x82)` command to the Hub.
----      * `paramID` - The ID value of the parameter.
----    * `menuChange` - Requests the application change a menu index by +1 or -1.
----      * `menuID` - The ID value of the menu.
----      * `increment` - The incremental amount by which the menu index should be changed which will always be an integer value of +1 or -1.
----    * `menuReset` - Requests that the application changes a menu to its reset value.
----      * `menuID` - The ID value of the menu.
----    * `menuStringRequest` - Requests that the application sends a `MenuString (0x83)` command to the Hub.
----      * `menuID` - The ID value of the menu.
----    * `actionOn` - Requests that the application performs the specified action.
----      * `actionID` - The ID value of the action.
----    * `modeChange` - Requests that the application changes to the specified mode.
----      * `modeID` - The ID value of the mode.
----    * `transport` - Requests the application to move the currently active transport.
----      * `jogValue` - The number of jog steps to move the transport.
----      * `shuttleValue` - An incremental value to add to the shuttle speed.
----    * `actionOff` - Requests that the application cancels the specified action.
----      * `actionID` - The ID value of the action.
----    * `unmanagedPanelCapabilities` - Only used when working in Unmanaged panel mode. Sent in response to a `UnmanagedPanelCapabilitiesRequest (0xA0)` command.
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `numButtons` - The number of buttons on the panel.
----      * `numEncoders` - The number of encoders on the panel.
----      * `numDisplays` - The number of displays on the panel.
----      * `numDisplayLines` - The number of lines for each display on the panel.
----      * `numDisplayChars` - The number of characters on each line of each display on the panel.
----    * `unmanagedButtonDown` - Only used when working in Unmanaged panel mode. Issued when a button has been pressed.
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `buttonID` - The hardware ID of the button
----    * `unmanagedButtonUp` - Only used when working in Unmanaged panel mode. Issued when a button has been released.
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `buttonID` - The hardware ID of the button.
----    * `unmanagedEncoderChange` - Only used when working in Unmanaged panel mode. Issued when an encoder has been moved.
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `paramID` - The hardware ID of the encoder.
----      * `increment` - The incremental value.
----    * `unmanagedDisplayRefresh` - Only used when working in Unmanaged panel mode. Issued when a panel has been connected or the focus of the panel has been returned to your application.
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----    * `panelConnectionState`
----      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `state` - The connected state of the panel, `true` if connected, `false` if disconnected.
-function mod.mt:callback(callbackFn)
-    if type(callbackFn) == "function" then
-        self._callback = callbackFn
-        return true
-    elseif type(callbackFn) == "nil" then
-        self._callback = nil
-        return true
-    else
-        log.ef("Callback received an invalid type: %s", type(callbackFn))
         return false
     end
 end
@@ -2431,12 +2345,11 @@ end
 -- Returns:
 --  * None
 function mod.mt:notifyDisconnected()
-    if self._callback then
-        self._callback({{id=mod.fromHub.disconnected, metadata={
-            ipAddress = mod.ipAddress,
-            port = mod.port,
-        }}})
-    end
+    self:processCommand({
+        id=mod.fromHub.disconnected,
+        ipAddress = self.ipAddress,
+        port = self.port,
+    })
     if self._connectionWatcher then self._connectionWatcher:stop() end
 end
 
@@ -2567,12 +2480,10 @@ function mod.mt:connect(applicationName, systemPath, userPath, task)
             --------------------------------------------------------------------------------
             -- Trigger Callback when connected:
             --------------------------------------------------------------------------------
-            if self._callback then
-                self._callback({{id=mod.fromHub.connected, metadata={
-                    ipAddress = mod.ipAddress,
-                    port = mod.port,
-                }}})
-            end
+            self:processCommand({id=mod.fromHub.connected,
+                ipAddress = self.ipAddress,
+                port = self.port,
+            })
 
             --------------------------------------------------------------------------------
             -- Watch for disconnections:
