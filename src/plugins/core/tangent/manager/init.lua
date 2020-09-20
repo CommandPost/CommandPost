@@ -292,7 +292,7 @@ function mod.update()
     if mod.connected() then
         local activeMode = mod.activeMode()
         if activeMode then
-            tangent.sendModeValue(activeMode.id)
+            mod._tangent:sendModeValue(activeMode.id)
         end
     end
 end
@@ -352,7 +352,7 @@ local fromHub = {
         --------------------------------------------------------------------------------
         doAfter(1, function()
             local version = tostring(config.appVersion)
-            tangent.sendDisplayText({"CommandPost "..version})
+            mod._tangent:sendDisplayText({"CommandPost "..version})
         end)
         --------------------------------------------------------------------------------
         -- Update Mode:
@@ -382,7 +382,7 @@ local fromHub = {
                 newValue = control:get()
             end
             if is.number(newValue) then
-                tangent.sendParameterValue(control.id, newValue)
+                mod._tangent:sendParameterValue(control.id, newValue)
             end
         end
     end,
@@ -395,7 +395,7 @@ local fromHub = {
                 newValue = control:get()
             end
             if is.number(newValue) then
-                tangent.sendParameterValue(control.id, newValue)
+                mod._tangent:sendParameterValue(control.id, newValue)
             end
         end
     end,
@@ -405,7 +405,7 @@ local fromHub = {
         if parameter.is(control) then
             local value = control:get()
             if is.number(value) then
-                tangent.sendParameterValue(control.id, value)
+                mod._tangent:sendParameterValue(control.id, value)
             end
         end
     end,
@@ -444,7 +444,7 @@ local fromHub = {
             --------------------------------------------------------------------------------
             local value = control:get()
             if value ~= nil then
-                tangent.sendMenuString(control.id, value)
+                mod._tangent:sendMenuString(control.id, value)
             end
         end
     end,
@@ -456,7 +456,7 @@ local fromHub = {
             control:reset()
             local value = control:get()
             if value ~= nil then
-                tangent.sendMenuString(control.id, value)
+                mod._tangent:sendMenuString(control.id, value)
             end
         end
     end,
@@ -466,7 +466,7 @@ local fromHub = {
         if menu.is(control) then
             local value = control:get()
             if value ~= nil then
-                tangent.sendMenuString(control.id, value)
+                mod._tangent:sendMenuString(control.id, value)
             end
         end
     end,
@@ -482,7 +482,7 @@ local fromHub = {
         log.df("Connection To Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
         mod._connectionConfirmed = true
         mod.connected:update()
-        mod.supportsFocusRequest = tangent.supportsFocusRequest()
+        mod.supportsFocusRequest = mod._tangent:supportsFocusRequest()
     end,
 
     [tangent.fromHub.disconnected] = function(metadata)
@@ -625,9 +625,9 @@ mod.connected = prop(
             -- NOTE: If we change Tangent Layout names, we'll need to migrate settings
             --       across for legacy users.
             --------------------------------------------------------------------------------
-            --local ok, errorMessage = mod._tangent.connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
+            --local ok, errorMessage = mod._tangent:connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
 
-            local ok, errorMessage = mod._tangent.connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
+            local ok, errorMessage = mod._tangent:connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false

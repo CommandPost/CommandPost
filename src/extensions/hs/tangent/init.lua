@@ -1221,6 +1221,8 @@ function mod.new(ipAddress, port)
         automaticallySendApplicationDefinition = true
     }
 
+    setmetatable(o, mod.mt)
+
 -- hs.tangent._connectionWatcher -> timer
 -- Variable
 -- Tracks the Tangent socket connection.
@@ -1242,7 +1244,7 @@ function mod.new(ipAddress, port)
         end
     end)
 
-    return setmetatable(o, mod.mt)
+    return o
 end
 
 --------------------------------------------------------------------------------
