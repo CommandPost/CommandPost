@@ -446,11 +446,9 @@ end
 -- Returns:
 --  * Nothing
 function mod.mt:processCommand(command)
-    log.df("received command: %s", hs.inspect(command))
     local commandHandlers = self._handlers[command.id]
     if commandHandlers then
         for _,handler in ipairs(commandHandlers) do
-            log.df("found handler for command: %s", command.id)
             local success, result = xpcall(function() handler(command) end, debug.traceback)
             if not success then
                 log.ef("Error in Tangent Callback: %s", result)
