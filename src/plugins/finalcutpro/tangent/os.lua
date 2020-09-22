@@ -1,4 +1,4 @@
---- === plugins.core.tangent.os ===
+--- === plugins.finalcutpro.tangent.os ===
 ---
 --- macOS Group for the Tangent.
 
@@ -8,8 +8,8 @@ local i18n = require("cp.i18n")
 
 
 local plugin = {
-    id = "core.tangent.os",
-    group = "core",
+    id = "finalcutpro.tangent.os",
+    group = "finalcutpro",
     dependencies = {
         ["core.tangent.manager"] = "tangentManager",
     }

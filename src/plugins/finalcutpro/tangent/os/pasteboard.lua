@@ -1,4 +1,4 @@
---- === plugins.core.tangent.os.pasteboard ===
+--- === plugins.finalcutpro.tangent.os.pasteboard ===
 ---
 --- Pasteboard Tools for Tangent.
 
@@ -8,10 +8,10 @@ local i18n = require("cp.i18n")
 
 
 local plugin = {
-    id = "core.tangent.os.pasteboard",
-    group = "core",
+    id = "finalcutpro.tangent.os.pasteboard",
+    group = "finalcutpro",
     dependencies = {
-        ["core.tangent.os"] = "osGroup",
+        ["finalcutpro.tangent.os"] = "osGroup",
         ["finder.pasteboard"] = "mod",
     }
 }

@@ -1,4 +1,4 @@
---- === plugins.core.tangent.os.display ===
+--- === plugins.finalcutpro.tangent.os.display ===
 ---
 --- Tangent Display Functions.
 
@@ -48,10 +48,10 @@ end
 
 
 local plugin = {
-    id = "core.tangent.os.display",
-    group = "core",
+    id = "finalcutpro.tangent.os.display",
+    group = "finalcutpro",
     dependencies = {
-        ["core.tangent.os"] = "osGroup",
+        ["finalcutpro.tangent.os"] = "osGroup",
     }
 }
 

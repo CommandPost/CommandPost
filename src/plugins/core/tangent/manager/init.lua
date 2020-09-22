@@ -28,6 +28,7 @@ local tools                 = require "cp.tools"
 local x                     = require "cp.web.xml"
 
 local action                = require "action"
+local connection            = require "connection"
 local controls              = require "controls"
 local menu                  = require "menu"
 local mode                  = require "mode"
@@ -759,7 +760,19 @@ function plugin.init(_, env)
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
     mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
 
-    mod.init()
+    --mod.init()
+
+    --------------------------------------------------------------------------------
+    -- WORK IN PROGRESS:
+    --------------------------------------------------------------------------------
+    log.df("mod._pluginPath: %s", mod._pluginPath)
+    log.df("mod.configPath: %s", mod.configPath)
+
+    mod.fromHub = fromHub -- Temporary workaround
+
+    mod.connections = {}
+    mod.connections["CommandPost"] = connection:new("CommandPost", mod.configPath, nil, "Final Cut Pro", mod)
+    mod._tangent = mod.connections["CommandPost"].device
 
     --------------------------------------------------------------------------------
     -- Return Module:
@@ -771,9 +784,11 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- If enable, start it up straight away:
     --------------------------------------------------------------------------------
+    --[[
     if mod.enabled() then
         mod.connected(true)
     end
+    --]]
 end
 
 return plugin
