@@ -26,7 +26,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.tangent.group"]  = "fcpGroup",
         ["finalcutpro.tangent.common"]  = "common",
-        ["core.tangent.manager"] = "manager",
+        ["core.tangent.manager"] = "tangentManager",
     }
 }
 
@@ -38,7 +38,9 @@ function plugin.init(deps)
 
     local common = deps.common
     local fcpGroup = deps.fcpGroup
-    local manager = deps.manager
+
+    local tangentManager = deps.tangentManager
+    local manager = tangentManager.getConnection("CommandPost")
 
     local doShortcut = common.doShortcut
     local doShowParameter = common.doShowParameter
@@ -274,9 +276,9 @@ function plugin.init(deps)
             local colorValue = w:colorValue()
             if colorValue then
                 local offset = 255
-                manager.connection():sendParameterValue(id + 3, round(colorValue.red * offset))
-                manager.connection():sendParameterValue(id + 1, round(colorValue.green * offset))
-                manager.connection():sendParameterValue(id + 2, round(colorValue.blue * offset))
+                manager:device():sendParameterValue(id + 3, round(colorValue.red * offset))
+                manager:device():sendParameterValue(id + 1, round(colorValue.green * offset))
+                manager:device():sendParameterValue(id + 2, round(colorValue.blue * offset))
             end
         end
 

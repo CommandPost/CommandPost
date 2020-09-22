@@ -55,7 +55,7 @@ end
 --- Returns:
 ---  * The `hs.tangent`.
 function group:tangent()
-    return self._manager.connection()
+    return self._manager:device()
 end
 
 --- plugins.core.tangent.manager.group.enabled <cp.prop: boolean>

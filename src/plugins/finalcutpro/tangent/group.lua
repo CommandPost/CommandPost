@@ -17,7 +17,8 @@ local plugin = {
 
 function plugin.init(deps)
     local tangentManager = deps.tangentManager
-    local fcpGroup = tangentManager.controls:group(i18n("finalCutPro"))
+    local connection = tangentManager.getConnection("CommandPost")
+    local fcpGroup = connection.controls:group(i18n("finalCutPro"))
 
     fcp.isFrontmost:watch(function(value)
         fcpGroup:enabled(value)

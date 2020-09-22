@@ -21,20 +21,13 @@ local tangent               = require "hs.tangent"
 local timer                 = require "hs.timer"
 
 local config                = require "cp.config"
-local fcp                   = require "cp.apple.finalcutpro"
-local is                    = require "cp.is"
 local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 local x                     = require "cp.web.xml"
 
-local action                = require "action"
 local connection            = require "connection"
-local controls              = require "controls"
-local menu                  = require "menu"
 local mode                  = require "mode"
-local parameter             = require "parameter"
 
-local doAfter               = timer.doAfter
 local doesDirectoryExist    = tools.doesDirectoryExist
 local doesFileExist         = tools.doesFileExist
 local execute               = hs.execute
@@ -78,11 +71,6 @@ mod._modes = {}
 -- Variable
 -- Connection Confirmed.
 mod._connectionConfirmed = false
-
---- plugins.core.tangent.manager.controls
---- Constant
---- The set of controls currently registered.
-mod.controls = controls(mod)
 
 local controlsXML
 
@@ -326,167 +314,6 @@ function mod.launchTangentMapper()
     application.launchOrFocusByBundleID(mod.TANGENT_MAPPER_BUNDLE_ID)
 end
 
--- fromHub -> table
--- Constant
--- Table of HUD Handling Functions
-local fromHub = {
-    [tangent.fromHub.initiateComms] = function(metadata)
-        --------------------------------------------------------------------------------
-        -- InitiateComms:
-        --------------------------------------------------------------------------------
-        --[[
-        log.df("InitiateComms Received:")
-        log.df("    Protocol Revision: %s", metadata.protocolRev)
-        log.df("    Number of Panels: %s", metadata.numberOfPanels)
-        for _, v in pairs(metadata.panels) do
-            log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
-        end
-        --]]
-
-        --------------------------------------------------------------------------------
-        -- Display CommandPost Version on Tangent Screen:
-        --------------------------------------------------------------------------------
-        doAfter(1, function()
-            local version = tostring(config.appVersion)
-            mod._tangent:sendDisplayText({"CommandPost "..version})
-        end)
-        --------------------------------------------------------------------------------
-        -- Update Mode:
-        --------------------------------------------------------------------------------
-        mod.update()
-    end,
-
-    [tangent.fromHub.actionOn] = function(metadata)
-        local control = mod.controls:findByID(metadata.actionID)
-        if action.is(control) then
-            control:press()
-        end
-    end,
-
-    [tangent.fromHub.actionOff] = function(metadata)
-        local control = mod.controls:findByID(metadata.actionID)
-        if action.is(control) then
-            control:release()
-        end
-    end,
-
-    [tangent.fromHub.parameterChange] = function(metadata)
-        local control = mod.controls:findByID(metadata.paramID)
-        if parameter.is(control) then
-            local newValue = control:change(metadata.increment)
-            if newValue == nil then
-                newValue = control:get()
-            end
-            if is.number(newValue) then
-                mod._tangent:sendParameterValue(control.id, newValue)
-            end
-        end
-    end,
-
-    [tangent.fromHub.parameterReset] = function(metadata)
-        local control = mod.controls:findByID(metadata.paramID)
-        if parameter.is(control) then
-            local newValue = control:reset()
-            if newValue == nil then
-                newValue = control:get()
-            end
-            if is.number(newValue) then
-                mod._tangent:sendParameterValue(control.id, newValue)
-            end
-        end
-    end,
-
-    [tangent.fromHub.parameterValueRequest] = function(metadata)
-        local control = mod.controls:findByID(metadata.paramID)
-        if parameter.is(control) then
-            local value = control:get()
-            if is.number(value) then
-                mod._tangent:sendParameterValue(control.id, value)
-            end
-        end
-    end,
-
-    [tangent.fromHub.transport] = function(metadata)
-        -- TODO: FCPX specific code should not be in `core`.
-        if fcp:isFrontmost() then
-            if metadata.jogValue == 1 then
-                fcp.menu:doSelectMenu({"Mark", "Next", "Frame"}):Now()
-            elseif metadata.jogValue == -1 then
-                fcp.menu:doSelectMenu({"Mark", "Previous", "Frame"}):Now()
-            end
-        end
-    end,
-
-    [tangent.fromHub.menuChange] = function(metadata)
-        local control = mod.controls:findByID(metadata.menuID)
-        local increment = metadata.increment
-        if menu.is(control) then
-            if increment == 1 then
-                control:next()
-            else
-                control:prev()
-            end
-            --------------------------------------------------------------------------------
-            -- For some strange reason, instead of returning -1 when you turn the knob
-            -- anti-clockwise, it returns 4294967295. No idea why!
-            --
-            --[[
-            elseif increment == -1 then
-                control:prev()
-            else
-                log.ef("Unexpected 'menu change' increment from Tangent: %s", increment)
-            end
-            --]]
-            --------------------------------------------------------------------------------
-            local value = control:get()
-            if value ~= nil then
-                mod._tangent:sendMenuString(control.id, value)
-            end
-        end
-    end,
-
-    [tangent.fromHub.menuReset] = function(metadata)
-        -- log.df("Menu Reset: %#010x", metadata.menuID)
-        local control = mod.controls:findByID(metadata.menuID)
-        if menu.is(control) then
-            control:reset()
-            local value = control:get()
-            if value ~= nil then
-                mod._tangent:sendMenuString(control.id, value)
-            end
-        end
-    end,
-
-    [tangent.fromHub.menuStringRequest] = function(metadata)
-        local control = mod.controls:findByID(metadata.menuID)
-        if menu.is(control) then
-            local value = control:get()
-            if value ~= nil then
-                mod._tangent:sendMenuString(control.id, value)
-            end
-        end
-    end,
-
-    [tangent.fromHub.modeChange] = function(metadata)
-        local newMode = mod.getMode(metadata.modeID)
-        if newMode then
-            mod.activeMode(newMode)
-        end
-    end,
-
-    [tangent.fromHub.connected] = function(metadata)
-        log.df("Connection to Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
-        mod._connectionConfirmed = true
-        mod.connected:update()
-    end,
-
-    [tangent.fromHub.disconnected] = function(metadata)
-        log.df("Connection to Tangent Hub (%s:%s) closed.", metadata.ipAddress, metadata.port)
-        mod._connectionConfirmed = false
-        mod.connected:update()
-    end,
-}
-
 --- plugins.core.tangent.manager.disableFinalCutProInTangentHub() -> none
 --- Function
 --- Disables the Final Cut Pro preset in the Tangent Hub Application.
@@ -719,32 +546,25 @@ function mod._spec(name)
     return result
 end
 
---- plugins.core.tangent.manager.connection() -> hs.tangent
---- Function
---- Returns the `hs.tangent` instance for the manager.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `hs.tangent` connection.
-function mod.connection()
-    return mod._tangent
+-- A table of all the Tangent connections.
+mod.connections = {}
+
+function mod.newConnection()
+    --------------------------------------------------------------------------------
+    -- This is just hardcoded for now. Eventually each application
+    -- (i.e. Final Cut Pro, Resolve, etc.) will create their own connection.
+    --------------------------------------------------------------------------------
+    mod.connections["CommandPost"] = connection:new("CommandPost", mod.configPath, nil, "Final Cut Pro", mod)
+
+    --------------------------------------------------------------------------------
+    -- This is just a temporary fix whilst I slowly port stuff from this manager
+    -- to the "connection" module:
+    --------------------------------------------------------------------------------
+    mod._tangent = mod.connections["CommandPost"]:device()
 end
 
-function mod.init()
-    local t = tangent.new()
-    mod._tangent = t
-
-    -- Error logger
-    t:handleError(function(data)
-        log.ef("Error while processing Tangent Message: '%#010x':\n%s", data.id, data)
-    end)
-
-    -- Register the handlers
-    for id,fn in pairs(fromHub) do
-        t:handle(id, fn)
-    end
+function mod.getConnection(applicationName)
+    return mod.connections[applicationName]
 end
 
 local plugin = {
@@ -760,19 +580,10 @@ function plugin.init(_, env)
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
     mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
 
-    --mod.init()
-
     --------------------------------------------------------------------------------
-    -- WORK IN PROGRESS:
+    -- Connect to Tangent Hub:
     --------------------------------------------------------------------------------
-    log.df("mod._pluginPath: %s", mod._pluginPath)
-    log.df("mod.configPath: %s", mod.configPath)
-
-    mod.fromHub = fromHub -- Temporary workaround
-
-    mod.connections = {}
-    mod.connections["CommandPost"] = connection:new("CommandPost", mod.configPath, nil, "Final Cut Pro", mod)
-    mod._tangent = mod.connections["CommandPost"].device
+    mod.newConnection()
 
     --------------------------------------------------------------------------------
     -- Return Module:
@@ -784,11 +595,9 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- If enable, start it up straight away:
     --------------------------------------------------------------------------------
-    --[[
     if mod.enabled() then
         mod.connected(true)
     end
-    --]]
 end
 
 return plugin

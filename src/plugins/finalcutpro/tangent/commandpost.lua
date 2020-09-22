@@ -16,7 +16,9 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    return deps.tangentManager.controls:group(i18n("appName"))
+    local tangentManager = deps.tangentManager
+    local connection = tangentManager.getConnection("CommandPost")
+    return connection.controls:group(i18n("appName"))
 end
 
 return plugin

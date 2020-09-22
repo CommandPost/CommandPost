@@ -25,6 +25,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+
+    -- Ignore for now:
+    do return end
+
     local tangentManager = deps.tangentManager
 
     --------------------------------------------------------------------------------
