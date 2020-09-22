@@ -14,16 +14,23 @@
 ---
 --- This extension was thrown together by [Chris Hocking](https://github.com/latenitefilms), then dramatically improved by [David Peterson](https://github.com/randomeizer) for [CommandPost](http://commandpost.io).
 
-local log                                       = require("hs.logger").new("tangent")
-local inspect                                   = require("hs.inspect")
+local log                   = require "hs.logger".new("tangent")
 
-local fs                                        = require("hs.fs")
-local socket                                    = require("hs.socket")
-local timer                                     = require("hs.timer")
+local application           = require "hs.application"
+local inspect               = require "hs.inspect"
 
-local unpack, pack, format                      = string.unpack, string.pack, string.format
-local insert                                    = table.insert
+local fs                    = require "hs.fs"
+local socket                = require "hs.socket"
+local timer                 = require "hs.timer"
 
+local semver                = require "semver"
+
+local unpack                = string.unpack
+local pack                  = string.pack
+local format                = string.format
+
+local insert                = table.insert
+local infoForBundleID       = application.infoForBundleID
 
 local mod = {}
 mod.mt = {}
@@ -32,6 +39,11 @@ mod.mt.__index = mod.mt
 --------------------------------------------------------------------------------
 -- MODULE CONSTANTS:
 --------------------------------------------------------------------------------
+
+-- TANGENT_MAPPER_BUNDLE_ID -> string
+-- Constant
+-- Tangent Mapper Bundle ID.
+local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 
 --- hs.tangent.fromHub -> table
 --- Constant
@@ -1532,18 +1544,23 @@ function mod.mt:sendApplicationDefinition(appName, systemPath, userPath, task)
     return self:send(byteString)
 end
 
---- hs.tangent:supportsFocusRequest() -> boolean
+--- hs.tangent.supportsFocusRequest() -> boolean
 --- Method
---- Checks if the Tangent Hub is connected and supports a `sendFocusRequest()` call.
+--- Checks if the Tangent Hub supports a `sendFocusRequest()` call.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * `true` if focus request be requested, otherwise `false`.
-function mod.mt:supportsFocusRequest()
-    local protocolRev = self:protocolRev()
-    return protocolRev and protocolRev >= 7
+function mod.supportsFocusRequest()
+    local info = infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
+    local version = info and info.CFBundleShortVersionString
+    if version and semver(version) >= semver("2.3.7") then
+        return true
+    else
+        return false
+    end
 end
 
 --- hs.tangent:sendFocusRequest([task]) -> boolean, string

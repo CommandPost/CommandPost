@@ -340,12 +340,14 @@ local fromHub = {
         --------------------------------------------------------------------------------
         -- InitiateComms:
         --------------------------------------------------------------------------------
+        --[[
         log.df("InitiateComms Received:")
         log.df("    Protocol Revision: %s", metadata.protocolRev)
         log.df("    Number of Panels: %s", metadata.numberOfPanels)
         for _, v in pairs(metadata.panels) do
             log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
         end
+        --]]
 
         --------------------------------------------------------------------------------
         -- Display CommandPost Version on Tangent Screen:
@@ -482,7 +484,6 @@ local fromHub = {
         log.df("Connection to Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
         mod._connectionConfirmed = true
         mod.connected:update()
-        mod.supportsFocusRequest = mod._tangent:supportsFocusRequest()
     end,
 
     [tangent.fromHub.disconnected] = function(metadata)
@@ -547,10 +548,19 @@ function mod.disableFinalCutProInTangentHub()
     end
 end
 
+--- plugins.core.tangent.manager.rebuildXML <cp.prop: boolean>
+--- Variable
+--- Defines whether or not we should rebuild the XML files.
+mod.rebuildXML = config.prop("tangent.rebuildXML", true)
+
 --- plugins.core.tangent.manager.enabled <cp.prop: boolean>
 --- Variable
 --- Enable or disables the Tangent Manager.
-mod.enabled = config.prop("enableTangent", false)
+mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
+    if not enabled then
+        mod.rebuildXML(true)
+    end
+end)
 
 --- plugins.core.tangent.manager.interrupted <cp.prop: boolean; read-only>
 --- Variable
@@ -570,7 +580,7 @@ end):watch(function(interrupted)
     --------------------------------------------------------------------------------
     -- If Tangent Hub doesn't support focus requests, do it manually:
     --------------------------------------------------------------------------------
-    if not mod.supportsFocusRequest then
+    if not tangent.supportsFocusRequest() then
         if interrupted then
             mod._tangent:disconnect()
         else
@@ -615,7 +625,14 @@ mod.connected = prop(
     end,
     function(value)
         if value and not mod._tangent:connected() then
-            mod.writeControlsXML()
+            --------------------------------------------------------------------------------
+            -- Only rebuild the controls XML when first enabled for faster startup times:
+            --------------------------------------------------------------------------------
+            if mod.rebuildXML() then
+                mod.writeControlsXML()
+                mod.rebuildXML(false)
+            end
+
             --------------------------------------------------------------------------------
             -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
             --------------------------------------------------------------------------------
@@ -643,7 +660,7 @@ mod.connected = prop(
 --- plugins.core.tangent.manager.focusable <cp.prop: boolean; read-only>
 --- Variable
 --- Is the Tangent connected and supports focus requests?
-mod.focusable = prop.AND(mod.connected, prop(function() return mod._tangent:supportsFocusRequest() end))
+mod.focusable = prop.AND(mod.connected, prop(function() return tangent.supportsFocusRequest() end))
 
 --- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
 --- Variable
@@ -758,7 +775,12 @@ function plugin.init(_, env)
 end
 
 function plugin.postInit()
-    mod.enabled:update()
+    --------------------------------------------------------------------------------
+    -- If enable, start it up straight away:
+    --------------------------------------------------------------------------------
+    if mod.enabled() then
+        mod.connected(true)
+    end
 end
 
 return plugin

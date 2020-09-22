@@ -4,7 +4,7 @@
 
 local require           = require
 
---local log               = require "hs.logger".new "fcp_tangent"
+local log               = require "hs.logger".new "fcp_tangent"
 
 local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 local deferred          = require "cp.deferred"
@@ -215,7 +215,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel:nudgeColor(rightChange, upChange)
                     rightChange, upChange = 0, 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())
@@ -227,7 +232,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel.saturation:shiftValue(satChange)
                     satChange = 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())
@@ -239,7 +249,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel.brightness:shiftValue(brightChange)
                     brightChange = 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())

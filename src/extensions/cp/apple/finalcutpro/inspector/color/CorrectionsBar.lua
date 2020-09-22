@@ -192,7 +192,7 @@ function CorrectionsBar:activate(correctionType, number)
             --------------------------------------------------------------------------------
             pattern = "%+"..correctionText
             if not menuButton:selectItemMatching(pattern) then
-                log.ef("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+                log.ef("Unable to find correction using 'activate': '%s' (%s)", correctionType, correctionText)
                 return false
             end
         end
@@ -226,17 +226,11 @@ function CorrectionsBar:doActivate(correctionType, number)
         end
 
         local pattern = "%s*"..correctionText.." "..number
+        local altPattern = "%+"..correctionText
 
-        return If(menuButton:doSelectItemMatching(pattern)):Is(false)
-        :Then(function()
-            --------------------------------------------------------------------------------
-            -- Try adding a new correction of the specified type:
-            --------------------------------------------------------------------------------
-            return self:doAdd(correctionType)
-        end)
-        :Otherwise(true)
+        return Do(menuButton:doSelectItemMatching(pattern, altPattern))
     end)
-    :Label("doActivate")
+    :Label("CorrectionsBar:doActivate")
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
@@ -260,7 +254,7 @@ function CorrectionsBar:add(correctionType)
 
     local pattern = "%+"..correctionText
     if not menuButton:selectItemMatching(pattern) then
-        log.ef("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+        log.ef("Unable to find correction using 'add': '%s' (%s)", correctionType, correctionText)
     end
 
     return self
@@ -269,6 +263,7 @@ end
 function CorrectionsBar:doAdd(correctionType)
     return Do(self:doShow())
     :Then(function()
+
         local correctionText = self:findCorrectionLabel(correctionType)
         if not correctionText then
             log.ef("Invalid Correction Type: %s", correctionType)
@@ -277,8 +272,9 @@ function CorrectionsBar:doAdd(correctionType)
         local pattern = "%+"..correctionText
 
         return Require(self.menuButton:doSelectItemMatching(pattern))
-        :OrThrow("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+        :OrThrow("Unable to find correction using 'doAdd': '%s' (%s)", correctionType, correctionText)
     end)
+    :Label("CorrectionsBar:doAdd")
 end
 
 return CorrectionsBar
