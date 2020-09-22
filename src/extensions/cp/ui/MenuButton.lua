@@ -94,7 +94,7 @@ function MenuButton.lazy.prop:menuUI()
 end
 
 function MenuButton.lazy.value:menu()
-    return Menu(self, self.menuUI())
+    return Menu(self, self.menuUI)
 end
 
 --- cp.ui.MenuButton.title <cp.prop: string; read-only>
