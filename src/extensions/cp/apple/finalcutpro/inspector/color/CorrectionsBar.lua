@@ -204,7 +204,7 @@ function CorrectionsBar:activate(correctionType, number)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:doActivate(correctionType, number) -> cp.rx.go.Statement
 --- Method
 --- A Statement that activates a correction type.
 ---
