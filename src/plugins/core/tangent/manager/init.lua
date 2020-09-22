@@ -312,13 +312,6 @@ mod.tangentMapperInstalled = prop(function()
     return info ~= nil
 end)
 
---- plugins.core.tangent.manager.tangentMapperRunning <cp.prop: boolean>
---- Variable
---- Is Tangent Mapper Running?
-mod.tangentMapperRunning = prop(function()
-    return application.applicationsForBundleID(mod.TANGENT_MAPPER_BUNDLE_ID) ~= nil
-end)
-
 --- plugins.core.tangent.manager.launchTangentMapper() -> none
 --- Function
 --- Launches the Tangent Mapper.
