@@ -19,17 +19,31 @@ local plugin = {
     id              = "resolve.tangent.emulation",
     group           = "resolve",
     dependencies    = {
-        ["core.action.manager"] = "actionManager",
-        ["core.tangent.manager"] = "tangentManager",
+        ["core.action.manager"]             = "actionManager",
+        ["resolve.tangent.manager"]         = "tangentManager",
+        ["core.commands.global"]            = "global",
     }
 }
 
 function plugin.init(deps)
-
-    -- Ignore for now:
-    do return end
-
     local tangentManager = deps.tangentManager
+
+    local global = deps.global
+    global
+        :add("requestFocus")
+        :whenActivated(function()
+            log.df("REQUESTING FOCUS")
+            tangentManager:device():pluginRequestFocus()
+        end)
+        :titled("Request DaVinci Resolve Tangent Control")
+
+    global
+        :add("releaseFocus")
+        :whenActivated(function()
+            log.df("RELEASING FOCUS")
+            tangentManager:device():pluginReleaseFocus()
+        end)
+        :titled("Release DaVinci Resolve Tangent Control")
 
     --------------------------------------------------------------------------------
     -- Constants:
@@ -578,7 +592,7 @@ function plugin.init(deps)
     local kbGroup = emuationGroup:group("Element-KB")
     local btGroup = emuationGroup:group("Element-BT")
 
-    tangentManager.addMode(0x03000001, "Resolve: Main")
+    tangentManager:addMode(0x03000001, "Resolve: Main")
 
     local mappings = {
         --------------------------------------------------------------------------------
@@ -1008,19 +1022,19 @@ function plugin.init(deps)
                     return 1
                 end)
                 :onChange(function(increment)
-                    tangentManager.connection():sendShamUnmanagedEncoderChange(APP_ID, v.panel, v.encoder, increment)
+                    tangentManager:device():sendShamUnmanagedEncoderChange(APP_ID, v.panel, v.encoder, increment)
                 end)
                 :onReset(function()
-                    tangentManager.connection():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.reset)
-                    tangentManager.connection():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.reset)
+                    tangentManager:device():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.reset)
+                    tangentManager:device():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.reset)
                 end)
         else
             group:action(currentID, v.title)
                 :onPress(function()
-                    tangentManager.connection():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.button)
+                    tangentManager:device():sendShamUnmanagedButtonDown(APP_ID, v.panel, v.button)
                 end)
                 :onRelease(function()
-                    tangentManager.connection():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.button)
+                    tangentManager:device():sendShamUnmanagedButtonUp(APP_ID, v.panel, v.button)
                 end)
         end
         currentID = currentID + 1

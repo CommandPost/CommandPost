@@ -26,7 +26,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.tangent.group"]  = "fcpGroup",
         ["finalcutpro.tangent.common"]  = "common",
-        ["core.tangent.manager"] = "tangentManager",
+        ["finalcutpro.tangent.manager"] = "tangentManager",
     }
 }
 
@@ -36,14 +36,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
 
-    local common = deps.common
-    local fcpGroup = deps.fcpGroup
+    local common            = deps.common
+    local fcpGroup          = deps.fcpGroup
+    local manager           = deps.tangentManager
 
-    local tangentManager = deps.tangentManager
-    local manager = tangentManager.getConnection("CommandPost")
-
-    local doShortcut = common.doShortcut
-    local doShowParameter = common.doShowParameter
+    local doShortcut        = common.doShortcut
+    local doShowParameter   = common.doShowParameter
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:

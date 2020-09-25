@@ -139,6 +139,8 @@ mod.toHub = {
     shamUnmanagedButtonDown                     = 0xAD,
     shamUnmanagedButtonUp                       = 0xAE,
     shamUnmanagedEncoderChange                  = 0xAF,
+    pluginRequestFocus                          = 0xAB,
+    pluginReleaseFocus                          = 0xAC,
 }
 
 mod.reserved = {
@@ -1563,19 +1565,6 @@ function mod.supportsFocusRequest()
     end
 end
 
---- hs.tangent:sendFocusRequest([task]) -> boolean, string
---- Method
---- Sends a request to the Tangent Hub to become the target of the Hub's messages. This is typically used when switching between multiple apps that want the Hub's attention.
----
---- Parameters:
----  * task - An optional string to indicate the name of the app which is 'active'. If not provided, the `task` provided when connecting will be used. Only supported with Tangent Hub on protocolRev 7 or greater.
----
---- Returns:
----  * `true` if successful, `false` and an error message if there was a problem.
-function mod.mt:sendFocusRequest(task)
-    return self:sendApplicationDefinition(self._applicationName, self._systemPath, self._userPath, task or self._task)
-end
-
 --- hs.tangent:sendParameterValue(paramID, value[, atDefault]) -> boolean, string
 --- Method
 --- Updates the Hub with a parameter value.
@@ -2263,6 +2252,52 @@ function mod.mt:sendShamUnmanagedButtonDown(appNameStr, panelID, buttonID)
                         numberToByteString(panelID) ..
                         numberToByteString(buttonID)
 
+    return self:send(byteString)
+end
+
+--- hs.tangent:pluginRequestFocus() -> boolean, string
+--- Method
+--- Plugins can request panel focus by issuing this command.
+--- This means that the Host application will temporarily lose panel focus.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful, `false` and an error message if not.
+---
+--- Notes:
+---  * This request will only succeed if the processStr defined in the
+---    ApplicationDefinition (0x81) command matches the process name of the host application.
+---  * Once focus is no longer relevant the plugin must issue a PluginReleaseFocus (0xAC)
+---    command to revert focus back to the host application
+function mod.mt:pluginRequestFocus()
+    --------------------------------------------------------------------------------
+    -- Format: 0xAB
+    --------------------------------------------------------------------------------
+    local byteString = numberToByteString(mod.toHub.pluginRequestFocus)
+    return self:send(byteString)
+end
+
+--- hs.tangent:pluginReleaseFocus() -> boolean, string
+--- Method
+--- This command must be issued when a plugin no longer requires panel focus,
+--- so that focus can be passed back to the host application.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful, `false` and an error message if not.
+---
+--- Notes:
+---  * This command will only succeed if the plugin has previously issued a
+---    PluginRequestFocus (0xAB) command.
+function mod.mt:pluginReleaseFocus()
+    --------------------------------------------------------------------------------
+    -- Format: 0xAC
+    --------------------------------------------------------------------------------
+    local byteString = numberToByteString(mod.toHub.pluginReleaseFocus)
     return self:send(byteString)
 end
 

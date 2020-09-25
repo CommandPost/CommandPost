@@ -8,296 +8,46 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
-local require               = require
+local require                   = require
 
-local hs                    = _G.hs
+local log                       = require "hs.logger".new "tangentMan"
 
-local log                   = require "hs.logger".new "tangentMan"
+local application               = require "hs.application"
+local tangent                   = require "hs.tangent"
 
-local application           = require "hs.application"
-local fs                    = require "hs.fs"
-local inspect               = require "hs.inspect"
-local tangent               = require "hs.tangent"
-local timer                 = require "hs.timer"
+local config                    = require "cp.config"
+local prop                      = require "cp.prop"
 
-local config                = require "cp.config"
-local prop                  = require "cp.prop"
-local tools                 = require "cp.tools"
-local x                     = require "cp.web.xml"
+local connection                = require "connection"
 
-local connection            = require "connection"
-local mode                  = require "mode"
-
-local doesDirectoryExist    = tools.doesDirectoryExist
-local doesFileExist         = tools.doesFileExist
-local execute               = hs.execute
-local format                = string.format
-local insert                = table.insert
-local sort                  = table.sort
+local infoForBundleID           = application.infoForBundleID
+local isTangentHubInstalled     = tangent.isTangentHubInstalled
+local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 
 local mod = {}
 
---- plugins.core.tangent.manager.TANGENT_MAPPER_BUNDLE_ID -> string
---- Constant
---- Tangent Mapper Bundle ID.
-mod.TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
+-- TANGENT_MAPPER_BUNDLE_ID -> string
+-- Constant
+-- Tangent Mapper Bundle ID.
+local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 
---- plugins.core.tangent.manager.HIDE_FILE_PATH -> string
---- Constant
---- Tangent Mapper Hide File Path.
-mod.HIDE_FILE_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
-
---- plugins.core.tangent.manager.FCP_KEYPRESS_APPS_PATH -> string
---- Constant
---- Final Cut Pro Keypress Apps Path for Tangent Mapper.
-mod.FCP_KEYPRESS_APPS_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro"
-
---- plugins.core.tangent.manager.LAUNCH_AGENT_PATH -> string
---- Constant
---- Path to Tangent Hub's Launch Agent.
-mod.LAUNCH_AGENT_PATH = "/Library/LaunchAgents/uk.co.tangentwave.hub.plist"
-
--- plugins.core.tangent.manager._writtenControlsXML -> boolean
--- Variable
--- Has CommandPost written the Controls XML file?
-mod._writtenControlsXML = false
-
--- plugins.core.tangent.manager._modes -> table
--- Variable
--- Modes
-mod._modes = {}
-
--- plugins.core.tangent.manager._connectionConfirmed -> boolean
--- Variable
--- Connection Confirmed.
-mod._connectionConfirmed = false
-
-local controlsXML
-
---- plugins.core.tangent.manager.getControlsXML() -> string
---- Function
---- Gets the controls XML.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The XML controls
-function mod.getControlsXML()
-    if not controlsXML then
-        controlsXML = x._xml() .. x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
-            --------------------------------------------------------------------------------
-            -- Capabilities:
-            --------------------------------------------------------------------------------
-            x.Capabilities (
-                x.Jog { enabled = true } ..
-                x.Shuttle { enabled = false } ..
-                x.StatusDisplay { lineCount = 3 }
-            ) ..
-
-            --------------------------------------------------------------------------------
-            -- Default Global Settings:
-            --------------------------------------------------------------------------------
-            x.DefaultGlobalSettings (
-                x.KnobSensitivity { std = 3, alt = 5 } ..
-                x.JogDialSensitivity { std = 1, alt = 5 } ..
-                x.TrackerballSensitivity { std = 1, alt = 5 } ..
-                x.TrackerballDialSensitivity { std = 1, alt = 5 } ..
-                x.IndependentPanelBanks { enabled = false }
-            ) ..
-
-            --------------------------------------------------------------------------------
-            -- Modes:
-            --------------------------------------------------------------------------------
-            x.Modes (function()
-                local modes = x()
-
-                for _,m in ipairs(mod._modes) do
-                    modes = modes .. m:xml()
-                end
-
-                return modes
-            end) ..
-
-            mod.controls:xml()
-
-        )
-    end
-    return controlsXML
-end
-
---- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
---- Function
---- Writes the Tangent controls.xml File to the User's Application Support folder.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successfully created otherwise `false` if an error occurred.
----  * If an error occurs an error message will also be returned as a string.
-function mod.writeControlsXML()
-    if not mod._writtenControlsXML then
-        --------------------------------------------------------------------------------
-        -- Create folder if it doesn't exist:
-        --------------------------------------------------------------------------------
-        if not doesDirectoryExist(mod.configPath) then
-            --log.df("Tangent Settings folder did not exist, so creating one.")
-            fs.mkdir(mod.configPath)
-        end
-
-        --------------------------------------------------------------------------------
-        -- Copy existing XML files from Application Bundle to local Application Support:
-        --------------------------------------------------------------------------------
-        local _, status = execute(format("cp -a %q/. %q/", mod._pluginPath, mod.configPath))
-        if not status then
-            log.ef("Failed to copy XML files.")
-            return false, "Failed to copy XML files."
-        end
-
-        --------------------------------------------------------------------------------
-        -- Create "controls.xml" file:
-        --------------------------------------------------------------------------------
-        local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
-        if controlsFile then
-            --------------------------------------------------------------------------------
-            -- Write to File & Close:
-            --------------------------------------------------------------------------------
-            io.output(controlsFile)
-            io.write(tostring(mod.getControlsXML()))
-            io.close(controlsFile)
-        else
-            log.ef("Failed to open controls.xml file in write mode")
-            return false, "Failed to open controls.xml file in write mode"
-        end
-
-        --------------------------------------------------------------------------------
-        -- Only write the Controls XML file once per session:
-        --------------------------------------------------------------------------------
-        mod._writtenControlsXML = true
-    end
-end
-
---- plugins.core.tangent.manager.updateControls() -> none
---- Function
---- Update Controls.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.updateControls()
-    --------------------------------------------------------------------------------
-    -- We need to rewrite the Controls XML:
-    --------------------------------------------------------------------------------
-    mod._writtenControlsXML = false
-
-    --------------------------------------------------------------------------------
-    -- Force a disconnection:
-    --------------------------------------------------------------------------------
-    if mod.connected() then
-        mod.connected(false)
-    end
-end
-
---- plugins.core.tangent.manager.addMode(id, name) -> plugins.core.tangent.manager.mode
---- Function
---- Adds a new `mode` with the specified details and returns it.
----
---- Parameters:
---- * id            - The id number of the Mode.
---- * name          - The name of the Mode.
----
---- Returns:
---- * The new `mode`
-function mod.addMode(id, name)
-    local m = mode(id, name, mod)
-    insert(mod._modes, m)
-    sort(mod._modes, function(a,b) return a.id < b.id end)
-    return m
-end
-
---- plugins.core.tangent.manager.getMode(id) -> plugins.core.tangent.manager.mode
---- Function
---- Returns the `mode` with the specified ID, or `nil`.
----
---- Parameters:
---- * id    - The ID to find.
----
---- Returns:
---- * The `mode`, or `nil`.
-function mod.getMode(id)
-    for _,m in ipairs(mod._modes) do
-        if m.id == id then
-            return m
-        end
-    end
-    return nil
-end
-
---- plugins.core.tangent.manager.activeModeID <cp.prop: string>
---- Field
---- The current active mode ID.
-mod.activeModeID = config.prop("tangent.activeModeID")
-
---- plugins.core.tangent.manager.activeMode <cp.prop: mode>
---- Constant
---- Represents the currently active `mode`.
-mod.activeMode = mod.activeModeID:mutate(
-    function(original)
-        local id = original()
-        return id and mod.getMode(id)
-    end,
-    function(newMode, original)
-        local m = mode.is(newMode) and newMode or mod.getMode(newMode)
-        if m then
-            local oldMode = mod._activeMode
-            if oldMode and oldMode._deactivate then
-                oldMode._deactivate()
-            end
-            mod._activeMode = m
-            if m._activate then
-                m._activate()
-            end
-            mod._tangent:sendModeValue(newMode.id)
-            original(newMode.id)
-        else
-            error("Expected a `mode` or a valid mode `ID`: %s", inspect(newMode))
-        end
-    end
-)
-
---- plugins.core.tangent.manager.update() -> none
---- Function
---- Updates the Tangent GUIs.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.update()
-    if mod.connected() then
-        local activeMode = mod.activeMode()
-        if activeMode then
-            mod._tangent:sendModeValue(activeMode.id)
-        end
-    end
-end
+--- plugins.core.tangent.manager.connections -> table
+--- Variable
+--- A table containing all the Tangent connections.
+mod.connections = {}
 
 --- plugins.core.tangent.manager.tangentHubInstalled <cp.prop: boolean>
 --- Variable
 --- Is Tangent Hub Installed?
 mod.tangentHubInstalled = prop(function()
-    return tangent.isTangentHubInstalled()
+    return isTangentHubInstalled()
 end)
 
 --- plugins.core.tangent.manager.tangentMapperInstalled <cp.prop: boolean>
 --- Variable
 --- Is Tangent Mapper Installed?
 mod.tangentMapperInstalled = prop(function()
-    local info = application.infoForBundleID(mod.TANGENT_MAPPER_BUNDLE_ID)
+    local info = infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
     return info ~= nil
 end)
 
@@ -311,258 +61,65 @@ end)
 --- Returns:
 ---  * None
 function mod.launchTangentMapper()
-    application.launchOrFocusByBundleID(mod.TANGENT_MAPPER_BUNDLE_ID)
+    launchOrFocusByBundleID(TANGENT_MAPPER_BUNDLE_ID)
 end
-
---- plugins.core.tangent.manager.disableFinalCutProInTangentHub() -> none
---- Function
---- Disables the Final Cut Pro preset in the Tangent Hub Application.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.disableFinalCutProInTangentHub()
-    if doesDirectoryExist(mod.FCP_KEYPRESS_APPS_PATH) then
-        if doesFileExist(mod.HIDE_FILE_PATH) then
-            --------------------------------------------------------------------------------
-            -- Read existing Hide file:
-            --------------------------------------------------------------------------------
-            local file, errorMessage, errorNumber = io.open(mod.HIDE_FILE_PATH, "r")
-            if file then
-                local fileContents = file:read("*a")
-                file:close()
-                if fileContents and string.match(fileContents, "Final Cut Pro") then
-                    --------------------------------------------------------------------------------
-                    -- Final Cut Pro is already hidden in the Tangent Hub.
-                    --------------------------------------------------------------------------------
-                    --log.df("Final Cut Pro is already disabled in Tangent Hub.")
-                    return
-                else
-                    --------------------------------------------------------------------------------
-                    -- Append Existing Hide File:
-                    --------------------------------------------------------------------------------
-                    local appendFile, errorMessageA, errorNumberA = io.open(mod.HIDE_FILE_PATH, "a")
-                    if appendFile then
-                        appendFile:write("\nFinal Cut Pro")
-                        appendFile:close()
-                    else
-                        log.ef("Failed to append existing Hide File for Tangent Mapper: %s (%s)", errorMessageA, errorNumberA)
-                    end
-                end
-            else
-                log.ef("Failed to read existing Hide File for Tangent Mapper: %s (%s)", errorMessage, errorNumber)
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- Create new Hide File:
-            --------------------------------------------------------------------------------
-            local newFile, errorMessage, errorNumber = io.open(mod.HIDE_FILE_PATH, "w")
-            if newFile then
-                newFile:write("Final Cut Pro")
-                newFile:close()
-            else
-                log.ef("Failed to create new Hide File for Tangent Mapper: %s (%s)", errorMessage, errorNumber)
-            end
-        end
-    end
-end
-
---- plugins.core.tangent.manager.rebuildXML <cp.prop: boolean>
---- Variable
---- Defines whether or not we should rebuild the XML files.
-mod.rebuildXML = config.prop("tangent.rebuildXML", true)
 
 --- plugins.core.tangent.manager.enabled <cp.prop: boolean>
 --- Variable
 --- Enable or disables the Tangent Manager.
 mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
-    if not enabled then
-        mod.rebuildXML(true)
-    end
-end)
-
---- plugins.core.tangent.manager.interrupted <cp.prop: boolean; read-only>
---- Variable
---- If this property is `true` it will temporarily interrupt the Tangent connection, if it is enabled.
---- Other plugins can add interruptions via the `interruptWhen` function.
-mod.interrupted = prop(function()
-    local interrupted = mod._interrupted
-    if interrupted then
-        for _,p in ipairs(interrupted) do
-            if p() then
-                return true
-            end
+    if enabled then
+        local connections = mod.connections
+        for _, c in pairs(connections) do
+            c.connected(true)
         end
-    end
-    return false
-end):watch(function(interrupted)
-    --------------------------------------------------------------------------------
-    -- If Tangent Hub doesn't support focus requests, do it manually:
-    --------------------------------------------------------------------------------
-    if not tangent.supportsFocusRequest() then
-        if interrupted then
-            mod._tangent:disconnect()
-        else
-            --------------------------------------------------------------------------------
-            -- Force Tangent Hub to restart when an interruption is completed so that
-            -- CommandPost regains focus in Tangent Mapper:
-            --------------------------------------------------------------------------------
-            execute("launchctl unload " .. mod.LAUNCH_AGENT_PATH)
-            execute("launchctl load " .. mod.LAUNCH_AGENT_PATH)
-        end
-    end
-end)
-
---- plugins.core.tangent.manager.interruptWhen(aProp) -> nil
---- Function
---- Adds a `cp.prop` that will cause an interruption to the Tangent connection when it is `true`.
----
---- Parameters:
---- * aProp     - The `cp.prop` that may interrupt the connection.
----
---- Returns:
---- * Nothing.
-function mod.interruptWhen(aProp)
-    if not prop.is(aProp) then
-        error(string.format("`aProp` must be a cp.prop, but was a '%s'", type(aProp)))
-    end
-
-    if not mod._interrupted then
-        mod._interrupted = {}
-    end
-
-    insert(mod._interrupted, aProp)
-    aProp:watch(function() mod.interrupted:update() end)
-end
-
---- plugins.core.tangent.manager.connected <cp.prop: boolean>
---- Variable
---- A `cp.prop` that tracks the connection status to the Tangent Hub.
-mod.connected = prop(
-    function()
-        return mod._connectionConfirmed and mod._tangent:connected()
-    end,
-    function(value)
-        if value and not mod._tangent:connected() then
-            --------------------------------------------------------------------------------
-            -- Only rebuild the controls XML when first enabled for faster startup times:
-            --------------------------------------------------------------------------------
-            if mod.rebuildXML() then
-                mod.writeControlsXML()
-                mod.rebuildXML(false)
-            end
-
-            --------------------------------------------------------------------------------
-            -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
-            --------------------------------------------------------------------------------
-            mod.disableFinalCutProInTangentHub()
-
-            --------------------------------------------------------------------------------
-            -- NOTE: If we change Tangent Layout names, we'll need to migrate settings
-            --       across for legacy users.
-            --------------------------------------------------------------------------------
-            --local ok, errorMessage = mod._tangent:connect("Final Cut Pro (via CommandPost)", mod.configPath, nil, "Final Cut Pro")
-
-            local ok, errorMessage = mod._tangent:connect("CommandPost", mod.configPath, nil, "Final Cut Pro")
-            if not ok then
-                log.ef("Failed to start Tangent Support: %s", errorMessage)
-                return false
-            end
-        elseif not value then
-            if mod._tangent:connected() then
-                mod._tangent:disconnect()
-            end
-        end
-    end
-)
-
---- plugins.core.tangent.manager.focusable <cp.prop: boolean; read-only>
---- Variable
---- Is the Tangent connected and supports focus requests?
-mod.focusable = prop.AND(mod.connected, prop(function() return tangent.supportsFocusRequest() end))
-
---- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
---- Variable
---- Is the Tangent Enabled, Not Interrupted, and the Tangent Hub Installed?
-mod.connectable = mod.enabled:AND(mod.tangentHubInstalled):AND(prop.OR(mod.focusable, prop.NOT(mod.interrupted)))
-
--- Tries to reconnect to Tangent Hub when disconnected.
-local ensureConnection = timer.new(1.0, function()
-    mod.connected(true)
-end)
-
---- plugins.core.tangent.manager.requiresConnection <cp.prop: boolean; read-only>
---- Variable
---- Is `true` when the Tangent Manager is both `enabled` but not `connected`.
-mod.requiresConnection = mod.connectable:AND(prop.NOT(mod.connected)):watch(function(required)
-    if required then
-        ensureConnection:start()
     else
-        ensureConnection:stop()
-    end
-end, true)
-
---- plugins.core.tangent.manager.requiresDisconnection <cp.prop: boolean; read-only>
---- Variable
---- Is `true` when the Tangent Manager is both not `enabled` but is `connected`.
-mod.requiresDisconnection = mod.connected:AND(prop.NOT(mod.connectable)):watch(function(required)
-    if required then
-        mod.connected(false)
-    end
-end, true)
-
---- plugins.core.tangent.manager.areMappingsInstalled() -> boolean
---- Function
---- Are mapping files installed?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if mapping files are installed otherwise `false`
-function mod.areMappingsInstalled()
-    return doesFileExist(mod.configPath .. "/controls.xml")
-end
-
--- plugins.core.tangent.manager._test(...) -> boolean
--- Function
--- Secret Test Function.
---
--- Parameters:
---  * ... - Any variables you want to pass along to all_tests.
---
--- Returns:
---  * The result from the test.
-function mod._spec(name)
-    local ok, result = xpcall(function() return require(name .. "_spec") end, debug.traceback)
-    if not ok then
-        ok, result = xpcall(function() return require(name .. "_test") end, debug.traceback)
-        if not ok then
-            error(result)
+        log.df("tangent support is disabled so rebuild xml when next enabled")
+        local connections = mod.connections
+        for _, c in pairs(connections) do
+            c.rebuildXML(true)
         end
     end
-    return result
+end)
+
+--- plugins.core.tangent.manager.newConnection(applicationName, systemPath, userPath, task) -> connection
+--- Function
+--- Creates a new Tangent Connection
+---
+--- Parameters:
+---  * applicationName - Your application name as a string
+---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
+---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
+---  * task - An optional string containing the name of the task associated with the application.
+---         This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+---         This parameter should only be required if the string passed in appStr does not match the Task name that the OS
+---         identifies as your application. Typically, this is only usually required for Plugins which run within a parent
+---         Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
+---  * pluginPath - A string containing the absolute path of the directory that contains the built-in Default Map XML files.
+---  * setupFn - Setup function.
+---  * transportFn - Transport function.
+---
+--- Returns:
+---  * The connection object
+function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, setupFn, transportFn)
+    if not mod.connections[applicationName] then
+        local connection = connection:new(applicationName, systemPath, userPath, task, pluginPath, setupFn, transportFn, mod)
+        mod.connections[applicationName] = connection
+        return connection
+    else
+        log.ef("A Tangent connection with the name '%s' is already registered.", applicationName)
+    end
 end
 
--- A table of all the Tangent connections.
-mod.connections = {}
-
-function mod.newConnection()
-    --------------------------------------------------------------------------------
-    -- This is just hardcoded for now. Eventually each application
-    -- (i.e. Final Cut Pro, Resolve, etc.) will create their own connection.
-    --------------------------------------------------------------------------------
-    mod.connections["CommandPost"] = connection:new("CommandPost", mod.configPath, nil, "Final Cut Pro", mod)
-
-    --------------------------------------------------------------------------------
-    -- This is just a temporary fix whilst I slowly port stuff from this manager
-    -- to the "connection" module:
-    --------------------------------------------------------------------------------
-    mod._tangent = mod.connections["CommandPost"]:device()
-end
-
+--- plugins.core.tangent.manager.getConnection(applicationName) -> connection
+--- Function
+--- Gets a Tangent connection object.
+---
+--- Parameters:
+---  * applicationName - Your application name as a string
+---
+--- Returns:
+---  * The connection object
 function mod.getConnection(applicationName)
     return mod.connections[applicationName]
 end
@@ -571,33 +128,47 @@ local plugin = {
     id          = "core.tangent.manager",
     group       = "core",
     required    = true,
+    dependencies    = {
+        ["core.commands.global"]            = "global",
+    }
 }
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global
+        :add("enableTangent")
+        :whenActivated(function()
+            mod.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :image(tourBoxIcon)
+        :titled("Enable Tangent Panel Support")
 
-function plugin.init(_, env)
-    --------------------------------------------------------------------------------
-    -- Get XML Path:
-    --------------------------------------------------------------------------------
-    mod._pluginPath = env:pathToAbsolute("/defaultmap")
-    mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
+    global
+        :add("disableTangent")
+        :whenActivated(function()
+            mod.enabled(false)
+        end)
+        :groupedBy("commandPost")
+        :image(tourBoxIcon)
+        :titled("Disable Tangent Panel Support")
 
-    --------------------------------------------------------------------------------
-    -- Connect to Tangent Hub:
-    --------------------------------------------------------------------------------
-    mod.newConnection()
+    global
+        :add("toggleTourBox")
+        :whenActivated(function()
+            mod.enabled:toggle()
+        end)
+        :groupedBy("commandPost")
+        :image(tourBoxIcon)
+        :titled("Toggle Tangent Panel Support")
 
-    --------------------------------------------------------------------------------
-    -- Return Module:
-    --------------------------------------------------------------------------------
     return mod
 end
 
 function plugin.postInit()
-    --------------------------------------------------------------------------------
-    -- If enable, start it up straight away:
-    --------------------------------------------------------------------------------
-    if mod.enabled() then
-        mod.connected(true)
-    end
+    mod.enabled:update()
 end
 
 return plugin

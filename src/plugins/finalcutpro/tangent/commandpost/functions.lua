@@ -1,4 +1,4 @@
---- === plugins.core.tangent.commandpost.functions ===
+--- === plugins.finalcutpro.tangent.commandpost.functions ===
 ---
 --- CommandPost Functions for Tangent.
 
@@ -7,16 +7,16 @@ local require = require
 local i18n = require("cp.i18n")
 
 local plugin = {
-    id = "core.tangent.commandpost.functions",
-    group = "core",
+    id = "finalcutpro.tangent.commandpost.functions",
+    group = "finalcutpro",
     dependencies = {
-        ["core.tangent.commandpost"] = "cpGroup",
-        ["core.console"] = "coreConsole",
-        ["core.helpandsupport.developerguide"] = "developerguide",
-        ["core.helpandsupport.feedback"] = "feedback",
-        ["core.helpandsupport.userguide"] = "userguide",
-        ["core.preferences.manager"] = "prefsMan",
-        ["core.watchfolders.manager"] = "watchfolders",
+        ["finalcutpro.tangent.commandpost"]         = "cpGroup",
+        ["core.console"]                            = "coreConsole",
+        ["core.helpandsupport.developerguide"]      = "developerguide",
+        ["core.helpandsupport.feedback"]            = "feedback",
+        ["core.helpandsupport.userguide"]           = "userguide",
+        ["core.preferences.manager"]                = "prefsMan",
+        ["core.watchfolders.manager"]               = "watchfolders",
     }
 }
 

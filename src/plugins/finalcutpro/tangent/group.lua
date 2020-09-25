@@ -11,13 +11,12 @@ local plugin = {
     id = "finalcutpro.tangent.group",
     group = "finalcutpro",
     dependencies = {
-        ["core.tangent.manager"] = "tangentManager",
+        ["finalcutpro.tangent.manager"] = "tangentManager",
     }
 }
 
 function plugin.init(deps)
-    local tangentManager = deps.tangentManager
-    local connection = tangentManager.getConnection("CommandPost")
+    local connection = deps.tangentManager
     local fcpGroup = connection.controls:group(i18n("finalCutPro"))
 
     fcp.isFrontmost:watch(function(value)

@@ -4,20 +4,18 @@
 
 local require = require
 
-local i18n = require("cp.i18n")
-
+local i18n = require "cp.i18n"
 
 local plugin = {
     id = "finalcutpro.tangent.os",
     group = "finalcutpro",
     dependencies = {
-        ["core.tangent.manager"] = "tangentManager",
+        ["finalcutpro.tangent.manager"] = "tangentManager",
     }
 }
 
 function plugin.init(deps)
-    local tangentManager = deps.tangentManager
-    local connection = tangentManager.getConnection("CommandPost")
+    local connection = deps.tangentManager
     return connection.controls:group(i18n("macOS"))
 end
 

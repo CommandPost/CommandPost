@@ -2,25 +2,27 @@
 ---
 --- Tangent Favourites.
 
-local require = require
+local require                   = require
 
-local log         = require "hs.logger".new "tng_favs"
+local log                       = require "hs.logger".new "tng_favs"
 
-local fs          = require "hs.fs"
-local inspect     = require "hs.inspect"
-local json        = require "hs.json"
+local fs                        = require "hs.fs"
+local inspect                   = require "hs.inspect"
+local json                      = require "hs.json"
 
-local tools       = require "cp.tools"
-local i18n        = require "cp.i18n"
+local tools                     = require "cp.tools"
+local i18n                      = require "cp.i18n"
 
-local moses       = require "moses"
+local moses                     = require "moses"
+
+local doesDirectoryExist        = tools.doesDirectoryExist
 
 local mod = {}
 
 -- FAVOURITES_FILE -> number
 -- Constant
 -- Favourites File Name.
-local FAVOURITES_FILE = "Default.cpTangent"
+local FAVOURITES_FILE = "Final Cut Pro.cpTangent"
 
 -- plugins.core.tangent.commandpost.favourites.ID -> number
 -- Constant
@@ -51,7 +53,7 @@ function mod.init(tangentManager, actionManager, cpGroup)
 
     mod._group = cpGroup:group(i18n("favourites"))
 
-    mod.updateControls()
+    mod.updateControls(true)
 end
 
 --- plugins.core.tangent.commandpost.favourites.updateControls() -> none
@@ -63,7 +65,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.updateControls()
+function mod.updateControls(firstLoad)
 
     local max = mod.MAX_ITEMS
     local group = mod._group
@@ -97,7 +99,10 @@ function mod.updateControls()
     --------------------------------------------------------------------------------
     -- Ensure the new controls are sent to Tangent Mapper:
     --------------------------------------------------------------------------------
-    mod._tangentManager.updateControls()
+    if not firstLoad then
+        log.df("reloading xml because of tangent favourites")
+        mod._tangentManager:updateControls()
+    end
 end
 
 -- loadFromFile() -> table
@@ -113,7 +118,7 @@ local function loadFromFile()
     --------------------------------------------------------------------------------
     -- Create folder if it doesn't exist:
     --------------------------------------------------------------------------------
-    local configPath = mod._tangentManager.configPath
+    local configPath = mod._tangentManager:systemPath()
     local filePath = configPath .. "/" .. FAVOURITES_FILE
 
     if not tools.doesFileExist(filePath) then
@@ -156,8 +161,8 @@ local function saveToFile(favourites)
     --------------------------------------------------------------------------------
     -- Create folder if it doesn't exist:
     --------------------------------------------------------------------------------
-    local configPath = mod._tangentManager.configPath
-    if not tools.doesDirectoryExist(configPath) then
+    local configPath = mod._tangentManager:systemPath()
+    if not doesDirectoryExist(configPath) then
         fs.mkdir(configPath)
     end
 
@@ -257,9 +262,9 @@ local plugin = {
     id = "core.tangent.commandpost.favourites",
     group = "core",
     dependencies = {
-        ["core.tangent.manager"]        = "tangentManager",
-        ["core.tangent.commandpost"]    = "cpGroup",
-        ["core.action.manager"]         = "actionManager",
+        ["finalcutpro.tangent.manager"]         = "tangentManager",
+        ["finalcutpro.tangent.commandpost"]     = "cpGroup",
+        ["core.action.manager"]                 = "actionManager",
     }
 }
 
