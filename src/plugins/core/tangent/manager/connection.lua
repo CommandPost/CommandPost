@@ -54,12 +54,14 @@ function connection:setupTangentConnection()
             --------------------------------------------------------------------------------
             -- InitiateComms:
             --------------------------------------------------------------------------------
+            --[[
             log.df("InitiateComms Received:")
             log.df("    Protocol Revision: %s", metadata.protocolRev)
             log.df("    Number of Panels: %s", metadata.numberOfPanels)
             for _, v in pairs(metadata.panels) do
                 log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
             end
+            --]]
 
             --------------------------------------------------------------------------------
             -- Display CommandPost Version on Tangent Screen:
