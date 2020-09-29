@@ -123,9 +123,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Timeline Scroll:
     --------------------------------------------------------------------------------
+    local contents = fcp.timeline.contents
     local updateTimelineScrollValue
     local updateTimelineScroll = deferred.new(0.01):action(function()
-        fcp.timeline.contents.horizontalScrollBar:value(tonumber(updateTimelineScrollValue))
+        contents:shiftHorizontalTo(updateTimelineScrollValue)
     end)
     manager.controls:new("horizontalTimelineScroll", {
         group = "fcpx",
