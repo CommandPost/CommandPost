@@ -1386,7 +1386,6 @@ end
 ---      * `controlID` - A `string` with the control's custom identifier.
 ---    * `customActionOff` - A custom action button has been released.
 ---      * `controlID` - A `string` with the control's custom identifier.
-
 function mod.mt:handle(messageID, handlerFn)
     local cmdHandlers = self._handlers[messageID]
     if not cmdHandlers then

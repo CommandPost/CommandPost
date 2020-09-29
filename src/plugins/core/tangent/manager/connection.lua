@@ -521,10 +521,11 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
                 --------------------------------------------------------------------------------
                 -- Only rebuild the controls XML when first enabled for faster startup times:
                 --------------------------------------------------------------------------------
-                if self.rebuildXML() then
+                -- TODO: This is just temporarily commented out for development.
+                --if self.rebuildXML() then
                     self:writeControlsXML()
                     self.rebuildXML(false)
-                end
+                --end
 
                 --------------------------------------------------------------------------------
                 -- Run any setup functions (such as disable "Final Cut Pro" in Tangent Hub):
