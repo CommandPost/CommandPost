@@ -2,23 +2,28 @@
 ---
 --- Tangent Preferences Panel
 
-local require = require
+local require                   = require
 
-local log           = require "hs.logger".new "tangentPref"
+local log                       = require "hs.logger".new "tangentPref"
 
-local dialog        = require "hs.dialog"
-local image         = require "hs.image"
-local timer         = require "hs.timer"
+local application               = require "hs.application"
+local dialog                    = require "hs.dialog"
+local image                     = require "hs.image"
+local timer                     = require "hs.timer"
 
-local config        = require "cp.config"
-local html          = require "cp.web.html"
-local i18n          = require "cp.i18n"
-local tools         = require "cp.tools"
+local config                    = require "cp.config"
+local html                      = require "cp.web.html"
+local i18n                      = require "cp.i18n"
+local tools                     = require "cp.tools"
 
-local moses         = require "moses"
+local moses                     = require "moses"
 
-local doAfter       = timer.doAfter
-local escapeTilda   = tools.escapeTilda
+local chooseFileOrFolder        = dialog.chooseFileOrFolder
+local doAfter                   = timer.doAfter
+local escapeTilda               = tools.escapeTilda
+local infoForBundlePath         = application.infoForBundlePath
+local spairs                    = tools.spairs
+local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
@@ -73,7 +78,7 @@ local function generateContent()
         displayNames            = mod._tangentManager.displayNames(),
         webviewLabel            = mod._prefsManager.getLabel(),
         maxItems                = mod._tangentManager.NUMBER_OF_FAVOURITES,
-        --favourites              = mod._favourites.favourites(),
+        spairs                  = spairs,
         none                    = i18n("none"),
         i18n                    = i18n,
     }
@@ -141,8 +146,26 @@ local function tangentPanelCallback(id, params)
             connection.enabled(enabled)
         elseif params["type"] == "changeApplication" then
             local app = params.application
-            mod.lastApplication(app)
-            updateUI()
+            if app == "Add Application" then
+                local files = chooseFileOrFolder(i18n("pleaseSelectAnApplication") .. ":", "/Applications", true, false, false, {"app"}, false)
+                if files then
+                    local path = files["1"]
+                    local info = path and infoForBundlePath(path)
+                    local displayName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+                    local bundleExecutable = info and info.CFBundleExecutable
+                    if displayName and bundleExecutable then
+                        -- TODO: This needs to be finished:
+                        log.df("adding displayName: %s, bundleExecutable: %s", displayName, bundleExecutable)
+                    else
+                        webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
+                        log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleExecutable: '%s'\ndisplayName: '%s'",path, bundleExecutable, displayName)
+                    end
+                    updateUI()
+                end
+            else
+                mod.lastApplication(app)
+                updateUI()
+            end
         elseif params["type"] == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
@@ -293,7 +316,7 @@ function mod.init(deps, env)
                 label = i18n("enableTangentPanelSupport"),
                 onchange = function(_, params)
                     if params.checked and not mod._tangentManager.tangentHubInstalled() then
-                        dialog.webviewAlert(mod._prefsManager.getWebview(), function()
+                        webviewAlert(mod._prefsManager.getWebview(), function()
                             mod._tangentManager.enabled(false)
                             mod._prefsManager.injectScript([[
                                 document.getElementById("enableTangentSupport").checked = false;
@@ -318,7 +341,7 @@ function mod.init(deps, env)
                     if mod._tangentManager.tangentMapperInstalled() then
                         mod._tangentManager.launchTangentMapper()
                     else
-                        dialog.webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
+                        webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
                     end
                 end,
                 class = "tangentButtonOne",

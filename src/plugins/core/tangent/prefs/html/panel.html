@@ -83,12 +83,15 @@
 		<th style="width: 150px;">
 			<select id="application" style="width: 150px;" onchange="changeApplication()">
 				{%
-				for id, displayName in pairs(displayNames) do
+
+				for id, displayName in spairs(displayNames, function(t,a,b) return t[a] < t[b] end) do
 				%}
 				<option value="{{ id }}">{{ displayName }}</option>
 				{%
 				end
 				%}
+				<option disabled>──────────</option>
+				<option value="Add Application">{{ i18n("addApplication") }}</option>
 			</select>
 		</th>
 		<th style="width: 20px;"></th>
