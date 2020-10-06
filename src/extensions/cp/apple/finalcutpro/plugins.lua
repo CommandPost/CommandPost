@@ -13,12 +13,12 @@ local hs                        = hs
 
 local log                       = require "hs.logger".new "scan"
 
-local audiounit                 = require "hs.audiounit"
 local fnutils                   = require "hs.fnutils"
 local fs                        = require "hs.fs"
-local plist                     = require "hs.plist"
 local notify                    = require "hs.notify"
 local pathwatcher               = require "hs.pathwatcher"
+local plist                     = require "hs.plist"
+local sound                     = require "hs.sound"
 
 local archiver                  = require "cp.plist.archiver"
 local config                    = require "cp.config"
@@ -41,6 +41,7 @@ local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local getAudioEffectNames       = sound.getAudioEffectNames
 local getFilenameFromPath       = tools.getFilenameFromPath
 local getLocalizedName          = localized.getLocalizedName
 local insert                    = table.insert
@@ -343,7 +344,7 @@ function mod.mt:scanSystemAudioUnits(locale)
     --------------------------------------------------------------------------------
     -- Get the full list of Audio Unit Effects:
     --------------------------------------------------------------------------------
-    local effects = audiounit.getAudioEffectNames()
+    local effects = getAudioEffectNames()
     local audioEffect = PLUGIN_TYPES.audioEffect
 
     if effects and next(effects) ~= nil then
