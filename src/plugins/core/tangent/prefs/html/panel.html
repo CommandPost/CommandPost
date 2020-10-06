@@ -1,6 +1,50 @@
 <style>{(css/tangent.css)}</style>
 <script>
-	function pressTangetActionButton(buttonID){
+	function updateUI(){
+		try {
+			var result = {
+				id: "tangentPanelCallback",
+				params: {
+					type: "updateUI",
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeEnabled(){
+		try {
+			var result = {
+				id: "tangentPanelCallback",
+				params: {
+					type: "changeEnabled",
+					enabled: document.getElementById("enabled").checked
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function changeApplication(){
+		try {
+			var result = {
+				id: "tangentPanelCallback",
+				params: {
+					type: "changeApplication",
+					application: document.getElementById("application").value,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function pressAction(buttonID){
 		try {
 			var result = {
 				id: "tangentPanelCallback",
@@ -15,7 +59,7 @@
 		}
 	}
 
-	function pressTangetClearButton(buttonID){
+	function pressClear(buttonID){
 		try {
 			var result = {
 				id: "tangentPanelCallback",
@@ -29,9 +73,66 @@
 			alertErrorMessage(err);
 		}
 	}
-
-	function setTangentAction(buttonID, value) {
-		document.getElementById("tangent_button" + buttonID + "_action").value = value;
-	}
 </script>
-{(html/controls.html, context)}
+<table style="text-align: left; vertical-align: text-bottom; margin-top: 10px;">
+	<tr>
+		<th style="width: 15px;"></th>
+		<th style="width: 80px;">
+			<span style="font-weight:normal; font-size:13px;">{{ i18n("application") }}: </span>
+		</th>
+		<th style="width: 150px;">
+			<select id="application" style="width: 150px;" onchange="changeApplication()">
+				{%
+				for id, displayName in pairs(displayNames) do
+				%}
+				<option value="{{ id }}">{{ displayName }}</option>
+				{%
+				end
+				%}
+			</select>
+		</th>
+		<th style="width: 20px;"></th>
+		<th style="width: 120px;">
+			<input type="checkbox" value="enabled" id="enabled" onchange="changeEnabled()">
+			<label for="enabled" style="vertical-align:middle">
+				<span style="font-weight:normal; font-size:13px; padding-left:5px;">Enabled</span>
+			</label>
+		</th>
+	</tr>
+</table>
+<div id="tangentControls" class="uiItem">
+	<div id="tangentGroup" class="tangentGroup">
+		<table class="tangent">
+			<thead>
+				<tr>
+					<th class="tangentRowFavourite">{{ i18n("identification") }}</th>
+					<th class="tangentRowAction">{{ i18n("action") }}</th>
+					<th class="tangentRowActionButton"></th>
+				</tr>
+			</thead>
+			<tbody>
+			{%
+				for i=1,maxItems,1 do
+			%}
+				<tr>
+					<td class="tangentRowFavourite">
+						{{ i18n("tangent") }} {{ i18n("favourite") }} #{{ i }}
+					</td>
+					<td class="tangentRowAction">
+						<input type="text" id="label_{{ i }}" class="tangentActionTextbox" value="{{ none }}" disabled>
+					</td>
+					<td class="tangentRowActionButton">
+						<a href="#" class="button tangentActionButton" onclick="pressAction('{{ i }}')">{{ i18n("select") }}</a>
+						<a href="#" class="button tangentActionButton" onclick="pressClear('{{ i }}')">{{ i18n("clear") }}</a>
+					</td>
+				</tr>
+			{%
+				end
+			%}
+			</tbody>
+		</table>
+	</div>
+</div>
+<script>
+	updateUI();
+</script>

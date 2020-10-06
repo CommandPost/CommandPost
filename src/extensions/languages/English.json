@@ -1903,6 +1903,7 @@
         "tangentPanelSupport": "Tangent Panel Support",
         "tangentPanelTooltip": "Tangent Preferences",
         "tangentPreferencesInfo": "CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong> & <strong>Wave2</strong>, <strong>Ripple</strong>, <strong>Arc</strong>, <strong>CP-200</strong>, the <strong>Element-Vs iPad</strong> & <strong>Android</strong> app, as well as any future panels that Tangent releases.",
+        "tangentTip": "To get full functionality CommandPost requires Tangent Hub v1.6.4 or newer.",
         "temperature": "Temperature",
         "temperature4": "Temp",
         "ten": "10",

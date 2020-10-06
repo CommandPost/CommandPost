@@ -10,7 +10,7 @@ local plugin = {
     id = "finalcutpro.tangent.commandpost.functions",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.tangent.commandpost"]         = "cpGroup",
+        ["finalcutpro.tangent.manager"]             = "tangentManager",
         ["core.console"]                            = "coreConsole",
         ["core.helpandsupport.developerguide"]      = "developerguide",
         ["core.helpandsupport.feedback"]            = "feedback",
@@ -22,7 +22,8 @@ local plugin = {
 
 function plugin.init(deps)
 
-    local group = deps.cpGroup:group(i18n("functions"))
+    local cpGroup = deps.tangentManager.commandPostGroup
+    local group = cpGroup:group(i18n("functions"))
     local id = 0x0AF00001
 
     --------------------------------------------------------------------------------

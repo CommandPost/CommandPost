@@ -8,13 +8,16 @@ local log           = require "hs.logger".new "tangentPref"
 
 local dialog        = require "hs.dialog"
 local image         = require "hs.image"
+local timer         = require "hs.timer"
 
+local config        = require "cp.config"
 local html          = require "cp.web.html"
 local i18n          = require "cp.i18n"
 local tools         = require "cp.tools"
 
 local moses         = require "moses"
 
+local doAfter       = timer.doAfter
 local escapeTilda   = tools.escapeTilda
 
 local mod = {}
@@ -28,6 +31,11 @@ local TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 -- Constant
 -- URL to download Tangent Hub Application.
 local DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
+
+--- plugins.core.tangent.prefs.lastApplication <cp.prop: string>
+--- Field
+--- Last Application used in the Preferences Panel.
+mod.lastApplication = config.prop("tangent.preferences.lastApplication", "Final Cut Pro (via CommandPost)")
 
 -- renderPanel(context) -> none
 -- Function
@@ -62,13 +70,53 @@ end
 local function generateContent()
     local context = {
         _                       = moses,
+        displayNames            = mod._tangentManager.displayNames(),
         webviewLabel            = mod._prefsManager.getLabel(),
-        maxItems                = mod._favourites.MAX_ITEMS,
-        favourites              = mod._favourites.favourites(),
+        maxItems                = mod._tangentManager.NUMBER_OF_FAVOURITES,
+        --favourites              = mod._favourites.favourites(),
         none                    = i18n("none"),
         i18n                    = i18n,
     }
     return renderPanel(context)
+end
+
+-- updateUI() -> none
+-- Function
+-- Updates the preferences panel user interface.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function updateUI()
+    local script = ""
+    local lastApplication = mod.lastApplication()
+    local connection = mod._tangentManager.getConnection(lastApplication)
+
+    local max = mod._tangentManager.NUMBER_OF_FAVOURITES
+
+    local enabled = connection.enabled()
+
+    script = script .. [[changeValueByID('application', `]] .. escapeTilda(lastApplication) .. [[`);]]
+
+    script = script .. [[changeCheckedByID('enabled', ]] .. tostring(enabled) .. [[);]]
+
+    local faves = connection.favourites()
+
+    for i = 1, max do
+        local fave = faves[tostring(i)]
+        if fave then
+            local actionTitle = fave.actionTitle
+            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+        else
+            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+        end
+    end
+
+    local injectScript = mod._prefsManager.injectScript
+
+    injectScript(script)
 end
 
 -- tangentPanelCallback() -> none
@@ -84,8 +132,18 @@ end
 local function tangentPanelCallback(id, params)
     local injectScript = mod._prefsManager.injectScript
     if params and params["type"] then
-        if params["type"] == "updateAction" then
-
+        if params["type"] == "updateUI" then
+            updateUI()
+        elseif params["type"] == "changeEnabled" then
+            local enabled = params.enabled
+            local lastApplication = mod.lastApplication()
+            local connection = mod._tangentManager.getConnection(lastApplication)
+            connection.enabled(enabled)
+        elseif params["type"] == "changeApplication" then
+            local app = params.application
+            mod.lastApplication(app)
+            updateUI()
+        elseif params["type"] == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
@@ -100,7 +158,6 @@ local function tangentPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             mod.activator:onActivate(function(handler, action, text)
-
                     --------------------------------------------------------------------------------
                     -- Process Stylised Text:
                     --------------------------------------------------------------------------------
@@ -112,8 +169,26 @@ local function tangentPanelCallback(id, params)
 
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
-                    mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
-                    injectScript("setTangentAction(" .. buttonID .. ", `" .. escapeTilda(actionTitle) .. "`)")
+
+                    local lastApplication = mod.lastApplication()
+                    local connection = mod._tangentManager.getConnection(lastApplication)
+                    local faves = connection.favourites()
+
+                    faves[tostring(buttonID)] = {
+                        actionTitle = actionTitle,
+                        handlerID = handlerID,
+                        action = action,
+                    }
+
+                    connection.favourites(faves)
+
+                    --------------------------------------------------------------------------------
+                    -- Add a slight delay to give the UI time to update before we rebuild the
+                    -- Tangent XML files:
+                    --------------------------------------------------------------------------------
+                    doAfter(0.5, function() connection:updateControls() end)
+
+                    updateUI()
                 end)
 
             --------------------------------------------------------------------------------
@@ -128,9 +203,19 @@ local function tangentPanelCallback(id, params)
             mod.activator:show()
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
-            mod._favourites.clearAction(buttonID)
-            injectScript("setTangentAction(" .. buttonID .. ", '" .. i18n("none") .. "')")
+            local lastApplication = mod.lastApplication()
+            local connection = mod._tangentManager.getConnection(lastApplication)
+            local faves = connection.favourites()
+            faves[tostring(buttonID)] = nil
+            connection.favourites(faves)
 
+            --------------------------------------------------------------------------------
+            -- Add a slight delay to give the UI time to update before we rebuild the
+            -- Tangent XML files:
+            --------------------------------------------------------------------------------
+            doAfter(0.5, function() connection:updateControls() end)
+
+            updateUI()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -157,7 +242,6 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod._actionManager  = deps.actionManager
     mod._appmanager     = deps.appManager
-    mod._favourites     = deps.favourites
     mod._prefsManager   = deps.prefsManager
     mod._tangentManager = deps.tangentManager
     mod._env            = env
@@ -171,7 +255,7 @@ function mod.init(deps, env)
         label       = i18n("tangentPanelLabel"),
         image       = image.imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 750,
+        height      = 830,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {
@@ -198,7 +282,9 @@ function mod.init(deps, env)
         ]], true))
         :addHeading(2, i18n("tangentPanelSupport"))
         :addParagraph(3, i18n("tangentPreferencesInfo"), false)
-        :addParagraph(3.2, html.br())
+        :addParagraph(3.1, html.br())
+        :addParagraph(3.2, html.span {class="tip"} (html(i18n("tangentTip"), false) ) .. "\n\n")
+        :addParagraph(3.3, html.br())
         --------------------------------------------------------------------------------
         -- Enable Tangent Support:
         --------------------------------------------------------------------------------
@@ -274,7 +360,6 @@ function mod.init(deps, env)
         :addHandler("onchange", "tangentPanelCallback", tangentPanelCallback)
 
     return mod
-
 end
 
 local plugin = {
@@ -283,7 +368,6 @@ local plugin = {
     dependencies    = {
         ["core.controlsurfaces.manager"]        = "prefsManager",
         ["core.tangent.manager"]                = "tangentManager",
-        ["core.tangent.commandpost.favourites"] = "favourites",
         ["core.action.manager"]                 = "actionManager",
         ["core.application.manager"]            = "appManager",
     }

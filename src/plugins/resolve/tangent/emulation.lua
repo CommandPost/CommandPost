@@ -31,13 +31,12 @@ function plugin.init(deps)
     local tangentManager = deps.tangentManager
 
     --------------------------------------------------------------------------------
-    -- Commands:
+    -- Request/Release Tangent Control:
     --------------------------------------------------------------------------------
     local global = deps.global
     global
         :add("requestFocus")
         :whenActivated(function()
-            log.df("REQUESTING FOCUS")
             tangentManager:device():pluginRequestFocus()
         end)
         :titled("Request DaVinci Resolve Tangent Control")
@@ -45,7 +44,6 @@ function plugin.init(deps)
     global
         :add("releaseFocus")
         :whenActivated(function()
-            log.df("RELEASING FOCUS")
             tangentManager:device():pluginReleaseFocus()
         end)
         :titled("Release DaVinci Resolve Tangent Control")

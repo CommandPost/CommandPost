@@ -31,6 +31,11 @@ local mod = {}
 -- Tangent Mapper Bundle ID.
 local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 
+--- plugins.core.tangent.manager.NUMBER_OF_FAVOURITES -> number
+--- Constant
+--- Maximum number of favourites.
+mod.NUMBER_OF_FAVOURITES = 50
+
 --- plugins.core.tangent.manager.connections -> table
 --- Variable
 --- A table containing all the Tangent connections.
@@ -74,7 +79,6 @@ mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
             c.connected(true)
         end
     else
-        log.df("tangent support is disabled so rebuild xml when next enabled")
         local connections = mod.connections
         for _, c in pairs(connections) do
             c.rebuildXML(true)
@@ -87,7 +91,8 @@ end)
 --- Creates a new Tangent Connection
 ---
 --- Parameters:
----  * applicationName - Your application name as a string
+---  * applicationName - The application name as a string. This is what appears in Tangent Mapper.
+---  * displayName - The application display name as a string. This is what appears in CommandPost.
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
@@ -101,9 +106,9 @@ end)
 ---
 --- Returns:
 ---  * The connection object
-function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, setupFn, transportFn)
+function mod.newConnection(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn)
     if not mod.connections[applicationName] then
-        local connection = connection:new(applicationName, systemPath, userPath, task, pluginPath, setupFn, transportFn, mod)
+        local connection = connection:new(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn, mod)
         mod.connections[applicationName] = connection
         return connection
     else
@@ -122,6 +127,24 @@ end
 ---  * The connection object
 function mod.getConnection(applicationName)
     return mod.connections[applicationName]
+end
+
+--- plugins.core.tangent.manager.displayNames() -> table
+--- Function
+--- Gets a table listing all the connections application and display names.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table where the application name is the key, and display name is the value.
+function mod.displayNames()
+    local displayNames = {}
+    local connections = mod.connections
+    for id, connection in pairs(connections) do
+        displayNames[id] = connection:displayName()
+    end
+    return displayNames
 end
 
 local plugin = {

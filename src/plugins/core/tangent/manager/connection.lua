@@ -14,7 +14,9 @@ local tangent               = require "hs.tangent"
 local timer                 = require "hs.timer"
 
 local config                = require "cp.config"
+local i18n                  = require "cp.i18n"
 local is                    = require "cp.is"
+local json                  = require "cp.json"
 local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
 local x                     = require "cp.web.xml"
@@ -36,8 +38,13 @@ local sort                  = table.sort
 
 local connection = class "core.tangent.manager.Connection"
 
---- plugins.core.tangent.manager.connection.setupTangentConnection() -> hs.tangent
---- Function
+-- FAVOURITE_START_ID -> number
+-- Constant
+-- The starting ID for Favourites.
+local FAVOURITE_START_ID = 0x0ACF0000
+
+--- plugins.core.tangent.manager.connection:setupTangentConnection() -> hs.tangent
+--- Method
 --- Sets up a new Tangent Connection.
 ---
 --- Parameters:
@@ -188,13 +195,13 @@ function connection:setupTangentConnection()
         end,
 
         [tangent.fromHub.connected] = function(metadata)
-            log.df("Connection to Tangent Hub (%s:%s) successfully established for %s.", metadata.ipAddress, metadata.port, self:applicationName())
+            log.df("Connection to Tangent Hub (%s:%s) successfully established for %s.", metadata.ipAddress, metadata.port, self:displayName())
             self._connectionConfirmed = true
             self.connected:update()
         end,
 
         [tangent.fromHub.disconnected] = function(metadata)
-            log.df("Connection to Tangent Hub (%s:%s) closed for %s.", metadata.ipAddress, metadata.port, self:applicationName())
+            log.df("Connection to Tangent Hub (%s:%s) closed for %s.", metadata.ipAddress, metadata.port, self:displayName())
             self._connectionConfirmed = false
             self.connected:update()
         end,
@@ -210,8 +217,51 @@ function connection:setupTangentConnection()
     return t
 end
 
---- plugins.core.tangent.manager.connection.writeControlsXML() -> boolean, string
---- Function
+--- plugins.core.tangent.manager.connection:updateFavourites() -> boolean, string
+--- Method
+--- Updates the Favourites.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function connection:updateFavourites()
+    --------------------------------------------------------------------------------
+    -- Reset the Favourites Group:
+    --------------------------------------------------------------------------------
+    local group = self.favouritesGroup
+    group:reset()
+
+    --------------------------------------------------------------------------------
+    -- Re-populate the favourites:
+    --------------------------------------------------------------------------------
+    local faves = self.favourites()
+    local max = self.manager.NUMBER_OF_FAVOURITES
+    local id = FAVOURITE_START_ID
+    for i = 1, max do
+        local fave = faves[tostring(i)]
+        if fave then
+            local actionId = id + i
+            group
+                :action(actionId)
+                :name(fave.actionTitle)
+                :onPress(function()
+                    local handler = mod._actionManager.getHandler(fave.handlerID)
+                    if handler then
+                        if not handler:execute(fave.action) then
+                            log.wf("Unable to execute Tangent Favourite #%s: %s", i, inspect(fave))
+                        end
+                    else
+                        log.wf("Unable to find handler to execute Tangent Favourite #%s: %s", i, inspect(fave))
+                    end
+                end)
+        end
+    end
+end
+
+--- plugins.core.tangent.manager.connection:writeControlsXML() -> boolean, string
+--- Method
 --- Writes the Tangent controls.xml File to the User's Application Support folder.
 ---
 --- Parameters:
@@ -221,7 +271,12 @@ end
 ---  * `true` if successfully created otherwise `false` if an error occurred.
 ---  * If an error occurs an error message will also be returned as a string.
 function connection:writeControlsXML()
-    log.df("Writing Tangent Control XML for %s", self:applicationName())
+    log.df("Writing Tangent Control XML for %s", self:displayName())
+
+    --------------------------------------------------------------------------------
+    -- Update Favourites:
+    --------------------------------------------------------------------------------
+    self:updateFavourites()
 
     local systemPath = self:systemPath()
     local pluginPath = self:pluginPath()
@@ -261,8 +316,8 @@ function connection:writeControlsXML()
     end
 end
 
---- plugins.core.tangent.manager.connection.getControlsXML() -> string
---- Function
+--- plugins.core.tangent.manager.connection:getControlsXML() -> string
+--- Method
 --- Gets the controls XML.
 ---
 --- Parameters:
@@ -313,8 +368,8 @@ function connection:getControlsXML()
     return self._controlsXML
 end
 
---- plugins.core.tangent.manager.connection.systemPath() -> string | nil
---- Function
+--- plugins.core.tangent.manager.connection:systemPath() -> string | nil
+--- Method
 --- Gets the system path.
 ---
 --- Parameters:
@@ -326,8 +381,8 @@ function connection:systemPath()
     return self._systemPath
 end
 
---- plugins.core.tangent.manager.connection.applicationName() -> string | nil
---- Function
+--- plugins.core.tangent.manager.connection:applicationName() -> string | nil
+--- Method
 --- Gets the application name.
 ---
 --- Parameters:
@@ -339,8 +394,8 @@ function connection:applicationName()
     return self._applicationName
 end
 
---- plugins.core.tangent.manager.connection.userPath() -> string | nil
---- Function
+--- plugins.core.tangent.manager.connection:userPath() -> string | nil
+--- Method
 --- Gets the user path.
 ---
 --- Parameters:
@@ -352,8 +407,8 @@ function connection:userPath()
     return self._userPath
 end
 
---- plugins.core.tangent.manager.connection.task() -> string | nil
---- Function
+--- plugins.core.tangent.manager.connection:task() -> string | nil
+--- Method
 --- Gets the task.
 ---
 --- Parameters:
@@ -365,8 +420,8 @@ function connection:task()
     return self._task
 end
 
---- plugins.core.tangent.manager.connection.pluginPath() -> string | nil
---- Function
+--- plugins.core.tangent.manager.connection:pluginPath() -> string | nil
+--- Method
 --- Gets the plugin path.
 ---
 --- Parameters:
@@ -378,8 +433,8 @@ function connection:pluginPath()
     return self._pluginPath
 end
 
---- plugins.core.tangent.manager.connection.addMode(id, name) -> plugins.core.tangent.manager.mode
---- Function
+--- plugins.core.tangent.manager.connection:addMode(id, name) -> plugins.core.tangent.manager.mode
+--- Method
 --- Adds a new `mode` with the specified details and returns it.
 ---
 --- Parameters:
@@ -395,8 +450,8 @@ function connection:addMode(id, name)
     return m
 end
 
---- plugins.core.tangent.manager.connection.getMode(id) -> plugins.core.tangent.manager.mode
---- Function
+--- plugins.core.tangent.manager.connection:getMode(id) -> plugins.core.tangent.manager.mode
+--- Method
 --- Returns the `mode` with the specified ID, or `nil`.
 ---
 --- Parameters:
@@ -413,8 +468,8 @@ function connection:getMode(id)
     return nil
 end
 
---- plugins.core.tangent.manager.connection.updateControls() -> none
---- Function
+--- plugins.core.tangent.manager.connection:updateControls() -> none
+--- Method
 --- Update Controls.
 ---
 --- Parameters:
@@ -442,7 +497,8 @@ end
 --- Creates a new `Mode` instance.
 ---
 --- Parameters:
----  * applicationName - Your application name as a string
+---  * applicationName - The application name as a string. This is what appears in Tangent Mapper.
+---  * displayName - The application display name as a string. This is what appears in CommandPost.
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
@@ -454,8 +510,9 @@ end
 ---
 --- Returns:
 ---  *
-function connection:initialize(applicationName, systemPath, userPath, task, pluginPath, setupFn, transportFn, manager)
+function connection:initialize(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn, manager)
     self._applicationName       = applicationName
+    self._displayName           = displayName
     self._systemPath            = systemPath
     self._userPath              = userPath
     self._task                  = task
@@ -476,6 +533,21 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
     --- Field
     --- The current active mode ID.
     self.activeModeID = config.prop("tangent.activeMode." .. applicationName)
+
+    --- plugins.core.tangent.manager.connection.enabled <cp.prop: boolean>
+    --- Field
+    --- Whether or not the connection is enabled or disabled.
+    self.enabled = config.prop("tangent.enabled." .. applicationName, true)
+
+    --- plugins.core.tangent.manager.connection.commandPostGroup -> Group
+    --- Field
+    --- CommandPost Group
+    self.commandPostGroup = self.controls:group(i18n("appName"))
+
+    --- plugins.core.tangent.manager.connection.favouritesGroup -> Group
+    --- Field
+    --- Favourites Group
+    self.favouritesGroup = self.commandPostGroup:group(i18n("favourites"))
 
     --- plugins.core.tangent.manager.connection.activeMode <cp.prop: mode>
     --- Constant
@@ -504,6 +576,14 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
         end
     )
 
+    local homePath = os.getenv("HOME")
+    local favouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent Settings"
+
+    --- plugins.core.tangent.manager.connection.favourites <cp.prop: table>
+    --- Variable
+    --- A `cp.prop` that that contains all the Tangent Favourites for the connection.
+    self.favourites = json.prop(favouritesPath, displayName, displayName .. ".cpTangent", {})
+
     --- plugins.core.tangent.manager.connection.rebuildXML <cp.prop: boolean>
     --- Variable
     --- Defines whether or not we should rebuild the XML files.
@@ -517,15 +597,14 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
             return self._connectionConfirmed and self:device():connected()
         end,
         function(value)
-            if value and not self:device():connected() then
+            if value and self.enabled() and not self:device():connected() then
                 --------------------------------------------------------------------------------
                 -- Only rebuild the controls XML when first enabled for faster startup times:
                 --------------------------------------------------------------------------------
-                -- TODO: This is just temporarily commented out for development.
-                --if self.rebuildXML() then
+                if self.rebuildXML() then
                     self:writeControlsXML()
                     self.rebuildXML(false)
-                --end
+                end
 
                 --------------------------------------------------------------------------------
                 -- Run any setup functions (such as disable "Final Cut Pro" in Tangent Hub):
@@ -533,7 +612,6 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
                 if type(setupFn) == "function" then
                     setupFn()
                 end
-
 
                 local ok, errorMessage = self:device():connect(applicationName, systemPath, userPath, task)
                 if not ok then
@@ -550,8 +628,8 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
 
     --- plugins.core.tangent.manager.connection.connectable <cp.prop: boolean; read-only>
     --- Variable
-    --- Is the Tangent Enabled and the Tangent Hub Installed?
-    self.connectable = manager.enabled:AND(manager.tangentHubInstalled)
+    --- Is Tangent support enabled, this connection enabled and the Tangent Hub Installed?
+    self.connectable = manager.enabled:AND(manager.tangentHubInstalled):AND(self.enabled)
 
     -- Tries to reconnect to Tangent Hub when disconnected.
     self._ensureConnection = timer.new(1.0, function()
@@ -580,8 +658,8 @@ function connection:initialize(applicationName, systemPath, userPath, task, plug
 
 end
 
---- plugins.core.tangent.manager.connection.update() -> none
---- Function
+--- plugins.core.tangent.manager.connection:update() -> none
+--- Method
 --- Updates the Tangent GUIs.
 ---
 --- Parameters:
@@ -598,8 +676,8 @@ function connection:update()
     end
 end
 
---- plugins.core.tangent.manager.connection.device() -> hs.tangent
---- Function
+--- plugins.core.tangent.manager.connection:device() -> hs.tangent
+--- Method
 --- Gets the `hs.tangent` object for the connnection.
 ---
 --- Parameters:
@@ -611,8 +689,21 @@ function connection:device()
     return self._device
 end
 
+--- plugins.core.tangent.manager.connection:displayName() -> string
+--- Method
+--- Gets the display name for the connnection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A string
+function connection:displayName()
+    return self._displayName
+end
+
 function connection:__tostring()
-    return format("connection: %s", self:applicationName())
+    return format("connection: %s", self:displayName())
 end
 
 return connection
