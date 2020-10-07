@@ -99,9 +99,6 @@ function plugin.init(deps, env)
 
     local manager = deps.manager
 
-    local systemPath = config.userConfigRootPath .. "/Tangent Settings/Final Cut Pro"
-    local pluginPath = config.basePath .. "/plugins/finalcutpro/tangent/defaultmap"
-
     --------------------------------------------------------------------------------
     -- Copy User Tangent Mappings from Legacy Path to the New Path.
     --
@@ -155,6 +152,8 @@ function plugin.init(deps, env)
         end
     end
 
+    local systemPath = config.userConfigRootPath .. "/Tangent Settings/Final Cut Pro"
+    local pluginPath = config.basePath .. "/plugins/finalcutpro/tangent/defaultmap"
     local connection = manager.newConnection("Final Cut Pro (via CommandPost)", "Final Cut Pro", systemPath, nil, "Final Cut Pro", pluginPath, setupFn, transportFn)
 
     connection:addMode(0x00010004, "FCP: " .. i18n("wheels"))

@@ -2,30 +2,6 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Tk">
-            <Mode id="0x03000001"> <!-- Resolve: Main -->
-                <ControlBank id="Trackerball">
-                    <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
-                            <Mapping mode="Std">
-                                <Key>0x0F840000</Key> <!-- Wheel 1 - Horizontal -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x0F840001</Key> <!-- Wheel 1 - Vertical -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="2"> <!-- Element-Tk Ring 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x0F840002</Key> <!-- Wheel 1 - Ring -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
         </Panel>
     </Panels>
 </TangentWave>

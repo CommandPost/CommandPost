@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
-        <Panel type="Element-Tk">
+        <Panel type="Wave">
         </Panel>
     </Panels>
 </TangentWave>

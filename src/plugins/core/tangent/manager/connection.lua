@@ -247,7 +247,7 @@ function connection:updateFavourites()
                 :action(actionId)
                 :name(fave.actionTitle)
                 :onPress(function()
-                    local handler = mod._actionManager.getHandler(fave.handlerID)
+                    local handler = mod.manager.actionManager.getHandler(fave.handlerID)
                     if handler then
                         if not handler:execute(fave.action) then
                             log.wf("Unable to execute Tangent Favourite #%s: %s", i, inspect(fave))
@@ -597,7 +597,7 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
             return self._connectionConfirmed and self:device():connected()
         end,
         function(value)
-            if value and self.enabled() and not self:device():connected() then
+            if value and self.enabled() and self:device() and not self:device():connected() then
                 --------------------------------------------------------------------------------
                 -- Only rebuild the controls XML when first enabled for faster startup times:
                 --------------------------------------------------------------------------------

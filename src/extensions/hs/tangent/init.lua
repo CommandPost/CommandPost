@@ -2448,7 +2448,6 @@ local MESSAGE_BODY = 2
 ---  * success - `true` on success, otherwise `nil`
 ---  * errorMessage - The error messages as a string or `nil` if `success` is `true`.
 function mod.mt:connect(applicationName, systemPath, userPath, task)
-
     --------------------------------------------------------------------------------
     -- Check Parameters:
     --------------------------------------------------------------------------------
@@ -2529,7 +2528,8 @@ function mod.mt:connect(applicationName, systemPath, userPath, task)
             --------------------------------------------------------------------------------
             -- Trigger Callback when connected:
             --------------------------------------------------------------------------------
-            self:processCommand({id=mod.fromHub.connected,
+            self:processCommand({
+                id = mod.fromHub.connected,
                 ipAddress = self.ipAddress,
                 port = self.port,
             })
@@ -2542,7 +2542,9 @@ function mod.mt:connect(applicationName, systemPath, userPath, task)
             --------------------------------------------------------------------------------
             -- Read the first 4 bytes, which will trigger the callback:
             --------------------------------------------------------------------------------
-            self._socket:read(4, MESSAGE_SIZE)
+            if self._socket then
+                self._socket:read(4, MESSAGE_SIZE)
+            end
         end)
     end
     return self._socket ~= nil or nil

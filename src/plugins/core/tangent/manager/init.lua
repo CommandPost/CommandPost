@@ -13,6 +13,7 @@ local require                   = require
 local log                       = require "hs.logger".new "tangentMan"
 
 local application               = require "hs.application"
+local image                     = require "hs.image"
 local tangent                   = require "hs.tangent"
 
 local config                    = require "cp.config"
@@ -20,6 +21,7 @@ local prop                      = require "cp.prop"
 
 local connection                = require "connection"
 
+local imageFromPath             = image.imageFromPath
 local infoForBundleID           = application.infoForBundleID
 local isTangentHubInstalled     = tangent.isTangentHubInstalled
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
@@ -35,6 +37,16 @@ local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 --- Constant
 --- Maximum number of favourites.
 mod.NUMBER_OF_FAVOURITES = 50
+
+--- plugins.core.tangent.manager.MAXIMUM_CONNECTIONS -> number
+--- Constant
+--- Maximum number of socket connections to Tangent Hub.
+mod.MAXIMUM_CONNECTIONS = 5
+
+--- plugins.core.tangent.manager.customApplications <cp.prop: table>
+--- Variable
+--- Table of Custom Applications
+mod.customApplications = config.prop("tangent.customApplications", {})
 
 --- plugins.core.tangent.manager.connections -> table
 --- Variable
@@ -74,6 +86,7 @@ end
 --- Enable or disables the Tangent Manager.
 mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
     if enabled then
+        mod.setupCustomApplications()
         local connections = mod.connections
         for _, c in pairs(connections) do
             c.connected(true)
@@ -147,15 +160,101 @@ function mod.displayNames()
     return displayNames
 end
 
+--- plugins.core.tangent.manager.registerCustomApplication(displayName, bundleExecutable) -> none
+--- Function
+--- Registers a new Custom Application
+---
+--- Parameters:
+---  * displayName - The display name of the custom application
+---  * bundleExecutable - The bundle executable identifier of the custom application
+---
+--- Returns:
+---  * A table where the application name is the key, and display name is the value.
+function mod.registerCustomApplication(displayName, bundleExecutable)
+    local customApplications = mod.customApplications()
+    customApplications[bundleExecutable] = displayName
+    mod.customApplications(customApplications)
+    mod.setupCustomApplications()
+end
+
+--- plugins.core.tangent.manager.removeCustomApplication(displayName) -> none
+--- Function
+--- Removes a Custom Application.
+---
+--- Parameters:
+---  * displayName - The display name of the Custom Application to Remove.
+---
+--- Returns:
+---  * None
+function mod.removeCustomApplication(displayName)
+    local customApplications = mod.customApplications()
+    for bundleExecutable, currentDisplayName in pairs(customApplications) do
+        if currentDisplayName == displayName then
+            local applicationName = displayName .. " (via CommandPost)"
+
+            --------------------------------------------------------------------------------
+            -- Disconnecting and removing connection:
+            --------------------------------------------------------------------------------
+            local connection = mod.connections[applicationName]
+            connection.connected(false)
+            connection._device = nil
+            mod.connections[applicationName] = nil
+
+            --------------------------------------------------------------------------------
+            -- Removing Custom Application from Preferences:
+            --------------------------------------------------------------------------------
+            customApplications[bundleExecutable] = nil
+            mod.customApplications(customApplications)
+        end
+    end
+    mod.customApplications(customApplications)
+end
+
+--- plugins.core.tangent.manager.setupCustomApplications() -> none
+--- Function
+--- Setup the Custom Applications.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.setupCustomApplications()
+    local customApplications = mod.customApplications()
+    for bundleExecutable, displayName in pairs(customApplications) do
+        local applicationName = displayName .. " (via CommandPost)"
+        if not mod.connections[applicationName] then
+            local applicationName = displayName .. " (via CommandPost)"
+            local systemPath = config.userConfigRootPath .. "/Tangent Settings/" .. bundleExecutable
+            local pluginPath = config.basePath .. "/plugins/core/tangent/defaultmap"
+            mod.newConnection(applicationName, displayName, systemPath, nil, bundleExecutable, pluginPath)
+        else
+            log.ef("Custom Application already registered: %s", bundleExecutable)
+        end
+    end
+end
+
 local plugin = {
     id          = "core.tangent.manager",
     group       = "core",
     required    = true,
     dependencies    = {
-        ["core.commands.global"]            = "global",
+        ["core.commands.global"]    = "global",
+        ["core.action.manager"]     = "actionManager",
     }
 }
-function plugin.init(deps)
+
+function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Inter-plugin Connections:
+    --------------------------------------------------------------------------------
+    mod.actionManager = deps.actionManager
+
+    --------------------------------------------------------------------------------
+    -- Tangent Icon:
+    --------------------------------------------------------------------------------
+    local tangentIcon = imageFromPath(env:pathToAbsolute("/../prefs/images/tangent.icns"))
+
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
@@ -166,7 +265,7 @@ function plugin.init(deps)
             mod.enabled(true)
         end)
         :groupedBy("commandPost")
-        :image(tourBoxIcon)
+        :image(tangentIcon)
         :titled("Enable Tangent Panel Support")
 
     global
@@ -175,16 +274,16 @@ function plugin.init(deps)
             mod.enabled(false)
         end)
         :groupedBy("commandPost")
-        :image(tourBoxIcon)
+        :image(tangentIcon)
         :titled("Disable Tangent Panel Support")
 
     global
-        :add("toggleTourBox")
+        :add("toggleTangent")
         :whenActivated(function()
             mod.enabled:toggle()
         end)
         :groupedBy("commandPost")
-        :image(tourBoxIcon)
+        :image(tangentIcon)
         :titled("Toggle Tangent Panel Support")
 
     return mod
