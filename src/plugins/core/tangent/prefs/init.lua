@@ -200,8 +200,6 @@ local function tangentPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Remove Application:
                 --------------------------------------------------------------------------------
-                local customApplications = mod._tangentManager.customApplications()
-
                 local applicationNames = mod._tangentManager.applicationNames()
                 table.sort(applicationNames)
 
