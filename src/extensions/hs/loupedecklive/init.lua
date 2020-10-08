@@ -36,6 +36,14 @@ local uint8             = bytes.uint8
 
 local mod               = {}
 
+--- hs.loupedeckct.deviceTypes -> table
+--- Constant
+--- A table containing the device types.
+mod.deviceTypes = {
+    CT      = "LOUPEDECK device",
+    LIVE    = "Loupedeck Live",
+}
+
 -- callbackRegister -> table
 -- Variable
 -- A table of registered callbacks
@@ -45,15 +53,14 @@ local callbackRegister = {}
 -- Function
 -- Registers a callback.
 --
---
 -- Parameters:
 --  * callbackFn - The callback function
 --
 -- Returns:
---  * A unique callback ID as a number, or `0` if none was provided.
+--  * A unique callback ID as a number.
 local function registerCallback(callbackFn)
     if callbackFn == nil then
-        return 0
+        callbackFn = function() end
     end
 
     if type(callbackFn) ~= "function" then
@@ -275,8 +282,9 @@ end
 local function findIPAddress()
     local interfaces = network.interfaces()
     local interfaceID
+    local deviceType = mod.deviceType
     for _, v in pairs(interfaces) do
-        if network.interfaceName(v) == "LOUPEDECK device" then
+        if network.interfaceName(v) == deviceType then
             interfaceID = v
             break
         end
@@ -308,10 +316,13 @@ local function initaliseDevice()
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
-    for _, screen in pairs(mod.screens) do
-        mod.updateScreenColor(screen, b)
-    end
+    mod.updateScreenColor(mod.screens.left, b)
+    mod.updateScreenColor(mod.screens.right, b)
+    mod.updateScreenColor(mod.screens.middle, b)
 
+    if mod.deviceType == mod.deviceTypes.CT then
+        mod.updateScreenColor(mod.screens.wheel, b)
+    end
 end
 
 --- hs.loupedeckct.callback([callbackFn]) -> boolean
@@ -469,6 +480,11 @@ mod.ignoreResponses = {
     [0x0409] = true, -- Reset Device
     [0x0819] = true, -- Flash Drive confirmation
     [0x041e] = true, -- Wheel Sensitivity confirmation
+
+    [0x0400] = true, -- This seems to be constant spam from the Loupedeck Live
+    [0x1c73] = true, -- This is triggered when the Loupedeck Live first connects
+    [0x1573] = true, -- This is triggered when the Loupedeck Live first connects
+    [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
 }
 
 -- convertWheelXandYtoButtonID(x, y) -> number
@@ -744,32 +760,6 @@ local function websocketCallback(event, message)
     else
         log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
     end
-end
-
---- hs.loupedeckct.startBackgroundLoop([callbackFn]) -> boolean
---- Function
---- Kicks off the background listening loop on the device.
----
---- Parameters:
----  * callbackFn - Optional function to call when the device responds, receiving a data table containing `id` and `message`.
----
---- Returns:
----  * `true` if the device is connected and the message was sent.
-function mod.startBackgroundLoop(callbackFn)
-    -- TODO: currently no idea what the trailing bytes represent. Possibly local data specific to the current machine?
-    local echo = hexToBytes("3da81c9ba72a8c87d4f6a135a289066c")
-    return sendCommand(
-        0x130E,
-        function(response)
-            if response.data ~= echo then
-                log.ef("Received different result from loopback confirmation: %s", response.data)
-            end
-            if callbackFn then
-                callbackFn(response)
-            end
-        end,
-        echo
-    )
 end
 
 function mod.requestDeviceInfo(callbackFn)
@@ -1649,12 +1639,13 @@ local function updateWatcher(enabled)
     end
 end
 
---- hs.loupedeckct.connect(retry) -> boolean, errorMessage
+--- hs.loupedeckct.connect(retry, deviceType) -> boolean, errorMessage
 --- Function
 --- Connects to a Loupedeck CT.
 ---
 --- Parameters:
 ---  * retry - `true` if you want to keep trying to connect, otherwise `false`
+---  * deviceType - The device type (for example `hs.loupedeckct.deviceTypes.LIVE`)
 ---
 --- Returns:
 ---  * None
@@ -1662,7 +1653,12 @@ end
 --- Notes:
 ---  * The callback with an action of "failed_to_find_device" will trigger
 ---    if the device cannot be connected to.
-function mod.connect(retry)
+function mod.connect(retry, deviceType)
+    --------------------------------------------------------------------------------
+    -- Setup the device type:
+    --------------------------------------------------------------------------------
+    mod.deviceType = deviceType or mod.deviceTypes.LIVE
+
     --------------------------------------------------------------------------------
     -- Setup retry watchers:
     --------------------------------------------------------------------------------
