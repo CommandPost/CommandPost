@@ -2,20 +2,31 @@
 ---
 --- Tangent Preferences Panel
 
-local require = require
+local require                   = require
 
-local log           = require "hs.logger".new "tangentPref"
+local log                       = require "hs.logger".new "tangentPref"
 
-local dialog        = require "hs.dialog"
-local image         = require "hs.image"
+local application               = require "hs.application"
+local dialog                    = require "hs.dialog"
+local image                     = require "hs.image"
+local timer                     = require "hs.timer"
 
-local html          = require "cp.web.html"
-local i18n          = require "cp.i18n"
-local tools         = require "cp.tools"
+local config                    = require "cp.config"
+local cpDialog                  = require "cp.dialog"
+local html                      = require "cp.web.html"
+local i18n                      = require "cp.i18n"
+local tools                     = require "cp.tools"
 
-local moses         = require "moses"
-
-local escapeTilda   = tools.escapeTilda
+local chooseFileOrFolder        = dialog.chooseFileOrFolder
+local displayChooseFromList     = cpDialog.displayChooseFromList
+local doAfter                   = timer.doAfter
+local escapeTilda               = tools.escapeTilda
+local imageFromPath             = image.imageFromPath
+local infoForBundlePath         = application.infoForBundlePath
+local spairs                    = tools.spairs
+local tableContains             = tools.tableContains
+local tableCount                = tools.tableCount
+local webviewAlert              = dialog.webviewAlert
 
 local mod = {}
 
@@ -28,6 +39,11 @@ local TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 -- Constant
 -- URL to download Tangent Hub Application.
 local DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
+
+-- DEFAULT_LAST_APPLICATION -> string
+-- Constant
+-- The default last application.
+local DEFAULT_LAST_APPLICATION = "Final Cut Pro"
 
 -- renderPanel(context) -> none
 -- Function
@@ -60,15 +76,96 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
+    local applicationNames = mod._tangentManager.applicationNames()
+    table.sort(applicationNames)
+
     local context = {
-        _                       = moses,
+        applicationNames        = applicationNames,
         webviewLabel            = mod._prefsManager.getLabel(),
-        maxItems                = mod._favourites.MAX_ITEMS,
-        favourites              = mod._favourites.favourites(),
+        maxItems                = mod._tangentManager.NUMBER_OF_FAVOURITES,
+        spairs                  = spairs,
         none                    = i18n("none"),
         i18n                    = i18n,
     }
     return renderPanel(context)
+end
+
+-- updateUI() -> none
+-- Function
+-- Updates the preferences panel user interface.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function updateUI()
+    local script = ""
+
+    --------------------------------------------------------------------------------
+    -- This will only happen if a Custom Application is deleted:
+    --------------------------------------------------------------------------------
+    local lastApplication = mod.lastApplication()
+    local connection = mod._tangentManager.getConnection(lastApplication)
+    if not connection then
+        lastApplication = DEFAULT_LAST_APPLICATION
+        connection = mod._tangentManager.getConnection(lastApplication)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Enable or Disable the "Add Application" drop down option:
+    --------------------------------------------------------------------------------
+    local maxConnections = mod._tangentManager.MAXIMUM_CONNECTIONS
+    local applicationNames = mod._tangentManager.applicationNames()
+    local connectionCount = #applicationNames
+    local allowAddApplication = true
+    if connectionCount >= maxConnections then
+        allowAddApplication = false
+    end
+    script = script .. [[document.getElementById("addApplication").disabled = ]] .. tostring(not allowAddApplication) .. [[;]]
+
+    --------------------------------------------------------------------------------
+    -- Enable or Disable the "Remove Application" drop down option:
+    --------------------------------------------------------------------------------
+    local customApplications = mod._tangentManager.customApplications()
+    local customApplicationsCount = tableCount(customApplications)
+    local allowRemoveApplication = true
+    if customApplicationsCount == 0 then
+        allowRemoveApplication = false
+    end
+    script = script .. [[document.getElementById("removeApplication").disabled = ]] .. tostring(not allowRemoveApplication) .. [[;]]
+
+    --------------------------------------------------------------------------------
+    -- Update the application drop down list:
+    --------------------------------------------------------------------------------
+    script = script .. [[changeValueByID('application', `]] .. escapeTilda(lastApplication) .. [[`);]]
+
+    --------------------------------------------------------------------------------
+    -- Update the enabled button checkbox:
+    --------------------------------------------------------------------------------
+    local enabled = connection.enabled()
+    script = script .. [[changeCheckedByID('enabled', ]] .. tostring(enabled) .. [[);]]
+
+    --------------------------------------------------------------------------------
+    -- Update the Favourites titles:
+    --------------------------------------------------------------------------------
+    local faves = connection.favourites()
+    local max = mod._tangentManager.NUMBER_OF_FAVOURITES
+    for i = 1, max do
+        local fave = faves[tostring(i)]
+        if fave then
+            local actionTitle = fave.actionTitle
+            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. escapeTilda(actionTitle) .. [[`);]]
+        else
+            script = script .. [[changeValueByID('label_]] .. i .. [[', `]] .. i18n("none") .. [[`);]]
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Inject the JavaScript:
+    --------------------------------------------------------------------------------
+    local injectScript = mod._prefsManager.injectScript
+    injectScript(script)
 end
 
 -- tangentPanelCallback() -> none
@@ -84,8 +181,73 @@ end
 local function tangentPanelCallback(id, params)
     local injectScript = mod._prefsManager.injectScript
     if params and params["type"] then
-        if params["type"] == "updateAction" then
+        if params["type"] == "updateUI" then
+            --------------------------------------------------------------------------------
+            -- Update the User Interface:
+            --------------------------------------------------------------------------------
+            updateUI()
+        elseif params["type"] == "changeEnabled" then
+            --------------------------------------------------------------------------------
+            -- Change the Enabled Checkbox:
+            --------------------------------------------------------------------------------
+            local enabled = params.enabled
+            local lastApplication = mod.lastApplication()
+            local connection = mod._tangentManager.getConnection(lastApplication)
+            connection.enabled(enabled)
+        elseif params["type"] == "changeApplication" then
+            local app = params.application
+            if app == "Remove Application" then
+                --------------------------------------------------------------------------------
+                -- Remove Application:
+                --------------------------------------------------------------------------------
+                local applicationNames = mod._tangentManager.applicationNames()
+                table.sort(applicationNames)
 
+                local result = displayChooseFromList("Please select the application you want to remove:", applicationNames)
+                local applicationToRemove = result and result[1]
+                if applicationToRemove then
+                    mod._tangentManager.removeCustomApplication(applicationToRemove)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the UI:
+                    --------------------------------------------------------------------------------
+                    mod._prefsManager.refresh()
+                else
+                    updateUI()
+                end
+            elseif app == "Add Application" then
+                --------------------------------------------------------------------------------
+                -- Add Application:
+                --------------------------------------------------------------------------------
+                local files = chooseFileOrFolder(i18n("pleaseSelectAnApplication") .. ":", "/Applications", true, false, false, {"app"}, false)
+                if files then
+                    local path = files["1"]
+                    local info = path and infoForBundlePath(path)
+                    local applicationName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+                    local bundleExecutable = info and info.CFBundleExecutable
+                    if applicationName and bundleExecutable then
+                        local applicationNames = mod._tangentManager.applicationNames()
+                        if not tableContains(applicationNames, applicationName) then
+                            mod._tangentManager.registerCustomApplication(applicationName, bundleExecutable)
+
+                            --------------------------------------------------------------------------------
+                            -- Refresh the UI:
+                            --------------------------------------------------------------------------------
+                            mod._prefsManager.refresh()
+                        else
+                            webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("duplicateCustomApplication"), i18n("ok"))
+                        end
+                    else
+                        webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
+                        log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleExecutable: '%s'\napplicationName: '%s'",path, bundleExecutable, applicationName)
+                    end
+                    updateUI()
+                end
+            else
+                mod.lastApplication(app)
+                updateUI()
+            end
+        elseif params["type"] == "updateAction" then
             --------------------------------------------------------------------------------
             -- Setup Activators:
             --------------------------------------------------------------------------------
@@ -100,7 +262,6 @@ local function tangentPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             mod.activator:onActivate(function(handler, action, text)
-
                     --------------------------------------------------------------------------------
                     -- Process Stylised Text:
                     --------------------------------------------------------------------------------
@@ -112,8 +273,26 @@ local function tangentPanelCallback(id, params)
 
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
-                    mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
-                    injectScript("setTangentAction(" .. buttonID .. ", `" .. escapeTilda(actionTitle) .. "`)")
+
+                    local lastApplication = mod.lastApplication()
+                    local connection = mod._tangentManager.getConnection(lastApplication)
+                    local faves = connection.favourites()
+
+                    faves[tostring(buttonID)] = {
+                        actionTitle = actionTitle,
+                        handlerID = handlerID,
+                        action = action,
+                    }
+
+                    connection.favourites(faves)
+
+                    --------------------------------------------------------------------------------
+                    -- Add a slight delay to give the UI time to update before we rebuild the
+                    -- Tangent XML files:
+                    --------------------------------------------------------------------------------
+                    doAfter(0.5, function() connection:updateControls() end)
+
+                    updateUI()
                 end)
 
             --------------------------------------------------------------------------------
@@ -128,9 +307,19 @@ local function tangentPanelCallback(id, params)
             mod.activator:show()
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
-            mod._favourites.clearAction(buttonID)
-            injectScript("setTangentAction(" .. buttonID .. ", '" .. i18n("none") .. "')")
+            local lastApplication = mod.lastApplication()
+            local connection = mod._tangentManager.getConnection(lastApplication)
+            local faves = connection.favourites()
+            faves[tostring(buttonID)] = nil
+            connection.favourites(faves)
 
+            --------------------------------------------------------------------------------
+            -- Add a slight delay to give the UI time to update before we rebuild the
+            -- Tangent XML files:
+            --------------------------------------------------------------------------------
+            doAfter(0.5, function() connection:updateControls() end)
+
+            updateUI()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -157,10 +346,14 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod._actionManager  = deps.actionManager
     mod._appmanager     = deps.appManager
-    mod._favourites     = deps.favourites
     mod._prefsManager   = deps.prefsManager
     mod._tangentManager = deps.tangentManager
     mod._env            = env
+
+    --- plugins.core.tangent.prefs.lastApplication <cp.prop: string>
+    --- Field
+    --- Last Application used in the Preferences Panel.
+    mod.lastApplication = config.prop("tangent.preferences.lastApplication", DEFAULT_LAST_APPLICATION)
 
     --------------------------------------------------------------------------------
     -- Setup Tangent Preferences Panel:
@@ -169,9 +362,9 @@ function mod.init(deps, env)
         priority    = 2032.1,
         id          = "tangent",
         label       = i18n("tangentPanelLabel"),
-        image       = image.imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
+        image       = imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 750,
+        height      = 830,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {
@@ -198,7 +391,9 @@ function mod.init(deps, env)
         ]], true))
         :addHeading(2, i18n("tangentPanelSupport"))
         :addParagraph(3, i18n("tangentPreferencesInfo"), false)
-        :addParagraph(3.2, html.br())
+        :addParagraph(3.1, html.br())
+        :addParagraph(3.2, html.span {class="tip"} (html(i18n("tangentTip"), false) ) .. "\n\n")
+        :addParagraph(3.3, html.br())
         --------------------------------------------------------------------------------
         -- Enable Tangent Support:
         --------------------------------------------------------------------------------
@@ -207,7 +402,7 @@ function mod.init(deps, env)
                 label = i18n("enableTangentPanelSupport"),
                 onchange = function(_, params)
                     if params.checked and not mod._tangentManager.tangentHubInstalled() then
-                        dialog.webviewAlert(mod._prefsManager.getWebview(), function()
+                        webviewAlert(mod._prefsManager.getWebview(), function()
                             mod._tangentManager.enabled(false)
                             mod._prefsManager.injectScript([[
                                 document.getElementById("enableTangentSupport").checked = false;
@@ -232,7 +427,7 @@ function mod.init(deps, env)
                     if mod._tangentManager.tangentMapperInstalled() then
                         mod._tangentManager.launchTangentMapper()
                     else
-                        dialog.webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
+                        webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
                     end
                 end,
                 class = "tangentButtonOne",
@@ -274,7 +469,6 @@ function mod.init(deps, env)
         :addHandler("onchange", "tangentPanelCallback", tangentPanelCallback)
 
     return mod
-
 end
 
 local plugin = {
@@ -283,7 +477,6 @@ local plugin = {
     dependencies    = {
         ["core.controlsurfaces.manager"]        = "prefsManager",
         ["core.tangent.manager"]                = "tangentManager",
-        ["core.tangent.commandpost.favourites"] = "favourites",
         ["core.action.manager"]                 = "actionManager",
         ["core.application.manager"]            = "appManager",
     }

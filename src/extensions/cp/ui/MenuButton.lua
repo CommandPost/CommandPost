@@ -94,7 +94,7 @@ function MenuButton.lazy.prop:menuUI()
 end
 
 function MenuButton.lazy.value:menu()
-    return Menu(self, self.menuUI())
+    return Menu(self, self.menuUI)
 end
 
 --- cp.ui.MenuButton.title <cp.prop: string; read-only>
@@ -229,18 +229,19 @@ function MenuButton:selectItemMatching(pattern)
     return false
 end
 
---- cp.ui.MenuButton:doSelectItemMatching(pattern) -> cp.rx.go.Statement
+--- cp.ui.MenuButton:doSelectItemMatching(pattern[, altPattern]) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by pattern.
 ---
 --- Parameters:
 ---  * pattern - The pattern to match.
+---  * [altPattern] - An optional alternate pattern to match if the first pattern fails.
 ---
 --- Returns:
 ---  * the `Statement`.
-function MenuButton:doSelectItemMatching(pattern)
+function MenuButton:doSelectItemMatching(pattern, altPattern)
     return If(self:doShowMenu())
-    :Then(self.menu:doSelectItemMatching(pattern))
+    :Then(self.menu:doSelectItemMatching(pattern, altPattern))
     :Otherwise(false)
     :Label("MenuButton:doSelectItemMatching")
 end

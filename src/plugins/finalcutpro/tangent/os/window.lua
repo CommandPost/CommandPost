@@ -1,4 +1,4 @@
---- === plugins.core.tangent.os.window ===
+--- === plugins.finalcutpro.tangent.os.window ===
 ---
 --- Window Management Tools for Tangent.
 
@@ -8,10 +8,10 @@ local i18n = require("cp.i18n")
 
 
 local plugin = {
-    id = "core.tangent.os.window",
-    group = "core",
+    id = "finalcutpro.tangent.os.window",
+    group = "finalcutpro",
     dependencies = {
-        ["core.tangent.os"] = "osGroup",
+        ["finalcutpro.tangent.os"] = "osGroup",
         ["finder.window"] = "win",
     }
 }

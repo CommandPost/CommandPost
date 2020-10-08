@@ -25,8 +25,22 @@ local controls = class "core.tangent.manager.controls" :include(lazy)
 ---
 --- Parameters:
 --- * name      - The name of the controls.
-function controls:initialize()
+function controls:initialize(manager)
     self.ids = {}
+    self._manager = manager
+end
+
+--- plugins.core.tangent.managercontrols:tangent() -> hs.tangent
+--- Method
+--- The `hs.tangent` connection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `hs.tangent`.
+function controls:tangent()
+    return self._manager:device()
 end
 
 --- plugins.core.tangent.manager.controls.enabled <cp.prop: boolean>
@@ -139,7 +153,7 @@ function controls:group(name)
         self._groups = groups
     end
 
-    local g = group(name, self)
+    local g = group(name, self._manager, self)
     insert(groups, g)
 
     return g

@@ -25,22 +25,37 @@ local format            = string.format
 
 local group = class "core.tangent.manager.group" :include(lazy)
 
---- plugins.core.tangent.manager.group(name[, parent[, localActive]])
+--- plugins.core.tangent.manager.group(name, manager, [, parent[, localActive]])
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
 ---  * name      - The name of the group.
+---  * manager   - The Tangent Manager.
 ---  * parent    - The parent group.
 ---  * localActive - If `true`, this group will ignore the parent's `active` status when determining its own `active` status. Defaults to `false`.
-function group:initialize(name, parent, localActive)
+function group:initialize(name, manager, parent, localActive)
     if is.blank(name) then
         error("Group names cannot be empty")
     end
 
     self._name = name
+    self._manager = manager
     self._parent = parent
     self._localActive = localActive
+end
+
+--- plugins.core.tangent.manager.group:tangent() -> hs.tangent
+--- Method
+--- The `hs.tangent` connection.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `hs.tangent`.
+function group:tangent()
+    return self._manager:device()
 end
 
 --- plugins.core.tangent.manager.group.enabled <cp.prop: boolean>
@@ -140,7 +155,7 @@ function group:group(name, localActive)
         self._groups = groups
     end
 
-    local g = group(name, self, localActive)
+    local g = group(name, self._manager, self, localActive)
     insert(groups, g)
 
     return g

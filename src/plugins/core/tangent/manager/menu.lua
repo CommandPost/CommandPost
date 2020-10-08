@@ -6,8 +6,6 @@
 
 local require = require
 
-local tangent           = require "hs.tangent"
-
 local x                 = require "cp.web.xml"
 local is                = require "cp.is"
 
@@ -206,7 +204,7 @@ end
 --- * `true` if the update was sent.
 function menu:update()
     if self:active() then
-        return tangent.sendMenuString(self.id, self:get())
+        return self:tangent():sendMenuString(self.id, self:get())
     end
     return false
 end

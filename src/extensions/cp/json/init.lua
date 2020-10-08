@@ -2,15 +2,17 @@
 ---
 --- A collection of handy JSON tools.
 
-local require = require
+local require                   = require
 
-local log       = require "hs.logger".new "json"
+local log                       = require "hs.logger".new "json"
 
-local fs        = require "hs.fs"
-local json      = require "hs.json"
+local fs                        = require "hs.fs"
+local json                      = require "hs.json"
 
-local prop      = require "cp.prop"
-local tools     = require "cp.tools"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
+
+local ensureDirectoryExists     = tools.ensureDirectoryExists
 
 local mod = {}
 
@@ -95,7 +97,7 @@ function mod.decode(...)
     return json.decode(...)
 end
 
---- cp.json.prop(path, folder, filename, defaultValue) -> cp.prop
+--- cp.json.prop(path, folder, filename, defaultValue[, errorCallbackFn]) -> cp.prop
 --- Function
 --- Returns a `cp.prop` instance for a JSON file.
 ---
@@ -130,7 +132,7 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-        if tools.ensureDirectoryExists(path, folder) then
+        if ensureDirectoryExists(path, folder) then
             if tools.doesFileExist(fullFilePath) then
                 local result = mod.read(fullFilePath)
                 if result then
@@ -166,7 +168,7 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
-        if tools.ensureDirectoryExists(path, folder) then
+        if ensureDirectoryExists(path, folder) then
             local result = mod.write(fullFilePath, value)
             if not result then
                 local errorMessage = string.format("Failed to save JSON file: %s", fullFilePath)

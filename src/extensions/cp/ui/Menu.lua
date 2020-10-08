@@ -118,26 +118,31 @@ function Menu:doSelectValue(value)
     :Label("Menu:doSelectValue")
 end
 
---- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
+--- cp.ui.Menu:doSelectValue(pattern[, altPattern]) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `Menu` by value.
 ---
 --- Parameters:
----  * value - The value of the item to match.
+---  * pattern - The pattern to match.
+---  * [altPattern] - An optional alternate pattern to match if the first pattern fails.
 ---
 --- Returns:
 ---  * the `Statement`.
-function Menu:doSelectItemMatching(pattern)
+function Menu:doSelectItemMatching(pattern, altPattern)
     return If(self.UI)
     :Then(function(ui)
-        for _,item in ipairs(ui) do
-            local title = item:attributeValue("AXTitle")
-            if title then
-                local s,e = find(title, pattern)
-                if s == 1 and e == title:len() then
-                    -- perfect match
-                    item:doPress()
-                    return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+        local patterns = {pattern}
+        if altPattern then table.insert(patterns, altPattern) end
+        for _, selectedPattern in pairs(patterns) do
+            for _,item in ipairs(ui) do
+                local title = item:attributeValue("AXTitle")
+                if title then
+                    local s,e = find(title, selectedPattern)
+                    if s == 1 and e == title:len() then
+                        -- perfect match
+                        item:doPress()
+                        return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
+                    end
                 end
             end
         end
