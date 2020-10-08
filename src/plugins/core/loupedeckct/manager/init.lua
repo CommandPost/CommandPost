@@ -6,14 +6,14 @@ local require                   = require
 
 local hs                        = hs
 
---local log                       = require "hs.logger".new "ldCT"
+local log                       = require "hs.logger".new "ldCT"
 
 local application               = require "hs.application"
 local appWatcher                = require "hs.application.watcher"
-local ct                        = require "hs.loupedeckct"
 local eventtap                  = require "hs.eventtap"
 local fs                        = require "hs.fs"
 local image                     = require "hs.image"
+local loupedeck                 = require "hs.loupedeck"
 local plist                     = require "hs.plist"
 local timer                     = require "hs.timer"
 
@@ -40,6 +40,12 @@ local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
 
 local mod = {}
+
+-- ct -> Loupedeck
+-- Variable
+-- Loupedeck CT Connection.
+local ct = loupedeck.new(true, loupedeck.deviceTypes.CT)
+mod.device = ct
 
 -- LD_BUNDLE_ID -> string
 -- Constant
@@ -198,7 +204,7 @@ mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
     if enabled then
         mod._appWatcher:start()
         mod._driveWatcher:start()
-        ct.connect(true)
+        ct:connect()
     else
         --------------------------------------------------------------------------------
         -- Stop all watchers:
@@ -209,18 +215,18 @@ mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Make everything black:
         --------------------------------------------------------------------------------
-        for _, screen in pairs(ct.screens) do
-                ct.updateScreenColor(screen, {hex="#"..defaultColor})
+        for _, screen in pairs(loupedeck.screens) do
+                ct:updateScreenColor(screen, {hex="#"..defaultColor})
         end
         for i=7, 26 do
-            ct.buttonColor(i, {hex="#" .. defaultColor})
+            ct:buttonColor(i, {hex="#" .. defaultColor})
         end
         just.wait(0.01) -- Slight delay so the websocket message has time to send.
 
         --------------------------------------------------------------------------------
         -- Disconnect from the Loupedeck CT:
         --------------------------------------------------------------------------------
-        ct.disconnect()
+        ct:disconnect()
     end
 end)
 
@@ -259,7 +265,7 @@ end
 --- Field
 --- Enable or disable the Loupedeck CT Flash Drive.
 mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", false):watch(function(enabled)
-    ct.updateFlashDrive(enabled)
+    ct:updateFlashDrive(enabled)
     if not enabled then
         local path = getFlashDrivePath()
         if path then
@@ -281,7 +287,7 @@ mod.lastBundleID = config.prop("loupedeckct.lastBundleID", "All Applications")
 --- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
 --- Field
 --- Screens Backlight Level
-mod.screensBacklightLevel = config.prop("loupedeckct.screensBacklightLevel", "9")
+mod.screensBacklightLevel = config.prop("loupedeckloupedeck.screensBacklightLevel", "9")
 
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
@@ -443,8 +449,8 @@ function mod.refresh(dueToAppChange)
     -- UPDATE WHEEL SENSITIVITY:
     --------------------------------------------------------------------------------
     local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
-    local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or ct.defaultWheelSensitivityIndex
-    ct.updateWheelSensitivity(wheelSensitivity)
+    local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
+    ct:updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -457,7 +463,7 @@ function mod.refresh(dueToAppChange)
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            ct.buttonColor(i, {hex="#" .. ledColor})
+            ct:buttonColor(i, {hex="#" .. ledColor})
         end
         cachedLEDButtonValues[id] = ledColor
     end
@@ -488,13 +494,13 @@ function mod.refresh(dueToAppChange)
             cachedTouchScreenButtonValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             if decodedImage then
-                ct.updateScreenButtonImage(i, decodedImage)
+                ct:updateScreenButtonImage(i, decodedImage)
                 success = true
             end
         end
 
         if not success and cachedTouchScreenButtonValues[id] ~= defaultColor then
-            ct.updateScreenButtonColor(i, {hex="#"..defaultColor})
+            ct:updateScreenButtonColor(i, {hex="#"..defaultColor})
             cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
@@ -511,12 +517,12 @@ function mod.refresh(dueToAppChange)
         cachedWheelScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct.updateScreenImage(ct.screens.wheel, decodedImage)
+            ct:updateScreenImage(loupedeck.screens.wheel, decodedImage)
             success = true
         end
     end
     if not success and cachedWheelScreen ~= defaultColor then
-        ct.updateScreenColor(ct.screens.wheel, {hex="#"..defaultColor})
+        ct:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
         cachedWheelScreen = defaultColor
     end
 
@@ -536,12 +542,12 @@ function mod.refresh(dueToAppChange)
         cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct.updateScreenImage(ct.screens.left, decodedImage)
+            ct:updateScreenImage(loupedeck.screens.left, decodedImage)
             success = true
         end
     end
     if not success and cachedLeftSideScreen ~= defaultColor then
-        ct.updateScreenColor(ct.screens.left, {hex="#"..defaultColor})
+        ct:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
         cachedLeftSideScreen = defaultColor
     end
 
@@ -561,12 +567,12 @@ function mod.refresh(dueToAppChange)
         cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct.updateScreenImage(ct.screens.right, decodedImage)
+            ct:updateScreenImage(loupedeck.screens.right, decodedImage)
             success = true
         end
     end
     if not success and cachedRightSideScreen ~= defaultColor then
-        ct.updateScreenColor(ct.screens.right, {hex="#"..defaultColor})
+        ct:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
         cachedRightSideScreen = defaultColor
     end
 end
@@ -659,7 +665,7 @@ local function callback(data)
         hasLoaded = true
         mod.enableFlashDrive:update()
 
-        ct.updateBacklightLevel(tonumber(mod.screensBacklightLevel()))
+        ct:updateBacklightLevel(tonumber(mod.screensBacklightLevel()))
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
@@ -707,16 +713,16 @@ local function callback(data)
     -- ISN'T ASSIGNED TO THEM (IN WHICH CASE THEY BECOME NORMAL BUTTONS):
     --------------------------------------------------------------------------------
     local functionButtonPressed = false
-    if data.id == ct.event.BUTTON_PRESS then
+    if data.id == loupedeck.event.BUTTON_PRESS then
         if data.direction == "up" then
-            if data.buttonID == ct.buttonID.LEFT_FN then
+            if data.buttonID == loupedeck.buttonID.LEFT_FN then
                 local button = item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     leftFnPressed = false
                     mod.refresh()
                 end
-            elseif data.buttonID == ct.buttonID.RIGHT_FN then
+            elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
@@ -725,7 +731,7 @@ local function callback(data)
                 end
             end
         elseif data.direction == "down" then
-            if data.buttonID == ct.buttonID.LEFT_FN then
+            if data.buttonID == loupedeck.buttonID.LEFT_FN then
                 local button = item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
@@ -733,7 +739,7 @@ local function callback(data)
                     leftFnPressed = true
                     mod.refresh()
                 end
-            elseif data.buttonID == ct.buttonID.RIGHT_FN then
+            elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
@@ -759,7 +765,7 @@ local function callback(data)
     local bank = item and item[bankID]
 
     if bank then
-        if data.id == ct.event.BUTTON_PRESS and data.direction == "down" then
+        if data.id == loupedeck.event.BUTTON_PRESS and data.direction == "down" then
             --------------------------------------------------------------------------------
             -- LED BUTTON PRESS:
             --------------------------------------------------------------------------------
@@ -778,7 +784,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisButton and thisButton.vibratePress then
-                ct.vibrate(tonumber(thisButton.vibratePress))
+                ct:vibrate(tonumber(thisButton.vibratePress))
             end
 
             --------------------------------------------------------------------------------
@@ -791,9 +797,9 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisKnob and thisKnob.vibratePress then
-                ct.vibrate(tonumber(thisKnob.vibratePress))
+                ct:vibrate(tonumber(thisKnob.vibratePress))
             end
-        elseif data.id == ct.event.BUTTON_PRESS and data.direction == "up" then
+        elseif data.id == loupedeck.event.BUTTON_PRESS and data.direction == "up" then
             --------------------------------------------------------------------------------
             -- LED BUTTON RELEASE:
             --------------------------------------------------------------------------------
@@ -813,7 +819,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisButton and thisButton.vibrateRelease then
-                ct.vibrate(tonumber(thisButton.vibrateRelease))
+                ct:vibrate(tonumber(thisButton.vibrateRelease))
             end
 
             --------------------------------------------------------------------------------
@@ -826,9 +832,9 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisKnob and thisKnob.vibrateRelease then
-                ct.vibrate(tonumber(thisKnob.vibrateRelease))
+                ct:vibrate(tonumber(thisKnob.vibrateRelease))
             end
-        elseif data.id == ct.event.ENCODER_MOVE then
+        elseif data.id == loupedeck.event.ENCODER_MOVE then
             --------------------------------------------------------------------------------
             -- KNOB TURN:
             --------------------------------------------------------------------------------
@@ -839,10 +845,10 @@ local function callback(data)
 
             -- Vibrate if needed:
             if data.direction == "left" and thisKnob and thisKnob.vibrateLeft then
-                ct.vibrate(tonumber(thisKnob.vibrateLeft))
+                ct:vibrate(tonumber(thisKnob.vibrateLeft))
             end
             if data.direction == "right" and thisKnob and thisKnob.vibrateRight then
-                ct.vibrate(tonumber(thisKnob.vibrateRight))
+                ct:vibrate(tonumber(thisKnob.vibrateRight))
             end
 
             local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
@@ -852,12 +858,12 @@ local function callback(data)
 
             -- Vibrate if needed:
             if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft then
-                ct.vibrate(tonumber(thisJogWheel.vibrateLeft))
+                ct:vibrate(tonumber(thisJogWheel.vibrateLeft))
             end
             if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight then
-                ct.vibrate(tonumber(thisJogWheel.vibrateRight))
+                ct:vibrate(tonumber(thisJogWheel.vibrateRight))
             end
-        elseif data.id == ct.event.SCREEN_PRESSED then
+        elseif data.id == loupedeck.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
             -- TOUCH SCREEN BUTTON PRESS:
             --------------------------------------------------------------------------------
@@ -865,7 +871,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisTouchButton and thisTouchButton.vibratePress then
-                ct.vibrate(tonumber(thisTouchButton.vibratePress))
+                ct:vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
@@ -883,7 +889,7 @@ local function callback(data)
             --------------------------------------------------------------------------------
             -- LEFT TOUCH SCREEN:
             --------------------------------------------------------------------------------
-            if data.screenID == ct.screens.left.id then
+            if data.screenID == loupedeck.screens.left.id then
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["1"]
                 if thisSideScreen then
                     --------------------------------------------------------------------------------
@@ -929,7 +935,7 @@ local function callback(data)
             --------------------------------------------------------------------------------
             -- RIGHT TOUCH SCREEN:
             --------------------------------------------------------------------------------
-            if data.screenID == ct.screens.right.id then
+            if data.screenID == loupedeck.screens.right.id then
                 --------------------------------------------------------------------------------
                 -- SLIDE UP/DOWN:
                 --------------------------------------------------------------------------------
@@ -971,7 +977,7 @@ local function callback(data)
                     end
                 end
             end
-        elseif data.id == ct.event.SCREEN_RELEASED then
+        elseif data.id == loupedeck.event.SCREEN_RELEASED then
             --------------------------------------------------------------------------------
             -- SCREEN RELEASED:
             --------------------------------------------------------------------------------
@@ -995,13 +1001,13 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisTouchButton and thisTouchButton.vibrateRelease then
-                ct.vibrate(tonumber(thisTouchButton.vibrateRelease))
+                ct:vibrate(tonumber(thisTouchButton.vibrateRelease))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.releaseAction) then
                 return
             end
-        elseif data.id == ct.event.WHEEL_PRESSED then
+        elseif data.id == loupedeck.event.WHEEL_PRESSED then
             local wheelScreen = bank.wheelScreen and bank.wheelScreen["1"]
             if wheelScreen then
                 --------------------------------------------------------------------------------
@@ -1087,7 +1093,7 @@ local function callback(data)
                     executeAction(wheelScreen.twoFingerTapAction)
                 end
             end
-        elseif data.id == ct.event.WHEEL_RELEASED then
+        elseif data.id == loupedeck.event.WHEEL_RELEASED then
             cacheWheelYAxis = nil
             cacheWheelXAxis = nil
 
@@ -1176,7 +1182,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup the Loupedeck CT callback:
     --------------------------------------------------------------------------------
-    ct.callback(callback)
+    ct:callback(callback)
 
     --------------------------------------------------------------------------------
     -- Setup watch to refresh the Loupedeck CT when apps change focus:
@@ -1296,11 +1302,11 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     config.shutdownCallback:new("loupedeckCT", function()
         if mod.enabled() then
-            for _, screen in pairs(ct.screens) do
-                ct.updateScreenColor(screen, {hex="#"..defaultColor})
+            for _, screen in pairs(loupedeck.screens) do
+                ct:updateScreenColor(screen, {hex="#"..defaultColor})
             end
             for i=7, 26 do
-                ct.buttonColor(i, {hex="#" .. defaultColor})
+                ct:buttonColor(i, {hex="#" .. defaultColor})
             end
             just.wait(0.01) -- Slight delay so the websocket message has time to send.
         end

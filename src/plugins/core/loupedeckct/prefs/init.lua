@@ -12,7 +12,7 @@ local dialog                    = require "hs.dialog"
 local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
-local loupedeckct               = require "hs.loupedeckct"
+local loupedeck                 = require "hs.loupedeck"
 local menubar                   = require "hs.menubar"
 local mouse                     = require "hs.mouse"
 
@@ -195,8 +195,8 @@ local function generateContent()
 
         insertImage                 = insertImage,
 
-        vibrationIndex              = loupedeckct.vibrationIndex,
-        wheelSensitivityIndex       = loupedeckct.wheelSensitivityIndex,
+        vibrationIndex              = loupedeck.vibrationIndex,
+        wheelSensitivityIndex       = loupedeck.wheelSensitivityIndex,
     }
 
     return renderPanel(context)
@@ -423,7 +423,7 @@ local function updateUI(params)
 
     local repeatPressActionUntilReleasedValue = selectedID and selectedID.repeatPressActionUntilReleased or false
 
-    local wheelSensitivityValue = selectedID and selectedID.wheelSensitivity or tostring(loupedeckct.defaultWheelSensitivityIndex)
+    local wheelSensitivityValue = selectedID and selectedID.wheelSensitivity or tostring(loupedeck.defaultWheelSensitivityIndex)
 
     local bankLabel = selectedBank and selectedBank.bankLabel or ""
 
@@ -2194,6 +2194,9 @@ function plugin.init(deps, env)
     mod._env                                = env
 
     mod._ctmanager                          = deps.ctmanager
+
+    mod.loupedeck                           = deps.ctmanager.device
+
     mod.items                               = deps.ctmanager.items
     mod.enabled                             = deps.ctmanager.enabled
     mod.loadSettingsFromDevice              = deps.ctmanager.loadSettingsFromDevice
@@ -2314,7 +2317,7 @@ function plugin.init(deps, env)
                 required    =   true,
                 onchange    =   function(_, params)
                                     mod.screensBacklightLevel(params.value)
-                                    loupedeckct.updateBacklightLevel(tonumber(params.value))
+                                    mod.loupedeck:updateBacklightLevel(tonumber(params.value))
                                 end,
             }
         )
