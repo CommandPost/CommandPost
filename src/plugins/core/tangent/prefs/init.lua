@@ -40,10 +40,10 @@ local TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 -- URL to download Tangent Hub Application.
 local DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
 
---- plugins.core.tangent.prefs.lastApplication <cp.prop: string>
---- Field
---- Last Application used in the Preferences Panel.
-mod.lastApplication = config.prop("tangent.preferences.lastApplication", "Final Cut Pro (via CommandPost)")
+-- DEFAULT_LAST_APPLICATION -> string
+-- Constant
+-- The default last application.
+local DEFAULT_LAST_APPLICATION = "Final Cut Pro"
 
 -- renderPanel(context) -> none
 -- Function
@@ -76,8 +76,11 @@ end
 -- Returns:
 --  * HTML content as string
 local function generateContent()
+    local applicationNames = mod._tangentManager.applicationNames()
+    table.sort(applicationNames)
+
     local context = {
-        displayNames            = mod._tangentManager.displayNames(),
+        applicationNames        = applicationNames,
         webviewLabel            = mod._prefsManager.getLabel(),
         maxItems                = mod._tangentManager.NUMBER_OF_FAVOURITES,
         spairs                  = spairs,
@@ -105,7 +108,7 @@ local function updateUI()
     local lastApplication = mod.lastApplication()
     local connection = mod._tangentManager.getConnection(lastApplication)
     if not connection then
-        lastApplication = "Final Cut Pro (via CommandPost)"
+        lastApplication = DEFAULT_LAST_APPLICATION
         connection = mod._tangentManager.getConnection(lastApplication)
     end
 
@@ -113,8 +116,8 @@ local function updateUI()
     -- Enable or Disable the "Add Application" drop down option:
     --------------------------------------------------------------------------------
     local maxConnections = mod._tangentManager.MAXIMUM_CONNECTIONS
-    local displayNames = mod._tangentManager.displayNames()
-    local connectionCount = tableCount(displayNames)
+    local applicationNames = mod._tangentManager.applicationNames()
+    local connectionCount = #applicationNames
     local allowAddApplication = true
     if connectionCount >= maxConnections then
         allowAddApplication = false
@@ -199,15 +202,13 @@ local function tangentPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 local customApplications = mod._tangentManager.customApplications()
 
-                local displayNames = {}
-                for _, displayName in pairs(customApplications) do
-                    table.insert(displayNames, displayName)
-                end
+                local applicationNames = mod._tangentManager.applicationNames()
+                table.sort(applicationNames)
 
-                local result = displayChooseFromList("Please select the application you want to remove:", displayNames)
-                local displayNameToRemove = result and result[1]
-                if displayNameToRemove then
-                    mod._tangentManager.removeCustomApplication(displayNameToRemove)
+                local result = displayChooseFromList("Please select the application you want to remove:", applicationNames)
+                local applicationToRemove = result and result[1]
+                if applicationToRemove then
+                    mod._tangentManager.removeCustomApplication(applicationToRemove)
 
                     --------------------------------------------------------------------------------
                     -- Refresh the UI:
@@ -224,12 +225,12 @@ local function tangentPanelCallback(id, params)
                 if files then
                     local path = files["1"]
                     local info = path and infoForBundlePath(path)
-                    local displayName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
+                    local applicationName = info and info.CFBundleDisplayName or info.CFBundleName or info.CFBundleExecutable
                     local bundleExecutable = info and info.CFBundleExecutable
-                    if displayName and bundleExecutable then
-                        local displayNames = mod._tangentManager.displayNames()
-                        if not tableContains(displayNames, displayName) then
-                            mod._tangentManager.registerCustomApplication(displayName, bundleExecutable)
+                    if applicationName and bundleExecutable then
+                        local applicationNames = mod._tangentManager.applicationNames()
+                        if not tableContains(applicationNames, applicationName) then
+                            mod._tangentManager.registerCustomApplication(applicationName, bundleExecutable)
 
                             --------------------------------------------------------------------------------
                             -- Refresh the UI:
@@ -240,7 +241,7 @@ local function tangentPanelCallback(id, params)
                         end
                     else
                         webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("failedToAddCustomApplication"), i18n("failedToAddCustomApplicationDescription"), i18n("ok"))
-                        log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleExecutable: '%s'\ndisplayName: '%s'",path, bundleExecutable, displayName)
+                        log.ef("Something went wrong trying to add a custom application.\n\nPath: '%s'\nbundleExecutable: '%s'\napplicationName: '%s'",path, bundleExecutable, applicationName)
                     end
                     updateUI()
                 end
@@ -350,6 +351,11 @@ function mod.init(deps, env)
     mod._prefsManager   = deps.prefsManager
     mod._tangentManager = deps.tangentManager
     mod._env            = env
+
+    --- plugins.core.tangent.prefs.lastApplication <cp.prop: string>
+    --- Field
+    --- Last Application used in the Preferences Panel.
+    mod.lastApplication = config.prop("tangent.preferences.lastApplication", DEFAULT_LAST_APPLICATION)
 
     --------------------------------------------------------------------------------
     -- Setup Tangent Preferences Panel:

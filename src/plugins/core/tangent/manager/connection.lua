@@ -237,8 +237,10 @@ function connection:updateFavourites()
     -- Re-populate the favourites:
     --------------------------------------------------------------------------------
     local faves = self.favourites()
-    local max = self.manager.NUMBER_OF_FAVOURITES
+
     local id = FAVOURITE_START_ID
+    local max = self.manager.NUMBER_OF_FAVOURITES
+
     for i = 1, max do
         local fave = faves[tostring(i)]
         if fave then
@@ -247,7 +249,7 @@ function connection:updateFavourites()
                 :action(actionId)
                 :name(fave.actionTitle)
                 :onPress(function()
-                    local handler = mod.manager.actionManager.getHandler(fave.handlerID)
+                    local handler = self.manager.actionManager.getHandler(fave.handlerID)
                     if handler then
                         if not handler:execute(fave.action) then
                             log.wf("Unable to execute Tangent Favourite #%s: %s", i, inspect(fave))
@@ -492,9 +494,9 @@ function connection:updateControls()
     end
 end
 
---- plugins.core.tangent.manager.connection(bundleID, manager)
+--- plugins.core.tangent.manager.connection(bundleID, manager) -> Connection object
 --- Constructor
---- Creates a new `Mode` instance.
+--- Creates a new `Connection` object.
 ---
 --- Parameters:
 ---  * applicationName - The application name as a string. This is what appears in Tangent Mapper.
@@ -502,15 +504,19 @@ end
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
----         This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
----         This parameter should only be required if the string passed in appStr does not match the Task name that the OS
----         identifies as your application. Typically, this is only usually required for Plugins which run within a parent
----         Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
+---           This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+---           This parameter should only be required if the string passed in appStr does not match the Task name that the OS
+---           identifies as your application. Typically, this is only usually required for Plugins which run within a parent
+---           Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
+---  * pluginPath - A string containing the absolute path of the directory that contains the built-in Default Map XML files.
+---  * addDefaultModes - A boolean which indicates whether or not CommandPost should add any default modes.
+---  * setupFn - Setup function.
+---  * transportFn - Transport function.
 ---  * manager - The Tangent Manager module
 ---
 --- Returns:
----  *
-function connection:initialize(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn, manager)
+---  * A new Connection object.
+function connection:initialize(applicationName, displayName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, manager)
     self._applicationName       = applicationName
     self._displayName           = displayName
     self._systemPath            = systemPath
@@ -528,6 +534,13 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     self._connectionConfirmed   = false
 
     self._device                = self:setupTangentConnection()
+
+    --------------------------------------------------------------------------------
+    -- Add a Default Mode for Custom Applications:
+    --------------------------------------------------------------------------------
+    if addDefaultModes then
+        self:addMode(0x00010001, i18n("default"))
+    end
 
     --- plugins.core.tangent.manager.connection.activeModeID <cp.prop: string>
     --- Field
@@ -583,6 +596,11 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     --- Variable
     --- A `cp.prop` that that contains all the Tangent Favourites for the connection.
     self.favourites = json.prop(favouritesPath, displayName, displayName .. ".cpTangent", {})
+
+    --------------------------------------------------------------------------------
+    -- Update Favourites:
+    --------------------------------------------------------------------------------
+    self:updateFavourites()
 
     --- plugins.core.tangent.manager.connection.rebuildXML <cp.prop: boolean>
     --- Variable

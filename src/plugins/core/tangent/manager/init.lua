@@ -17,6 +17,7 @@ local image                     = require "hs.image"
 local tangent                   = require "hs.tangent"
 
 local config                    = require "cp.config"
+local i18n                      = require "cp.i18n"
 local prop                      = require "cp.prop"
 
 local connection                = require "connection"
@@ -32,6 +33,11 @@ local mod = {}
 -- Constant
 -- Tangent Mapper Bundle ID.
 local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
+
+--- plugins.core.tangent.manager.APPLICATION_NAME_SUFFIX -> string
+--- Constant
+--- A suffix applied to the end of Application Names as they appear in Tangent Mapper
+mod.APPLICATION_NAME_SUFFIX = " (via CP)"
 
 --- plugins.core.tangent.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
@@ -99,29 +105,29 @@ mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
     end
 end)
 
---- plugins.core.tangent.manager.newConnection(applicationName, systemPath, userPath, task) -> connection
+--- plugins.core.tangent.manager.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn) -> connection
 --- Function
 --- Creates a new Tangent Connection
 ---
 --- Parameters:
----  * applicationName - The application name as a string. This is what appears in Tangent Mapper.
----  * displayName - The application display name as a string. This is what appears in CommandPost.
+---  * applicationName - The application name as a string. This is what appears in CommandPost Preferences.
 ---  * systemPath - A string containing the absolute path of the directory that contains the Controls and Default Map XML files.
 ---  * userPath - An optional string containing the absolute path of the directory that contains the User’s Default Map XML files.
 ---  * task - An optional string containing the name of the task associated with the application.
----         This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
----         This parameter should only be required if the string passed in appStr does not match the Task name that the OS
----         identifies as your application. Typically, this is only usually required for Plugins which run within a parent
----         Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
+---           This is used to assist with automatic switching of panels when your application gains mouse focus on the GUI.
+---           This parameter should only be required if the string passed in appStr does not match the Task name that the OS
+---           identifies as your application. Typically, this is only usually required for Plugins which run within a parent
+---           Host application. Under these circumstances it is the name of the Host Application’s Task which should be passed.
 ---  * pluginPath - A string containing the absolute path of the directory that contains the built-in Default Map XML files.
+---  * addDefaultModes - A boolean which indicates whether or not CommandPost should add any default modes.
 ---  * setupFn - Setup function.
 ---  * transportFn - Transport function.
 ---
 --- Returns:
 ---  * The connection object
-function mod.newConnection(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn)
+function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn)
     if not mod.connections[applicationName] then
-        local connection = connection:new(applicationName, displayName, systemPath, userPath, task, pluginPath, setupFn, transportFn, mod)
+        local connection = connection:new(applicationName .. mod.APPLICATION_NAME_SUFFIX, applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, mod)
         mod.connections[applicationName] = connection
         return connection
     else
@@ -142,56 +148,61 @@ function mod.getConnection(applicationName)
     return mod.connections[applicationName]
 end
 
---- plugins.core.tangent.manager.displayNames() -> table
+--- plugins.core.tangent.manager.applicationNames() -> table
 --- Function
---- Gets a table listing all the connections application and display names.
+--- Gets a table listing all the connections application names.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A table where the application name is the key, and display name is the value.
-function mod.displayNames()
-    local displayNames = {}
+---  * A table containing the names of all the registered connections.
+function mod.applicationNames()
+    local applicationNames = {}
     local connections = mod.connections
-    for id, connection in pairs(connections) do
-        displayNames[id] = connection:displayName()
+    for applicationName, _ in pairs(connections) do
+        table.insert(applicationNames, applicationName)
     end
-    return displayNames
+    return applicationNames
 end
 
---- plugins.core.tangent.manager.registerCustomApplication(displayName, bundleExecutable) -> none
+--- plugins.core.tangent.manager.registerCustomApplication(applicationName, bundleExecutable) -> none
 --- Function
 --- Registers a new Custom Application
 ---
 --- Parameters:
----  * displayName - The display name of the custom application
+---  * applicationName - The display name of the custom application
 ---  * bundleExecutable - The bundle executable identifier of the custom application
 ---
 --- Returns:
 ---  * A table where the application name is the key, and display name is the value.
-function mod.registerCustomApplication(displayName, bundleExecutable)
+function mod.registerCustomApplication(applicationName, bundleExecutable)
+    --------------------------------------------------------------------------------
+    -- Add Custom Application to Preferences:
+    --------------------------------------------------------------------------------
     local customApplications = mod.customApplications()
-    customApplications[bundleExecutable] = displayName
+    customApplications[bundleExecutable] = applicationName
     mod.customApplications(customApplications)
+
+    --------------------------------------------------------------------------------
+    -- Setup the custom application:
+    --------------------------------------------------------------------------------
     mod.setupCustomApplications()
 end
 
---- plugins.core.tangent.manager.removeCustomApplication(displayName) -> none
+--- plugins.core.tangent.manager.removeCustomApplication(applicationName) -> none
 --- Function
 --- Removes a Custom Application.
 ---
 --- Parameters:
----  * displayName - The display name of the Custom Application to Remove.
+---  * applicationName - The display name of the Custom Application to Remove.
 ---
 --- Returns:
 ---  * None
-function mod.removeCustomApplication(displayName)
+function mod.removeCustomApplication(applicationName)
     local customApplications = mod.customApplications()
-    for bundleExecutable, currentDisplayName in pairs(customApplications) do
-        if currentDisplayName == displayName then
-            local applicationName = displayName .. " (via CommandPost)"
-
+    for bundleExecutable, currentApplicationName in pairs(customApplications) do
+        if currentApplicationName == applicationName then
             --------------------------------------------------------------------------------
             -- Disconnecting and removing connection:
             --------------------------------------------------------------------------------
@@ -221,13 +232,11 @@ end
 ---  * None
 function mod.setupCustomApplications()
     local customApplications = mod.customApplications()
-    for bundleExecutable, displayName in pairs(customApplications) do
-        local applicationName = displayName .. " (via CommandPost)"
+    for bundleExecutable, applicationName in pairs(customApplications) do
         if not mod.connections[applicationName] then
-            local applicationName = displayName .. " (via CommandPost)"
             local systemPath = config.userConfigRootPath .. "/Tangent Settings/" .. bundleExecutable
             local pluginPath = config.basePath .. "/plugins/core/tangent/defaultmap"
-            mod.newConnection(applicationName, displayName, systemPath, nil, bundleExecutable, pluginPath)
+            mod.newConnection(applicationName, systemPath, nil, bundleExecutable, pluginPath, true)
         else
             log.ef("Custom Application already registered: %s", bundleExecutable)
         end

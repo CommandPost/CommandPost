@@ -17,6 +17,7 @@ local dirFiles              = tools.dirFiles
 local doesDirectoryExist    = tools.doesDirectoryExist
 local doesFileExist         = tools.doesFileExist
 local mkdir                 = fs.mkdir
+local replace               = tools.replace
 
 -- FCP_KEYPRESS_APPS_PATH -> string
 -- Constant
@@ -105,9 +106,11 @@ function plugin.init(deps, env)
     -- NOTE: The reason we copy, and don't move, is so that users can still
     --       roll back to a previous CommandPost release if needed.
     --------------------------------------------------------------------------------
+    local suffix = manager.APPLICATION_NAME_SUFFIX
+    local safeSuffix = replace(suffix, " ", "_")
     local homePath = os.getenv("HOME")
     local legacyPath = homePath .. "/Library/Application Support/Tangent/Hub/CommandPost"
-    local newPath = homePath .."/Library/Application Support/Tangent/Hub/Final_Cut_Pro_(via_CommandPost)"
+    local newPath = homePath .."/Library/Application Support/Tangent/Hub/Final_Cut_Pro" .. safeSuffix
     local filesToMove = {}
     if doesDirectoryExist(legacyPath) then
         local files = dirFiles(legacyPath)
@@ -154,7 +157,7 @@ function plugin.init(deps, env)
 
     local systemPath = config.userConfigRootPath .. "/Tangent Settings/Final Cut Pro"
     local pluginPath = config.basePath .. "/plugins/finalcutpro/tangent/defaultmap"
-    local connection = manager.newConnection("Final Cut Pro (via CommandPost)", "Final Cut Pro", systemPath, nil, "Final Cut Pro", pluginPath, setupFn, transportFn)
+    local connection = manager.newConnection("Final Cut Pro", systemPath, nil, "Final Cut Pro", pluginPath, false, setupFn, transportFn)
 
     connection:addMode(0x00010004, "FCP: " .. i18n("wheels"))
 

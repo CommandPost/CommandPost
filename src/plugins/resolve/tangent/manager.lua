@@ -28,7 +28,7 @@ function plugin.init(deps, env)
     local systemPath = config.userConfigRootPath .. "/Tangent Settings/DaVinci Resolve"
     local pluginPath = config.basePath .. "/plugins/resolve/tangent/defaultmap"
 
-    local connection = manager.newConnection("DaVinci Resolve (via CommandPost)", "DaVinci Resolve", systemPath, nil, "Resolve", pluginPath)
+    local connection = manager.newConnection("DaVinci Resolve", systemPath, nil, "Resolve", pluginPath, false)
     return connection
 end
 

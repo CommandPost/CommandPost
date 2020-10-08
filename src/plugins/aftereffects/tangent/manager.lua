@@ -7,6 +7,7 @@ local require               = require
 --local log                   = require "hs.logger".new("tangentManager")
 
 local config                = require "cp.config"
+local i18n                  = require "cp.i18n"
 
 local plugin = {
     id = "aftereffects.tangent.manager",
@@ -22,7 +23,10 @@ function plugin.init(deps, env)
     local systemPath = config.userConfigRootPath .. "/Tangent Settings/After Effects"
     local pluginPath = config.basePath .. "/plugins/aftereffects/tangent/defaultmap"
 
-    local connection = manager.newConnection("After Effects (via CommandPost)", "After Effects", systemPath, nil, "After Effects", pluginPath)
+    local connection = manager.newConnection("After Effects", systemPath, nil, "After Effects", pluginPath, false)
+
+    connection:addMode(0x00010001, i18n("default"))
+
     return connection
 end
 
