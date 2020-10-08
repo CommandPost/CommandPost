@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.tangent.commandpost ===
+--- === plugins.finalcutpro.tangent.features ===
 ---
 --- Final Cut Pro CommandPost Actions for Tangent
 
@@ -10,7 +10,7 @@ local fcp       = require "cp.apple.finalcutpro"
 local i18n      = require "cp.i18n"
 
 local plugin = {
-    id = "finalcutpro.tangent.commandpost",
+    id = "finalcutpro.tangent.features",
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.tangent.common"]  = "common",

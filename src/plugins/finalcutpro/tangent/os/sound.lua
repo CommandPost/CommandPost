@@ -1,4 +1,4 @@
---- === plugins.core.tangent.os.sound ===
+--- === plugins.finalcutpro.tangent.os.sound ===
 ---
 --- Tangent Display Functions.
 
@@ -129,10 +129,10 @@ end
 
 
 local plugin = {
-    id = "core.tangent.os.sound",
-    group = "core",
+    id = "finalcutpro.tangent.os.sound",
+    group = "finalcutpro",
     dependencies = {
-        ["core.tangent.os"] = "osGroup",
+        ["finalcutpro.tangent.os"] = "osGroup",
     }
 }
 

@@ -1,12 +1,10 @@
---- === plugins.finalcutpro.tangent.manager ===
+--- === plugins.finalcutpro.tangent.color ===
 ---
 --- Final Cut Pro Tangent Color Manager.
 
 local require           = require
 
 --local log               = require "hs.logger".new "fcp_tangent"
-
-local tangent           = require "hs.tangent"
 
 local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 local deferred          = require "cp.deferred"
@@ -28,7 +26,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.tangent.group"]  = "fcpGroup",
         ["finalcutpro.tangent.common"]  = "common",
-        ["core.tangent.manager"] = "manager",
+        ["finalcutpro.tangent.manager"] = "tangentManager",
     }
 }
 
@@ -38,12 +36,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
 
-    local common = deps.common
-    local fcpGroup = deps.fcpGroup
-    local manager = deps.manager
+    local common            = deps.common
+    local fcpGroup          = deps.fcpGroup
+    local manager           = deps.tangentManager
 
-    local doShortcut = common.doShortcut
-    local doShowParameter = common.doShowParameter
+    local doShortcut        = common.doShortcut
+    local doShowParameter   = common.doShowParameter
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
@@ -217,7 +215,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel:nudgeColor(rightChange, upChange)
                     rightChange, upChange = 0, 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())
@@ -229,7 +232,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel.saturation:shiftValue(satChange)
                     satChange = 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())
@@ -241,7 +249,12 @@ function plugin.init(deps)
                 :Then(function()
                     wheel.brightness:shiftValue(brightChange)
                     brightChange = 0
-                    manager.controls:findByID(id):update() -- Force the Tangent display to update.
+
+                    local control = manager.controls:findByID(id)
+                    if control then
+                        control:update() -- Force the Tangent display to update.
+                    end
+
                     return true
                 end)
                 :Otherwise(wheel:doShow())
@@ -261,9 +274,9 @@ function plugin.init(deps)
             local colorValue = w:colorValue()
             if colorValue then
                 local offset = 255
-                tangent.sendParameterValue(id + 3, round(colorValue.red * offset))
-                tangent.sendParameterValue(id + 1, round(colorValue.green * offset))
-                tangent.sendParameterValue(id + 2, round(colorValue.blue * offset))
+                manager:device():sendParameterValue(id + 3, round(colorValue.red * offset))
+                manager:device():sendParameterValue(id + 1, round(colorValue.green * offset))
+                manager:device():sendParameterValue(id + 2, round(colorValue.blue * offset))
             end
         end
 
