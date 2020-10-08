@@ -1,35 +1,34 @@
 --- === plugins.finalcutpro.tangent.os.sound ===
 ---
---- Tangent Display Functions.
+--- Tangent Sound Functions.
 
 local require = require
 
-local audiodevice           = require("hs.audiodevice")
-local audiowatcher          = require("hs.audiodevice.watcher")
+local audiodevice           = require "hs.audiodevice"
+local audiowatcher          = require "hs.audiodevice.watcher"
 
-local dialog                = require("cp.dialog")
-local i18n                  = require("cp.i18n")
-local prop                  = require("cp.prop")
-local tools                 = require("cp.tools")
+local dialog                = require "cp.dialog"
+local i18n                  = require "cp.i18n"
+local prop                  = require "cp.prop"
+local tools                 = require "cp.tools"
 
 local format                = string.format
 
-
 local mod = {}
 
---- plugins.core.tangent.os.sound.currentOutputDevice <cp.prop: audio>
+--- plugins.finalcutpro.tangent.os.sound.currentOutputDevice <cp.prop: audio>
 --- Variable
 --- Current Output Device.
 mod.currentOutputDevice = prop(function()
     return audiodevice.defaultOutputDevice()
 end)
 
---- plugins.core.tangent.os.sound.group <cp.prop: audio>
+--- plugins.finalcutpro.tangent.os.sound.group <cp.prop: audio>
 --- Variable
 --- Tangent Sound Group.
 mod.group = nil
 
---- plugins.core.tangent.os.sound.init() -> self
+--- plugins.finalcutpro.tangent.os.sound.init() -> self
 --- Function
 --- Initialise the module.
 ---
@@ -126,7 +125,6 @@ function mod.init(deps)
 
     return mod
 end
-
 
 local plugin = {
     id = "finalcutpro.tangent.os.sound",
