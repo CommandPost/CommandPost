@@ -25,10 +25,11 @@ function plugin.init(deps, env)
 
     local manager = deps.manager
 
-    local systemPath = config.userConfigRootPath .. "/Tangent Settings/DaVinci Resolve"
+    local systemPath = config.userConfigRootPath .. "/Tangent/DaVinci Resolve"
     local pluginPath = config.basePath .. "/plugins/resolve/tangent/defaultmap"
+    local userPath = systemPath .. "/" .. manager.USER_CONTROL_MAPS_FOLDER
 
-    local connection = manager.newConnection("DaVinci Resolve", systemPath, nil, "Resolve", pluginPath, false)
+    local connection = manager.newConnection("DaVinci Resolve", systemPath, userPath, "Resolve", pluginPath, false)
     return connection
 end
 

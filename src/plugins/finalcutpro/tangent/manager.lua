@@ -106,11 +106,10 @@ function plugin.init(deps, env)
     -- NOTE: The reason we copy, and don't move, is so that users can still
     --       roll back to a previous CommandPost release if needed.
     --------------------------------------------------------------------------------
-    local suffix = manager.APPLICATION_NAME_SUFFIX
-    local safeSuffix = replace(suffix, " ", "_")
     local homePath = os.getenv("HOME")
     local legacyPath = homePath .. "/Library/Application Support/Tangent/Hub/CommandPost"
-    local newPath = homePath .."/Library/Application Support/Tangent/Hub/Final_Cut_Pro" .. safeSuffix
+    local rootPath = config.userConfigRootPath .. "/Tangent/Final Cut Pro"
+    local userPath = rootPath .. "/User Control Maps"
     local filesToMove = {}
     if doesDirectoryExist(legacyPath) then
         local files = dirFiles(legacyPath)
@@ -120,31 +119,44 @@ function plugin.init(deps, env)
             end
         end
     end
-    if not doesDirectoryExist(newPath) then
-        mkdir(newPath)
+    if not doesDirectoryExist(rootPath) then
+        mkdir(rootPath)
     end
+    if not doesDirectoryExist(userPath) then
+        mkdir(userPath)
+    end
+    local didMigrate = false
     for _, file in pairs(filesToMove) do
-        local cmd = [[cp -n "]] ..  file .. [[" "]] .. newPath .. [[" || true]]
+        didMigrate = true
+        local cmd = [[cp -n "]] ..  file .. [[" "]] .. userPath .. [[" || true]]
         os.execute(cmd)
+    end
+    if didMigrate then
+        log.df("Migrated legacy Tangent User Mappings.")
     end
 
     --------------------------------------------------------------------------------
     -- Copy Legacy Favourites:
     --------------------------------------------------------------------------------
     local legacyFavouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent Settings/Default.cpTangent"
-    local newFavouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent Settings/Final Cut Pro/Final Cut Pro.cpTangent"
+    local newFavouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent/Final Cut Pro/Final Cut Pro.cpTangent"
     if doesFileExist(legacyFavouritesPath) and not doesFileExist(newFavouritesPath) then
         local cmd = [[cp -n "]] ..  legacyFavouritesPath .. [[" "]] .. newFavouritesPath .. [[" || true]]
         os.execute(cmd)
+        log.df("Migrated legacy Tangent Favourites.")
     end
 
     --------------------------------------------------------------------------------
-    -- Setup Tangent Connection:
+    -- Disable Final Cut Pro in Tangent Hub (only relevant for older versions
+    -- of Tangent Mapper).
     --------------------------------------------------------------------------------
     local setupFn = function()
         disableFinalCutProInTangentHub()
     end
 
+    --------------------------------------------------------------------------------
+    -- Setup Transport Controls:
+    --------------------------------------------------------------------------------
     local transportFn = function(metadata)
         if fcp:isFrontmost() then
             if metadata.jogValue == 1 then
@@ -155,10 +167,18 @@ function plugin.init(deps, env)
         end
     end
 
-    local systemPath = config.userConfigRootPath .. "/Tangent Settings/Final Cut Pro"
+    --------------------------------------------------------------------------------
+    -- Setup Tangent Connection:
+    --------------------------------------------------------------------------------
+    local systemPath = config.userConfigRootPath .. "/Tangent/Final Cut Pro"
     local pluginPath = config.basePath .. "/plugins/finalcutpro/tangent/defaultmap"
-    local connection = manager.newConnection("Final Cut Pro", systemPath, nil, "Final Cut Pro", pluginPath, false, setupFn, transportFn)
+    local userPath = systemPath .. "/" .. manager.USER_CONTROL_MAPS_FOLDER
 
+    local connection = manager.newConnection("Final Cut Pro", systemPath, userPath, "Final Cut Pro", pluginPath, false, setupFn, transportFn)
+
+    --------------------------------------------------------------------------------
+    -- Add Default Mode:
+    --------------------------------------------------------------------------------
     connection:addMode(0x00010004, "FCP: " .. i18n("wheels"))
 
     return connection

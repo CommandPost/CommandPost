@@ -1740,14 +1740,18 @@ end
 --- If it fails, `nil` is returned.
 ---
 --- Parameters:
----  * `rootPath` - The root path (should already exist).
+---  * `rootPath` - The root path
 ---  * `...`      - The list of path steps to create
 ---
 --- Returns:
 ---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
 function tools.ensureDirectoryExists(rootPath, ...)
     if not tools.doesDirectoryExist(rootPath) then
-        return
+        local success, err = fs.mkdir(rootPath)
+        if not success then
+            log.ef("Problem ensuring that '%s' exists: %s", rootPath, err)
+            return nil
+        end
     end
     local fullPath = rootPath
     for _,path in ipairs(table.pack(...)) do

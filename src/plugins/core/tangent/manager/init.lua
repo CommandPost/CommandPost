@@ -13,19 +13,23 @@ local require                   = require
 local log                       = require "hs.logger".new "tangentMan"
 
 local application               = require "hs.application"
+local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local tangent                   = require "hs.tangent"
 
 local config                    = require "cp.config"
 local i18n                      = require "cp.i18n"
 local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
 local connection                = require "connection"
 
+local doesDirectoryExist        = tools.doesDirectoryExist
 local imageFromPath             = image.imageFromPath
 local infoForBundleID           = application.infoForBundleID
 local isTangentHubInstalled     = tangent.isTangentHubInstalled
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
+local mkdir                     = fs.mkdir
 
 local mod = {}
 
@@ -38,6 +42,11 @@ local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 --- Constant
 --- A suffix applied to the end of Application Names as they appear in Tangent Mapper
 mod.APPLICATION_NAME_SUFFIX = " (via CP)"
+
+--- plugins.core.tangent.manager.USER_CONTROL_MAPS_FOLDER -> string
+--- Constant
+--- The full name for storing User Control Maps
+mod.USER_CONTROL_MAPS_FOLDER = "User Control Maps"
 
 --- plugins.core.tangent.manager.NUMBER_OF_FAVOURITES -> number
 --- Constant
@@ -234,9 +243,10 @@ function mod.setupCustomApplications()
     local customApplications = mod.customApplications()
     for bundleExecutable, applicationName in pairs(customApplications) do
         if not mod.connections[applicationName] then
-            local systemPath = config.userConfigRootPath .. "/Tangent Settings/" .. bundleExecutable
+            local systemPath = config.userConfigRootPath .. "/Tangent/" .. bundleExecutable
             local pluginPath = config.basePath .. "/plugins/core/tangent/defaultmap"
-            mod.newConnection(applicationName, systemPath, nil, bundleExecutable, pluginPath, true)
+            local userPath = systemPath .. "/" .. mod.USER_CONTROL_MAPS_FOLDER
+            mod.newConnection(applicationName, systemPath, userPath, bundleExecutable, pluginPath, true)
         else
             log.ef("Custom Application already registered: %s", bundleExecutable)
         end
@@ -265,6 +275,15 @@ function plugin.init(deps, env)
     local tangentIcon = imageFromPath(env:pathToAbsolute("/../prefs/images/tangent.icns"))
 
     --------------------------------------------------------------------------------
+    -- Make sure a Tangent Folder exists:
+    --------------------------------------------------------------------------------
+    local tangentPath = config.userConfigRootPath .. "/Tangent"
+    if not doesDirectoryExist(tangentPath) then
+        log.df("Making new folder: %s", tangentPath)
+        mkdir(tangentPath)
+    end
+
+    --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
     local global = deps.global
@@ -275,7 +294,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :image(tangentIcon)
-        :titled("Enable Tangent Panel Support")
+        :titled(i18n("enableTangentPanelSupport"))
 
     global
         :add("disableTangent")
@@ -284,7 +303,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :image(tangentIcon)
-        :titled("Disable Tangent Panel Support")
+        :titled(i18n("disableTangentPanelSupport"))
 
     global
         :add("toggleTangent")
@@ -293,7 +312,7 @@ function plugin.init(deps, env)
         end)
         :groupedBy("commandPost")
         :image(tangentIcon)
-        :titled("Toggle Tangent Panel Support")
+        :titled(i18n("toggleTangentPanelSupport"))
 
     return mod
 end

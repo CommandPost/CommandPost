@@ -34,6 +34,7 @@ local doesDirectoryExist    = tools.doesDirectoryExist
 local execute               = hs.execute
 local format                = string.format
 local insert                = table.insert
+local mkdir                 = fs.mkdir
 local sort                  = table.sort
 
 local connection = class "core.tangent.manager.Connection"
@@ -284,14 +285,6 @@ function connection:writeControlsXML()
     local pluginPath = self:pluginPath()
 
     --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    if not doesDirectoryExist(systemPath) then
-        --log.df("Tangent Settings folder did not exist, so creating one.")
-        fs.mkdir(systemPath)
-    end
-
-    --------------------------------------------------------------------------------
     -- Copy existing XML files from Application Bundle to local Application Support:
     --------------------------------------------------------------------------------
     local _, status = execute(format("cp -a %q/. %q/", pluginPath, systemPath))
@@ -536,6 +529,20 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     self._device                = self:setupTangentConnection()
 
     --------------------------------------------------------------------------------
+    -- Make sure the system path actually exists:
+    --------------------------------------------------------------------------------
+    if not doesDirectoryExist(systemPath) then
+        mkdir(systemPath)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure the user path actually exists:
+    --------------------------------------------------------------------------------
+    if not doesDirectoryExist(userPath) then
+        mkdir(userPath)
+    end
+
+    --------------------------------------------------------------------------------
     -- Add a Default Mode for Custom Applications:
     --------------------------------------------------------------------------------
     if addDefaultModes then
@@ -590,7 +597,7 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     )
 
     local homePath = os.getenv("HOME")
-    local favouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent Settings"
+    local favouritesPath = homePath .. "/Library/Application Support/CommandPost/Tangent"
 
     --- plugins.core.tangent.manager.connection.favourites <cp.prop: table>
     --- Variable
