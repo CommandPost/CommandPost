@@ -67,7 +67,7 @@ function connection:setupTangentConnection()
     -- Setup handlers:
     --------------------------------------------------------------------------------
     local fromHub = {
-        [tangent.fromHub.initiateComms] = function(metadata)
+        [tangent.fromHub.initiateComms] = function(metadata) -- luacheck: ignore
             --------------------------------------------------------------------------------
             -- InitiateComms:
             --------------------------------------------------------------------------------

@@ -17,7 +17,6 @@ local dirFiles              = tools.dirFiles
 local doesDirectoryExist    = tools.doesDirectoryExist
 local doesFileExist         = tools.doesFileExist
 local mkdir                 = fs.mkdir
-local replace               = tools.replace
 
 -- FCP_KEYPRESS_APPS_PATH -> string
 -- Constant
@@ -92,7 +91,7 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Only load plugin if Final Cut Pro is supported:
     --------------------------------------------------------------------------------
@@ -109,7 +108,7 @@ function plugin.init(deps, env)
     local homePath = os.getenv("HOME")
     local legacyPath = homePath .. "/Library/Application Support/Tangent/Hub/CommandPost"
     local rootPath = config.userConfigRootPath .. "/Tangent/Final Cut Pro"
-    local userPath = rootPath .. "/User Control Maps"
+    local controlMapsPath = rootPath .. "/User Control Maps"
     local filesToMove = {}
     if doesDirectoryExist(legacyPath) then
         local files = dirFiles(legacyPath)
@@ -122,13 +121,13 @@ function plugin.init(deps, env)
     if not doesDirectoryExist(rootPath) then
         mkdir(rootPath)
     end
-    if not doesDirectoryExist(userPath) then
-        mkdir(userPath)
+    if not doesDirectoryExist(controlMapsPath) then
+        mkdir(controlMapsPath)
     end
     local didMigrate = false
     for _, file in pairs(filesToMove) do
         didMigrate = true
-        local cmd = [[cp -n "]] ..  file .. [[" "]] .. userPath .. [[" || true]]
+        local cmd = [[cp -n "]] ..  file .. [[" "]] .. controlMapsPath .. [[" || true]]
         os.execute(cmd)
     end
     if didMigrate then

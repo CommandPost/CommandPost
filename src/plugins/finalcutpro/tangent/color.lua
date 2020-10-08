@@ -1,10 +1,10 @@
---- === plugins.finalcutpro.tangent.manager ===
+--- === plugins.finalcutpro.tangent.color ===
 ---
 --- Final Cut Pro Tangent Color Manager.
 
 local require           = require
 
-local log               = require "hs.logger".new "fcp_tangent"
+--local log               = require "hs.logger".new "fcp_tangent"
 
 local ColorWell         = require "cp.apple.finalcutpro.inspector.color.ColorWell"
 local deferred          = require "cp.deferred"

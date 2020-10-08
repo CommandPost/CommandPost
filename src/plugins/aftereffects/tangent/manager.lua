@@ -17,7 +17,7 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
     local manager = deps.manager
 
     local systemPath = config.userConfigRootPath .. "/Tangent/After Effects"

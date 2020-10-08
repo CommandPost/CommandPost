@@ -17,7 +17,7 @@ local plugin = {
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Only load plugin if DaVinci Resolve is supported:
     --------------------------------------------------------------------------------

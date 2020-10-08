@@ -136,9 +136,9 @@ end)
 ---  * The connection object
 function mod.newConnection(applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn)
     if not mod.connections[applicationName] then
-        local connection = connection:new(applicationName .. mod.APPLICATION_NAME_SUFFIX, applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, mod)
-        mod.connections[applicationName] = connection
-        return connection
+        local c = connection:new(applicationName .. mod.APPLICATION_NAME_SUFFIX, applicationName, systemPath, userPath, task, pluginPath, addDefaultModes, setupFn, transportFn, mod)
+        mod.connections[applicationName] = c
+        return c
     else
         log.ef("A Tangent connection with the name '%s' is already registered.", applicationName)
     end
@@ -215,9 +215,9 @@ function mod.removeCustomApplication(applicationName)
             --------------------------------------------------------------------------------
             -- Disconnecting and removing connection:
             --------------------------------------------------------------------------------
-            local connection = mod.connections[applicationName]
-            connection.connected(false)
-            connection._device = nil
+            local c = mod.connections[applicationName]
+            c.connected(false)
+            c._device = nil
             mod.connections[applicationName] = nil
 
             --------------------------------------------------------------------------------
