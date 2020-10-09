@@ -287,7 +287,7 @@ mod.lastBundleID = config.prop("loupedeckct.lastBundleID", "All Applications")
 --- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
 --- Field
 --- Screens Backlight Level
-mod.screensBacklightLevel = config.prop("loupedeckloupedeck.screensBacklightLevel", "9")
+mod.screensBacklightLevel = config.prop("loupedeckct.screensBacklightLevel", "9")
 
 --- plugins.core.loupedeckct.manager.items <cp.prop: table>
 --- Field
