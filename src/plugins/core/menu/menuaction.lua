@@ -227,7 +227,7 @@ function plugin.postInit(deps)
     local appManager            = deps.applicationmanager
     local actionmanager         = deps.actionmanager
 
-    local loupedeckCTItems      = deps.loupedeckctmanager.items
+    local loupedeckCTItems      = deps.loupedeckctmanager.devices.CT.items -- TODO: This needs to support the Live too.
     local loupedeckItems        = deps.midimanager.loupedeckItems
     local loupedeckPlusItems    = deps.midimanager.loupedeckPlusItems
     local midiItems             = deps.midimanager.items

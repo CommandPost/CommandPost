@@ -65,11 +65,11 @@ function mod.mt:registerCallback(callbackFn)
     end
 
     local id = randomFromRange(1, 255)
-    while(self._callbackRegister[id])
+    while(self.callbackRegister[id])
     do
         id = randomFromRange(1, 255)
     end
-    self._callbackRegister[id] = callbackFn
+    self.callbackRegister[id] = callbackFn
     return id
 end
 
@@ -84,9 +84,9 @@ end
 --- Returns:
 ---  * The callback `function`, or `nil` if not available.
 function mod.mt:getCallback(id, preserve)
-    local callback = self._callbackRegister[id]
+    local callback = self.callbackRegister[id]
     if not preserve then
-        self._callbackRegister[id] = nil
+        self.callbackRegister[id] = nil
     end
     return callback
 end
@@ -231,7 +231,7 @@ end
 --- Returns:
 ---  * `true` if connected otherwise `false`
 function mod.mt:connected()
-    return self._websocket and self._websocket:status() == "open"
+    return self.websocket and self.websocket:status() == "open"
 end
 
 --- hs.loupedeck:send() -> boolean
@@ -247,7 +247,7 @@ function mod.mt:send(message)
     if self:connected() then
         local data = type(message) == "table" and concat(message) or tostring(message)
         --log.df("Sending: %s", hexDump(data))
-        self._websocket:send(data)
+        self.websocket:send(data)
         return true
     end
     return false
@@ -282,7 +282,7 @@ end
 function mod.mt:findIPAddress()
     local interfaces = network.interfaces()
     local interfaceID
-    local deviceType = self._deviceType
+    local deviceType = self.deviceType
     for _, v in pairs(interfaces) do
         if network.interfaceName(v) == deviceType then
             interfaceID = v
@@ -320,7 +320,7 @@ function mod.mt:initaliseDevice()
     self:updateScreenColor(mod.screens.right, b)
     self:updateScreenColor(mod.screens.middle, b)
 
-    if self._deviceType == mod.deviceTypes.CT then
+    if self.deviceType == mod.deviceTypes.CT then
         self:updateScreenColor(mod.screens.wheel, b)
     end
 end
@@ -1641,11 +1641,11 @@ function mod.mt:updateWatcher(enabled)
     if enabled then
         if not self._usbWatcher then
             self._usbWatcher = usb.watcher.new(function(data)
-                if data.productName == mod.deviceTypes[self._deviceType] then
+                if data.productName == self.deviceType then
                     if data.eventType == "added" then
-                        log.df("New Loupedeck device connected.")
+                        log.df("Loupedeck device connected.")
                         doAfter(4, function()
-                            mod.connect(true)
+                            self:connect()
                         end)
                     elseif data.eventType == "removed" then
                         log.df("Loupedeck device disconnected.")
@@ -1679,16 +1679,16 @@ function mod.mt:connect()
     --------------------------------------------------------------------------------
     -- Setup retry watchers:
     --------------------------------------------------------------------------------
-    self:updateWatcher(self._retry)
+    self:updateWatcher(self.retry)
 
     --------------------------------------------------------------------------------
     -- Find the Loupedeck Device:
     --------------------------------------------------------------------------------
     local ip = self:findIPAddress()
     if not ip then
-        if self._retry then
+        if self.retry then
             doAfter(2, function()
-                mod:connect()
+                self:connect()
             end)
         end
         return
@@ -1699,7 +1699,7 @@ function mod.mt:connect()
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
     log.df("Connecting to Loupedeck: %s", url)
-    self._websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
+    self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
 end
 
 --- hs.loupedeck:disconnect() -> none
@@ -1712,9 +1712,9 @@ end
 --- Returns:
 ---  * None
 function mod.mt:disconnect()
-    if self._websocket then
-        self._websocket:close()
-        self._websocket = nil
+    if self.websocket then
+        self.websocket:close()
+        self.websocket = nil
 
         -- Destroy any watchers:
         self:updateWatcher()
@@ -1737,9 +1737,9 @@ end
 ---    or `hs.loupedeck.deviceTypes.CT`.
 function mod.new(retry, deviceType)
     local o = {
-        _retry = retry,
-        _deviceType = deviceType or mod.deviceTypes.LIVE,
-        _callbackRegister = {},
+        retry               = retry,
+        deviceType          = deviceType,
+        callbackRegister    = {},
     }
     setmetatable(o, mod.mt)
     return o

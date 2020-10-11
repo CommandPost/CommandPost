@@ -1,6 +1,6 @@
 --- === plugins.core.loupedeckct.manager ===
 ---
---- Loupedeck CT Manager Plugin.
+--- Loupedeck CT & Loupedeck Live Manager Plugin.
 
 local require                   = require
 
@@ -40,27 +40,13 @@ local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
 local readString                = plist.readString
 
 local mod = {}
-
--- ct -> Loupedeck
--- Variable
--- Loupedeck CT Connection.
-local ct = loupedeck.new(true, loupedeck.deviceTypes.CT)
-mod.device = ct
+mod.mt = {}
+mod.mt.__index = mod.mt
 
 -- LD_BUNDLE_ID -> string
 -- Constant
 -- The official Loupedeck App bundle identifier.
 local LD_BUNDLE_ID = "com.loupedeck.Loupedeck2"
-
--- fileExtension -> string
--- Variable
--- File Extension for Loupedeck CT
-local fileExtension = ".cpLoupedeckCT"
-
--- defaultFilename -> string
--- Variable
--- Default Filename for Loupedeck CT Settings
-local defaultFilename = "Default" .. fileExtension
 
 -- defaultColor -> string
 -- Variable
@@ -77,110 +63,10 @@ local doubleTapTimeout = 0.2
 -- Drag minimum difference.
 local dragMinimumDiff = 3
 
--- hasLoaded -> boolean
--- Variable
--- Has the Loupedeck CT loaded?
-local hasLoaded = false
-
--- leftFnPressed -> boolean
--- Variable
--- Is the left Function button pressed?
-local leftFnPressed = false
-
--- rightFnPressed -> boolean
--- Variable
--- Is the right Function button pressed?
-local rightFnPressed = false
-
--- cachedLEDButtonValues -> table
--- Variable
--- Table of cached LED button values.
-local cachedLEDButtonValues = {}
-
--- cachedTouchScreenButtonValues -> table
--- Variable
--- Table of cached Touch Screen button values.
-local cachedTouchScreenButtonValues = {}
-
--- cachedWheelScreen -> string
--- Variable
--- The last wheel screen data sent.
-local cachedWheelScreen = ""
-
--- cachedLeftSideScreen -> string
--- Variable
--- The last screen data sent.
-local cachedLeftSideScreen = ""
-
--- cachedRightSideScreen -> string
--- Variable
--- The last screen data sent.
-local cachedRightSideScreen = ""
-
 -- cachedBundleID -> string
 -- Variable
 -- The last bundle ID processed.
 local cachedBundleID = ""
-
--- cacheWheelYAxis -> number
--- Variable
--- Wheel Y Axis Cache
-local cacheWheelYAxis = nil
-
--- cacheWheelXAxis -> number
--- Variable
--- Wheel X Axis Cache
-local cacheWheelXAxis = nil
-
--- cacheLeftScreenYAxis -> number
--- Variable
--- Right Screen Y Axis Cache
-local cacheLeftScreenYAxis = nil
-
--- cacheRightScreenYAxis -> number
--- Variable
--- Right Screen Y Axis Cache
-local cacheRightScreenYAxis = nil
-
--- wheelScreenDoubleTapTriggered -> boolean
--- Variable
--- Has the wheel screen been tapped once?
-local wheelScreenDoubleTapTriggered = false
-
--- leftScreenDoubleTapTriggered -> boolean
--- Variable
--- Has the wheel screen been tapped once?
-local leftScreenDoubleTapTriggered = false
-
--- rightScreenDoubleTapTriggered -> boolean
--- Variable
--- Has the wheel screen been tapped once?
-local rightScreenDoubleTapTriggered = false
-
--- tookFingerOffLeftScreen -> boolean
--- Variable
--- Took Finger Off Left Screen?
-local tookFingerOffLeftScreen = false
-
--- tookFingerOffRightScreen -> boolean
--- Variable
--- Took Finger Off Right Screen?
-local tookFingerOffRightScreen = false
-
--- tookFingerOffWheelScreen -> boolean
--- Variable
--- Took Finger Off Wheel Screen?
-local tookFingerOffWheelScreen = false
-
--- lastWheelDoubleTapX -> number
--- Variable
--- Last Wheel Double Tap X Position
-local lastWheelDoubleTapX = nil
-
--- lastWheelDoubleTapY -> number
--- Variable
--- Last Wheel Double Tap Y Position
-local lastWheelDoubleTapY = nil
 
 -- wheelDoubleTapXTolerance -> number
 -- Variable
@@ -192,129 +78,485 @@ local wheelDoubleTapXTolerance = 12
 -- Last Wheel Double Tap Y Tolerance
 local wheelDoubleTapYTolerance = 7
 
---- plugins.core.loupedeckct.manager.connected <cp.prop: boolean>
---- Field
---- Is Loupedeck CT connected?
-mod.connected = prop.FALSE()
+--- plugins.core.loupedeckct.manager.new() -> Loupedeck
+--- Constructor
+--- Creates a new Loupedeck object.
+---
+--- Parameters:
+---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * The deviceType should be either `hs.loupedeck.deviceTypes.LIVE`
+---    or `hs.loupedeck.deviceTypes.CT`.
+function mod.new(deviceType)
 
---- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
---- Field
---- Is Loupedeck CT support enabled?
-mod.enabled = config.prop("loupedeckct.enabled", false):watch(function(enabled)
-    if enabled then
-        mod._appWatcher:start()
-        mod._driveWatcher:start()
-        ct:connect()
+    local o = {}
+
+    if deviceType == loupedeck.deviceTypes.CT then
+        --------------------------------------------------------------------------------
+        -- Loupedeck CT:
+        --------------------------------------------------------------------------------
+        o.device            = loupedeck.new(true, loupedeck.deviceTypes.CT)
+        o.fileExtension     = ".cpLoupedeckCT"
+        o.id                = "loupedeckct"
+        o.mediaName         = "LD-CT CT Media"
+        o.configFolder      = "Loupedeck CT"
+        o.commandID         = "LoupedeckCT"
+        o.i18nID            = "loupedeckCT"
+    elseif deviceType == loupedeck.deviceTypes.LIVE then
+        --------------------------------------------------------------------------------
+        -- Loupedeck Live:
+        --------------------------------------------------------------------------------
+        o.device            = loupedeck.new(true, loupedeck.deviceTypes.LIVE)
+        o.fileExtension     = ".cpLoupedeckLive"
+        o.id                = "loupedecklive"
+        o.mediaName         = "LD-CT CT Media" -- TODO: This needs to be changed.
+        o.configFolder      = "Loupedeck Live"
+        o.commandID         = "LoupedeckLive"
+        o.i18nID            = "loupedeckLive"
     else
-        --------------------------------------------------------------------------------
-        -- Stop all watchers:
-        --------------------------------------------------------------------------------
-        mod._appWatcher:stop()
-        mod._driveWatcher:stop()
-
-        --------------------------------------------------------------------------------
-        -- Make everything black:
-        --------------------------------------------------------------------------------
-        for _, screen in pairs(loupedeck.screens) do
-                ct:updateScreenColor(screen, {hex="#"..defaultColor})
-        end
-        for i=7, 26 do
-            ct:buttonColor(i, {hex="#" .. defaultColor})
-        end
-        just.wait(0.01) -- Slight delay so the websocket message has time to send.
-
-        --------------------------------------------------------------------------------
-        -- Disconnect from the Loupedeck CT:
-        --------------------------------------------------------------------------------
-        ct:disconnect()
+        log.ef("Invalid Loupedeck Device Type: %s", deviceType)
+        return
     end
-end)
 
--- defaultLayoutPath -> string
--- Variable
--- Default Layout Path
-local defaultLayoutPath = config.basePath .. "/plugins/core/loupedeckct/default/Default.cpLoupedeckCT"
+    --------------------------------------------------------------------------------
+    -- Setup the Loupedeck callback:
+    --------------------------------------------------------------------------------
+    o.device:callback(function(...)
+        o:callback(...)
+    end)
 
---- plugins.core.loupedeckct.manager.defaultLayout -> table
---- Variable
---- Default Loupedeck CT Layout
-mod.defaultLayout = json.read(defaultLayoutPath)
+    --- plugins.core.loupedeckct.manager.defaultFilename -> string
+    --- Field
+    --- Default filename
+    o.defaultFilename = "Default" .. o.fileExtension
 
--- getFlashDrivePath() -> string
--- Function
--- Gets the Loupedeck CT Flash Drive path.
---
--- Parameters:
---  * None
---
--- Returns:
---  * The Loupedeck CT Flash Drive path as a string
-local function getFlashDrivePath()
+    --- plugins.core.loupedeckct.manager.repeatTimers -> table
+    --- Variable
+    --- A table containing `hs.timer` objects.
+    o.repeatTimers = {}
+
+    --- plugins.core.loupedeckct.manager.items <cp.prop: table>
+    --- Field
+    --- Contains all the saved Loupedeck layouts.
+    o.items = nil
+
+    --- plugins.core.loupedeckct.manager.hasLoaded -> boolean
+    --- Variable
+    --- Has the Loupedeck loaded?
+    o.hasLoaded = false
+
+    --- plugins.core.loupedeckct.manager.leftFnPressed -> boolean
+    --- Variable
+    --- Is the left Function button pressed?
+    o.leftFnPressed = false
+
+    --- plugins.core.loupedeckct.manager.rightFnPressed -> boolean
+    --- Variable
+    --- Is the right Function button pressed?
+    o.rightFnPressed = false
+
+    --- plugins.core.loupedeckct.manager.cachedLEDButtonValues -> table
+    --- Variable
+    --- Table of cached LED button values.
+    o.cachedLEDButtonValues = {}
+
+    --- plugins.core.loupedeckct.manager.cachedTouchScreenButtonValues -> table
+    --- Variable
+    --- Table of cached Touch Screen button values.
+    o.cachedTouchScreenButtonValues = {}
+
+    --- plugins.core.loupedeckct.manager.cachedWheelScreen -> string
+    --- Variable
+    --- The last wheel screen data sent.
+    o.cachedWheelScreen = ""
+
+    --- plugins.core.loupedeckct.manager.cachedLeftSideScreen -> string
+    --- Variable
+    --- The last screen data sent.
+    o.cachedLeftSideScreen = ""
+
+    --- plugins.core.loupedeckct.manager.cachedRightSideScreen -> string
+    --- Variable
+    --- The last screen data sent.
+    o.cachedRightSideScreen = ""
+
+    --- plugins.core.loupedeckct.manager.cacheWheelYAxis -> number
+    --- Variable
+    --- Wheel Y Axis Cache
+    o.cacheWheelYAxis = nil
+
+    --- plugins.core.loupedeckct.manager.cacheWheelXAxis -> number
+    --- Variable
+    --- Wheel X Axis Cache
+    o.cacheWheelXAxis = nil
+
+    --- plugins.core.loupedeckct.manager.cacheLeftScreenYAxis -> number
+    --- Variable
+    --- Right Screen Y Axis Cache
+    o.cacheLeftScreenYAxis = nil
+
+    --- plugins.core.loupedeckct.manager.cacheRightScreenYAxis -> number
+    --- Variable
+    --- Right Screen Y Axis Cache
+    o.cacheRightScreenYAxis = nil
+
+    --- plugins.core.loupedeckct.manager.wheelScreenDoubleTapTriggered -> boolean
+    --- Variable
+    --- Has the wheel screen been tapped once?
+    o.wheelScreenDoubleTapTriggered = false
+
+    --- plugins.core.loupedeckct.manager.leftScreenDoubleTapTriggered -> boolean
+    --- Variable
+    --- Has the wheel screen been tapped once?
+    o.leftScreenDoubleTapTriggered = false
+
+    --- plugins.core.loupedeckct.manager.rightScreenDoubleTapTriggered -> boolean
+    --- Variable
+    --- Has the wheel screen been tapped once?
+    o.rightScreenDoubleTapTriggered = false
+
+    --- plugins.core.loupedeckct.manager.tookFingerOffLeftScreen -> boolean
+    --- Variable
+    --- Took Finger Off Left Screen?
+    o.tookFingerOffLeftScreen = false
+
+    --- plugins.core.loupedeckct.manager.tookFingerOffRightScreen -> boolean
+    --- Variable
+    --- Took Finger Off Right Screen?
+    o.tookFingerOffRightScreen = false
+
+    --- plugins.core.loupedeckct.manager.tookFingerOffWheelScreen -> boolean
+    --- Variable
+    --- Took Finger Off Wheel Screen?
+    o.tookFingerOffWheelScreen = false
+
+    --- plugins.core.loupedeckct.manager.lastWheelDoubleTapX -> number
+    --- Variable
+    --- Last Wheel Double Tap X Position
+    o.lastWheelDoubleTapX = nil
+
+    --- plugins.core.loupedeckct.manager.lastWheelDoubleTapY -> number
+    --- Variable
+    --- Last Wheel Double Tap Y Position
+    o.lastWheelDoubleTapY = nil
+
+    --- plugins.core.loupedeckct.manager.connected <cp.prop: boolean>
+    --- Field
+    --- Is the Loupedeck connected?
+    o.connected = prop.FALSE()
+
+    -- defaultLayoutPath -> string
+    -- Variable
+    -- Default Layout Path
+    o.defaultLayoutPath = config.basePath .. "/plugins/core/" .. o.id .. "/default/Default.cp" .. o.commandID
+
+    --- plugins.core.loupedeckct.manager.defaultLayout -> table
+    --- Variable
+    --- Default Loupedeck Layout
+    o.defaultLayout = json.read(o.defaultLayoutPath)
+
+    --- plugins.core.loupedeckct.manager.driveWatcher -> watcher
+    --- Field
+    --- Watches for drive volume events.
+    o.driveWatcher = fs.volume.new(function()
+        o:refreshItems()
+    end)
+
+    --- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
+    --- Field
+    --- Enable or disable the Loupedeck Flash Drive.
+    o.enableFlashDrive = config.prop(o.id .. ".enableFlashDrive", false):watch(function(enabled)
+        o.device:updateFlashDrive(enabled)
+        if not enabled then
+            local path = o:getFlashDrivePath()
+            if path then
+                fs.volume.eject(path)
+            end
+        end
+    end)
+
+    --- plugins.core.loupedeckct.manager.lastBundleID <cp.prop: string>
+    --- Field
+    --- The last Bundle ID.
+    o.lastBundleID = config.prop(o.id .. ".lastBundleID", "All Applications")
+
+    --- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
+    --- Field
+    --- Screens Backlight Level
+    o.screensBacklightLevel = config.prop(o.id .. ".screensBacklightLevel", "9")
+
+    --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
+    --- Field
+    --- Table of active banks for each application.
+    o.activeBanks = config.prop(o.id .. ".activeBanks", {})
+
+    --- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
+    --- Field
+    --- Load settings from device.
+    o.loadSettingsFromDevice = config.prop(o.id .. ".loadSettingsFromDevice", false):watch(function(enabled)
+        if enabled then
+            local existingSettings = json.read(config.userConfigRootPath .. "/" .. o.configFolder .. "/" .. o.defaultFilename)
+            local path = config.userConfigRootPath .. "/" .. o.configFolder .. "/Backup " .. os.date("%Y%m%d %H%M") .. o.fileExtension
+            json.write(path, existingSettings)
+        end
+        o:refreshItems()
+    end)
+
+    --- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+    --- Field
+    --- Enable or disable the automatic switching of applications.
+    o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
+
+    --- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
+    --- Field
+    --- Is Loupedeck support enabled?
+    o.enabled = config.prop(o.id .. ".enabled", false):watch(function(enabled)
+        if enabled then
+            o.appWatcher:start()
+            o.driveWatcher:start()
+            o.device:connect()
+        else
+            --------------------------------------------------------------------------------
+            -- Stop all watchers:
+            --------------------------------------------------------------------------------
+            o.appWatcher:stop()
+            o.driveWatcher:stop()
+
+            --------------------------------------------------------------------------------
+            -- Make everything black:
+            --------------------------------------------------------------------------------
+            for _, screen in pairs(loupedeck.screens) do
+                o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+            end
+            for i=7, 26 do
+                o.device:buttonColor(i, {hex="#" .. defaultColor})
+            end
+            just.wait(0.01) -- Slight delay so the websocket message has time to send.
+
+            --------------------------------------------------------------------------------
+            -- Disconnect from the Loupedeck:
+            --------------------------------------------------------------------------------
+            o.device:disconnect()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Setup watch to refresh the Loupedeck when apps change focus:
+    --------------------------------------------------------------------------------
+    o.appWatcher = appWatcher.new(function(_, event)
+        if o.hasLoaded and event == appWatcher.activated then
+            o:refresh(true)
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Shutdown Callback (make screen black):
+    --------------------------------------------------------------------------------
+    config.shutdownCallback:new(o.configFolder, function()
+        if o.enabled() then
+            for _, screen in pairs(loupedeck.screens) do
+                o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+            end
+            for i=7, 26 do
+                o.device:buttonColor(i, {hex="#" .. defaultColor})
+            end
+            just.wait(0.01) -- Slight delay so the websocket message has time to send.
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Setup Loupedeck Commands:
+    --------------------------------------------------------------------------------
+    local icon = imageFromPath(mod.env:pathToAbsolute("/../prefs/images/loupedeck.icns"))
+    local global = mod.global
+    global
+        :add("enable" .. o.commandID)
+        :whenActivated(function()
+            o.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enableLoupedeckCTSupport"))
+        :image(icon)
+
+    global
+        :add("disable" .. o.commandID)
+        :whenActivated(function()
+            o.enabled(false)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disableLoupedeckCTSupport"))
+        :image(icon)
+
+    global
+        :add("disable" .. o.commandID .. "andLaunchLoupedeckApp")
+        :whenActivated(function()
+            o.enabled(false)
+            launchOrFocusByBundleID(LD_BUNDLE_ID)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("disable" .. o.commandID .. "SupportAndLaunchLoupedeckApp"))
+        :image(icon)
+
+    global
+        :add("enable" .. o.commandID .. "andKillLoupedeckApp")
+        :whenActivated(function()
+            local apps = applicationsForBundleID(LD_BUNDLE_ID)
+            if apps then
+                for _, app in pairs(apps) do
+                    app:kill9()
+                end
+            end
+            o.enabled(true)
+        end)
+        :groupedBy("commandPost")
+        :titled(i18n("enable" .. o.commandID .. "SupportQuitLoupedeckApp"))
+        :image(icon)
+
+    --------------------------------------------------------------------------------
+    -- Setup Bank Actions:
+    --------------------------------------------------------------------------------
+    local actionmanager = mod.actionmanager
+    local numberOfBanks = mod.csman.NUMBER_OF_BANKS
+    actionmanager.addHandler("global_" .. o.id .. "_banks")
+        :onChoices(function(choices)
+            for i=1, numberOfBanks do
+                choices:add(o.configFolder .. " " .. i18n("bank") .. " " .. tostring(i))
+                    :subText(i18n(o.i18nID .. "BankDescription"))
+                    :params({ id = i })
+                    :id(i)
+                    :image(icon)
+            end
+
+            choices:add(i18n("next") .. " " .. o.configFolder .. " " .. i18n("bank"))
+                :subText(i18n(o.i18nID .. "BankDescription"))
+                :params({ id = "next" })
+                :id("next")
+                :image(icon)
+
+            choices:add(i18n("previous") .. " " .. o.configFolder .. " " .. i18n("bank"))
+                :subText(i18n(o.i18nID .. "BankDescription"))
+                :params({ id = "previous" })
+                :id("previous")
+                :image(icon)
+
+            return choices
+        end)
+        :onExecute(function(result)
+            if result and result.id then
+
+                local frontmostApplication = application.frontmostApplication()
+                local bundleID = frontmostApplication:bundleID()
+
+                local items = o.items()
+
+                --------------------------------------------------------------------------------
+                -- Revert to "All Applications" if no settings for frontmost app exist:
+                --------------------------------------------------------------------------------
+                if not items[bundleID] then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Ignore if ignored:
+                --------------------------------------------------------------------------------
+                if items[bundleID].ignore and items[bundleID].ignore == true then
+                    bundleID = "All Applications"
+                end
+
+                --------------------------------------------------------------------------------
+                -- If not Automatically Switching Applications:
+                --------------------------------------------------------------------------------
+                if not o.automaticallySwitchApplications() then
+                    bundleID = o.lastBundleID()
+                end
+
+                local activeBanks = o.activeBanks()
+                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
+
+                if type(result.id) == "number" then
+                    activeBanks[bundleID] = tostring(result.id)
+                else
+                    if result.id == "next" then
+                        if currentBank == numberOfBanks then
+                            activeBanks[bundleID] = "1"
+                        else
+                            activeBanks[bundleID] = tostring(currentBank + 1)
+                        end
+                    elseif result.id == "previous" then
+                        if currentBank == 1 then
+                            activeBanks[bundleID] = tostring(numberOfBanks)
+                        else
+                            activeBanks[bundleID] = tostring(currentBank - 1)
+                        end
+                    end
+                end
+
+                local newBank = activeBanks[bundleID]
+
+                o.activeBanks(activeBanks)
+
+                o:refresh()
+
+                items = o.items() -- Reload items
+                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
+                displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
+            end
+        end)
+        :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
+
+    --------------------------------------------------------------------------------
+    -- Connect to the Loupedeck:
+    --------------------------------------------------------------------------------
+    o.enabled:update()
+
+    setmetatable(o, mod.mt)
+    return o
+end
+
+--- plugins.core.loupedeckct.manager:getFlashDrivePath() -> string
+--- Method
+--- Gets the Loupedeck Flash Drive path.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Loupedeck Flash Drive path as a string
+function mod.mt:getFlashDrivePath()
     local storage = execute("system_profiler SPStorageDataType -xml")
     local storagePlist = storage and readString(storage)
     local drives = storagePlist and storagePlist[1] and storagePlist[1]._items
     for _, data in pairs(drives) do
-        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == "LD-CT CT Media" then
+        if data.physical_drive and data.physical_drive.media_name and data.physical_drive.media_name == self.mediaName then
             local path = data.mount_point
             return doesDirectoryExist(path) and path
         end
     end
 end
-
---- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
---- Field
---- Enable or disable the Loupedeck CT Flash Drive.
-mod.enableFlashDrive = config.prop("loupedeckct.enableFlashDrive", false):watch(function(enabled)
-    ct:updateFlashDrive(enabled)
-    if not enabled then
-        local path = getFlashDrivePath()
-        if path then
-            fs.volume.eject(path)
-        end
-    end
-end)
-
---- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
---- Field
---- Enable or disable the automatic switching of applications.
-mod.automaticallySwitchApplications = config.prop("loupedeckct.automaticallySwitchApplications", false):watch(function() mod.refresh() end)
-
---- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
---- Field
---- Enable or disable the automatic switching of applications.
-mod.lastBundleID = config.prop("loupedeckct.lastBundleID", "All Applications")
-
---- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
---- Field
---- Screens Backlight Level
-mod.screensBacklightLevel = config.prop("loupedeckct.screensBacklightLevel", "9")
-
---- plugins.core.loupedeckct.manager.items <cp.prop: table>
---- Field
---- Contains all the saved Loupedeck CT layouts.
-mod.items = nil
-
--- refreshItems() -> none
--- Function
--- Refreshes mod.items to either
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function refreshItems()
-    local flashDrivePath = getFlashDrivePath()
-
-    if mod.loadSettingsFromDevice() and flashDrivePath then
+--- plugins.core.loupedeckct.manager:refreshItems() -> self
+--- Method
+--- Refreshes the items to either either local drive or the Loupedeck Flash Drive.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
+function mod.mt:refreshItems()
+    local flashDrivePath = self:getFlashDrivePath()
+    if self.loadSettingsFromDevice() and flashDrivePath then
         --------------------------------------------------------------------------------
-        -- If settings don't already exist on Loupedeck CT, copy them from Mac:
+        -- If settings don't already exist on Loupedeck, copy them from Mac:
         --------------------------------------------------------------------------------
-        local macPreferencesPath = config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename
-        local flashDrivePreferencesPath = flashDrivePath .. "/CommandPost/" .. defaultFilename
+        local macPreferencesPath = config.userConfigRootPath .. "/" .. self.configFolder .. "/" .. self.defaultFilename
+        local flashDrivePreferencesPath = flashDrivePath .. "/CommandPost/" .. self.defaultFilename
         if not doesFileExist(flashDrivePreferencesPath) then
             if ensureDirectoryExists(flashDrivePath, "CommandPost") then
-                local existingSettings = json.read(macPreferencesPath) or mod.defaultLayout
+                local existingSettings = json.read(macPreferencesPath) or self.defaultLayout
                 json.write(flashDrivePreferencesPath, existingSettings)
             end
         end
@@ -322,41 +564,24 @@ local function refreshItems()
         --------------------------------------------------------------------------------
         -- Read preferences from Flash Drive:
         --------------------------------------------------------------------------------
-        mod.items = json.prop(flashDrivePath, "CommandPost", defaultFilename, mod.defaultLayout, function()
-            refreshItems()
+        self.items = json.prop(flashDrivePath, "CommandPost", self.defaultFilename, self.defaultLayout, function()
+            self:refreshItems()
         end):watch(function()
-            local data = mod.items()
-            local path = config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename
+            local data = self.items()
+            local path = config.userConfigRootPath .. "/" .. self.configFolder .. "/" .. self.defaultFilename
             json.write(path, data)
         end)
-        return
     else
         --------------------------------------------------------------------------------
         -- Read preferences from Mac:
         --------------------------------------------------------------------------------
-        mod.items = json.prop(config.userConfigRootPath, "Loupedeck CT", defaultFilename, mod.defaultLayout)
+        self.items = json.prop(config.userConfigRootPath, self.configFolder, self.defaultFilename, self.defaultLayout)
     end
+    return self
 end
 
---- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
---- Field
---- Load settings from device.
-mod.loadSettingsFromDevice = config.prop("loupedeckct.loadSettingsFromDevice", false):watch(function(enabled)
-    if enabled then
-        local existingSettings = json.read(config.userConfigRootPath .. "/Loupedeck CT/" .. defaultFilename)
-        local path = config.userConfigRootPath .. "/Loupedeck CT/Backup " .. os.date("%Y%m%d %H%M") .. fileExtension
-        json.write(path, existingSettings)
-    end
-    refreshItems()
-end)
-
---- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
---- Field
---- Table of active banks for each application.
-mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
-
---- plugins.core.loupedeckct.manager.reset()
---- Function
+--- plugins.core.loupedeckct.manager:reset()
+--- Method
 --- Resets the config back to the default layout.
 ---
 --- Parameters:
@@ -364,18 +589,13 @@ mod.activeBanks = config.prop("loupedeckct.activeBanks", {})
 ---
 --- Returns:
 ---  * None
-function mod.reset()
-    mod.items(mod.defaultLayout)
+function mod.mt:reset()
+    self.items(self.defaultLayout)
 end
-
--- repeatTimers -> table
--- Variable
--- A table containing `hs.timer` objects.
-local repeatTimers = {}
 
 --- plugins.core.loupedeckct.manager.refresh()
 --- Function
---- Refreshes the Loupedeck CT screens and LED buttons.
+--- Refreshes the Loupedeck screens and LED buttons.
 ---
 --- Parameters:
 ---  * dueToAppChange - A optional boolean to specify whether the refresh is due to
@@ -383,7 +603,7 @@ local repeatTimers = {}
 ---
 --- Returns:
 ---  * None
-function mod.refresh(dueToAppChange)
+function mod.mt:refresh(dueToAppChange)
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -402,12 +622,12 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
-    for _, v in pairs(repeatTimers) do
+    for _, v in pairs(self.repeatTimers) do
         v:stop()
         v = nil -- luacheck: ignore
     end
 
-    local items = mod.items()
+    local items = self.items()
 
     --------------------------------------------------------------------------------
     -- Revert to "All Applications" if no settings for frontmost app exist:
@@ -426,19 +646,19 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     -- If not Automatically Switching Applications:
     --------------------------------------------------------------------------------
-    if not mod.automaticallySwitchApplications() then
-        bundleID = mod.lastBundleID()
+    if not self.automaticallySwitchApplications() then
+        bundleID = self.lastBundleID()
     end
 
-    local activeBanks = mod.activeBanks()
+    local activeBanks = self.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
 
     --------------------------------------------------------------------------------
     -- TREAT LEFT & RIGHT FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
-    if leftFnPressed then
+    if self.leftFnPressed then
         bankID = bankID .. "_LeftFn"
-    elseif rightFnPressed then
+    elseif self.rightFnPressed then
         bankID = bankID .. "_RightFn"
     end
 
@@ -450,7 +670,7 @@ function mod.refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
     local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
-    ct:updateWheelSensitivity(wheelSensitivity)
+    self.device:updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -459,13 +679,13 @@ function mod.refresh(dueToAppChange)
     for i=7, 26 do
         local id = tostring(i)
         local ledColor = ledButton and ledButton[id] and ledButton[id].led or defaultColor
-        if cachedLEDButtonValues[id] ~= ledColor then
+        if self.cachedLEDButtonValues[id] ~= ledColor then
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            ct:buttonColor(i, {hex="#" .. ledColor})
+            self.device:buttonColor(i, {hex="#" .. ledColor})
         end
-        cachedLEDButtonValues[id] = ledColor
+        self.cachedLEDButtonValues[id] = ledColor
     end
 
     --------------------------------------------------------------------------------
@@ -488,20 +708,20 @@ function mod.refresh(dueToAppChange)
         --------------------------------------------------------------------------------
         -- Only update if the screen has changed to save bandwidth:
         --------------------------------------------------------------------------------
-        if encodedIcon and cachedTouchScreenButtonValues[id] == encodedIcon then
+        if encodedIcon and self.cachedTouchScreenButtonValues[id] == encodedIcon then
             success = true
-        elseif encodedIcon and cachedTouchScreenButtonValues[id] ~= encodedIcon then
-            cachedTouchScreenButtonValues[id] = encodedIcon
+        elseif encodedIcon and self.cachedTouchScreenButtonValues[id] ~= encodedIcon then
+            self.cachedTouchScreenButtonValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             if decodedImage then
-                ct:updateScreenButtonImage(i, decodedImage)
+                self.device:updateScreenButtonImage(i, decodedImage)
                 success = true
             end
         end
 
-        if not success and cachedTouchScreenButtonValues[id] ~= defaultColor then
-            ct:updateScreenButtonColor(i, {hex="#"..defaultColor})
-            cachedTouchScreenButtonValues[id] = defaultColor
+        if not success and self.cachedTouchScreenButtonValues[id] ~= defaultColor then
+            self.device:updateScreenButtonColor(i, {hex="#"..defaultColor})
+            self.cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
 
@@ -511,19 +731,19 @@ function mod.refresh(dueToAppChange)
     success = false
     local thisWheel = bank and bank.wheelScreen and bank.wheelScreen["1"]
     local encodedIcon = thisWheel and thisWheel.encodedIcon
-    if encodedIcon and cachedWheelScreen == encodedIcon then
+    if encodedIcon and self.cachedWheelScreen == encodedIcon then
         success = true
-    elseif encodedIcon and cachedWheelScreen ~= encodedIcon then
-        cachedWheelScreen = encodedIcon
+    elseif encodedIcon and self.cachedWheelScreen ~= encodedIcon then
+        self.cachedWheelScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct:updateScreenImage(loupedeck.screens.wheel, decodedImage)
+            self.device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
             success = true
         end
     end
-    if not success and cachedWheelScreen ~= defaultColor then
-        ct:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
-        cachedWheelScreen = defaultColor
+    if not success and self.cachedWheelScreen ~= defaultColor then
+        self.device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
+        self.cachedWheelScreen = defaultColor
     end
 
     --------------------------------------------------------------------------------
@@ -536,19 +756,19 @@ function mod.refresh(dueToAppChange)
     else
         encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
     end
-    if encodedIcon and cachedLeftSideScreen == encodedIcon then
+    if encodedIcon and self.cachedLeftSideScreen == encodedIcon then
         success = true
-    elseif encodedIcon and cachedLeftSideScreen ~= encodedIcon then
-        cachedLeftSideScreen = encodedIcon
+    elseif encodedIcon and self.cachedLeftSideScreen ~= encodedIcon then
+        self.cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct:updateScreenImage(loupedeck.screens.left, decodedImage)
+            self.device:updateScreenImage(loupedeck.screens.left, decodedImage)
             success = true
         end
     end
-    if not success and cachedLeftSideScreen ~= defaultColor then
-        ct:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
-        cachedLeftSideScreen = defaultColor
+    if not success and self.cachedLeftSideScreen ~= defaultColor then
+        self.device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
+        self.cachedLeftSideScreen = defaultColor
     end
 
     --------------------------------------------------------------------------------
@@ -561,19 +781,19 @@ function mod.refresh(dueToAppChange)
     else
         encodedIcon = thisSideScreen and thisSideScreen.encodedIcon
     end
-    if encodedIcon and cachedRightSideScreen == encodedIcon then
+    if encodedIcon and self.cachedRightSideScreen == encodedIcon then
         success = true
-    elseif encodedIcon and cachedRightSideScreen ~= encodedIcon then
-        cachedRightSideScreen = encodedIcon
+    elseif encodedIcon and self.cachedRightSideScreen ~= encodedIcon then
+        self.cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            ct:updateScreenImage(loupedeck.screens.right, decodedImage)
+            self.device:updateScreenImage(loupedeck.screens.right, decodedImage)
             success = true
         end
     end
-    if not success and cachedRightSideScreen ~= defaultColor then
-        ct:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
-        cachedRightSideScreen = defaultColor
+    if not success and self.cachedRightSideScreen ~= defaultColor then
+        self.device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
+        self.cachedRightSideScreen = defaultColor
     end
 end
 
@@ -591,7 +811,7 @@ local function executeAction(thisAction)
         local handlerID = thisAction.handlerID
         local action = thisAction.action
         if handlerID and action then
-            local handler = mod._actionmanager.getHandler(handlerID)
+            local handler = mod.actionmanager.getHandler(handlerID)
             if handler then
                 doAfter(0, function()
                     handler:execute(action)
@@ -603,82 +823,82 @@ local function executeAction(thisAction)
     return false
 end
 
--- clearCache() -> none
--- Function
--- Clears the cache.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function clearCache()
+--- plugins.core.loupedeckct.manager:clearCache() -> none
+--- Method
+--- Clears the cache.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.mt:clearCache()
     --------------------------------------------------------------------------------
     -- Stop any stray repeat timers:
     --------------------------------------------------------------------------------
-    for _, v in pairs(repeatTimers) do
+    for _, v in pairs(self.repeatTimers) do
         v:stop()
         v = nil -- luacheck: ignore
     end
 
-    cacheWheelYAxis = nil
-    cacheWheelXAxis = nil
+    self.cacheWheelYAxis = nil
+    self.cacheWheelXAxis = nil
 
-    cacheRightScreenYAxis = nil
-    cacheLeftScreenYAxis = nil
+    self.cacheRightScreenYAxis = nil
+    self.cacheLeftScreenYAxis = nil
 
-    leftFnPressed = false
-    rightFnPressed = false
+    self.leftFnPressed = false
+    self.rightFnPressed = false
 
-    cachedLEDButtonValues = {}
-    cachedTouchScreenButtonValues = {}
+    self.cachedLEDButtonValues = {}
+    self.cachedTouchScreenButtonValues = {}
 
-    cachedWheelScreen = ""
-    cachedLeftSideScreen = ""
-    cachedRightSideScreen = ""
+    self.cachedWheelScreen = ""
+    self.cachedLeftSideScreen = ""
+    self.cachedRightSideScreen = ""
 
-    lastWheelDoubleTapX = nil
-    lastWheelDoubleTapY = nil
+    self.lastWheelDoubleTapX = nil
+    self.lastWheelDoubleTapY = nil
 
-    hasLoaded = false
+    self.hasLoaded = false
 end
 
--- callback(data) -> none
--- Function
--- The Loupedeck CT callback.
---
--- Parameters:
---  * data - The callback data.
---
--- Returns:
---  * None
-local function callback(data)
+--- plugins.core.loupedeckct.manager:callback(data) -> none
+--- Method
+--- The Loupedeck callback.
+---
+--- Parameters:
+---  * data - The callback data.
+---
+--- Returns:
+---  * None
+function mod.mt:callback(data)
     --log.df("ct data: %s", hs.inspect(data))
 
     --------------------------------------------------------------------------------
     -- REFRESH ON INITIAL LOAD AFTER A SLIGHT DELAY:
     --------------------------------------------------------------------------------
     if data.action == "websocket_open" then
-        mod.connected(true)
-        clearCache()
-        mod.refresh()
-        hasLoaded = true
-        mod.enableFlashDrive:update()
+        self.connected(true)
+        self:clearCache()
+        self:refresh()
+        self.hasLoaded = true
+        self.enableFlashDrive:update()
 
-        ct:updateBacklightLevel(tonumber(mod.screensBacklightLevel()))
+        self.device:updateBacklightLevel(tonumber(self.screensBacklightLevel()))
         return
     elseif data.action == "websocket_closed" or data.action == "websocket_fail" then
         --------------------------------------------------------------------------------
         -- If the websocket disconnects or fails, then trash all the caches:
         --------------------------------------------------------------------------------
-        mod.connected(false)
-        clearCache()
+        self.connected(false)
+        self:clearCache()
         return
     end
 
     local bundleID = cachedBundleID
 
-    local items = mod.items()
+    local items = self.items()
 
     --------------------------------------------------------------------------------
     -- Revert to "All Applications" if no settings for frontmost app exist:
@@ -697,11 +917,11 @@ local function callback(data)
     --------------------------------------------------------------------------------
     -- If not Automatically Switching Applications:
     --------------------------------------------------------------------------------
-    if not mod.automaticallySwitchApplications() then
-        bundleID = mod.lastBundleID()
+    if not self.automaticallySwitchApplications() then
+        bundleID = self.lastBundleID()
     end
 
-    local activeBanks = mod.activeBanks()
+    local activeBanks = self.activeBanks()
     local bankID = activeBanks[bundleID] or "1"
 
     local buttonID = tostring(data.buttonID)
@@ -719,15 +939,15 @@ local function callback(data)
                 local button = item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
-                    leftFnPressed = false
-                    mod.refresh()
+                    self.leftFnPressed = false
+                    self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
-                    rightFnPressed = false
-                    mod.refresh()
+                    self.rightFnPressed = false
+                    self:refresh()
                 end
             end
         elseif data.direction == "down" then
@@ -736,16 +956,16 @@ local function callback(data)
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
-                    leftFnPressed = true
-                    mod.refresh()
+                    self.leftFnPressed = true
+                    self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
                 local button = item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
-                    rightFnPressed = true
-                    mod.refresh()
+                    self.rightFnPressed = true
+                    self:refresh()
                 end
             end
         end
@@ -755,9 +975,9 @@ local function callback(data)
     -- HANDLE FUNCTION KEYS AS MODIFIERS:
     --------------------------------------------------------------------------------
     if not functionButtonPressed then
-        if leftFnPressed then
+        if self.leftFnPressed then
             bankID = bankID .. "_LeftFn"
-        elseif rightFnPressed then
+        elseif self.rightFnPressed then
             bankID = bankID .. "_RightFn"
         end
     end
@@ -774,7 +994,7 @@ local function callback(data)
 
                 -- Repeat if necessary:
                 if thisButton.repeatPressActionUntilReleased then
-                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                    self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
                         executeAction(thisButton.pressAction)
                     end)
                 end
@@ -784,7 +1004,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisButton and thisButton.vibratePress then
-                ct:vibrate(tonumber(thisButton.vibratePress))
+                self.device:vibrate(tonumber(thisButton.vibratePress))
             end
 
             --------------------------------------------------------------------------------
@@ -797,7 +1017,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisKnob and thisKnob.vibratePress then
-                ct:vibrate(tonumber(thisKnob.vibratePress))
+                self.device:vibrate(tonumber(thisKnob.vibratePress))
             end
         elseif data.id == loupedeck.event.BUTTON_PRESS and data.direction == "up" then
             --------------------------------------------------------------------------------
@@ -807,9 +1027,9 @@ local function callback(data)
 
             -- Stop repeating:
             if thisButton and thisButton.repeatPressActionUntilReleased then
-                if repeatTimers[buttonID] then
-                    repeatTimers[buttonID]:stop()
-                    repeatTimers[buttonID] = nil
+                if self.repeatTimers[buttonID] then
+                    self.repeatTimers[buttonID]:stop()
+                    self.repeatTimers[buttonID] = nil
                 end
             end
 
@@ -819,7 +1039,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisButton and thisButton.vibrateRelease then
-                ct:vibrate(tonumber(thisButton.vibrateRelease))
+                self.device:vibrate(tonumber(thisButton.vibrateRelease))
             end
 
             --------------------------------------------------------------------------------
@@ -832,7 +1052,7 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisKnob and thisKnob.vibrateRelease then
-                ct:vibrate(tonumber(thisKnob.vibrateRelease))
+                self.device:vibrate(tonumber(thisKnob.vibrateRelease))
             end
         elseif data.id == loupedeck.event.ENCODER_MOVE then
             --------------------------------------------------------------------------------
@@ -845,10 +1065,10 @@ local function callback(data)
 
             -- Vibrate if needed:
             if data.direction == "left" and thisKnob and thisKnob.vibrateLeft then
-                ct:vibrate(tonumber(thisKnob.vibrateLeft))
+                self.device:vibrate(tonumber(thisKnob.vibrateLeft))
             end
             if data.direction == "right" and thisKnob and thisKnob.vibrateRight then
-                ct:vibrate(tonumber(thisKnob.vibrateRight))
+                self.device:vibrate(tonumber(thisKnob.vibrateRight))
             end
 
             local thisJogWheel = buttonID == "0" and bank.jogWheel and bank.jogWheel["1"]
@@ -858,10 +1078,10 @@ local function callback(data)
 
             -- Vibrate if needed:
             if data.direction == "left" and thisJogWheel and thisJogWheel.vibrateLeft then
-                ct:vibrate(tonumber(thisJogWheel.vibrateLeft))
+                self.device:vibrate(tonumber(thisJogWheel.vibrateLeft))
             end
             if data.direction == "right" and thisJogWheel and thisJogWheel.vibrateRight then
-                ct:vibrate(tonumber(thisJogWheel.vibrateRight))
+                self.device:vibrate(tonumber(thisJogWheel.vibrateRight))
             end
         elseif data.id == loupedeck.event.SCREEN_PRESSED then
             --------------------------------------------------------------------------------
@@ -871,14 +1091,14 @@ local function callback(data)
 
             -- Vibrate if needed:
             if thisTouchButton and thisTouchButton.vibratePress then
-                ct:vibrate(tonumber(thisTouchButton.vibratePress))
+                self.device:vibrate(tonumber(thisTouchButton.vibratePress))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.pressAction) then
 
                 -- Repeat if necessary:
                 if thisTouchButton.repeatPressActionUntilReleased then
-                    repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
+                    self.repeatTimers[buttonID] = doEvery(keyRepeatInterval(), function()
                         executeAction(thisTouchButton.pressAction)
                     end)
                 end
@@ -895,30 +1115,30 @@ local function callback(data)
                     --------------------------------------------------------------------------------
                     -- SLIDE UP/DOWN:
                     --------------------------------------------------------------------------------
-                    if cacheLeftScreenYAxis ~= nil then
+                    if self.cacheLeftScreenYAxis ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - cacheLeftScreenYAxis
+                        local yDiff = data.y - self.cacheLeftScreenYAxis
                         if yDiff < 0-dragMinimumDiff then
                             executeAction(thisSideScreen.upAction)
                         elseif yDiff > 0+dragMinimumDiff then
                             executeAction(thisSideScreen.downAction)
                         end
                     end
-                    cacheLeftScreenYAxis = data.y
+                    self.cacheLeftScreenYAxis = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 0 and thisSideScreen.doubleTapAction then
-                        if leftScreenDoubleTapTriggered and tookFingerOffLeftScreen then
-                            leftScreenDoubleTapTriggered = false
-                            tookFingerOffLeftScreen = false
+                        if self.leftScreenDoubleTapTriggered and self.tookFingerOffLeftScreen then
+                            self.leftScreenDoubleTapTriggered = false
+                            self.tookFingerOffLeftScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
-                            leftScreenDoubleTapTriggered = true
+                            self.leftScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
-                                leftScreenDoubleTapTriggered = false
-                                tookFingerOffLeftScreen = false
+                                self.leftScreenDoubleTapTriggered = false
+                                self.tookFingerOffLeftScreen = false
                             end)
                         end
                     end
@@ -941,30 +1161,30 @@ local function callback(data)
                 --------------------------------------------------------------------------------
                 local thisSideScreen = bank.sideScreen and bank.sideScreen["2"]
                 if thisSideScreen then
-                    if cacheRightScreenYAxis ~= nil then
+                    if self.cacheRightScreenYAxis ~= nil then
                         -- already dragging. Which way?
-                        local yDiff = data.y - cacheRightScreenYAxis
+                        local yDiff = data.y - self.cacheRightScreenYAxis
                         if yDiff < 0-dragMinimumDiff then
                             executeAction(thisSideScreen.upAction)
                         elseif yDiff > 0+dragMinimumDiff then
                             executeAction(thisSideScreen.downAction)
                         end
                     end
-                    cacheRightScreenYAxis = data.y
+                    self.cacheRightScreenYAxis = data.y
 
                     --------------------------------------------------------------------------------
                     -- DOUBLE TAP:
                     --------------------------------------------------------------------------------
                     if data.multitouch == 0 and thisSideScreen.doubleTapAction then
-                        if rightScreenDoubleTapTriggered and tookFingerOffRightScreen then
-                            rightScreenDoubleTapTriggered = false
-                            tookFingerOffRightScreen = false
+                        if self.rightScreenDoubleTapTriggered and self.tookFingerOffRightScreen then
+                            self.rightScreenDoubleTapTriggered = false
+                            self.tookFingerOffRightScreen = false
                             executeAction(thisSideScreen.doubleTapAction)
                         else
-                            rightScreenDoubleTapTriggered = true
+                            self.rightScreenDoubleTapTriggered = true
                             doAfter(doubleTapTimeout, function()
-                                rightScreenDoubleTapTriggered = false
-                                tookFingerOffRightScreen = false
+                                self.rightScreenDoubleTapTriggered = false
+                                self.tookFingerOffRightScreen = false
                             end)
                         end
                     end
@@ -981,10 +1201,10 @@ local function callback(data)
             --------------------------------------------------------------------------------
             -- SCREEN RELEASED:
             --------------------------------------------------------------------------------
-            cacheLeftScreenYAxis = nil
-            cacheRightScreenYAxis = nil
-            tookFingerOffLeftScreen = true
-            tookFingerOffRightScreen = true
+            self.cacheLeftScreenYAxis = nil
+            self.cacheRightScreenYAxis = nil
+            self.tookFingerOffLeftScreen = true
+            self.tookFingerOffRightScreen = true
 
             --------------------------------------------------------------------------------
             -- TOUCH SCREEN BUTTON RELEASE:
@@ -993,15 +1213,15 @@ local function callback(data)
 
             -- Stop repeating:
             if thisTouchButton and thisTouchButton.repeatPressActionUntilReleased then
-                if repeatTimers[buttonID] then
-                    repeatTimers[buttonID]:stop()
-                    repeatTimers[buttonID] = nil
+                if self.repeatTimers[buttonID] then
+                    self.repeatTimers[buttonID]:stop()
+                    self.repeatTimers[buttonID] = nil
                 end
             end
 
             -- Vibrate if needed:
             if thisTouchButton and thisTouchButton.vibrateRelease then
-                ct:vibrate(tonumber(thisTouchButton.vibrateRelease))
+                self.device:vibrate(tonumber(thisTouchButton.vibrateRelease))
             end
 
             if thisTouchButton and executeAction(thisTouchButton.releaseAction) then
@@ -1035,9 +1255,9 @@ local function callback(data)
                 --------------------------------------------------------------------------------
                 -- DRAG WHEEL:
                 --------------------------------------------------------------------------------
-                if cacheWheelXAxis ~= nil and cacheWheelYAxis ~= nil then
+                if self.cacheWheelXAxis ~= nil and self.cacheWheelYAxis ~= nil then
                     -- we're already dragging. Which way?
-                    local xDiff, yDiff = data.x - cacheWheelXAxis, data.y - cacheWheelYAxis
+                    local xDiff, yDiff = data.x - self.cacheWheelXAxis, data.y - self.cacheWheelYAxis
                     -- dragging horizontally
                     if xDiff < 0-dragMinimumDiff then
                         executeAction(wheelScreen.leftAction)
@@ -1055,33 +1275,33 @@ local function callback(data)
                 --------------------------------------------------------------------------------
                 -- CACHE DATA:
                 --------------------------------------------------------------------------------
-                cacheWheelXAxis = data.x
-                cacheWheelYAxis = data.y
+                self.cacheWheelXAxis = data.x
+                self.cacheWheelYAxis = data.y
 
                 --------------------------------------------------------------------------------
                 -- DOUBLE TAP:
                 --------------------------------------------------------------------------------
                 if not data.multitouch and wheelScreen.doubleTapAction then
 
-                    local withinRange = lastWheelDoubleTapX and lastWheelDoubleTapY and
-                                        data.x >= (lastWheelDoubleTapX - wheelDoubleTapXTolerance) and data.x <= (lastWheelDoubleTapX + wheelDoubleTapXTolerance) and
-                                        data.y >= (lastWheelDoubleTapY - wheelDoubleTapYTolerance) and data.y <= (lastWheelDoubleTapY + wheelDoubleTapYTolerance)
+                    local withinRange = self.lastWheelDoubleTapX and self.lastWheelDoubleTapY and
+                                        data.x >= (self.lastWheelDoubleTapX - wheelDoubleTapXTolerance) and data.x <= (self.lastWheelDoubleTapX + wheelDoubleTapXTolerance) and
+                                        data.y >= (self.lastWheelDoubleTapY - wheelDoubleTapYTolerance) and data.y <= (self.lastWheelDoubleTapY + wheelDoubleTapYTolerance)
 
-                    if wheelScreenDoubleTapTriggered and tookFingerOffWheelScreen and withinRange then
-                        wheelScreenDoubleTapTriggered = false
-                        tookFingerOffWheelScreen = false
-                        lastWheelDoubleTapX = nil
-                        lastWheelDoubleTapY = nil
+                    if self.wheelScreenDoubleTapTriggered and self.tookFingerOffWheelScreen and withinRange then
+                        self.wheelScreenDoubleTapTriggered = false
+                        self.tookFingerOffWheelScreen = false
+                        self.lastWheelDoubleTapX = nil
+                        self.lastWheelDoubleTapY = nil
                         executeAction(wheelScreen.doubleTapAction)
                     else
-                        wheelScreenDoubleTapTriggered = true
-                        lastWheelDoubleTapX = nil
-                        lastWheelDoubleTapY = nil
+                        self.wheelScreenDoubleTapTriggered = true
+                        self.lastWheelDoubleTapX = nil
+                        self.lastWheelDoubleTapY = nil
                         doAfter(doubleTapTimeout, function()
-                            wheelScreenDoubleTapTriggered = false
-                            tookFingerOffWheelScreen = false
-                            lastWheelDoubleTapX = nil
-                            lastWheelDoubleTapY = nil
+                            self.wheelScreenDoubleTapTriggered = false
+                            self.tookFingerOffWheelScreen = false
+                            self.lastWheelDoubleTapX = nil
+                            self.lastWheelDoubleTapY = nil
                         end)
                     end
                 end
@@ -1094,13 +1314,13 @@ local function callback(data)
                 end
             end
         elseif data.id == loupedeck.event.WHEEL_RELEASED then
-            cacheWheelYAxis = nil
-            cacheWheelXAxis = nil
+            self.cacheWheelYAxis = nil
+            self.cacheWheelXAxis = nil
 
-            lastWheelDoubleTapX = data.x
-            lastWheelDoubleTapY = data.y
+            self.lastWheelDoubleTapX = data.x
+            self.lastWheelDoubleTapY = data.y
 
-            tookFingerOffWheelScreen = true
+            self.tookFingerOffWheelScreen = true
         end
 
     end
@@ -1112,205 +1332,27 @@ local plugin = {
     required    = true,
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
-        ["core.application.manager"]        = "appmanager",
         ["core.controlsurfaces.manager"]    = "csman",
         ["core.commands.global"]            = "global",
     }
 }
 
 function plugin.init(deps, env)
-
-    local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/loupedeck.icns"))
-
-    --------------------------------------------------------------------------------
-    -- Refresh mod.items:
-    --------------------------------------------------------------------------------
-    refreshItems()
-
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
-    mod._actionmanager = deps.actionmanager
+    mod.actionmanager       = deps.actionmanager
+    mod.csman               = deps.csman
+    mod.global              = deps.global
+
+    mod.env                 = env
 
     --------------------------------------------------------------------------------
-    -- Setup Commands:
+    -- Setup devices:
     --------------------------------------------------------------------------------
-    local global = deps.global
-    global
-        :add("enableLoupedeckCT")
-        :whenActivated(function()
-            mod.enabled(true)
-        end)
-        :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckCTSupport"))
-        :image(icon)
-
-    global
-        :add("disableLoupedeckCT")
-        :whenActivated(function()
-            mod.enabled(false)
-        end)
-        :groupedBy("commandPost")
-        :titled(i18n("disableLoupedeckCTSupport"))
-        :image(icon)
-
-    global
-        :add("disableLoupedeckCTandLaunchLoupedeckApp")
-        :whenActivated(function()
-            mod.enabled(false)
-            launchOrFocusByBundleID(LD_BUNDLE_ID)
-        end)
-        :groupedBy("commandPost")
-        :titled(i18n("disableLoupedeckCTSupportAndLaunchLoupedeckApp"))
-        :image(icon)
-
-    global
-        :add("enableLoupedeckCTandKillLoupedeckApp")
-        :whenActivated(function()
-            local apps = applicationsForBundleID(LD_BUNDLE_ID)
-            if apps then
-                for _, app in pairs(apps) do
-                    app:kill9()
-                end
-            end
-            mod.enabled(true)
-        end)
-        :groupedBy("commandPost")
-        :titled(i18n("enableLoupedeckCTSupportQuitLoupedeckApp"))
-        :image(icon)
-
-    --------------------------------------------------------------------------------
-    -- Setup the Loupedeck CT callback:
-    --------------------------------------------------------------------------------
-    ct:callback(callback)
-
-    --------------------------------------------------------------------------------
-    -- Setup watch to refresh the Loupedeck CT when apps change focus:
-    --------------------------------------------------------------------------------
-    mod._appWatcher = appWatcher.new(function(_, event)
-        if hasLoaded and event == appWatcher.activated then
-            mod.refresh(true)
-        end
-    end)
-
-    --------------------------------------------------------------------------------
-    -- Watch for drive changes:
-    --------------------------------------------------------------------------------
-    mod._driveWatcher = fs.volume.new(function()
-        refreshItems()
-    end)
-
-    --------------------------------------------------------------------------------
-    -- Connect to the Loupedeck CT:
-    --------------------------------------------------------------------------------
-    mod.enabled:update()
-
-    --------------------------------------------------------------------------------
-    -- Setup Bank Actions:
-    --------------------------------------------------------------------------------
-    local actionmanager = deps.actionmanager
-    local numberOfBanks = deps.csman.NUMBER_OF_BANKS
-    actionmanager.addHandler("global_loupedeckct_banks")
-        :onChoices(function(choices)
-            for i=1, numberOfBanks do
-                choices:add(i18n("loupedeckCT") .. " " .. i18n("bank") .. " " .. tostring(i))
-                    :subText(i18n("loupedeckCTBankDescription"))
-                    :params({ id = i })
-                    :id(i)
-                    :image(icon)
-            end
-
-            choices:add(i18n("next") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
-                :subText(i18n("loupedeckCTBankDescription"))
-                :params({ id = "next" })
-                :id("next")
-                :image(icon)
-
-            choices:add(i18n("previous") .. " " .. i18n("loupedeckCT") .. " " .. i18n("bank"))
-                :subText(i18n("loupedeckCTBankDescription"))
-                :params({ id = "previous" })
-                :id("previous")
-                :image(icon)
-
-            return choices
-        end)
-        :onExecute(function(result)
-            if result and result.id then
-
-                local frontmostApplication = application.frontmostApplication()
-                local bundleID = frontmostApplication:bundleID()
-
-                local items = mod.items()
-
-                --------------------------------------------------------------------------------
-                -- Revert to "All Applications" if no settings for frontmost app exist:
-                --------------------------------------------------------------------------------
-                if not items[bundleID] then
-                    bundleID = "All Applications"
-                end
-
-                --------------------------------------------------------------------------------
-                -- Ignore if ignored:
-                --------------------------------------------------------------------------------
-                if items[bundleID].ignore and items[bundleID].ignore == true then
-                    bundleID = "All Applications"
-                end
-
-                --------------------------------------------------------------------------------
-                -- If not Automatically Switching Applications:
-                --------------------------------------------------------------------------------
-                if not mod.automaticallySwitchApplications() then
-                    bundleID = mod.lastBundleID()
-                end
-
-                local activeBanks = mod.activeBanks()
-                local currentBank = activeBanks[bundleID] and tonumber(activeBanks[bundleID]) or 1
-
-                if type(result.id) == "number" then
-                    activeBanks[bundleID] = tostring(result.id)
-                else
-                    if result.id == "next" then
-                        if currentBank == numberOfBanks then
-                            activeBanks[bundleID] = "1"
-                        else
-                            activeBanks[bundleID] = tostring(currentBank + 1)
-                        end
-                    elseif result.id == "previous" then
-                        if currentBank == 1 then
-                            activeBanks[bundleID] = tostring(numberOfBanks)
-                        else
-                            activeBanks[bundleID] = tostring(currentBank - 1)
-                        end
-                    end
-                end
-
-                local newBank = activeBanks[bundleID]
-
-                mod.activeBanks(activeBanks)
-
-                mod.refresh()
-
-                items = mod.items() -- Reload items
-                local label = items[bundleID] and items[bundleID][newBank] and items[bundleID][newBank]["bankLabel"] or newBank
-                displayNotification(i18n("loupedeckCT") .. " " .. i18n("bank") .. ": " .. label)
-            end
-        end)
-        :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
-
-    --------------------------------------------------------------------------------
-    -- Shutdown Callback (make screen black):
-    --------------------------------------------------------------------------------
-    config.shutdownCallback:new("loupedeckCT", function()
-        if mod.enabled() then
-            for _, screen in pairs(loupedeck.screens) do
-                ct:updateScreenColor(screen, {hex="#"..defaultColor})
-            end
-            for i=7, 26 do
-                ct:buttonColor(i, {hex="#" .. defaultColor})
-            end
-            just.wait(0.01) -- Slight delay so the websocket message has time to send.
-        end
-    end)
+    mod.devices         = {}
+    mod.devices.CT      = mod.new(loupedeck.deviceTypes.CT):refreshItems()
+    mod.devices.LIVE    = mod.new(loupedeck.deviceTypes.LIVE):refreshItems()
 
     return mod
 end

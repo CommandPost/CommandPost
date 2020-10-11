@@ -27,7 +27,7 @@ local plugin = {
 function plugin.init(deps)
     local actionmanager = deps.actionmanager
     local applicationmanager = deps.applicationmanager
-    local loupedeckctmanager = deps.loupedeckctmanager
+    local loupedeckctmanager = deps.loupedeckctmanager.devices.CT -- TODO: We need to support the Live.
 
     mod._handler = actionmanager.addHandler("global_loupedeckctapplications", "global")
         :onChoices(function(choices)
@@ -70,7 +70,7 @@ function plugin.init(deps)
         :onExecute(function(action)
             local bundleID = action.bundleID
             loupedeckctmanager.lastBundleID(bundleID)
-            loupedeckctmanager.refresh()
+            loupedeckctmanager:refresh()
 
             if action.launch then
                 launchOrFocusByBundleID(bundleID)

@@ -794,7 +794,7 @@ local function loupedeckCTPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Refresh the hardware:
                 --------------------------------------------------------------------------------
-                mod._ctmanager.refresh()
+                mod._ctmanager:refresh()
             end
         elseif callbackType == "updateUI" then
             updateUI(params)
@@ -813,7 +813,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateBankLabel" then
             --------------------------------------------------------------------------------
             -- Update Bank Label:
@@ -887,7 +887,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "iconClicked" then
             --------------------------------------------------------------------------------
             -- Icon Clicked:
@@ -1002,7 +1002,7 @@ local function loupedeckCTPanelCallback(id, params)
                         --------------------------------------------------------------------------------
                         -- Refresh the hardware:
                         --------------------------------------------------------------------------------
-                        mod._ctmanager.refresh()
+                        mod._ctmanager:refresh()
                     else
                         failed = true
                     end
@@ -1063,7 +1063,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateButtonIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
@@ -1109,7 +1109,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateSideScreenIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
@@ -1155,7 +1155,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateWheelIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
@@ -1200,7 +1200,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateKnobIcon" then
             --------------------------------------------------------------------------------
             -- Update Icon:
@@ -1285,7 +1285,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "iconHistory" then
 
             local controlType = params["controlType"]
@@ -1378,7 +1378,7 @@ local function loupedeckCTPanelCallback(id, params)
                                 --------------------------------------------------------------------------------
                                 injectScript([[setIcon("]] .. fixedEncodedIcon .. [[")]] .. "\n" .. changeImageScript)
 
-                                mod._ctmanager.refresh()
+                                mod._ctmanager:refresh()
                             end,
                         })
                 end
@@ -1461,7 +1461,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "updateIconLabel" then
             --------------------------------------------------------------------------------
             -- Write to file:
@@ -1572,7 +1572,7 @@ local function loupedeckCTPanelCallback(id, params)
 
             end
 
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:
@@ -1800,16 +1800,16 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             updateUI(params)
 
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "resetEverything" then
             --------------------------------------------------------------------------------
             -- Reset Everything:
             --------------------------------------------------------------------------------
             webviewAlert(mod._manager.getWebview(), function(result)
                 if result == i18n("yes") then
-                    mod._ctmanager.reset()
+                    mod._ctmanager:reset()
                     mod._manager.refresh()
-                    mod._ctmanager.refresh()
+                    mod._ctmanager:refresh()
                 end
             end, i18n("loupedeckCTResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetApplication" then
@@ -1830,7 +1830,7 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    mod._ctmanager.refresh()
+                    mod._ctmanager:refresh()
                 end
             end, i18n("loupedeckCTResetApplicationConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "resetBank" then
@@ -1854,7 +1854,7 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    mod._ctmanager.refresh()
+                    mod._ctmanager:refresh()
                 end
             end, i18n("loupedeckCTResetBankConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
         elseif callbackType == "copyApplication" then
@@ -1936,7 +1936,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
 
         elseif callbackType == "changeRepeatPressActionUntilReleased" then
             local app = params["application"]
@@ -2094,7 +2094,7 @@ local function loupedeckCTPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Refresh the hardware:
             --------------------------------------------------------------------------------
-            mod._ctmanager.refresh()
+            mod._ctmanager:refresh()
         elseif callbackType == "showContextMenu" then
             --------------------------------------------------------------------------------
             -- Show Context Menu:
@@ -2144,7 +2144,7 @@ local function loupedeckCTPanelCallback(id, params)
                     --------------------------------------------------------------------------------
                     -- Refresh the hardware:
                     --------------------------------------------------------------------------------
-                    mod._ctmanager.refresh()
+                    mod._ctmanager:refresh()
                 end
             })
 
@@ -2193,16 +2193,16 @@ function plugin.init(deps, env)
     mod._actionmanager                      = deps.actionmanager
     mod._env                                = env
 
-    mod._ctmanager                          = deps.ctmanager
+    local device = deps.ctmanager.devices.CT
 
-    mod.loupedeck                           = deps.ctmanager.device
-
-    mod.items                               = deps.ctmanager.items
-    mod.enabled                             = deps.ctmanager.enabled
-    mod.loadSettingsFromDevice              = deps.ctmanager.loadSettingsFromDevice
-    mod.enableFlashDrive                    = deps.ctmanager.enableFlashDrive
-    mod.automaticallySwitchApplications     = deps.ctmanager.automaticallySwitchApplications
-    mod.screensBacklightLevel               = deps.ctmanager.screensBacklightLevel
+    mod._ctmanager                          = device
+    mod.loupedeck                           = device.device
+    mod.items                               = device.items
+    mod.enabled                             = device.enabled
+    mod.loadSettingsFromDevice              = device.loadSettingsFromDevice
+    mod.enableFlashDrive                    = device.enableFlashDrive
+    mod.automaticallySwitchApplications     = device.automaticallySwitchApplications
+    mod.screensBacklightLevel               = device.screensBacklightLevel
 
     mod.numberOfBanks                       = deps.manager.NUMBER_OF_BANKS
 
@@ -2275,7 +2275,7 @@ function plugin.init(deps, env)
                             if result == "OK" then
                                 mod.loadSettingsFromDevice(params.checked)
                                 mod._manager.refresh()
-                                mod._ctmanager.refresh()
+                                mod._ctmanager:refresh()
                             else
                                 manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
                             end
@@ -2283,7 +2283,7 @@ function plugin.init(deps, env)
                     else
                         mod.loadSettingsFromDevice(params.checked)
                         mod._manager.refresh()
-                        mod._ctmanager.refresh()
+                        mod._ctmanager:refresh()
                     end
                 end,
             }
