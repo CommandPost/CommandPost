@@ -1959,6 +1959,7 @@
         "title": "Title",
         "title_group": "Title",
         "toEnableTheFlashDriveOnLoupedeckCT": "To enable the Flash drive you need to restart your device by disconnecting it from your computer and reconnecting it.",
+        "toEnableTheFlashDriveOnLoupedeckLive": "To enable the Flash drive you need to restart your device by disconnecting it from your computer and reconnecting it.",
         "toggle": "Toggle",
         "toggleAutomaticScriptReloading": "Auto Reload",
         "toggleColorCorrectionEffects": "Toggle Color Correction Effects",

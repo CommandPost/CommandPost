@@ -3,8 +3,10 @@
 --- Control surface support for the Loupedeck CT and Loupedeck Live.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
+---
+--- Special thanks to [Max Maischein](https://github.com/Corion) for his [HID-LoupedeckCT](https://github.com/Corion/HID-LoupedeckCT) experiments.
 
-local log               = require "hs.logger".new("loupedeckct")
+local log               = require "hs.logger".new("loupedeck")
 
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
@@ -1643,12 +1645,12 @@ function mod.mt:updateWatcher(enabled)
             self._usbWatcher = usb.watcher.new(function(data)
                 if data.productName == self.deviceType then
                     if data.eventType == "added" then
-                        log.df("Loupedeck device connected.")
+                        --log.df("Loupedeck device connected.")
                         doAfter(4, function()
                             self:connect()
                         end)
-                    elseif data.eventType == "removed" then
-                        log.df("Loupedeck device disconnected.")
+                    --elseif data.eventType == "removed" then
+                        --log.df("Loupedeck device disconnected.")
                     end
                 end
             end):start()
@@ -1698,7 +1700,7 @@ function mod.mt:connect()
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    log.df("Connecting to Loupedeck: %s", url)
+    --log.df("Connecting to Loupedeck: %s", url)
     self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
 end
 

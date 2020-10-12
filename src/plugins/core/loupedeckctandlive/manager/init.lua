@@ -1,4 +1,4 @@
---- === plugins.core.loupedeckct.manager ===
+--- === plugins.core.loupedeckctandlive.manager ===
 ---
 --- Loupedeck CT & Loupedeck Live Manager Plugin.
 
@@ -78,7 +78,7 @@ local wheelDoubleTapXTolerance = 12
 -- Last Wheel Double Tap Y Tolerance
 local wheelDoubleTapYTolerance = 7
 
---- plugins.core.loupedeckct.manager.new() -> Loupedeck
+--- plugins.core.loupedeckctandlive.manager.new() -> Loupedeck
 --- Constructor
 --- Creates a new Loupedeck object.
 ---
@@ -129,122 +129,122 @@ function mod.new(deviceType)
         o:callback(...)
     end)
 
-    --- plugins.core.loupedeckct.manager.defaultFilename -> string
+    --- plugins.core.loupedeckctandlive.manager.defaultFilename -> string
     --- Field
     --- Default filename
     o.defaultFilename = "Default" .. o.fileExtension
 
-    --- plugins.core.loupedeckct.manager.repeatTimers -> table
+    --- plugins.core.loupedeckctandlive.manager.repeatTimers -> table
     --- Variable
     --- A table containing `hs.timer` objects.
     o.repeatTimers = {}
 
-    --- plugins.core.loupedeckct.manager.items <cp.prop: table>
+    --- plugins.core.loupedeckctandlive.manager.items <cp.prop: table>
     --- Field
     --- Contains all the saved Loupedeck layouts.
     o.items = nil
 
-    --- plugins.core.loupedeckct.manager.hasLoaded -> boolean
+    --- plugins.core.loupedeckctandlive.manager.hasLoaded -> boolean
     --- Variable
     --- Has the Loupedeck loaded?
     o.hasLoaded = false
 
-    --- plugins.core.loupedeckct.manager.leftFnPressed -> boolean
+    --- plugins.core.loupedeckctandlive.manager.leftFnPressed -> boolean
     --- Variable
     --- Is the left Function button pressed?
     o.leftFnPressed = false
 
-    --- plugins.core.loupedeckct.manager.rightFnPressed -> boolean
+    --- plugins.core.loupedeckctandlive.manager.rightFnPressed -> boolean
     --- Variable
     --- Is the right Function button pressed?
     o.rightFnPressed = false
 
-    --- plugins.core.loupedeckct.manager.cachedLEDButtonValues -> table
+    --- plugins.core.loupedeckctandlive.manager.cachedLEDButtonValues -> table
     --- Variable
     --- Table of cached LED button values.
     o.cachedLEDButtonValues = {}
 
-    --- plugins.core.loupedeckct.manager.cachedTouchScreenButtonValues -> table
+    --- plugins.core.loupedeckctandlive.manager.cachedTouchScreenButtonValues -> table
     --- Variable
     --- Table of cached Touch Screen button values.
     o.cachedTouchScreenButtonValues = {}
 
-    --- plugins.core.loupedeckct.manager.cachedWheelScreen -> string
+    --- plugins.core.loupedeckctandlive.manager.cachedWheelScreen -> string
     --- Variable
     --- The last wheel screen data sent.
     o.cachedWheelScreen = ""
 
-    --- plugins.core.loupedeckct.manager.cachedLeftSideScreen -> string
+    --- plugins.core.loupedeckctandlive.manager.cachedLeftSideScreen -> string
     --- Variable
     --- The last screen data sent.
     o.cachedLeftSideScreen = ""
 
-    --- plugins.core.loupedeckct.manager.cachedRightSideScreen -> string
+    --- plugins.core.loupedeckctandlive.manager.cachedRightSideScreen -> string
     --- Variable
     --- The last screen data sent.
     o.cachedRightSideScreen = ""
 
-    --- plugins.core.loupedeckct.manager.cacheWheelYAxis -> number
+    --- plugins.core.loupedeckctandlive.manager.cacheWheelYAxis -> number
     --- Variable
     --- Wheel Y Axis Cache
     o.cacheWheelYAxis = nil
 
-    --- plugins.core.loupedeckct.manager.cacheWheelXAxis -> number
+    --- plugins.core.loupedeckctandlive.manager.cacheWheelXAxis -> number
     --- Variable
     --- Wheel X Axis Cache
     o.cacheWheelXAxis = nil
 
-    --- plugins.core.loupedeckct.manager.cacheLeftScreenYAxis -> number
+    --- plugins.core.loupedeckctandlive.manager.cacheLeftScreenYAxis -> number
     --- Variable
     --- Right Screen Y Axis Cache
     o.cacheLeftScreenYAxis = nil
 
-    --- plugins.core.loupedeckct.manager.cacheRightScreenYAxis -> number
+    --- plugins.core.loupedeckctandlive.manager.cacheRightScreenYAxis -> number
     --- Variable
     --- Right Screen Y Axis Cache
     o.cacheRightScreenYAxis = nil
 
-    --- plugins.core.loupedeckct.manager.wheelScreenDoubleTapTriggered -> boolean
+    --- plugins.core.loupedeckctandlive.manager.wheelScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
     o.wheelScreenDoubleTapTriggered = false
 
-    --- plugins.core.loupedeckct.manager.leftScreenDoubleTapTriggered -> boolean
+    --- plugins.core.loupedeckctandlive.manager.leftScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
     o.leftScreenDoubleTapTriggered = false
 
-    --- plugins.core.loupedeckct.manager.rightScreenDoubleTapTriggered -> boolean
+    --- plugins.core.loupedeckctandlive.manager.rightScreenDoubleTapTriggered -> boolean
     --- Variable
     --- Has the wheel screen been tapped once?
     o.rightScreenDoubleTapTriggered = false
 
-    --- plugins.core.loupedeckct.manager.tookFingerOffLeftScreen -> boolean
+    --- plugins.core.loupedeckctandlive.manager.tookFingerOffLeftScreen -> boolean
     --- Variable
     --- Took Finger Off Left Screen?
     o.tookFingerOffLeftScreen = false
 
-    --- plugins.core.loupedeckct.manager.tookFingerOffRightScreen -> boolean
+    --- plugins.core.loupedeckctandlive.manager.tookFingerOffRightScreen -> boolean
     --- Variable
     --- Took Finger Off Right Screen?
     o.tookFingerOffRightScreen = false
 
-    --- plugins.core.loupedeckct.manager.tookFingerOffWheelScreen -> boolean
+    --- plugins.core.loupedeckctandlive.manager.tookFingerOffWheelScreen -> boolean
     --- Variable
     --- Took Finger Off Wheel Screen?
     o.tookFingerOffWheelScreen = false
 
-    --- plugins.core.loupedeckct.manager.lastWheelDoubleTapX -> number
+    --- plugins.core.loupedeckctandlive.manager.lastWheelDoubleTapX -> number
     --- Variable
     --- Last Wheel Double Tap X Position
     o.lastWheelDoubleTapX = nil
 
-    --- plugins.core.loupedeckct.manager.lastWheelDoubleTapY -> number
+    --- plugins.core.loupedeckctandlive.manager.lastWheelDoubleTapY -> number
     --- Variable
     --- Last Wheel Double Tap Y Position
     o.lastWheelDoubleTapY = nil
 
-    --- plugins.core.loupedeckct.manager.connected <cp.prop: boolean>
+    --- plugins.core.loupedeckctandlive.manager.connected <cp.prop: boolean>
     --- Field
     --- Is the Loupedeck connected?
     o.connected = prop.FALSE()
@@ -254,19 +254,19 @@ function mod.new(deviceType)
     -- Default Layout Path
     o.defaultLayoutPath = config.basePath .. "/plugins/core/" .. o.id .. "/default/Default.cp" .. o.commandID
 
-    --- plugins.core.loupedeckct.manager.defaultLayout -> table
+    --- plugins.core.loupedeckctandlive.manager.defaultLayout -> table
     --- Variable
     --- Default Loupedeck Layout
     o.defaultLayout = json.read(o.defaultLayoutPath)
 
-    --- plugins.core.loupedeckct.manager.driveWatcher -> watcher
+    --- plugins.core.loupedeckctandlive.manager.driveWatcher -> watcher
     --- Field
     --- Watches for drive volume events.
     o.driveWatcher = fs.volume.new(function()
         o:refreshItems()
     end)
 
-    --- plugins.core.loupedeckct.manager.enableFlashDrive <cp.prop: boolean>
+    --- plugins.core.loupedeckctandlive.manager.enableFlashDrive <cp.prop: boolean>
     --- Field
     --- Enable or disable the Loupedeck Flash Drive.
     o.enableFlashDrive = config.prop(o.id .. ".enableFlashDrive", false):watch(function(enabled)
@@ -279,22 +279,22 @@ function mod.new(deviceType)
         end
     end)
 
-    --- plugins.core.loupedeckct.manager.lastBundleID <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.manager.lastBundleID <cp.prop: string>
     --- Field
     --- The last Bundle ID.
     o.lastBundleID = config.prop(o.id .. ".lastBundleID", "All Applications")
 
-    --- plugins.core.loupedeckct.manager.screensBacklightLevel <cp.prop: number>
+    --- plugins.core.loupedeckctandlive.manager.screensBacklightLevel <cp.prop: number>
     --- Field
     --- Screens Backlight Level
     o.screensBacklightLevel = config.prop(o.id .. ".screensBacklightLevel", "9")
 
-    --- plugins.core.loupedeckct.manager.activeBanks <cp.prop: table>
+    --- plugins.core.loupedeckctandlive.manager.activeBanks <cp.prop: table>
     --- Field
     --- Table of active banks for each application.
     o.activeBanks = config.prop(o.id .. ".activeBanks", {})
 
-    --- plugins.core.loupedeckct.manager.loadSettingsFromDevice <cp.prop: boolean>
+    --- plugins.core.loupedeckctandlive.manager.loadSettingsFromDevice <cp.prop: boolean>
     --- Field
     --- Load settings from device.
     o.loadSettingsFromDevice = config.prop(o.id .. ".loadSettingsFromDevice", false):watch(function(enabled)
@@ -306,12 +306,12 @@ function mod.new(deviceType)
         o:refreshItems()
     end)
 
-    --- plugins.core.loupedeckct.manager.automaticallySwitchApplications <cp.prop: boolean>
+    --- plugins.core.loupedeckctandlive.manager.automaticallySwitchApplications <cp.prop: boolean>
     --- Field
     --- Enable or disable the automatic switching of applications.
     o.automaticallySwitchApplications = config.prop(o.id .. ".automaticallySwitchApplications", false):watch(function() o:refresh() end)
 
-    --- plugins.core.loupedeckct.manager.enabled <cp.prop: boolean>
+    --- plugins.core.loupedeckctandlive.manager.enabled <cp.prop: boolean>
     --- Field
     --- Is Loupedeck support enabled?
     o.enabled = config.prop(o.id .. ".enabled", false):watch(function(enabled)
@@ -509,6 +509,62 @@ function mod.new(deviceType)
         :onActionId(function(action) return "loupedeckCTBank" .. action.id end)
 
     --------------------------------------------------------------------------------
+    -- Actions to Manually Change Application:
+    --------------------------------------------------------------------------------
+    local applicationmanager = mod.applicationmanager
+    actionmanager.addHandler("global_" .. o.id .. "applications", "global")
+        :onChoices(function(choices)
+            local applications = applicationmanager.getApplications()
+
+            applications["All Applications"] = {
+                displayName = "All Applications",
+            }
+
+            -- Add User Added Applications from Loupedeck Preferences:
+            local items = o.items()
+            for bundleID, v in pairs(items) do
+                if not applications[bundleID] and v.displayName then
+                    applications[bundleID] = {}
+                    applications[bundleID].displayName = v.displayName
+                end
+            end
+
+            for bundleID, item in pairs(applications) do
+                choices
+                    :add(i18n("switch" .. o.commandID .. "To") .. " " .. item.displayName)
+                    :subText("")
+                    :params({
+                        bundleID = bundleID,
+                    })
+                    :id("global_" .. o.id .. "applications_switch_" .. bundleID)
+
+                if bundleID ~= "All Applications" then
+                    choices
+                        :add(i18n("switch" .. o.commandID .. "To") .. " " .. item.displayName .. " " .. i18n("andLaunch"))
+                        :subText("")
+                        :params({
+                            bundleID = bundleID,
+                            launch = true,
+                        })
+                        :id("global_" .. o.id .. "applications_launch_" .. bundleID)
+                end
+            end
+        end)
+        :onExecute(function(action)
+            local bundleID = action.bundleID
+            o.lastBundleID(bundleID)
+            o:refresh()
+
+            if action.launch then
+                launchOrFocusByBundleID(bundleID)
+            end
+        end)
+        :onActionId(function(params)
+            return "global_" .. o.id .. "applications_" .. params.bundleID
+        end)
+        :cached(false)
+
+    --------------------------------------------------------------------------------
     -- Connect to the Loupedeck:
     --------------------------------------------------------------------------------
     o.enabled:update()
@@ -517,7 +573,7 @@ function mod.new(deviceType)
     return o
 end
 
---- plugins.core.loupedeckct.manager:getFlashDrivePath() -> string
+--- plugins.core.loupedeckctandlive.manager:getFlashDrivePath() -> string
 --- Method
 --- Gets the Loupedeck Flash Drive path.
 ---
@@ -537,7 +593,7 @@ function mod.mt:getFlashDrivePath()
         end
     end
 end
---- plugins.core.loupedeckct.manager:refreshItems() -> self
+--- plugins.core.loupedeckctandlive.manager:refreshItems() -> self
 --- Method
 --- Refreshes the items to either either local drive or the Loupedeck Flash Drive.
 ---
@@ -580,7 +636,7 @@ function mod.mt:refreshItems()
     return self
 end
 
---- plugins.core.loupedeckct.manager:reset()
+--- plugins.core.loupedeckctandlive.manager:reset()
 --- Method
 --- Resets the config back to the default layout.
 ---
@@ -593,8 +649,8 @@ function mod.mt:reset()
     self.items(self.defaultLayout)
 end
 
---- plugins.core.loupedeckct.manager.refresh()
---- Function
+--- plugins.core.loupedeckctandlive.manager:refresh()
+--- Method
 --- Refreshes the Loupedeck screens and LED buttons.
 ---
 --- Parameters:
@@ -823,7 +879,7 @@ local function executeAction(thisAction)
     return false
 end
 
---- plugins.core.loupedeckct.manager:clearCache() -> none
+--- plugins.core.loupedeckctandlive.manager:clearCache() -> none
 --- Method
 --- Clears the cache.
 ---
@@ -863,7 +919,7 @@ function mod.mt:clearCache()
     self.hasLoaded = false
 end
 
---- plugins.core.loupedeckct.manager:callback(data) -> none
+--- plugins.core.loupedeckctandlive.manager:callback(data) -> none
 --- Method
 --- The Loupedeck callback.
 ---
@@ -1327,13 +1383,14 @@ function mod.mt:callback(data)
 end
 
 local plugin = {
-    id          = "core.loupedeckct.manager",
+    id          = "core.loupedeckctandlive.manager",
     group       = "core",
     required    = true,
     dependencies    = {
         ["core.action.manager"]             = "actionmanager",
-        ["core.controlsurfaces.manager"]    = "csman",
+        ["core.application.manager"]        = "applicationmanager",
         ["core.commands.global"]            = "global",
+        ["core.controlsurfaces.manager"]    = "csman",
     }
 }
 
@@ -1342,6 +1399,7 @@ function plugin.init(deps, env)
     -- Link to dependancies:
     --------------------------------------------------------------------------------
     mod.actionmanager       = deps.actionmanager
+    mod.applicationmanager  = deps.applicationmanager
     mod.csman               = deps.csman
     mod.global              = deps.global
 

@@ -1,4 +1,4 @@
---- === plugins.core.loupedeckct.prefs ===
+--- === plugins.core.loupedeckctandlive.prefs ===
 ---
 --- Loupedeck CT & Loupedeck Live Preferences Panels
 
@@ -52,17 +52,17 @@ local KEY_CREATOR_URL = "https://www.elgato.com/en/gaming/keycreator"
 -- URL to SideshowFX Website
 local BUY_MORE_ICONS_URL = "http://www.sideshowfx.net/buy"
 
---- plugins.core.loupedeckct.prefs.supportedExtensions -> string
+--- plugins.core.loupedeckctandlive.prefs.supportedExtensions -> string
 --- Variable
 --- Table of supported extensions for Icons.
 mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 
---- plugins.core.loupedeckct.prefs.defaultIconPath -> string
+--- plugins.core.loupedeckctandlive.prefs.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = config.assetsPath .. "/icons/"
 
---- plugins.core.loupedeckct.prefs.new() -> Loupedeck
+--- plugins.core.loupedeckctandlive.prefs.new() -> Loupedeck
 --- Constructor
 --- Creates a new Loupedeck Preferences panel.
 ---
@@ -103,52 +103,52 @@ function mod.new(deviceType)
         return
     end
 
-    --- plugins.core.loupedeckct.prefs.lastIconPath <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastIconPath <cp.prop: string>
     --- Field
     --- Last icon path.
     o.lastIconPath = config.prop(o.id .. ".preferences.lastIconPath", mod.defaultIconPath)
 
-    --- plugins.core.loupedeckct.prefs.iconHistory <cp.prop: table>
+    --- plugins.core.loupedeckctandlive.prefs.iconHistory <cp.prop: table>
     --- Field
     --- Icon History
     o.iconHistory = json.prop(config.cachePath, o.configFolder, "Icon History.cpCache", {})
 
-    --- plugins.core.loupedeckct.prefs.pasteboard <cp.prop: table>
+    --- plugins.core.loupedeckctandlive.prefs.pasteboard <cp.prop: table>
     --- Field
     --- Pasteboard
     o.pasteboard = json.prop(config.cachePath, o.configFolder, "Pasteboard.cpCache", {})
 
-    --- plugins.core.loupedeckct.prefs.lastExportPath <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastExportPath <cp.prop: string>
     --- Field
     --- Last Export path.
     o.lastExportPath = config.prop(o.id .. ".preferences.lastExportPath", os.getenv("HOME") .. "/Desktop/")
 
-    --- plugins.core.loupedeckct.prefs.lastImportPath <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastImportPath <cp.prop: string>
     --- Field
     --- Last Import path.
     o.lastImportPath = config.prop(o.id .. ".preferences.lastImportPath", os.getenv("HOME") .. "/Desktop/")
 
-    --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastApplication <cp.prop: string>
     --- Field
     --- Last Application used in the Preferences Panel.
     o.lastApplication = config.prop(o.id .. ".preferences.lastApplication", "All Applications")
 
-    --- plugins.core.loupedeckct.prefs.lastApplication <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastApplication <cp.prop: string>
     --- Field
     --- Last Bank used in the Preferences Panel.
     o.lastBank = config.prop(o.id .. ".preferences.lastBank", "1")
 
-    --- plugins.core.loupedeckct.prefs.lastSelectedControl <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastSelectedControl <cp.prop: string>
     --- Field
     --- Last Selected Control used in the Preferences Panel.
     o.lastSelectedControl = config.prop(o.id .. ".preferences.lastSelectedControl", "1")
 
-    --- plugins.core.loupedeckct.prefs.lastID <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastID <cp.prop: string>
     --- Field
     --- Last Selected Control ID used in the Preferences Panel.
     o.lastID = config.prop(o.id .. ".preferences.lastID", "7")
 
-    --- plugins.core.loupedeckct.prefs.lastControlType <cp.prop: string>
+    --- plugins.core.loupedeckctandlive.prefs.lastControlType <cp.prop: string>
     --- Field
     --- Last Selected Control Type used in the Preferences Panel.
     o.lastControlType = config.prop(o.id .. ".preferences.lastControlType", "ledButton")
@@ -291,15 +291,15 @@ function mod.new(deviceType)
     return o
 end
 
--- renderPanel(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
+--- plugins.core.loupedeckctandlive.prefs:renderPanel(context) -> none
+--- Method
+--- Generates the Preference Panel HTML Content.
+---
+--- Parameters:
+---  * context - Table of data that you want to share with the renderer
+---
+--- Returns:
+---  * HTML content as string
 function mod.mt:renderPanel(context)
     if not self._renderPanel then
         local err
@@ -326,15 +326,15 @@ local function insertImage(path)
     return i:encodeAsURLString(false, "PNG")
 end
 
--- generateContent() -> string
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * None
---
--- Returns:
---  * HTML content as string
+--- plugins.core.loupedeckctandlive.prefs:generateContent() -> string
+--- Method
+--- Generates the Preference Panel HTML Content.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * HTML content as string
 function mod.mt:generateContent()
     --------------------------------------------------------------------------------
     -- Get list of registered and custom apps:
@@ -378,21 +378,26 @@ function mod.mt:generateContent()
 
         vibrationIndex              = loupedeck.vibrationIndex,
         wheelSensitivityIndex       = loupedeck.wheelSensitivityIndex,
+
+        id                          = self.id,
     }
     return self:renderPanel(context)
 end
 
--- setItem(app, bank, controlType, id, valueA, valueB) -> none
--- Function
--- Update the Loupedeck CT layout file.
---
--- Parameters:
---  * app - The application bundle ID as a string
---  * bank - The bank ID as a string
---  * controlType - The control type as a string
---  * id - The ID of the item as a string
---  * valueA - The value of the item as a string
---  * valueB - An optional value
+--- plugins.core.loupedeckctandlive.prefs:setItem(app, bank, controlType, id, valueA, valueB) -> none
+--- Method
+--- Update the Loupedeck CT layout file.
+---
+--- Parameters:
+---  * app - The application bundle ID as a string
+---  * bank - The bank ID as a string
+---  * controlType - The control type as a string
+---  * id - The ID of the item as a string
+---  * valueA - The value of the item as a string
+---  * valueB - An optional value
+---
+--- Returns:
+---  * None
 function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
     local items = self.items()
 
@@ -401,7 +406,7 @@ function mod.mt:setItem(app, bank, controlType, id, valueA, valueB)
     if type(items[app][bank][controlType]) ~= "table" then items[app][bank][controlType] = {} end
     if type(items[app][bank][controlType][id]) ~= "table" then items[app][bank][controlType][id] = {} end
 
-    if valueB then
+    if type(valueB) ~= "nil" then
         if not items[app][bank][controlType][id][valueA] then items[app][bank][controlType][id][valueA] = {} end
         items[app][bank][controlType][id][valueA] = valueB
     else
@@ -433,17 +438,17 @@ local function getScreenSizeFromControlType(controlType)
     end
 end
 
--- generateKnobImages(app, bank, id) -> none
--- Function
--- Generates a combined image for all the knobs.
---
--- Parameters:
---  * app - The application bundle ID
---  * bank - The bank as a string
---  * id - The ID
---
--- Returns:
---  * None
+--- plugins.core.loupedeckctandlive.prefs:generateKnobImages(app, bank, id) -> none
+--- Method
+--- Generates a combined image for all the knobs.
+---
+--- Parameters:
+---  * app - The application bundle ID
+---  * bank - The bank as a string
+---  * id - The ID
+---
+--- Returns:
+---  * None
 function mod.mt:generateKnobImages(app, bank, bid)
     local whichScreen = "1"
     local kA = "1"
@@ -532,17 +537,16 @@ function mod.mt:generateKnobImages(app, bank, bid)
     self:setItem(app, bank, "sideScreen", whichScreen, "encodedKnobIcon", encodedKnobIcon)
 end
 
--- updateUI([params]) -> none
--- Function
--- Update the Preferences Panel UI.
---
--- Parameters:
---  * params - A optional table of parameters
---
--- Returns:
---  * None
+--- plugins.core.loupedeckctandlive.prefs:updateUI([params]) -> none
+--- Function
+--- Update the Preferences Panel UI.
+---
+--- Parameters:
+---  * params - A optional table of parameters
+---
+--- Returns:
+---  * None
 function mod.mt:updateUI(params)
-
     --------------------------------------------------------------------------------
     -- If no parameters are supplied, just use whatever was last:
     --------------------------------------------------------------------------------
@@ -656,11 +660,13 @@ function mod.mt:updateUI(params)
         --------------------------------------------------------------------------------
         -- Wheel Screen:
         --------------------------------------------------------------------------------
-        local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
-        if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
-            updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
-        else
-            updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
+        if self.id == "loupedeckct" then
+            local wheelScreen = selectedBank and selectedBank.wheelScreen and selectedBank.wheelScreen["1"]
+            if wheelScreen and wheelScreen.encodedIcon and wheelScreen.encodedIcon ~= "" then
+                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. wheelScreen.encodedIcon .. [[")]] .. "\n"
+            else
+                updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
+            end
         end
     else
         --------------------------------------------------------------------------------
@@ -672,7 +678,9 @@ function mod.mt:updateUI(params)
         end
         updateIconsScript = updateIconsScript .. [[changeImage("sideScreen1", "]] .. insertImage("images/sideScreen1.png") .. [[")]] .. "\n"
         updateIconsScript = updateIconsScript .. [[changeImage("sideScreen2", "]] .. insertImage("images/sideScreen2.png") .. [[")]] .. "\n"
-        updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
+        if self.id == "loupedeckct" then
+            updateIconsScript = updateIconsScript .. [[changeImage("wheelScreen1", "]] .. insertImage("images/wheelScreen1.png") .. [[")]] .. "\n"
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -722,16 +730,16 @@ function mod.mt:updateUI(params)
     ]] .. updateIconsScript .. "\n" .. connectedScript .. "\n" .. "updateIgnoreVisibility();")
 end
 
--- panelCallback() -> none
--- Function
--- JavaScript Callback for the Preferences Panel
---
--- Parameters:
---  * id - ID as string
---  * params - Table of paramaters
---
--- Returns:
---  * None
+--- plugins.core.loupedeckctandlive.prefs:panelCallback() -> none
+--- Method
+--- JavaScript Callback for the Preferences Panel
+---
+--- Parameters:
+---  * id - ID as string
+---  * params - Table of paramaters
+---
+--- Returns:
+---  * None
 function mod.mt:panelCallback(id, params)
     local injectScript = mod._manager.injectScript
     local callbackType = params and params["type"]
@@ -2345,7 +2353,7 @@ function mod.mt:panelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Loupedeck CT Preferences Panel:")
+            log.df("Unknown Callback in Loupedeck Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
@@ -2353,13 +2361,13 @@ function mod.mt:panelCallback(id, params)
 end
 
 local plugin = {
-    id              = "core.loupedeckct.prefs",
+    id              = "core.loupedeckctandlive.prefs",
     group           = "core",
     dependencies    = {
-        ["core.controlsurfaces.manager"]    = "manager",
-        ["core.action.manager"]             = "actionmanager",
-        ["core.loupedeckct.manager"]        = "ctmanager",
-        ["core.application.manager"]        = "appmanager",
+        ["core.action.manager"]                 = "actionmanager",
+        ["core.application.manager"]            = "appmanager",
+        ["core.controlsurfaces.manager"]        = "manager",
+        ["core.loupedeckctandlive.manager"]     = "deviceManager",
     }
 }
 
@@ -2369,7 +2377,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     mod._appmanager     = deps.appmanager
 
-    mod._deviceManager  = deps.ctmanager
+    mod._deviceManager  = deps.deviceManager
 
     mod._manager        = deps.manager
     mod._webviewLabel   = deps.manager.getLabel()

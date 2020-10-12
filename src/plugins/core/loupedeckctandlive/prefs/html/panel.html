@@ -1,5 +1,12 @@
 <script>{(js/jscolor.js)}</script>
 <style>{(css/loupedeck.css)}</style>
+
+{% if id == "loupedeckct" then %}
+<style>{(css/ct.css)}</style>
+{% elseif id == "loupedecklive" then %}
+<style>{(css/live.css)}</style>
+{% end %}
+
 <script>
 	var selectedWheelMode = "slide";
 
@@ -118,6 +125,8 @@
 			if (controlType == "wheelScreen") {
 				label = "Wheel Screen";
 			}
+
+			{% if id == "loupedeckct" then %}
 			if (controlType == "ledButton") {
 				if (id == "7") { label = "1"}
 				if (id == "8") { label = "2"}
@@ -140,6 +149,19 @@
 				if (id == "25") { label = "D"}
 				if (id == "26") { label = "E"}
 			}
+			{% elseif id == "loupedecklive" then %}
+			if (controlType == "ledButton") {
+				if (id == "7") { label = "Home"}
+				if (id == "8") { label = "1"}
+				if (id == "9") { label = "2"}
+				if (id == "10") { label = "3"}
+				if (id == "11") { label = "4"}
+				if (id == "12") { label = "5"}
+				if (id == "13") { label = "6"}
+				if (id == "14") { label = "7"}
+			}
+			{% end %}
+
 			if (controlType == "sideScreen") {
 				if (id == "1") { label = "Left Side Screen" }
 				if (id == "2") { label = "Right Side Screen" }
@@ -1167,6 +1189,7 @@
 	<thead>
 		<tr>
 			<th width="447px">
+				{% if id == "loupedeckct" then %}
 				<div id="loupedeckCT">
 					<div controlType="knob" controlID="1" id="knob1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
 						<img src="{{ insertImage('images/knob1.png') }}" width="39" height="39" />
@@ -1304,6 +1327,94 @@
 						<img src="{{ insertImage('images/jogWheelBottom.png') }}" width="81" height="25" draggable="false" />
 					</div>
 				</div>
+				{% elseif id == "loupedecklive" then %}
+				<div id="loupedeckLive">
+					<div controlType="knob" controlID="1" id="knob1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob1.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="knob" controlID="4" id="knob4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob4.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="sideScreen" controlID="1" id="sideScreen1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/sideScreen1.png') }}" width="28" height="141" style="object-fit: cover;" />
+					</div>
+					<div controlType="touchButton" controlID="1" id="touchButton1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton1.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="2" id="touchButton2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton2.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="3" id="touchButton3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton3.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="4" id="touchButton4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton4.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="sideScreen" controlID="2" id="sideScreen2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/sideScreen2.png') }}" width="28" height="141" style="object-fit: cover;" />
+					</div>
+					<div controlType="touchButton" controlID="5" id="touchButton5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton5.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="6" id="touchButton6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton6.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="7" id="touchButton7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton7.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="8" id="touchButton8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton8.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="knob" controlID="2" id="knob2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob2.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="knob" controlID="5" id="knob5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob5.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="touchButton" controlID="9" id="touchButton9" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton9.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="10" id="touchButton10" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton10.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="11" id="touchButton11" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton11.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="touchButton" controlID="12" id="touchButton12" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/touchButton12.png') }}" width="40" height="40" />
+					</div>
+					<div controlType="knob" controlID="3" id="knob3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob3.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="knob" controlID="6" id="knob6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/knob6.png') }}" width="41" height="41" />
+					</div>
+					<div controlType="ledButton" controlID="7" id="ledButton1" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton1.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="8" id="ledButton2" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton2.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="9" id="ledButton3" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton3.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="10" id="ledButton4" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton4.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="11" id="ledButton5" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton5.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="12" id="ledButton6" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton6.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="13" id="ledButton7" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton7.png') }}" width="36" height="36" />
+					</div>
+					<div controlType="ledButton" controlID="14" id="ledButton8" draggable="true" ondragstart="drag(event)" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="changeControl(this)" style="cursor: pointer;" oncontextmenu="showContextMenu(event)">
+						<img src="{{ insertImage('images/live/ledButton8.png') }}" width="36" height="36" />
+					</div>
+				</div>
+				{% end %}
 			</th>
 			<th style="text-align:top; padding-top: 20px;">
 

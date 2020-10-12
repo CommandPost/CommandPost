@@ -142,12 +142,12 @@ local plugin = {
     id              = "core.menu.menuaction",
     group           = "core",
     dependencies    = {
-        ["core.action.manager"]         = "actionmanager",
-        ["core.application.manager"]    = "applicationmanager",
-        ["core.midi.manager"]           = "midimanager",
-        ["core.loupedeckct.manager"]    = "loupedeckctmanager",
-        ["core.tourbox.manager"]        = "tourboxmanager",
-        ["core.streamdeck.manager"]     = "streamdeckmanager",
+        ["core.action.manager"]                 = "actionmanager",
+        ["core.application.manager"]            = "applicationmanager",
+        ["core.loupedeckctandlive.manager"]     = "loupedeckctmanager",
+        ["core.midi.manager"]                   = "midimanager",
+        ["core.streamdeck.manager"]             = "streamdeckmanager",
+        ["core.tourbox.manager"]                = "tourboxmanager",
     }
 }
 
@@ -227,7 +227,8 @@ function plugin.postInit(deps)
     local appManager            = deps.applicationmanager
     local actionmanager         = deps.actionmanager
 
-    local loupedeckCTItems      = deps.loupedeckctmanager.devices.CT.items -- TODO: This needs to support the Live too.
+    local loupedeckCTItems      = deps.loupedeckctmanager.devices.CT.items
+    local loupedeckLiveItems    = deps.loupedeckctmanager.devices.LIVE.items
     local loupedeckItems        = deps.midimanager.loupedeckItems
     local loupedeckPlusItems    = deps.midimanager.loupedeckPlusItems
     local midiItems             = deps.midimanager.items
@@ -285,6 +286,7 @@ function plugin.postInit(deps)
         --------------------------------------------------------------------------------
         local items = {
             loupedeckCTItems,
+            loupedeckLiveItems,
             loupedeckItems,
             loupedeckPlusItems,
             midiItems,
