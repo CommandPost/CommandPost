@@ -88,6 +88,7 @@ function mod.new(deviceType)
         o.priority          = 2033.01
         o.label             = "Loupedeck CT"
         o.commandID         = "LoupedeckCT"
+        o.height            = 1055
     elseif deviceType == loupedeck.deviceTypes.LIVE then
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
@@ -98,6 +99,7 @@ function mod.new(deviceType)
         o.priority          = 2033.02
         o.label             = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
+        o.height            = 1020
     else
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
@@ -191,7 +193,7 @@ function mod.new(deviceType)
         label           = o.label,
         image           = imageFromPath(mod._env:pathToAbsolute("/images/loupedeck.icns")),
         tooltip         = o.label,
-        height          = 1055,
+        height          = o.height,
     })
         :addHeading(6, o.label)
 
@@ -205,45 +207,49 @@ function mod.new(deviceType)
             }
         )
 
-        :addCheckbox(8,
-            {
-                label       = i18n("enableFlashDrive"),
-                checked     = o.enableFlashDrive,
-                onchange    = function(_, params)
-                    if params.checked then
-                        webviewAlert(mod._manager.getWebview(), function() end, i18n("pleaseDisconnectAndReconnectYour" .. o.commandID), i18n("toEnableTheFlashDriveOn" .. o.commandID), i18n("ok"))
-                    end
-                    o.enableFlashDrive(params.checked)
-                end,
-            }
-        )
+    if deviceType == loupedeck.deviceTypes.CT then
+        o.panel
+            :addCheckbox(8,
+                {
+                    label       = i18n("enableFlashDrive"),
+                    checked     = o.enableFlashDrive,
+                    onchange    = function(_, params)
+                        if params.checked then
+                            webviewAlert(mod._manager.getWebview(), function() end, i18n("pleaseDisconnectAndReconnectYour" .. o.commandID), i18n("toEnableTheFlashDriveOn" .. o.commandID), i18n("ok"))
+                        end
+                        o.enableFlashDrive(params.checked)
+                    end,
+                }
+            )
 
-        :addCheckbox(9,
-            {
-                label       = i18n("storeSettingsOnFlashDrive"),
-                checked     = o.loadSettingsFromDevice,
-                id          = "storeSettingsOnFlashDrive",
-                onchange    = function(_, params)
-                    local manager = mod._manager
-                    if params.checked then
-                        webviewAlert(manager.getWebview(), function(result)
-                            if result == "OK" then
-                                o.loadSettingsFromDevice(params.checked)
-                                mod._manager.refresh()
-                                o.device:refresh()
-                            else
-                                manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
-                            end
-                        end, i18n("areYouSureYouWantToStoreYourSettingsOnThe" .. o.commandID .. "FlashDrive"), i18n("areYouSureYouWantToStoreYourSettingsOnThe" .. o.commandID .. "FlashDriveDescription"), i18n("ok"), i18n("cancel"), "warning")
-                    else
-                        o.loadSettingsFromDevice(params.checked)
-                        mod._manager.refresh()
-                        o.device:refresh()
-                    end
-                end,
-            }
-        )
+            :addCheckbox(9,
+                {
+                    label       = i18n("storeSettingsOnFlashDrive"),
+                    checked     = o.loadSettingsFromDevice,
+                    id          = "storeSettingsOnFlashDrive",
+                    onchange    = function(_, params)
+                        local manager = mod._manager
+                        if params.checked then
+                            webviewAlert(manager.getWebview(), function(result)
+                                if result == "OK" then
+                                    o.loadSettingsFromDevice(params.checked)
+                                    mod._manager.refresh()
+                                    o.device:refresh()
+                                else
+                                    manager.injectScript("changeCheckedByID('storeSettingsOnFlashDrive', false);")
+                                end
+                            end, i18n("areYouSureYouWantToStoreYourSettingsOnThe" .. o.commandID .. "FlashDrive"), i18n("areYouSureYouWantToStoreYourSettingsOnThe" .. o.commandID .. "FlashDriveDescription"), i18n("ok"), i18n("cancel"), "warning")
+                        else
+                            o.loadSettingsFromDevice(params.checked)
+                            mod._manager.refresh()
+                            o.device:refresh()
+                        end
+                    end,
+                }
+            )
+    end
 
+    o.panel
         :addCheckbox(10,
             {
                 label       = i18n("automaticallySwitchApplications"),
