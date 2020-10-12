@@ -13,7 +13,7 @@ local format                = string.format
 
 local mod = {}
 
---- plugins.core.tangent.os.display.init() -> self
+--- plugins.finalcutpro.tangent.os.display.init() -> self
 --- Function
 --- Initialise the module.
 ---

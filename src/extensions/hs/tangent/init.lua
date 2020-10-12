@@ -1180,16 +1180,6 @@ end
 ---  * port - A port `number`. Defaults to `64246`
 function mod.new(ipAddress, port)
     local o = {
--- hs.tangent._buffer -> table
--- Variable
--- The commands buffer.
-        _buffer = {},
-
--- hs.tangent._readBytesRemaining -> number
--- Field
--- Number of read bytes remaining.
-        _readBytesRemaining = 0,
-
 -- hs.tangent._applicationName -> string
 -- Field
 -- Application name as specified in `hs.tangent:connect()`

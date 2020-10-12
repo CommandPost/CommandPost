@@ -1,0 +1,379 @@
+/* LOUPEDECK CT INTERFACE: */
+
+#loupedeckCT {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:447px;
+	height:482px;
+	font-size:0px;
+	background-image: url({* insertImage('images/loupedeckCT.png') *});
+}
+
+#knob1 {
+	position:absolute;
+	left:38px;
+	top:52px;
+	width:39px;
+	height:39px;
+}
+
+#knob4 {
+	position:absolute;
+	left:360px;
+	top:52px;
+	width:39px;
+	height:39px;
+}
+
+#sideScreen1 {
+	position:absolute;
+	left:100px;
+	top:67px;
+	width:24px;
+	height:131px;
+}
+
+#touchButton1 {
+	position:absolute;
+	left:130px;
+	top:67px;
+	width:40px;
+	height:40px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
+}
+
+#touchButton2 {
+	position:absolute;
+	left:175px;
+	top:67px;
+	width:40px;
+	height:40px;
+	border: 0;
+	margin: 0;
+	font-size: 0;
+	border-image-width: 0;
+}
+
+#touchButton3 {
+	position:absolute;
+	left:220px;
+	top:67px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton4 {
+	position:absolute;
+	left:266px;
+	top:67px;
+	width:40px;
+	height:40px;
+}
+
+#sideScreen2 {
+	position:absolute;
+	left:313px;
+	top:67px;
+	width:24px;
+	height:131px;
+}
+
+#touchButton5 {
+	position:absolute;
+	left:130px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton6 {
+	position:absolute;
+	left:175px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton7 {
+	position:absolute;
+	left:220px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton8 {
+	position:absolute;
+	left:266px;
+	top:112px;
+	width:40px;
+	height:40px;
+}
+
+#knob2 {
+	position:absolute;
+	left:38px;
+	top:114px;
+	width:39px;
+	height:38px;
+}
+
+#knob5 {
+	position:absolute;
+	left:360px;
+	top:114px;
+	width:39px;
+	height:38px;
+}
+
+#touchButton9 {
+	position:absolute;
+	left:130px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton10 {
+	position:absolute;
+	left:175px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton11 {
+	position:absolute;
+	left:220px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#touchButton12 {
+	position:absolute;
+	left:266px;
+	top:158px;
+	width:40px;
+	height:40px;
+}
+
+#knob3 {
+	position:absolute;
+	left:38px;
+	top:175px;
+	width:39px;
+	height:39px;
+}
+
+#knob6 {
+	position:absolute;
+	left:360px;
+	top:175px;
+	width:39px;
+	height:39px;
+}
+
+#ledButton1 {
+	position:absolute;
+	left:41px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton2 {
+	position:absolute;
+	left:87px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton3 {
+	position:absolute;
+	left:133px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton4 {
+	position:absolute;
+	left:179px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton5 {
+	position:absolute;
+	left:225px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton6 {
+	position:absolute;
+	left:271px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton7 {
+	position:absolute;
+	left:317px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButton8 {
+	position:absolute;
+	left:363px;
+	top:225px;
+	width:33px;
+	height:33px;
+}
+
+#ledButtonO {
+	position:absolute;
+	left:37px;
+	top:277px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonReturn {
+	position:absolute;
+	left:85px;
+	top:277px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonA {
+	position:absolute;
+	left:306px;
+	top:277px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonB {
+	position:absolute;
+	left:354px;
+	top:277px;
+	width:46px;
+	height:46px;
+}
+
+#jogWheelTop {
+	position:absolute;
+	left:151px;
+	top:280px;
+	width:135px;
+	height:27px;
+}
+
+#jogWheelLeft {
+	position:absolute;
+	left:151px;
+	top:307px;
+	width:28px;
+	height:107px;
+}
+
+#wheelScreen1 {
+	position:absolute;
+	left:179px;
+	top:307px;
+	width:81px;
+	height:82px;
+}
+
+#jogWheelRight {
+	position:absolute;
+	left:260px;
+	top:307px;
+	width:26px;
+	height:107px;
+}
+
+#ledButtonUndo {
+	position:absolute;
+	left:37px;
+	top:324px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonSave {
+	position:absolute;
+	left:85px;
+	top:324px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonC {
+	position:absolute;
+	left:306px;
+	top:324px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonD {
+	position:absolute;
+	left:354px;
+	top:324px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonKeyboard {
+	position:absolute;
+	left:37px;
+	top:371px;
+	width:46px;
+	height:46px;
+}
+
+#ledButtonLeftFn {
+	position:absolute;
+	left:85px;
+	top:371px;
+	width:45px;
+	height:46px;
+}
+
+#ledButtonRightFn {
+	position:absolute;
+	left:306px;
+	top:371px;
+	width:47px;
+	height:46px;
+}
+
+#ledButtonE {
+	position:absolute;
+	left:354px;
+	top:371px;
+	width:46px;
+	height:46px;
+}
+
+#jogWheelBottom {
+	position:absolute;
+	left:179px;
+	top:389px;
+	width:81px;
+	height:25px;
+}

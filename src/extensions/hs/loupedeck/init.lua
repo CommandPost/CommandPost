@@ -1,10 +1,12 @@
---- === hs.loupedeckct ===
+--- === hs.loupedeck ===
 ---
---- Adds Loupedeck CT Support.
+--- Control surface support for the Loupedeck CT and Loupedeck Live.
 ---
 --- Special thanks to William Viker & Håkon Nessjøen for their [NodeJS experiments](https://github.com/bitfocus/loupedeck-ct).
+---
+--- Special thanks to [Max Maischein](https://github.com/Corion) for his [HID-LoupedeckCT](https://github.com/Corion/HID-LoupedeckCT) experiments.
 
-local log               = require "hs.logger".new("loupedeckct")
+local log               = require "hs.logger".new("loupedeck")
 
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
@@ -34,26 +36,30 @@ local uint24be          = bytes.uint24be
 local uint32be          = bytes.uint32be
 local uint8             = bytes.uint8
 
-local mod               = {}
+local mod = {}
+mod.mt = {}
+mod.mt.__index = mod.mt
 
--- callbackRegister -> table
--- Variable
--- A table of registered callbacks
-local callbackRegister = {}
+--- hs.loupedeck.deviceTypes -> table
+--- Constant
+--- A table containing the device types.
+mod.deviceTypes = {
+    CT      = "LOUPEDECK device",
+    LIVE    = "Loupedeck Live",
+}
 
--- registerCallback(callbackFn) -> number
--- Function
--- Registers a callback.
---
---
--- Parameters:
---  * callbackFn - The callback function
---
--- Returns:
---  * A unique callback ID as a number, or `0` if none was provided.
-local function registerCallback(callbackFn)
+--- hs.loupedeck:registerCallback(callbackFn) -> number
+--- Method
+--- Registers a callback.
+---
+--- Parameters:
+---  * callbackFn - The callback function
+---
+--- Returns:
+---  * A unique callback ID as a number.
+function mod.mt:registerCallback(callbackFn)
     if callbackFn == nil then
-        return 0
+        callbackFn = function() end
     end
 
     if type(callbackFn) ~= "function" then
@@ -61,28 +67,28 @@ local function registerCallback(callbackFn)
     end
 
     local id = randomFromRange(1, 255)
-    while(callbackRegister[id])
+    while(self.callbackRegister[id])
     do
         id = randomFromRange(1, 255)
     end
-    callbackRegister[id] = callbackFn
+    self.callbackRegister[id] = callbackFn
     return id
 end
 
--- getCallback(id[, preserve]) -> function | nil
--- Function
--- Retrieves the callback function at the specified id.
---
--- Parameters:
---  * id        - the callback ID to retrieve
---  * preserve  - (optional) if `true`, the callback will not be cleared from the register. defaults to `false`.
---
--- Returns:
---  * The callback `function`, or `nil` if not available.
-local function getCallback(id, preserve)
-    local callback = callbackRegister[id]
+--- hs.loupedeck.getCallback(id[, preserve]) -> function | nil
+--- Function
+--- Retrieves the callback function at the specified id.
+---
+--- Parameters:
+---  * id        - the callback ID to retrieve
+---  * preserve  - (optional) if `true`, the callback will not be cleared from the register. defaults to `false`.
+---
+--- Returns:
+---  * The callback `function`, or `nil` if not available.
+function mod.mt:getCallback(id, preserve)
+    local callback = self.callbackRegister[id]
     if not preserve then
-        callbackRegister[id] = nil
+        self.callbackRegister[id] = nil
     end
     return callback
 end
@@ -204,7 +210,7 @@ local function findLast(haystack, needle)
     if i==nil then return nil else return i-1 end
 end
 
---- hs.loupedeckct.setLogLevel(loglevel) -> none
+--- hs.loupedeck.setLogLevel(loglevel) -> none
 --- Function
 --- Sets the Log Level.
 ---
@@ -217,66 +223,70 @@ function mod.setLogLevel(loglevel)
     log:setLogLevel(loglevel)
 end
 
--- connected() -> boolean
--- Function
--- Checks if the websocket is connected or not
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if connected otherwise `false`
-local function connected()
-    return mod._websocket and mod._websocket:status() == "open"
+--- hs.loupedeck:connected() -> boolean
+--- Method
+--- Checks if the websocket is connected or not
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if connected otherwise `false`
+function mod.mt:connected()
+    return self.websocket and self.websocket:status() == "open"
 end
 
--- send() -> boolean
--- Function
--- Sends a message via the websocket if connected
---
--- Parameters:
---  * message - The message to send.
---
--- Returns:
---  * `true` if sent.
-local function send(message)
-    if connected() then
+--- hs.loupedeck:send() -> boolean
+--- Method
+--- Sends a message via the websocket if connected
+---
+--- Parameters:
+---  * message - The message to send.
+---
+--- Returns:
+---  * `true` if sent.
+function mod.mt:send(message)
+    if self:connected() then
         local data = type(message) == "table" and concat(message) or tostring(message)
         --log.df("Sending: %s", hexDump(data))
-        mod._websocket:send(data)
+        self.websocket:send(data)
         return true
     end
     return false
 end
 
--- sendCommand(commandID[, callbackFn[, ...]]) -> boolean
--- Function
--- Sends the specified command, with the provided callback function, along with any additional binary string blocks.
---
--- Parameters:
--- * commandID  - An 16-bit integer with the command ID.
--- * callbackFn - A `function` that will be called with the `data` from the response. (optional)
--- * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
-local function sendCommand(commandID, callbackFn, ...)
-    return send(
-        bytes(uint16be(commandID), uint8(registerCallback(callbackFn)), ...):bytes()
+--- hs.loupedeck:sendCommand(commandID[, callbackFn[, ...]]) -> boolean
+--- Method
+--- Sends the specified command, with the provided callback function, along with any additional binary string blocks.
+---
+--- Parameters:
+---  * commandID  - An 16-bit integer with the command ID.
+---  * callbackFn - A `function` that will be called with the `data` from the response. (optional)
+---  * ...        - a variable number of byte string values, which will be concatinated together with the command and callback ID when being sent.
+---
+--- Returns:
+---  * `true` if sent.
+function mod.mt:sendCommand(commandID, callbackFn, ...)
+    return self:send(
+        bytes(uint16be(commandID), uint8(self:registerCallback(callbackFn)), ...):bytes()
     )
 end
 
--- findIPAddress() -> string | nil
--- Function
--- Searches for a valid IP address for the Loupedeck CT
---
--- Parameters:
---  * None
---
--- Returns:
---  * An IP address as a string, or `nil` if no device can be detected.
-local function findIPAddress()
+--- hs.loupedeck:findIPAddress() -> string | nil
+--- Method
+--- Searches for a valid IP address for the Loupedeck
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An IP address as a string, or `nil` if no device can be detected.
+function mod.mt:findIPAddress()
     local interfaces = network.interfaces()
     local interfaceID
+    local deviceType = self.deviceType
     for _, v in pairs(interfaces) do
-        if network.interfaceName(v) == "LOUPEDECK device" then
+        if network.interfaceName(v) == deviceType then
             interfaceID = v
             break
         end
@@ -287,48 +297,51 @@ local function findIPAddress()
     return ip and lastDot and string.sub(ip, 1, lastDot) .. "1"
 end
 
--- initaliseDevice() -> None
--- Function
--- Starts the background loop, performs self-test and resets screens and buttons.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function initaliseDevice()
+--- hs.loupedeck:initaliseDevice() -> None
+--- Method
+--- Starts the background loop, performs self-test and resets screens and buttons.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.mt:initaliseDevice()
     -- This must be executed before writing to the main Touch Screen:
-    mod.resetDevice()
+    self:resetDevice()
 
     -- Reset all the buttons to black:
     local black = 0x000000
     for _,id in pairs(mod.buttonID) do
-        mod.buttonColor(id, black)
+        self:buttonColor(id, black)
     end
 
     -- Reset all the screens to black:
     local b = drawing.color.hammerspoon.black
-    for _, screen in pairs(mod.screens) do
-        mod.updateScreenColor(screen, b)
-    end
+    self:updateScreenColor(mod.screens.left, b)
+    self:updateScreenColor(mod.screens.right, b)
+    self:updateScreenColor(mod.screens.middle, b)
 
+    if self.deviceType == mod.deviceTypes.CT then
+        self:updateScreenColor(mod.screens.wheel, b)
+    end
 end
 
---- hs.loupedeckct.callback([callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:callback([callbackFn]) -> boolean
+--- Method
 --- Sets a callback when new messages are received.
 ---
 --- Parameters:
----  * callbackFn - a function to set as the callback for `hs.loupedeckct`. If the value provided is `nil`, any currently existing callback function is removed.
+---  * callbackFn - a function to set as the callback for `hs.loupedeck`. If the value provided is `nil`, any currently existing callback function is removed.
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`
-function mod.callback(callbackFn)
+function mod.mt:callback(callbackFn)
     if type(callbackFn) == "function" then
-        mod._callback = callbackFn
+        self._callback = callbackFn
         return true
     elseif type(callbackFn) == "nil" then
-        mod._callback = nil
+        self._callback = nil
         return true
     else
         log.ef("Callback received an invalid type: %s", type(callbackFn))
@@ -336,23 +349,23 @@ function mod.callback(callbackFn)
     end
 end
 
--- triggerCallback -> none
--- Function
--- Triggers a callback function
---
--- Parameters:
---  * data - Any data to pass along to the callback function as a table
---
--- Returns:
---  * None
-local function triggerCallback(data)
+--- hs.loupedeck:triggerCallback -> none
+--- Method
+--- Triggers a callback function
+---
+--- Parameters:
+---  * data - Any data to pass along to the callback function as a table
+---
+--- Returns:
+---  * None
+function mod.mt:triggerCallback(data)
     --------------------------------------------------------------------------------
     -- Trigger the callback:
     --------------------------------------------------------------------------------
-    if mod._callback then
-        local success, result = xpcall(function() mod._callback(data) end, debug.traceback)
+    if self._callback then
+        local success, result = xpcall(function() self._callback(data) end, debug.traceback)
         if not success then
-            log.ef("Error in Loupedeck CT Callback: %s", result)
+            log.ef("Error in Loupedeck Callback: %s", result)
         end
     end
 end
@@ -364,9 +377,9 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET OPENED:
     --------------------------------------------------------------------------------
-    open = function()
-        initaliseDevice()
-        triggerCallback {
+    open = function(obj)
+        obj:initaliseDevice()
+        obj:triggerCallback {
             action = "websocket_open",
         }
     end,
@@ -374,8 +387,8 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET CLOSED:
     --------------------------------------------------------------------------------
-    closed = function()
-        triggerCallback {
+    closed = function(obj)
+        obj:triggerCallback {
             action = "websocket_closed",
         }
     end,
@@ -383,8 +396,8 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET FAILED:
     --------------------------------------------------------------------------------
-    fail = function(message)
-        triggerCallback({
+    fail = function(obj, message)
+        obj:triggerCallback({
             action = "websocket_fail",
             error = message,
         })
@@ -393,8 +406,8 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET RECEIVED PONG:
     --------------------------------------------------------------------------------
-    pong = function()
-        triggerCallback {
+    pong = function(obj)
+        obj:triggerCallback {
             action = "websocket_pong",
         }
     end,
@@ -402,7 +415,7 @@ local events = {
     --------------------------------------------------------------------------------
     -- WEBSOCKET RECEIVED MESSAGE:
     --------------------------------------------------------------------------------
-    received = function(message)
+    received = function(obj, message)
         -- read the command ID, callback ID and the remainder of the message...
         local id, callbackID, data = bytes.read(message,
             uint16be, uint8, remainder
@@ -414,7 +427,7 @@ local events = {
         }
 
         -- first, check if we have a callback...
-        local callback = getCallback(callbackID)
+        local callback = obj:getCallback(callbackID)
         if callback then
             local ok, res = xpcall(function() return callback(response) end, debug.traceback)
             if not ok then
@@ -425,7 +438,7 @@ local events = {
             -- if not, see if there is a handler.
             local handler = mod.responseHandler[id]
             if handler then
-                local ok, res = xpcall(function() return handler(response) end, debug.traceback)
+                local ok, res = xpcall(function() return handler(obj, response) end, debug.traceback)
                 if not ok then
                     log.ef("Error executing callback for %04x: %s", response.id, res)
                     return
@@ -438,9 +451,9 @@ local events = {
     end
 }
 
---- hs.loupedeckct.event -> table
+--- hs.loupedeck.event -> table
 --- Constant
---- The set of events sent from the Loupedeck CT device.
+--- The set of events sent from the Loupedeck device.
 ---
 --- Notes:
 ---  * Includes:
@@ -459,7 +472,7 @@ mod.event = {
     SCREEN_RELEASED = 0x096D,
 }
 
---- hs.loupedeckct.ignoreResponses -> table
+--- hs.loupedeck.ignoreResponses -> table
 --- Constant
 --- A table of responses to ignore.
 mod.ignoreResponses = {
@@ -469,6 +482,11 @@ mod.ignoreResponses = {
     [0x0409] = true, -- Reset Device
     [0x0819] = true, -- Flash Drive confirmation
     [0x041e] = true, -- Wheel Sensitivity confirmation
+
+    [0x0400] = true, -- This seems to be constant spam from the Loupedeck Live
+    [0x1c73] = true, -- This is triggered when the Loupedeck Live first connects
+    [0x1573] = true, -- This is triggered when the Loupedeck Live first connects
+    [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
 }
 
 -- convertWheelXandYtoButtonID(x, y) -> number
@@ -597,7 +615,7 @@ local function convertXandYtoButtonID(x, y)
     return button
 end
 
---- hs.loupedeckct.responseHandler -> table
+--- hs.loupedeck.responseHandler -> table
 --- Constant
 --- Set of response handlers for device-generated events.
 mod.responseHandler = {
@@ -608,7 +626,7 @@ mod.responseHandler = {
     -- 07 00        Down
     -- 07 01        Up
     --------------------------------------------------------------------------------
-    [mod.event.BUTTON_PRESS] = function(response)
+    [mod.event.BUTTON_PRESS] = function(obj, response)
         local id, dirByte = bytes(response.data):read(int8, int8)
         if dirByte == 0x00 then
             response.direction = "down"
@@ -619,7 +637,7 @@ mod.responseHandler = {
             return
         end
         response.buttonID = id
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -629,7 +647,7 @@ mod.responseHandler = {
     -- 01 01    Right
     -- 01 FF    Left
     --------------------------------------------------------------------------------
-    [mod.event.ENCODER_MOVE] = function(response)
+    [mod.event.ENCODER_MOVE] = function(obj, response)
         local id, dirByte = bytes.read(response.data, uint8, int8)
         if dirByte == -1 then
             response.direction = "left"
@@ -640,7 +658,7 @@ mod.responseHandler = {
             return
         end
         response.buttonID = id
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -649,7 +667,7 @@ mod.responseHandler = {
     -- Example:
     -- 00 00 7E 00 76 00
     --------------------------------------------------------------------------------
-    [mod.event.WHEEL_PRESSED] = function(response)
+    [mod.event.WHEEL_PRESSED] = function(obj, response)
         response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
 
@@ -659,7 +677,7 @@ mod.responseHandler = {
             response.buttonID = buttonID
         end
 
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -668,7 +686,7 @@ mod.responseHandler = {
     -- Example:
     -- 00 00 7B 00 94 00
     --------------------------------------------------------------------------------
-    [mod.event.WHEEL_RELEASED] = function(response)
+    [mod.event.WHEEL_RELEASED] = function(obj, response)
         response.multitouch, response.x, response.y, response.unknown = bytes.read(response.data, uint8, int16be, int16be, uint8)
         response.multitouch = response.multitouch == 0x01
 
@@ -678,7 +696,7 @@ mod.responseHandler = {
             response.buttonID = buttonID
         end
 
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -687,7 +705,7 @@ mod.responseHandler = {
     -- Example:
     -- 00 01 C9 00 9A 27
     --------------------------------------------------------------------------------
-    [mod.event.SCREEN_PRESSED] = function(response)
+    [mod.event.SCREEN_PRESSED] = function(obj, response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
@@ -705,7 +723,7 @@ mod.responseHandler = {
             response.screenID = mod.screens.middle.id
         end
 
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 
     --------------------------------------------------------------------------------
@@ -714,7 +732,7 @@ mod.responseHandler = {
     -- Example:
     -- 00 01 BC 00 BE 25
     --------------------------------------------------------------------------------
-    [mod.event.SCREEN_RELEASED] = function(response)
+    [mod.event.SCREEN_RELEASED] = function(obj, response)
         response.multitouch, response.x, response.y, response.pressure = bytes.read(response.data, uint8, int16be, int16be, uint8)
 
         -- Get button ID:
@@ -723,56 +741,42 @@ mod.responseHandler = {
             response.buttonID = buttonID
         end
 
-        triggerCallback(response)
+        obj:triggerCallback(response)
     end,
 }
 
--- websocketCallback(event, message) -> none
--- Function
--- The websocket callback function.
---
--- Parameters:
---  * event - A string containing the type of event (i.e. "open" or "closed")
---  * message - The message from the websocket
---
--- Returns:
---  * None
-local function websocketCallback(event, message)
+--- hs.loupedeck:websocketCallback(event, message) -> none
+--- Method
+--- The websocket callback function.
+---
+--- Parameters:
+---  * event - A string containing the type of event (i.e. "open" or "closed")
+---  * message - The message from the websocket
+---
+--- Returns:
+---  * None
+function mod.mt:websocketCallback(event, message)
     local handler = events[event]
     if handler then
-        handler(message)
+        handler(self, message)
     else
         log.wf("Unexpected websocket event '%s':\n%s", event, hexDump(message))
     end
 end
 
---- hs.loupedeckct.startBackgroundLoop([callbackFn]) -> boolean
---- Function
---- Kicks off the background listening loop on the device.
+--- hs.loupedeck:requestDeviceInfo([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking for device information.
 ---
 --- Parameters:
----  * callbackFn - Optional function to call when the device responds, receiving a data table containing `id` and `message`.
+---  * callbackFn - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
-function mod.startBackgroundLoop(callbackFn)
-    -- TODO: currently no idea what the trailing bytes represent. Possibly local data specific to the current machine?
-    local echo = hexToBytes("3da81c9ba72a8c87d4f6a135a289066c")
-    return sendCommand(
-        0x130E,
-        function(response)
-            if response.data ~= echo then
-                log.ef("Received different result from loopback confirmation: %s", response.data)
-            end
-            if callbackFn then
-                callbackFn(response)
-            end
-        end,
-        echo
-    )
-end
-
-function mod.requestDeviceInfo(callbackFn)
+---
+--- Notes:
+---  * the `response` contains the `id`, `data`,
+function mod.mt:requestDeviceInfo(callbackFn)
     --------------------------------------------------------------------------------
     -- DEVICE INFORMATION:
     --
@@ -783,12 +787,12 @@ function mod.requestDeviceInfo(callbackFn)
     --------------------------------------------------------------------------------
 
     -- TODO: figure out what these bytes mean...
-    return sendCommand(0x131C, callbackFn, hexToBytes("61f1392a8e936ba66e992daedb40f65f"))
+    return self:sendCommand(0x131C, callbackFn, hexToBytes("61f1392a8e936ba66e992daedb40f65f"))
 end
 
---- hs.loupedeckct.requestFirmwareVersion([callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking for its firmware version.
+--- hs.loupedeck:requestFirmwareVersion([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking for its firmware version.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -798,7 +802,7 @@ end
 ---
 --- Notes:
 ---  * the `response` contains the `id`, `data`,
-function mod.requestFirmwareVersion(callbackFn)
+function mod.mt:requestFirmwareVersion(callbackFn)
     --------------------------------------------------------------------------------
     -- FIRMWARE VERSION:
     --
@@ -808,7 +812,7 @@ function mod.requestFirmwareVersion(callbackFn)
     -- Firmware version 'C': '0.9.0'
     -- Firmware version 'I': '1.0.10'
     --------------------------------------------------------------------------------
-    return sendCommand(0x0307, callbackFn and function(response)
+    return self:sendCommand(0x0307, callbackFn and function(response)
         local data = response.data
         response.b = format("%d.%d.%d", data:byte(1), data:byte(2), data:byte(3))
         response.c = format("%d.%d.%d", data:byte(4), data:byte(5), data:byte(6))
@@ -817,9 +821,9 @@ function mod.requestFirmwareVersion(callbackFn)
     end)
 end
 
---- hs.loupedeckct.requestSerialNumber([callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking for its serial number.
+--- hs.loupedeck:requestSerialNumber([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking for its serial number.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -829,16 +833,16 @@ end
 ---
 --- Notes:
 ---  * the `response` contains the `id`, `data`, and `serialNumber`
-function mod.requestSerialNumber(callbackFn)
-    return sendCommand(0x0303, callbackFn and function(response)
+function mod.mt:requestSerialNumber(callbackFn)
+    return self:sendCommand(0x0303, callbackFn and function(response)
         response.serialNumber = response.data
         callbackFn(response)
     end)
 end
 
---- hs.loupedeckct.requestMCUID([callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking for its MCU ID.
+--- hs.loupedeck:requestMCUID([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking for its MCU ID.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -848,16 +852,16 @@ end
 ---
 --- Notes:
 ---  * the `response` contains the `id`, `data`, and `mcuid`
-function mod.requestMCUID(callbackFn)
-    return sendCommand(0x030D, callbackFn and function(response)
+function mod.mt:requestMCUID(callbackFn)
+    return self:sendCommand(0x030D, callbackFn and function(response)
         response.mcuid = bytesToHex(response.data)
         callbackFn(response)
     end)
 end
 
---- hs.loupedeckct.requestSelfTest() -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking it to perform a self test.
+--- hs.loupedeck:requestSelfTest() -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking it to perform a self test.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -868,8 +872,8 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, and `selfTest`.
 ---  * The `selfTest` value is the `data` read as a 32-bit big-endian integer.
-function mod.requestSelfTest(callbackFn)
-    return sendCommand(0x0304, callbackFn and function(response)
+function mod.mt:requestSelfTest(callbackFn)
+    return self:sendCommand(0x0304, callbackFn and function(response)
         --------------------------------------------------------------------------------
         -- Sending message (3): (3) 03-04-05
         -- Message sent (3): (3) 03-04-05
@@ -884,8 +888,8 @@ function mod.requestSelfTest(callbackFn)
     end)
 end
 
--- function processRegisterResponse(response) -> nil
--- function
+-- processRegisterResponse(response) -> nil
+-- Function
 -- Receives the raw value of a register and interprets it, adding properties to the `response` table.
 --
 -- Parameters:
@@ -929,9 +933,9 @@ local function processRegisterResponse(response)
     return response
 end
 
---- hs.loupedeckct.requestRegister(registerID[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking it to send the specified register number.
+--- hs.loupedeck:requestRegister(registerID[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking it to send the specified register number.
 ---
 --- Parameters:
 ---  * registerID - The register number (typically `0`, `1`, or `2`).
@@ -945,7 +949,7 @@ end
 ---  * the `registerID` should be the same value as the `registerID` parameter you passed in.
 ---  * the `value` value is the `data` read as a 32-bit big-endian integer.
 ---  * if requesting register `2`, it will also have the `backlightLevel` and `vibraWaveformIndex` values.
-function mod.requestRegister(registerID, callbackFn)
+function mod.mt:requestRegister(registerID, callbackFn)
     --------------------------------------------------------------------------------
     -- 04 1A 01 01
     -- ^     ^  ^
@@ -953,7 +957,7 @@ function mod.requestRegister(registerID, callbackFn)
     -- ^     callback ID
     -- command ID
     --------------------------------------------------------------------------------
-    return sendCommand(
+    return self:sendCommand(
         0x041A,
         callbackFn and function(response)
             processRegisterResponse(response)
@@ -963,9 +967,9 @@ function mod.requestRegister(registerID, callbackFn)
     )
 end
 
---- hs.loupedeckct.updateRegister(registerID, value[, callbackFn]) -> boolean
---- Function
---- Sends a new value to the Loupedeck CT for the specified register value.
+--- hs.loupedeck:updateRegister(registerID, value[, callbackFn]) -> boolean
+--- Method
+--- Sends a new value to the Loupedeck for the specified register value.
 ---
 --- Parameters:
 ---  * registerID - The register to update (0/1/2)
@@ -976,8 +980,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.updateRegister(registerID, value, callbackFn)
+---  * The Loupedeck needs to be powered cycled for the drive to be mounted.
+function mod.mt:updateRegister(registerID, value, callbackFn)
     if registerID < 0 or registerID > 2 then
         error(format("expected registerID of 0/1/2 but got %d", registerID), 2)
     end
@@ -995,7 +999,7 @@ function mod.updateRegister(registerID, value, callbackFn)
     -- ^     the callback ID
     -- the command ID
     --------------------------------------------------------------------------------
-    return sendCommand(
+    return self:sendCommand(
         0x0819,
         callbackFn and function(response)
             processRegisterResponse(response)
@@ -1006,9 +1010,9 @@ function mod.updateRegister(registerID, value, callbackFn)
     )
 end
 
---- hs.loupedeckct.updateFlashDrive(enabled[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to enable or disable the Flash Drive.
+--- hs.loupedeck:updateFlashDrive(enabled[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck to enable or disable the Flash Drive.
 ---
 --- Parameters:
 ---  * enabled - `true` to enable otherwise `false`
@@ -1018,8 +1022,8 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.updateFlashDrive(enabled, callbackFn)
+---  * The Loupedeck needs to be powered cycled for the drive to be mounted.
+function mod.mt:updateFlashDrive(enabled, callbackFn)
     --------------------------------------------------------------------------------
     -- FLASH DRIVE STATUS:
     --
@@ -1029,21 +1033,21 @@ function mod.updateFlashDrive(enabled, callbackFn)
     -- Note: best guess is that the last bit (0x01) is the flash enabled/disabled value
     -- while the second last bit (0x02) is for something else.
     --------------------------------------------------------------------------------
-    return mod.requestRegister(0, function(response)
+    return self:requestRegister(0, function(response)
         processRegisterResponse(response)
         if response.flashDriveEnabled ~= enabled then
             local value = response.value
             value = enabled and (value - 0x01) or (value + 0x01)
-            mod.updateRegister(0, value, callbackFn)
+            self:updateRegister(0, value, callbackFn)
         elseif callbackFn then
             callbackFn(response)
         end
     end)
 end
 
---- hs.loupedeckct.updateVibraWaveformIndex(value[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to update the Vibra waveform index.
+--- hs.loupedeck:updateVibraWaveformIndex(value[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck to update the Vibra waveform index.
 ---
 --- Parameters:
 ---  * value - an 8-bit number with the new vibra waveform index.
@@ -1053,23 +1057,23 @@ end
 ---  * `true` if the device is connected and the message was sent.
 ---
 --- Notes:
----  * The Loupedeck CT needs to be powered cycled for the drive to be mounted.
-function mod.updateVibraWaveformIndex(value, callbackFn)
-    return mod.requestRegister(2, function(response)
+---  * The Loupedeck needs to be powered cycled for the drive to be mounted.
+function mod.mt:updateVibraWaveformIndex(value, callbackFn)
+    return self:requestRegister(2, function(response)
         processRegisterResponse(response)
         if response.vibraWaveformIndex ~= value then
             local mask = 0xFFFFFF00
             local newValue = (response.value & mask) + value
-            mod.updateRegister(2, newValue, callbackFn)
+            self:updateRegister(2, newValue, callbackFn)
         elseif callbackFn then
             callbackFn(response)
         end
     end)
 end
 
---- hs.loupedeckct.saveBacklightLevel(value[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to save the backlight level in the register.
+--- hs.loupedeck:saveBacklightLevel(value[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck to save the backlight level in the register.
 ---
 --- Parameters:
 ---  * value - an 8-bit number with the new backlight level.
@@ -1077,22 +1081,22 @@ end
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
-function mod.saveBacklightLevel(value, callbackFn)
+function mod.mt:saveBacklightLevel(value, callbackFn)
     return mod.requestRegister(2, function(response)
         processRegisterResponse(response)
         if response.backlightLevel ~= value then
             local mask = 0xFFFF00FF
             local newValue = (response.value & mask) + (value << 8)
-            mod.updateRegister(2, newValue, callbackFn)
+            self:updateRegister(2, newValue, callbackFn)
         elseif callbackFn then
             callbackFn(response)
         end
     end)
 end
 
---- hs.loupedeckct.updateBacklightLevel(backlightLevel[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to update the backlight level.
+--- hs.loupedeck:updateBacklightLevel(backlightLevel[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck to update the backlight level.
 ---
 --- Parameters:
 ---  * value - an 8-bit number with the new backlight level.
@@ -1100,8 +1104,8 @@ end
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
-function mod.updateBacklightLevel(backlightLevel, callbackFn)
-    return sendCommand(
+function mod.mt:updateBacklightLevel(backlightLevel, callbackFn)
+    return self:sendCommand(
         0x0409,
         callbackFn and function(response)
             callbackFn(response)
@@ -1110,12 +1114,12 @@ function mod.updateBacklightLevel(backlightLevel, callbackFn)
     )
 end
 
---- hs.loupedeckct.wheelSensitivityIndex -> number
--- Constant
--- The default wheel sensitivity index.
+--- hs.loupedeck.defaultWheelSensitivityIndex -> number
+--- Constant
+--- The default wheel sensitivity index.
 mod.defaultWheelSensitivityIndex = 4
 
---- hs.loupedeckct.wheelSensitivityIndex -> table
+--- hs.loupedeck.wheelSensitivityIndex -> table
 --- Constant
 --- Descriptions of all the wheel sensitivity indexes.
 mod.wheelSensitivityIndex = {
@@ -1128,9 +1132,9 @@ mod.wheelSensitivityIndex = {
     [255] = "1.5 Revolutions",
 }
 
---- hs.loupedeckct.requestWheelSensitivity([callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking it to send the current wheel sensitivity.
+--- hs.loupedeck:requestWheelSensitivity([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking it to send the current wheel sensitivity.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -1140,8 +1144,8 @@ mod.wheelSensitivityIndex = {
 ---
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `wheelSensitivity`.
-function mod.requestWheelSensitivity(callbackFn)
-    return sendCommand(
+function mod.mt:requestWheelSensitivity(callbackFn)
+    return self:sendCommand(
         0x041E,
         callbackFn and function(response)
             local wheelSensitivity = uint8(response.data)
@@ -1154,18 +1158,18 @@ function mod.requestWheelSensitivity(callbackFn)
         uint8(0))
 end
 
---- hs.loupedeckct.updateWheelSensitivity(wheelSensitivity[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT to update the wheel sensitivity index.
+--- hs.loupedeck:updateWheelSensitivity(wheelSensitivity[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck to update the wheel sensitivity index.
 ---
 --- Parameters:
----  * value - an 8-bit number with the new wheel sensitivity index (see `hs.loupedeckct.wheelSensitivityIndex`).
+---  * value - an 8-bit number with the new wheel sensitivity index (see `hs.loupedeck.wheelSensitivityIndex`).
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
 ---
 --- Returns:
 ---  * `true` if the device is connected and the message was sent.
-function mod.updateWheelSensitivity(wheelSensitivity, callbackFn)
-    return sendCommand(
+function mod.mt:updateWheelSensitivity(wheelSensitivity, callbackFn)
+    return self:sendCommand(
         0x041E,
         callbackFn and function(response)
             local result = uint8(response.data)
@@ -1179,9 +1183,9 @@ function mod.updateWheelSensitivity(wheelSensitivity, callbackFn)
     )
 end
 
---- hs.loupedeckct.resetDevice([callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking it to reset the device.
+--- hs.loupedeck:resetDevice([callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking it to reset the device.
 ---
 --- Parameters:
 ---  * callbackFn - (optional) Function called with a `response` table as the first parameter
@@ -1192,8 +1196,8 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.resetDevice(callbackFn)
-    return sendCommand(
+function mod.mt:resetDevice(callbackFn)
+    return self:sendCommand(
         0x0409,
         callbackFn and function(response)
             response.success = bytes.read(response.data, uint8) == 0x01
@@ -1203,14 +1207,15 @@ function mod.resetDevice(callbackFn)
     )
 end
 
---- hs.loupedeckct.screens -> table
+--- hs.loupedeck.screens -> table
 --- Constant
 --- The set of screens available: `left`, `right`, `middle`, and `wheel`.
 ---
 --- Notes:
----  * each screen has an `id`, a `width`, and a `height` value.
----  * the `id` is how the Loupedeck CT identifies the screen.
----  * the `width` and `height` are in pixels.
+---  * Each screen has an `id`, a `width`, and a `height` value.
+---  * The `id` is how the Loupedeck identifies the screen.
+---  * The `width` and `height` are in pixels.
+---  * The Loupedeck Live doesn't have a 'wheel' screen.
 mod.screens = {
     left = {
         id = 0x004C,
@@ -1231,9 +1236,9 @@ mod.screens = {
     },
 }
 
---- hs.loupedeckct.refreshScreen(screen[, callbackFn]) -> boolean
---- Function
---- Sends a request to the Loupedeck CT asking it to reset the device.
+--- hs.loupedeck:refreshScreen(screen[, callbackFn]) -> boolean
+--- Method
+--- Sends a request to the Loupedeck asking it to reset the device.
 ---
 --- Parameters:
 ---  * screen       - The screen (eg. `screens.left`) to refresh.
@@ -1245,7 +1250,7 @@ mod.screens = {
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.refreshScreen(screen, callbackFn)
+function mod.mt:refreshScreen(screen, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 050F XX 004C
     --          ^    ^  ^
@@ -1253,7 +1258,7 @@ function mod.refreshScreen(screen, callbackFn)
     --          ^    callback ID (8-bit int)
     --          command ID
     --------------------------------------------------------------------------------
-    return sendCommand(
+    return self:sendCommand(
         0x050F,
         callbackFn and function(response)
             response.success = bytes.read(response.data, uint8) == 0x01
@@ -1263,8 +1268,8 @@ function mod.refreshScreen(screen, callbackFn)
     )
 end
 
---- hs.loupedeckct.updateScreenImage(screen, imageBytes[, frame][, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:updateScreenImage(screen, imageBytes[, frame][, callbackFn]) -> boolean
+--- Method
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
 --- Parameters:
@@ -1279,7 +1284,7 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
+function mod.mt:updateScreenImage(screen, imageBytes, frame, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: FF10 XX 004C 00 00 00 00 003C 010E (00) FFFF FFFF ....
     --          ^    ^  ^    ^     ^     ^    ^    ^    ^
@@ -1307,7 +1312,7 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
 
     local imageSuccess = false
 
-    if sendCommand(
+    if self:sendCommand(
         0xFF10,
         function(response)
             imageSuccess = bytes.read(response.data, uint8) == 0x01
@@ -1320,7 +1325,7 @@ function mod.updateScreenImage(screen, imageBytes, frame, callbackFn)
         screen.circular and uint8(0) or "",
         imageBytes
     ) then
-        return mod.refreshScreen(screen, callbackFn and function(response)
+        return self:refreshScreen(screen, callbackFn and function(response)
             response.success = imageSuccess and (bytes.read(response.data, uint8) == 0x01)
         end)
     end
@@ -1341,8 +1346,8 @@ local function convertButtonIDtoXYCoordinates(buttonID)
     return floor(((buttonID-1) % 4)) * 90, floor(((buttonID-1) / 4)) * 90
 end
 
---- hs.loupedeckct.updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:updateScreenButtonImage(buttonID, imageBytes[, callbackFn]) -> boolean
+--- Method
 --- Sends an image to the specified button on the middle screen.
 ---
 --- Parameters:
@@ -1356,9 +1361,9 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenButtonImage(buttonID, imageBytes, callbackFn)
+function mod.mt:updateScreenButtonImage(buttonID, imageBytes, callbackFn)
     local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    mod.updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
+    self:updateScreenImage(mod.screens.middle, imageBytes, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
 -- solidColorImage(width, height, color) -> string
@@ -1382,8 +1387,8 @@ local function solidColorBytes(width, height, color)
     return concat(result)
 end
 
---- hs.loupedeckct.updateScreenColor(screen, color[, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:updateScreenColor(screen, color[, callbackFn]) -> boolean
+--- Method
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
 --- Parameters:
@@ -1398,9 +1403,9 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenColor(screen, color, frame, callbackFn)
+function mod.mt:updateScreenColor(screen, color, frame, callbackFn)
     frame = frame or {}
-    return mod.updateScreenImage(
+    return self:updateScreenImage(
         screen,
         solidColorBytes(frame.w or screen.width, frame.h or screen.height, color),
         frame,
@@ -1408,8 +1413,8 @@ function mod.updateScreenColor(screen, color, frame, callbackFn)
     )
 end
 
---- hs.loupedeckct.updateScreenButtonColor(buttonID, color[, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:updateScreenButtonColor(buttonID, color[, callbackFn]) -> boolean
+--- Method
 --- Sends an image to the specified screen and refreshes the specified screen.
 ---
 --- Parameters:
@@ -1423,9 +1428,9 @@ end
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.updateScreenButtonColor(buttonID, color, callbackFn)
+function mod.mt:updateScreenButtonColor(buttonID, color, callbackFn)
     local x, y = convertButtonIDtoXYCoordinates(buttonID)
-    mod.updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
+    self:updateScreenColor(mod.screens.middle, color, {x=x, y=y, w=90,h=90}, callbackFn)
 end
 
 --- hs.loupdeckct.buttonID -> table
@@ -1473,8 +1478,8 @@ mod.buttonID = {
     O = 15,
 }
 
---- hs.loupedeckct.buttonColor(buttonID, color[, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:buttonColor(buttonID, color[, callbackFn]) -> boolean
+--- Method
 --- Changes a button color.
 ---
 --- Parameters:
@@ -1488,7 +1493,7 @@ mod.buttonID = {
 --- Notes:
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
-function mod.buttonColor(buttonID, color, callbackFn)
+function mod.mt:buttonColor(buttonID, color, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 07 02 FA 00 00 00 00
     --                ^  ^  ^  ^  ^
@@ -1500,7 +1505,7 @@ function mod.buttonColor(buttonID, color, callbackFn)
     --------------------------------------------------------------------------------
     color = toInt24Color(color)
 
-    return sendCommand(
+    return self:sendCommand(
         0x0702,
         callbackFn and function(response)
             response.success = response.id == 0x0302
@@ -1511,7 +1516,7 @@ function mod.buttonColor(buttonID, color, callbackFn)
     )
 end
 
---- hs.loupedeckct.vibrationIndex -> table
+--- hs.loupedeck.vibrationIndex -> table
 --- Constant
 --- Descriptions of all the vibration indexes.
 mod.vibrationIndex = {
@@ -1588,8 +1593,8 @@ mod.vibrationIndex = {
     [125]   = "Ramp Up (ver-eh)",
 }
 
---- hs.loupedeckct.vibrate([vibrationIndex, callbackFn]) -> boolean
---- Function
+--- hs.loupedeck:vibrate([vibrationIndex, callbackFn]) -> boolean
+--- Method
 --- Requests the Loupedeck to vibrate.
 ---
 --- Parameters:
@@ -1603,7 +1608,7 @@ mod.vibrationIndex = {
 ---  * the `response` contains the `id`, `data`, `success`.
 ---  * the `success` value is a boolean, `true` or `false`.
 ---  *
-function mod.vibrate(vibrationIndex, callbackFn)
+function mod.mt:vibrate(vibrationIndex, callbackFn)
     --------------------------------------------------------------------------------
     -- COMMAND: 04 1B 6B 19
     --          ^     ^  ^
@@ -1615,7 +1620,7 @@ function mod.vibrate(vibrationIndex, callbackFn)
     -- Message sent (4): (4) 04-1B-6B-19
     -- Message received (4): (4) 04-1B-6B-01
     --------------------------------------------------------------------------------
-    return sendCommand(
+    return self:sendCommand(
         0x041B,
         callbackFn and function(response)
             response.success = uint8(response.data) == 0x01
@@ -1625,36 +1630,46 @@ function mod.vibrate(vibrationIndex, callbackFn)
     )
 end
 
-local function updateWatcher(enabled)
+--- hs.loupedeck:updateWatcher(enabled) -> none
+--- Method
+--- Updates the USB device watcher.
+---
+--- Parameters:
+---  * enabled - A boolean which turns the watcher on or off.
+---
+--- Returns:
+---  * None
+function mod.mt:updateWatcher(enabled)
     if enabled then
-        if not mod._usbWatcher then
-            mod._usbWatcher = usb.watcher.new(function(data)
-                if data.productName == "LOUPEDECK device" then
+        if not self._usbWatcher then
+            self._usbWatcher = usb.watcher.new(function(data)
+                if data.productName == self.deviceType then
                     if data.eventType == "added" then
-                        --log.df("Loupedeck CT Connected")
+                        --log.df("Loupedeck device connected.")
                         doAfter(4, function()
-                            mod.connect(true)
+                            self:connect()
                         end)
                     --elseif data.eventType == "removed" then
-                        --log.df("Loupedeck CT Disconnected")
+                        --log.df("Loupedeck device disconnected.")
                     end
                 end
             end):start()
         end
     else
-        if mod._usbWatcher then
-            mod._usbWatcher:stop()
-            mod._usbWatcher = nil
+        if self._usbWatcher then
+            self._usbWatcher:stop()
+            self._usbWatcher = nil
         end
     end
 end
 
---- hs.loupedeckct.connect(retry) -> boolean, errorMessage
---- Function
---- Connects to a Loupedeck CT.
+--- hs.loupedeck:connect(retry, deviceType) -> boolean, errorMessage
+--- Method
+--- Connects to a Loupedeck.
 ---
 --- Parameters:
 ---  * retry - `true` if you want to keep trying to connect, otherwise `false`
+---  * deviceType - The device type (for example `hs.loupedeck.deviceTypes.LIVE`)
 ---
 --- Returns:
 ---  * None
@@ -1662,20 +1677,20 @@ end
 --- Notes:
 ---  * The callback with an action of "failed_to_find_device" will trigger
 ---    if the device cannot be connected to.
-function mod.connect(retry)
+function mod.mt:connect()
     --------------------------------------------------------------------------------
     -- Setup retry watchers:
     --------------------------------------------------------------------------------
-    updateWatcher(retry)
+    self:updateWatcher(self.retry)
 
     --------------------------------------------------------------------------------
-    -- Find the Loupedeck CT Device:
+    -- Find the Loupedeck Device:
     --------------------------------------------------------------------------------
-    local ip = findIPAddress()
+    local ip = self:findIPAddress()
     if not ip then
-        if retry then
+        if self.retry then
             doAfter(2, function()
-                mod.connect(true)
+                self:connect()
             end)
         end
         return
@@ -1685,27 +1700,51 @@ function mod.connect(retry)
     -- Attempt to connect:
     --------------------------------------------------------------------------------
     local url = "ws://" .. ip .. ":80/"
-    --log.df("Connecting to Loupedeck CT: %s", url)
-    mod._websocket = websocket.new(url, websocketCallback)
+    --log.df("Connecting to Loupedeck: %s", url)
+    self.websocket = websocket.new(url, function(event, message) return self:websocketCallback(event, message) end)
 end
 
---- hs.loupedeckct.disconnect() -> none
---- Function
---- Disconnects from the Loupedeck CT
+--- hs.loupedeck:disconnect() -> none
+--- Method
+--- Disconnects from the Loupedeck.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.disconnect()
-    if mod._websocket then
-        mod._websocket:close()
-        mod._websocket = nil
+function mod.mt:disconnect()
+    if self.websocket then
+        self.websocket:close()
+        self.websocket = nil
 
         -- Destroy any watchers:
-        updateWatcher()
+        self:updateWatcher()
     end
+end
+
+--- hs.loupedeck.new() -> Loupedeck
+--- Constructor
+--- Creates a new Loupedeck object.
+---
+--- Parameters:
+---  * retry - `true` if you want to keep trying to connect, otherwise `false`
+---  * deviceType - The device type defined in `hs.loupedeck.deviceTypes`
+---
+--- Returns:
+---  * None
+---
+--- Notes:
+---  * The deviceType should be either `hs.loupedeck.deviceTypes.LIVE`
+---    or `hs.loupedeck.deviceTypes.CT`.
+function mod.new(retry, deviceType)
+    local o = {
+        retry               = retry,
+        deviceType          = deviceType,
+        callbackRegister    = {},
+    }
+    setmetatable(o, mod.mt)
+    return o
 end
 
 return mod

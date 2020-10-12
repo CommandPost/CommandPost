@@ -114,7 +114,10 @@ function plugin.init(deps)
         local files = dirFiles(legacyPath)
         for _, file in pairs(files) do
             if file:sub(-4) == ".xml" or file == "map-ref.txt" then
-                table.insert(filesToMove, legacyPath.. "/" .. file)
+                local path = legacyPath.. "/" .. file
+                if not doesFileExist(path) then
+                    table.insert(filesToMove, path)
+                end
             end
         end
     end

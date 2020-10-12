@@ -30,7 +30,7 @@ function controls:initialize(manager)
     self._manager = manager
 end
 
---- plugins.core.tangent.managercontrols:tangent() -> hs.tangent
+--- plugins.core.tangent.manager.controls:tangent() -> hs.tangent
 --- Method
 --- The `hs.tangent` connection.
 ---
