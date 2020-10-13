@@ -21,7 +21,7 @@
 	function updateApplicationAndBank() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateApplicationAndBank",
 					application: document.getElementById("application").value,
@@ -40,7 +40,7 @@
 	function iconHistory() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "iconHistory",
 					application: document.getElementById("application").value,
@@ -60,7 +60,7 @@
 	function clearIcon() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "clearIcon",
 					application: document.getElementById("application").value,
@@ -79,7 +79,7 @@
 	function updateBankLabel() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateBankLabel",
 					application: document.getElementById("application").value,
@@ -424,7 +424,7 @@
 
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateUI",
 					application: document.getElementById("application").value,
@@ -453,7 +453,7 @@
 	function updateColor() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateColor",
 					application: document.getElementById("application").value,
@@ -473,7 +473,7 @@
 	function updateIconLabel() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateIconLabel",
 					application: document.getElementById("application").value,
@@ -493,7 +493,7 @@
 	function selectButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateAction",
 					application: document.getElementById("application").value,
@@ -513,7 +513,7 @@
 	function clearButton(buttonType) {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "clearAction",
 					application: document.getElementById("application").value,
@@ -543,7 +543,7 @@
 	function pressIconDropZone(groupID, buttonID) {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "iconClicked",
 					application: document.getElementById("application").value,
@@ -570,7 +570,7 @@
 			// File type dropped doesn't match the accepted list:
 			try {
 				var result = {
-					id: "loupedeckCTPanelCallback",
+					id: "{{ id }}",
 					params: {
 						type: "badExtension",
 					},
@@ -594,7 +594,7 @@
 			// Icon Callback:
 			try {
 				var result = {
-					id: "loupedeckCTPanelCallback",
+					id: "{{ id }}",
 					params: {
 						type: "updateIcon",
 						application: document.getElementById("application").value,
@@ -616,7 +616,7 @@
 	function importSettings() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "importSettings",
 					application: document.getElementById("application").value,
@@ -632,7 +632,7 @@
 	function exportSettings() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "exportSettings",
 					application: document.getElementById("application").value,
@@ -648,7 +648,7 @@
 	function copyControlToAllBanks() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "copyControlToAllBanks",
 					application: document.getElementById("application").value,
@@ -667,7 +667,7 @@
 	function resetControl() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "resetControl",
 					application: document.getElementById("application").value,
@@ -686,7 +686,7 @@
 	function resetEverything() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "resetEverything",
 				},
@@ -700,7 +700,7 @@
 	function resetApplication() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "resetApplication",
 				},
@@ -714,7 +714,7 @@
 	function resetBank() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "resetBank",
 				},
@@ -728,7 +728,7 @@
 	function copyApplication() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "copyApplication",
 				},
@@ -742,7 +742,7 @@
 	function copyBank() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "copyBank",
 				},
@@ -756,7 +756,7 @@
 	function openKeyCreator() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "openKeyCreator",
 				},
@@ -770,7 +770,7 @@
 	function buyMoreIcons() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "buyMoreIcons",
 				},
@@ -784,7 +784,7 @@
 	function updateVibratePress() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateVibratePress",
 					application: document.getElementById("application").value,
@@ -803,7 +803,7 @@
 	function updateVibrateRelease() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateVibrateRelease",
 					application: document.getElementById("application").value,
@@ -822,7 +822,7 @@
 	function changeRepeatPressActionUntilReleased() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "changeRepeatPressActionUntilReleased",
 					application: document.getElementById("application").value,
@@ -841,7 +841,7 @@
 	function updateWheelSensitivity() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateWheelSensitivity",
 					application: document.getElementById("application").value,
@@ -860,7 +860,7 @@
 	function updateVibrateLeft() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateVibrateLeft",
 					application: document.getElementById("application").value,
@@ -880,7 +880,7 @@
 	function updateVibrateRight() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "updateVibrateRight",
 					application: document.getElementById("application").value,
@@ -899,7 +899,7 @@
 	function changeIgnore() {
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "changeIgnore",
 					application: document.getElementById("application").value,
@@ -924,7 +924,7 @@
 		ev.preventDefault();
 		try {
 			var result = {
-				id: "loupedeckCTPanelCallback",
+				id: "{{ id }}",
 				params: {
 					type: "showContextMenu",
 					application: document.getElementById("application").value,
@@ -1025,7 +1025,7 @@
 					// Icon Callback:
 					try {
 						var result = {
-							id: "loupedeckCTPanelCallback",
+							id: "{{ id }}",
 							params: {
 								type: callbackType,
 								application: document.getElementById("application").value,
@@ -1047,7 +1047,7 @@
 				// File type dropped doesn't match the accepted list:
 				try {
 					var result = {
-						id: "loupedeckCTPanelCallback",
+						id: "{{ id }}",
 						params: {
 							type: "badExtension",
 						},
@@ -1062,7 +1062,7 @@
 	    else {
 			try {
 				var result = {
-					id: "loupedeckCTPanelCallback",
+					id: "{{ id }}",
 					params: {
 						type: "dropAndDrop",
 						application: document.getElementById("application").value,

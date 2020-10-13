@@ -291,7 +291,7 @@ function mod.new(deviceType)
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
     --------------------------------------------------------------------------------
-    o.panel:addHandler("onchange", "loupedeckCTPanelCallback", function(...) o:panelCallback(...) end)
+    o.panel:addHandler("onchange", o.id, function(...) o:panelCallback(...) end)
 
     setmetatable(o, mod.mt)
     return o
