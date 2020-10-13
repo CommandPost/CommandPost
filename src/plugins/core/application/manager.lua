@@ -86,10 +86,11 @@ function mod.defaultSearchConsoleToolbar()
         global_loupedeck_banks          = { path = iconPath .. "loupedeckbank.png",     priority = 54},
         global_loupedeckbanks           = { path = iconPath .. "loupedeckplusbank.png", priority = 55},
         global_loupedeckct_banks        = { path = iconPath .. "loupedeckctbank.png",   priority = 56},
-        global_midibanks                = { path = iconPath .. "midibank.png",          priority = 57},
-        global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 58},
-        global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 59},
-        global_tourbox_banks            = { path = iconPath .. "tourboxbank.png",       priority = 60},
+        global_loupedecklive_banks      = { path = iconPath .. "loupedecklivebank.png", priority = 57},
+        global_midibanks                = { path = iconPath .. "midibank.png",          priority = 58},
+        global_streamDeckbanks          = { path = iconPath .. "streamdeckbank.png",    priority = 59},
+        global_touchbarbanks            = { path = iconPath .. "touchbarbank.png",      priority = 60},
+        global_tourbox_banks            = { path = iconPath .. "tourboxbank.png",       priority = 61},
     }
 end
 
