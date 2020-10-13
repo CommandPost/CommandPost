@@ -629,6 +629,16 @@ function activator:incPopularity(choice, id)
     end
 end
 
+-- _sortChoices(choices, query) -> table
+-- Function
+-- Sorts choices.
+--
+-- Parameters:
+--  * choices - a table of choices
+--  * query - the current query string
+--
+-- Returns:
+--  * A sorted table of choices
 local function _sortChoices(choices, query)
     local queryLen = query and query:len() or 0
 
@@ -765,6 +775,11 @@ function activator:activeChoices()
         if (showHidden or not choice.hidden) and not disabledHandlers[choice.type] then
             -- Check if we are filtering by query
             if queryLen > 0 then
+                -- Don't show deprecated actions in the Search Console:
+                if choice.text:sub(1, 11) == "Deprecated:" then
+                    return false
+                end
+
                 -- Store the match index for sorting later.
                 choice.textMatch = choice.text:lower():find(query, 1, true)
                 if choice.textMatch then
