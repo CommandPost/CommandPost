@@ -975,10 +975,10 @@ function plugin.init(deps)
     local holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset = i18n("holdDownShiftToChangeValueAtSmallerIncrementsAndOptionToReset")
 
     local colourWheels = {
-        { title = i18n("master"),       control = fcp.inspector.color.colorWheels.master,       id = "master" },
-        { title = i18n("shadows"),      control = fcp.inspector.color.colorWheels.shadows,      id = "shadows" },
-        { title = i18n("midtones"),     control = fcp.inspector.color.colorWheels.midtones,     id = "midtones" },
-        { title = i18n("highlights"),   control = fcp.inspector.color.colorWheels.highlights,   id = "highlights" },
+        { title = i18n("master"),       control = fcp.inspector.color.colorWheels.master,       id = "master",      legacyID = "colorWheelMaster" },
+        { title = i18n("shadows"),      control = fcp.inspector.color.colorWheels.shadows,      id = "shadows",     legacyID = "colorWheelShadows" },
+        { title = i18n("midtones"),     control = fcp.inspector.color.colorWheels.midtones,     id = "midtones",    legacyID = "colorWheelMidtones" },
+        { title = i18n("highlights"),   control = fcp.inspector.color.colorWheels.highlights,   id = "highlights",  legacyID = "colorWheelHighlights" },
     }
 
     for _, v in pairs(colourWheels) do
@@ -1046,6 +1046,16 @@ function plugin.init(deps)
             fn = makeAbsoluteSaturationHandler(function() return v.control end, true),
         })
 
+            --------------------------------------------------------------------------------
+            -- Deprecated/Legacy Action for 1.0.6 users:
+            --------------------------------------------------------------------------------
+            deps.manager.controls:new(v.legacyID .. "Saturation", {
+                group = "fcpx",
+                text = format("Deprecated: %s - %s - %s (%s)", colorWheel, v.title, saturation, absolute),
+                subText = midiControlColorWheel,
+                fn = makeAbsoluteSaturationHandler(function() return v.control end, true),
+            })
+
         --------------------------------------------------------------------------------
         -- Saturation (Relative A):
         --------------------------------------------------------------------------------
@@ -1075,6 +1085,16 @@ function plugin.init(deps)
             subText = midiControlColorWheel,
             fn = makeAbsoluteBrightnessHandler(function() return v.control end, true),
         })
+
+            --------------------------------------------------------------------------------
+            -- Deprecated/Legacy Action for 1.0.6 users:
+            --------------------------------------------------------------------------------
+            deps.manager.controls:new(v.legacyID .. "Brightness", {
+                group = "fcpx",
+                text = format("Deprecated: %s - %s - %s (%s)", colorWheel, v.title, brightness, absolute),
+                subText = midiControlColorWheel,
+                fn = makeAbsoluteBrightnessHandler(function() return v.control end, true),
+            })
 
         --------------------------------------------------------------------------------
         -- Brightness (Relative A):
