@@ -44,7 +44,7 @@ mod.mt.__index = mod.mt
 --- Constant
 --- A table containing the device types.
 mod.deviceTypes = {
-    CT      = "LOUPEDECK device",
+    CT      = "Loupedeck CT",
     LIVE    = "Loupedeck Live",
 }
 
@@ -272,6 +272,28 @@ function mod.mt:sendCommand(commandID, callbackFn, ...)
     )
 end
 
+-- tableContains(table, element) -> boolean
+-- Function
+-- Does a element exist in a table?
+--
+-- Parameters:
+--  * table - the table you want to check
+--  * element - the element you want to check for
+--
+-- Returns:
+--  * Boolean
+local function tableContains(table, element)
+    if not table or not element then
+        return false
+    end
+    for _, value in pairs(table) do
+        if value == element then
+            return true
+        end
+    end
+    return false
+end
+
 --- hs.loupedeck:findIPAddress() -> string | nil
 --- Method
 --- Searches for a valid IP address for the Loupedeck
@@ -282,11 +304,23 @@ end
 --- Returns:
 ---  * An IP address as a string, or `nil` if no device can be detected.
 function mod.mt:findIPAddress()
+    --------------------------------------------------------------------------------
+    -- NOTE: When upgrading from the 0.0.8 to 0.1.79 firmware on the Loupedeck CT,
+    --       the network interface name changed from "LOUPEDECK device" to
+    --       "Loupedeck CT". Below is a workaround to support both interface names.
+    --------------------------------------------------------------------------------
+    local interfaceNames
+    local deviceType = self.deviceType
+    if deviceType == mod.deviceTypes.CT then
+        interfaceNames = {"LOUPEDECK device", "Loupedeck CT"}
+    elseif deviceType == mod.deviceTypes.LIVE then
+        interfaceNames = {"Loupedeck Live"}
+    end
+
     local interfaces = network.interfaces()
     local interfaceID
-    local deviceType = self.deviceType
     for _, v in pairs(interfaces) do
-        if network.interfaceName(v) == deviceType then
+        if tableContains(interfaceNames, network.interfaceName(v)) then
             interfaceID = v
             break
         end
