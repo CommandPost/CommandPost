@@ -971,6 +971,10 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup Menus:
@@ -1004,7 +1008,9 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit()
-    mod.update()
+    if mod.update then
+        mod.update()
+    end
 end
 
 return plugin

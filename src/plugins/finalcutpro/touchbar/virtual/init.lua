@@ -195,6 +195,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Connect to Manager:
     --------------------------------------------------------------------------------
     mod._virtual = deps.manager
@@ -228,7 +233,9 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update visibility:
     --------------------------------------------------------------------------------
-    mod.enabled:update()
+    if mod.enabled then
+        mod.enabled:update()
+    end
 end
 
 return plugin

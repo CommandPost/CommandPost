@@ -17,6 +17,11 @@ local plugin = {
 
 function plugin.init()
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- New Final Cut Pro Command Collection:
     --------------------------------------------------------------------------------
     mod.cmds = commands.new("fcpx")
@@ -41,7 +46,9 @@ function plugin.init()
 end
 
 function plugin.postInit()
-    mod.isEnabled:update()
+    if mod.isEnabled then
+        mod.isEnabled:update()
+    end
 end
 
 return plugin

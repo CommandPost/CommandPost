@@ -9,7 +9,7 @@ local application = require "hs.application"
 
 local app = require "cp.app"
 
-local fcpID = "com.apple.FinalCut"
+local fcpID = "XXcom.apple.FinalCut"
 local trialID = "com.apple.FinalCutTrial"
 
 --------------------------------------------------------------------------------

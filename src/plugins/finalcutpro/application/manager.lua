@@ -16,6 +16,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local iconPath = config.basePath .. "/plugins/finalcutpro/console/images/"
     local searchConsoleToolbar = {
         fcpx_videoEffect            = { path = iconPath .. "videoEffect.png",       priority = 3},

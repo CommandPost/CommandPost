@@ -163,6 +163,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     mod.init(deps.actionmanager, deps.cmds)
     return mod
 end

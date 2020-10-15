@@ -22,6 +22,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Register a Final Cut Pro specific activator for the Search Console:
     --------------------------------------------------------------------------------
     local bundleID = fcp:bundleID()

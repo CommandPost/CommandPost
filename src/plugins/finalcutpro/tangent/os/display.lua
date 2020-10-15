@@ -7,6 +7,7 @@ local require = require
 local brightness            = require "hs.brightness"
 
 local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 
 local format                = string.format
@@ -56,6 +57,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod.init(deps)
 end
 

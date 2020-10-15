@@ -21,6 +21,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     local cpGroup = deps.tangentManager.commandPostGroup
     local group = cpGroup:group(i18n("functions"))

@@ -308,6 +308,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     local SHIFT_AMOUNTS = {0.1, 1, 5, 10, 15, 20, 25, 30, 35, 40}
 

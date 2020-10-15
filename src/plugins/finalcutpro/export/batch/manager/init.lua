@@ -554,6 +554,11 @@ local plugin = {
 }
 
 function plugin.init(_, env)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod.init(env)
 end
 

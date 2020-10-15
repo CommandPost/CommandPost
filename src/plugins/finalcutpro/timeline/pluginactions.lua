@@ -141,6 +141,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end
 

@@ -141,6 +141,11 @@ local plugin = {
 }
 
 function plugin.init()
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod
 end
 
