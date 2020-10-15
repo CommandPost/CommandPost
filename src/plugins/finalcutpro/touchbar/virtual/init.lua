@@ -181,7 +181,6 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
     end
 end)
 
-
 local plugin = {
     id = "finalcutpro.touchbar.virtual",
     group = "finalcutpro",
@@ -231,11 +230,14 @@ end
 
 function plugin.postInit()
     --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Update visibility:
     --------------------------------------------------------------------------------
-    if mod.enabled then
-        mod.enabled:update()
-    end
+    mod.enabled:update()
 end
 
 return plugin
