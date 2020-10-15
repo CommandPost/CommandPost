@@ -1150,25 +1150,27 @@
 					%}
 					<option {{selected}} value="{{i}}">{{i}}</option>
 					{% end %}
-					<option disabled>──────────</option>
-					{%
-					for i=1, numberOfBanks do
-						local selected = ""
-						if lastBank == tostring(i) .. "_LeftFn" then
-							selected = [[selected=""]]
-						end
-					%}
-					<option {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
-					{% end %}
-					<option disabled>──────────</option>
-					{%
-					for i=1, numberOfBanks do
-						local selected = ""
-						if lastBank == tostring(i) .. "_RightFn" then
-							selected = [[selected=""]]
-						end
-					%}
-					<option {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
+					{% if id == "loupedeckct" then %}
+						<option disabled>──────────</option>
+						{%
+						for i=1, numberOfBanks do
+							local selected = ""
+							if lastBank == tostring(i) .. "_LeftFn" then
+								selected = [[selected=""]]
+							end
+						%}
+						<option {{selected}} value="{{i}}_LeftFn">{{i}} (Left Fn)</option>
+						{% end %}
+						<option disabled>──────────</option>
+						{%
+						for i=1, numberOfBanks do
+							local selected = ""
+							if lastBank == tostring(i) .. "_RightFn" then
+								selected = [[selected=""]]
+							end
+						%}
+						<option {{selected}} value="{{i}}_RightFn">{{i}} (Right Fn)</option>
+						{% end %}
 					{% end %}
 				</select>
 			</span>
