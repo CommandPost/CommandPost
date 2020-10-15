@@ -8,9 +8,10 @@ local dialog        = require "hs.dialog"
 local http          = require "hs.http"
 
 local config        = require "cp.config"
+local fcp           = require "cp.apple.finalcutpro"
 local html          = require "cp.web.html"
-local ui            = require "cp.web.ui"
 local i18n          = require "cp.i18n"
+local ui            = require "cp.web.ui"
 
 local slaxdom       = require "slaxml.slaxdom"
 

@@ -13,6 +13,7 @@ local http              = require "hs.http"
 local json              = require "hs.json"
 
 local config            = require "cp.config"
+local fcp               = require "cp.apple.finalcutpro"
 local html              = require "cp.web.html"
 local i18n              = require "cp.i18n"
 local ui                = require "cp.web.ui"

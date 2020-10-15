@@ -6,9 +6,10 @@ local require = require
 
 local fs            = require "hs.fs"
 
+local fcp           = require "cp.apple.finalcutpro"
+local i18n          = require "cp.i18n"
 local plist         = require "cp.plist"
 local watcher       = require "cp.watcher"
-local i18n          = require "cp.i18n"
 
 local mod = {}
 

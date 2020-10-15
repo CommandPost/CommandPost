@@ -12,6 +12,7 @@ local mouse			    = require "hs.mouse"
 
 local deferred          = require "cp.deferred"
 local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
 local mod = {}

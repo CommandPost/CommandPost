@@ -2,9 +2,11 @@
 ---
 --- CommandPost Functions for Tangent.
 
-local require = require
+local require   = require
 
-local i18n = require("cp.i18n")
+local i18n      = require "cp.i18n"
+
+local fcp       = require "cp.apple.finalcutpro"
 
 local plugin = {
     id = "finalcutpro.tangent.commandpost.functions",
