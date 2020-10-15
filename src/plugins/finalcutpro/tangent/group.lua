@@ -16,6 +16,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local connection = deps.tangentManager
     local fcpGroup = connection.controls:group(i18n("finalCutPro"))
 

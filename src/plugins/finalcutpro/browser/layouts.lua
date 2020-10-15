@@ -97,21 +97,27 @@ function mod.setupWatcher()
         --------------------------------------------------------------------------------
         if not mod._watcher then
             mod._watcher = eventtap.new({eventtap.event.types.leftMouseDown}, function(event)
-                if fcp:isFrontmost() then
-                    local ui = fcp.browser:UI()
-                    if ui then
-                        local browserFrame = ui:attributeValue("AXFrame")
-                        local location = event:location() and geometry.point(event:location())
-                        if browserFrame and location and location:inside(geometry.rect(browserFrame)) then
-                            --------------------------------------------------------------------------------
-                            -- We need to add in a delay to give the UI time to update:
-                            --------------------------------------------------------------------------------
-                            doAfter(0.1, function()
-                                mod.restoreBrowserLayoutForSelectedCollection()
-                            end)
+                --------------------------------------------------------------------------------
+                -- NOTE: This is wrapped in a timer, because we don't want the eventtap
+                --       blocking anything else.
+                --------------------------------------------------------------------------------
+                doAfter(0, function()
+                    if fcp:isFrontmost() then
+                        local ui = fcp.browser:UI()
+                        if ui then
+                            local browserFrame = ui:attributeValue("AXFrame")
+                            local location = event:location() and geometry.point(event:location())
+                            if browserFrame and location and location:inside(geometry.rect(browserFrame)) then
+                                --------------------------------------------------------------------------------
+                                -- We need to add in a delay to give the UI time to update:
+                                --------------------------------------------------------------------------------
+                                doAfter(0.1, function()
+                                    mod.restoreBrowserLayoutForSelectedCollection()
+                                end)
+                            end
                         end
                     end
-                end
+                end)
             end):start()
         end
     else
@@ -680,6 +686,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     --------------------------------------------------------------------------------
     -- Setup Mouse Watcher:

@@ -6,6 +6,7 @@
 local require           = require
 
 local dialog            = require "cp.dialog"
+local fcp               = require "cp.apple.finalcutpro"
 local i18n              = require "cp.i18n"
 
 local displayMessage    = dialog.displayMessage
@@ -163,6 +164,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     mod.init(deps.actionmanager, deps.cmds)
     return mod
 end

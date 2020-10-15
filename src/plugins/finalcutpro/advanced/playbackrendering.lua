@@ -2,10 +2,10 @@
 ---
 --- Playback Rendering Plugin.
 
-local require = require
+local require   = require
 
-local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
+local fcp       = require "cp.apple.finalcutpro"
+local i18n      = require "cp.i18n"
 
 local mod = {}
 
@@ -24,6 +24,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------

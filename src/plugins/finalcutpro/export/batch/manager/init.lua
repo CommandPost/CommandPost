@@ -15,6 +15,7 @@ local webview       = require "hs.webview"
 
 local config        = require "cp.config"
 local dialog        = require "cp.dialog"
+local fcp           = require "cp.apple.finalcutpro"
 local i18n          = require "cp.i18n"
 local just          = require "cp.just"
 local tools         = require "cp.tools"
@@ -554,6 +555,11 @@ local plugin = {
 }
 
 function plugin.init(_, env)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod.init(env)
 end
 

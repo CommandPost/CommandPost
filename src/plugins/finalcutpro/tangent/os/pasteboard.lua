@@ -2,10 +2,11 @@
 ---
 --- Pasteboard Tools for Tangent.
 
-local require = require
+local require   = require
 
-local i18n = require("cp.i18n")
+local i18n      = require "cp.i18n"
 
+local fcp       = require "cp.apple.finalcutpro"
 
 local plugin = {
     id = "finalcutpro.tangent.os.pasteboard",
@@ -17,6 +18,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
     local mod = deps.mod
     local group = deps.osGroup:group(i18n("pasteboard"))

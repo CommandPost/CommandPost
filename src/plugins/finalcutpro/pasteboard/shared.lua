@@ -471,6 +471,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
     mod._manager = deps.manager
@@ -503,6 +508,11 @@ function plugin.init(deps)
 end
 
 function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local setEnabledValue = false
     if mod.enabled() then
         if not mod.validRootPath() then

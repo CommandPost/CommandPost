@@ -38,6 +38,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     -- Add Menu:
     deps.menu.mediaImport
         :addItems(2000, function()

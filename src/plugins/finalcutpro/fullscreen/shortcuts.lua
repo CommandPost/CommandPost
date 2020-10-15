@@ -229,6 +229,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     if deps.prefs.panel then
@@ -252,7 +257,9 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Check to see if we started in fullscreen mode:
     --------------------------------------------------------------------------------
-    mod.enabled:update()
+    if mod.enabled then
+        mod.enabled:update()
+    end
 end
 
 return plugin

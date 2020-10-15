@@ -51,14 +51,12 @@ mod.location = config.prop("displayVirtualTouchBarLocation", mod.LOCATION_DEFAUL
 --- Update Location Callback
 mod.updateLocationCallback = location
 
+--- plugins.core.touchbar.virtual.macOSVersionSupported <cp.prop: boolean>
+--- Field
+--- Does the macOS version support the Touch Bar?
 mod.macOSVersionSupported = prop(function()
-    local supportedHardware = true
-    local output = execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
-    if output and output:find("MacBookPro16,1") then
-        supportedHardware = false
-    end
     local osVersion = semver(tools.macOSVersion())
-    return supportedHardware and osVersion >= semver("10.12.1")
+    return osVersion >= semver("10.12.1")
 end)
 
 --- plugins.core.touchbar.virtual.supported <cp.prop: boolean; read-only>

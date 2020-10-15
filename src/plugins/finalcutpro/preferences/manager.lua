@@ -19,18 +19,20 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    local mod = {}
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
 
-    if fcp:isSupported() then
-        mod.panel = deps.manager.addPanel({
-            priority    = 2040,
-            id          = "finalcutpro",
-            label       = i18n("finalCutProPanelLabel"),
-            image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
-            tooltip     = i18n("finalCutProPanelTooltip"),
-            height      = 570,
-        })
-    end
+    local mod = {}
+    mod.panel = deps.manager.addPanel({
+        priority    = 2040,
+        id          = "finalcutpro",
+        label       = i18n("finalCutProPanelLabel"),
+        image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
+        tooltip     = i18n("finalCutProPanelTooltip"),
+        height      = 570,
+    })
 
     return mod
 end

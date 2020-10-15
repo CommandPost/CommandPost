@@ -74,6 +74,11 @@ local plugin = {
 }
 
 function plugin.init()
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod
 end
 
@@ -81,7 +86,9 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     -- Update Dock Icon:
     --------------------------------------------------------------------------------
-    mod.dockIconEnabled:update()
+    if mod.dockIconEnabled then
+        mod.dockIconEnabled:update()
+    end
 end
 
 return plugin

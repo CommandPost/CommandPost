@@ -160,6 +160,7 @@ local env           = require "cp.plugins.env"
 local plugin        = require "cp.plugins.plugin"
 local tools         = require "cp.tools"
 
+local clock         = timer.secondsSinceEpoch
 local doAfter       = timer.doAfter
 
 local mod = {}
@@ -291,13 +292,7 @@ end
 ---  * None
 function mod.initPlugins()
     for _,id in ipairs(mod.IDS) do
-        local startTime = os.clock()
         mod.initPlugin(id)
-        local finishTime = os.clock()
-        local loadingTime = finishTime-startTime
-        if loadingTime > SLOW_PLUGIN_WARNING_THRESHOLD then
-            log.wf("Slow Plugin: %s (%s)", id, finishTime-startTime)
-        end
     end
 end
 
@@ -320,6 +315,7 @@ end
 ---  * the result of the plugin's `init(...)` function call.
 function mod.initPlugin(id)
     -- log.df("Loading plugin '%s'", id)
+    local startTime = clock()
 
     local thePlugin = mod.getPlugin(id)
     if not thePlugin then
@@ -396,6 +392,16 @@ function mod.initPlugin(id)
     -- Return the module:
     --------------------------------------------------------------------------------
     -- log.df("Initialised plugin: %s", id)
+
+    --------------------------------------------------------------------------------
+    -- Detect slow plugins:
+    --------------------------------------------------------------------------------
+    local finishTime = clock()
+    local loadingTime = finishTime-startTime
+    if loadingTime > SLOW_PLUGIN_WARNING_THRESHOLD then
+        log.wf("Slow Plugin: %s (%s)", id, finishTime-startTime)
+    end
+
     return module
 end
 
@@ -576,9 +582,9 @@ end
 ---  * None
 function mod.postInitPlugins()
     for _,id in pairs(mod.IDS) do
-        local startTime = os.clock()
+        local startTime = clock()
         mod.postInitPlugin(id)
-        local finishTime = os.clock()
+        local finishTime = clock()
         local loadingTime = finishTime-startTime
         if loadingTime > SLOW_PLUGIN_WARNING_THRESHOLD then
             log.wf("Slow Plugin (Post): %s (%s)", id, finishTime-startTime)

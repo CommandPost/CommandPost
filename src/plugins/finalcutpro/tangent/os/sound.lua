@@ -8,6 +8,7 @@ local audiodevice           = require "hs.audiodevice"
 local audiowatcher          = require "hs.audiodevice.watcher"
 
 local dialog                = require "cp.dialog"
+local fcp                   = require "cp.apple.finalcutpro"
 local i18n                  = require "cp.i18n"
 local prop                  = require "cp.prop"
 local tools                 = require "cp.tools"
@@ -135,6 +136,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     return mod.init(deps)
 end
 

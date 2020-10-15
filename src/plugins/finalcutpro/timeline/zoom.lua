@@ -21,6 +21,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if Final Cut Pro is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local fcpxCmds = deps.fcpxCmds
     local appearance = fcp.timeline.toolbar.appearance
 

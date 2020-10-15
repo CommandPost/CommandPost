@@ -4,6 +4,7 @@
 
 local require       = require
 
+local fcp           = require "cp.apple.finalcutpro"
 local html          = require "cp.web.html"
 local i18n          = require "cp.i18n"
 
@@ -16,6 +17,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------

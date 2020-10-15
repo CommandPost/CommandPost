@@ -21,6 +21,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     deps.fcpxCmds
         :add("goToAudioInspector")
         :whenActivated(function() fcp.inspector.audio:doShow():Now() end)

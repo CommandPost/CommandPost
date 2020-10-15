@@ -78,6 +78,11 @@ local plugin = {
 
 function plugin.init(deps)
     --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
+    --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     if deps and deps.prefs and deps.prefs.panel then
@@ -98,7 +103,9 @@ function plugin.init(deps)
 end
 
 function plugin.postInit()
-    mod.enabled:update()
+    if mod.enabled then
+        mod.enabled:update()
+    end
 end
 
 return plugin

@@ -16,6 +16,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if FCPX is supported:
+    --------------------------------------------------------------------------------
+    if not fcp:isSupported() then return end
+
     local fcpGroup = deps.fcpGroup
     local id = 0x00050000
     fcpGroup:action(id, i18n("cpLaunchFinalCutPro" .. "_title"), true)

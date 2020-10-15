@@ -21,7 +21,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if not fcp:isSupported() then return end
 
-
     local fcpGroup = deps.fcpGroup
     local baseID = 0x00090000
 
