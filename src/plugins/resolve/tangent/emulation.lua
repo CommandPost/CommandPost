@@ -11,6 +11,7 @@ local timer                 = require "hs.timer"
 
 local config                = require "cp.config"
 local i18n                  = require "cp.i18n"
+local resolve               = require "cp.blackmagic.resolve"
 
 local doAfter               = timer.doAfter
 local imageFromPath         = image.imageFromPath
@@ -28,6 +29,11 @@ local plugin = {
 }
 
 function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Only load plugin if DaVinci Resolve is supported:
+    --------------------------------------------------------------------------------
+    if not resolve:isSupported() then return end
+
     local tangentManager = deps.tangentManager
 
     --------------------------------------------------------------------------------
