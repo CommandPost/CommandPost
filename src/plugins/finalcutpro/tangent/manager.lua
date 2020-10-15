@@ -115,7 +115,8 @@ function plugin.init(deps)
         for _, file in pairs(files) do
             if file:sub(-4) == ".xml" or file == "map-ref.txt" then
                 local path = legacyPath.. "/" .. file
-                if not doesFileExist(path) then
+                local destination = controlMapsPath .. "/" .. file
+                if not doesFileExist(destination) then
                     table.insert(filesToMove, path)
                 end
             end

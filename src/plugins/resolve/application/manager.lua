@@ -15,11 +15,13 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    deps.manager.registerApplication({
-        bundleID = resolve:bundleID(),
-        displayName = "DaVinci Resolve",
-        legacyGroupID = "resolve",
-    })
+    if resolve:isSupported() then
+        deps.manager.registerApplication({
+            bundleID = resolve:bundleID(),
+            displayName = "DaVinci Resolve",
+            legacyGroupID = "resolve",
+        })
+    end
 end
 
 return plugin

@@ -23,7 +23,7 @@ local resolve = class("cp.blackmagic.resolve")
 --- cp.blackmagic.resolve.EARLIEST_SUPPORTED_VERSION <semver>
 --- Constant
 --- The earliest version this API supports.
-resolve.EARLIEST_SUPPORTED_VERSION = v("16.2")
+resolve.EARLIEST_SUPPORTED_VERSION = v("16.2.7")
 
 function resolve:initialize()
 --- cp.blackmagic.resolve.app <cp.app>
