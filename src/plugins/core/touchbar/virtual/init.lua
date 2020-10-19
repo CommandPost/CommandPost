@@ -17,7 +17,6 @@ local tools                                     = require "cp.tools"
 local semver                                    = require "semver"
 
 local location                                  = require "location"
-local execute                                   = hs.execute
 
 local mod = {}
 
