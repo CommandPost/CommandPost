@@ -1,0 +1,13 @@
+{
+  "name": "Final Cut Pro (via CP)",
+  "id": "org.latenitefilms.CommandPost.FinalCutPro",
+  "bundle": ["com.apple.FinalCut"],
+  "category": ["video"],
+  "connection": [
+    {
+      "name": "CommandPost",
+      "type": "udp",
+      "port": 51234
+    }
+  ]
+}

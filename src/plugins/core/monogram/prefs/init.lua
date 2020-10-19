@@ -9,6 +9,7 @@ local require           = require
 local image             = require "hs.image"
 
 local i18n              = require "cp.i18n"
+local html              = require "cp.web.html"
 
 local imageFromPath     = image.imageFromPath
 local execute           = hs.execute
@@ -19,37 +20,60 @@ local plugin = {
     id              = "core.monogram.prefs",
     group           = "core",
     dependencies    = {
+        ["core.monogram.manager"]           = "monogram",
         ["core.controlsurfaces.manager"]    = "manager",
+
     }
 }
 
 function plugin.init(deps, env)
     --------------------------------------------------------------------------------
-    -- Inter-plugin Connectivity:
-    --------------------------------------------------------------------------------
-    mod._manager        = deps.manager
-
-    --------------------------------------------------------------------------------
     -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    mod._panel          =  deps.manager.addPanel({
+    local manager = deps.manager
+    local monogram = deps.monogram
+
+    manager.addPanel({
         priority        = 9010,
         id              = "monogram",
         label           = i18n("monogram"),
         image           = imageFromPath(env:pathToAbsolute("/images/Monogram.icns")),
         tooltip         = i18n("monogram"),
-        height          = 240,
+        height          = 210,
     })
-        :addHeading(1, "Monogram/Palette Support")
-        :addContent(2, [[<p style="padding-left:20px;">We are hoping to add built-in Monogram/Palette support in a future release.<br />
-        <br />
-        In the meantime, you can use MIDI commands and keyboard shortcuts to control CommandPost via Monogram Creator.
-        </p>]], false)
-        :addButton(3,
+        :addContent(1, html.style ([[
+                .buttonOne {
+                    float:left;
+                    width: 192px;
+                }
+                .buttonTwo {
+                    float:left;
+                    margin-left: 5px;
+                    width: 192px;
+                }
+            ]], true))
+        :addHeading(2, "Monogram Support")
+        :addCheckbox(3,
+            {
+                label = "Enable Monogram Support",
+                onchange = function(_, params) monogram.enabled(params.checked) end,
+                checked = monogram.enabled,
+
+            }
+        )
+        :addParagraph(4, html.br())
+        :addButton(5,
+            {
+                label 	    = "Open Monogram Creator",
+                onclick	    = function() monogram.launchCreatorBundle() end,
+                class       = "buttonOne",
+            }
+        )
+        :addButton(6,
             {
                 label 	    = "Download Monogram Creator",
-                width       = 240,
                 onclick	    = function() execute([[open https://monogramcc.com/download]]) end,
+                class       = "buttonTwo",
             }
         )
 

@@ -1,0 +1,146 @@
+[
+	{
+		"name": "Color Wheels.Master.Reset All",
+		"info": "Resets the Master Wheel Position, Saturation and Brightness"
+	},
+	{
+		"name": "Color Wheels.Master.Reset",
+		"info": "Resets the Master Wheel Position"
+	},
+	{
+		"name": "Color Wheels.Master.Saturation",
+		"range": [0, 2],
+		"step": 0.01,
+		"reset": 1,
+		"info": "Changes the Master Saturation"
+	},
+	{
+		"name": "Color Wheels.Master.Brightness",
+		"range": [-1, 1],
+		"step": 0.01,
+		"reset": 0,
+		"info": "Changes the Master Brightness"
+	},
+	{
+		"name": "Color Wheels.Master.Horizontal",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Master Color Wheel Horizontally"
+	},
+	{
+		"name": "Color Wheels.Master.Vertical",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Master Color Wheel Vertically"
+	},
+	{
+		"name": "Color Wheels.Shadows.Reset All",
+		"info": "Resets the Shadows Wheel Position, Saturation and Brightness"
+	},
+	{
+		"name": "Color Wheels.Shadows.Reset",
+		"info": "Resets the Shadows Wheel Position"
+	},
+	{
+		"name": "Color Wheels.Shadows.Saturation",
+		"range": [0, 2],
+		"step": 0.01,
+		"reset": 1,
+		"info": "Changes the Shadows Saturation"
+	},
+	{
+		"name": "Color Wheels.Shadows.Brightness",
+		"range": [-1, 1],
+		"step": 0.01,
+		"reset": 0,
+		"info": "Changes the Shadows Brightness"
+	},
+	{
+		"name": "Color Wheels.Shadows.Horizontal",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Shadows Color Wheel Horizontally"
+	},
+	{
+		"name": "Color Wheels.Shadows.Vertical",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Shadows Color Wheel Vertically"
+	},
+	{
+		"name": "Color Wheels.Midtones.Reset All",
+		"info": "Resets the Midtones Wheel Position, Saturation and Brightness"
+	},
+	{
+		"name": "Color Wheels.Midtones.Reset",
+		"info": "Resets the Midtones Wheel Position"
+	},
+	{
+		"name": "Color Wheels.Midtones.Saturation",
+		"range": [0, 2],
+		"step": 0.01,
+		"reset": 1,
+		"info": "Changes the Midtones Saturation"
+	},
+	{
+		"name": "Color Wheels.Midtones.Brightness",
+		"range": [-1, 1],
+		"step": 0.01,
+		"reset": 0,
+		"info": "Changes the Midtones Brightness"
+	},
+	{
+		"name": "Color Wheels.Midtones.Horizontal",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Midtones Color Wheel Horizontally"
+	},
+	{
+		"name": "Color Wheels.Midtones.Vertical",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Midtones Color Wheel Vertically"
+	},
+	{
+		"name": "Color Wheels.Highlights.Reset All",
+		"info": "Resets the Highlights Wheel Position, Saturation and Brightness"
+	},
+	{
+		"name": "Color Wheels.Highlights.Reset",
+		"info": "Resets the Highlights Wheel Position"
+	},
+	{
+		"name": "Color Wheels.Highlights.Saturation",
+		"range": [0, 2],
+		"step": 0.01,
+		"reset": 1,
+		"info": "Changes the Highlights Saturation"
+	},
+	{
+		"name": "Color Wheels.Highlights.Brightness",
+		"range": [-1, 1],
+		"step": 0.01,
+		"reset": 0,
+		"info": "Changes the Highlights Brightness"
+	},
+	{
+		"name": "Color Wheels.Highlights.Horizontal",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Highlights Color Wheel Horizontally"
+	},
+	{
+		"name": "Color Wheels.Highlights.Vertical",
+		"range": [-255, 255],
+		"step": 0.001666666667,
+		"reset": 0,
+		"info": "Moves the Highlights Color Wheel Vertically"
+	}
+]
