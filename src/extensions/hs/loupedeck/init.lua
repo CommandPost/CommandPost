@@ -46,15 +46,15 @@ mod.deviceTypes = {
     LIVE    = "Loupedeck Live",
 }
 
---- hs.loupedeck:registerCallback(callbackFn) -> number
+--- hs.loupedeck:registerCallback([callbackFn]) -> number
 --- Method
 --- Registers a callback.
 ---
 --- Parameters:
----  * callbackFn - The callback function
+---  * [callbackFn] - The optional callback function
 ---
 --- Returns:
----  * A unique callback ID as a number.
+---  * If `callbackFn` is supplied a unique callback id between 2 and 255, otherwise 1.
 function mod.mt:registerCallback(callbackFn)
     if type(callbackFn) == "function" then
         local id
