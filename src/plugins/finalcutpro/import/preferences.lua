@@ -55,7 +55,7 @@ function plugin.init(deps)
                 { title = i18n("createOptimizedMedia"),         fn = function() mod.createOptimizedMedia:toggle() end,              checked = mod.createOptimizedMedia(),               },
                 { title = i18n("createMulticamOptimizedMedia"), fn = function() mod.createMulticamOptimizedMedia:toggle() end,      checked = mod.createMulticamOptimizedMedia(),       },
                 { title = i18n("createProxyMedia"),             fn = function() mod.createProxyMedia:toggle() end,                  checked = mod.createProxyMedia(),                   },
-                { title = i18n("leaveFilesInPlaceOnImport"),    fn = function() mod.leaveInPlace:toggle() end,                      checked = mod.leaveInPlace(),                       },
+                { title = i18n("leaveFilesInPlaceOnImport"),    fn = function() mod.leaveInPlace:toggle() end,                      checked = not mod.leaveInPlace(),                       },
             }
         end)
 
@@ -96,11 +96,11 @@ function plugin.init(deps)
     fcpxCmds
         :add("cpLeaveInPlaceOn")
         :groupedBy("mediaImport")
-        :whenActivated(function() mod.leaveInPlace(true) end)
+        :whenActivated(function() mod.leaveInPlace(false) end)
 
     fcpxCmds:add("cpLeaveInPlaceOff")
         :groupedBy("mediaImport")
-        :whenActivated(function() mod.leaveInPlace(false) end)
+        :whenActivated(function() mod.leaveInPlace(true) end)
 
     return mod
 end
