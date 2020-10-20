@@ -160,6 +160,7 @@
 local require               = require
 
 local log                   = require "hs.logger" .new "spec"
+local inspect               = require "hs.inspect"
 
 local fs                    = require "hs.fs"
 
@@ -496,7 +497,7 @@ local function findSpecsInDirectory(path, result)
         for file in fs.dir(path) do
             if file ~= "." and file ~= ".." then
                 local filePath = path .. "/" .. file
-                local newSpec, err
+                local newSpec, ok, err
                 local matched = false
 
                 local mode = fs.attributes(filePath, "mode")
@@ -523,7 +524,7 @@ local function findSpecsInDirectory(path, result)
                     if Definition.is(newSpec) then
                         result:with(newSpec)
                     else
-                        return false, format("Result from %q is not a cp.spec.Definition: %s", filePath, hs.inspect(newSpec))
+                        return false, format("Result from %q is not a cp.spec.Definition: %s", filePath, inspect(newSpec))
                     end
                 elseif matched then
                     return false, format("Error loading %q as a spec file: %s", filePath, err)

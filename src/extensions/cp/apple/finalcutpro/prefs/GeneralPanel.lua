@@ -14,6 +14,7 @@ local PopUpButton           = require "cp.ui.PopUpButton"
 local Panel                 = require "cp.apple.finalcutpro.prefs.Panel"
 
 local childFromTop          = axutils.childFromTop
+local execute               = _G.hs.execute
 
 local GeneralPanel = Panel:subclass("cp.apple.finalcutpro.prefs.GeneralPanel")
 
@@ -42,7 +43,7 @@ function GeneralPanel.static.timeDisplay(value)
         -- Setter:
         --------------------------------------------------------------------------------
         if tools.tableContains(GeneralPanel.mt.TIME_DISPLAY, value) then
-            hs.execute("defaults write com.apple.FinalCut timeFormatLK -data " .. value)
+            execute("defaults write com.apple.FinalCut timeFormatLK -data " .. value)
             for i, v in pairs(GeneralPanel.mt.TIME_DISPLAY) do
                 if value == v then
                     return i
@@ -56,7 +57,7 @@ function GeneralPanel.static.timeDisplay(value)
         --------------------------------------------------------------------------------
         -- Getter:
         --------------------------------------------------------------------------------
-        local output, executeStatus = hs.execute("defaults read com.apple.FinalCut timeFormatLK")
+        local output, executeStatus = execute("defaults read com.apple.FinalCut timeFormatLK")
         if executeStatus and output then
             local length = string.len(output)
             if string.sub(output, 1, 1) == "<" and string.sub(output, length -1, length - 1 ) == ">" then

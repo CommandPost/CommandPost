@@ -2,7 +2,8 @@
 ---
 --- Menu Manager Plugin.
 
-local require = require
+local require   = require
+local hs        = _G.hs
 
 local image     = require "hs.image"
 local menubar   = require "hs.menubar"

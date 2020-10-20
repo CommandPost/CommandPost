@@ -33,6 +33,9 @@ local map               = keycodes.map
 local usleep            = timer.usleep
 local utf16             = text.utf16
 
+local execute           = _G.hs.execute
+local processInfo       = _G.hs.processInfo
+
 local newKeyEvent       = event.newKeyEvent
 local newSystemKeyEvent = event.newSystemKeyEvent
 
@@ -554,10 +557,10 @@ end
 --- Returns:
 ---  * String
 function tools.getModelName()
-    local output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Name"]])
+    local output, status = execute([[system_profiler SPHardwareDataType | grep "Model Name"]])
     if status and output then
         local modelName = tools.splitOnColumn(output)
-        output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
+        output, status = execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
         if status and output then
             local modelIdentifier = tools.splitOnColumn(output)
             if modelName == "MacBook Pro" then
@@ -721,7 +724,7 @@ end
 ---  * String
 function tools.getUSBDevices()
     -- "system_profiler SPUSBDataType"
-    local output, status = hs.execute("ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*'")
+    local output, status = execute("ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*'")
     if output and status then
         local lines = tools.lines(output)
         local result = "USB DEVICES:\n"
@@ -749,7 +752,7 @@ end
 --- Returns:
 ---  * String
 function tools.getThunderboltDevices()
-    local output, status = hs.execute([[system_profiler SPThunderboltDataType | grep "Device Name" -B1]])
+    local output, status = execute([[system_profiler SPThunderboltDataType | grep "Device Name" -B1]])
     if output and status then
         local lines = tools.lines(output)
         local devices = {}
@@ -809,7 +812,7 @@ end
 --- Returns:
 ---  * String
 function tools.getFullname()
-    local output, status = hs.execute("id -F")
+    local output, status = execute("id -F")
     if output and status then
         return tools.trim(output)
     else
@@ -880,7 +883,7 @@ function tools.getScreenshotsAsBase64()
     for _, value in ipairs(allScreens) do
         local temporaryFileName = os.tmpname()
         value:shotAsJPG(temporaryFileName)
-        hs.execute("sips -Z 1920 " .. temporaryFileName)
+        execute("sips -Z 1920 " .. temporaryFileName)
         local screenshotFile = io.open(temporaryFileName, "r")
         local screenshotFileContents = screenshotFile:read("*all")
         screenshotFile:close()
@@ -1080,7 +1083,7 @@ end
 ---  * `true` if successful, `false` if cancelled and a string if there's an error.
 function tools.executeWithAdministratorPrivileges(input, stopOnError)
     local originalFocusedWindow = window.focusedWindow()
-    local whichBundleID = hs.processInfo["bundleID"]
+    local whichBundleID = processInfo["bundleID"]
     local fcpBundleID = "com.apple.FinalCut"
     if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcpBundleID then
         whichBundleID = fcpBundleID
@@ -1123,7 +1126,7 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
             end tell
         ]]
         local _,result = osascript.applescript(appleScript)
-        if originalFocusedWindow and whichBundleID == hs.processInfo["bundleID"] then
+        if originalFocusedWindow and whichBundleID == processInfo["bundleID"] then
             originalFocusedWindow:focus()
         end
         return result
@@ -1149,7 +1152,7 @@ function tools.executeWithAdministratorPrivileges(input, stopOnError)
             end tell
         ]]
         local _,result = osascript.applescript(appleScript)
-        if originalFocusedWindow and whichBundleID == hs.processInfo["bundleID"] then
+        if originalFocusedWindow and whichBundleID == processInfo["bundleID"] then
             originalFocusedWindow:focus()
         end
         return result
@@ -1951,23 +1954,23 @@ function tools.contentsInsideBrackets(a)
     return b and b:sub(2, -2)
 end
 
---- cp.tools.replace(text, old, new) -> string
+--- cp.tools.replace(textValue, old, new) -> string
 --- Function
 --- A find and replace feature that doesn't use patterns.
 ---
 --- Parameters:
----  * text - The string you want to process
+---  * textValue - The string you want to process
 ---  * old - The string you want to find
 ---  * new - The new string you want to replace the old string with
 ---
 --- Returns:
 ---  * A new string
-function tools.replace(text, old, new)
-    local b,e = text:find(old, 1, true)
+function tools.replace(textValue, old, new)
+    local b,e = textValue:find(old, 1, true)
     if b == nil then
-        return text
+        return textValue
     else
-        local result = text:sub(1, b - 1) .. new .. text:sub(e + 1)
+        local result = textValue:sub(1, b - 1) .. new .. textValue:sub(e + 1)
         return tools.replace(result, old, new)
     end
 end

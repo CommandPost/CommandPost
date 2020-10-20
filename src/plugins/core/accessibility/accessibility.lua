@@ -3,6 +3,7 @@
 --- Accessibility Plugin.
 
 local require           = require
+local hs                = _G.hs
 
 local application       = require "hs.application"
 

@@ -11,7 +11,7 @@ local image             = require "hs.image"
 local i18n              = require "cp.i18n"
 
 local imageFromPath     = image.imageFromPath
-local execute           = hs.execute
+local execute           = _G.hs.execute
 
 local mod = {}
 

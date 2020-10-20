@@ -2,7 +2,8 @@
 ---
 --- Sends Apple a Bug Report or Feature Request for Compressor.
 
-local require = require
+local require               = require
+local hs                    = _G.hs
 
 local log                   = require("hs.logger").new("compBug")
 

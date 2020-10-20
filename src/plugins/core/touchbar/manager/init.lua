@@ -4,8 +4,6 @@
 
 local require           = require
 
-local hs                = hs
-
 local log               = require "hs.logger".new "tbManager"
 
 local canvas            = require "hs.canvas"
@@ -26,7 +24,6 @@ local semver            = require "semver"
 local widgets           = require "widgets"
 
 local copy              = fnutils.copy
-local execute           = hs.execute
 local imageFromPath     = image.imageFromPath
 
 local mod = {}

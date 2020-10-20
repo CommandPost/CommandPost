@@ -5,6 +5,7 @@
 local require                   = require
 
 local log                       = require "hs.logger".new "tangentPref"
+local inspect                   = require "hs.inspect"
 
 local application               = require "hs.application"
 local dialog                    = require "hs.dialog"
@@ -179,7 +180,6 @@ end
 -- Returns:
 --  * None
 local function tangentPanelCallback(id, params)
-    local injectScript = mod._prefsManager.injectScript
     if params and params["type"] then
         if params["type"] == "updateUI" then
             --------------------------------------------------------------------------------
@@ -325,8 +325,8 @@ local function tangentPanelCallback(id, params)
             -- Unknown Callback:
             --------------------------------------------------------------------------------
             log.df("Unknown Callback in Tangent Preferences Panel:")
-            log.df("id: %s", hs.inspect(id))
-            log.df("params: %s", hs.inspect(params))
+            log.df("id: %s", inspect(id))
+            log.df("params: %s", inspect(params))
         end
     end
 end

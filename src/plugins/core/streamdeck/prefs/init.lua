@@ -7,6 +7,7 @@ local require                   = require
 local os                        = os
 
 local log                       = require "hs.logger".new "prefsStreamDeck"
+local inspect                   = require "hs.inspect"
 
 local application               = require "hs.application"
 local canvas                    = require "hs.canvas"
@@ -1345,8 +1346,8 @@ local function streamDeckPanelCallback(id, params)
             -- Unknown Callback:
             --------------------------------------------------------------------------------
             log.df("Unknown Callback in Stream Deck Preferences Panel:")
-            log.df("id: %s", hs.inspect(id))
-            log.df("params: %s", hs.inspect(params))
+            log.df("id: %s", inspect(id))
+            log.df("params: %s", inspect(params))
         end
     end
 end

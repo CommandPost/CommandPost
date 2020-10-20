@@ -2,6 +2,9 @@
 ---
 --- A set of handy developer tools for CommandPost.
 
+local require           = require
+local hs                = _G.hs
+
 local log               = require "hs.logger".new "dev"
 
 local ax                = require "hs._asm.axuielement"

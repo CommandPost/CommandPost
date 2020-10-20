@@ -29,7 +29,7 @@ local require = require
 
 local log                   = require "hs.logger" .new "disk"
 
-local execute               = hs.execute
+local execute               = _G.hs.execute
 
 local plist                 = require "cp.plist"
 local isBlank               = require "cp.is" .blank

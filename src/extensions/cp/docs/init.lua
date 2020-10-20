@@ -16,7 +16,7 @@ local log           = require("hs.logger").new("docs")
 local config        = require("cp.config")
 local tools         = require("cp.tools")
 
-local execute       = hs.execute
+local execute       = _G.hs.execute
 
 
 local mod = {}

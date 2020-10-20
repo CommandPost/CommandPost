@@ -1,5 +1,7 @@
 local require                   = require
 
+local inspect                   = require "hs.inspect"
+
 local Definition                = require "cp.spec.Definition"
 local Run                       = require "cp.spec.Run"
 
@@ -91,7 +93,7 @@ end
 function Where:_runNext(index, whereThis)
     local data = self.whereData[index]
     if data then
-        whereThis:log("running data row #%d: %s", index, hs.inspect(data))
+        whereThis:log("running data row #%d: %s", index, inspect(data))
 
         self.currentRun.data = data
 

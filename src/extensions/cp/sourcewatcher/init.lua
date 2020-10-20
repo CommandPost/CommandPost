@@ -2,7 +2,8 @@
 ---
 --- Watches folders for specific file extensions and reloads the app if they change.
 
-local require = require
+local require                       = require
+local hs                            = _G.hs
 
 local console                       = require("hs.console")
 local pathwatcher                   = require("hs.pathwatcher")

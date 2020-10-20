@@ -25,6 +25,8 @@
 
 local require = require
 
+local hs            = _G.hs
+
 local log           = require("hs.logger").new("testfcp")
 local inspect       = require("hs.inspect")
 

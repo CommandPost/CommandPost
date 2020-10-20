@@ -4,7 +4,7 @@
 
 local require = require
 
-local hs        = hs
+local hs        = _G.hs
 
 local config    = require "cp.config"
 local i18n      = require "cp.i18n"

@@ -672,24 +672,28 @@ local function tourBoxPanelCallback(id, params)
 
             local data = items[app] and items[app][bank] and items[app][bank][controlType]
 
-            local suffix = ""
-            if bank:sub(-7) == "_LeftFn" then
-                suffix = "_LeftFn"
-            elseif bank:sub(-8) == "_RightFn" then
-                suffix = "_RightFn"
-            end
+            if type(data) == "table" then
+                local suffix = ""
+                if bank:sub(-7) == "_LeftFn" then
+                    suffix = "_LeftFn"
+                elseif bank:sub(-8) == "_RightFn" then
+                    suffix = "_RightFn"
+                end
 
-            if data then
                 for b=1, mod.numberOfBanks do
-                    b = tostring(b) .. suffix
+                    local bankId = tostring(b) .. suffix
 
-                    if not items[app] then items[app] = {} end
-                    if not items[app][b] then items[app][b] = {} end
-                    if not items[app][b][controlType] then items[app][b][controlType] = {} end
-                    if type(data) == "table" then
-                        for i, v in pairs(data) do
-                            items[app][b][controlType][i] = v
-                        end
+                    local appItems = items[app] or {}
+                    items[app] = appItems
+
+                    local bankItems = appItems[bankId] or {}
+                    appItems[bankId] = bankItems
+
+                    local controlTypes = bankItems[controlType] or {}
+                    bankItems[controlType] = controlTypes
+
+                    for i, v in pairs(data) do
+                        controlTypes[i] = v
                     end
                 end
             end

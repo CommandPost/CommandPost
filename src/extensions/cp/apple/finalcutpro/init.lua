@@ -128,6 +128,7 @@ local pathFromBookmark                          = fs.pathFromBookmark
 local pathToAbsolute                            = fs.pathToAbsolute
 local pathToBookmark                            = fs.pathToBookmark
 local stringToHexString                         = tools.stringToHexString
+local execute                                   = _G.hs.execute
 
 -- Load the menu helpers:
 require "cp.apple.finalcutpro.menu"
@@ -713,7 +714,7 @@ end
 ---  * A table of Workflow Extension names
 function fcp.workflowExtensions()
     local result = {}
-    local output, status = hs.execute("pluginkit -m -v -p FxPlug")
+    local output, status = execute("pluginkit -m -v -p FxPlug")
     if status then
         local p = tools.lines(output)
         if p then
@@ -981,7 +982,7 @@ function fcp.lazy.prop:openAndSavePanelDefaultPath()
                 local hexString = stringToHexString(bookmark)
                 if hexString then
                     local command = "defaults write " .. self.app:bundleID() ..  [[ FFLMOpenSavePanelDefaultURL -data "]] .. hexString .. [["]]
-                    local _, status = hs.execute(command)
+                    local _, status = execute(command)
                     if not status then
                         log.ef("Could not change defaults in fcp:openAndSavePanelDefaultPath().")
                     end

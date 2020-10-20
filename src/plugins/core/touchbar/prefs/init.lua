@@ -5,6 +5,7 @@
 local require           = require
 
 local log               = require "hs.logger".new "prefsTouchBar"
+local inspect           = require "hs.inspect"
 
 local canvas            = require "hs.canvas"
 local dialog            = require "hs.dialog"
@@ -349,8 +350,8 @@ local function touchBarPanelCallback(id, params)
             -- Unknown Callback:
             --------------------------------------------------------------------------------
             log.df("Unknown Callback in Touch Bar Preferences Panel:")
-            log.df("id: %s", hs.inspect(id))
-            log.df("params: %s", hs.inspect(params))
+            log.df("id: %s", inspect(id))
+            log.df("params: %s", inspect(params))
         end
     end
 end
