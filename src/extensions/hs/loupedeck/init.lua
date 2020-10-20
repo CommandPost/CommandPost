@@ -65,8 +65,8 @@ function mod.mt:registerCallback(callbackFn)
             end
         end
         if not id then
-            log.ef("Unexpected error: All 256 callback IDs are already allocated. This shouldn't happen. Defaulting to an callback ID of 1.")
-            id = 1
+            log.ef("Unexpected error: All 256 callback IDs are already allocated, so ignoring this callback registration.")
+            return 1
         end
         self.callbackRegister[id] = callbackFn
         return id
