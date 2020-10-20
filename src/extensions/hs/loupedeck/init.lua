@@ -56,28 +56,23 @@ mod.deviceTypes = {
 --- Returns:
 ---  * A unique callback ID as a number.
 function mod.mt:registerCallback(callbackFn)
-    if callbackFn == nil then
-        callbackFn = function() end
-    end
-
-    if type(callbackFn) ~= "function" then
-        error(format("expected a callback function, but got a %s", type(callbackFn), 3))
-    end
-
-    local id
-    for i=1, 255 do
-        if not self.callbackRegister[i] then
-            id = i
-            break
+    if type(callbackFn) == "function" then
+        local id
+        for i=2, 255 do
+            if not self.callbackRegister[i] then
+                id = i
+                break
+            end
         end
+        if not id then
+            log.ef("Unexpected error: All 256 callback IDs are already allocated. This shouldn't happen. Defaulting to an callback ID of 1.")
+            id = 1
+        end
+        self.callbackRegister[id] = callbackFn
+        return id
+    else
+        return 1
     end
-    if not id then
-        log.ef("Unexpected error: All 256 callback IDs are already allocated. This shouldn't happen.")
-        return
-    end
-
-    self.callbackRegister[id] = callbackFn
-    return id
 end
 
 --- hs.loupedeck.getCallback(id[, preserve]) -> function | nil
