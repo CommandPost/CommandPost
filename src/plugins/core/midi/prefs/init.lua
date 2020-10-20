@@ -32,6 +32,7 @@ local mergeTable                = tools.mergeTable
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
+local open                      = _G.hs.open
 
 local mod = {}
 
@@ -1150,7 +1151,7 @@ local function midiPanelCallback(id, params)
             popup:setMenu(menu):removeFromMenuBar()
             popup:popupMenu(mouse.getAbsolutePosition(), true)
         elseif callbackType == "openAudioMIDISetup" then
-            hs.open("/Applications/Utilities/Audio MIDI Setup.app")
+            open("/Applications/Utilities/Audio MIDI Setup.app")
         elseif callbackType == "importSettings" then
             --------------------------------------------------------------------------------
             -- Import Settings:

@@ -4,6 +4,8 @@
 
 local require = require
 
+local hs                  = _G.hs
+
 local application		  = require("hs.application")
 local console			  = require("hs.console")
 local fs				  = require("hs.fs")

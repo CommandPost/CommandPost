@@ -4,6 +4,8 @@
 
 local require = require
 
+local hs            = _G.hs
+
 local log           = require "hs.logger".new "watchMan"
 
 local inspect       = require "hs.inspect"
@@ -14,7 +16,6 @@ local webview       = require "hs.webview"
 
 local config        = require "cp.config"
 local dialog        = require "cp.dialog"
-local just          = require "cp.just"
 local tools         = require "cp.tools"
 local i18n          = require "cp.i18n"
 
@@ -197,7 +198,7 @@ end
 --
 -- Returns:
 -- * Nothing
-local function windowCallback(action, wv, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil

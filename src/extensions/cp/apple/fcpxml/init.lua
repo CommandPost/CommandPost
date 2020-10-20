@@ -209,7 +209,6 @@ local log                   = require("hs.logger").new("fcpxml")
 local fnutils               = require("hs.fnutils")
 
 local config                = require("cp.config")
-local flicks                = require("cp.time.flicks")
 local tools                 = require("cp.tools")
 
 local xml                   = require("hs._asm.xml")
@@ -226,6 +225,8 @@ local project               = require("cp.apple.fcpxml.project")
 local resource              = require("cp.apple.fcpxml.resource")
 local secondaryStoryline    = require("cp.apple.fcpxml.secondaryStoryline")
 local title                 = require("cp.apple.fcpxml.title")
+
+local execute               = _G.hs.execute
 
 
 local mod = {}
@@ -630,7 +631,7 @@ end
 --- Returns:
 ---  * A new Multicam Clip object.
 function mod.newMulticamClip(...)
-    return multicamClip.new()
+    return multicamClip.new(...)
 end
 
 --- cp.apple.fcpxml.newSecondaryStoryline(lane, offset, formatRef, clips) -> fcpxmlSecondaryStoryline Object
@@ -778,7 +779,7 @@ function mod.valid(filename, version)
 
     local dtdPath = config.scriptPath .. "/cp/apple/fcpxml/dtd/" .. "FCPXMLv" .. major .. "_" .. minor .. ".dtd"
 
-    local _, status = hs.execute([[xmllint --noout --dtdvalid "]] .. dtdPath .. [[" "]] .. filename .. [["]])
+    local _, status = execute([[xmllint --noout --dtdvalid "]] .. dtdPath .. [[" "]] .. filename .. [["]])
     return status or false
 end
 

@@ -146,6 +146,7 @@
 --- These modules will not be accessible to other plugins or to the main application. They are only available to code inside the plugin.
 
 local require       = require
+local hs            = _G.hs
 
 local log           = require "hs.logger".new "plugins"
 

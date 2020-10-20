@@ -5,7 +5,7 @@
 local startTime             = os.clock()
 
 local require               = require
-local hs                    = hs
+local hs                    = _G.hs
 
 local logger                = require "hs.logger"
 logger.defaultLogLevel      = "verbose"

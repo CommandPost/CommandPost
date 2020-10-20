@@ -2,7 +2,8 @@
 ---
 --- Debug Console Menu Item.
 
-local require = require
+local require   = require
+local hs        = _G.hs
 
 local i18n = require("cp.i18n")
 

@@ -4,21 +4,19 @@
 
 local require               = require
 
-local hs                    = hs
+local hs                    = _G.hs
 
 local log				    = require "hs.logger".new "applications"
 
 local image                 = require "hs.image"
 local fs                    = require "hs.fs"
 
-local config                = require "cp.config"
 local spotlight             = require "hs.spotlight"
 
 local displayName           = fs.displayName
 local execute               = hs.execute
 local iconForFile           = image.iconForFile
 local imageFromAppBundle    = image.imageFromAppBundle
-local imageFromPath         = image.imageFromPath
 
 local mod = {}
 

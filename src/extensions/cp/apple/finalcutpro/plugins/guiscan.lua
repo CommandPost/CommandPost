@@ -17,6 +17,8 @@ local fcp                   = require("cp.apple.finalcutpro")
 local i18n                  = require("cp.i18n")
 local plugins               = require("cp.apple.finalcutpro.plugins")
 
+local openConsole           = _G.hs.openConsole
+
 
 local mod = {}
 
@@ -461,7 +463,7 @@ function mod.checkAllPlugins(locale)
         end
     end
     log.df("Scan complete!")
-    hs.openConsole()
+    openConsole()
 end
 
 -- cp.apple.finalcutpro.plugins.guiscan.checkAllPluginsInAllLanguages() -> none

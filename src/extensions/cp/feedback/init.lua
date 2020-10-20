@@ -2,9 +2,11 @@
 ---
 --- Feedback Form.
 
-local require = require
+local require           = require
+local hs                = _G.hs
 
 local log               = require "hs.logger".new "feedback"
+local inspect           = require "hs.inspect"
 
 local application       = require "hs.application"
 local base64            = require "hs.base64"
@@ -219,7 +221,7 @@ function mod.showFeedback(quitOnComplete)
                     config.set("userFullName", message["body"][1])
                     config.set("userEmail", message["body"][2])
                 else
-                    log.df("Message: %s", hs.inspect(message))
+                    log.df("Message: %s", inspect(message))
                 end
             end)
 

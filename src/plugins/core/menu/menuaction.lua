@@ -5,6 +5,7 @@
 --- Specials thanks to @asmagill for his amazing work with `coroutine` support.
 
 local require               = require
+local hs                    = _G.hs
 
 --local log                   = require "hs.logger".new "menuaction"
 

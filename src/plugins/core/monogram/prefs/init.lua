@@ -12,7 +12,7 @@ local i18n              = require "cp.i18n"
 local html              = require "cp.web.html"
 
 local imageFromPath     = image.imageFromPath
-local execute           = hs.execute
+local execute           = _G.hs.execute
 
 local mod = {}
 

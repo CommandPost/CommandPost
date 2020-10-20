@@ -261,7 +261,7 @@ end
 
 
 --- If the user hasn't specified a separator, try to work out what it is.
-function guess_separator(buffer, f)
+local function guess_separator(buffer, f)
   local best_separator, lowest_diff = "", math.huge
   for _, s in ipairs(separator_candidates) do
     local ok, diff = pcall(function() return try_separator(buffer, s, f) end)

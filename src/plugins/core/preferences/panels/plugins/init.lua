@@ -4,6 +4,8 @@
 
 local require = require
 
+local hs        = _G.hs
+
 local log       = require("hs.logger").new("prefsPlugin")
 
 local dialog    = require("hs.dialog")
