@@ -10,7 +10,6 @@ local log               = require "hs.logger".new("loupedeck")
 
 local bytes             = require "hs.bytes"
 local drawing           = require "hs.drawing"
-local hsmath            = require "hs.math"
 local inspect           = require "hs.inspect"
 local network           = require "hs.network"
 local timer             = require "hs.timer"
@@ -23,7 +22,6 @@ local doAfter           = timer.doAfter
 local floor             = math.floor
 local format            = string.format
 local hexDump           = utf8.hexDump
-local randomFromRange   = hsmath.randomFromRange
 
 local bytesToHex        = bytes.bytesToHex
 local hexToBytes        = bytes.hexToBytes
@@ -48,31 +46,33 @@ mod.deviceTypes = {
     LIVE    = "Loupedeck Live",
 }
 
---- hs.loupedeck:registerCallback(callbackFn) -> number
+--- hs.loupedeck:registerCallback([callbackFn]) -> number
 --- Method
 --- Registers a callback.
 ---
 --- Parameters:
----  * callbackFn - The callback function
+---  * [callbackFn] - The optional callback function
 ---
 --- Returns:
----  * A unique callback ID as a number.
+---  * If `callbackFn` is supplied a unique callback id between 2 and 255, otherwise 1.
 function mod.mt:registerCallback(callbackFn)
-    if callbackFn == nil then
-        callbackFn = function() end
+    if type(callbackFn) == "function" then
+        local id
+        for i=2, 255 do
+            if not self.callbackRegister[i] then
+                id = i
+                break
+            end
+        end
+        if not id then
+            log.ef("Unexpected error: All 256 callback IDs are already allocated, so ignoring this callback registration.")
+            return 1
+        end
+        self.callbackRegister[id] = callbackFn
+        return id
+    else
+        return 1
     end
-
-    if type(callbackFn) ~= "function" then
-        error(format("expected a callback function, but got a %s", type(callbackFn), 3))
-    end
-
-    local id = randomFromRange(1, 255)
-    while(self.callbackRegister[id])
-    do
-        id = randomFromRange(1, 255)
-    end
-    self.callbackRegister[id] = callbackFn
-    return id
 end
 
 --- hs.loupedeck.getCallback(id[, preserve]) -> function | nil
@@ -455,6 +455,14 @@ local events = {
             uint16be, uint8, remainder
         )
 
+        --------------------------------------------------------------------------------
+        -- NOTE: Starting with the 0.1.79 firmware update on both the Loupedeck Live
+        --       and Loupedeck CT, the hardware seems to constantly send a 1024
+        --       message. It doesn't seem to be useful (i.e. it appears to just be
+        --       websocket spam) - so we're ignoring it early.
+        --------------------------------------------------------------------------------
+        if id == 0x0400 then return end
+
         local response = {
             id = id,
             data = data,
@@ -498,26 +506,25 @@ local events = {
 ---    * SCREEN_PRESSED - occurs when the main screen is pressed.
 ---    * SCREEN_RELEASED - occurs when the main screen is released.
 mod.event = {
-    BUTTON_PRESS = 0x0500,
-    ENCODER_MOVE = 0x0501,
-    WHEEL_PRESSED = 0x0952,
-    WHEEL_RELEASED = 0x0972,
-    SCREEN_PRESSED = 0x094D,
-    SCREEN_RELEASED = 0x096D,
+    BUTTON_PRESS = 0x0500,      -- 1280
+    ENCODER_MOVE = 0x0501,      -- 1281
+    WHEEL_PRESSED = 0x0952,     -- 2386
+    WHEEL_RELEASED = 0x0972,    -- 2418
+    SCREEN_PRESSED = 0x094D,    -- 2381
+    SCREEN_RELEASED = 0x096D,   -- 2413
 }
 
 --- hs.loupedeck.ignoreResponses -> table
 --- Constant
 --- A table of responses to ignore.
 mod.ignoreResponses = {
-    [0x0302] = true, -- Button Color confirmation
-    [0x040F] = true, -- Screen Image Update confirmation
-    [0x041B] = true, -- Vibration confirmation
-    [0x0409] = true, -- Reset Device
-    [0x0819] = true, -- Flash Drive confirmation
-    [0x041e] = true, -- Wheel Sensitivity confirmation
+    [0x0302] = true, -- Button Color confirmation (770)
+    [0x040F] = true, -- Screen Image Update confirmation (1039)
+    [0x041B] = true, -- Vibration confirmation (1051)
+    [0x0409] = true, -- Reset Device (1033)
+    [0x0819] = true, -- Flash Drive confirmation (2073)
+    [0x041e] = true, -- Wheel Sensitivity confirmation (1054)
 
-    [0x0400] = true, -- This seems to be constant spam from the Loupedeck Live
     [0x1c73] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1573] = true, -- This is triggered when the Loupedeck Live first connects
     [0x1f73] = true, -- This is triggered when the Loupedeck Live first connects
