@@ -95,11 +95,35 @@ function mod.new(deviceType)
 
     local o = {}
 
+    --- plugins.core.loupedeckctandlive.manager.getDevice() -> hs.loupedeck
+    --- Function
+    --- Gets the Loupedeck device.
+    ---
+    --- Parameters:
+    ---  * None
+    ---
+    --- Returns:
+    ---  * A cached or a new hs.loupedeck object.
+    o.getDevice = function()
+        if not o.device then
+            if deviceType == loupedeck.deviceTypes.CT then
+                o.device = loupedeck.new(true, loupedeck.deviceTypes.CT)
+            elseif deviceType == loupedeck.deviceTypes.LIVE then
+                o.device = loupedeck.new(true, loupedeck.deviceTypes.LIVE)
+            end
+
+            -- Setup the callback:
+            o.device:callback(function(...)
+                o:callback(...)
+            end)
+        end
+        return o.device
+    end
+
     if deviceType == loupedeck.deviceTypes.CT then
         --------------------------------------------------------------------------------
         -- Loupedeck CT:
         --------------------------------------------------------------------------------
-        o.device            = loupedeck.new(true, loupedeck.deviceTypes.CT)
         o.fileExtension     = ".cpLoupedeckCT"
         o.id                = "loupedeckct"
         o.mediaName         = "LD-CT CT Media"
@@ -110,10 +134,8 @@ function mod.new(deviceType)
         --------------------------------------------------------------------------------
         -- Loupedeck Live:
         --------------------------------------------------------------------------------
-        o.device            = loupedeck.new(true, loupedeck.deviceTypes.LIVE)
         o.fileExtension     = ".cpLoupedeckLive"
         o.id                = "loupedecklive"
-        o.mediaName         = "LD-CT CT Media" -- TODO: This needs to be changed.
         o.configFolder      = "Loupedeck Live"
         o.commandID         = "LoupedeckLive"
         o.i18nID            = "loupedeckLive"
@@ -121,13 +143,6 @@ function mod.new(deviceType)
         log.ef("Invalid Loupedeck Device Type: %s", deviceType)
         return
     end
-
-    --------------------------------------------------------------------------------
-    -- Setup the Loupedeck callback:
-    --------------------------------------------------------------------------------
-    o.device:callback(function(...)
-        o:callback(...)
-    end)
 
     --- plugins.core.loupedeckctandlive.manager.defaultFilename -> string
     --- Field
@@ -270,7 +285,8 @@ function mod.new(deviceType)
     --- Field
     --- Enable or disable the Loupedeck Flash Drive.
     o.enableFlashDrive = config.prop(o.id .. ".enableFlashDrive", false):watch(function(enabled)
-        o.device:updateFlashDrive(enabled)
+        local device = o.getDevice()
+        device:updateFlashDrive(enabled)
         if not enabled then
             local path = o:getFlashDrivePath()
             if path then
@@ -318,7 +334,9 @@ function mod.new(deviceType)
         if enabled then
             o.appWatcher:start()
             o.driveWatcher:start()
-            o.device:connect()
+
+            local device = o.getDevice()
+            device:connect()
         else
             --------------------------------------------------------------------------------
             -- Stop all watchers:
@@ -326,21 +344,32 @@ function mod.new(deviceType)
             o.appWatcher:stop()
             o.driveWatcher:stop()
 
-            --------------------------------------------------------------------------------
-            -- Make everything black:
-            --------------------------------------------------------------------------------
-            for _, screen in pairs(loupedeck.screens) do
-                o.device:updateScreenColor(screen, {hex="#"..defaultColor})
-            end
-            for i=7, 26 do
-                o.device:buttonColor(i, {hex="#" .. defaultColor})
-            end
-            just.wait(0.01) -- Slight delay so the websocket message has time to send.
+            if o.device then
+                --------------------------------------------------------------------------------
+                -- Make everything black:
+                --------------------------------------------------------------------------------
+                for _, screen in pairs(loupedeck.screens) do
+                    o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+                end
+                for i=7, 26 do
+                    o.device:buttonColor(i, {hex="#" .. defaultColor})
+                end
 
-            --------------------------------------------------------------------------------
-            -- Disconnect from the Loupedeck:
-            --------------------------------------------------------------------------------
-            o.device:disconnect()
+                --------------------------------------------------------------------------------
+                -- After a slight delay so the websocket message has time to send...
+                --------------------------------------------------------------------------------
+                doAfter(0.01, function()
+                    --------------------------------------------------------------------------------
+                    -- Disconnect from the Loupedeck:
+                    --------------------------------------------------------------------------------
+                    o.device:disconnect()
+
+                    --------------------------------------------------------------------------------
+                    -- Destroy the device:
+                    --------------------------------------------------------------------------------
+                    o.device = nil
+                end)
+            end
         end
     end)
 
@@ -358,11 +387,12 @@ function mod.new(deviceType)
     --------------------------------------------------------------------------------
     config.shutdownCallback:new(o.configFolder, function()
         if o.enabled() then
+            local device = o.getDevice()
             for _, screen in pairs(loupedeck.screens) do
-                o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+                device:updateScreenColor(screen, {hex="#"..defaultColor})
             end
             for i=7, 26 do
-                o.device:buttonColor(i, {hex="#" .. defaultColor})
+                device:buttonColor(i, {hex="#" .. defaultColor})
             end
             just.wait(0.01) -- Slight delay so the websocket message has time to send.
         end
