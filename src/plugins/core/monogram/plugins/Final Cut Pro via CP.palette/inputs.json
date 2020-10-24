@@ -142,5 +142,85 @@
 		"step": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Highlights Color Wheel Vertically"
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 1",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 2",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 3",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 4",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 5",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 6",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 7",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 8",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 9",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 10",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 11",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 12",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 13",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 14",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 15",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 16",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 17",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 18",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 19",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
+	},
+	{
+		"name": "CommandPost Favourites.Favourite 20",
+		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
 	}
 ]

@@ -203,6 +203,7 @@ end
 ---
 --- Returns:
 ---  * The panel.
+---
 --- Notes:
 ---  * The `params` can contain the following fields:
 ---  ** `id`         - (optional) The unique ID. If none is provided, one will be generated.

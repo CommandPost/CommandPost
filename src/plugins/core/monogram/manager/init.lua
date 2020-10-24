@@ -7,21 +7,22 @@ local require                   = require
 local log                       = require "hs.logger".new "monogram"
 
 local application               = require "hs.application"
-local json                      = require "hs.json"
+local inspect                   = require "hs.inspect"
 local timer                     = require "hs.timer"
 local udp                       = require "hs.socket.udp"
 
 local config                    = require "cp.config"
-local deferred                  = require "cp.deferred"
-local fcp                       = require "cp.apple.finalcutpro"
-local i18n                      = require "cp.i18n"
+local json                      = require "cp.json"
 local tools                     = require "cp.tools"
 
 local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local doesFileExist             = tools.doesFileExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
+local execute                   = _G.hs.execute
+local infoForBundleID           = application.infoForBundleID
 local launchOrFocusByBundleID   = application.launchOrFocusByBundleID
+local playErrorSound            = tools.playErrorSound
 
 local mod = {}
 
@@ -33,7 +34,53 @@ local UDP_PORT = 51234
 -- MONOGRAM_CREATOR_BUNDLE_ID -> string
 -- Constant
 -- The Monogram Creator Bundle ID.
-local MONOGRAM_CREATOR_BUNDLE_ID = "com.monogramcc.Monogram-Creator-Beta"
+local MONOGRAM_CREATOR_BUNDLE_ID = "com.monogramcc.Monogram-Creator"
+
+-- MONOGRAM_CREATOR_DOWNLOAD_URL -> string
+-- Constant
+-- The Monogram Creator Download URL.
+local MONOGRAM_CREATOR_DOWNLOAD_URL = "https://monogramcc.com/download"
+
+--- plugins.core.monogram.manager.NUMBER_OF_FAVOURITES -> number
+--- Constant
+--- Number of favourites
+mod.NUMBER_OF_FAVOURITES = 20
+
+--- plugins.core.monogram.manager.favourites <cp.prop: table>
+--- Variable
+--- A `cp.prop` that that contains all the Monogram Favourites.
+mod.favourites = json.prop(os.getenv("HOME") .. "/Library/Application Support/CommandPost/", "Monogram", "Favourites.cpMonogram", {})
+
+-- getMonogramCreatorBundleID() -> string
+-- Function
+-- Returns the Monogram Creator Bundle ID. It first tries to find a running version
+-- of Monogram Creator, and if none is running then checks for installations of the
+-- Internal release, then Alpha, then Beta, then public release.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The bundle ID as a string, or `nil` if Monogram Creator is not installed.
+local function getMonogramCreatorBundleID()
+    if application.get(MONOGRAM_CREATOR_BUNDLE_ID .. "-Internal") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Internal"
+    elseif application.get(MONOGRAM_CREATOR_BUNDLE_ID .. "-Alpha") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Alpha"
+    elseif application.get(MONOGRAM_CREATOR_BUNDLE_ID .. "-Beta") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Beta"
+    elseif application.get(MONOGRAM_CREATOR_BUNDLE_ID) then
+        return MONOGRAM_CREATOR_BUNDLE_ID
+    elseif infoForBundleID(MONOGRAM_CREATOR_BUNDLE_ID .. "-Internal") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Internal"
+    elseif infoForBundleID(MONOGRAM_CREATOR_BUNDLE_ID .. "-Alpha") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Alpha"
+    elseif infoForBundleID(MONOGRAM_CREATOR_BUNDLE_ID .. "-Beta") then
+        return MONOGRAM_CREATOR_BUNDLE_ID .. "-Beta"
+    elseif infoForBundleID(MONOGRAM_CREATOR_BUNDLE_ID) then
+        return MONOGRAM_CREATOR_BUNDLE_ID
+    end
+end
 
 --- plugins.core.monogram.manager.performAction -> table
 --- Variable
@@ -105,7 +152,24 @@ end
 --- Returns:
 ---  * None
 function mod.launchCreatorBundle()
-    application.launchOrFocusByBundleID(MONOGRAM_CREATOR_BUNDLE_ID)
+    local bundleID = getMonogramCreatorBundleID()
+    if bundleID then
+        launchOrFocusByBundleID(bundleID)
+    end
+end
+
+
+--- plugins.core.monogram.manager.launchCreatorBundle() -> none
+--- Function
+--- Launch the Monogram Creator.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.openDownloadMonogramCreatorURL()
+    execute("open " .. MONOGRAM_CREATOR_DOWNLOAD_URL)
 end
 
 -- setupPlugin()
@@ -134,11 +198,12 @@ local function setupPlugins()
         for pluginName, sourcePath in pairs(plugins) do
             local pluginExtension = pluginName .. ".palette"
             if not doesDirectoryExist(destinationPath .. pluginExtension) then
-                log.df("Copying plugin from Application Bundle to Application Support: %s", pluginName)
                 local cmd = [[cp -R "]] ..  sourcePath .. pluginExtension .. [[" "]] .. destinationPath .. pluginExtension .. [["]]
-                os.execute(cmd)
-            else
-                log.df("Monogram plugin already copied: %s", pluginName)
+                local _, status = os.execute(cmd)
+                if not status then
+                    log.ef("Failed to execute: %s", cmd)
+                    return false
+                end
             end
         end
     end
@@ -149,7 +214,10 @@ local function setupPlugins()
     local homePath = os.getenv("HOME")
     local statePath = homePath .. "/Library/Application Support/Monogram/Service/state.json"
     local pluginsToInstall = {}
-    if doesFileExist(statePath) then
+    if not doesFileExist(statePath) then
+        log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
+        return false
+    else
         local stateData = json.read(statePath)
         if stateData then
             local integrations = stateData.integrations
@@ -161,10 +229,7 @@ local function setupPlugins()
                             pluginInstalled = true
                         end
                     end
-                    if pluginInstalled then
-                        log.df("Monogram Plugin already installed: %s", pluginName)
-                    else
-                        log.df("Monogram Plugin needs installing: %s", pluginName)
+                    if not pluginInstalled then
                         table.insert(pluginsToInstall, pluginName)
                     end
                 end
@@ -173,36 +238,112 @@ local function setupPlugins()
                 -- We need to install some plugins:
                 --------------------------------------------------------------------------------
                 if next(pluginsToInstall) then
-
                     for _, pluginName in pairs(pluginsToInstall) do
-                        log.df("Installing Plugin: %s", pluginName)
                         table.insert(stateData.integrations, destinationPath .. pluginName .. ".palette")
                     end
 
-                    local creator = application.get(MONOGRAM_CREATOR_BUNDLE_ID)
+                    local bundleID = getMonogramCreatorBundleID()
+                    local creator = application.get(bundleID)
 
                     local didKill = false
                     if creator then
-                        log.df("Killing Monogram Creator...")
                         creator:kill9()
                         didKill = true
                     end
 
-                    log.df("Writing to preferences file...")
-                    json.write(stateData, statePath, true, true)
+                    json.write(statePath, stateData)
 
                     if didKill then
                         mod._launcher = doAfter(1, function()
-                            log.df("Relaunching Monogram Creator...")
                             mod.launchCreatorBundle()
                         end)
                     end
-
                 end
             end
-
         end
     end
+    return true
+end
+
+-- removePlugins()
+-- Function
+-- Deletes Monogram Plugins.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function removePlugins()
+    --------------------------------------------------------------------------------
+    -- List of Monogram Plugins:
+    --------------------------------------------------------------------------------
+    local plugins = mod.plugins
+
+    --------------------------------------------------------------------------------
+    -- Remove the Monogram Plugins from the Application Support Folder:
+    --------------------------------------------------------------------------------
+    local userConfigRootPath = config.userConfigRootPath
+    local destinationPath = userConfigRootPath .. "/Monogram/Plugins/"
+    local cmd = [[rm -rf "]] .. destinationPath .. [["]]
+    local _, status = execute(cmd)
+    if not status then
+        log.ef("Failed to remove Monogram Plugin Folder")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Remove plugins from Monogram Preferences:
+    --------------------------------------------------------------------------------
+    local homePath = os.getenv("HOME")
+    local statePath = homePath .. "/Library/Application Support/Monogram/Service/state.json"
+    if not doesFileExist(statePath) then
+        log.ef("The Monogram State file could not be found. Is Monogram Creator Installed?")
+        return false
+    else
+        local stateData = json.read(statePath)
+        if stateData then
+            local integrations = stateData.integrations
+            if integrations then
+                local intergrationsToKeep = {}
+                for _, path in pairs(integrations) do
+                    local needsRemoving = false
+                    for pluginName, _ in pairs(plugins) do
+                        if path == destinationPath .. pluginName .. ".palette" then
+                            needsRemoving = true
+                        end
+                    end
+                    if not needsRemoving then
+                        table.insert(intergrationsToKeep, path)
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Update Monogram Preferences:
+                --------------------------------------------------------------------------------
+                stateData.integrations = intergrationsToKeep
+
+                local bundleID = getMonogramCreatorBundleID()
+                local creator = application.get(bundleID)
+
+                local didKill = false
+                if creator then
+                    creator:kill9()
+                    didKill = true
+                end
+
+                json.write(statePath, stateData)
+
+                if didKill then
+                    mod._launcher = doAfter(1, function()
+                        mod.launchCreatorBundle()
+                    end)
+                end
+            end
+        end
+    end
+
+    return true
 end
 
 --- plugins.core.monogram.manager.enabled <cp.prop: boolean>
@@ -210,8 +351,7 @@ end
 --- Enable or disable Monogram Support.
 mod.enabled = config.prop("monogram.enabled", false):watch(function(enabled)
     if enabled then
-        setupPlugins()
-        mod.server = udp.server(51234):receive(callbackFn)
+        mod.server = udp.server(UDP_PORT):receive(callbackFn)
     else
         if mod.server then
             mod.server:close()
@@ -220,15 +360,65 @@ mod.enabled = config.prop("monogram.enabled", false):watch(function(enabled)
     end
 end)
 
+--- plugins.core.monogram.manager.setEnabled() -> none
+--- Function
+--- Enables or disables Monogram Support.
+---
+--- Parameters:
+---  * enabled - A boolean
+---
+--- Returns:
+---  * `true` if Monogram support is enabled, otherwise `false`
+function mod.setEnabled(enabled)
+    if enabled then
+        if setupPlugins() then
+            mod.enabled(true)
+        else
+            log.ef("Failed to install Monogram Plugins.")
+        end
+    else
+        if removePlugins() then
+            mod.enabled(false)
+        else
+            log.ef("Failed to remove Monogram Plugins.")
+        end
+    end
+    return mod.enabled()
+end
+
 local plugin = {
     id          = "core.monogram.manager",
     group       = "core",
     required    = true,
     dependencies    = {
+        ["core.action.manager"] = "actionManager",
     }
 }
 
-function plugin.init(deps, env)
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Register favourites:
+    --------------------------------------------------------------------------------
+    for i=1, mod.NUMBER_OF_FAVOURITES do
+        mod.registerAction("CommandPost Favourites.Favourite " .. i, function()
+            local faves = mod.favourites()
+            local fave = faves[tostring(i)]
+            if fave then
+                local handler = deps.actionManager.getHandler(fave.handlerID)
+                if handler then
+                    if not handler:execute(fave.action) then
+                        log.ef("Unable to execute Monogram Favourite #%s: %s", i, inspect(fave))
+                    end
+                else
+                    log.ef("Unable to find handler to execute Monogram Favourite #%s: %s", i, inspect(fave))
+                end
+            else
+                log.ef("No action is assigned to the favourite in the Monogram Control Surfaces Panel in CommandPost.")
+                playErrorSound()
+            end
+        end)
+    end
+
     return mod
 end
 

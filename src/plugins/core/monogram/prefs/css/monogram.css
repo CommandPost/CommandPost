@@ -1,0 +1,115 @@
+.monogram {
+	margin-top: 10px;
+	table-layout: fixed;
+	width: 100%;
+	white-space: nowrap;
+	border: 1px solid #cccccc;
+	padding: 8px;
+	background-color: #161616;
+	text-align: left;
+}
+
+.monogram td {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.monogramButtonLabel {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 290px;
+}
+
+.monogramRowFavourite {
+	width: 15%;
+}
+
+.monogramRowAction {
+	width: 50%;
+}
+
+.monogramRowActionButton {
+	width: 12%;
+}
+
+.monogram thead {
+	font-weight: bold;
+	font-size: 12px;
+	width: 100%;
+}
+
+.monogram thead tr, .monogram tbody tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.monogram thead tr {
+	width: calc( 100% - 8px);
+}
+
+.monogram tbody {
+	display:block;
+	height: 370px;
+	font-weight: normal;
+	font-size: 10px;
+	width: 100%;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.monogram tbody tr:hover {
+	background-color: #006dd4;
+	color: white;
+}
+
+.monogramControl {
+	padding-top: 0px;
+	padding-bottom: 3pt;
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+	height: 20px;
+}
+
+.monogramActionTextbox {
+	-webkit-appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 620px;
+}
+
+.monogramActionButton {
+	padding: 5px 5px !important;
+}
+
+#monogramController {
+	font-weight: bold;
+}
