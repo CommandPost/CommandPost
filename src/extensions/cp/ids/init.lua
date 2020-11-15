@@ -2,19 +2,21 @@
 ---
 --- Allows managing values/IDs which can vary between versions.
 
-local require           = require
+local require               = require
 
-local log				= require "hs.logger".new "ids"
+--local log				    = require "hs.logger".new "ids"
 
-local fs			    = require "hs.fs"
+local fs			        = require "hs.fs"
 
-local tools             = require "cp.tools"
+local tools                 = require "cp.tools"
 
-local v					= require "semver"
+local v					    = require "semver"
 
-local dir               = fs.dir
-local insert			= table.insert
-local pathToAbsolute    = fs.pathToAbsolute
+local insert			    = table.insert
+
+local dir                   = fs.dir
+local doesDirectoryExist    = fs.doesDirectoryExist
+local pathToAbsolute        = fs.pathToAbsolute
 
 local mod = {}
 mod.mt = {}

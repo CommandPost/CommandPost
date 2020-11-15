@@ -9,9 +9,9 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "fcpStrings"
+--local log                   = require "hs.logger".new "fcpStrings"
 
-local inspect               = require "hs.inspect"
+--local inspect               = require "hs.inspect"
 local fs                    = require "hs.fs"
 
 local app                   = require "cp.apple.finalcutpro.app"

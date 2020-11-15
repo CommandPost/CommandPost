@@ -60,7 +60,7 @@
 
 local require               = require
 
-local log                   = require "hs.logger".new "destinations"
+--local log                   = require "hs.logger".new "destinations"
 
 local fs                    = require "hs.fs"
 
