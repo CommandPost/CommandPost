@@ -39,6 +39,7 @@ local v                         = require "semver"
 
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
+local dir                       = fs.dir
 local doesDirectoryExist        = tools.doesDirectoryExist
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getAudioEffectNames       = sound.getAudioEffectNames
@@ -267,15 +268,11 @@ mod.scanned = config.prop("finalCutProScanned", false)
 --  * path - The path to the folder
 --
 -- Returns:
---  * The size as a number of `nil` if something goes wrong.
+--  * The size as a number or `nil` if something goes wrong.
 local function getFolderSize(path, size)
-    if type(path) ~= "string" then
-        return
-    end
-    size = size or 0
-    local iterFn, dirObj = fs.dir(path)
-    if iterFn then
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        size = size or 0
+        for file in dir(path) do
             if file ~= "." and file ~= ".." then
                 local attributes = fs.attributes(path .. file)
                 if attributes then
@@ -290,8 +287,8 @@ local function getFolderSize(path, size)
                 end
             end
         end
+        return size
     end
-    return size
 end
 
 -- doesCacheDirectoryExist() -> boolean
@@ -472,34 +469,29 @@ function mod.mt:scanUserEffectsPresets(locale)
 
     local videoEffect, audioEffect = PLUGIN_TYPES.videoEffect, PLUGIN_TYPES.audioEffect
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanUserEffectsPresets: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
-                local plugin = string.match(file, "(.+)%.effectsPreset")
-                if plugin then
-                    local effectPath = path .. "/" .. file
-                    local preset = archiver.unarchiveFile(effectPath)
-                    if preset then
-                        local category = preset.category
-                        local effectType = preset.effectType or preset.presetEffectType
-                        if category then
-                            local type = effectType == "effect.audio.effect" and audioEffect or videoEffect
-                            self:registerPlugin(effectPath, type, category, "Final Cut", plugin, locale)
+        for file in dir(path) do
+            local plugin = string.match(file, "(.+)%.effectsPreset")
+            if plugin then
+                local effectPath = path .. "/" .. file
+                local preset = archiver.unarchiveFile(effectPath)
+                if preset then
+                    local category = preset.category
+                    local effectType = preset.effectType or preset.presetEffectType
+                    if category then
+                        local type = effectType == "effect.audio.effect" and audioEffect or videoEffect
+                        self:registerPlugin(effectPath, type, category, "Final Cut", plugin, locale)
 
-                            --------------------------------------------------------------------------------
-                            -- Cache Plugin:
-                            --------------------------------------------------------------------------------
-                            table.insert(cache, {
-                                effectPath = effectPath,
-                                effectType = type,
-                                category = category,
-                                plugin = plugin,
-                                locale = locale.code,
-                            })
+                        --------------------------------------------------------------------------------
+                        -- Cache Plugin:
+                        --------------------------------------------------------------------------------
+                        table.insert(cache, {
+                            effectPath = effectPath,
+                            effectType = type,
+                            category = category,
+                            plugin = plugin,
+                            locale = locale.code,
+                        })
 
-                        end
                     end
                 end
             end
@@ -565,65 +557,60 @@ function mod.mt:scanUserColorPresets(locale)
     local category = fcpStrings:find("FFColorPresetsCategory", locale)
     local videoEffect = PLUGIN_TYPES.videoEffect
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanUserEffectsPresets: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
-                local plugin = string.match(file, "(.+)%.cboard")
-                if plugin then
-                    local effectPath = path .. "/" .. file
-                    if plist.read(effectPath) then
-                        --------------------------------------------------------------------------------
-                        -- Is a valid property list:
-                        --------------------------------------------------------------------------------
-                        local preset = archiver.unarchiveFile(effectPath)
-                        if preset then
-                            local root = preset.root
-                            if root then
-                                local name = root.name
-                                if category then
-                                    self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
-                                    --------------------------------------------------------------------------------
-                                    -- Cache Plugin:
-                                    --------------------------------------------------------------------------------
-                                    table.insert(cache, {
-                                        effectPath = effectPath,
-                                        effectType = videoEffect,
-                                        category = category,
-                                        plugin = name,
-                                        locale = locale.code,
-                                    })
+        for file in dir(path) do
+            local plugin = string.match(file, "(.+)%.cboard")
+            if plugin then
+                local effectPath = path .. "/" .. file
+                if plist.read(effectPath) then
+                    --------------------------------------------------------------------------------
+                    -- Is a valid property list:
+                    --------------------------------------------------------------------------------
+                    local preset = archiver.unarchiveFile(effectPath)
+                    if preset then
+                        local root = preset.root
+                        if root then
+                            local name = root.name
+                            if category then
+                                self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
+                                --------------------------------------------------------------------------------
+                                -- Cache Plugin:
+                                --------------------------------------------------------------------------------
+                                table.insert(cache, {
+                                    effectPath = effectPath,
+                                    effectType = videoEffect,
+                                    category = category,
+                                    plugin = name,
+                                    locale = locale.code,
+                                })
 
-                                end
                             end
                         end
-                    else
-                        --------------------------------------------------------------------------------
-                        -- Most likely in the older Axel format.
-                        --
-                        -- Interestingly, despite the fact that the Axel XML format has a "name" field,
-                        -- FCPX seems to ignore that, and uses the filename instead.
-                        --------------------------------------------------------------------------------
-                        local data = xml.open(effectPath)
-                        if data then
-                            local children = data:children()
-                            local childone = children and children[1]
-                            if childone and childone:localName() == "axel" then
-                                local name = getFilenameFromPath(effectPath, true)
-                                if name and category then
-                                    self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
-                                    --------------------------------------------------------------------------------
-                                    -- Cache Plugin:
-                                    --------------------------------------------------------------------------------
-                                    table.insert(cache, {
-                                        effectPath = effectPath,
-                                        effectType = videoEffect,
-                                        category = category,
-                                        plugin = name,
-                                        locale = locale.code,
-                                    })
-                                end
+                    end
+                else
+                    --------------------------------------------------------------------------------
+                    -- Most likely in the older Axel format.
+                    --
+                    -- Interestingly, despite the fact that the Axel XML format has a "name" field,
+                    -- FCPX seems to ignore that, and uses the filename instead.
+                    --------------------------------------------------------------------------------
+                    local data = xml.open(effectPath)
+                    if data then
+                        local children = data:children()
+                        local childone = children and children[1]
+                        if childone and childone:localName() == "axel" then
+                            local name = getFilenameFromPath(effectPath, true)
+                            if name and category then
+                                self:registerPlugin(effectPath, videoEffect, category, nil, name, locale)
+                                --------------------------------------------------------------------------------
+                                -- Cache Plugin:
+                                --------------------------------------------------------------------------------
+                                table.insert(cache, {
+                                    effectPath = effectPath,
+                                    effectType = videoEffect,
+                                    category = category,
+                                    plugin = name,
+                                    locale = locale.code,
+                                })
                             end
                         end
                     end
@@ -723,20 +710,15 @@ local function getPluginName(path, pluginExt, locale)
         local localName, realName = getLocalizedName(path, locale)
         if realName then
             local targetExt = "."..pluginExt
-            local iterFn, dirObj = fs.dir(path)
-            if not iterFn then
-                log.ef("An error occured in cp.apple.finalcutpro.plugins.getPluginName: %s", dirObj)
-            else
-                for file in iterFn, dirObj do
-                    if tools.endsWith(file, targetExt) then
-                        local name = file:sub(1, (targetExt:len()+1)*-1)
-                        local pluginPath = path .. "/" .. name .. targetExt
-                        if name == realName then
-                            name = localName
-                        end
-                        local theme, isObsolete = getMotionTheme(pluginPath)
-                        return name, theme, isObsolete
+            for file in dir(path) do
+                if tools.endsWith(file, targetExt) then
+                    local name = file:sub(1, (targetExt:len()+1)*-1)
+                    local pluginPath = path .. "/" .. name .. targetExt
+                    if name == realName then
+                        name = localName
                     end
+                    local theme, isObsolete = getMotionTheme(pluginPath)
+                    return name, theme, isObsolete
                 end
             end
         end
@@ -789,11 +771,8 @@ function mod.mt:scanPluginsDirectory(locale, path, checkFn)
     --------------------------------------------------------------------------------
     -- Loop through the files in the directory:
     --------------------------------------------------------------------------------
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginsDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        for file in dir(path)do
             if file:sub(1,1) ~= "." then
                 local typePath = path .. "/" .. file
                 local typeNameEN = getLocalizedName(typePath, "en")
@@ -867,11 +846,8 @@ end
 function mod.mt:scanPluginTypeDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginTypeDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        for file in dir(path) do
             if file:sub(1,1) ~= "." then
                 local p = copy(plugin)
                 local childPath = path .. "/" .. file
@@ -903,11 +879,8 @@ end
 function mod.mt:scanPluginCategoryDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginsDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        for file in dir(path) do
             if file:sub(1,1) ~= "." then
                 local p = copy(plugin)
                 local childPath = path .. "/" .. file
@@ -938,11 +911,8 @@ end
 ---  * `true` if the folder was scanned successfully.
 function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
     locale = localeID(locale)
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginThemeDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        for file in dir(path) do
             if file:sub(1,1) ~= "." then
                 local p = copy(plugin)
                 local pluginPath = path .. "/" .. file
@@ -951,12 +921,11 @@ function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
                     --------------------------------------------------------------------------------
                     -- Maybe there's a subdirectory?
                     --------------------------------------------------------------------------------
-                    local iterFnTwo, dirObjTwo = fs.dir(pluginPath)
-                    if iterFnTwo then
+                    if doesDirectoryExist(pluginPath) then
                         local hasTemplate = false
                         local ext = plugin.extension
                         local extLen = (ext:len() + 1) * -1
-                        for fileTwo in iterFnTwo, dirObjTwo do
+                        for fileTwo in dir(pluginPath) do
                             if fileTwo:sub(extLen) == "." .. ext then
                                 hasTemplate = true
                             end
@@ -1100,19 +1069,14 @@ function mod.mt:scanAppAudioEffectBundles(locale)
     local audioEffect = PLUGIN_TYPES.audioEffect
     local path = fcpApp:path() .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles"
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanAppAudioEffectBundles: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
-                --------------------------------------------------------------------------------
-                -- Example: Alien.Voice.audio.effectBundle
-                --------------------------------------------------------------------------------
-                local name, category, type = string.match(file, "^([^%.]+)%.([^%.]+)%.([^%.]+)%.effectBundle$")
-                if name and type == "audio" then
-                    local plugin = self:translateEffectBundle(name, locale)
-                    self:registerPlugin(path .. "/" .. file, audioEffect, category, "Final Cut", plugin, locale)
-                end
+        for file in dir(path) do
+            --------------------------------------------------------------------------------
+            -- Example: Alien.Voice.audio.effectBundle
+            --------------------------------------------------------------------------------
+            local name, category, type = string.match(file, "^([^%.]+)%.([^%.]+)%.([^%.]+)%.effectBundle$")
+            if name and type == "audio" then
+                local plugin = self:translateEffectBundle(name, locale)
+                self:registerPlugin(path .. "/" .. file, audioEffect, category, "Final Cut", plugin, locale)
             end
         end
     end
@@ -1785,9 +1749,8 @@ end
 local function doesPathContainPlugins(path)
     local attr = fs.attributes(path)
     if attr and attr.mode == "directory" then
-        local iterFn, dirObj = fs.dir(path)
-        if iterFn then
-            for file in iterFn, dirObj do
+        if doesDirectoryExist(path) then
+            for file in dir(path) do
                 if file:sub(1,1) ~= "." then
                     if doesPathContainPlugins(path .. "/" .. file) then
                         return true

@@ -7,21 +7,24 @@
 -- NOTE:
 -- /usr/bin/grep -r -i -s -F --include=\*.strings 'Undo %@' /System
 
-local require = require
+local require               = require
 
-local log                   = require("hs.logger").new("fcpStrings")
+local log                   = require "hs.logger".new "fcpStrings"
 
--- local inspect               = require("hs.inspect")
-local fs                    = require("hs.fs")
+local inspect               = require "hs.inspect"
+local fs                    = require "hs.fs"
 
-local app                   = require("cp.apple.finalcutpro.app")
-local config                = require("cp.config")
-local strings               = require("cp.strings")
-local localeID              = require("cp.i18n.localeID")
+local app                   = require "cp.apple.finalcutpro.app"
+local config                = require "cp.config"
+local strings               = require "cp.strings"
+local localeID              = require "cp.i18n.localeID"
 
-local v                     = require("semver")
+local v                     = require "semver"
 
-local insert, sort          = table.insert, table.sort
+local dir                   = fs.dir
+local insert                = table.insert
+local pathToAbsolute        = fs.pathToAbsolute
+local sort                  = table.sort
 
 local mod = {}
 
@@ -76,19 +79,14 @@ function mod:_versions(locale)
     if not versions then
         versions = {}
         local stringsPath = extraPath .. locale.code
-        local path = fs.pathToAbsolute(stringsPath)
+        local path = pathToAbsolute(stringsPath)
         if path then
-            local iterFn, dirObj = fs.dir(path)
-            if not iterFn then
-                log.ef("An error occured in cp.apple.finalcutpro.strings:_versions: %s", dirObj)
-            else
-                for file in iterFn, dirObj do
-                    if file:sub(-8) == ".strings" then
-                        local versionString = file:sub(1, -9)
-                        local version = toVersion(versionString)
-                        if version then
-                            insert(versions, version)
-                        end
+            for file in dir(path) do
+                if file:sub(-8) == ".strings" then
+                    local versionString = file:sub(1, -9)
+                    local version = toVersion(versionString)
+                    if version then
+                        insert(versions, version)
                     end
                 end
             end

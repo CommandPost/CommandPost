@@ -121,14 +121,18 @@ local gsub                                      = string.gsub
 local Do                                        = go.Do
 local Throw                                     = go.Throw
 
-local childMatching                             = axutils.childMatching
-local dirFiles                                  = tools.dirFiles
-local insert                                    = table.insert
+local dir                                       = fs.dir
 local pathFromBookmark                          = fs.pathFromBookmark
 local pathToAbsolute                            = fs.pathToAbsolute
 local pathToBookmark                            = fs.pathToBookmark
+
+local dirFiles                                  = tools.dirFiles
+local doesDirectoryExist                        = tools.doesDirectoryExist
 local stringToHexString                         = tools.stringToHexString
+
+local childMatching                             = axutils.childMatching
 local execute                                   = _G.hs.execute
+local insert                                    = table.insert
 
 -- Load the menu helpers:
 require "cp.apple.finalcutpro.menu"
@@ -1027,15 +1031,12 @@ end
 function fcp.userCommandSets()
     local result = {}
     local userCommandSetPath = fcp:userCommandSetPath()
-    if userCommandSetPath then
-        local iterFn, dirObj = fs.dir(userCommandSetPath)
-        if iterFn then
-            for file in iterFn, dirObj do
-                if file:sub(-11) == ".commandset" then
-                    table.insert(result, file:sub(1, -12))
-                end
+    if doesDirectoryExist(userCommandSetPath) then
+        for file in dir(userCommandSetPath) do
+            if file:sub(-11) == ".commandset" then
+                table.insert(result, file:sub(1, -12))
             end
-       end
+        end
     end
     return result
 end
