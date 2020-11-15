@@ -2,18 +2,21 @@
 ---
 --- Allows managing values/IDs which can vary between versions.
 
-local require = require
+local require               = require
 
-local log				  = require("hs.logger").new("ids")
+--local log				    = require "hs.logger".new "ids"
 
-local fs				  = require("hs.fs")
+local fs			        = require "hs.fs"
 
-local tools				= require("cp.tools")
+local tools                 = require "cp.tools"
 
-local v					  = require("semver")
+local v					    = require "semver"
 
-local insert			= table.insert
+local insert			    = table.insert
 
+local dir                   = fs.dir
+local doesDirectoryExist    = fs.doesDirectoryExist
+local pathToAbsolute        = fs.pathToAbsolute
 
 local mod = {}
 mod.mt = {}
@@ -81,12 +84,9 @@ end
 function mod.mt:versions()
     if not self._versions then
         local versions = {}
-        local path = fs.pathToAbsolute(self.path)
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.ids:versions: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
+        local path = pathToAbsolute(self.path)
+        if doesDirectoryExist(path) then
+            for file in dir(path) do
                 if file:sub(-4) == ".lua" then
                     local versionString = file:sub(1, -5)
                     local version = toVersion(versionString)
@@ -171,7 +171,7 @@ function mod.mt:load(version)
     ----------------------------------------------------------------------------------------
     -- Load current version ID:
     ----------------------------------------------------------------------------------------
-    local vFile = fs.pathToAbsolute(("%s/%s.lua"):format(self.path, vStr))
+    local vFile = pathToAbsolute(("%s/%s.lua"):format(self.path, vStr))
 
     if vFile then
         local currentIds = dofile(vFile)

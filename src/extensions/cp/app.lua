@@ -42,12 +42,14 @@ local v                         = require "semver"
 local class                     = require "middleclass"
 
 local childMatching             = axutils.childMatching
+local dir                       = fs.dir
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
 local insert                    = table.insert
 local keyStroke                 = tools.keyStroke
+local pathToAbsolute            = fs.pathToAbsolute
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
 local tableFilter               = tools.tableFilter
@@ -612,26 +614,20 @@ function app.lazy.prop:supportedLocales()
         local locales = {}
         local appPath = original()
         if appPath then
-            local resourcesPath = fs.pathToAbsolute(appPath .. "/Contents/Resources")
+            local resourcesPath = pathToAbsolute(appPath .. "/Contents/Resources")
             if resourcesPath then
                 local theBaseLocale = self:baseLocale()
                 if theBaseLocale then
                     -- always add the base locale, if present.
                     insert(locales, theBaseLocale)
                 end
-
-                local iterFn, dirObj = fs.dir(resourcesPath)
-                if not iterFn then
-                    log.ef("An error occured in cp.app.forBundleID: %s", dirObj)
-                else
-                    for file in iterFn, dirObj do
-                        local localeCode = file:match("(.+)%.lproj")
-                        if localeCode then
-                            if localeCode ~= BASE_LOCALE then
-                                local locale = localeID.forCode(localeCode)
-                                if locale and locale ~= theBaseLocale then
-                                    insert(locales, locale)
-                                end
+                for file in dir(resourcesPath) do
+                    local localeCode = file:match("(.+)%.lproj")
+                    if localeCode then
+                        if localeCode ~= BASE_LOCALE then
+                            local locale = localeID.forCode(localeCode)
+                            if locale and locale ~= theBaseLocale then
+                                insert(locales, locale)
                             end
                         end
                     end
@@ -731,7 +727,7 @@ end
 function app.lazy.prop:resourcesPath()
     return self.path:mutate(function(original)
         local path = original()
-        return path and fs.pathToAbsolute(path .. "/Contents/Resources") or nil
+        return path and pathToAbsolute(path .. "/Contents/Resources") or nil
     end)
 end
 
@@ -742,7 +738,7 @@ end
 function app.lazy.prop:baseResourcesPath()
     return self.resourcesPath:mutate(function(original)
         local path = original()
-        return path and fs.pathToAbsolute(path .. "/Base.lproj") or nil
+        return path and pathToAbsolute(path .. "/Base.lproj") or nil
     end)
 end
 
@@ -756,7 +752,7 @@ function app.lazy.prop:localeResourcesPath()
         if resourcesPath then
             local locale = self:bestSupportedLocale(self:currentLocale())
             for _, alias in pairs(locale.aliases) do
-                local path = fs.pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
+                local path = pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
                 if path then
                     return path
                 end

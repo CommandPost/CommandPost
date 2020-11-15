@@ -26,6 +26,13 @@ local config            = require "cp.config"
 
 local v                 = require "semver"
 
+local attributes        = fs.attributes
+local dir               = fs.dir
+local mkdir             = fs.mkdir
+local pathToAbsolute    = fs.pathToAbsolute
+local rmdir             = fs.rmdir
+local symlinkAttributes = fs.symlinkAttributes
+
 local event             = eventtap.event
 local insert            = table.insert
 local locale            = host.locale
@@ -1012,7 +1019,7 @@ end
 ---  * `true` if the directory exists otherwise `false`
 function tools.doesDirectoryExist(path)
     if path and type(path) == "string" then
-        local attr = fs.attributes(path)
+        local attr = attributes(path)
         return attr and attr.mode == 'directory'
     else
         return false
@@ -1029,7 +1036,7 @@ end
 --- Returns:
 ---  * `true` if the file exists otherwise `false`
 function tools.doesFileExist(path)
-    return type(path) == "string" and type(fs.attributes(path)) == "table"
+    return type(path) == "string" and type(attributes(path)) == "table"
 end
 
 --- cp.tools.trim(string) -> string
@@ -1558,11 +1565,11 @@ function tools.dirFiles(path)
     if not path then
         return nil
     end
-    path = fs.pathToAbsolute(path)
+    path = pathToAbsolute(path)
     if not path then
         return nil
     end
-    local contents, data = fs.dir(path)
+    local contents, data = dir(path)
     if not contents then
         return nil, data
     end
@@ -1589,14 +1596,11 @@ function tools.rmdir(path, recursive)
         --------------------------------------------------------------------------------
         -- Remove the contents:
         --------------------------------------------------------------------------------
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            return nil, dirObj
-        else
-            for name in iterFn, dirObj do
+        if tools.doesDirectoryExist(path) then
+            for name in dir(path) do
                 if name ~= "." and name ~= ".." then
                     local filePath = path .. "/" .. name
-                    local attrs = fs.symlinkAttributes(filePath)
+                    local attrs = symlinkAttributes(filePath)
                     local ok, err
                     if attrs == nil then
                         return nil, "Unable to find file to remove: "..filePath
@@ -1613,7 +1617,7 @@ function tools.rmdir(path, recursive)
         end
     end
     -- remove the directory itself
-    return fs.rmdir(path)
+    return rmdir(path)
 end
 
 --- cp.tools.numberToWord(number) -> string
@@ -1750,7 +1754,7 @@ end
 ---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
 function tools.ensureDirectoryExists(rootPath, ...)
     if not tools.doesDirectoryExist(rootPath) then
-        local success, err = fs.mkdir(rootPath)
+        local success, err = mkdir(rootPath)
         if not success then
             log.ef("Problem ensuring that '%s' exists: %s", rootPath, err)
             return nil
@@ -1759,15 +1763,15 @@ function tools.ensureDirectoryExists(rootPath, ...)
     local fullPath = rootPath
     for _,path in ipairs(table.pack(...)) do
         fullPath = fullPath .. "/" .. path
-        if not fs.pathToAbsolute(fullPath) then
-            local success, err = fs.mkdir(fullPath)
+        if not pathToAbsolute(fullPath) then
+            local success, err = mkdir(fullPath)
             if not success then
                 log.ef("Problem ensuring that '%s' exists: %s", fullPath, err)
                 return nil
             end
         end
     end
-    return fs.pathToAbsolute(fullPath)
+    return pathToAbsolute(fullPath)
 end
 
 --- cp.tools.playErrorSound() -> none
