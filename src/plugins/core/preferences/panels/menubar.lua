@@ -8,7 +8,6 @@ local image             = require "hs.image"
 
 local config            = require "cp.config"
 local i18n              = require "cp.i18n"
-local tools             = require "cp.tools"
 
 local imageFromPath     = image.imageFromPath
 
