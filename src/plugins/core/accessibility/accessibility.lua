@@ -8,9 +8,9 @@ local hs                = _G.hs
 local application       = require "hs.application"
 
 local config            = require "cp.config"
+local i18n              = require "cp.i18n"
 local prop              = require "cp.prop"
 local tools             = require "cp.tools"
-local i18n              = require "cp.i18n"
 
 local mod = {}
 
@@ -88,7 +88,7 @@ end
 function mod.init(setup)
     mod.setup = setup
     mod.panel = setup.panel.new("accessibility", 10)
-        :addIcon(tools.iconFallback("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns"))
+        :addIcon(config.basePath .. "/plugins/core/accessibility/images/UniversalAccessPref.icns")
         :addParagraph(i18n("accessibilityNote"), false)
         :addButton({
             label       = i18n("allowAccessibility"),

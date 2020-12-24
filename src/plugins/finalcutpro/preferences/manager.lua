@@ -2,13 +2,16 @@
 ---
 --- Final Cut Pro Preferences Panel Manager.
 
-local require       = require
+local require           = require
 
-local image         = require "hs.image"
+local image             = require "hs.image"
 
-local fcp           = require "cp.apple.finalcutpro"
-local tools         = require "cp.tools"
-local i18n          = require "cp.i18n"
+local fcp               = require "cp.apple.finalcutpro"
+local tools             = require "cp.tools"
+local i18n              = require "cp.i18n"
+
+local iconFallback      = tools.iconFallback
+local imageFromPath     = image.imageFromPath
 
 local plugin = {
     id              = "finalcutpro.preferences.manager",
@@ -29,7 +32,7 @@ function plugin.init(deps)
         priority    = 2040,
         id          = "finalcutpro",
         label       = i18n("finalCutProPanelLabel"),
-        image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
+        image       = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns")),
         tooltip     = i18n("finalCutProPanelTooltip"),
         height      = 570,
     })

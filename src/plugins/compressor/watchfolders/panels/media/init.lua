@@ -29,6 +29,8 @@ local doesFileExist             = tools.doesFileExist
 local doEvery                   = timer.doEvery
 
 local getFilenameFromPath       = tools.getFilenameFromPath
+local iconFallback              = tools.iconFallback
+local imageFromPath             = image.imageFromPath
 local incrementFilenameInPath   = tools.incrementFilenameInPath
 local tableContains             = tools.tableContains
 local unescape                  = tools.unescape
@@ -836,7 +838,7 @@ function mod.init(deps)
             priority        = 2030,
             id              = "compressor",
             label           = i18n("compressor"),
-            image           = image.imageFromPath(tools.iconFallback(compressor:getPath() .. "/Contents/Resources/compressor.icns")),
+            image           = imageFromPath(iconFallback(compressor:getPath() .. "/Contents/Resources/compressor.icns", compressor:getPath() .. "/Contents/Resources/AppIcon.icns")),
             tooltip         = i18n("watchFolderCompressorTooltip"),
             height          = 360,
             loadFn          = mod.refreshTable,

@@ -4,26 +4,27 @@
 
 local require = require
 
-local eventtap          = require("hs.eventtap")
-local fnutils           = require("hs.fnutils")
-local host              = require("hs.host")
-local image             = require("hs.image")
-local notify            = require("hs.notify")
-local pathwatcher       = require("hs.pathwatcher")
-local timer             = require("hs.timer")
+local eventtap          = require "hs.eventtap"
+local fnutils           = require "hs.fnutils"
+local host              = require "hs.host"
+local image             = require "hs.image"
+local notify            = require "hs.notify"
+local pathwatcher       = require "hs.pathwatcher"
+local timer             = require "hs.timer"
 
-local config            = require("cp.config")
-local dialog            = require("cp.dialog")
-local Do                = require("cp.rx.go.Do")
-local fcp               = require("cp.apple.finalcutpro")
-local html              = require("cp.web.html")
-local i18n              = require("cp.i18n")
-local tools             = require("cp.tools")
-local ui                = require("cp.web.ui")
+local config            = require "cp.config"
+local dialog            = require "cp.dialog"
+local Do                = require "cp.rx.go.Do"
+local fcp               = require "cp.apple.finalcutpro"
+local html              = require "cp.web.html"
+local i18n              = require "cp.i18n"
+local tools             = require "cp.tools"
+local ui                = require "cp.web.ui"
 
 local doAfter           = timer.doAfter
+local iconFallback      = tools.iconFallback
+local imageFromPath     = image.imageFromPath
 local uuid              = host.uuid
-
 
 local mod = {}
 
@@ -688,7 +689,7 @@ function mod.init(deps)
                 priority        = 2020,
                 id              = "fcpxml",
                 label           = "FCPXML",
-                image           = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
+                image           = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns")),
                 tooltip         = i18n("watchFolderFCPXMLTooltip"),
                 height          = 475,
                 loadFn          = mod.refreshTable,
