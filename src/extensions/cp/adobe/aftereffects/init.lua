@@ -70,11 +70,13 @@ end
 ---  * A string
 function aftereffects:preferencesFilePath()
     local version = self:version()
-    local major = version.major
-    local minor = version.minor
-    local preferencesPath = self:preferencesPath()
-    local prefsFile =  preferencesPath and preferencesPath .. "Adobe After Effects " .. major .. "." .. minor .. " Prefs.txt"
-    return prefsFile
+    if version then
+        local major = version.major
+        local minor = version.minor
+        local preferencesPath = self:preferencesPath()
+        local prefsFile =  preferencesPath and preferencesPath .. "Adobe After Effects " .. major .. "." .. minor .. " Prefs.txt"
+        return prefsFile
+    end
 end
 
 --- cp.adobe.aftereffects:allowScriptsToWriteFilesAndAccessNetwork() -> boolean
