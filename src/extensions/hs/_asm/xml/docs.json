@@ -8,13 +8,13 @@
     ],
     "Function" : [
       {
+        "doc" : "Returns the local name of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the local name for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`",
         "def" : "hs._asm.xml.localNameFor(qualifiedName) -> string",
         "stripped_doc" : [
           "Returns the local name of the specified qualified name",
           ""
         ],
-        "doc" : "Returns the local name of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the local name for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`",
-        "desc" : "Returns the local name of the specified qualified name",
+        "name" : "localNameFor",
         "notes" : [
           " * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`"
         ],
@@ -24,20 +24,20 @@
           " * a string containing the local name for the specified namespace-qualifying name",
           ""
         ],
-        "name" : "localNameFor",
+        "desc" : "Returns the local name of the specified qualified name",
         "parameters" : [
           " * qualifiedName - a namespace-qualifying name for a node",
           ""
         ]
       },
       {
+        "doc" : "Returns the prefix of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the prefix for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`",
         "def" : "hs._asm.xml.prefixFor(qualifiedName) -> string",
         "stripped_doc" : [
           "Returns the prefix of the specified qualified name",
           ""
         ],
-        "doc" : "Returns the prefix of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the prefix for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`",
-        "desc" : "Returns the prefix of the specified qualified name",
+        "name" : "prefixFor",
         "notes" : [
           " * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`"
         ],
@@ -47,7 +47,7 @@
           " * a string containing the prefix for the specified namespace-qualifying name",
           ""
         ],
-        "name" : "prefixFor",
+        "desc" : "Returns the prefix of the specified qualified name",
         "parameters" : [
           " * qualifiedName - a namespace-qualifying name for a node",
           ""
@@ -60,20 +60,20 @@
     "stripped_doc" : [
 
     ],
+    "desc" : "Functions for module",
     "Deprecated" : [
 
     ],
     "type" : "Module",
-    "desc" : "Functions for module",
     "Constructor" : [
       {
+        "doc" : "Returns an xmlDTD object created from the contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the DTD declarations\n\nReturns:\n * an xmlDTD object",
         "def" : "hs._asm.xml.openDTD(url) -> xmlDTD object",
         "stripped_doc" : [
           "Returns an xmlDTD object created from the contents of the specified URL source.",
           ""
         ],
-        "doc" : "Returns an xmlDTD object created from the contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the DTD declarations\n\nReturns:\n * an xmlDTD object",
-        "desc" : "Returns an xmlDTD object created from the contents of the specified URL source.",
+        "name" : "openDTD",
         "notes" : [
 
         ],
@@ -82,20 +82,20 @@
         "returns" : [
           " * an xmlDTD object"
         ],
-        "name" : "openDTD",
+        "desc" : "Returns an xmlDTD object created from the contents of the specified URL source.",
         "parameters" : [
           " * url - the url specifying the location of the DTD declarations",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the XML or HTML source\n\nReturns:\n * an xmlDocument object",
         "def" : "hs._asm.xml.openURL(url) -> xmlDocument object",
         "stripped_doc" : [
           "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
           ""
         ],
-        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the XML or HTML source\n\nReturns:\n * an xmlDocument object",
-        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
+        "name" : "openURL",
         "notes" : [
 
         ],
@@ -104,20 +104,20 @@
         "returns" : [
           " * an xmlDocument object"
         ],
-        "name" : "openURL",
+        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
         "parameters" : [
           " * url - the url specifying the location of the XML or HTML source",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.\n\nParameters:\n * file - the path to the file containing the XML or HTML source\n\nReturns:\n * an xmlDocument object\n\nNotes:\n * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL.",
         "def" : "hs._asm.xml.open(file) -> xmlDocument object",
         "stripped_doc" : [
           "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
           ""
         ],
-        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.\n\nParameters:\n * file - the path to the file containing the XML or HTML source\n\nReturns:\n * an xmlDocument object\n\nNotes:\n * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL.",
-        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
+        "name" : "open",
         "notes" : [
           " * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL."
         ],
@@ -127,20 +127,20 @@
           " * an xmlDocument object",
           ""
         ],
-        "name" : "open",
+        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
         "parameters" : [
           " * file - the path to the file containing the XML or HTML source",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDTDNode object for the predefined entity specified\n\nParameters:\n * entityName - the name of the predefined entity\n\nReturns:\n * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.\n\nNotes:\n * The five predefined entity references (or character references) are:\n   * < (less-than sign)    - with the entity name \"lt\"\n   * > (greater-than sign) - with the entity name \"gt\"\n   * & (ampersand)         - with the entity name \"amp\"\n   * \" (quotation mark)    - with the entity name \"quot\"\n   * ' (apostrophe)        - with the entity name \"apos\"",
         "def" : "hs._asm.xml.predefinedEntityDeclaration(entityName) -> xmlDTDNode object",
         "stripped_doc" : [
           "Returns an xmlDTDNode object for the predefined entity specified",
           ""
         ],
-        "doc" : "Returns an xmlDTDNode object for the predefined entity specified\n\nParameters:\n * entityName - the name of the predefined entity\n\nReturns:\n * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.\n\nNotes:\n * The five predefined entity references (or character references) are:\n   * < (less-than sign)    - with the entity name \"lt\"\n   * > (greater-than sign) - with the entity name \"gt\"\n   * & (ampersand)         - with the entity name \"amp\"\n   * \" (quotation mark)    - with the entity name \"quot\"\n   * ' (apostrophe)        - with the entity name \"apos\"",
-        "desc" : "Returns an xmlDTDNode object for the predefined entity specified",
+        "name" : "predefinedEntityDeclaration",
         "notes" : [
           " * The five predefined entity references (or character references) are:",
           "   * < (less-than sign)    - with the entity name \"lt\"",
@@ -155,7 +155,7 @@
           " * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.",
           ""
         ],
-        "name" : "predefinedEntityDeclaration",
+        "desc" : "Returns an xmlDTDNode object for the predefined entity specified",
         "parameters" : [
           " * entityName - the name of the predefined entity",
           ""
@@ -163,15 +163,668 @@
       }
     ],
     "doc" : "Functions for module\n\nA description of module.",
+    "Method" : [
+      {
+        "doc" : "Returns the specific NSXML class type of the object as a string.\n\nParameters:\n * None\n\nReturns:\n * the XML class type as a string\n\nNotes:\n * the possible returned values are as follows:\n   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.\n   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure\n   * NSXMLElement  - the object represents an element node in an XML tree structure\n   * NSXMLDTD      - the object represents a Document Type Definition\n   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration",
+        "def" : "hs._asm.xml:nodeType() -> string",
+        "stripped_doc" : [
+          "Returns the specific NSXML class type of the object as a string.",
+          ""
+        ],
+        "name" : "nodeType",
+        "notes" : [
+          " * the possible returned values are as follows:",
+          "   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.",
+          "   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure",
+          "   * NSXMLElement  - the object represents an element node in an XML tree structure",
+          "   * NSXMLDTD      - the object represents a Document Type Definition",
+          "   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration"
+        ],
+        "signature" : "hs._asm.xml:nodeType() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the XML class type as a string",
+          ""
+        ],
+        "desc" : "Returns the specific NSXML class type of the object as a string.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.\n\nParameters:\n * None\n\nReturns:\n * an xmlDocument object",
+        "def" : "hs._asm.xml:rootDocument() -> xmlDocument obejct",
+        "stripped_doc" : [
+          "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
+          ""
+        ],
+        "name" : "rootDocument",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:rootDocument() -> xmlDocument obejct",
+        "type" : "Method",
+        "returns" : [
+          " * an xmlDocument object"
+        ],
+        "desc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the parent node of the object.\n\nParameters:\n * None\n\nReturns:\n * an xmlNode object, or nil if no parent exists for this object",
+        "def" : "hs._asm.xml:parent() -> xmlNode obejct",
+        "stripped_doc" : [
+          "Returns the parent node of the object.",
+          ""
+        ],
+        "name" : "parent",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:parent() -> xmlNode obejct",
+        "type" : "Method",
+        "returns" : [
+          " * an xmlNode object, or nil if no parent exists for this object"
+        ],
+        "desc" : "Returns the parent node of the object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the child node at the specified index.\n\nParameters:\n * index - an integer index specifying the child object to return\n\nReturns:\n * an xmlNode object, or nil if no child exists at that index\n\nNotes:\n * The returned node object can represent an element, comment, text, or processing instruction.",
+        "def" : "hs._asm.xml:childAtIndex(index) -> xmlNode obejct",
+        "stripped_doc" : [
+          "Returns the child node at the specified index.",
+          ""
+        ],
+        "name" : "childAtIndex",
+        "notes" : [
+          " * The returned node object can represent an element, comment, text, or processing instruction."
+        ],
+        "signature" : "hs._asm.xml:childAtIndex(index) -> xmlNode obejct",
+        "type" : "Method",
+        "returns" : [
+          " * an xmlNode object, or nil if no child exists at that index",
+          ""
+        ],
+        "desc" : "Returns the child node at the specified index.",
+        "parameters" : [
+          " * index - an integer index specifying the child object to return",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the number of child nodes for the object.\n\nParameters:\n * None\n\nReturns:\n * the number of child nodes for the object",
+        "def" : "hs._asm.xml:childCount() -> integer",
+        "stripped_doc" : [
+          "Returns the number of child nodes for the object.",
+          ""
+        ],
+        "name" : "childCount",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:childCount() -> integer",
+        "type" : "Method",
+        "returns" : [
+          " * the number of child nodes for the object"
+        ],
+        "desc" : "Returns the number of child nodes for the object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the children of the object in a table as an array.\n\nParameters:\n * None\n\nReturns:\n * the children of the object in a table as an array.",
+        "def" : "hs._asm.xml:children() -> table",
+        "stripped_doc" : [
+          "Returns the children of the object in a table as an array.",
+          ""
+        ],
+        "name" : "children",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:children() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * the children of the object in a table as an array."
+        ],
+        "desc" : "Returns the children of the object in a table as an array.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the next xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
+        "def" : "hs._asm.xml:nextNode() -> xmlNode object",
+        "stripped_doc" : [
+          "Returns the next xmlNode object in document order.",
+          ""
+        ],
+        "name" : "nextNode",
+        "notes" : [
+          " * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
+        ],
+        "signature" : "hs._asm.xml:nextNode() -> xmlNode object",
+        "type" : "Method",
+        "returns" : [
+          " * the next xmlNode object in document order.",
+          ""
+        ],
+        "desc" : "Returns the next xmlNode object in document order.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the next xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil.",
+        "def" : "hs._asm.xml:nextSibling() -> xmlNode object",
+        "stripped_doc" : [
+          "Returns the next xmlNode object that is a sibling node to the object.",
+          ""
+        ],
+        "name" : "nextSibling",
+        "notes" : [
+          " * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil."
+        ],
+        "signature" : "hs._asm.xml:nextSibling() -> xmlNode object",
+        "type" : "Method",
+        "returns" : [
+          " * the next xmlNode object that is a sibling node to the object.",
+          ""
+        ],
+        "desc" : "Returns the next xmlNode object that is a sibling node to the object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the previous xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
+        "def" : "hs._asm.xml:previousNode() -> xmlNode object",
+        "stripped_doc" : [
+          "Returns the previous xmlNode object in document order.",
+          ""
+        ],
+        "name" : "previousNode",
+        "notes" : [
+          " * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
+        ],
+        "signature" : "hs._asm.xml:previousNode() -> xmlNode object",
+        "type" : "Method",
+        "returns" : [
+          " * the previous xmlNode object in document order.",
+          ""
+        ],
+        "desc" : "Returns the previous xmlNode object in document order.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the previous xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil.",
+        "def" : "hs._asm.xml:previousSibling() -> xmlNode object",
+        "stripped_doc" : [
+          "Returns the previous xmlNode object that is a sibling node to the object.",
+          ""
+        ],
+        "name" : "previousSibling",
+        "notes" : [
+          " * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil."
+        ],
+        "signature" : "hs._asm.xml:previousSibling() -> xmlNode object",
+        "type" : "Method",
+        "returns" : [
+          " * the previous xmlNode object that is a sibling node to the object.",
+          ""
+        ],
+        "desc" : "Returns the previous xmlNode object that is a sibling node to the object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the string representation of the object as it would appear in an XML document.\n\nParameters:\n * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.\n\nReturns:\n * the string representation of the object as it would appear in an XML document.\n\nNotes:\n * The returned string includes the string representations of all children.",
+        "def" : "hs._asm.xml:xmlString([options]) -> string",
+        "stripped_doc" : [
+          "Returns the string representation of the object as it would appear in an XML document.",
+          ""
+        ],
+        "name" : "xmlString",
+        "notes" : [
+          " * The returned string includes the string representations of all children."
+        ],
+        "signature" : "hs._asm.xml:xmlString([options]) -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the string representation of the object as it would appear in an XML document.",
+          ""
+        ],
+        "desc" : "Returns the string representation of the object as it would appear in an XML document.",
+        "parameters" : [
+          " * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a string encapsulating the object’s XML in canonical form.\n\nParameters:\n * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.\n\nReturns:\n * a string encapsulating the object’s XML in canonical form.\n\nNotes:\n * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:\n   * Encodes the document in UTF-8.\n   * Normalizes line breaks to “#xA” on input before parsing.\n   * Normalizes attribute values in the manner of a validating processor.\n   * Replaces character and parsed entity references with their character content.\n   * Replaces CDATA sections with their character content.\n   * Removes the XML declaration and the document type declaration (DTD).\n   * Converts empty elements to start-end tag pairs.\n   * Normalizes whitespace outside of the document element and within start and end tags.\n   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).\n   * Sets attribute value delimiters to quotation marks (double quotes).\n   * Replaces special characters in attribute values and character content with character references.\n   * Removes superfluous namespace declarations from each element.\n   * Adds default attributes to each element.\n   * Imposes lexicographic order on the namespace declarations and attributes of each element.",
+        "def" : "hs._asm.xml:canonicalXMLString([comments]) -> string",
+        "stripped_doc" : [
+          "Returns a string encapsulating the object’s XML in canonical form.",
+          ""
+        ],
+        "name" : "canonicalXMLString",
+        "notes" : [
+          " * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:",
+          "   * Encodes the document in UTF-8.",
+          "   * Normalizes line breaks to “#xA” on input before parsing.",
+          "   * Normalizes attribute values in the manner of a validating processor.",
+          "   * Replaces character and parsed entity references with their character content.",
+          "   * Replaces CDATA sections with their character content.",
+          "   * Removes the XML declaration and the document type declaration (DTD).",
+          "   * Converts empty elements to start-end tag pairs.",
+          "   * Normalizes whitespace outside of the document element and within start and end tags.",
+          "   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).",
+          "   * Sets attribute value delimiters to quotation marks (double quotes).",
+          "   * Replaces special characters in attribute values and character content with character references.",
+          "   * Removes superfluous namespace declarations from each element.",
+          "   * Adds default attributes to each element.",
+          "   * Imposes lexicographic order on the namespace declarations and attributes of each element."
+        ],
+        "signature" : "hs._asm.xml:canonicalXMLString([comments]) -> string",
+        "type" : "Method",
+        "returns" : [
+          " * a string encapsulating the object’s XML in canonical form.",
+          ""
+        ],
+        "desc" : "Returns a string encapsulating the object’s XML in canonical form.",
+        "parameters" : [
+          " * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the index of the object identifying its position relative to its sibling nodes.\n\nParameters:\n * None\n\nReturns:\n * the index of the object identifying its position relative to its sibling nodes.",
+        "def" : "hs._asm.xml:index() -> integer",
+        "stripped_doc" : [
+          "Returns the index of the object identifying its position relative to its sibling nodes.",
+          ""
+        ],
+        "name" : "index",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:index() -> integer",
+        "type" : "Method",
+        "returns" : [
+          " * the index of the object identifying its position relative to its sibling nodes."
+        ],
+        "desc" : "Returns the index of the object identifying its position relative to its sibling nodes.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the kind of node the object is as a string.\n\nParameters:\n * None\n\nReturns:\n * a string representing the type of information represented by this node.  Possible values include:\n   * invalid               - a node object created without a valid kind being specified\n   * document              - a document node\n   * element               - an element node\n   * attribute             - an attribute node\n   * namespace             - a namespace node\n   * processingInstruction - a processing instruction node\n   * comment               - a comment node\n   * text                  - a text node\n   * DTD                   - a document type declaration node\n   * entityDeclaration     - an entity declaration node\n   * attributeDeclaration  - an attribute declaration node\n   * elementDeclaration    - an element declaration node\n   * notationDeclaration   - a notation declaration\n   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated.",
+        "def" : "hs._asm.xml:kind() -> string",
+        "stripped_doc" : [
+          "Returns the kind of node the object is as a string.",
+          ""
+        ],
+        "name" : "kind",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:kind() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * a string representing the type of information represented by this node.  Possible values include:",
+          "   * invalid               - a node object created without a valid kind being specified",
+          "   * document              - a document node",
+          "   * element               - an element node",
+          "   * attribute             - an attribute node",
+          "   * namespace             - a namespace node",
+          "   * processingInstruction - a processing instruction node",
+          "   * comment               - a comment node",
+          "   * text                  - a text node",
+          "   * DTD                   - a document type declaration node",
+          "   * entityDeclaration     - an entity declaration node",
+          "   * attributeDeclaration  - an attribute declaration node",
+          "   * elementDeclaration    - an element declaration node",
+          "   * notationDeclaration   - a notation declaration",
+          "   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated."
+        ],
+        "desc" : "Returns the kind of node the object is as a string.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the nesting level of the object within the tree hierarchy.\n\nParameters:\n * None\n\nReturns:\n * the nesting level of the object within the tree hierarchy.\n\nNotes:\n * The root element of a document has a nesting level of one.",
+        "def" : "hs._asm.xml:level() -> integer",
+        "stripped_doc" : [
+          "Returns the nesting level of the object within the tree hierarchy.",
+          ""
+        ],
+        "name" : "level",
+        "notes" : [
+          " * The root element of a document has a nesting level of one."
+        ],
+        "signature" : "hs._asm.xml:level() -> integer",
+        "type" : "Method",
+        "returns" : [
+          " * the nesting level of the object within the tree hierarchy.",
+          ""
+        ],
+        "desc" : "Returns the nesting level of the object within the tree hierarchy.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the name of the object node.\n\nParameters:\n * None\n\nReturns:\n * the name of the object node or nil if the object does not have a name.\n\nNotes:\n * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil.",
+        "def" : "hs._asm.xml:name() -> string",
+        "stripped_doc" : [
+          "Returns the name of the object node.",
+          ""
+        ],
+        "name" : "name",
+        "notes" : [
+          " * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil."
+        ],
+        "signature" : "hs._asm.xml:name() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the name of the object node or nil if the object does not have a name.",
+          ""
+        ],
+        "desc" : "Returns the name of the object node.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the value of the xmlObject node.\n\nParameters:\n * None\n\nReturns:\n * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value.",
+        "def" : "hs._asm.xml:objectValue() -> object",
+        "stripped_doc" : [
+          "Returns the value of the xmlObject node.",
+          ""
+        ],
+        "name" : "objectValue",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:objectValue() -> object",
+        "type" : "Method",
+        "returns" : [
+          " * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value."
+        ],
+        "desc" : "Returns the value of the xmlObject node.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * None\n\nReturns:\n * the content of the xmlObject as a string value.\n\nNotes:\n * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.\n * If the receiver’s content is set as an object value, this method returns the string value representing the object.\n * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.\n * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type.",
+        "def" : "hs._asm.xml:stringValue() -> string",
+        "stripped_doc" : [
+          "Returns the content of the xmlObject as a string value.",
+          ""
+        ],
+        "name" : "stringValue",
+        "notes" : [
+          " * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.",
+          " * If the receiver’s content is set as an object value, this method returns the string value representing the object.",
+          " * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.",
+          " * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type."
+        ],
+        "signature" : "hs._asm.xml:stringValue() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the content of the xmlObject as a string value.",
+          ""
+        ],
+        "desc" : "Returns the content of the xmlObject as a string value.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * value - The value you want to set the string value to.\n\nReturns:\n * the content of the xmlObject as a string value.",
+        "def" : "hs._asm.xml:setStringValue(value) -> string",
+        "stripped_doc" : [
+          "Returns the content of the xmlObject as a string value.",
+          ""
+        ],
+        "name" : "setStringValue",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:setStringValue(value) -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the content of the xmlObject as a string value."
+        ],
+        "desc" : "Returns the content of the xmlObject as a string value.",
+        "parameters" : [
+          " * value - The value you want to set the string value to.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the URI associated with the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the URI associated with the xmlObject\n\nNotes:\n * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set.",
+        "def" : "hs._asm.xml:URI() -> string",
+        "stripped_doc" : [
+          "Returns the URI associated with the xmlObject.",
+          ""
+        ],
+        "name" : "URI",
+        "notes" : [
+          " * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set."
+        ],
+        "signature" : "hs._asm.xml:URI() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the URI associated with the xmlObject",
+          ""
+        ],
+        "desc" : "Returns the URI associated with the xmlObject.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the local name of the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the local name of the xmlObject.\n\nNotes:\n * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon.",
+        "def" : "hs._asm.xml:localName() -> string",
+        "stripped_doc" : [
+          "Returns the local name of the xmlObject.",
+          ""
+        ],
+        "name" : "localName",
+        "notes" : [
+          " * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon."
+        ],
+        "signature" : "hs._asm.xml:localName() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the local name of the xmlObject.",
+          ""
+        ],
+        "desc" : "Returns the local name of the xmlObject.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the prefix (namespace) of the xmlObject’s name.\n\nParameters:\n * None\n\nReturns:\n * the prefix (namespace) of the xmlObject.\n\nNotes:\n * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace.",
+        "def" : "hs._asm.xml:prefix() -> string",
+        "stripped_doc" : [
+          "Returns the prefix (namespace) of the xmlObject’s name.",
+          ""
+        ],
+        "name" : "prefix",
+        "notes" : [
+          " * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace."
+        ],
+        "signature" : "hs._asm.xml:prefix() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the prefix (namespace) of the xmlObject.",
+          ""
+        ],
+        "desc" : "Returns the prefix (namespace) of the xmlObject’s name.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.\n\nParameters:\n * None\n\nReturns:\n * the XPath expression identifying the xmlObject node’s location in the document tree.",
+        "def" : "hs._asm.xml:XPath() -> string",
+        "stripped_doc" : [
+          "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
+          ""
+        ],
+        "name" : "XPath",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:XPath() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the XPath expression identifying the xmlObject node’s location in the document tree."
+        ],
+        "desc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.\n\nParameters:\n * query - an optional string that specifies an XPath query.  Defaults to \".\".\n\nReturns:\n * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node.",
+        "def" : "hs._asm.xml:XPathQuery([query]) -> table",
+        "stripped_doc" : [
+          "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
+          ""
+        ],
+        "name" : "XPathQuery",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:XPathQuery([query]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node."
+        ],
+        "desc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
+        "parameters" : [
+          " * query - an optional string that specifies an XPath query.  Defaults to \".\".",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.\n\nParameters:\n * query     - an optional string that specifies an XQuery query.  Defaults to \".\".\n * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.\n\nReturns:\n * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node.",
+        "def" : "hs._asm.xml:XQuery([query], [constants]) -> table",
+        "stripped_doc" : [
+          "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
+          ""
+        ],
+        "name" : "XQuery",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:XQuery([query], [constants]) -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node."
+        ],
+        "desc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
+        "parameters" : [
+          " * query     - an optional string that specifies an XQuery query.  Defaults to \".\".",
+          " * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the xmlObject's public identifier.\n\nParameters:\n * None\n\nReturns:\n * the public identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
+        "def" : "hs._asm.xml:publicID() -> string",
+        "stripped_doc" : [
+          "Returns the xmlObject's public identifier.",
+          ""
+        ],
+        "name" : "publicID",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:publicID() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the public identifier for the xmlObject.",
+          "",
+          "Note:",
+          " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
+        ],
+        "desc" : "Returns the xmlObject's public identifier.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the xmlObject's system identifier.\n\nParameters:\n * None\n\nReturns:\n * the system identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
+        "def" : "hs._asm.xml:systemID() -> string",
+        "stripped_doc" : [
+          "Returns the xmlObject's system identifier.",
+          ""
+        ],
+        "name" : "systemID",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.xml:systemID() -> string",
+        "type" : "Method",
+        "returns" : [
+          " * the system identifier for the xmlObject.",
+          "",
+          "Note:",
+          " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
+        ],
+        "desc" : "Returns the xmlObject's system identifier.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      }
+    ],
     "items" : [
       {
+        "doc" : "Returns the local name of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the local name for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`",
         "def" : "hs._asm.xml.localNameFor(qualifiedName) -> string",
         "stripped_doc" : [
           "Returns the local name of the specified qualified name",
           ""
         ],
-        "doc" : "Returns the local name of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the local name for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`",
-        "desc" : "Returns the local name of the specified qualified name",
+        "name" : "localNameFor",
         "notes" : [
           " * for example, `hs._asm.xml.localNameFor(\"acme:chapter\")` would return `chapter`"
         ],
@@ -181,20 +834,20 @@
           " * a string containing the local name for the specified namespace-qualifying name",
           ""
         ],
-        "name" : "localNameFor",
+        "desc" : "Returns the local name of the specified qualified name",
         "parameters" : [
           " * qualifiedName - a namespace-qualifying name for a node",
           ""
         ]
       },
       {
+        "doc" : "Returns the prefix of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the prefix for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`",
         "def" : "hs._asm.xml.prefixFor(qualifiedName) -> string",
         "stripped_doc" : [
           "Returns the prefix of the specified qualified name",
           ""
         ],
-        "doc" : "Returns the prefix of the specified qualified name\n\nParameters:\n * qualifiedName - a namespace-qualifying name for a node\n\nReturns:\n * a string containing the prefix for the specified namespace-qualifying name\n\nNotes:\n * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`",
-        "desc" : "Returns the prefix of the specified qualified name",
+        "name" : "prefixFor",
         "notes" : [
           " * for example, `hs._asm.xml.prefixFor(\"acme:chapter\")` would return  `acme`"
         ],
@@ -204,20 +857,20 @@
           " * a string containing the prefix for the specified namespace-qualifying name",
           ""
         ],
-        "name" : "prefixFor",
+        "desc" : "Returns the prefix of the specified qualified name",
         "parameters" : [
           " * qualifiedName - a namespace-qualifying name for a node",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.\n\nParameters:\n * file - the path to the file containing the XML or HTML source\n\nReturns:\n * an xmlDocument object\n\nNotes:\n * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL.",
         "def" : "hs._asm.xml.open(file) -> xmlDocument object",
         "stripped_doc" : [
           "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
           ""
         ],
-        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.\n\nParameters:\n * file - the path to the file containing the XML or HTML source\n\nReturns:\n * an xmlDocument object\n\nNotes:\n * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL.",
-        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
+        "name" : "open",
         "notes" : [
           " * This is a wrapper for [hs._asm.xml.openURL](#openURL) which converts the specified path into a properly formatted file URL."
         ],
@@ -227,20 +880,20 @@
           " * an xmlDocument object",
           ""
         ],
-        "name" : "open",
+        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the file specified.",
         "parameters" : [
           " * file - the path to the file containing the XML or HTML source",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDTD object created from the contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the DTD declarations\n\nReturns:\n * an xmlDTD object",
         "def" : "hs._asm.xml.openDTD(url) -> xmlDTD object",
         "stripped_doc" : [
           "Returns an xmlDTD object created from the contents of the specified URL source.",
           ""
         ],
-        "doc" : "Returns an xmlDTD object created from the contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the DTD declarations\n\nReturns:\n * an xmlDTD object",
-        "desc" : "Returns an xmlDTD object created from the contents of the specified URL source.",
+        "name" : "openDTD",
         "notes" : [
 
         ],
@@ -249,20 +902,20 @@
         "returns" : [
           " * an xmlDTD object"
         ],
-        "name" : "openDTD",
+        "desc" : "Returns an xmlDTD object created from the contents of the specified URL source.",
         "parameters" : [
           " * url - the url specifying the location of the DTD declarations",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the XML or HTML source\n\nReturns:\n * an xmlDocument object",
         "def" : "hs._asm.xml.openURL(url) -> xmlDocument object",
         "stripped_doc" : [
           "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
           ""
         ],
-        "doc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.\n\nParameters:\n * url - the url specifying the location of the XML or HTML source\n\nReturns:\n * an xmlDocument object",
-        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
+        "name" : "openURL",
         "notes" : [
 
         ],
@@ -271,20 +924,20 @@
         "returns" : [
           " * an xmlDocument object"
         ],
-        "name" : "openURL",
+        "desc" : "Returns an xmlDocument object created from the XML or HTML contents of the specified URL source.",
         "parameters" : [
           " * url - the url specifying the location of the XML or HTML source",
           ""
         ]
       },
       {
+        "doc" : "Returns an xmlDTDNode object for the predefined entity specified\n\nParameters:\n * entityName - the name of the predefined entity\n\nReturns:\n * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.\n\nNotes:\n * The five predefined entity references (or character references) are:\n   * < (less-than sign)    - with the entity name \"lt\"\n   * > (greater-than sign) - with the entity name \"gt\"\n   * & (ampersand)         - with the entity name \"amp\"\n   * \" (quotation mark)    - with the entity name \"quot\"\n   * ' (apostrophe)        - with the entity name \"apos\"",
         "def" : "hs._asm.xml.predefinedEntityDeclaration(entityName) -> xmlDTDNode object",
         "stripped_doc" : [
           "Returns an xmlDTDNode object for the predefined entity specified",
           ""
         ],
-        "doc" : "Returns an xmlDTDNode object for the predefined entity specified\n\nParameters:\n * entityName - the name of the predefined entity\n\nReturns:\n * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.\n\nNotes:\n * The five predefined entity references (or character references) are:\n   * < (less-than sign)    - with the entity name \"lt\"\n   * > (greater-than sign) - with the entity name \"gt\"\n   * & (ampersand)         - with the entity name \"amp\"\n   * \" (quotation mark)    - with the entity name \"quot\"\n   * ' (apostrophe)        - with the entity name \"apos\"",
-        "desc" : "Returns an xmlDTDNode object for the predefined entity specified",
+        "name" : "predefinedEntityDeclaration",
         "notes" : [
           " * The five predefined entity references (or character references) are:",
           "   * < (less-than sign)    - with the entity name \"lt\"",
@@ -299,20 +952,20 @@
           " * an xmlDTDNode object for the specified predefined entity, or nil if no predefined entity with that name exists.",
           ""
         ],
-        "name" : "predefinedEntityDeclaration",
+        "desc" : "Returns an xmlDTDNode object for the predefined entity specified",
         "parameters" : [
           " * entityName - the name of the predefined entity",
           ""
         ]
       },
       {
+        "doc" : "Returns the URI associated with the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the URI associated with the xmlObject\n\nNotes:\n * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set.",
         "def" : "hs._asm.xml:URI() -> string",
         "stripped_doc" : [
           "Returns the URI associated with the xmlObject.",
           ""
         ],
-        "doc" : "Returns the URI associated with the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the URI associated with the xmlObject\n\nNotes:\n * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set.",
-        "desc" : "Returns the URI associated with the xmlObject.",
+        "name" : "URI",
         "notes" : [
           " * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set."
         ],
@@ -322,20 +975,20 @@
           " * the URI associated with the xmlObject",
           ""
         ],
-        "name" : "URI",
+        "desc" : "Returns the URI associated with the xmlObject.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.\n\nParameters:\n * None\n\nReturns:\n * the XPath expression identifying the xmlObject node’s location in the document tree.",
         "def" : "hs._asm.xml:XPath() -> string",
         "stripped_doc" : [
           "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
           ""
         ],
-        "doc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.\n\nParameters:\n * None\n\nReturns:\n * the XPath expression identifying the xmlObject node’s location in the document tree.",
-        "desc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
+        "name" : "XPath",
         "notes" : [
 
         ],
@@ -344,20 +997,20 @@
         "returns" : [
           " * the XPath expression identifying the xmlObject node’s location in the document tree."
         ],
-        "name" : "XPath",
+        "desc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.\n\nParameters:\n * query - an optional string that specifies an XPath query.  Defaults to \".\".\n\nReturns:\n * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node.",
         "def" : "hs._asm.xml:XPathQuery([query]) -> table",
         "stripped_doc" : [
           "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
           ""
         ],
-        "doc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.\n\nParameters:\n * query - an optional string that specifies an XPath query.  Defaults to \".\".\n\nReturns:\n * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node.",
-        "desc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
+        "name" : "XPathQuery",
         "notes" : [
 
         ],
@@ -366,20 +1019,20 @@
         "returns" : [
           " * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node."
         ],
-        "name" : "XPathQuery",
+        "desc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
         "parameters" : [
           " * query - an optional string that specifies an XPath query.  Defaults to \".\".",
           ""
         ]
       },
       {
+        "doc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.\n\nParameters:\n * query     - an optional string that specifies an XQuery query.  Defaults to \".\".\n * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.\n\nReturns:\n * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node.",
         "def" : "hs._asm.xml:XQuery([query], [constants]) -> table",
         "stripped_doc" : [
           "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
           ""
         ],
-        "doc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.\n\nParameters:\n * query     - an optional string that specifies an XQuery query.  Defaults to \".\".\n * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.\n\nReturns:\n * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node.",
-        "desc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
+        "name" : "XQuery",
         "notes" : [
 
         ],
@@ -388,7 +1041,7 @@
         "returns" : [
           " * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node."
         ],
-        "name" : "XQuery",
+        "desc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
         "parameters" : [
           " * query     - an optional string that specifies an XQuery query.  Defaults to \".\".",
           " * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.",
@@ -396,13 +1049,13 @@
         ]
       },
       {
+        "doc" : "Returns a string encapsulating the object’s XML in canonical form.\n\nParameters:\n * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.\n\nReturns:\n * a string encapsulating the object’s XML in canonical form.\n\nNotes:\n * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:\n   * Encodes the document in UTF-8.\n   * Normalizes line breaks to “#xA” on input before parsing.\n   * Normalizes attribute values in the manner of a validating processor.\n   * Replaces character and parsed entity references with their character content.\n   * Replaces CDATA sections with their character content.\n   * Removes the XML declaration and the document type declaration (DTD).\n   * Converts empty elements to start-end tag pairs.\n   * Normalizes whitespace outside of the document element and within start and end tags.\n   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).\n   * Sets attribute value delimiters to quotation marks (double quotes).\n   * Replaces special characters in attribute values and character content with character references.\n   * Removes superfluous namespace declarations from each element.\n   * Adds default attributes to each element.\n   * Imposes lexicographic order on the namespace declarations and attributes of each element.",
         "def" : "hs._asm.xml:canonicalXMLString([comments]) -> string",
         "stripped_doc" : [
           "Returns a string encapsulating the object’s XML in canonical form.",
           ""
         ],
-        "doc" : "Returns a string encapsulating the object’s XML in canonical form.\n\nParameters:\n * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.\n\nReturns:\n * a string encapsulating the object’s XML in canonical form.\n\nNotes:\n * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:\n   * Encodes the document in UTF-8.\n   * Normalizes line breaks to “#xA” on input before parsing.\n   * Normalizes attribute values in the manner of a validating processor.\n   * Replaces character and parsed entity references with their character content.\n   * Replaces CDATA sections with their character content.\n   * Removes the XML declaration and the document type declaration (DTD).\n   * Converts empty elements to start-end tag pairs.\n   * Normalizes whitespace outside of the document element and within start and end tags.\n   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).\n   * Sets attribute value delimiters to quotation marks (double quotes).\n   * Replaces special characters in attribute values and character content with character references.\n   * Removes superfluous namespace declarations from each element.\n   * Adds default attributes to each element.\n   * Imposes lexicographic order on the namespace declarations and attributes of each element.",
-        "desc" : "Returns a string encapsulating the object’s XML in canonical form.",
+        "name" : "canonicalXMLString",
         "notes" : [
           " * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:",
           "   * Encodes the document in UTF-8.",
@@ -426,20 +1079,20 @@
           " * a string encapsulating the object’s XML in canonical form.",
           ""
         ],
-        "name" : "canonicalXMLString",
+        "desc" : "Returns a string encapsulating the object’s XML in canonical form.",
         "parameters" : [
           " * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.",
           ""
         ]
       },
       {
+        "doc" : "Returns the child node at the specified index.\n\nParameters:\n * index - an integer index specifying the child object to return\n\nReturns:\n * an xmlNode object, or nil if no child exists at that index\n\nNotes:\n * The returned node object can represent an element, comment, text, or processing instruction.",
         "def" : "hs._asm.xml:childAtIndex(index) -> xmlNode obejct",
         "stripped_doc" : [
           "Returns the child node at the specified index.",
           ""
         ],
-        "doc" : "Returns the child node at the specified index.\n\nParameters:\n * index - an integer index specifying the child object to return\n\nReturns:\n * an xmlNode object, or nil if no child exists at that index\n\nNotes:\n * The returned node object can represent an element, comment, text, or processing instruction.",
-        "desc" : "Returns the child node at the specified index.",
+        "name" : "childAtIndex",
         "notes" : [
           " * The returned node object can represent an element, comment, text, or processing instruction."
         ],
@@ -449,20 +1102,20 @@
           " * an xmlNode object, or nil if no child exists at that index",
           ""
         ],
-        "name" : "childAtIndex",
+        "desc" : "Returns the child node at the specified index.",
         "parameters" : [
           " * index - an integer index specifying the child object to return",
           ""
         ]
       },
       {
+        "doc" : "Returns the number of child nodes for the object.\n\nParameters:\n * None\n\nReturns:\n * the number of child nodes for the object",
         "def" : "hs._asm.xml:childCount() -> integer",
         "stripped_doc" : [
           "Returns the number of child nodes for the object.",
           ""
         ],
-        "doc" : "Returns the number of child nodes for the object.\n\nParameters:\n * None\n\nReturns:\n * the number of child nodes for the object",
-        "desc" : "Returns the number of child nodes for the object.",
+        "name" : "childCount",
         "notes" : [
 
         ],
@@ -471,20 +1124,20 @@
         "returns" : [
           " * the number of child nodes for the object"
         ],
-        "name" : "childCount",
+        "desc" : "Returns the number of child nodes for the object.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the children of the object in a table as an array.\n\nParameters:\n * None\n\nReturns:\n * the children of the object in a table as an array.",
         "def" : "hs._asm.xml:children() -> table",
         "stripped_doc" : [
           "Returns the children of the object in a table as an array.",
           ""
         ],
-        "doc" : "Returns the children of the object in a table as an array.\n\nParameters:\n * None\n\nReturns:\n * the children of the object in a table as an array.",
-        "desc" : "Returns the children of the object in a table as an array.",
+        "name" : "children",
         "notes" : [
 
         ],
@@ -493,20 +1146,20 @@
         "returns" : [
           " * the children of the object in a table as an array."
         ],
-        "name" : "children",
+        "desc" : "Returns the children of the object in a table as an array.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the index of the object identifying its position relative to its sibling nodes.\n\nParameters:\n * None\n\nReturns:\n * the index of the object identifying its position relative to its sibling nodes.",
         "def" : "hs._asm.xml:index() -> integer",
         "stripped_doc" : [
           "Returns the index of the object identifying its position relative to its sibling nodes.",
           ""
         ],
-        "doc" : "Returns the index of the object identifying its position relative to its sibling nodes.\n\nParameters:\n * None\n\nReturns:\n * the index of the object identifying its position relative to its sibling nodes.",
-        "desc" : "Returns the index of the object identifying its position relative to its sibling nodes.",
+        "name" : "index",
         "notes" : [
 
         ],
@@ -515,20 +1168,20 @@
         "returns" : [
           " * the index of the object identifying its position relative to its sibling nodes."
         ],
-        "name" : "index",
+        "desc" : "Returns the index of the object identifying its position relative to its sibling nodes.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the kind of node the object is as a string.\n\nParameters:\n * None\n\nReturns:\n * a string representing the type of information represented by this node.  Possible values include:\n   * invalid               - a node object created without a valid kind being specified\n   * document              - a document node\n   * element               - an element node\n   * attribute             - an attribute node\n   * namespace             - a namespace node\n   * processingInstruction - a processing instruction node\n   * comment               - a comment node\n   * text                  - a text node\n   * DTD                   - a document type declaration node\n   * entityDeclaration     - an entity declaration node\n   * attributeDeclaration  - an attribute declaration node\n   * elementDeclaration    - an element declaration node\n   * notationDeclaration   - a notation declaration\n   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated.",
         "def" : "hs._asm.xml:kind() -> string",
         "stripped_doc" : [
           "Returns the kind of node the object is as a string.",
           ""
         ],
-        "doc" : "Returns the kind of node the object is as a string.\n\nParameters:\n * None\n\nReturns:\n * a string representing the type of information represented by this node.  Possible values include:\n   * invalid               - a node object created without a valid kind being specified\n   * document              - a document node\n   * element               - an element node\n   * attribute             - an attribute node\n   * namespace             - a namespace node\n   * processingInstruction - a processing instruction node\n   * comment               - a comment node\n   * text                  - a text node\n   * DTD                   - a document type declaration node\n   * entityDeclaration     - an entity declaration node\n   * attributeDeclaration  - an attribute declaration node\n   * elementDeclaration    - an element declaration node\n   * notationDeclaration   - a notation declaration\n   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated.",
-        "desc" : "Returns the kind of node the object is as a string.",
+        "name" : "kind",
         "notes" : [
 
         ],
@@ -551,20 +1204,20 @@
           "   * notationDeclaration   - a notation declaration",
           "   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated."
         ],
-        "name" : "kind",
+        "desc" : "Returns the kind of node the object is as a string.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the nesting level of the object within the tree hierarchy.\n\nParameters:\n * None\n\nReturns:\n * the nesting level of the object within the tree hierarchy.\n\nNotes:\n * The root element of a document has a nesting level of one.",
         "def" : "hs._asm.xml:level() -> integer",
         "stripped_doc" : [
           "Returns the nesting level of the object within the tree hierarchy.",
           ""
         ],
-        "doc" : "Returns the nesting level of the object within the tree hierarchy.\n\nParameters:\n * None\n\nReturns:\n * the nesting level of the object within the tree hierarchy.\n\nNotes:\n * The root element of a document has a nesting level of one.",
-        "desc" : "Returns the nesting level of the object within the tree hierarchy.",
+        "name" : "level",
         "notes" : [
           " * The root element of a document has a nesting level of one."
         ],
@@ -574,20 +1227,20 @@
           " * the nesting level of the object within the tree hierarchy.",
           ""
         ],
-        "name" : "level",
+        "desc" : "Returns the nesting level of the object within the tree hierarchy.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the local name of the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the local name of the xmlObject.\n\nNotes:\n * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon.",
         "def" : "hs._asm.xml:localName() -> string",
         "stripped_doc" : [
           "Returns the local name of the xmlObject.",
           ""
         ],
-        "doc" : "Returns the local name of the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the local name of the xmlObject.\n\nNotes:\n * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon.",
-        "desc" : "Returns the local name of the xmlObject.",
+        "name" : "localName",
         "notes" : [
           " * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon."
         ],
@@ -597,20 +1250,20 @@
           " * the local name of the xmlObject.",
           ""
         ],
-        "name" : "localName",
+        "desc" : "Returns the local name of the xmlObject.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the name of the object node.\n\nParameters:\n * None\n\nReturns:\n * the name of the object node or nil if the object does not have a name.\n\nNotes:\n * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil.",
         "def" : "hs._asm.xml:name() -> string",
         "stripped_doc" : [
           "Returns the name of the object node.",
           ""
         ],
-        "doc" : "Returns the name of the object node.\n\nParameters:\n * None\n\nReturns:\n * the name of the object node or nil if the object does not have a name.\n\nNotes:\n * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil.",
-        "desc" : "Returns the name of the object node.",
+        "name" : "name",
         "notes" : [
           " * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil."
         ],
@@ -620,20 +1273,20 @@
           " * the name of the object node or nil if the object does not have a name.",
           ""
         ],
-        "name" : "name",
+        "desc" : "Returns the name of the object node.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the next xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
         "def" : "hs._asm.xml:nextNode() -> xmlNode object",
         "stripped_doc" : [
           "Returns the next xmlNode object in document order.",
           ""
         ],
-        "doc" : "Returns the next xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
-        "desc" : "Returns the next xmlNode object in document order.",
+        "name" : "nextNode",
         "notes" : [
           " * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
         ],
@@ -643,20 +1296,20 @@
           " * the next xmlNode object in document order.",
           ""
         ],
-        "name" : "nextNode",
+        "desc" : "Returns the next xmlNode object in document order.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the next xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil.",
         "def" : "hs._asm.xml:nextSibling() -> xmlNode object",
         "stripped_doc" : [
           "Returns the next xmlNode object that is a sibling node to the object.",
           ""
         ],
-        "doc" : "Returns the next xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil.",
-        "desc" : "Returns the next xmlNode object that is a sibling node to the object.",
+        "name" : "nextSibling",
         "notes" : [
           " * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil."
         ],
@@ -666,20 +1319,20 @@
           " * the next xmlNode object that is a sibling node to the object.",
           ""
         ],
-        "name" : "nextSibling",
+        "desc" : "Returns the next xmlNode object that is a sibling node to the object.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the specific NSXML class type of the object as a string.\n\nParameters:\n * None\n\nReturns:\n * the XML class type as a string\n\nNotes:\n * the possible returned values are as follows:\n   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.\n   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure\n   * NSXMLElement  - the object represents an element node in an XML tree structure\n   * NSXMLDTD      - the object represents a Document Type Definition\n   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration",
         "def" : "hs._asm.xml:nodeType() -> string",
         "stripped_doc" : [
           "Returns the specific NSXML class type of the object as a string.",
           ""
         ],
-        "doc" : "Returns the specific NSXML class type of the object as a string.\n\nParameters:\n * None\n\nReturns:\n * the XML class type as a string\n\nNotes:\n * the possible returned values are as follows:\n   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.\n   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure\n   * NSXMLElement  - the object represents an element node in an XML tree structure\n   * NSXMLDTD      - the object represents a Document Type Definition\n   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration",
-        "desc" : "Returns the specific NSXML class type of the object as a string.",
+        "name" : "nodeType",
         "notes" : [
           " * the possible returned values are as follows:",
           "   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.",
@@ -694,20 +1347,20 @@
           " * the XML class type as a string",
           ""
         ],
-        "name" : "nodeType",
+        "desc" : "Returns the specific NSXML class type of the object as a string.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the value of the xmlObject node.\n\nParameters:\n * None\n\nReturns:\n * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value.",
         "def" : "hs._asm.xml:objectValue() -> object",
         "stripped_doc" : [
           "Returns the value of the xmlObject node.",
           ""
         ],
-        "doc" : "Returns the value of the xmlObject node.\n\nParameters:\n * None\n\nReturns:\n * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value.",
-        "desc" : "Returns the value of the xmlObject node.",
+        "name" : "objectValue",
         "notes" : [
 
         ],
@@ -716,20 +1369,20 @@
         "returns" : [
           " * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value."
         ],
-        "name" : "objectValue",
+        "desc" : "Returns the value of the xmlObject node.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the parent node of the object.\n\nParameters:\n * None\n\nReturns:\n * an xmlNode object, or nil if no parent exists for this object",
         "def" : "hs._asm.xml:parent() -> xmlNode obejct",
         "stripped_doc" : [
           "Returns the parent node of the object.",
           ""
         ],
-        "doc" : "Returns the parent node of the object.\n\nParameters:\n * None\n\nReturns:\n * an xmlNode object, or nil if no parent exists for this object",
-        "desc" : "Returns the parent node of the object.",
+        "name" : "parent",
         "notes" : [
 
         ],
@@ -738,20 +1391,20 @@
         "returns" : [
           " * an xmlNode object, or nil if no parent exists for this object"
         ],
-        "name" : "parent",
+        "desc" : "Returns the parent node of the object.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the prefix (namespace) of the xmlObject’s name.\n\nParameters:\n * None\n\nReturns:\n * the prefix (namespace) of the xmlObject.\n\nNotes:\n * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace.",
         "def" : "hs._asm.xml:prefix() -> string",
         "stripped_doc" : [
           "Returns the prefix (namespace) of the xmlObject’s name.",
           ""
         ],
-        "doc" : "Returns the prefix (namespace) of the xmlObject’s name.\n\nParameters:\n * None\n\nReturns:\n * the prefix (namespace) of the xmlObject.\n\nNotes:\n * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace.",
-        "desc" : "Returns the prefix (namespace) of the xmlObject’s name.",
+        "name" : "prefix",
         "notes" : [
           " * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace."
         ],
@@ -761,20 +1414,20 @@
           " * the prefix (namespace) of the xmlObject.",
           ""
         ],
-        "name" : "prefix",
+        "desc" : "Returns the prefix (namespace) of the xmlObject’s name.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the previous xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
         "def" : "hs._asm.xml:previousNode() -> xmlNode object",
         "stripped_doc" : [
           "Returns the previous xmlNode object in document order.",
           ""
         ],
-        "doc" : "Returns the previous xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
-        "desc" : "Returns the previous xmlNode object in document order.",
+        "name" : "previousNode",
         "notes" : [
           " * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
         ],
@@ -784,20 +1437,20 @@
           " * the previous xmlNode object in document order.",
           ""
         ],
-        "name" : "previousNode",
+        "desc" : "Returns the previous xmlNode object in document order.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the previous xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil.",
         "def" : "hs._asm.xml:previousSibling() -> xmlNode object",
         "stripped_doc" : [
           "Returns the previous xmlNode object that is a sibling node to the object.",
           ""
         ],
-        "doc" : "Returns the previous xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil.",
-        "desc" : "Returns the previous xmlNode object that is a sibling node to the object.",
+        "name" : "previousSibling",
         "notes" : [
           " * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil."
         ],
@@ -807,20 +1460,20 @@
           " * the previous xmlNode object that is a sibling node to the object.",
           ""
         ],
-        "name" : "previousSibling",
+        "desc" : "Returns the previous xmlNode object that is a sibling node to the object.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the xmlObject's public identifier.\n\nParameters:\n * None\n\nReturns:\n * the public identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
         "def" : "hs._asm.xml:publicID() -> string",
         "stripped_doc" : [
           "Returns the xmlObject's public identifier.",
           ""
         ],
-        "doc" : "Returns the xmlObject's public identifier.\n\nParameters:\n * None\n\nReturns:\n * the public identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
-        "desc" : "Returns the xmlObject's public identifier.",
+        "name" : "publicID",
         "notes" : [
 
         ],
@@ -832,20 +1485,20 @@
           "Note:",
           " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
         ],
-        "name" : "publicID",
+        "desc" : "Returns the xmlObject's public identifier.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.\n\nParameters:\n * None\n\nReturns:\n * an xmlDocument object",
         "def" : "hs._asm.xml:rootDocument() -> xmlDocument obejct",
         "stripped_doc" : [
           "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
           ""
         ],
-        "doc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.\n\nParameters:\n * None\n\nReturns:\n * an xmlDocument object",
-        "desc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
+        "name" : "rootDocument",
         "notes" : [
 
         ],
@@ -854,20 +1507,20 @@
         "returns" : [
           " * an xmlDocument object"
         ],
-        "name" : "rootDocument",
+        "desc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * value - The value you want to set the string value to.\n\nReturns:\n * the content of the xmlObject as a string value.",
         "def" : "hs._asm.xml:setStringValue(value) -> string",
         "stripped_doc" : [
           "Returns the content of the xmlObject as a string value.",
           ""
         ],
-        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * value - The value you want to set the string value to.\n\nReturns:\n * the content of the xmlObject as a string value.",
-        "desc" : "Returns the content of the xmlObject as a string value.",
+        "name" : "setStringValue",
         "notes" : [
 
         ],
@@ -876,20 +1529,20 @@
         "returns" : [
           " * the content of the xmlObject as a string value."
         ],
-        "name" : "setStringValue",
+        "desc" : "Returns the content of the xmlObject as a string value.",
         "parameters" : [
           " * value - The value you want to set the string value to.",
           ""
         ]
       },
       {
+        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * None\n\nReturns:\n * the content of the xmlObject as a string value.\n\nNotes:\n * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.\n * If the receiver’s content is set as an object value, this method returns the string value representing the object.\n * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.\n * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type.",
         "def" : "hs._asm.xml:stringValue() -> string",
         "stripped_doc" : [
           "Returns the content of the xmlObject as a string value.",
           ""
         ],
-        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * None\n\nReturns:\n * the content of the xmlObject as a string value.\n\nNotes:\n * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.\n * If the receiver’s content is set as an object value, this method returns the string value representing the object.\n * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.\n * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type.",
-        "desc" : "Returns the content of the xmlObject as a string value.",
+        "name" : "stringValue",
         "notes" : [
           " * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.",
           " * If the receiver’s content is set as an object value, this method returns the string value representing the object.",
@@ -902,20 +1555,20 @@
           " * the content of the xmlObject as a string value.",
           ""
         ],
-        "name" : "stringValue",
+        "desc" : "Returns the content of the xmlObject as a string value.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the xmlObject's system identifier.\n\nParameters:\n * None\n\nReturns:\n * the system identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
         "def" : "hs._asm.xml:systemID() -> string",
         "stripped_doc" : [
           "Returns the xmlObject's system identifier.",
           ""
         ],
-        "doc" : "Returns the xmlObject's system identifier.\n\nParameters:\n * None\n\nReturns:\n * the system identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
-        "desc" : "Returns the xmlObject's system identifier.",
+        "name" : "systemID",
         "notes" : [
 
         ],
@@ -927,20 +1580,20 @@
           "Note:",
           " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
         ],
-        "name" : "systemID",
+        "desc" : "Returns the xmlObject's system identifier.",
         "parameters" : [
           " * None",
           ""
         ]
       },
       {
+        "doc" : "Returns the string representation of the object as it would appear in an XML document.\n\nParameters:\n * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.\n\nReturns:\n * the string representation of the object as it would appear in an XML document.\n\nNotes:\n * The returned string includes the string representations of all children.",
         "def" : "hs._asm.xml:xmlString([options]) -> string",
         "stripped_doc" : [
           "Returns the string representation of the object as it would appear in an XML document.",
           ""
         ],
-        "doc" : "Returns the string representation of the object as it would appear in an XML document.\n\nParameters:\n * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.\n\nReturns:\n * the string representation of the object as it would appear in an XML document.\n\nNotes:\n * The returned string includes the string representations of all children.",
-        "desc" : "Returns the string representation of the object as it would appear in an XML document.",
+        "name" : "xmlString",
         "notes" : [
           " * The returned string includes the string representations of all children."
         ],
@@ -950,7 +1603,7 @@
           " * the string representation of the object as it would appear in an XML document.",
           ""
         ],
-        "name" : "xmlString",
+        "desc" : "Returns the string representation of the object as it would appear in an XML document.",
         "parameters" : [
           " * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.",
           ""
@@ -959,659 +1612,6 @@
     ],
     "Field" : [
 
-    ],
-    "Method" : [
-      {
-        "def" : "hs._asm.xml:nodeType() -> string",
-        "stripped_doc" : [
-          "Returns the specific NSXML class type of the object as a string.",
-          ""
-        ],
-        "doc" : "Returns the specific NSXML class type of the object as a string.\n\nParameters:\n * None\n\nReturns:\n * the XML class type as a string\n\nNotes:\n * the possible returned values are as follows:\n   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.\n   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure\n   * NSXMLElement  - the object represents an element node in an XML tree structure\n   * NSXMLDTD      - the object represents a Document Type Definition\n   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration",
-        "desc" : "Returns the specific NSXML class type of the object as a string.",
-        "notes" : [
-          " * the possible returned values are as follows:",
-          "   * NSXMLNode     - the base class; generally, you should not see this value, as a more specific label from the following should be returned instead.",
-          "   * NSXMLDocument - the object represents an XML Document internalized into a logical tree structure",
-          "   * NSXMLElement  - the object represents an element node in an XML tree structure",
-          "   * NSXMLDTD      - the object represents a Document Type Definition",
-          "   * NSXMLDTDNode  - the object represents an element, attribute-list, entity, or notation declaration in a Document Type Declaration"
-        ],
-        "signature" : "hs._asm.xml:nodeType() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the XML class type as a string",
-          ""
-        ],
-        "name" : "nodeType",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:rootDocument() -> xmlDocument obejct",
-        "stripped_doc" : [
-          "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
-          ""
-        ],
-        "doc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.\n\nParameters:\n * None\n\nReturns:\n * an xmlDocument object",
-        "desc" : "Returns the NSXMLDocument object containing the root element and representing the XML document as a whole.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:rootDocument() -> xmlDocument obejct",
-        "type" : "Method",
-        "returns" : [
-          " * an xmlDocument object"
-        ],
-        "name" : "rootDocument",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:parent() -> xmlNode obejct",
-        "stripped_doc" : [
-          "Returns the parent node of the object.",
-          ""
-        ],
-        "doc" : "Returns the parent node of the object.\n\nParameters:\n * None\n\nReturns:\n * an xmlNode object, or nil if no parent exists for this object",
-        "desc" : "Returns the parent node of the object.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:parent() -> xmlNode obejct",
-        "type" : "Method",
-        "returns" : [
-          " * an xmlNode object, or nil if no parent exists for this object"
-        ],
-        "name" : "parent",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:childAtIndex(index) -> xmlNode obejct",
-        "stripped_doc" : [
-          "Returns the child node at the specified index.",
-          ""
-        ],
-        "doc" : "Returns the child node at the specified index.\n\nParameters:\n * index - an integer index specifying the child object to return\n\nReturns:\n * an xmlNode object, or nil if no child exists at that index\n\nNotes:\n * The returned node object can represent an element, comment, text, or processing instruction.",
-        "desc" : "Returns the child node at the specified index.",
-        "notes" : [
-          " * The returned node object can represent an element, comment, text, or processing instruction."
-        ],
-        "signature" : "hs._asm.xml:childAtIndex(index) -> xmlNode obejct",
-        "type" : "Method",
-        "returns" : [
-          " * an xmlNode object, or nil if no child exists at that index",
-          ""
-        ],
-        "name" : "childAtIndex",
-        "parameters" : [
-          " * index - an integer index specifying the child object to return",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:childCount() -> integer",
-        "stripped_doc" : [
-          "Returns the number of child nodes for the object.",
-          ""
-        ],
-        "doc" : "Returns the number of child nodes for the object.\n\nParameters:\n * None\n\nReturns:\n * the number of child nodes for the object",
-        "desc" : "Returns the number of child nodes for the object.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:childCount() -> integer",
-        "type" : "Method",
-        "returns" : [
-          " * the number of child nodes for the object"
-        ],
-        "name" : "childCount",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:children() -> table",
-        "stripped_doc" : [
-          "Returns the children of the object in a table as an array.",
-          ""
-        ],
-        "doc" : "Returns the children of the object in a table as an array.\n\nParameters:\n * None\n\nReturns:\n * the children of the object in a table as an array.",
-        "desc" : "Returns the children of the object in a table as an array.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:children() -> table",
-        "type" : "Method",
-        "returns" : [
-          " * the children of the object in a table as an array."
-        ],
-        "name" : "children",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:nextNode() -> xmlNode object",
-        "stripped_doc" : [
-          "Returns the next xmlNode object in document order.",
-          ""
-        ],
-        "doc" : "Returns the next xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
-        "desc" : "Returns the next xmlNode object in document order.",
-        "notes" : [
-          " * Use this method to “walk” forward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
-        ],
-        "signature" : "hs._asm.xml:nextNode() -> xmlNode object",
-        "type" : "Method",
-        "returns" : [
-          " * the next xmlNode object in document order.",
-          ""
-        ],
-        "name" : "nextNode",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:nextSibling() -> xmlNode object",
-        "stripped_doc" : [
-          "Returns the next xmlNode object that is a sibling node to the object.",
-          ""
-        ],
-        "doc" : "Returns the next xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the next xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil.",
-        "desc" : "Returns the next xmlNode object that is a sibling node to the object.",
-        "notes" : [
-          " * This object will have an index value that is one more than the object’s. If there are no more subsequent siblings (that is, other child nodes of the object’s parent) the method returns nil."
-        ],
-        "signature" : "hs._asm.xml:nextSibling() -> xmlNode object",
-        "type" : "Method",
-        "returns" : [
-          " * the next xmlNode object that is a sibling node to the object.",
-          ""
-        ],
-        "name" : "nextSibling",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:previousNode() -> xmlNode object",
-        "stripped_doc" : [
-          "Returns the previous xmlNode object in document order.",
-          ""
-        ],
-        "doc" : "Returns the previous xmlNode object in document order.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object in document order.\n\nNotes:\n * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order.",
-        "desc" : "Returns the previous xmlNode object in document order.",
-        "notes" : [
-          " * Use this method to “walk” backward through the tree structure representing an XML document or document section. Document order is the natural order that XML constructs appear in markup text. This method bypasses namespace and attribute nodes when traversing the tree in document order."
-        ],
-        "signature" : "hs._asm.xml:previousNode() -> xmlNode object",
-        "type" : "Method",
-        "returns" : [
-          " * the previous xmlNode object in document order.",
-          ""
-        ],
-        "name" : "previousNode",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:previousSibling() -> xmlNode object",
-        "stripped_doc" : [
-          "Returns the previous xmlNode object that is a sibling node to the object.",
-          ""
-        ],
-        "doc" : "Returns the previous xmlNode object that is a sibling node to the object.\n\nParameters:\n * None\n\nReturns:\n * the previous xmlNode object that is a sibling node to the object.\n\nNotes:\n * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil.",
-        "desc" : "Returns the previous xmlNode object that is a sibling node to the object.",
-        "notes" : [
-          " * This object will have an index value that is one less than the object’s. If there are no more previous siblings (that is, other child nodes of the object’s parent) the method returns nil."
-        ],
-        "signature" : "hs._asm.xml:previousSibling() -> xmlNode object",
-        "type" : "Method",
-        "returns" : [
-          " * the previous xmlNode object that is a sibling node to the object.",
-          ""
-        ],
-        "name" : "previousSibling",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:xmlString([options]) -> string",
-        "stripped_doc" : [
-          "Returns the string representation of the object as it would appear in an XML document.",
-          ""
-        ],
-        "doc" : "Returns the string representation of the object as it would appear in an XML document.\n\nParameters:\n * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.\n\nReturns:\n * the string representation of the object as it would appear in an XML document.\n\nNotes:\n * The returned string includes the string representations of all children.",
-        "desc" : "Returns the string representation of the object as it would appear in an XML document.",
-        "notes" : [
-          " * The returned string includes the string representations of all children."
-        ],
-        "signature" : "hs._asm.xml:xmlString([options]) -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the string representation of the object as it would appear in an XML document.",
-          ""
-        ],
-        "name" : "xmlString",
-        "parameters" : [
-          " * options - an optional integer value made by logically OR'ing together options described in [hs._asm.xml.nodeOptions](#nodeOptions).  Defaults to `hs._asm.xml.nodeOptions.optionsNone`.",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:canonicalXMLString([comments]) -> string",
-        "stripped_doc" : [
-          "Returns a string encapsulating the object’s XML in canonical form.",
-          ""
-        ],
-        "doc" : "Returns a string encapsulating the object’s XML in canonical form.\n\nParameters:\n * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.\n\nReturns:\n * a string encapsulating the object’s XML in canonical form.\n\nNotes:\n * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:\n   * Encodes the document in UTF-8.\n   * Normalizes line breaks to “#xA” on input before parsing.\n   * Normalizes attribute values in the manner of a validating processor.\n   * Replaces character and parsed entity references with their character content.\n   * Replaces CDATA sections with their character content.\n   * Removes the XML declaration and the document type declaration (DTD).\n   * Converts empty elements to start-end tag pairs.\n   * Normalizes whitespace outside of the document element and within start and end tags.\n   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).\n   * Sets attribute value delimiters to quotation marks (double quotes).\n   * Replaces special characters in attribute values and character content with character references.\n   * Removes superfluous namespace declarations from each element.\n   * Adds default attributes to each element.\n   * Imposes lexicographic order on the namespace declarations and attributes of each element.",
-        "desc" : "Returns a string encapsulating the object’s XML in canonical form.",
-        "notes" : [
-          " * The canonical form of an XML document is defined by the World Wide Web Consortium at http:\/\/www.w3.org\/TR\/xml-c14n. Generally, if two documents with varying physical representations have the same canonical form, then they are considered logically equivalent within the given application context. The following list summarizes most key aspects of canonical form as defined by the W3C recommendation:",
-          "   * Encodes the document in UTF-8.",
-          "   * Normalizes line breaks to “#xA” on input before parsing.",
-          "   * Normalizes attribute values in the manner of a validating processor.",
-          "   * Replaces character and parsed entity references with their character content.",
-          "   * Replaces CDATA sections with their character content.",
-          "   * Removes the XML declaration and the document type declaration (DTD).",
-          "   * Converts empty elements to start-end tag pairs.",
-          "   * Normalizes whitespace outside of the document element and within start and end tags.",
-          "   * Retains all whitespace characters in content (excluding characters removed during line-feed normalization).",
-          "   * Sets attribute value delimiters to quotation marks (double quotes).",
-          "   * Replaces special characters in attribute values and character content with character references.",
-          "   * Removes superfluous namespace declarations from each element.",
-          "   * Adds default attributes to each element.",
-          "   * Imposes lexicographic order on the namespace declarations and attributes of each element."
-        ],
-        "signature" : "hs._asm.xml:canonicalXMLString([comments]) -> string",
-        "type" : "Method",
-        "returns" : [
-          " * a string encapsulating the object’s XML in canonical form.",
-          ""
-        ],
-        "name" : "canonicalXMLString",
-        "parameters" : [
-          " * comments - an optional boolean indicating whether or not comment nodes should be included.  Defaults to true.",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:index() -> integer",
-        "stripped_doc" : [
-          "Returns the index of the object identifying its position relative to its sibling nodes.",
-          ""
-        ],
-        "doc" : "Returns the index of the object identifying its position relative to its sibling nodes.\n\nParameters:\n * None\n\nReturns:\n * the index of the object identifying its position relative to its sibling nodes.",
-        "desc" : "Returns the index of the object identifying its position relative to its sibling nodes.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:index() -> integer",
-        "type" : "Method",
-        "returns" : [
-          " * the index of the object identifying its position relative to its sibling nodes."
-        ],
-        "name" : "index",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:kind() -> string",
-        "stripped_doc" : [
-          "Returns the kind of node the object is as a string.",
-          ""
-        ],
-        "doc" : "Returns the kind of node the object is as a string.\n\nParameters:\n * None\n\nReturns:\n * a string representing the type of information represented by this node.  Possible values include:\n   * invalid               - a node object created without a valid kind being specified\n   * document              - a document node\n   * element               - an element node\n   * attribute             - an attribute node\n   * namespace             - a namespace node\n   * processingInstruction - a processing instruction node\n   * comment               - a comment node\n   * text                  - a text node\n   * DTD                   - a document type declaration node\n   * entityDeclaration     - an entity declaration node\n   * attributeDeclaration  - an attribute declaration node\n   * elementDeclaration    - an element declaration node\n   * notationDeclaration   - a notation declaration\n   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated.",
-        "desc" : "Returns the kind of node the object is as a string.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:kind() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * a string representing the type of information represented by this node.  Possible values include:",
-          "   * invalid               - a node object created without a valid kind being specified",
-          "   * document              - a document node",
-          "   * element               - an element node",
-          "   * attribute             - an attribute node",
-          "   * namespace             - a namespace node",
-          "   * processingInstruction - a processing instruction node",
-          "   * comment               - a comment node",
-          "   * text                  - a text node",
-          "   * DTD                   - a document type declaration node",
-          "   * entityDeclaration     - an entity declaration node",
-          "   * attributeDeclaration  - an attribute declaration node",
-          "   * elementDeclaration    - an element declaration node",
-          "   * notationDeclaration   - a notation declaration",
-          "   * unknown               - should not occur -- the presence of this value indicates that an error has occurred of that Apple has changed the NSXML* classes and this module should be updated."
-        ],
-        "name" : "kind",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:level() -> integer",
-        "stripped_doc" : [
-          "Returns the nesting level of the object within the tree hierarchy.",
-          ""
-        ],
-        "doc" : "Returns the nesting level of the object within the tree hierarchy.\n\nParameters:\n * None\n\nReturns:\n * the nesting level of the object within the tree hierarchy.\n\nNotes:\n * The root element of a document has a nesting level of one.",
-        "desc" : "Returns the nesting level of the object within the tree hierarchy.",
-        "notes" : [
-          " * The root element of a document has a nesting level of one."
-        ],
-        "signature" : "hs._asm.xml:level() -> integer",
-        "type" : "Method",
-        "returns" : [
-          " * the nesting level of the object within the tree hierarchy.",
-          ""
-        ],
-        "name" : "level",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:name() -> string",
-        "stripped_doc" : [
-          "Returns the name of the object node.",
-          ""
-        ],
-        "doc" : "Returns the name of the object node.\n\nParameters:\n * None\n\nReturns:\n * the name of the object node or nil if the object does not have a name.\n\nNotes:\n * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil.",
-        "desc" : "Returns the name of the object node.",
-        "notes" : [
-          " * This method is applicable only to objects representing elements, attributes, namespaces, processing instructions, and DTD-declaration nodes. If the object is not one of these kinds, this method returns nil."
-        ],
-        "signature" : "hs._asm.xml:name() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the name of the object node or nil if the object does not have a name.",
-          ""
-        ],
-        "name" : "name",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:objectValue() -> object",
-        "stripped_doc" : [
-          "Returns the value of the xmlObject node.",
-          ""
-        ],
-        "doc" : "Returns the value of the xmlObject node.\n\nParameters:\n * None\n\nReturns:\n * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value.",
-        "desc" : "Returns the value of the xmlObject node.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:objectValue() -> object",
-        "type" : "Method",
-        "returns" : [
-          " * the value of the xmlObject node.  For nodes without content (for example, document nodes), this method returns the same value as [hs._asm.xml:stringValue](#stringValue), or an empty string if there is no string value."
-        ],
-        "name" : "objectValue",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:stringValue() -> string",
-        "stripped_doc" : [
-          "Returns the content of the xmlObject as a string value.",
-          ""
-        ],
-        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * None\n\nReturns:\n * the content of the xmlObject as a string value.\n\nNotes:\n * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.\n * If the receiver’s content is set as an object value, this method returns the string value representing the object.\n * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.\n * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type.",
-        "desc" : "Returns the content of the xmlObject as a string value.",
-        "notes" : [
-          " * If the receiver is a node object of element kind, the content is that of any text-node children. This method recursively visits elements nodes and concatenates their text nodes in document order with no intervening spaces.",
-          " * If the receiver’s content is set as an object value, this method returns the string value representing the object.",
-          " * If the object value is one of the standard, built-in ones (NSNumber, NSCalendarDate, and so on), the string value is in canonical format as defined by the W3C XML Schema Data Types specification.",
-          " * If the object value is not represented by one of these classes (or if the default value transformer for a class has been overridden), the string value is generated by the NSValueTransformer registered for that object type."
-        ],
-        "signature" : "hs._asm.xml:stringValue() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the content of the xmlObject as a string value.",
-          ""
-        ],
-        "name" : "stringValue",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:setStringValue(value) -> string",
-        "stripped_doc" : [
-          "Returns the content of the xmlObject as a string value.",
-          ""
-        ],
-        "doc" : "Returns the content of the xmlObject as a string value.\n\nParameters:\n * value - The value you want to set the string value to.\n\nReturns:\n * the content of the xmlObject as a string value.",
-        "desc" : "Returns the content of the xmlObject as a string value.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:setStringValue(value) -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the content of the xmlObject as a string value."
-        ],
-        "name" : "setStringValue",
-        "parameters" : [
-          " * value - The value you want to set the string value to.",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:URI() -> string",
-        "stripped_doc" : [
-          "Returns the URI associated with the xmlObject.",
-          ""
-        ],
-        "doc" : "Returns the URI associated with the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the URI associated with the xmlObject\n\nNotes:\n * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set.",
-        "desc" : "Returns the URI associated with the xmlObject.",
-        "notes" : [
-          " * A node’s URI is derived from its namespace or a document’s URI; for documents, the URI comes either from the parsed XML or is explicitly set."
-        ],
-        "signature" : "hs._asm.xml:URI() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the URI associated with the xmlObject",
-          ""
-        ],
-        "name" : "URI",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:localName() -> string",
-        "stripped_doc" : [
-          "Returns the local name of the xmlObject.",
-          ""
-        ],
-        "doc" : "Returns the local name of the xmlObject.\n\nParameters:\n * None\n\nReturns:\n * the local name of the xmlObject.\n\nNotes:\n * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon.",
-        "desc" : "Returns the local name of the xmlObject.",
-        "notes" : [
-          " * The local name is the part of a node name that follows a namespace-qualifying colon or the full name if there is no colon."
-        ],
-        "signature" : "hs._asm.xml:localName() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the local name of the xmlObject.",
-          ""
-        ],
-        "name" : "localName",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:prefix() -> string",
-        "stripped_doc" : [
-          "Returns the prefix (namespace) of the xmlObject’s name.",
-          ""
-        ],
-        "doc" : "Returns the prefix (namespace) of the xmlObject’s name.\n\nParameters:\n * None\n\nReturns:\n * the prefix (namespace) of the xmlObject.\n\nNotes:\n * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace.",
-        "desc" : "Returns the prefix (namespace) of the xmlObject’s name.",
-        "notes" : [
-          " * The prefix is the part of a namespace-qualified name that precedes the colon.  This method returns an empty string if the object’s name is not qualified by a namespace."
-        ],
-        "signature" : "hs._asm.xml:prefix() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the prefix (namespace) of the xmlObject.",
-          ""
-        ],
-        "name" : "prefix",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:XPath() -> string",
-        "stripped_doc" : [
-          "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
-          ""
-        ],
-        "doc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.\n\nParameters:\n * None\n\nReturns:\n * the XPath expression identifying the xmlObject node’s location in the document tree.",
-        "desc" : "Returns the XPath expression identifying the xmlObject node’s location in the document tree.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:XPath() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the XPath expression identifying the xmlObject node’s location in the document tree."
-        ],
-        "name" : "XPath",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:XPathQuery([query]) -> table",
-        "stripped_doc" : [
-          "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
-          ""
-        ],
-        "doc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.\n\nParameters:\n * query - an optional string that specifies an XPath query.  Defaults to \".\".\n\nReturns:\n * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node.",
-        "desc" : "Returns a table containing the nodes resulting from executing an XPath query upon xmlObject.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:XPathQuery([query]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * a table containing the nodes (if any) that match the XPath query within the context of the xmlObject node."
-        ],
-        "name" : "XPathQuery",
-        "parameters" : [
-          " * query - an optional string that specifies an XPath query.  Defaults to \".\".",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:XQuery([query], [constants]) -> table",
-        "stripped_doc" : [
-          "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
-          ""
-        ],
-        "doc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.\n\nParameters:\n * query     - an optional string that specifies an XQuery query.  Defaults to \".\".\n * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.\n\nReturns:\n * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node.",
-        "desc" : "Returns a table containing the nodes resulting from executing an XQuery query upon xmlObject.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:XQuery([query], [constants]) -> table",
-        "type" : "Method",
-        "returns" : [
-          " * a table containing the nodes (if any) that match the XQuery query within the context of the xmlObject node."
-        ],
-        "name" : "XQuery",
-        "parameters" : [
-          " * query     - an optional string that specifies an XQuery query.  Defaults to \".\".",
-          " * constants - an optional table containing the constants required for the query.  Defaults to an empty dictionary.",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:publicID() -> string",
-        "stripped_doc" : [
-          "Returns the xmlObject's public identifier.",
-          ""
-        ],
-        "doc" : "Returns the xmlObject's public identifier.\n\nParameters:\n * None\n\nReturns:\n * the public identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
-        "desc" : "Returns the xmlObject's public identifier.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:publicID() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the public identifier for the xmlObject.",
-          "",
-          "Note:",
-          " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
-        ],
-        "name" : "publicID",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      },
-      {
-        "def" : "hs._asm.xml:systemID() -> string",
-        "stripped_doc" : [
-          "Returns the xmlObject's system identifier.",
-          ""
-        ],
-        "doc" : "Returns the xmlObject's system identifier.\n\nParameters:\n * None\n\nReturns:\n * the system identifier for the xmlObject.\n\nNote:\n * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error.",
-        "desc" : "Returns the xmlObject's system identifier.",
-        "notes" : [
-
-        ],
-        "signature" : "hs._asm.xml:systemID() -> string",
-        "type" : "Method",
-        "returns" : [
-          " * the system identifier for the xmlObject.",
-          "",
-          "Note:",
-          " * this method is only valid for DTD and DTDNode xmlObjects; if used on an xmlObject of a different type, it will result in an error."
-        ],
-        "name" : "systemID",
-        "parameters" : [
-          " * None",
-          ""
-        ]
-      }
     ],
     "Command" : [
 
