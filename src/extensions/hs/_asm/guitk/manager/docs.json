@@ -15,11 +15,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.",
     "Deprecated" : [
 
     ],
-    "desc" : "This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
@@ -46,12 +46,6 @@
       }
     ],
     "doc" : "This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.\n\nA manager can also act as an element to another manager -- this allows for the grouping of elements as single units for display or other purposes. See `hs._asm.guitk.element.button` for a further discussion of this when using the radio button style.\n\nElements can be added and managed through the methods of this module.  There are also metamethods which allow you to manipulate the elements in an array like fashion. Each element is represented as a table and can be accessed from the manager as if it were an array. Valid index numbers range from 1 to `#hs._asm.guitk.manager:elements()` when getting an element or its attributes, or 1 to `#hs._asm.guitk.manager:elements() + 1` when replacing or assigning a new element. To access the userdata representing a specific element you can use the following syntax: `hs._asm.guitk.manager[#]._element` or `hs._asm.guitk.manager(#)` where # is the index number or the string `id` specified in the `frameDetails` attribute described below.\n\nThe specific attributes of each element will depend upon the type of element (see `hs._asm.guitk.element`) and the following manager specific attributes:\n\n* `_element`     - A read-only attribute whos value is the userdata representing the gui element itself.\n* `_fittingSize` - A read-only size-table specifying the default height and width for the element. Not all elements have a default height or width and the value for one or more of these keys may be 0.\n* `_type`        - A read-only string indicating the userdata name for the element.\n* `frameDetails` - A table containing positioning and identification information about the element.  All of it's keys are optional and are as follows:\n  * `x`  - The horizontal position of the elements left side. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.\n  * `rX`  - The horizontal position of the elements right side. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.\n  * `cX` - The horizontal position of the elements center point. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.\n  * `y`  - The vertical position of the elements top. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.\n  * `bY`  - The vertical position of the elements bottom. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.\n  * `cY` - The vertical position of the elements center point. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.\n  * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by the `_fittingSize` attribute. If the default height is 0, then this *must* be set or the element will be effectively invisible.\n  * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by the `_fittingSize` attribute. If the default width is 0, then this *must* be set or the element will be effectively invisible.\n  * `id` - A string specifying an identifier which can be used to reference this element through the manager's metamethods without requiring knowledge of the element's index position.\n\n  * `honorCanvasMove` - A boolean, default nil (false), indicating whether or not the frame wrapper functions for `hs.canvas` objects should honor location changes when made with `hs.canvas:topLeft` or `hs.canvas:frame`. This is a (hopefully temporary) fix because canvas objects are not aware of the `hs._asm.guitk` frameDetails model for element placement.\n\n  * Note that `x`, `rX`, `cX`, `y`, `bY`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `rX`, `cX`, and `w`) or height (for `y`, `bY`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.\n\n* When assigning a new element to the manager through the metamethods, you can assign the userdata directly or by using the table format described above. For example:\n\n~~~lua\nmanager = hs._asm.guitk.manager.new()\nmanager[1] = hs._asm.guitk.element.button.new(...)  -- direct assignment of the element\nmanager[2] = {                                      -- as a table\n  _element = hs._asm.guitk.element.button.new(...), -- the only time that `_element` can be assigned a value\n  frameDetails = { cX = \"50%\", cY = \"50%\" },\n  id = \"secondButton\", -- the only time that `id` can be set outside of the `frameDetails` table\n  -- other button specific attributes as defined in `hs._asm.guitk.element.button`\n}\n~~~\n\nYou can remove an existing element by setting its value to nil, e.g. `manager[1] = nil`.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
@@ -1417,7 +1411,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.manager"
   }
 ]
-Menu Developer Updated: Contents

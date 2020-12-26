@@ -24,21 +24,15 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "THis submodule provides common methods and metamethods linking a variety of visual elements that can be used with `hs._asm.guitk` to build your own visual displays and input  interfaces within Hammerspoon.",
     "Deprecated" : [
 
     ],
-    "desc" : "THis submodule provides common methods and metamethods linking a variety of visual elements that can be used with `hs._asm.guitk` to build your own visual displays and input  interfaces within Hammerspoon.",
+    "type" : "Module",
     "Constructor" : [
 
     ],
     "doc" : "THis submodule provides common methods and metamethods linking a variety of visual elements that can be used with `hs._asm.guitk` to build your own visual displays and input  interfaces within Hammerspoon.\n\nThis module by itself provides no elements, but serves as the glue between it's submodules and the guitk window and manager objects.  Elements are defined as submodules to this and may inherit methods defined in `hs._asm.guitk.element._control` and `hs._asm.guitk.element._view`.  The documentation for each specific element will indicate if it inherits methods from one of these helper submodules.\n\nMethods invoked on element userdata objects which are not recognized by the element itself are passed up the responder chain (`hs._asm.guitk.manager` and `hs._asm.guitk`) as well, allowing you to work from the userdata which is most relevant without having to track the userdata for its supporting infrastructure separately. This will become more clear in the examples provided at a location to be determined (currently in the [..\/Examples](..\/Examples) directory of this repository folder).",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Get or set whether or not the image holder element allows the user to cut, copy, and paste an image to or from the element.",
@@ -174,6 +168,12 @@
           ""
         ]
       }
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
     ],
     "name" : "hs._asm.guitk.element"
   },
@@ -193,21 +193,15 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Common methods inherited by elements which act as controls. Generally these are elements which are manipulated directly by the user to supply information or trigger a desired action.",
     "Deprecated" : [
 
     ],
-    "desc" : "Common methods inherited by elements which act as controls. Generally these are elements which are manipulated directly by the user to supply information or trigger a desired action.",
+    "type" : "Module",
     "Constructor" : [
 
     ],
     "doc" : "Common methods inherited by elements which act as controls. Generally these are elements which are manipulated directly by the user to supply information or trigger a desired action.\n\nCurrently, the elements which inherit these methods are:\n * hs._asm.guitk.element.button\n * hs._asm.guitk.element.colorwell\n * hs._asm.guitk.element.datepicker\n * hs._asm.guitk.element.image\n * hs._asm.guitk.element.slider\n * hs._asm.guitk.element.textfield\n\nmacOS Developer Note: Understanding this is not required for use of the methods provided by this submodule, but for those interested, some of the elements provided under `hs._asm.guitk.element` are subclasses of the macOS NSControl class; macOS methods which belong to NSControl and are not overridden or superseded by more specific or appropriate element specific methods are defined here so that they can be used by all elements which share this common ancestor.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Get or set whether or not the element triggers continuous callbacks when the user interacts with it.",
@@ -663,6 +657,12 @@
           ""
         ]
       }
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
     ],
     "name" : "hs._asm.guitk.element._control"
   },
@@ -682,21 +682,15 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Common methods inherited by all elements defined as submodules. This does not include elements which come from other Hammerspoon modules (currently this is limited to canvas objects, but may be extended to include webview and possibly chooser.)",
     "Deprecated" : [
 
     ],
-    "desc" : "Common methods inherited by all elements defined as submodules. This does not include elements which come from other Hammerspoon modules (currently this is limited to canvas objects, but may be extended to include webview and possibly chooser.)",
+    "type" : "Module",
     "Constructor" : [
 
     ],
     "doc" : "Common methods inherited by all elements defined as submodules. This does not include elements which come from other Hammerspoon modules (currently this is limited to canvas objects, but may be extended to include webview and possibly chooser.)\n\nmacOS Developer Note: Understanding this is not required for use of the methods provided by this submodule, but for those interested, `hs._asm.guitk` works by providing a framework for displaying macOS objects which are subclasses of the NSView class; macOS methods which belong to NSView and are not overridden or superseded by more specific or appropriate element specific methods are defined here so that they can be used by all elements which share this common ancestor.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Get the parent of the current element, usually a `hs._asm.guitk.manager` or `hs._asm.guitk` userdata object.",
@@ -1091,6 +1085,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element._view"
   },
   {
@@ -1109,11 +1109,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides an AudioVisual player element for `hs._asm.guitk`.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides an AudioVisual player element for `hs._asm.guitk`.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new AVPlayer element for `hs._asm.guitk` which can display audiovisual media.",
@@ -1140,12 +1140,6 @@
       }
     ],
     "doc" : "Provides an AudioVisual player element for `hs._asm.guitk`.\n\nIf you wish to include other elements within the window containing the avplayer object, you will need to use an `hs._asm.guitk.manager` object.  However, since this element is fully self contained and provides its own controls for video playback, it may be easier to attach this element directly to a `hs._asm.guitk` window object when you don't require other elements in the visual display.\n\nPlayback of remote or streaming content has been tested against http:\/\/devimages.apple.com\/iphone\/samples\/bipbop\/bipbopall.m3u8, which is a sample URL provided in the Apple documentation at https:\/\/developer.apple.com\/library\/prerelease\/content\/documentation\/AudioVideo\/Conceptual\/AVFoundationPG\/Articles\/02_Playback.html#\/\/apple_ref\/doc\/uid\/TP40010188-CH3-SW4\n\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new AVPlayer element for `hs._asm.guitk` which can display audiovisual media.",
@@ -2461,6 +2455,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.avplayer"
   },
   {
@@ -2479,11 +2479,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides button and checkbox elements for use with `hs._asm.guitk`.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides button and checkbox elements for use with `hs._asm.guitk`.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates an `hs._asm.guitk.manager` object which can be used as an element containing a set of radio buttons with labels defined by the specified title strings.",
@@ -2717,12 +2717,6 @@
       }
     ],
     "doc" : "Provides button and checkbox elements for use with `hs._asm.guitk`.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new button element of the specified type for `hs._asm.guitk`.",
@@ -3897,6 +3891,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.button"
   },
   {
@@ -3964,11 +3964,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides acolorwell element `hs._asm.guitk`. A colorwell is a rectangular swatch of color which the user can click on to pop up the color picker for choosing a new color.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides acolorwell element `hs._asm.guitk`. A colorwell is a rectangular swatch of color which the user can click on to pop up the color picker for choosing a new color.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new colorwell element for `hs._asm.guitk`.",
@@ -3997,12 +3997,6 @@
       }
     ],
     "doc" : "Provides acolorwell element `hs._asm.guitk`. A colorwell is a rectangular swatch of color which the user can click on to pop up the color picker for choosing a new color.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Get or set whether or not the alpha component is ignored in the color picker.",
@@ -4313,6 +4307,12 @@
           ""
         ]
       }
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
     ],
     "name" : "hs._asm.guitk.element.colorwell"
   },
@@ -4407,11 +4407,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides a date picker element for use with `hs._asm.guitk`.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides a date picker element for use with `hs._asm.guitk`.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new date picker element for `hs._asm.guitk`.",
@@ -4440,12 +4440,6 @@
       }
     ],
     "doc" : "Provides a date picker element for use with `hs._asm.guitk`.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "A table which contains an array of strings listing the calendar types supported by the system.",
@@ -5343,6 +5337,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.datepicker"
   },
   {
@@ -5361,11 +5361,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides an image holder element `hs._asm.guitk`. The image can be static, specified by you, or it can be an editable element, allowing the user to change the image through drag-and-drop or cut-and-paste.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides an image holder element `hs._asm.guitk`. The image can be static, specified by you, or it can be an editable element, allowing the user to change the image through drag-and-drop or cut-and-paste.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new image holder element for `hs._asm.guitk`.",
@@ -5394,12 +5394,6 @@
       }
     ],
     "doc" : "Provides an image holder element `hs._asm.guitk`. The image can be static, specified by you, or it can be an editable element, allowing the user to change the image through drag-and-drop or cut-and-paste.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new image holder element for `hs._asm.guitk`.",
@@ -5693,6 +5687,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.image"
   },
   {
@@ -5711,11 +5711,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides spinning and bar progress indicator elements for use with `hs._asm.guitk`.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides spinning and bar progress indicator elements for use with `hs._asm.guitk`.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new Progress Indicator element for `hs._asm.guitk`.",
@@ -5744,12 +5744,6 @@
       }
     ],
     "doc" : "Provides spinning and bar progress indicator elements for use with `hs._asm.guitk`.\n\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new Progress Indicator element for `hs._asm.guitk`.",
@@ -6457,6 +6451,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.progress"
   },
   {
@@ -6475,11 +6475,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides a slider element for use with `hs._asm.guitk`. Sliders are horizontal or vertical bars representing a range of numeric values which can be selected by adjusting the position of the knob on the slider.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides a slider element for use with `hs._asm.guitk`. Sliders are horizontal or vertical bars representing a range of numeric values which can be selected by adjusting the position of the knob on the slider.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new slider element for `hs._asm.guitk`.",
@@ -6506,12 +6506,6 @@
       }
     ],
     "doc" : "Provides a slider element for use with `hs._asm.guitk`. Sliders are horizontal or vertical bars representing a range of numeric values which can be selected by adjusting the position of the knob on the slider.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new slider element for `hs._asm.guitk`.",
@@ -7371,6 +7365,12 @@
         ]
       }
     ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
     "name" : "hs._asm.guitk.element.slider"
   },
   {
@@ -7389,11 +7389,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "Provides text label and input field elements for use with `hs._asm.guitk`.",
     "Deprecated" : [
 
     ],
-    "desc" : "Provides text label and input field elements for use with `hs._asm.guitk`.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new textfield element for `hs._asm.guitk`.",
@@ -7493,12 +7493,6 @@
       }
     ],
     "doc" : "Provides text label and input field elements for use with `hs._asm.guitk`.\n\n* This submodule inherits methods from `hs._asm.guitk.element._control` and you should consult its documentation for additional methods which may be used.\n* This submodule inherits methods from `hs._asm.guitk.element._view` and you should consult its documentation for additional methods which may be used.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "Creates a new textfield element for `hs._asm.guitk`.",
@@ -8632,6 +8626,12 @@
           ""
         ]
       }
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
     ],
     "name" : "hs._asm.guitk.element.textfield"
   }

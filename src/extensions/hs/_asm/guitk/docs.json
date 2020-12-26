@@ -202,11 +202,11 @@
     "stripped_doc" : [
 
     ],
-    "type" : "Module",
+    "desc" : "This module provides a window or panel which can be used to display a variety of graphical elements defined in the submodules or other Hammerspoon modules.",
     "Deprecated" : [
 
     ],
-    "desc" : "This module provides a window or panel which can be used to display a variety of graphical elements defined in the submodules or other Hammerspoon modules.",
+    "type" : "Module",
     "Constructor" : [
       {
         "desc" : "Creates a new empty guitk window that is transparent and has no decorations.",
@@ -269,12 +269,6 @@
       }
     ],
     "doc" : "This module provides a window or panel which can be used to display a variety of graphical elements defined in the submodules or other Hammerspoon modules.\n\nIn the macOS, all visual elements are contained within a \"window\", though many of these windows have no extra decorations (title bar, close button, etc.). This module and its submodules is an attempt to provide a generic toolkit so that you can develop whatever type of visual interface you wish from a single set of tools rather then replicating code across multiple modules. Ultimately this module should be able to replace the other drawing or user interface modules and allow you to mix their components or even create completely new ones.\n\nBy itself, this module just creates the \"window\" and its methods describe how (or if) it should be visible, movable, etc. and provides a notification callback for potentially interesting events, for example when the \"window\" becomes visible, is moved, etc.\n\nSee `hs._asm.guitk.manager` for more information on how to populate a guitkObject with visual elements and `hs._asm.guitk.element` for a description of the currently supported visual elements which can included in a guitk window.",
-    "Field" : [
-
-    ],
-    "Command" : [
-
-    ],
     "items" : [
       {
         "desc" : "A table of predefined window levels usable with [hs._asm.guitk:level](#level)",
@@ -2367,6 +2361,12 @@
           ""
         ]
       }
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
     ],
     "name" : "hs._asm.guitk"
   }
