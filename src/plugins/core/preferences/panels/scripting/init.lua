@@ -1,6 +1,6 @@
 --- === plugins.core.preferences.panels.scripting ===
 ---
---- Snippets Preferences Panel
+--- Scripting Preferences Panel
 
 local require           = require
 

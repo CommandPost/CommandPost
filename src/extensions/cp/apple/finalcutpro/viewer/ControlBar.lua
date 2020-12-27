@@ -22,7 +22,10 @@ local rightToLeft       = axutils.compareRightToLeft
 local cache             = axutils.cache
 local childFromBottom   = axutils.childFromBottom
 local childFromRight    = axutils.childFromRight
+
+local doUntil           = just.doUntil
 local find              = string.find
+local ninjaMouseClick   = tools.ninjaMouseClick
 
 local ControlBar        = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
 
@@ -125,20 +128,20 @@ function ControlBar.lazy.prop:timecode()
                 -- Double click the timecode value in the Viewer:
                 --------------------------------------------------------------------------------
                 self:app():launch()
-                local result = just.doUntil(function()
+                local result = doUntil(function()
                     return self:app():isFrontmost()
                 end)
                 if not result then
                     log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.viewer.Viewer.timecode).")
                     return
                 end
-                tools.ninjaMouseClick(center)
+                ninjaMouseClick(center)
 
                 --------------------------------------------------------------------------------
                 -- Wait until the click has been registered (give it 5 seconds):
                 --------------------------------------------------------------------------------
                 local toolbar = self:UI()
-                local ready = just.doUntil(function()
+                local ready = doUntil(function()
                     return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
                 end, 5)
                 if ready then
@@ -155,7 +158,7 @@ function ControlBar.lazy.prop:timecode()
                     --------------------------------------------------------------------------------
                     -- Wait until the timecode is on the pasteboard:
                     --------------------------------------------------------------------------------
-                    local pasteboardReady = just.doUntil(function()
+                    local pasteboardReady = doUntil(function()
                         return pasteboard.getContents() == timecodeValue
                     end, 5)
 
@@ -172,7 +175,7 @@ function ControlBar.lazy.prop:timecode()
                         --------------------------------------------------------------------------------
                         -- Wait until we see the timecode in the viewer:
                         --------------------------------------------------------------------------------
-                        local pasteboardPasteResult = just.doUntil(function()
+                        local pasteboardPasteResult = doUntil(function()
                             local blank = "00:00:00:00"
                             local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
                             return tcField:value() == formattedTimecodeValue
