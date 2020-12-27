@@ -119,7 +119,7 @@ function ColorCurves.lazy.method:doShow()
     :Label("ColorCurves:doShow")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.contentUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` representing the content element of the ColorCurves corrector.
 --- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.

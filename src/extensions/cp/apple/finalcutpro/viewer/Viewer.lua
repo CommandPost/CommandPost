@@ -44,7 +44,7 @@ local PLAYER_QUALITY = {
     PROXY                       = 4,
 }
 
--- findViewersUI(...) -> table of hs._asm.axuielement | nil
+-- findViewersUI(...) -> table of hs.axuielement | nil
 -- Private Function
 -- Finds the viewer `axuielement`s in a table. There may be more than one if the Event Viewer is enabled.
 -- If none can be found, `nil` is returned.
@@ -67,7 +67,7 @@ local function findViewersUI(...)
     return nil
 end
 
--- findViewerUI(...) -> hs._asm.axuielement
+-- findViewerUI(...) -> hs.axuielement
 -- Private Function
 -- Finds the Viewer UI from the list, if present.
 --
@@ -84,7 +84,7 @@ local function findViewerUI(...)
     return nil
 end
 
--- findEventViewerUI(...) -> hs._asm.axuielement
+-- findEventViewerUI(...) -> hs.axuielement
 -- Private Function
 -- Finds the Event Viewer UI from the list, if present.
 --
@@ -231,7 +231,7 @@ end
 function Viewer.lazy.prop:isOnSecondary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and SecondaryWindow.matches(ui:window())
+        return ui and SecondaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -241,7 +241,7 @@ end
 function Viewer.lazy.prop:isOnPrimary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and PrimaryWindow.matches(ui:window())
+        return ui and PrimaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -255,7 +255,7 @@ function Viewer.lazy.prop:frame()
     end)
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.contentsUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Provides the `axuielement` for the media contents of the Viewer, or `nil` if not available.
 function Viewer.lazy.prop:contentsUI()

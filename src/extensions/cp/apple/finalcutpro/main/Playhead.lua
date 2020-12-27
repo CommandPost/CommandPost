@@ -2,16 +2,15 @@
 ---
 --- Playhead Module.
 
-local require = require
+local require       = require
 
--- local log                               = require("hs.logger").new("fcpPlayhead")
+local log           = require "hs.logger".new "fcpPlayhead"
 
-local geometry                          = require("hs.geometry")
+local geometry      = require "hs.geometry"
 
-local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
-local prop                              = require("cp.prop")
-
+local axutils       = require "cp.ui.axutils"
+local Element       = require "cp.ui.Element"
+local prop          = require "cp.prop"
 
 local Playhead = Element:subclass("cp.apple.finalcutpro.main.Playhead")
 
@@ -28,7 +27,7 @@ function Playhead.static.matches(element)
     return element and element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
---- cp.apple.finalcutpro.main.Playhead.find(containerUI, skimming) -> hs._asm.axuielement object | nil
+--- cp.apple.finalcutpro.main.Playhead.find(containerUI, skimming) -> hs.axuielement object | nil
 --- Function
 --- Finds the playhead (either persistent or skimming) in the specified container. Defaults to persistent.
 ---
@@ -37,7 +36,7 @@ end
 ---  * `skimming` - Whether or not you want the skimming playhead as boolean.
 ---
 --- Returns:
----  * The playhead `hs._asm.axuielement` object or `nil` if not found.
+---  * The playhead `hs.axuielement` object or `nil` if not found.
 function Playhead.static.find(containerUI, skimming)
     local ui = containerUI
     if ui and #ui > 0 then
@@ -110,7 +109,8 @@ end
 function Playhead.lazy.prop:frame()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and ui:frame()
+        log.df("ui: %s", ui)
+        return ui and ui:attributeValue("AXFrame")
     end)
 end
 

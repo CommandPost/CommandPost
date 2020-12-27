@@ -62,7 +62,7 @@ function LibrariesBrowser:initialize(parent)
     Group.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the main group within the Libraries Browser, or `nil` if not available..
 function LibrariesBrowser.lazy.prop:mainGroupUI()

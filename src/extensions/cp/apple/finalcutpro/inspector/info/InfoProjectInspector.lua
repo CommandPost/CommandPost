@@ -64,15 +64,15 @@ function InfoProjectInspector:initialize(parent)
     }
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoProjectInspector:propertiesUI() -> hs._asm.axuielement object
+--- cp.apple.finalcutpro.inspector.info.InfoProjectInspector:propertiesUI() -> hs.axuielement object
 --- Method
---- Returns the `hs._asm.axuielement` object for the Properties UI.
+--- Returns the `hs.axuielement` object for the Properties UI.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A `hs._asm.axuielement` object.
+---  * A `hs.axuielement` object.
 function InfoProjectInspector.lazy.prop:propertiesUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_properties", function()

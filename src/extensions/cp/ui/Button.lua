@@ -20,7 +20,7 @@ local Button = Element:subclass("cp.ui.Button")
 --- Checks if the `element` is a `Button`, returning `true` if so.
 ---
 --- Parameters:
----  * element		- The `hs._asm.axuielement` to check.
+---  * element		- The `hs.axuielement` to check.
 ---
 --- Returns:
 ---  * `true` if the `element` is a `Button`, or `false` if not.
@@ -34,7 +34,7 @@ end
 ---
 --- Parameters:
 ---  * parent		- The parent object. Should have a `UI` and `isShowing` field.
----  * uiFinder		- A function which will return the `hs._asm.axuielement` the button belongs to, or `nil` if not available.
+---  * uiFinder		- A function which will return the `hs.axuielement` the button belongs to, or `nil` if not available.
 ---
 --- Returns:
 --- The new `Button` instance.
@@ -62,7 +62,7 @@ end
 function Button:press()
     local success = false
     local ui = self:UI()
-    if ui then success = ui:doPress() == true end
+    if ui then success = ui:performAction("AXPress") == true end
     return self, success
 end
 
@@ -78,7 +78,7 @@ end
 ---  * The `Statement` which will press the button when executed.
 function Button.lazy.method:doPress()
     return If(self.UI):Then(function(ui)
-        ui:doPress()
+        ui:performAction("AXPress")
         return true
     end)
     :Otherwise(false)

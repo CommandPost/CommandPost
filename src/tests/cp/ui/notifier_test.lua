@@ -3,7 +3,7 @@ local log				= require("hs.logger").new("t_notifier")
 -- local inspect			= require("hs.inspect")
 
 local application       = require("hs.application")
-local ax                = require("hs._asm.axuielement")
+local ax                = require("hs.axuielement")
 local notifier          = require("cp.ui.notifier")
 local just              = require("cp.just")
 local timer             = require("hs.timer")

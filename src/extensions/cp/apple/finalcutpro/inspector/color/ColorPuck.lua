@@ -250,7 +250,7 @@ function ColorPuck:select()
     self:show()
     local ui = self:UI()
     if ui then
-        local f = ui:frame()
+        local f = ui:attributeValue("AXFrame")
         -- local centre = geometry(f.x + f.w/2, f.y + f.h/2)
         local centre = geometry(f).center
         tools.ninjaMouseClick(centre)
@@ -272,7 +272,7 @@ function ColorPuck.lazy.method:doSelect()
     :Then(function()
         local ui = self:UI()
         if ui then
-            local f = ui:frame()
+            local f = ui:attributeValue("AXFrame")
             local centre = geometry(f).center
             tools.ninjaMouseClick(centre)
             return true

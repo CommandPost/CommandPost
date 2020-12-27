@@ -10,7 +10,6 @@ local Do                            = require "cp.rx.go.Do"
 local Element                       = require "cp.ui.Element"
 local prop							= require "cp.prop"
 
-
 local Toolbar = Element:subclass("cp.ui.Toolbar")
 
 --- cp.ui.Toolbar.matches(element) -> boolean
@@ -18,7 +17,7 @@ local Toolbar = Element:subclass("cp.ui.Toolbar")
 --- Checks if the `element` is a `Button`, returning `true` if so.
 ---
 --- Parameters:
----  * element		- The `hs._asm.axuielement` to check.
+---  * element		- The `hs.axuielement` to check.
 ---
 --- Returns:
 ---  * `true` if the `element` is a `Button`, or `false` if not.
@@ -32,7 +31,7 @@ end
 ---
 --- Parameters:
 ---  * parent   - The parent object.
----  * uiFinder   - The `cp.prop` or `function` that finds the `hs._asm.axuielement` that represents the `Toolbar`.
+---  * uiFinder   - The `cp.prop` or `function` that finds the `hs.axuielement` that represents the `Toolbar`.
 ---
 --- Returns:
 ---  * The new `Toolbar` instance.
@@ -90,7 +89,7 @@ function Toolbar:doSelect(title)
         if selectedTitle ~= title then
             local button = ui and axutils.childWith(ui, "AXTitle", title)
             if button then
-                button:doPress()
+                button:doAXPress()
                 return true
             end
         end

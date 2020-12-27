@@ -2,7 +2,7 @@
 ---
 --- Check Box UI Module.
 ---
---- This represents an `hs._asm.axuielement` with a `AXCheckBox` role.
+--- This represents an `hs.axuielement` with a `AXCheckBox` role.
 --- It allows checking and modifying the `checked` status like so:
 ---
 --- ```lua
@@ -35,7 +35,7 @@ local CheckBox = Element:subclass("cp.ui.CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
 --- Function
---- Checks if the provided `hs._asm.axuielement` is a CheckBox.
+--- Checks if the provided `hs.axuielement` is a CheckBox.
 ---
 --- Parameters:
 ---  * element		- The `axuielement` to check.
@@ -52,7 +52,7 @@ end
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * uiFinder		- A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder		- A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `CheckBox`.
@@ -75,12 +75,12 @@ function CheckBox.lazy.prop:checked()
     return self.UI:mutate(
         function(original) -- get
             local ui = original()
-            return ui ~= nil and ui:value() == 1
+            return ui ~= nil and ui:attributeValue("AXValue") == 1
         end,
         function(value, original) -- set
             local ui = original()
-            if ui and value ~= (ui:value() == 1) and ui:attributeValue("AXEnabled") == true then
-                ui:doPress()
+            if ui and value ~= (ui:attributeValue("AXValue") == 1) and ui:attributeValue("AXEnabled") == true then
+                ui:performAction("AXPress")
             end
         end
     )
@@ -132,7 +132,7 @@ end
 function CheckBox:press()
     local ui = self:UI()
     if ui then
-        ui:doPress()
+        ui:performAction("AXPress")
     end
     return self
 end
@@ -151,7 +151,7 @@ function CheckBox.lazy.method:doPress()
     return Do(self:parent():doShow())
         :Then(
             If(self.UI):Then(function(ui)
-                ui:doPress()
+                ui:performAction("AXPress")
                 return true
             end)
             :Otherwise(false)

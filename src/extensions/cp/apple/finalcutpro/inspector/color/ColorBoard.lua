@@ -79,9 +79,9 @@ function ColorBoard:initialize(parent)
     Element.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard.contentUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.contentUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the `hs._asm.axuielement` object for the Color Board's content.
+--- Returns the `hs.axuielement` object for the Color Board's content.
 function ColorBoard.lazy.prop:contentUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_content", function()
@@ -181,15 +181,15 @@ function ColorBoard.lazy.method:doHide()
     :Label("ColorBoard:doHide")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:childUI(id) -> hs._asm.axuielement object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:childUI(id) -> hs.axuielement object
 --- Method
---- Gets the `hs._asm.axuielement` object for a child with the specified ID.
+--- Gets the `hs.axuielement` object for a child with the specified ID.
 ---
 --- Parameters:
 ---  * axID - `AXIdentifier` of the child
 ---
 --- Returns:
----  * An `hs._asm.axuielement` object
+---  * An `hs.axuielement` object
 function ColorBoard:childUI(axID)
     return axutils.cache(self._child, "_"..axID, function()
         local ui = self:contentUI()

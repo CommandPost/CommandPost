@@ -50,7 +50,7 @@ function SpeedPopover:initialize(timeline)
     local uiFinder = timeline.UI:mutate(function(original)
         return cache(self, "_ui", function()
             local ui = original()
-            local window = ui and ui:window()
+            local window = ui and ui:attributeValue("AXWindow")
             local popups = window and childrenWithRole(window, "AXPopover")
             if popups then
                 for _, popup in pairs(popups) do

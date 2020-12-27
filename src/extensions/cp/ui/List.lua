@@ -30,7 +30,7 @@ end
 ---
 --- Parameters:
 ---  * parent       - The parent table. Should have a `isShowing` property.
----  * uiFinder      - The `function` or `cp.prop` that provides the current `hs._asm.axuielement`.
+---  * uiFinder      - The `function` or `cp.prop` that provides the current `hs.axuielement`.
 ---
 --- Returns:
 ---  * The new `List` instance.

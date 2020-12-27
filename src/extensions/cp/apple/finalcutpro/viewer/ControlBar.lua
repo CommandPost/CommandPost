@@ -236,11 +236,11 @@ function ControlBar.lazy.prop:isPlaying()
                         return
                     end
 
-                    local windowFrame = window and window:frame()
+                    local windowFrame = window and window:attributeValue("AXFrame")
                     local shotSize = windowSnap and windowSnap:size()
 
                     local ratio = shotSize and windowFrame and shotSize.h/windowFrame.h
-                    local elementFrame = element and element:frame()
+                    local elementFrame = element and element:attributeValue("AXFrame")
 
                     if not elementFrame then return end
 

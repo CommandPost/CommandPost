@@ -220,7 +220,7 @@ end
 function LibrariesFilmstrip:selectedClipsUI()
     local ui = self:contentsUI()
     if ui then
-        local children = ui:selectedChildren()
+        local children = ui:attributeValue("AXSelectedChildren")
         local clips = {}
         for i,child in ipairs(children) do
             clips[i] = child
@@ -258,7 +258,7 @@ function LibrariesFilmstrip:showClip(clip)
     local ui = self:UI()
     if ui then
         local vScroll = self.verticalScrollBar:UI()
-        local vFrame = vScroll:frame()
+        local vFrame = vScroll:attributeValue("AXFrame")
         local clipFrame = clipUI:frame()
 
         local top = vFrame.y
@@ -271,7 +271,7 @@ function LibrariesFilmstrip:showClip(clip)
             --------------------------------------------------------------------------------
             -- We need to scroll:
             --------------------------------------------------------------------------------
-            local oFrame = self:contentsUI():frame()
+            local oFrame = self:contentsUI():attributeValue("AXFrame")
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue

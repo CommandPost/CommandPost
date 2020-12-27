@@ -2,10 +2,9 @@
 ---
 --- Split Group UI.
 
-local require = require
+local require       = require
 
-local Element           = require("cp.ui.Element")
-
+local Element       = require "cp.ui.Element"
 
 local SplitGroup = Element:subclass("cp.ui.SplitGroup")
 
@@ -28,7 +27,7 @@ end
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * uiFinder		- The `function` or `cp.prop` which returns an `hs._asm.axuielement` for the Split Group, or `nil`.
+---  * uiFinder		- The `function` or `cp.prop` which returns an `hs.axuielement` for the Split Group, or `nil`.
 ---
 --- Returns:
 ---  * A new `SplitGroup` instance.

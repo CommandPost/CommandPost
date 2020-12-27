@@ -175,7 +175,7 @@ end
 --- Returns:
 ---  * A new `Table` instance.
 
---- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.Table.contentUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` that contains the actual rows.
 function Table.lazy.prop:contentUI()
@@ -188,14 +188,14 @@ function Table.lazy.prop:contentUI()
     end)
 end
 
---- cp.ui.Table.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.Table.verticalScrollBarUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The vertical scroll bar UI element, if present.
 function Table.lazy.prop:verticalScrollBarUI()
     return axutils.prop(self.UI, "AXVerticalScrollBar")
 end
 
---- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The horizontal scroll bar UI element, if present.
 function Table.lazy.prop:horizontalScrollBarUI()
@@ -316,7 +316,7 @@ function Table:findColumnIndex(id)
     return nil
 end
 
---- cp.ui.Table:findCellUI(rowNumber, columnId) -> `hs._asm.axuielement` | nil
+--- cp.ui.Table:findCellUI(rowNumber, columnId) -> `hs.axuielement` | nil
 --- Method
 --- Finds a specific Cell UI.
 ---
@@ -325,7 +325,7 @@ end
 ---  * columnId - The Column ID.
 ---
 --- Returns:
----  * A `hs._asm.axuielement` object for the cell, or `nil` if the cell cannot be found.
+---  * A `hs.axuielement` object for the cell, or `nil` if the cell cannot be found.
 function Table:findCellUI(rowNumber, columnId)
     local rows = self:rowsUI()
     if rows and rowNumber >= 1 and rowNumber < #rows then
@@ -343,7 +343,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * Table of `hs._asm.axuielement` objects, or `nil` if none could be found.
+---  * Table of `hs.axuielement` objects, or `nil` if none could be found.
 function Table:selectedRowsUI()
     local rows = self:rowsUI()
     if rows then
@@ -370,16 +370,16 @@ end
 function Table:viewFrame()
     local ui = self:UI()
     if ui then
-        local vFrame = ui:frame()
+        local vFrame = ui:attributeValue("AXFrame")
         local vScroll = self:verticalScrollBarUI()
         if vScroll then
-            local vsFrame = vScroll:frame()
+            local vsFrame = vScroll:attributeValue("AXFrame")
             vFrame.w = vFrame.w - vsFrame.w
             vFrame.h = vsFrame.h
         else
             local hScroll = self:horizontalScrollBarUI()
             if hScroll then
-                local hsFrame = hScroll:frame()
+                local hsFrame = hScroll:attributeValue("AXFrame")
                 vFrame.w = hsFrame.w
                 vFrame.h = vFrame.h - hsFrame.h
             end
@@ -394,7 +394,7 @@ end
 --- Shows a specific row.
 ---
 --- Parameters:
----  * rowUI - The `hs._asm.axuielement` object of the row you want to show.
+---  * rowUI - The `hs.axuielement` object of the row you want to show.
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
@@ -402,7 +402,7 @@ function Table:showRow(rowUI)
     local ui = self:UI()
     if ui and rowUI then
         local vFrame = self:viewFrame()
-        local rowFrame = rowUI:frame()
+        local rowFrame = rowUI:attributeValue("AXFrame")
 
         local top = vFrame.y
         local bottom = vFrame.y + vFrame.h
@@ -412,7 +412,7 @@ function Table:showRow(rowUI)
 
         if rowTop < top or rowBottom > bottom then
             -- we need to scroll
-            local oFrame = self:contentUI():frame()
+            local oFrame = self:contentUI():attributeValue("AXFrame")
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue
@@ -455,7 +455,7 @@ end
 --- Select a specific row.
 ---
 --- Parameters:
----  * rowUI - The `hs._asm.axuielement` object of the row you want to select.
+---  * rowUI - The `hs.axuielement` object of the row you want to select.
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
@@ -490,7 +490,7 @@ end
 --- Deselect a specific row.
 ---
 --- Parameters:
----  * rowUI - The `hs._asm.axuielement` object of the row you want to deselect.
+---  * rowUI - The `hs.axuielement` object of the row you want to deselect.
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
@@ -525,7 +525,7 @@ end
 --- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
 ---
 --- Parameters:
----  * rowUI - A table of `hs._asm.axuielement` objects for the rows you want to select.
+---  * rowUI - A table of `hs.axuielement` objects for the rows you want to select.
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
@@ -544,7 +544,7 @@ end
 --- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
 ---
 --- Parameters:
----  * rowUI - A table of `hs._asm.axuielement` objects for the rows you want to deselect.
+---  * rowUI - A table of `hs.axuielement` objects for the rows you want to deselect.
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
@@ -637,11 +637,11 @@ function Table:saveLayout()
     local layout = {}
     local hScroll = self:horizontalScrollBarUI()
     if hScroll then
-        layout.horizontalScrollBar = hScroll:value()
+        layout.horizontalScrollBar = hScroll:attributeValue("AXValue")
     end
     local vScroll = self:verticalScrollBarUI()
     if vScroll then
-        layout.verticalScrollBar = vScroll:value()
+        layout.verticalScrollBar = vScroll:attributeValue("AXValue")
     end
     layout.selectedRows = self:selectedRowsUI()
 
@@ -662,11 +662,11 @@ function Table:loadLayout(layout)
         self:selectAll(layout.selectedRows)
         local vScroll = self:verticalScrollBarUI()
         if vScroll then
-            vScroll:setValue(layout.verticalScrollBar)
+            vScroll:setAttributeValue("AXValue", layout.verticalScrollBar)
         end
         local hScroll = self:horizontalScrollBarUI()
         if hScroll then
-            hScroll:setValue(layout.horizontalScrollBar)
+            hScroll:setAttributeValue("AXValue", layout.horizontalScrollBar)
         end
     end
 end

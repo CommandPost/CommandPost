@@ -7,7 +7,7 @@ local hs                = _G.hs
 
 local log               = require "hs.logger".new "dev"
 
-local ax                = require "hs._asm.axuielement"
+local ax                = require "hs.axuielement"
 local drawing           = require "hs.drawing"
 local fs                = require "hs.fs"
 local geometry          = require "hs.geometry"

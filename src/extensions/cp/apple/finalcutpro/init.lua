@@ -263,11 +263,11 @@ function fcp.lazy.prop:isRunning()
     return self.app.running
 end
 
---- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The Final Cut Pro `axuielement`, if available.
 
---- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.windowsUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the list of windows in the app.
 function fcp.lazy.prop:windowsUI()

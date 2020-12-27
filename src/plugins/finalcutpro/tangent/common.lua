@@ -656,9 +656,9 @@ function mod.checkboxParameterByIndex(group, section, nextSection, id, label, in
         :onPress(function()
             section:show():expanded(true)
             local children = section:propertiesUI():children()
-            local sectionFrame = section and section:UI() and section:UI():frame()
-            local nextSectionFrame = nextSection and nextSection:UI() and nextSection:UI():frame()
-            local allowedX = section and section.enabled and section.enabled:UI() and section.enabled:UI():frame().x
+            local sectionFrame = section and section:UI() and section:UI():attributeValue("AXFrame")
+            local nextSectionFrame = nextSection and nextSection:UI() and nextSection:UI():attributeValue("AXFrame")
+            local allowedX = section and section.enabled and section.enabled:UI() and section.enabled:UI():attributeValue("AXFrame").x
             if sectionFrame and allowedX then
                 local checkboxes = childrenMatching(children, function(e)
                     local frame = e:attributeValue("AXFrame")

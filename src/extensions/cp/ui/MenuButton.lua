@@ -42,7 +42,7 @@ end
 ---
 --- Parameters:
 --- * parent        - The parent object. Should have an `isShowing` property.
---- * uiFinder      - A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
+--- * uiFinder      - A `cp.prop` or function which will return a `hs.axuielement`, or `nil` if it's not available.
 
 --- cp.ui.MenuButton.value <cp.prop: anything>
 --- Field
@@ -56,11 +56,11 @@ function MenuButton.lazy.prop:value()
         function(newValue, original)
             local ui = original()
             if ui and ui:attributeValue("AXTitle") ~= newValue then
-                local items = ui:doPress()[1]
+                local items = ui:performAction("AXPress")[1]
                 if items then
                     for _,item in ipairs(items) do
                         if item:title() == newValue then
-                            item:doPress()
+                            item:doAXPress()
                             return
                         end
                     end
@@ -77,7 +77,7 @@ function MenuButton.lazy.prop:value()
     end)
 end
 
---- cp.ui.MenuButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- cp.ui.MenuButton.menuUI <cp.prop: hs.axuielement; read-only; live?>
 --- Field
 --- Returns the `AXMenu` for the MenuButton if it is currently visible.
 function MenuButton.lazy.prop:menuUI()
@@ -133,17 +133,17 @@ end
 function MenuButton:selectItem(index)
     local ui = self:UI()
     if ui then
-        ui:doPress()
+        ui:performAction("AXPress")
         local items = just.doUntil(function() return ui[1] end, 3)
         if items then
             local item = items[index]
             if item then
                 -- select the menu item
-                item:doPress()
+                item:doAXPress()
                 return true
             else
                 -- close the menu again
-                items:doCancel()
+                items:doAXCancel()
             end
         end
         self.value:update()
@@ -200,7 +200,7 @@ function MenuButton:selectItemMatching(pattern)
             -- Don't bother selecting if it's already selected.
             return true
         end
-        ui:doPress()
+        ui:performAction("AXPress")
         local items = just.doUntil(function() return ui[1] end, 5, 0.01)
         if items then
             local found = false
@@ -210,7 +210,7 @@ function MenuButton:selectItemMatching(pattern)
                     local s,e = find(itemTitle, pattern)
                     if s == 1 and e == itemTitle:len() then
                         -- perfect match
-                        item:doPress()
+                        item:doAXPress()
                         found = true
                         break
                     end
@@ -298,7 +298,7 @@ end
 function MenuButton:press()
     local ui = self:UI()
     if ui then
-        ui:doPress()
+        ui:performAction("AXPress")
     end
     return self
 end
@@ -315,7 +315,7 @@ end
 function MenuButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
-        ui:doPress()
+        ui:performAction("AXPress")
         return true
     end)
     :ThenYield()

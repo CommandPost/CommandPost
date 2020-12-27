@@ -30,7 +30,7 @@ end
 ---
 --- Parameters:
 ---  * parent       - The parent object.
----  * uiFinder     - A `function` or `cp.prop` which will return the `hs._asm.axuielement` when available.
+---  * uiFinder     - A `function` or `cp.prop` which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
@@ -38,7 +38,7 @@ function ScrollArea:initialize(parent, uiFinder)
     Element.initialize(self, parent, uiFinder)
 end
 
---- cp.ui.ScrollArea.contentsUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- cp.ui.ScrollArea.contentsUI <cp.prop: hs.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 function ScrollArea.lazy.prop:contentsUI()
@@ -47,7 +47,7 @@ function ScrollArea.lazy.prop:contentsUI()
         if ui then
             local role = ui:attributeValue("AXRole")
             if role and role == "AXScrollArea" then
-                return ui:contents()[1]
+                return ui:attributeValue("AXContents")[1]
             end
         end
     end)
@@ -67,7 +67,7 @@ function ScrollArea.lazy.value:horizontalScrollBar()
     return ScrollBar(self, axutils.prop(self.UI, "AXHorizontalScrollBar"))
 end
 
---- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
 function ScrollArea.lazy.prop:selectedChildrenUI()
@@ -80,7 +80,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.ui.ScrollArea:childrenUI(filterFn) -> hs._asm.axuielement | nil
+--- cp.ui.ScrollArea:childrenUI(filterFn) -> hs.axuielement | nil
 --- Method
 --- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
 ---
@@ -102,8 +102,8 @@ function ScrollArea:childrenUI(filterFn)
             table.sort(children,
                 function(a, b)
                     if a and b then -- Added in this to try and solve issue #950
-                        local aFrame = a:frame()
-                        local bFrame = b:frame()
+                        local aFrame = a:attributeValue("AXFrame")
+                        local bFrame = b:attributeValue("AXFrame")
                         if aFrame and bFrame then
                             if aFrame.y < bFrame.y then -- a is above b
                                 return true
@@ -135,7 +135,7 @@ function ScrollArea.lazy.prop:viewFrame()
         local hScroll = self.horizontalScrollBar:frame()
         local vScroll = self.verticalScrollBar:frame()
 
-        local frame = ui:frame()
+        local frame = ui:attributeValue("AXFrame")
 
         if hScroll then
             frame.h = frame.h - hScroll.h
@@ -155,7 +155,7 @@ end
 --- Show's a child element in a Scroll Area.
 ---
 --- Parameters:
----  * childUI - The `hs._asm.axuielement` object of the child you want to show.
+---  * childUI - The `hs.axuielement` object of the child you want to show.
 ---
 --- Return:
 ---  * Self
@@ -163,7 +163,7 @@ function ScrollArea:showChild(childUI)
     local ui = self:UI()
     if ui and childUI then
         local vFrame = self:viewFrame()
-        local childFrame = childUI:frame()
+        local childFrame = childUI:attributeValue("AXFrame")
 
         local top = vFrame.y
         local bottom = vFrame.y + vFrame.h
@@ -173,7 +173,7 @@ function ScrollArea:showChild(childUI)
 
         if childTop < top or childBottom > bottom then
             -- we need to scroll
-            local oFrame = self:contentsUI():frame()
+            local oFrame = self:contentsUI():attributeValue("AXFrame")
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue
@@ -210,7 +210,7 @@ end
 --- Select a specific child within a Scroll Area.
 ---
 --- Parameters:
----  * childUI - The `hs._asm.axuielement` object of the child you want to select.
+---  * childUI - The `hs.axuielement` object of the child you want to select.
 ---
 --- Return:
 ---  * Self
@@ -246,7 +246,7 @@ end
 --- Select all children in a scroll area.
 ---
 --- Parameters:
----  * childrenUI - A table of `hs._asm.axuielement` objects.
+---  * childrenUI - A table of `hs.axuielement` objects.
 ---
 --- Return:
 ---  * Self

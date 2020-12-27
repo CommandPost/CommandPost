@@ -2,7 +2,7 @@
 ---
 --- Radio Button Module.
 ---
---- This represents an `hs._asm.axuielement` with a `AXRadioButton` role.
+--- This represents an `hs.axuielement` with a `AXRadioButton` role.
 --- It allows checking and modifying the `checked` status like so:
 ---
 --- ```lua
@@ -31,7 +31,7 @@ local RadioButton = Element:subclass("cp.ui.RadioButton")
 
 --- cp.ui.RadioButton.matches(element) -> boolean
 --- Function
---- Checks if the provided `hs._asm.axuielement` is a RadioButton.
+--- Checks if the provided `hs.axuielement` is a RadioButton.
 ---
 --- Parameters:
 --- * element		- The `axuielement` to check.
@@ -48,7 +48,7 @@ end
 ---
 --- Parameters:
 --- * parent		- The parent object.
---- * finderFn		- A function which will return the `hs._asm.axuielement` when available.
+--- * finderFn		- A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 --- * The new `RadioButton`.
@@ -69,7 +69,7 @@ function RadioButton.lazy.prop:checked()
         function(value, original) -- set
             local ui = original()
             if ui and value ~= (ui:attributeValue("AXValue") == 1) then
-                ui:doPress()
+                ui:performAction("AXPress")
             end
         end
     )
@@ -153,7 +153,7 @@ end
 function RadioButton:press()
     local ui = self:UI()
     if ui then
-        ui:doPress()
+        ui:performAction("AXPress")
     end
     return self
 end
@@ -170,7 +170,7 @@ end
 ---  * The `Statement` which will press the button when executed.
 function RadioButton.lazy.method:doPress()
     return If(self.UI):Then(function(ui)
-        ui:doPress()
+        ui:performAction("AXPress")
         return true
     end)
     :Otherwise(false)

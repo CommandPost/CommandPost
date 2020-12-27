@@ -40,7 +40,7 @@ PropertyRow.static.intersectBuffer = 2
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
 --- Function
---- Returns the `cp.prop` which finds the `hs._asm.axuielement` that contains property rows from the parent.
+--- Returns the `cp.prop` which finds the `hs.axuielement` that contains property rows from the parent.
 --- This needs to be configured first by calling the `prepareParent` function with the `parent` and finder function.
 ---
 --- Parameters:
@@ -56,7 +56,7 @@ end
 --- Function
 --- Call this to make `parent` table ready to be a parent of `PropertyRow`s.
 --- Essentially, this lets `PropertyRow` instances ask the parent for the
---- `hs._asm.axuielement` that contains the property row details.
+--- `hs.axuielement` that contains the property row details.
 ---
 --- Parameters:
 ---  * parent    - The parent table.
@@ -130,7 +130,7 @@ function PropertyRow:initialize(parent, labelKey, index)
         error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`: %s", parent))
     end
 
---- cp.ui.PropertyRow.labelUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.PropertyRow.labelUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for the label UI.
     local labelUI = uiFinder:mutate(function(original)
@@ -147,7 +147,7 @@ function PropertyRow:initialize(parent, labelKey, index)
         end)
     end)
 
---- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.PropertyRow.UI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for the row.
     local UI = labelUI
@@ -182,7 +182,7 @@ function PropertyRow:extend(extendFn)
     return self
 end
 
---- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.ui.PropertyRow.propertiesUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` from the parent that contains the properties.
 function PropertyRow.lazy.prop:propertiesUI()
@@ -336,8 +336,8 @@ function PropertyRow:children()
     end
     -- check if we have children cached
     if not children and label then
-        local labelFrame = label:frame()
-        labelFrame = labelFrame and geometry.new(label:frame()) or nil
+        local labelFrame = label:attributeValue("AXFrame")
+        labelFrame = labelFrame and geometry.new(labelFrame) or nil
         if labelFrame then
             children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)

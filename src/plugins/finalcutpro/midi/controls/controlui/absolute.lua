@@ -6,7 +6,7 @@ local require = require
 
 local log               = require "hs.logger".new "midiCtrlSlider"
 
-local ax                = require "hs._asm.axuielement"
+local ax                = require "hs.axuielement"
 local eventtap          = require "hs.eventtap"
 local mouse             = require "hs.mouse"
 

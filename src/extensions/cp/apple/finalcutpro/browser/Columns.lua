@@ -2,23 +2,20 @@
 ---
 --- Final Cut Pro Browser List View Columns
 
-local require = require
+local require                   = require
 
---local log                       = require("hs.logger").new("Columns")
+--local log                       = require "hs.logger".new "Columns"
 
-local ax                        = require("hs._asm.axuielement")
+local ax                        = require "hs.axuielement"
+local geometry                  = require "hs.geometry"
 
-local geometry                  = require("hs.geometry")
-
-local axutils                   = require("cp.ui.axutils")
-local tools                     = require("cp.tools")
-
-local Element                   = require("cp.ui.Element")
-local Menu                      = require("cp.ui.Menu")
+local axutils                   = require "cp.ui.axutils"
+local Element                   = require "cp.ui.Element"
+local Menu                      = require "cp.ui.Menu"
+local tools                     = require "cp.tools"
 
 local systemElementAtPosition   = ax.systemElementAtPosition
 local childWithRole             = axutils.childWithRole
-
 
 local Columns = Element:subclass("cp.apple.finalcutpro.browser.Columns")
 

@@ -108,7 +108,7 @@ end
 function Browser.lazy.prop:isOnSecondary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and SecondaryWindow.matches(ui:window())
+        return ui and SecondaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -118,7 +118,7 @@ end
 function Browser.lazy.prop:isOnPrimary()
     return self.UI:mutate(function(uiProp)
         local ui = uiProp()
-        return ui and PrimaryWindow.matches(ui:window())
+        return ui and PrimaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 

@@ -250,7 +250,7 @@ function mod.init()
         --------------------------------------------------------------------------------
         -- Set Log Level to Verbose for Debugging:
         --------------------------------------------------------------------------------
-        settings.set("hs._asm.axuielement.logLevel", "verbose")
+        settings.set("hs.axuielement.logLevel", "verbose")
 
         --------------------------------------------------------------------------------
         -- Don't do this again unless you trash preferences:

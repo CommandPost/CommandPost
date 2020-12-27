@@ -69,7 +69,7 @@ function LibrariesList:initialize(parent)
     SplitGroup.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.LibrariesList.playerUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.main.LibrariesList.playerUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` for the player section of the Libraries List UI.
 function LibrariesList.lazy.prop:playerUI()
