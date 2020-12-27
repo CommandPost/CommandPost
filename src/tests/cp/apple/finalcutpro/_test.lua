@@ -2,25 +2,25 @@
 -- By default, this will run all test cases across all supported locales in Final Cut Pro:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")()
+-- cp.dev.test("cp.apple.finalcutpro")()
 -- ```
 --
 -- You can also trigger a specific version of Final Cut Pro by supplying it's path:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
+-- cp.dev.test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
 -- ```
 --
 -- If you want to just run a specific test against a specific locale, you can do this:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
+-- cp.dev.test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
 -- ```
 --
 -- You can run multiple specific locales like so:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
+-- cp.dev.test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
 -- ```
 
 local require = require
@@ -164,11 +164,17 @@ return test.suite("cp.apple.finalcutpro"):with(
             export:hide()
             ok(not export:isShowing())
 
+            -- TODO: Chris temporarily disabled this on 20201227, because it was
+            --       causing FCPX and CommandPost to Freeze. Should investigate
+            --       further at some point:
+
             -- fail on proxies this time, quietly
+            --[[
             _, err = export:show(1, false, true, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
             ok(eq(fcp.alert:isShowing(), false))
+            --]]
 
             -- reset proxies mode
             fcp.viewer:usingProxies(false)
