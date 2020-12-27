@@ -595,7 +595,7 @@ function fcp:closeLibrary(title)
             end
 
             self:selectMenu({"File", function(item)
-                local itemTitle = item:title():gsub(NBSP, " ")
+                local itemTitle = item:attributeValue("AXTitle"):gsub(NBSP, " ")
                 local result = itemTitle == closeLibrary
                 return result
             end})

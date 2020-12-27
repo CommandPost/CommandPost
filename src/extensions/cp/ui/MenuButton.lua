@@ -59,7 +59,7 @@ function MenuButton.lazy.prop:value()
                 local items = ui:performAction("AXPress")[1]
                 if items then
                     for _,item in ipairs(items) do
-                        if item:title() == newValue then
+                        if item:attributeValue("AXTitle") == newValue then
                             item:doAXPress()
                             return
                         end

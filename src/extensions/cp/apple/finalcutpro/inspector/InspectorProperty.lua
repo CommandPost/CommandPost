@@ -203,7 +203,7 @@ function mod.section(labelKey, index)
                     --]]
 
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
-                    return theRow.toggle:title() == iHide
+                    return theRow.toggle:attributeValue("AXTitle") == iHide
                 end,
                 function(newValue, theRow, theProp)
 

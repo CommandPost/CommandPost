@@ -315,7 +315,7 @@ end
 function Contents:playheadClipsUI(expandGroups, filterFn)
     local playheadPosition = self.playhead:position()
     local clips = self:clipsUI(expandGroups, function(clip)
-        local frame = clip:frame()
+        local frame = clip:attributeValue("AXFrame")
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
            and (filterFn == nil or filterFn(clip))
     end)

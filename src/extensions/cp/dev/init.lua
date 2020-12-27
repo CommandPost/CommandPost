@@ -291,7 +291,7 @@ function mod.highlight(e)
         return e
     end
 
-    local eFrame = e:frame()
+    local eFrame = e:attributeValue("AXFrame")
     if eFrame then
         eFrame = geometry.rect(eFrame)
     else
