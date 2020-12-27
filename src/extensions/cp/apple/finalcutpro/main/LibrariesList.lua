@@ -105,7 +105,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * A `AppearanceAndFiltering` object.
+---  * A `Columns` object.
 function LibrariesList:columns()
     return Columns(self)
 end
