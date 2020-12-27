@@ -88,7 +88,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             ok(viewer:isShowing())
             ok(viewer:infoBar():UI() ~= nil)
-            ok(viewer:bottomToolbarUI() ~= nil)
+            ok(viewer:controlBar():UI() ~= nil)
             ok(viewer.format() ~= nil)
             ok(viewer:framerate() ~= nil)
             ok(viewer:title() ~= nil)
