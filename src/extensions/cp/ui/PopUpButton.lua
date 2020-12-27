@@ -221,7 +221,7 @@ end
 function PopUpButton:press()
     local ui = self:UI()
     if ui then
-        ui:doAXPress()
+        ui:performAction("AXPress")
     end
     return self
 end
@@ -238,7 +238,7 @@ end
 function PopUpButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
-        ui:doAXPress()
+        ui:performAction("AXPress")
     end)
     :ThenYield()
     :Label("PopUpButton:doPress")

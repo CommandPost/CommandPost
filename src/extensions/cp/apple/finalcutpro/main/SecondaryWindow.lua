@@ -4,16 +4,19 @@
 
 local require       = require
 
-local log           = require "hs.logger".new "secondaryWindow"
+--local log           = require "hs.logger".new "secondaryWindow"
 
 local axutils       = require "cp.ui.axutils"
 local Window        = require "cp.ui.Window"
 
 local go            = require "cp.rx.go"
-local Do, If        = go.Do, go.If
+
 
 local class         = require "middleclass"
 local lazy          = require "cp.lazy"
+
+local Do            = go.Do
+local If            = go.If
 
 local SecondaryWindow = class("cp.apple.finalcutpro.main.SecondaryWindow"):include(lazy)
 
