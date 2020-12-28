@@ -398,8 +398,8 @@ function mod.init()
     -- previous collection. The default value is 100; the maximum value is 1000.
     --------------------------------------------------------------------------------
     if garbageCollectionMode == "generational" then
-        local minorMultiplier = 20      -- The default value is 20; the maximum value is 200.
-        local majorMultiplier = 100     -- The default value is 100; the maximum value is 1000.
+        local minorMultiplier = 5       -- The default value is 20; the maximum value is 200.
+        local majorMultiplier = 50      -- The default value is 100; the maximum value is 1000.
         collectgarbage("generational", minorMultiplier, majorMultiplier)
     end
 

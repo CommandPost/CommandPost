@@ -553,9 +553,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(panel:isShowing())
             ok(panel.createProxyMedia:isShowing())
             ok(panel.createOptimizedMedia:isShowing())
-            ok(panel:copyToLibraryStorageLocation():isShowing())
-            ok(panel:leaveFilesInPlace():isShowing())
-            ok(panel:copyToLibraryStorageLocation():checked() or panel:leaveFilesInPlace():checked())
+            ok(panel.copyToLibraryStorageLocation:isShowing())
+            ok(panel.leaveFilesInPlace:isShowing())
+            ok(panel.copyToLibraryStorageLocation:checked() or panel.leaveFilesInPlace:checked())
 
             panel:hide()
         end
