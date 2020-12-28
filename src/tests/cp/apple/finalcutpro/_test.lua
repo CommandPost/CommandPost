@@ -522,8 +522,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(toolbar.skimming:UI() ~= nil)
             ok(skimmingId and toolbar.skimming:UI():attributeValue("AXIdentifier") == skimmingId)
 
-            ok(toolbar.effectsGroup:UI() ~= nil)
-            ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
+            -- TODO: Chris disabled on 20201228 because effectsGroup is no longer used in the FCPX API.
+            -- ok(toolbar.effectsGroup:UI() ~= nil)
+            -- ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(
@@ -552,9 +553,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(panel:isShowing())
             ok(panel.createProxyMedia:isShowing())
             ok(panel.createOptimizedMedia:isShowing())
-            ok(panel:copyToMediaFolder():isShowing())
-            ok(panel:leaveInPlace():isShowing())
-            ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())
+            ok(panel:copyToLibraryStorageLocation():isShowing())
+            ok(panel:leaveFilesInPlace():isShowing())
+            ok(panel:copyToLibraryStorageLocation():checked() or panel:leaveFilesInPlace():checked())
 
             panel:hide()
         end
@@ -699,7 +700,7 @@ onRun(
             fcp:launch()
         end
 
-        just.doUntil(function() return fcp:isRunning() end, 10, 0.1)
+        just.doUntil(function() return fcp:isRunning() end, 30, 1)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
