@@ -42,21 +42,23 @@ end
 --- Returns:
 ---  * The combined text value of the cell.
 function Table.static.cellTextValue(cell)
-    local textValue = nil
-    if #cell > 0 then
-        for _,item in ipairs(cell) do
-            local itemValue = item:attributeValue("AXValue")
-            if type(itemValue) == "string" then
-                textValue = (textValue or "") .. itemValue
+    if cell then
+        local textValue = nil
+        if #cell > 0 then
+            for _,item in ipairs(cell) do
+                local itemValue = item:attributeValue("AXValue")
+                if type(itemValue) == "string" then
+                    textValue = (textValue or "") .. itemValue
+                end
+            end
+        else
+            local cellValue = cell:attributeValue("AXValue")
+            if type(cellValue) == "string" then
+                textValue = cellValue
             end
         end
-    else
-        local cellValue = cell:attributeValue("AXValue")
-        if type(cellValue) == "string" then
-            textValue = cellValue
-        end
+        return textValue
     end
-    return textValue
 end
 
 --- cp.ui.Table.cellTextValueIs(cell, value) -> boolean

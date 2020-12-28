@@ -331,10 +331,84 @@ function mod.init()
     log.df("Startup Time: %s seconds", loadingTime)
 
     --------------------------------------------------------------------------------
+    -- Set Garbage Collection Mode:
+    --------------------------------------------------------------------------------
+    local garbageCollectionMode = "generational"
+
+    --------------------------------------------------------------------------------
+    -- Use Incremental Garbage Collection:
+    --
+    -- In incremental mode, each GC cycle performs a mark-and-sweep collection in
+    -- small steps interleaved with the program's execution. In this mode, the
+    -- collector uses three numbers to control its garbage-collection cycles:
+    -- the garbage-collector pause, the garbage-collector step multiplier,
+    -- and the garbage-collector step size.
+    --
+    -- The garbage-collector pause controls how long the collector waits before
+    -- starting a new cycle. The collector starts a new cycle when the use of memory
+    -- hits n% of the use after the previous collection. Larger values make the
+    -- collector less aggressive. Values equal to or less than 100 mean the collector
+    -- will not wait to start a new cycle. A value of 200 means that the collector
+    -- waits for the total memory in use to double before starting a new cycle.
+    -- The default value is 200; the maximum value is 1000.
+    --
+    -- The garbage-collector step multiplier controls the speed of the collector
+    -- relative to memory allocation, that is, how many elements it marks or sweeps
+    -- for each kilobyte of memory allocated. Larger values make the collector more
+    -- aggressive but also increase the size of each incremental step. You should
+    -- not use values less than 100, because they make the collector too slow and
+    -- can result in the collector never finishing a cycle.
+    -- The default value is 100; the maximum value is 1000.
+    --
+    -- The garbage-collector step size controls the size of each incremental step,
+    -- specifically how many bytes the interpreter allocates before performing a step.
+    -- This parameter is logarithmic: A value of n means the interpreter will
+    -- allocate 2n bytes between steps and perform equivalent work during the step.
+    -- A large value (e.g., 60) makes the collector a stop-the-world (non-incremental)
+    -- collector. The default value is 13, which means steps of approximately 8 Kbytes.
+    --------------------------------------------------------------------------------
+    if garbageCollectionMode == "incremental" then
+        local gcPause = 100             -- The default value is 200; the maximum value is 1000.
+        local stepMultiplier = 100      -- The default value is 100; the maximum value is 1000.
+        local stepSize = 13             -- The default value is 13, which means steps of approximately 8 Kbytes.
+        collectgarbage("incremental", gcPause, stepMultiplier, stepSize)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Use Generational Garbage Collection:
+    --
+    -- In generational mode, the collector does frequent minor collections, which
+    -- traverses only objects recently created. If after a minor collection the use
+    -- of memory is still above a limit, the collector does a stop-the-world major
+    -- collection, which traverses all objects. The generational mode uses two
+    -- parameters: the minor multiplier and the the major multiplier.
+    --
+    -- The minor multiplier controls the frequency of minor collections. For a
+    -- minor multiplier x, a new minor collection will be done when memory grows x%
+    -- larger than the memory in use after the previous major collection. For instance,
+    -- for a multiplier of 20, the collector will do a minor collection when the use
+    -- of memory gets 20% larger than the use after the previous major collection.
+    -- The default value is 20; the maximum value is 200.
+    --
+    -- The major multiplier controls the frequency of major collections.
+    -- For a major multiplier x, a new major collection will be done when memory
+    -- grows x% larger than the memory in use after the previous major collection.
+    -- For instance, for a multiplier of 100, the collector will do a major
+    -- collection when the use of memory gets larger than twice the use after the
+    -- previous collection. The default value is 100; the maximum value is 1000.
+    --------------------------------------------------------------------------------
+    if garbageCollectionMode == "generational" then
+        local minorMultiplier = 20      -- The default value is 20; the maximum value is 200.
+        local majorMultiplier = 100     -- The default value is 100; the maximum value is 1000.
+        collectgarbage("generational", minorMultiplier, majorMultiplier)
+    end
+
+    --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
     collectgarbage("collect")
     collectgarbage("collect")
+    log.df("Garbage Collection Mode: %s", garbageCollectionMode)
 
     --------------------------------------------------------------------------------
     -- Return the module:
