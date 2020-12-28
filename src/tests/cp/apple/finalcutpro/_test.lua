@@ -101,11 +101,11 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Event Viewer",
         function()
             -- Turn it on and off.
-            ok(not fcp.eventViewer:isShowing())
+            ok(eq(fcp.eventViewer:isShowing(), false))
             fcp.eventViewer:showOnPrimary()
-            ok(fcp.eventViewer:isShowing())
+            ok(eq(just.doUntil(fcp.eventViewer.isShowing, 2, 0.01), true))
             fcp.eventViewer:hide()
-            ok(not fcp.eventViewer:isShowing())
+            ok(eq(just.doUntil(fcp.eventViewer.isShowing:NOT(), 2, 0.01), true))
         end
     ),
     test("Viewer Quality", function()
@@ -113,12 +113,12 @@ return test.suite("cp.apple.finalcutpro"):with(
 
         ok(viewer:isShowing())
         viewer:usingProxies(true)
-        ok(eq(viewer:usingProxies(), true))
+        ok(eq(just.doUntil(viewer.usingProxies, 2, 0.01), true))
         ok(eq(viewer:betterQuality(), false))
 
         viewer:usingProxies(false)
         -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.usingProxies, 2, 0.01), false))
+        ok(eq(just.doWhile(viewer.usingProxies, 2, 0.01), false))
         ok(eq(viewer:betterQuality(), false))
 
         viewer:betterQuality(true)
@@ -128,7 +128,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
         viewer:betterQuality(false)
         -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), false))
+        ok(eq(just.doWhile(viewer.betterQuality, 2, 0.01), false))
         ok(eq(viewer:usingProxies(), false))
     end),
     test(
