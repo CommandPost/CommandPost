@@ -36,6 +36,7 @@ local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
+local Viewer        = require("cp.apple.finalcutpro.viewer.Viewer")
 local just          = require("cp.just")
 local localeID      = require("cp.i18n.localeID")
 local test          = require("cp.test")
@@ -110,26 +111,35 @@ return test.suite("cp.apple.finalcutpro"):with(
     ),
     test("Viewer Quality", function()
         local viewer = fcp.viewer
+        local originalMode = viewer:playbackMode()
 
         ok(viewer:isShowing())
-        viewer:usingProxies(true)
-        ok(eq(just.doUntil(viewer.usingProxies, 2, 0.01), true))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_ONLY)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.PROXY_ONLY))
+        ok(eq(viewer:usingProxies(), true))
+        ok(eq(viewer:proxyPreferred(), false))
         ok(eq(viewer:betterQuality(), false))
 
-        viewer:usingProxies(false)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doWhile(viewer.usingProxies, 2, 0.01), false))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_PREFERRED)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.PROXY_PREFERRED))
+        ok(eq(viewer:usingProxies(), true))
+        ok(eq(viewer:proxyPreferred(), true))
         ok(eq(viewer:betterQuality(), false))
 
-        viewer:betterQuality(true)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), true))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_QUALITY)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_QUALITY))
         ok(eq(viewer:usingProxies(), false))
+        ok(eq(viewer:proxyPreferred(), true))
+        ok(eq(viewer:betterQuality(), true))
 
-        viewer:betterQuality(false)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doWhile(viewer.betterQuality, 2, 0.01), false))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_PERFORMANCE)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_PERFORMANCE))
         ok(eq(viewer:usingProxies(), false))
+        ok(eq(viewer:proxyPreferred(), true))
+        ok(eq(viewer:betterQuality(), false))
+
+        -- reset
+        viewer:playbackMode(originalMode)
     end),
     test(
         "Command Editor",
