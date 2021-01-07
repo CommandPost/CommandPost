@@ -2,19 +2,21 @@
 ---
 --- Secondary Window Module.
 
-local require = require
+local require       = require
 
--- local log							= require("hs.logger").new("secondaryWindow")
+--local log           = require "hs.logger".new "secondaryWindow"
 
-local axutils						= require "cp.ui.axutils"
-local Window						= require "cp.ui.Window"
+local axutils       = require "cp.ui.axutils"
+local Window        = require "cp.ui.Window"
 
-local go                            = require "cp.rx.go"
-local Do, If                        = go.Do, go.If
+local go            = require "cp.rx.go"
 
-local class                         = require "middleclass"
-local lazy                          = require "cp.lazy"
 
+local class         = require "middleclass"
+local lazy          = require "cp.lazy"
+
+local Do            = go.Do
+local If            = go.If
 
 local SecondaryWindow = class("cp.apple.finalcutpro.main.SecondaryWindow"):include(lazy)
 
@@ -93,7 +95,7 @@ function SecondaryWindow.lazy.prop:frame()
     return self.window.frame
 end
 
---- cp.apple.finalcutpro.main.SecondaryWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.SecondaryWindow.rootGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The root UI element on the window.
 function SecondaryWindow.lazy.prop:rootGroupUI()
@@ -105,21 +107,21 @@ function SecondaryWindow.lazy.prop:rootGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.SecondaryWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.SecondaryWindow.viewerGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Viewer` if it's on the Secondary Window.
 function SecondaryWindow.lazy.prop:viewerGroupUI()
     return self.rootGroupUI
 end
 
---- cp.apple.finalcutpro.main.SecondaryWindow.browserGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.SecondaryWindow.browserGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Browser` if it's on the Secondary Window.
 function SecondaryWindow.lazy.prop:browserGroupUI()
     return self.rootGroupUI
 end
 
---- cp.apple.finalcutpro.main.SecondaryWindow.timelineGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.SecondaryWindow.timelineGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Timeline` if it's on the Secondary Window.
 function SecondaryWindow.lazy.prop:timelineGroupUI()

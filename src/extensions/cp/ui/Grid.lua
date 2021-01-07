@@ -288,7 +288,7 @@ function Grid:findColumnIndex(id)
     return nil
 end
 
---- cp.ui.Grid:findCell(rowNumber, columnId) -> `hs._asm.axuielement` | nil
+--- cp.ui.Grid:findCell(rowNumber, columnId) -> `hs.axuielement` | nil
 --- Method
 --- Finds a specific [Cell](cp.ui.Cell.md).
 ---
@@ -297,7 +297,7 @@ end
 ---  * columnId - The Column ID.
 ---
 --- Returns:
----  * A `hs._asm.axuielement` object for the cell, or `nil` if the cell cannot be found.
+---  * A `hs.axuielement` object for the cell, or `nil` if the cell cannot be found.
 function Grid:findCell(rowNumber, columnId)
     local rows = self:rows()
     if rows and rowNumber >= 1 and rowNumber < #rows then

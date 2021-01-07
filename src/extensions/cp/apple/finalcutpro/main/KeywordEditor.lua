@@ -30,10 +30,10 @@ KeywordEditor.static.NUMBER_OF_SHORTCUTS = 9
 
 --- cp.apple.finalcutpro.main.KeywordEditor.matches(element) -> boolean
 --- Function
---- Checks to see if an `hs._asm.axuielement` object matches a Keyword Editor window
+--- Checks to see if an `hs.axuielement` object matches a Keyword Editor window
 ---
 --- Parameters:
----  * element - the `hs._asm.axuielement` object you want to check
+---  * element - the `hs.axuielement` object you want to check
 ---
 --- Returns:
 ---  * `true` if a match otherwise `false`
@@ -45,15 +45,15 @@ function KeywordEditor.static.matches(element)
     return false
 end
 
--- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs._asm.axuielement object | nil
+-- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs.axuielement object | nil
 -- Function
 -- Finds the Keyword Editor window.
 --
 -- Parameters:
---  * windows - a table of `hs._asm.axuielement` object to search
+--  * windows - a table of `hs.axuielement` object to search
 --
 -- Returns:
---  * A `hs._asm.axuielement` object if succesful otherwise `nil`
+--  * A `hs.axuielement` object if succesful otherwise `nil`
 local function _findWindowUI(windows)
     for _,window in ipairs(windows) do
         if KeywordEditor.matches(window) then return window end

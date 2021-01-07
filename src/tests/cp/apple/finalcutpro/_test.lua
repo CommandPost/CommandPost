@@ -2,25 +2,25 @@
 -- By default, this will run all test cases across all supported locales in Final Cut Pro:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")()
+-- cp.dev.test("cp.apple.finalcutpro")()
 -- ```
 --
 -- You can also trigger a specific version of Final Cut Pro by supplying it's path:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
+-- cp.dev.test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
 -- ```
 --
 -- If you want to just run a specific test against a specific locale, you can do this:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
+-- cp.dev.test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
 -- ```
 --
 -- You can run multiple specific locales like so:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
+-- cp.dev.test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
 -- ```
 
 local require = require
@@ -36,6 +36,7 @@ local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
+local Viewer        = require("cp.apple.finalcutpro.viewer.Viewer")
 local just          = require("cp.just")
 local localeID      = require("cp.i18n.localeID")
 local test          = require("cp.test")
@@ -88,7 +89,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             ok(viewer:isShowing())
             ok(viewer:infoBar():UI() ~= nil)
-            ok(viewer:bottomToolbarUI() ~= nil)
+            ok(viewer:controlBar():UI() ~= nil)
             ok(viewer.format() ~= nil)
             ok(viewer:framerate() ~= nil)
             ok(viewer:title() ~= nil)
@@ -101,35 +102,44 @@ return test.suite("cp.apple.finalcutpro"):with(
         "Event Viewer",
         function()
             -- Turn it on and off.
-            ok(not fcp.eventViewer:isShowing())
+            ok(eq(fcp.eventViewer:isShowing(), false))
             fcp.eventViewer:showOnPrimary()
-            ok(fcp.eventViewer:isShowing())
+            ok(eq(just.doUntil(fcp.eventViewer.isShowing, 2, 0.01), true))
             fcp.eventViewer:hide()
-            ok(not fcp.eventViewer:isShowing())
+            ok(eq(just.doUntil(fcp.eventViewer.isShowing:NOT(), 2, 0.01), true))
         end
     ),
     test("Viewer Quality", function()
         local viewer = fcp.viewer
+        local originalMode = viewer:playbackMode()
 
         ok(viewer:isShowing())
-        viewer:usingProxies(true)
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_ONLY)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.PROXY_ONLY))
         ok(eq(viewer:usingProxies(), true))
+        ok(eq(viewer:proxyPreferred(), false))
         ok(eq(viewer:betterQuality(), false))
 
-        viewer:usingProxies(false)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.usingProxies, 2, 0.01), false))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.PROXY_PREFERRED)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.PROXY_PREFERRED))
+        ok(eq(viewer:usingProxies(), true))
+        ok(eq(viewer:proxyPreferred(), true))
         ok(eq(viewer:betterQuality(), false))
 
-        viewer:betterQuality(true)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), true))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_QUALITY)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_QUALITY))
         ok(eq(viewer:usingProxies(), false))
+        ok(eq(viewer:proxyPreferred(), true))
+        ok(eq(viewer:betterQuality(), true))
 
-        viewer:betterQuality(false)
-        -- it can take a moment for the preference to sync.
-        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), false))
+        viewer:playbackMode(Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_PERFORMANCE)
+        ok(eq(viewer:playbackMode(), Viewer.PLAYBACK_MODE.ORIGINAL_BETTER_PERFORMANCE))
         ok(eq(viewer:usingProxies(), false))
+        ok(eq(viewer:proxyPreferred(), true))
+        ok(eq(viewer:betterQuality(), false))
+
+        -- reset
+        viewer:playbackMode(originalMode)
     end),
     test(
         "Command Editor",
@@ -164,11 +174,17 @@ return test.suite("cp.apple.finalcutpro"):with(
             export:hide()
             ok(not export:isShowing())
 
+            -- TODO: Chris temporarily disabled this on 20201227, because it was
+            --       causing FCPX and CommandPost to Freeze. Should investigate
+            --       further at some point:
+
             -- fail on proxies this time, quietly
+            --[[
             _, err = export:show(1, false, true, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
             ok(eq(fcp.alert:isShowing(), false))
+            --]]
 
             -- reset proxies mode
             fcp.viewer:usingProxies(false)
@@ -387,23 +403,24 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- Check UI elements
             ok(libraries:isShowing())
-            ok(libraries.toggleViewMode.isShowing())
-            ok(libraries.appearanceAndFiltering:isShowing())
+            ok(libraries.toggleViewMode:isShowing())
+            ok(libraries.appearanceAndFiltering.button:isShowing())
+            ok(not libraries.appearanceAndFiltering:isShowing())
             ok(libraries.sidebar:isShowing())
 
             -- Check the search UI
             ok(libraries.searchToggle:isShowing())
             -- Show the search field if necessary
-            if not libraries.search:isShowing() or not libraries.filterToggle:isShowing() then
+            if not libraries.search:isShowing() or not libraries.searchToggle:isShowing() then
                 libraries.searchToggle()
             end
 
             ok(libraries.search:isShowing())
-            ok(libraries.filterToggle:isShowing())
+            ok(libraries.searchToggle:isShowing())
             -- turn it back off
             libraries:searchToggle()
             ok(not libraries.search:isShowing())
-            ok(not libraries.filterToggle:isShowing())
+            ok(libraries.searchToggle:isShowing())
 
             -- Check that it hides
             libraries:hide()
@@ -412,7 +429,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(not libraries.appearanceAndFiltering:isShowing())
             ok(not libraries.searchToggle:isShowing())
             ok(not libraries.search:isShowing())
-            ok(not libraries.filterToggle:isShowing())
+            ok(not libraries.searchToggle:isShowing())
         end
     ),
     test(
@@ -515,8 +532,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(toolbar.skimming:UI() ~= nil)
             ok(skimmingId and toolbar.skimming:UI():attributeValue("AXIdentifier") == skimmingId)
 
-            ok(toolbar.effectsGroup:UI() ~= nil)
-            ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
+            -- TODO: Chris disabled on 20201228 because effectsGroup is no longer used in the FCPX API.
+            -- ok(toolbar.effectsGroup:UI() ~= nil)
+            -- ok(effectsGroup and toolbar.effectsGroup:UI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(
@@ -545,9 +563,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(panel:isShowing())
             ok(panel.createProxyMedia:isShowing())
             ok(panel.createOptimizedMedia:isShowing())
-            ok(panel:copyToMediaFolder():isShowing())
-            ok(panel:leaveInPlace():isShowing())
-            ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())
+            ok(panel.copyToLibraryStorageLocation:isShowing())
+            ok(panel.leaveFilesInPlace:isShowing())
+            ok(panel.copyToLibraryStorageLocation:checked() or panel.leaveFilesInPlace:checked())
 
             panel:hide()
         end
@@ -692,7 +710,7 @@ onRun(
             fcp:launch()
         end
 
-        just.doUntil(function() return fcp:isRunning() end, 10, 0.1)
+        just.doUntil(function() return fcp:isRunning() end, 30, 1)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 

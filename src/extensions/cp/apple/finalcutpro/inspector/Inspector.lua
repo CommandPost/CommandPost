@@ -115,7 +115,7 @@ function Inspector:initialize(parent)
     end)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.Inspector.topBarUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the "top bar" `axuielement` for the Inspector.
 function Inspector.lazy.prop:topBarUI()
@@ -127,7 +127,7 @@ function Inspector.lazy.prop:topBarUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.panelUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.Inspector.panelUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the central panel `axuielement` for the Inspector.
 function Inspector.lazy.prop:panelUI()
@@ -148,7 +148,7 @@ function Inspector.lazy.prop:panelUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.Inspector.propertiesUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the properties `axuielement` for the Inspector. This contains the rows of property values.
 function Inspector.lazy.prop:propertiesUI()
@@ -166,7 +166,7 @@ function Inspector.lazy.prop:propertiesUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.bottomBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.Inspector.bottomBarUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the bottom bar `axuielement` for the Inspector.
 function Inspector.lazy.prop:bottomBarUI()
@@ -178,7 +178,7 @@ function Inspector.lazy.prop:bottomBarUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.labelUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.Inspector.labelUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for text label at the top of the Inspector.
 function Inspector.lazy.prop:labelUI()
@@ -415,7 +415,7 @@ function Inspector:doSelectTab(title)
     :Then(
         If(self:doFindTabButton(title))
         :Then(function(button)
-            button:doPress()
+            button:doAXPress()
             return true
         end)
         :Otherwise(false)

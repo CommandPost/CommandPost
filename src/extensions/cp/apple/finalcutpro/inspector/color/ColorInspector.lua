@@ -60,9 +60,9 @@ function ColorInspector:initialize(parent)
     BasePanel.initialize(self, parent, "Color")
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.topBarUI <cp.prop: hs.axuielement; read-only>
 --- Field
---- Returns the `hs._asm.axuielement` object representing the top bar.
+--- Returns the `hs.axuielement` object representing the top bar.
 function ColorInspector.lazy.prop:topBarUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_topBar",
@@ -79,9 +79,9 @@ function ColorInspector.lazy.prop:topBarUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector.correctorUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.correctorUI <cp.prop: hs.axuielement; read-only>
 --- Field
---- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
+--- Returns the `hs.axuielement` object representing the currently-selected corrector panel.
 function ColorInspector.lazy.prop:correctorUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_corrector",

@@ -22,7 +22,7 @@ local TIMEOUT_AFTER = 3000
 ---
 --- Parameters:
 ---  * parent - The parent object.
----  * uiFinder - A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder - A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 ---  * A new `Menu` object.
@@ -82,7 +82,7 @@ function Menu:doSelectItem(index)
     :Then(function(ui)
         local item = ui[index]
         if item then
-            item:doPress()
+            item:doAXPress()
             return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
         else
             return self:doCancel()
@@ -108,7 +108,7 @@ function Menu:doSelectValue(value)
     :Then(function(ui)
         for _,item in ipairs(ui) do
             if item:title() == value then
-                item:doPress()
+                item:doAXPress()
                 return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
             end
         end
@@ -140,7 +140,7 @@ function Menu:doSelectItemMatching(pattern, altPattern)
                     local s,e = find(title, selectedPattern)
                     if s == 1 and e == title:len() then
                         -- perfect match
-                        item:doPress()
+                        item:doAXPress()
                         return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
                     end
                 end

@@ -1,6 +1,6 @@
 --- === cp.ui.axutils ===
 ---
---- Utility functions to support `hs._asm.axuielement`.
+--- Utility functions to support `hs.axuielement`.
 
 local require = require
 
@@ -154,7 +154,7 @@ end
 
 --- cp.ui.axutils.children(element[, compareFn]) -> table
 --- Function
---- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
+--- Finds the children for the element. If it is an `hs.axuielement`, it will
 --- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
 --- that will get called. If no children exist, an empty table will be returned.
 ---
@@ -197,7 +197,8 @@ local function isBelow(a)
         elseif a == nil then
             return true
         else
-            local aFrame, bFrame = a:frame(), b:frame()
+            local aFrame = a:attributeValue("AXFrame")
+            local bFrame = b:attributeValue("AXFrame")
             return aFrame.y + aFrame.h < bFrame.y
         end
     end
@@ -210,7 +211,8 @@ local function isAbove(a)
         elseif a == nil then
             return true
         else
-            local aFrame, bFrame = a:frame(), b:frame()
+            local aFrame = a:attributeValue("AXFrame")
+            local bFrame = b:attributeValue("AXFrame")
             return aFrame.y < bFrame.y + bFrame.h
         end
     end
@@ -261,7 +263,7 @@ function axutils.hasAttributeValue(element, name, value)
     return element and element:attributeValue(name) == value
 end
 
---- cp.ui.axutils.withAttributeValue(element, name, value) -> hs._asm.axuielement | nil
+--- cp.ui.axutils.withAttributeValue(element, name, value) -> hs.axuielement | nil
 --- Function
 --- Checks if the element has an attribute value with the specified `name` and `value`.
 --- If so, the element is returned, otherwise `nil`.
@@ -277,7 +279,7 @@ function axutils.withAttributeValue(element, name, value)
     return axutils.hasAttributeValue(element, name, value) and element or nil
 end
 
---- cp.ui.axutils.withRole(element, role) -> hs._asm.axuielement | nil
+--- cp.ui.axutils.withRole(element, role) -> hs.axuielement | nil
 --- Function
 --- Checks if the element has an "AXRole" attribute with the specified `role`.
 --- If so, the element is returned, otherwise `nil`.
@@ -292,7 +294,7 @@ function axutils.withRole(element, role)
     return axutils.withAttributeValue(element, "AXRole", role)
 end
 
---- cp.ui.axutils.withValue(element, value) -> hs._asm.axuielement | nil
+--- cp.ui.axutils.withValue(element, value) -> hs.axuielement | nil
 --- Function
 --- Checks if the element has an "AXValue" attribute with the specified `value`.
 --- If so, the element is returned, otherwise `nil`.
@@ -307,7 +309,7 @@ function axutils.withValue(element, value)
     return axutils.withAttributeValue(element, "AXValue", value)
 end
 
---- cp.ui.axutils.withTitle(element, title) -> hs._asm.axuielement | nil
+--- cp.ui.axutils.withTitle(element, title) -> hs.axuielement | nil
 --- Function
 --- Checks if the element has an "AXTitle" attribute with the specified `title`.
 --- If so, the element is returned, otherwise `nil`.
@@ -750,7 +752,7 @@ function axutils.snapshot(element, filename, elementFrame)
             local shotSize = windowSnap:size()
 
             local ratio = shotSize.h/windowFrame.h
-            elementFrame = elementFrame or element:frame()
+            elementFrame = elementFrame or element:attributeValue("AXFrame")
 
             local imageFrame = {
                 x = (windowFrame.x-elementFrame.x)*ratio,
@@ -782,11 +784,11 @@ end
 
 --- cp.ui.axutils.prop(uiFinder, attributeName[, settable]) -> cp.prop
 --- Function
---- Creates a new `cp.prop` which will find the `hs._asm.axuielement` via the `uiFinder` and
+--- Creates a new `cp.prop` which will find the `hs.axuielement` via the `uiFinder` and
 --- get/set the value (if settable is `true`).
 ---
 --- Parameters:
----  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
+---  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs.axuielement`.
 ---  * attributeName - the `AX` atrribute name the property links to.
 ---  * settable      - Defaults to `false`. If `true`, the property will also be settable.
 ---

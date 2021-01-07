@@ -6,13 +6,13 @@ local require = require
 
 --local log                   = require("hs.logger").new("appearanceAndFiltering")
 
-local axutils               = require("cp.ui.axutils")
+local axutils               = require "cp.ui.axutils"
 
-local Button			    = require("cp.ui.Button")
-local CheckBox              = require("cp.ui.CheckBox")
-local Popover               = require("cp.ui.Popover")
-local PopUpButton           = require("cp.ui.PopUpButton")
-local Slider                = require("cp.ui.Slider")
+local Button			    = require "cp.ui.Button"
+local CheckBox              = require "cp.ui.CheckBox"
+local Popover               = require "cp.ui.Popover"
+local PopUpButton           = require "cp.ui.PopUpButton"
+local Slider                = require "cp.ui.Slider"
 
 local cache                 = axutils.cache
 local childFromRight        = axutils.childFromRight
@@ -94,7 +94,8 @@ end
 --- Field
 --- The "Clip Appearance & Filtering Menu" button.
 function AppearanceAndFiltering.lazy.value:button()
-    return Button(self, self:parent().UI:mutate(function(original)
+    local parent = self:parent()
+    return Button(parent, parent.UI:mutate(function(original)
         return childFromRight(childrenWithRole(original(), "AXButton"), 2)
     end))
 end

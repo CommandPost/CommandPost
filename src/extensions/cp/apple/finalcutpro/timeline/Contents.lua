@@ -62,7 +62,7 @@ function Contents:initialize(parent)
 
     prop.bind(self) {
 
---- cp.apple.finalcutpro.timeline.Contents.scrollAreaUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.timeline.Contents.scrollAreaUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The parent `ScrollArea` UI of the Timeline Contents area.
         scrollAreaUI = scrollAreaUI
@@ -102,7 +102,7 @@ end
 function Contents.lazy.prop:timelineFrame()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and ui:frame()
+        return ui and ui:attributeValue("AXFrame")
     end)
 end
 
@@ -269,7 +269,7 @@ end
 function Contents:clipsUI(expandGroups, filterFn)
     local ui = self:UI()
     if ui then
-        local clips = fnutils.filter(ui:children(), function(child)
+        local clips = fnutils.filter(ui:attributeValue("AXChildren"), function(child)
             local role = child:attributeValue("AXRole")
             return role == "AXLayoutItem" or role == "AXGroup"
         end)
@@ -315,7 +315,7 @@ end
 function Contents:playheadClipsUI(expandGroups, filterFn)
     local playheadPosition = self.playhead:position()
     local clips = self:clipsUI(expandGroups, function(clip)
-        local frame = clip:frame()
+        local frame = clip:attributeValue("AXFrame")
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
            and (filterFn == nil or filterFn(clip))
     end)
@@ -392,7 +392,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Contents:doSelectClips(clipsUI) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs._asm.axuielement` values in the Timeline Contents area.
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs.axuielement` values in the Timeline Contents area.
 ---
 --- Parameters:
 --- * clipsUI       - The table of `hs._asm.axuilement` values to select.
@@ -415,7 +415,7 @@ end
 
 --- cp.apple.finalcutpro.timeline.Contents:doSelectClip(clipUI) -> cp.rx.go.Statement
 --- Method
---- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs._asm.axuielement` value in the Timeline Contents area.
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs.axuielement` value in the Timeline Contents area.
 ---
 --- Parameters:
 --- * clipUI       - The `hs._asm.axuilement` values to select.
@@ -500,7 +500,7 @@ function Contents:selectClipInAngle(angleNumber)
 
         local playheadPosition = self.playhead:position()
         local clipUI = axutils.childMatching(angleUI, function(child)
-            local frame = child:frame()
+            local frame = child:attributeValue("AXFrame")
             return child:attributeValue("AXRole") == "AXLayoutItem"
                and frame.x <= playheadPosition and (frame.x+frame.w) >= playheadPosition
         end)

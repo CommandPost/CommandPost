@@ -25,6 +25,8 @@ local Given                             = require "cp.rx.go.Given"
 local If                                = require "cp.rx.go.If"
 local WaitUntil                         = require "cp.rx.go.WaitUntil"
 
+local ninjaDoubleClick                  = tools.ninjaDoubleClick
+
 local EffectsBrowser = Group:subclass("cp.apple.finalcutpro.main.EffectsBrowser")
 
 --- cp.apple.finalcutpro.main.EffectsBrowser.EFFECTS -> string
@@ -583,12 +585,12 @@ end
 function EffectsBrowser:applyItem(itemUI)
     if itemUI then
         self.contents:showChild(itemUI)
-        local uiFrame = itemUI:frame()
+        local uiFrame = itemUI:attributeValue("AXFrame")
         if uiFrame then
             local rect = geometry.rect(uiFrame)
             local targetPoint = rect and rect.center
             if targetPoint then
-                tools.ninjaDoubleClick(targetPoint)
+                ninjaDoubleClick(targetPoint)
             end
         end
     end
@@ -620,7 +622,7 @@ end
 --
 -----------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.EffectsBrowser:mainGroupUI() -> <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.main.EffectsBrowser:mainGroupUI() -> <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Main Group UI.
 function EffectsBrowser.lazy.prop:mainGroupUI()

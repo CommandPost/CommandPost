@@ -214,9 +214,9 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         -- Check to see if there's any clips above or below the selected clip:
         --------------------------------------------------------------------------------
-        local originalFrame = clip:frame()
+        local originalFrame = clip:attributeValue("AXFrame")
         local verticalClips = timelineContents:clipsUI(false, function(c)
-            local newFrame = c:frame()
+            local newFrame = c:attributeValue("AXFrame")
             return newFrame.x > originalFrame.x and newFrame.x < (originalFrame.x + originalFrame.w)
             or originalFrame.x > newFrame.x and originalFrame.x < (newFrame.x + newFrame.w)
 
@@ -254,7 +254,7 @@ function mod.batchExportTimelineClips(clips, sendToCompressor)
         --------------------------------------------------------------------------------
         if isOnPrimaryStoryline then
             local playheadUI = playhead and playhead:UI()
-            local playheadFrame = playheadUI and playheadUI:frame()
+            local playheadFrame = playheadUI and playheadUI:attributeValue("AXFrame")
             local center = playheadFrame and geometry(playheadFrame).center
             if center then
                 ninjaMouseClick(center)

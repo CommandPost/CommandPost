@@ -73,7 +73,7 @@ function FullScreenWindow:initialize(app)
     Window.initialize(self, app.app, UI)
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.FullScreenWindow.rootGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The root `AXGroup`.
 function FullScreenWindow.lazy.prop:rootGroupUI()
@@ -85,7 +85,7 @@ function FullScreenWindow.lazy.prop:rootGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.FullScreenWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.FullScreenWindow.viewerGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The Viewer's group UI element.
 function FullScreenWindow.lazy.prop:viewerGroupUI()

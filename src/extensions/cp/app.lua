@@ -17,7 +17,7 @@ local log                       = require "hs.logger".new "app"
 
 local application               = require "hs.application"
 local applicationwatcher        = require "hs.application.watcher"
-local ax                        = require "hs._asm.axuielement"
+local ax                        = require "hs.axuielement"
 local fs                        = require "hs.fs"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
@@ -273,7 +273,7 @@ function app.lazy.prop:running()
     end)
 end
 
---- cp.app.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the application's `axuielement`, if available.
 function app.lazy.prop:UI()
@@ -376,7 +376,7 @@ end
 
 -- cp.app:_findWindow(windowUI) -> cp.ui.Window
 -- Method
--- Finds the matching [Window](cp.ui.Window.md) for the `hs._asm.axuielement`.
+-- Finds the matching [Window](cp.ui.Window.md) for the `hs.axuielement`.
 -- If it is cached, return the cached instance, otherwise, create a new one.
 function app:_findWindow(windowUI)
     -- first, check the cache
@@ -424,7 +424,7 @@ function app.lazy.prop:windows()
     end)
 end
 
---- cp.app.windowsUI <cp.prop: table of hs._asm.axuielement; read-only; live>
+--- cp.app.windowsUI <cp.prop: table of hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the list of windows in the app.
 function app.lazy.prop:windowsUI()
@@ -454,7 +454,7 @@ function app.lazy.prop:focusedWindow()
     end)
 end
 
---- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.focusedWindowUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:focusedWindowUI()
@@ -473,7 +473,7 @@ function app.lazy.prop:mainWindow()
     end)
 end
 
---- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.mainWindowUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:mainWindowUI()

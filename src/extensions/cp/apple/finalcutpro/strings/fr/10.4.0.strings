@@ -3,14 +3,6 @@
 <!-- Missing I18N keys values for FCPX. Generally prefixed with "CP" to avoid clashes with existing keys.  -->
 <plist version="1.0">
 <dict>
-    <key>CPViewerViewOptimized</key>
-    <string>Optimisées et originales</string>
-    <key>CPViewerViewProxy</key>
-    <string>Proxy</string>
-    <key>CPViewerViewBetterQuality</key>
-    <string>Meilleure qualité</string>
-    <key>CPViewerViewBetterPerformance</key>
-    <string>Meilleures performances</string>
     <key>CPColorBoardMidtones</key>
     <string>Intermédiaires</string>
     <key>CPColorBoardHighlights</key>

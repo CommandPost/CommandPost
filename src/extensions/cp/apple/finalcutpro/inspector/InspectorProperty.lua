@@ -7,36 +7,28 @@
 --- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
-local require = require
+local require                   = require
 
---local log                   = require("hs.logger").new("InspectorProperty")
+--local log                       = require "hs.logger".new "InspectorProperty"
 
---local geometry              = require("hs.geometry")
---local mouse                 = require("hs.mouse")
+local is                        = require "cp.is"
+local prop                      = require "cp.prop"
+local tools                     = require "cp.tools"
 
-local is                    = require("cp.is")
---local just                  = require("cp.just")
-local prop                  = require("cp.prop")
-local tools                 = require("cp.tools")
+local axutils                   = require "cp.ui.axutils"
+local Button                    = require "cp.ui.Button"
+local CheckBox                  = require "cp.ui.CheckBox"
+local MenuButton                = require "cp.ui.MenuButton"
+local PopUpButton               = require "cp.ui.PopUpButton"
+local PropertyRow               = require "cp.ui.PropertyRow"
+local StaticText                = require "cp.ui.StaticText"
+local TextField                 = require "cp.ui.TextField"
 
-local axutils               = require("cp.ui.axutils")
-local Button                = require("cp.ui.Button")
-local CheckBox              = require("cp.ui.CheckBox")
-local MenuButton            = require("cp.ui.MenuButton")
-local PopUpButton           = require("cp.ui.PopUpButton")
-local PropertyRow           = require("cp.ui.PropertyRow")
-local StaticText            = require("cp.ui.StaticText")
-local TextField             = require("cp.ui.TextField")
+local Do                        = require "cp.rx.go.Do"
 
-local Do                    = require("cp.rx.go.Do")
-
---local ax                    = require("hs._asm.axuielement")
-
-local childFromLeft         = axutils.childFromLeft
-local childFromRight        = axutils.childFromRight
-local childrenMatching      = axutils.childrenMatching
---local ninjaMouseClick       = tools.ninjaMouseClick
---local wait                  = just.wait
+local childFromLeft             = axutils.childFromLeft
+local childFromRight            = axutils.childFromRight
+local childrenMatching          = axutils.childrenMatching
 
 local toRegionalNumber          = tools.toRegionalNumber
 local toRegionalNumberString    = tools.toRegionalNumberString
@@ -148,7 +140,7 @@ function mod.section(labelKey, index)
                 local propsUI = original()
                 local rowUI = row:UI()
                 if propsUI and rowUI then
-                    local frame = rowUI:frame()
+                    local frame = rowUI:attributeValue("AXFrame")
                     if frame then
                         local rowPos = frame.y + frame.h
                         return childrenMatching(propsUI, function(child)
@@ -174,7 +166,7 @@ function mod.section(labelKey, index)
                     local result = false
                     local resetButton = theRow.reset
                     local resetButtonUI = resetButton and resetButton:UI()
-                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:attributeValue("AXFrame")
                     if resetButtonFrame then
                         resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w
                         local center = geometry(resetButtonFrame).center
@@ -197,11 +189,11 @@ function mod.section(labelKey, index)
 
                     --[[
                     local theRowUI = theRow and theRow:UI()
-                    local theRowFrame = theRowUI and theRowUI:frame()
+                    local theRowFrame = theRowUI and theRowUI:attributeValue("AXFrame")
 
                     local nextRow = axutils.childrenInNextLine(theRowUI)
                     local nextRowStaticText = nextRow and axutils.childFromLeft(nextRow, 1, StaticText.matches)
-                    local nextRowStaticTextFrame = nextRowStaticText and nextRowStaticText:frame()
+                    local nextRowStaticTextFrame = nextRowStaticText and nextRowStaticText:attributeValue("AXFrame")
 
                     if theRowFrame and nextRowStaticTextFrame and (theRowFrame.y + theRowFrame.h) > (nextRowStaticTextFrame.y - 5) then
                         return true
@@ -211,7 +203,7 @@ function mod.section(labelKey, index)
                     --]]
 
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
-                    return theRow.toggle:title() == iHide
+                    return theRow.toggle:attributeValue("AXTitle") == iHide
                 end,
                 function(newValue, theRow, theProp)
 
@@ -225,7 +217,7 @@ function mod.section(labelKey, index)
                     --[[
                     local resetButton = theRow.reset
                     local resetButtonUI = resetButton and resetButton:UI()
-                    local resetButtonFrame = resetButtonUI and resetButtonUI:frame()
+                    local resetButtonFrame = resetButtonUI and resetButtonUI:attributeValue("AXFrame")
 
                     if resetButtonFrame and newValue ~= currentValue then
                         resetButtonFrame.x = resetButtonFrame.x - resetButtonFrame.w

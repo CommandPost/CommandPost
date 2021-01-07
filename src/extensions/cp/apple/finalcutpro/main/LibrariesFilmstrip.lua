@@ -123,8 +123,8 @@ end
 --- Returns:
 ---  * `true` if clip A is above clip B, otherwise `false`.
 function LibrariesFilmstrip.sortClips(a, b)
-    local aFrame = a:frame()
-    local bFrame = b:frame()
+    local aFrame = a:attributeValue("AXFrame")
+    local bFrame = b:attributeValue("AXFrame")
     if aFrame.y < bFrame.y then -- a is above b
         return true
     elseif aFrame.y == bFrame.y then
@@ -220,7 +220,7 @@ end
 function LibrariesFilmstrip:selectedClipsUI()
     local ui = self:contentsUI()
     if ui then
-        local children = ui:selectedChildren()
+        local children = ui:attributeValue("AXSelectedChildren")
         local clips = {}
         for i,child in ipairs(children) do
             clips[i] = child
@@ -258,8 +258,8 @@ function LibrariesFilmstrip:showClip(clip)
     local ui = self:UI()
     if ui then
         local vScroll = self.verticalScrollBar:UI()
-        local vFrame = vScroll:frame()
-        local clipFrame = clipUI:frame()
+        local vFrame = vScroll:attributeValue("AXFrame")
+        local clipFrame = clipUI:attributeValue("AXFrame")
 
         local top = vFrame.y
         local bottom = vFrame.y + vFrame.h
@@ -271,7 +271,7 @@ function LibrariesFilmstrip:showClip(clip)
             --------------------------------------------------------------------------------
             -- We need to scroll:
             --------------------------------------------------------------------------------
-            local oFrame = self:contentsUI():frame()
+            local oFrame = self:contentsUI():attributeValue("AXFrame")
             local scrollHeight = oFrame.h - vFrame.h
 
             local vValue
@@ -317,8 +317,11 @@ function LibrariesFilmstrip:selectClip(clip) -- luacheck:ignore
     if clip then
         local clipUI = clip:UI()
         if isValid(clipUI) then
-            clipUI:parent():setSelectedChildren( { clipUI } )
-            return true
+            local parent = clipUI:attributeValue("AXParent")
+            if parent then
+                parent:setAttributeValue("AXSelectedChildren", {clipUI})
+                return true
+            end
         end
     end
     return false
@@ -395,7 +398,7 @@ function LibrariesFilmstrip:selectAll(clips)
     local contents = self:contentsUI()
     if clips and contents then
         local clipsUI = _clipsToUI(clips)
-        contents:setSelectedChildren(clipsUI)
+        contents:setAttributeValue("AXSelectedChildren", clipsUI)
         return true
     end
     return false
@@ -413,7 +416,7 @@ end
 function LibrariesFilmstrip:deselectAll()
     local contents = self:contentsUI()
     if contents then
-        contents:setSelectedChildren({})
+        contents:setAttributeValue("AXSelectedChildren", {})
         return true
     end
     return false

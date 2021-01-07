@@ -36,6 +36,8 @@ local childMatching             = axutils.childMatching
 local childWith                 = axutils.childWith
 local childWithRole             = axutils.childWithRole
 
+local doUntil                   = just.doUntil
+
 local LibrariesBrowser = Group:subclass("cp.apple.finalcutpro.main.LibrariesBrowser")
 
 function LibrariesBrowser.static.matches(element)
@@ -62,7 +64,7 @@ function LibrariesBrowser:initialize(parent)
     Group.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the main group within the Libraries Browser, or `nil` if not available..
 function LibrariesBrowser.lazy.prop:mainGroupUI()
@@ -317,7 +319,7 @@ function LibrariesBrowser:openClipTitled(name)
         --------------------------------------------------------------------------------
         local openClip = menuBar:findMenuUI({"Clip", "Open Clip"})
         if openClip then
-            just.doUntil(function() return openClip:enabled() end)
+            doUntil(function() return openClip:attributeValue("AXEnabled") end)
             menuBar:selectMenu({"Clip", "Open Clip"})
             return true
         end

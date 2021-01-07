@@ -26,7 +26,7 @@ local timer                 = require "hs.timer"
 local axutils               = require "cp.ui.axutils"
 local prop                  = require "cp.prop"
 
-local ax                    = require "hs._asm.axuielement"
+local ax                    = require "hs.axuielement"
 
 local doAfter               = timer.doAfter
 local insert                = table.insert
@@ -128,7 +128,7 @@ end
 --- Creates a new `cp.ui.notifier` instance with the specified bundle ID and
 --- a function that returns the element being observed.
 ---
---- The function has a signature of `function() -> hs._asm.axuielement`.
+--- The function has a signature of `function() -> hs.axuielement`.
 --- It simply returns the current element being observed, or `nil` if none is available.
 --- The function will be called multiple times over the life of the notifier.
 ---
@@ -170,7 +170,7 @@ function mod.notifiersForBundleID(bundleID)
     return registeredBundleIDs[bundleID]
 end
 
---- cp.ui.notifier:currentElement() -> hs._asm.axuielement
+--- cp.ui.notifier:currentElement() -> hs.axuielement
 --- Method
 --- Returns the current `axuielement` being observed.
 ---
@@ -197,7 +197,7 @@ end
 ---
 --- Notes:
 ---  * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
----      * the `hs._asm.axuielement` object for the accessibility element which generated the notification.
+---      * the `hs.axuielement` object for the accessibility element which generated the notification.
 ---      * a string with the notification type.
 ---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
 function mod.mt:watchFor(notifications, callbackFn)
@@ -245,7 +245,7 @@ end
 --- Notes:
 ---  * This should generally just be used for debugging purposes. It's best to use `watchFor`[#watchFor] in most cases.
 ---  * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
----      * the `hs._asm.axuielement` object for the accessibility element which generated the notification.
+---      * the `hs.axuielement` object for the accessibility element which generated the notification.
 ---      * a string with the notification type.
 ---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
 function mod.mt:watchAll(callbackFn)
@@ -342,7 +342,7 @@ function mod.mt:pid()
     return app and app:pid()
 end
 
--- cp.ui.notifier:_observer([create]) -> hs._asm.axuielement.observer
+-- cp.ui.notifier:_observer([create]) -> hs.axuielement.observer
 -- Private Method
 -- Returns the current observer, or `nil` if one does not yet exist.
 --

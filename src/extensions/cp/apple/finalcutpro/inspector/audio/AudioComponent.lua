@@ -111,15 +111,15 @@ local function getRow(ui, subcomponent, ct, index)
         -- Subcomponent:
         --------------------------------------------------------------------------------
         if ct == "standard" then
-            local children = ui and ui:children()
+            local children = ui and ui:attributeValue("AXChildren")
             local topButton = children and childFromLeft(children, 1, Button.matches)
-            local topButtonFrame = topButton and topButton:frame()
+            local topButtonFrame = topButton and topButton:attributeValue("AXFrame")
             local buttons = childrenMatching(children, function(element)
-                return element:frame().w == topButtonFrame.w and element:frame().h == topButtonFrame.h
+                return element:attributeValue("AXFrame").w == topButtonFrame.w and element:attributeValue("AXFrame").h == topButtonFrame.h
             end)
             return buttons and buttons[index + 1] and childrenInLine(buttons[index + 1])
         elseif ct == "multicam" then
-            local children = ui and ui:children()
+            local children = ui and ui:attributeValue("AXChildren")
             local buttons = children and childrenWithRole(children, "AXButton")
             if buttons then
                 local rows = {}
@@ -132,7 +132,7 @@ local function getRow(ui, subcomponent, ct, index)
                 return rows[index]
             end
         elseif ct == "compound" then
-            local children = ui and ui:children()
+            local children = ui and ui:attributeValue("AXChildren")
             local buttons = children and childrenWithRole(children, "AXButton")
             if buttons then
                 local rows = {}
@@ -153,7 +153,7 @@ local function getRow(ui, subcomponent, ct, index)
             local topButton = childFromTop(ui, 1, Button.matches)
             return topButton and childrenInLine(topButton)
         elseif ct == "multicam" then
-            local children = ui and ui:children()
+            local children = ui and ui:attributeValue("AXChildren")
             local buttons = children and childrenWithRole(children, "AXButton")
             if buttons then
                 local rows = {}
@@ -166,7 +166,7 @@ local function getRow(ui, subcomponent, ct, index)
                 return rows[index]
             end
         elseif ct == "compound" then
-            local children = ui and ui:children()
+            local children = ui and ui:attributeValue("AXChildren")
             local buttons = children and childrenWithRole(children, "AXButton")
             if buttons then
                 local rows = {}

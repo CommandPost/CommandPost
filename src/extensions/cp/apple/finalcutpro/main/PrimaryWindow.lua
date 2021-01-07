@@ -71,7 +71,7 @@ function PrimaryWindow.lazy.value:window()
     return Window(self:app().app, self.UI)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The main `axuielement` for the window. May be `nil` if not currently available.
 function PrimaryWindow.lazy.prop:UI()
@@ -111,9 +111,9 @@ function PrimaryWindow.lazy.prop:frame()
     return self.window.frame
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.rootGroupUI() <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.rootGroupUI() <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the top AXSplitGroup as a `hs._asm.axuielement` object
+--- Returns the top AXSplitGroup as a `hs.axuielement` object
 function PrimaryWindow.lazy.prop:rootGroupUI()
     return self.UI:mutate(function(original)
         return axutils.cache(self, "_rootGroup", function()
@@ -122,9 +122,9 @@ function PrimaryWindow.lazy.prop:rootGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.leftGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.leftGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the left group UI as a `hs._asm.axuielement` object
+--- Returns the left group UI as a `hs.axuielement` object
 function PrimaryWindow.lazy.prop:leftGroupUI()
     return self.rootGroupUI:mutate(function(original)
         local root = original()
@@ -142,9 +142,9 @@ function PrimaryWindow.lazy.prop:leftGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.rightGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.rightGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the right group UI as a `hs._asm.axuielement` object.
+--- Returns the right group UI as a `hs.axuielement` object.
 function PrimaryWindow.lazy.prop:rightGroupUI()
     return self.rootGroupUI:mutate(function(original)
         local root = original()
@@ -159,9 +159,9 @@ function PrimaryWindow.lazy.prop:rightGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.topGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.topGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the top group UI as a `hs._asm.axuielement` object.
+--- Returns the top group UI as a `hs.axuielement` object.
 function PrimaryWindow.lazy.prop:topGroupUI()
     return self.leftGroupUI:mutate(function(original)
         local left = original()
@@ -184,8 +184,8 @@ function PrimaryWindow.lazy.prop:topGroupUI()
                 local top = nil
                 for _,child in ipairs(left) do
                     if child:attributeValue("AXRole") == "AXGroup" then
-                        local topFrame = top and top:frame()
-                        local childFrame = child and child:frame()
+                        local topFrame = top and top:attributeValue("AXFrame")
+                        local childFrame = child and child:attributeValue("AXFrame")
                         if top == nil or (topFrame and childFrame and topFrame.y > childFrame.y) then
                             top = child
                         end
@@ -198,9 +198,9 @@ function PrimaryWindow.lazy.prop:topGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow:bottomGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow:bottomGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
---- Returns the bottom group UI as a `hs._asm.axuielement` object.
+--- Returns the bottom group UI as a `hs.axuielement` object.
 function PrimaryWindow.lazy.prop:bottomGroupUI()
     return self.leftGroupUI:mutate(function(original)
         local left = original()
@@ -223,7 +223,7 @@ function PrimaryWindow.lazy.prop:bottomGroupUI()
                 local top = nil
                 for _,child in ipairs(left) do
                     if child:attributeValue("AXRole") == "AXGroup" then
-                        if top == nil or top:frame().y < child:frame().y then
+                        if top == nil or top:attributeValue("AXFrame").y < child:attributeValue("AXFrame").y then
                             top = child
                         end
                     end
@@ -235,21 +235,21 @@ function PrimaryWindow.lazy.prop:bottomGroupUI()
     end)
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.viewerGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI that contains the `Viewer`.
 function PrimaryWindow.lazy.prop:viewerGroupUI()
     return self.topGroupUI
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.timelineGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.timelineGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI that contains the `Timeline`.
 function PrimaryWindow.lazy.prop:timelineGroupUI()
     return self.bottomGroupUI
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow.browserGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.main.PrimaryWindow.browserGroupUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI which contains the Browser.
 function PrimaryWindow.lazy.prop:browserGroupUI()

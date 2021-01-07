@@ -2,11 +2,11 @@
 ---
 --- Adds the ability to control any Final Cut Pro User Interface Element via a MIDI Knob/Slider.
 
-local require = require
+local require           = require
 
 local log               = require "hs.logger".new "midiCtrlSlider"
 
-local ax 			    = require "hs._asm.axuielement"
+local ax 			    = require "hs.axuielement"
 local eventtap          = require "hs.eventtap"
 local mouse			    = require "hs.mouse"
 

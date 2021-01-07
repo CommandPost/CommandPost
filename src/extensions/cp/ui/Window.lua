@@ -45,7 +45,7 @@ end
 ---
 --- Parameters:
 ---  * `cpApp`    - a `cp.app` for the application the Window belongs to.
----  * `uiProp`   - a `cp.prop` that returns the `hs._asm.axuielement` for the window.
+---  * `uiProp`   - a `cp.prop` that returns the `hs.axuielement` for the window.
 ---
 --- Returns:
 ---  * A new `Window` instance.
@@ -54,7 +54,7 @@ function Window:initialize(cpApp, uiProp)
 
     self._app = cpApp
 
---- cp.ui.Window.UI <cp.prop: hs._asm.axuielement: read-only; live?>
+--- cp.ui.Window.UI <cp.prop: hs.axuielement: read-only; live?>
 --- Field
 --- The UI `axuielement` for the Window.
     prop.bind(self) {
@@ -331,7 +331,7 @@ function Window.lazy.value:alert()
     return Alert(self)
 end
 
---- cp.ui.Window.findSectionUI(windowUI, sectionID) -> hs._asm.axuielement
+--- cp.ui.Window.findSectionUI(windowUI, sectionID) -> hs.axuielement
 --- Function
 --- Finds the `axuielement` for the specified `sectionID`, if present in the provided `axuielement` `windowUI`.
 ---
@@ -354,7 +354,7 @@ function Window.static.findSectionUI(windowUI, sectionID)
     end
 end
 
---- cp.ui.Window:findSectionUI(sectionID) -> hs._asm.axuielement
+--- cp.ui.Window:findSectionUI(sectionID) -> hs.axuielement
 --- Method
 --- Looks for th section with the specified `SectionUniqueID` value and returns the matching `axuielement` value.
 ---

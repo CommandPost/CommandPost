@@ -14,10 +14,9 @@ local Dialog                        = require "cp.ui.Dialog"
 local cache                         = axutils.cache
 local childWith                     = axutils.childWith
 
-
 local MediaImport = Dialog:subclass("cp.apple.finalcutpro.import.MediaImport")
 
--- _findWindowUI(windows) -> hs._asm.axuielementObject | nil
+-- _findWindowUI(windows) -> hs.axuielementObject | nil
 -- Method
 -- Finds a matching window UI.
 --

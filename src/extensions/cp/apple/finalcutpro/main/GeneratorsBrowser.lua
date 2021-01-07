@@ -22,11 +22,15 @@ local PopUpButton						= require "cp.ui.PopUpButton"
 local TextField							= require "cp.ui.TextField"
 
 local go                                = require "cp.rx.go"
-local Do, WaitUntil                     = go.Do, go.WaitUntil
+
+local Do                                = go.Do
+local WaitUntil                         = go.WaitUntil
 
 local cache                             = axutils.cache
-local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
+local childWithRole                     = axutils.childWithRole
+local childMatching                     = axutils.childMatching
 
+local ninjaDoubleClick                  = tools.ninjaDoubleClick
 
 local GeneratorsBrowser = Group:subclass("cp.apple.finalcutpro.main.GeneratorsBrowser")
 
@@ -153,7 +157,7 @@ end
 function GeneratorsBrowser.lazy.value:contents()
     return ScrollArea(self, function()
         local group = childMatching(self:mainGroupUI(), function(child)
-            return child:role() == "AXGroup" and #child == 1
+            return child:attributeValue("AXRole") == "AXGroup" and #child == 1
         end)
         return group and group[1]
     end)
@@ -387,8 +391,9 @@ end
 function GeneratorsBrowser:applyItem(itemUI)
     if itemUI then
         self.contents:showChild(itemUI)
-        local targetPoint = geometry.rect(itemUI:frame()).center
-        tools.ninjaDoubleClick(targetPoint)
+        local frame = itemUI:attributeValue("AXFrame")
+        local targetPoint = geometry.rect(frame).center
+        ninjaDoubleClick(targetPoint)
     end
     return self
 end

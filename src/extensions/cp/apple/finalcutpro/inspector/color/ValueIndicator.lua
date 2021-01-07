@@ -137,7 +137,7 @@ end
 function ValueIndicator:increment()
     local ui = self:UI()
     if ui then
-        ui:doIncrement()
+        ui:performAction("AXIncrement")
     end
     return self
 end
@@ -154,7 +154,7 @@ end
 function ValueIndicator:decrement()
     local ui = self:UI()
     if ui then
-        ui:doDecrement()
+        ui:performAction("AXDecrement")
     end
     return self
 end
@@ -185,7 +185,7 @@ end
 ---  * None
 function ValueIndicator:loadLayout(layout)
     if layout then
-        self:setValue(layout.value)
+        self.UI:setAttributeValue("AXValue", layout.value)
     end
 end
 
