@@ -2,7 +2,7 @@
 
 # [CommandPost](http://commandpost.io/)
 [![Latest-Release](https://img.shields.io/github/v/release/CommandPost/CommandPost?include_prereleases)](https://github.com/CommandPost/CommandPost/releases) [![Platform](https://img.shields.io/badge/platform-MacOS-lightgrey.svg)](https://commandpost.io/#system-requirements) [![Website](https://img.shields.io/website?down_message=offline&up_message=online&url=https%3A%2F%2Fcommandpost.io)](https://commandpost.io/)
-> Workflow Toolkit for Professional Editors
+> Workflow Enhancements for Creatives
 
 ## Introduction:
 
