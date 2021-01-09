@@ -210,7 +210,7 @@ function Inspector.lazy.prop:isFullHeight()
             self:show()
             local currentValue = thisProp:get()
             if newValue ~= currentValue then
-                self:app().menu:selectMenu({"View", "Toggle Inspector Height"})
+                self:app().menu:selectMenu({"View", "Toggle Inspector Height"}, {plain=true})
             end
         end
     )

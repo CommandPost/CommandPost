@@ -194,7 +194,7 @@ end
 function ColorBoardAspect.lazy.value:master()
     return ColorPuck(
         self, ColorPuck.RANGE.master,
-        {"CPColorBoardMaster", "cb master puck display name"},
+        {"PAE4WayCorrectorViewControllerMasterLabel"},
         self._hasAngle
     )
 end
@@ -205,7 +205,7 @@ end
 function ColorBoardAspect.lazy.value:shadows()
     return ColorPuck(
         self, ColorPuck.RANGE.shadows,
-        {"CPBolorBoardShadows", "cb shadow puck display name"},
+        {"PAE4WayCorrectorViewControllerShadowsLabel"},
         self._hasAngle
     )
 end
@@ -216,7 +216,7 @@ end
 function ColorBoardAspect.lazy.value:midtones()
     return ColorPuck(
         self, ColorPuck.RANGE.midtones,
-        {"CPColorBoardMidtones", "cb midtone puck display name"},
+        {"PAE4WayCorrectorViewControllerMidtonesLabel"},
         self._hasAngle
     )
 end
@@ -227,7 +227,7 @@ end
 function ColorBoardAspect.lazy.value:highlights()
     return ColorPuck(
         self, ColorPuck.RANGE.highlights,
-        {"CPColorBoardHighlights", "cb highlight puck display name"},
+        {"PAE4WayCorrectorViewControllerHighlightsLabel"},
         self._hasAngle
     )
 end
