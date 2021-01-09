@@ -445,11 +445,15 @@ function mod.start()
           image = image.imageFromPath(config.bundledPluginsPath .. "/core/touchbar/images/icon.png"),
           frame = { x = "15%", y = "18%", h = "65%", w = "65%" },
         }
+        local iconImage = icon:imageFromCanvas()
+
+        icon:delete()
+        icon = nil
 
         --------------------------------------------------------------------------------
         -- Setup System Icon:
         --------------------------------------------------------------------------------
-        mod._sysTrayIcon = mod.touchbar().item.newButton(icon:imageFromCanvas(), "CommandPost")
+        mod._sysTrayIcon = mod.touchbar().item.newButton(iconImage, "CommandPost")
                              :callback(function()
                                 mod.incrementActiveSubGroup()
                                 mod.update()
