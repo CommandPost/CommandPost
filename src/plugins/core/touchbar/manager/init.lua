@@ -448,7 +448,7 @@ function mod.start()
         local iconImage = icon:imageFromCanvas()
 
         icon:delete()
-        icon = nil
+        icon = nil -- luacheck: ignore
 
         --------------------------------------------------------------------------------
         -- Setup System Icon:
