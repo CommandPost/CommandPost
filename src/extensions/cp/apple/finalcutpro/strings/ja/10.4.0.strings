@@ -3,8 +3,6 @@
 <!-- Missing I18N keys values for FCPX. Generally prefixed with "CP" to avoid clashes with existing keys.  -->
 <plist version="1.0">
 <dict>
-    <key>CPColorBoardMidtones</key>
-    <string>中間色調</string>
     <key>CPCodecs</key>
     <string>コーデック</string>
     <key>CPShowHorizon</key>
