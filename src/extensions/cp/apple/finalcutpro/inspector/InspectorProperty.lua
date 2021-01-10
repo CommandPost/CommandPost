@@ -9,7 +9,7 @@
 
 local require                   = require
 
---local log                       = require "hs.logger".new "InspectorProperty"
+local log                       = require "hs.logger".new "InspectorProperty"
 
 local is                        = require "cp.is"
 local prop                      = require "cp.prop"
@@ -203,7 +203,8 @@ function mod.section(labelKey, index)
                     --]]
 
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
-                    return theRow.toggle:attributeValue("AXTitle") == iHide
+                    local toggleUI = theRow.toggle:UI()
+                    return toggleUI and toggleUI:attributeValue("AXTitle") == iHide
                 end,
                 function(newValue, theRow, theProp)
 

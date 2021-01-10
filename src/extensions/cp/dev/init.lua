@@ -287,7 +287,7 @@ end
 --- Returns:
 ---  * The element.
 function mod.highlight(e)
-    if not e or not e.frame then
+    if not e then
         return e
     end
 

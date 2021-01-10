@@ -922,7 +922,7 @@ local plugin = {
     id = "finalcutpro.tangent.common",
     group = "finalcutpro",
     dependencies = {
-        ["core.tangent.manager"] = "manager",
+        ["finalcutpro.tangent.manager"] = "manager",
     },
 }
 

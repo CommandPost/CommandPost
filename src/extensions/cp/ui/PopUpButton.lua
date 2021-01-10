@@ -51,7 +51,7 @@ function PopUpButton.lazy.prop:value()
     return self.UI:mutate(
         function(original)
             local ui = original()
-            return ui and ui.value and ui:attributeValue("AXValue")
+            return ui and ui:attributeValue("AXValue")
         end,
         function(newValue, original)
             local ui = original()
