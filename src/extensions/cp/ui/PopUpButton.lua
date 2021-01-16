@@ -136,10 +136,10 @@ function PopUpButton:doSelectItem(index)
     :Then(function(menuUI)
         local item = menuUI[index]
         if item then
-            item:doPress()
+            item:performAction("AXPress")
             return true
         else
-            item:doCancel()
+            item:performAction("AXCancel")
             return false
         end
     end)
@@ -167,7 +167,7 @@ function PopUpButton:doSelectValue(value)
             :Then(function(menuUI)
                 for _,item in ipairs(menuUI) do
                     if item:title() == value and item:enabled() then
-                        item:doPress()
+                        item:performAction("AXPress")
                         return true
                     end
                 end

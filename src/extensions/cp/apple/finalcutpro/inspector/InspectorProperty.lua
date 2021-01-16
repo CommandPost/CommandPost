@@ -9,7 +9,7 @@
 
 local require                   = require
 
-local log                       = require "hs.logger".new "InspectorProperty"
+--local log                       = require "hs.logger".new "InspectorProperty"
 
 local is                        = require "cp.is"
 local prop                      = require "cp.prop"
