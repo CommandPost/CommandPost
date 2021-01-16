@@ -59,8 +59,8 @@ function PopUpButton.lazy.prop:value()
                 local items = ui:performAction("AXPress")[1]
                 if items then
                     for _,item in ipairs(items) do
-                        if item:title() == newValue then
-                            item:doAXPress()
+                        if item:attributeValue("AXTitle") == newValue then
+                            item:performAction("AXPress")
                             return
                         end
                     end
@@ -110,7 +110,7 @@ function PopUpButton:selectItem(index)
             local item = items[index]
             if item then
                 -- select the menu item
-                item:doAXPress()
+                item:performAction("AXPress")
             else
                 -- close the menu again
                 items:doAXCancel()
@@ -166,7 +166,7 @@ function PopUpButton:doSelectValue(value)
             :Then(WaitUntil(self.menuUI):TimeoutAfter(TIMEOUT_AFTER))
             :Then(function(menuUI)
                 for _,item in ipairs(menuUI) do
-                    if item:title() == value and item:enabled() then
+                    if item:attributeValue("AXTitle") == value and item:attributeValue("AXEnabled") then
                         item:performAction("AXPress")
                         return true
                     end
