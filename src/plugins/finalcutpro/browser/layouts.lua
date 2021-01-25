@@ -188,6 +188,11 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.restoreLayoutFromTable(layout)
+    --------------------------------------------------------------------------------
+    -- If no layout supplied, abort:
+    --------------------------------------------------------------------------------
+    if not layout then return end
+
     local libraries = fcp.libraries
     local appearanceAndFiltering = fcp.libraries.appearanceAndFiltering
 
@@ -579,11 +584,12 @@ end
 --- Returns:
 ---  * A string if successful otherwise `nil`.
 function mod.getSingleSelectedCollection()
+    -- NOTE: Chris tweaked this on 20210125 to work on FCPX 10.4.10 on Mojave.
     local selectedRowsUI = fcp.libraries.sidebar:selectedRowsUI()
-    if selectedRowsUI and #selectedRowsUI == 1 and childWithRole(selectedRowsUI[1], "AXTextField") then
-        return childWithRole(selectedRowsUI[1], "AXTextField"):attributeValue("AXValue")
-    end
-    return nil
+    local selectedRow = selectedRowsUI and #selectedRowsUI == 1 and selectedRowsUI[1]
+    local selectedCell = selectedRow and #selectedRow == 1 and selectedRow[1]
+    local selectedTextField = selectedCell and childWithRole(selectedCell, "AXTextField")
+    return selectedTextField and selectedTextField:attributeValue("AXValue")
 end
 
 --- plugins.finalcutpro.browser.layouts.restoreBrowserLayoutForSelectedCollection() -> none
@@ -667,9 +673,9 @@ function mod.resetBrowserLayoutForSelectedCollection()
         collectionLayout[value] = nil
         config.set(COLLECTION_LAYOUT_PREFERENCES_KEY, collectionLayout)
         mod.setupWatcher()
-    else
-        playErrorSound()
+        return
     end
+    playErrorSound()
 end
 
 --- plugins.finalcutpro.browser.layouts.lastCollection -> string | nil
@@ -739,7 +745,10 @@ function plugin.init(deps)
         :add("saveBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
         :whenActivated(function()
-            if mod.busy then return end
+            if mod.busy then
+                playErrorSound()
+                return
+            end
             mod.busy = true
             mod.saveBrowserLayoutForSelectedCollection()
             mod.busy = false
@@ -749,7 +758,10 @@ function plugin.init(deps)
         :add("restoreBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
         :whenActivated(function()
-            if mod.busy then return end
+            if mod.busy then
+                playErrorSound()
+                return
+            end
             mod.busy = true
             mod.restoreBrowserLayoutForSelectedCollection()
             mod.busy = false
@@ -759,7 +771,10 @@ function plugin.init(deps)
         :add("resetBrowserLayoutForSelectedCollection")
         :groupedBy("browser")
         :whenActivated(function()
-            if mod.busy then return end
+            if mod.busy then
+                playErrorSound()
+                return
+            end
             mod.busy = true
             mod.resetBrowserLayoutForSelectedCollection()
             mod.busy = false
