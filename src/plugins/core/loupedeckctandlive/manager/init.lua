@@ -15,6 +15,7 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local loupedeck                 = require "hs.loupedeck"
 local plist                     = require "hs.plist"
+local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
@@ -334,6 +335,7 @@ function mod.new(deviceType)
         if enabled then
             o.appWatcher:start()
             o.driveWatcher:start()
+            o.sleepWatcher:start()
 
             local device = o.getDevice()
             device:connect()
@@ -343,6 +345,7 @@ function mod.new(deviceType)
             --------------------------------------------------------------------------------
             o.appWatcher:stop()
             o.driveWatcher:stop()
+            o.sleepWatcher:stop()
 
             if o.device then
                 --------------------------------------------------------------------------------
@@ -368,6 +371,41 @@ function mod.new(deviceType)
                     -- Destroy the device:
                     --------------------------------------------------------------------------------
                     o.device = nil
+                end)
+            end
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Watch for sleep events:
+    --------------------------------------------------------------------------------
+    o.sleepWatcher = sleepWatcher.new(function(eventType)
+        if eventType == sleepWatcher.systemDidWake then
+            if o.enabled() and o.device then
+                o.device:disconnect()
+                o.device:connect()
+            end
+        end
+        if eventType == sleepWatcher.systemWillSleep then
+            if o.enabled() and o.device then
+                --------------------------------------------------------------------------------
+                -- Make everything black:
+                --------------------------------------------------------------------------------
+                for _, screen in pairs(loupedeck.screens) do
+                    o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+                end
+                for i=7, 26 do
+                    o.device:buttonColor(i, {hex="#" .. defaultColor})
+                end
+
+                --------------------------------------------------------------------------------
+                -- After a slight delay so the websocket message has time to send...
+                --------------------------------------------------------------------------------
+                doAfter(0.01, function()
+                    --------------------------------------------------------------------------------
+                    -- Disconnect from the Loupedeck:
+                    --------------------------------------------------------------------------------
+                    o.device:disconnect()
                 end)
             end
         end
