@@ -7,6 +7,7 @@ local require           = require
 local log               = require "hs.logger".new "actions"
 
 local eventtap          = require "hs.eventtap"
+local fnutils           = require "hs.fnutils"
 local image             = require "hs.image"
 local inspect           = require "hs.inspect"
 local keycodes          = require "hs.keycodes"
@@ -20,6 +21,7 @@ local applescript       = osascript.applescript
 local keyStroke         = tools.keyStroke
 local pressSystemKey    = tools.pressSystemKey
 local imageFromPath     = image.imageFromPath
+local copy              = fnutils.copy
 
 local event             = eventtap.event
 local newKeyEvent       = event.newKeyEvent
@@ -38,12 +40,33 @@ function plugin.init(deps)
 
     local icon = imageFromPath(config.basePath .. "/plugins/core/console/images/Keyboard.icns")
 
+    local heldKeys = {}
+
     local holdKey = function(key, isDown)
         applescript([[tell application "System Events" to ]] .. key .. [[ key ]] .. (isDown and "down" or "up"))
+        if isDown then
+            heldKeys[key] = true
+        else
+            heldKeys[key] = nil
+        end
+    end
+
+    local pressKey = function(action)
+        local m = copy(action.modifiers)
+
+        --------------------------------------------------------------------------------
+        -- Inject modifier keys, if they've already been held down by a hold action:
+        --------------------------------------------------------------------------------
+        if heldKeys["control"] == true then table.insert(m, "ctrl") end
+        if heldKeys["option"] == true then table.insert(m, "alt") end
+        if heldKeys["command"] == true then table.insert(m, "cmd") end
+        if heldKeys["shift"] == true then table.insert(m, "shift") end
+
+        keyStroke(m, action.character)
     end
 
     local actions = {
-        pressKey        = function(action) keyStroke(action.modifiers, action.character) end,
+        pressKey        = function(action) pressKey(action) end,
         systemKey       = function(action) pressSystemKey(action.key) end,
         pressTilda      = function() newKeyEvent("`", true):post() end,
         releaseTilda    = function() newKeyEvent("`", false):post() end,
