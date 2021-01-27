@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.toolbox.shotdata ===
 ---
---- FCPXML Titles Toolbox Panel
+--- Shot Data Toolbox Panel.
 
 local require                   = require
 
@@ -17,18 +17,15 @@ local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
 local tools                     = require "cp.tools"
 
-local csv                       = require "csv"
 local xml                       = require "hs._asm.xml"
 
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
-local dirFiles                  = tools.dirFiles
 local doesDirectoryExist        = tools.doesDirectoryExist
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
 local tableCount                = tools.tableCount
-local trim                      = tools.trim
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
 
@@ -40,7 +37,7 @@ local DEFAULT_SHOT_SIZE_AND_TYPE = "WS"
 local DEFAULT_CAMERA_ANGLE = "Eye Line"
 local DEFAULT_FLAG = "false"
 
-local TEMPLATE_NUMBER_OF_NODES = 185
+local TEMPLATE_NUMBER_OF_NODES = 128
 
 local TEMPLATE = {
     [1]     = { label = "Shot Data",            ignore = true  },
@@ -257,13 +254,13 @@ end
 local function processTitles(nodes)
     if nodes then
         for _, node in pairs(nodes) do
-            local name = node:name()
-            if name == "spine" or name == "gap" or name == "asset-clip" then
+            local nodeName = node:name()
+            if nodeName == "spine" or nodeName == "gap" or nodeName == "asset-clip" then
                 --------------------------------------------------------------------------------
                 -- Secondary Storyline:
                 --------------------------------------------------------------------------------
                 processTitles(node:children())
-            elseif name == "title" then
+            elseif nodeName == "title" then
                 --------------------------------------------------------------------------------
                 -- Title:
                 --------------------------------------------------------------------------------
@@ -381,7 +378,7 @@ local function convertFCPXMLtoCSV()
             local firstTitleCount = tableCount(firstTitle)
 
             local count = 1
-            for heading, _ in pairs(firstTitle) do
+            for heading, _ in spairs(firstTitle) do
                 if heading:match(",") then
                     output = output .. [["]] .. heading .. [["]]
                 else
@@ -397,7 +394,7 @@ local function convertFCPXMLtoCSV()
 
             for _, row in pairs(data) do
                 count = 1
-                for _, value in pairs(row) do
+                for _, value in spairs(row) do
                     if value:match(",") then
                         output = output .. [["]] .. value .. [["]]
                     else
