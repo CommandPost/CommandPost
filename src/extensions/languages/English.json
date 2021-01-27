@@ -1828,6 +1828,7 @@
         "shortcutsPanelTooltip": "Keyboard Shortcuts",
         "shortcutsResetConfirmation": "This will reset all modified shortcuts to the default values.",
         "shortcutsSetNoneConfirmation": "This will reset all of the shortcuts to None.",
+        "shotData": "Shot Data",
         "show": "Show",
         "showActionGroups": "Show Action Groups",
         "showAll": "Show All",

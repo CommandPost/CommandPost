@@ -1,0 +1,33 @@
+<style>{(css/fcpxmltitles.css)}</style>
+<script>
+	function pressButton(whichButton) {
+		try {
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<h3 class="uiItem">{{ i18n("shotData") }}</h3>
+<p class="uiItem">This utility allows you to import a FCPXML which contains one or more Shot Data Titles in a timeline, and converts</p>
+<p class="uiItem">the data from these Motion Templates into a single CSV file for use in other applications.</p>
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('installMotionTemplate')">Install Motion Template</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('convertFCPXMLtoCSV')">Convert FCPXML to CSV</a>
+		</th>
+	</tr>
+</table>
