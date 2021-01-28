@@ -364,7 +364,7 @@ function mod.restoreLayoutFromTable(layout)
                 end
             end
 
-            menu:close()
+            menu:cancel()
         end
     end
 
@@ -500,7 +500,7 @@ function mod.saveLayoutToTable()
         -- Close the Columns popup:
         --------------------------------------------------------------------------------
         if not just.doUntil(function()
-            menu:close()
+            menu:cancel()
             return not libraries.list:columns():isMenuShowing()
         end) then
             log.ef("saveLayoutToTable: Failed to close the columns menu popup when saving.")
