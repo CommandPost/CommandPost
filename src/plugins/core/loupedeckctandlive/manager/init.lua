@@ -1060,14 +1060,14 @@ function mod.mt:callback(data)
     if data.id == loupedeck.event.BUTTON_PRESS then
         if data.direction == "up" then
             if data.buttonID == loupedeck.buttonID.LEFT_FN then
-                local button = item[bankID]["ledButton"]["20"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     self.leftFnPressed = false
                     self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
-                local button = item[bankID]["ledButton"]["23"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     self.rightFnPressed = false
@@ -1076,7 +1076,7 @@ function mod.mt:callback(data)
             end
         elseif data.direction == "down" then
             if data.buttonID == loupedeck.buttonID.LEFT_FN then
-                local button = item[bankID]["ledButton"]["20"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
@@ -1084,7 +1084,7 @@ function mod.mt:callback(data)
                     self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
-                local button = item[bankID]["ledButton"]["23"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
