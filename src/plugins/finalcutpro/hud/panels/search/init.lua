@@ -227,7 +227,7 @@ local function showColumn(column)
             return result
         end
     end
-    menu:close()
+    menu:cancel()
 end
 
 -- updateInfo() -> none
