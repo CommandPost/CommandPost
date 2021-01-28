@@ -6,29 +6,10 @@ local require                   = require
 
 local log                       = require "hs.logger".new "intro"
 
-local dialog                    = require "hs.dialog"
-local fnutils                   = require "hs.fnutils"
 local image                     = require "hs.image"
 local inspect                   = require "hs.inspect"
 
-local config                    = require "cp.config"
-local fcp                       = require "cp.apple.finalcutpro"
-local fcpxml                    = require "cp.apple.fcpxml"
 local i18n                      = require "cp.i18n"
-local tools                     = require "cp.tools"
-
-local xml                       = require "hs._asm.xml"
-
-local chooseFileOrFolder        = dialog.chooseFileOrFolder
-local copy                      = fnutils.copy
-local doesDirectoryExist        = tools.doesDirectoryExist
-local ensureDirectoryExists     = tools.ensureDirectoryExists
-local getFilenameFromPath       = tools.getFilenameFromPath
-local removeFilenameFromPath    = tools.removeFilenameFromPath
-local spairs                    = tools.spairs
-local tableCount                = tools.tableCount
-local webviewAlert              = dialog.webviewAlert
-local writeToFile               = tools.writeToFile
 
 local mod = {}
 
