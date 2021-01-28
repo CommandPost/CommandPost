@@ -22,6 +22,7 @@ local xml                       = require "hs._asm.xml"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local doesDirectoryExist        = tools.doesDirectoryExist
+local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
@@ -31,14 +32,40 @@ local writeToFile               = tools.writeToFile
 
 local mod = {}
 
-local DEFAULT_SCENE_PREFIX = "INT"
-local DEFAULT_SCENE_TIME = "Dawn"
-local DEFAULT_SHOT_SIZE_AND_TYPE = "WS"
-local DEFAULT_CAMERA_ANGLE = "Eye Line"
-local DEFAULT_FLAG = "false"
-
+-- TEMPLATE_NUMBER_OF_NODES -> number
+-- Constant
+-- The minimum number of nodes a Shot Data template will have.
+-- This is used to detect if a title is actually a Shot Data template.
 local TEMPLATE_NUMBER_OF_NODES = 128
 
+-- DEFAULT_SCENE_PREFIX -> string
+-- Constant
+-- The default Scene Prefix value.
+local DEFAULT_SCENE_PREFIX = "INT"
+
+-- DEFAULT_SCENE_TIME -> string
+-- Constant
+-- The default Scene Time value.
+local DEFAULT_SCENE_TIME = "Dawn"
+
+-- DEFAULT_SHOT_SIZE_AND_TYPE -> string
+-- Constant
+-- The default Shot Size & Type value.
+local DEFAULT_SHOT_SIZE_AND_TYPE = "WS"
+
+-- DEFAULT_CAMERA_ANGLE -> string
+-- Constant
+-- The default camera angle value.
+local DEFAULT_CAMERA_ANGLE = "Eye Line"
+
+-- DEFAULT_FLAG -> string
+-- Constant
+-- The default flag value.
+local DEFAULT_FLAG = "false"
+
+-- TEMPLATE -> table
+-- Constant
+-- A table that contains all the fields of the Shot Data Motion Template.
 local TEMPLATE = {
     [1]     = { label = "Shot Data",            ignore = true  },
     [2]     = { label = "Shot Number",          ignore = false },
@@ -239,7 +266,22 @@ end
 -- Returns:
 --  * None
 local function installMotionTemplate()
-    webviewAlert(mod._manager.getWebview(), function() end, "Not yet implimented.", "This feature hasn't been built yet.", i18n("ok"), nil, "warning")
+    webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("ok") then
+            local moviesPath = os.getenv("HOME") .. "/Movies"
+            if not ensureDirectoryExists(moviesPath, "Motion Templates.localized", "Titles.localized", "CommandPost") then
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("shotDataFailedToInstallTemplate"), i18n("shotDataFailedToInstallTemplateDescription"), i18n("ok"), nil, "warning")
+                return
+            end
+            local runString = [[cp -R "]] .. config.basePath .. "/plugins/finalcutpro/toolbox/shotdata/motiontemplate/Shot Data" .. [[" "]] .. os.getenv("HOME") .. "/Movies/Motion Templates.localized/Titles.localized/CommandPost" .. [["]]
+            local output, status = hs.execute(runString)
+            if output and status then
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("shotDataInstalledSuccessfully"), i18n("shotDataInstalledSuccessfullyDescription"), i18n("ok"), nil, "informational")
+            else
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("shotDataFailedToInstallTemplate"), i18n("shotDataFailedToInstallTemplateDescription"), i18n("ok"), nil, "warning")
+            end
+        end
+    end, i18n("shotDataInstallMotionTemplate"), i18n("shotDataInstallMotionTemplateDescription"), i18n("ok"), i18n("cancel"), "informational")
 end
 
 -- processTitles(nodes) -> none
@@ -255,7 +297,7 @@ local function processTitles(nodes)
     if nodes then
         for _, node in pairs(nodes) do
             local nodeName = node:name()
-            if nodeName == "spine" or nodeName == "gap" or nodeName == "asset-clip" then
+            if nodeName == "spine" or nodeName == "gap" or nodeName == "asset-clip" or nodeName == "video" then
                 --------------------------------------------------------------------------------
                 -- Secondary Storyline:
                 --------------------------------------------------------------------------------
@@ -339,35 +381,57 @@ local function processTitles(nodes)
     end
 end
 
--- convertFCPXMLtoCSV() -> none
+-- processFCPXML(path) -> none
 -- Function
--- Converts a FCPXML to a CSV.
+-- Process a FCPXML file.
 --
 -- Parameters:
---  * None
+--  * path - A string containing the path to the FCPXML file.
 --
 -- Returns:
 --  * None
-local function convertFCPXMLtoCSV()
-    if not doesDirectoryExist(mod.lastOpenPath()) then
-        mod.lastOpenPath(desktopPath)
-    end
-    local result = chooseFileOrFolder("Please select a FCPXML file to convert:", mod.lastOpenPath(), true, false, false, {"fcpxml"}, true)
-    local path = result and result["1"]
+local function processFCPXML(path)
     if path then
         if fcpxml.valid(path) then
-            mod.lastOpenPath(removeFilenameFromPath(path))
-
-            originalFilename = getFilenameFromPath(path, true)
-
+            --------------------------------------------------------------------------------
+            -- Open the FCPXML:
+            --------------------------------------------------------------------------------
             local document = xml.open(path)
             local spine = document:XPathQuery("/fcpxml[1]/library[1]/event[1]/project[1]/sequence[1]/spine[1]")
             local spineChildren = spine and spine[1] and spine[1]:children()
+
+            --------------------------------------------------------------------------------
+            -- If there's no spineChildren, then try another path (for drag & drop):
+            --------------------------------------------------------------------------------
+            if not spineChildren then
+                spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+                spineChildren = spine and spine[1] and spine[1]:children()
+            end
+
+            --------------------------------------------------------------------------------
+            -- If drag and drop FCPXML, then use the project name for the filename:
+            --------------------------------------------------------------------------------
+            if spineChildren and not originalFilename then
+                local projectName = spine and spine[1] and spine[1]:parent():parent():rawAttributes()[1]:stringValue()
+                originalFilename = projectName
+            end
+
+            --------------------------------------------------------------------------------
+            -- Reset our data table:
+            --------------------------------------------------------------------------------
             data = {}
+
+            --------------------------------------------------------------------------------
+            -- Process the titles:
+            --------------------------------------------------------------------------------
             processTitles(spineChildren)
 
+            --------------------------------------------------------------------------------
+            -- Abort if we didn't get any results:
+            --------------------------------------------------------------------------------
             if not next(data) then
-                webviewAlert(mod._manager.getWebview(), function() end, "Failed to process FCPXML.", "CommandPost was unable to process the FCPXML. Please make sure the FCPXML contains a single timeline, which contains the Shot Data titles.", i18n("ok"), nil, "warning")
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("failedToProcessFCPXML"), i18n("shotDataFCPXMLFailedDescription"), i18n("ok"), nil, "warning")
+                return
             end
 
             --------------------------------------------------------------------------------
@@ -430,6 +494,28 @@ local function convertFCPXMLtoCSV()
     end
 end
 
+-- convertFCPXMLtoCSV() -> none
+-- Function
+-- Converts a FCPXML to a CSV.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function convertFCPXMLtoCSV()
+    if not doesDirectoryExist(mod.lastOpenPath()) then
+        mod.lastOpenPath(desktopPath)
+    end
+    local result = chooseFileOrFolder(i18n("pleaseSelectAFCPXMLFileToConvert") .. ":", mod.lastOpenPath(), true, false, false, {"fcpxml"}, true)
+    local path = result and result["1"]
+    if path then
+        originalFilename = getFilenameFromPath(path, true)
+        mod.lastOpenPath(removeFilenameFromPath(path))
+        processFCPXML(path)
+    end
+end
+
 -- callback() -> none
 -- Function
 -- JavaScript Callback for the Panel
@@ -443,16 +529,46 @@ end
 local function callback(id, params)
     local callbackType = params and params["type"]
     if callbackType then
+        --------------------------------------------------------------------------------
+        -- Install Motion Template:
+        --------------------------------------------------------------------------------
         if callbackType == "installMotionTemplate" then
-            --------------------------------------------------------------------------------
-            -- Install Motion Template:
-            --------------------------------------------------------------------------------
             installMotionTemplate()
+        --------------------------------------------------------------------------------
+        -- Convert a FCPXML to CSV:
+        --------------------------------------------------------------------------------
         elseif callbackType == "convertFCPXMLtoCSV" then
-            --------------------------------------------------------------------------------
-            -- Convert a FCPXML to CSV:
-            --------------------------------------------------------------------------------
             convertFCPXMLtoCSV()
+        --------------------------------------------------------------------------------
+        -- Convert a FCPXML to CSV via Drop Zone:
+        -----------------------------
+        elseif callbackType == "dropbox" then
+            ---------------------------------------------------
+            -- Make CommandPost active:
+            ---------------------------------------------------
+            hs.focus()
+
+            ---------------------------------------------------
+            -- Get value from UI:
+            ---------------------------------------------------
+            local value = params["value"] or ""
+            local path = os.tmpname() .. ".fcpxml"
+
+            ---------------------------------------------------
+            -- Reset the original filename (as we'll use
+            -- the project name instead):
+            ---------------------------------------------------
+            originalFilename = nil
+
+            ---------------------------------------------------
+            -- Write the FCPXML data to a temporary file:
+            ---------------------------------------------------
+            writeToFile(path, value)
+
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            processFCPXML(path)
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -493,7 +609,7 @@ function plugin.init(deps, env)
         label           = i18n("shotData"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("shotData"),
-        height          = 230,
+        height          = 355,
     })
     :addContent(1, generateContent, false)
 

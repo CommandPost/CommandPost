@@ -1,0 +1,66 @@
+<style>
+	.bottomButton {
+		background-color: #4a4a4a;
+		color: #bfbfbc;
+		text-decoration: none;
+		padding: 2px 18px;
+		border:0.5px solid black;
+		margin: 2px 2px;
+		display: inline-block;
+		border-radius: 3px;
+		cursor: default;
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 180px;
+		font-weight: normal;
+		font-family: -apple-system;
+		font-size: 13px;
+	}
+
+	.bottomButton:active {
+		color: white;
+		border-color:#1262fb;
+		background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+	}
+	.bottomButton.selected {
+		color: white;
+		border-color:#1262fb;
+		background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+	}
+	.bottomButton.disabled {
+		color: #999!important;
+		background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+	}
+</style>
+<script>
+	function pressButton(whichButton) {
+		try {
+			var result = {
+				id: "introPanelCallback",
+				params: {
+					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+</script>
+<h3 class="uiItem">{{ i18n("welcomeToTheToolbox") }}</h3>
+<p class="uiItem">{{ i18n("toolboxDescriptionOne") }}</p>
+<br />
+<p class="uiItem">{{ i18n("toolboxDescriptionTwo") }}</p>
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('learnMore')">{{ i18n("learnMore") }}</a>
+		</th>
+	</tr>
+</table>
