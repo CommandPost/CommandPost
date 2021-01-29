@@ -48,7 +48,6 @@ local getLocalizedName          = localized.getLocalizedName
 local insert                    = table.insert
 local pathToAbsolute            = fs.pathToAbsolute
 local unescapeXML               = text.unescapeXML
-local endsWith                  = tools.endsWith
 
 -- THEME_PATTERN -> string
 -- Constant
@@ -273,7 +272,7 @@ mod.scanned = config.prop("finalCutProScanned", false)
 local function getFolderSize(path, size)
     if doesDirectoryExist(path) then
         size = size or 0
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 if file ~= "." and file ~= ".." then
                     local attributes = fs.attributes(path .. file)
@@ -290,8 +289,8 @@ local function getFolderSize(path, size)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in getFolderSize: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in getFolderSize: %s", pcallError)
         end
         return size
     end
@@ -475,7 +474,7 @@ function mod.mt:scanUserEffectsPresets(locale)
 
     local videoEffect, audioEffect = PLUGIN_TYPES.videoEffect, PLUGIN_TYPES.audioEffect
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 local plugin = string.match(file, "(.+)%.effectsPreset")
                 if plugin then
@@ -504,8 +503,8 @@ function mod.mt:scanUserEffectsPresets(locale)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanUserEffectsPresets: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanUserEffectsPresets: %s", pcallError)
         end
 
         --------------------------------------------------------------------------------
@@ -568,7 +567,7 @@ function mod.mt:scanUserColorPresets(locale)
     local category = fcpStrings:find("FFColorPresetsCategory", locale)
     local videoEffect = PLUGIN_TYPES.videoEffect
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 local plugin = string.match(file, "(.+)%.cboard")
                 if plugin then
@@ -630,8 +629,8 @@ function mod.mt:scanUserColorPresets(locale)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanUserColorPresets: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanUserColorPresets: %s", pcallError)
         end
 
         --------------------------------------------------------------------------------
@@ -679,12 +678,12 @@ local function getMotionTheme(filename)
             local line = file:read("*l")
             if line == nil then break end
             if not inTemplate then
-                inTemplate = endsWith(line, "<template>")
+                inTemplate = tools.endsWith(line, "<template>")
             end
             if inTemplate then
                 theme = theme or line:match(THEME_PATTERN)
                 flags = line:match(FLAGS_PATTERN) or flags
-                if endsWith(line, "</template>") then
+                if tools.endsWith(line, "</template>") then
                     break
                 end
             end
@@ -726,9 +725,9 @@ local function getPluginName(path, pluginExt, locale)
         local localName, realName = getLocalizedName(path, locale)
         if realName then
             local targetExt = "."..pluginExt
-            local status, errorMessage = pcall(function()
+            local pcallStatus, pcallError = pcall(function()
                 for file in dir(path) do
-                    if endsWith(file, targetExt) then
+                    if tools.endsWith(file, targetExt) then
                         local name = file:sub(1, (targetExt:len()+1)*-1)
                         local pluginPath = path .. "/" .. name .. targetExt
                         if name == realName then
@@ -739,8 +738,8 @@ local function getPluginName(path, pluginExt, locale)
                     end
                 end
             end)
-            if not status then
-                log.ef("Error in getPluginName: %s", errorMessage)
+            if not pcallStatus then
+                log.ef("Error in getPluginName: %s", pcallError)
             end
         end
     end
@@ -793,7 +792,7 @@ function mod.mt:scanPluginsDirectory(locale, path, checkFn)
     -- Loop through the files in the directory:
     --------------------------------------------------------------------------------
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 if file:sub(1,1) ~= "." then
                     local typePath = path .. "/" .. file
@@ -810,8 +809,8 @@ function mod.mt:scanPluginsDirectory(locale, path, checkFn)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in getPluginName: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanPluginsDirectory: %s", pcallError)
         end
     end
     return not failure
@@ -873,7 +872,7 @@ function mod.mt:scanPluginTypeDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 if file:sub(1,1) ~= "." then
                     local p = copy(plugin)
@@ -888,11 +887,10 @@ function mod.mt:scanPluginTypeDirectory(locale, path, plugin)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanPluginTypeDirectory: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanPluginTypeDirectory: %s", pcallError)
         end
     end
-
     return not failure
 end
 
@@ -911,7 +909,7 @@ function mod.mt:scanPluginCategoryDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 if file:sub(1,1) ~= "." then
                     local p = copy(plugin)
@@ -926,11 +924,10 @@ function mod.mt:scanPluginCategoryDirectory(locale, path, plugin)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanPluginCategoryDirectory: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanPluginCategoryDirectory: %s", pcallError)
         end
     end
-
     return not failure
 end
 
@@ -948,7 +945,7 @@ end
 function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
     locale = localeID(locale)
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 if file:sub(1,1) ~= "." then
                     local p = copy(plugin)
@@ -980,8 +977,8 @@ function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanPluginThemeDirectory: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanPluginThemeDirectory: %s", pcallError)
         end
     end
     return true
@@ -1110,7 +1107,7 @@ function mod.mt:scanAppAudioEffectBundles(locale)
     local audioEffect = PLUGIN_TYPES.audioEffect
     local path = fcpApp:path() .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles"
     if doesDirectoryExist(path) then
-        local status, errorMessage = pcall(function()
+        local pcallStatus, pcallError = pcall(function()
             for file in dir(path) do
                 --------------------------------------------------------------------------------
                 -- Example: Alien.Voice.audio.effectBundle
@@ -1122,8 +1119,8 @@ function mod.mt:scanAppAudioEffectBundles(locale)
                 end
             end
         end)
-        if not status then
-            log.ef("Error in scanAppAudioEffectBundles: %s", errorMessage)
+        if not pcallStatus then
+            log.ef("Error in scanAppAudioEffectBundles: %s", pcallError)
         end
     end
 end
@@ -1796,7 +1793,7 @@ local function doesPathContainPlugins(path)
     local attr = fs.attributes(path)
     if attr and attr.mode == "directory" then
         if doesDirectoryExist(path) then
-            local status, errorMessage = pcall(function()
+            local pcallStatus, pcallError = pcall(function()
                 for file in dir(path) do
                     if file:sub(1,1) ~= "." then
                         if doesPathContainPlugins(path .. "/" .. file) then
@@ -1805,8 +1802,8 @@ local function doesPathContainPlugins(path)
                     end
                 end
             end)
-            if not status then
-                log.ef("Error in getPluginName: %s", errorMessage)
+            if not pcallStatus then
+                log.ef("Error in getPluginName: %s", pcallError)
             end
         end
     elseif attr and attr.mode == "file" then
