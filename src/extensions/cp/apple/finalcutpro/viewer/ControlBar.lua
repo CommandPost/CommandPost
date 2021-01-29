@@ -6,8 +6,10 @@
 local log               = require "hs.logger" .new "ViewerCB"
 
 local canvas            = require "hs.canvas"
+local eventtap          = require "hs.eventtap"
 local geometry          = require "hs.geometry"
 local pasteboard        = require "hs.pasteboard"
+local timer             = require "hs.timer"
 
 local just              = require "cp.just"
 local prop              = require "cp.prop"
@@ -23,11 +25,12 @@ local cache             = axutils.cache
 local childFromBottom   = axutils.childFromBottom
 local childFromRight    = axutils.childFromRight
 
+local doAfter           = timer.doAfter
 local doUntil           = just.doUntil
 local find              = string.find
 local ninjaMouseClick   = tools.ninjaMouseClick
 
-local ControlBar        = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
+local ControlBar = Group:subclass("cp.apple.finalcutpro.viewer.ControlBar")
 
 --- cp.apple.finalcutpro.viewer.ControlBar.matches(element) -> boolean
 --- Function
@@ -84,18 +87,27 @@ function ControlBar:initialize(viewer)
     Group.initialize(self, viewer, uiFinder)
 end
 
+--- cp.apple.finalcutpro.viewer.playFullScreen <cp.ui.Button>
+--- Field
+--- Play Full Screen Button.
 function ControlBar.lazy.value:playFullScreen()
     return Button(self, self.UI:mutate(function(original)
         return childFromRight(original(), 1, Button.matches)
     end))
 end
 
+--- cp.apple.finalcutpro.viewer.audioMeters <cp.ui.Button>
+--- Field
+--- Audio Meters button.
 function ControlBar.lazy.value:audioMeters()
     return Button(self, self.UI:mutate(function(original)
         return childFromRight(original(), 2, Button.matches)
     end))
 end
 
+--- cp.apple.finalcutpro.viewer.timecodeField <cp.ui.StaticText>
+--- Field
+--- Timecode Field
 function ControlBar.lazy.value:timecodeField()
     return StaticText(self, self.UI:mutate(function(original)
         return childFromRight(original(), 1, StaticText.matches)
@@ -106,6 +118,8 @@ end
 --- Field
 --- The current timecode value, with the format "hh:mm:ss:ff". Setting also supports "hh:mm:ss;ff".
 --- The property can be watched to get notifications of changes.
+--- The prop will use the "Paste Timecode" shortcut to set the timecode value if a shortcut
+--- key is associated, otherwise it will attempt to use GUI Scripting methods.
 function ControlBar.lazy.prop:timecode()
     local tcField = self.timecodeField
     return tcField.value:mutate(
@@ -113,38 +127,23 @@ function ControlBar.lazy.prop:timecode()
             return original()
         end,
         function(timecodeValue, original)
-            if not tcField:isShowing() then
-                log.ef("Timecode text not showing (cp.apple.finalcutpro.viewer.Viewer.timecode).")
+            --------------------------------------------------------------------------------
+            -- Make sure there's a timecode value:
+            --------------------------------------------------------------------------------
+            if not timecodeValue then
+                log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Timecode value is invalid: %s.", timecodeValue)
                 return
             end
-            if timecodeValue then
-                local frame = tcField:frame()
-                if not frame then
-                    log.ef("Failed to find timecode frame (cp.apple.finalcutpro.viewer.Viewer.timecode).")
-                    return
-                end
-                local center = geometry(frame).center
-                --------------------------------------------------------------------------------
-                -- Double click the timecode value in the Viewer:
-                --------------------------------------------------------------------------------
-                self:app():launch()
-                local result = doUntil(function()
-                    return self:app():isFrontmost()
-                end)
-                if not result then
-                    log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.viewer.Viewer.timecode).")
-                    return
-                end
-                ninjaMouseClick(center)
 
+            --------------------------------------------------------------------------------
+            -- Check to see if we can use the "Paste Timecode" shortcut:
+            --------------------------------------------------------------------------------
+            local shortcuts = self:app():getCommandShortcuts("PasteTimecode")
+            if shortcuts and #shortcuts > 0 then
                 --------------------------------------------------------------------------------
-                -- Wait until the click has been registered (give it 5 seconds):
+                -- Use "Paste Timecode" method:
                 --------------------------------------------------------------------------------
-                local toolbar = self:UI()
-                local ready = doUntil(function()
-                    return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
-                end, 5)
-                if ready then
+                if timecodeValue then
                     --------------------------------------------------------------------------------
                     -- Get current Pasteboard Contents:
                     --------------------------------------------------------------------------------
@@ -163,57 +162,100 @@ function ControlBar.lazy.prop:timecode()
                     end, 5)
 
                     if not pasteboardReady then
-                        log.ef("Failed to add timecode to pasteboard (cp.apple.finalcutpro.viewer.Viewer.timecode).")
+                        log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to add timecode to pasteboard.")
                         return
                     else
-                        --------------------------------------------------------------------------------
-                        -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
-                        -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
-                        --------------------------------------------------------------------------------
-                        self:app():keyStroke({"cmd"}, "v")
-
-                        --------------------------------------------------------------------------------
-                        -- Wait until we see the timecode in the viewer:
-                        --------------------------------------------------------------------------------
-                        local pasteboardPasteResult = doUntil(function()
-                            local blank = "00:00:00:00"
-                            local formattedTimecodeValue = string.sub(blank, 1, 11 - string.len(timecodeValue)) .. timecodeValue
-                            return tcField:value() == formattedTimecodeValue
-                        end, 5)
-
-                        --------------------------------------------------------------------------------
-                        -- Press return to complete the timecode entry:
-                        --------------------------------------------------------------------------------
-                        if not pasteboardPasteResult then
-                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.viewer.Viewer.timecode). Expected: '%s', Got: '%s'.", timecodeValue, tcField:value())
-                            return
-                        else
-                            self:app():keyStroke({}, 'return')
-                        end
+                        local app = self:app():application()
+                        shortcuts[1]:trigger(app)
                     end
 
                     --------------------------------------------------------------------------------
                     -- Restore Original Pasteboard Contents:
                     --------------------------------------------------------------------------------
                     if originalPasteboard then
-                        pasteboard.setContents(originalPasteboard)
+                        doAfter(0.1, function()
+                            pasteboard.setContents(originalPasteboard)
+                        end)
                     end
-
-                    return self
                 end
             else
-                log.ef("Timecode value is invalid: %s (cp.apple.finalcutpro.viewer.Viewer.timecode).", timecodeValue)
+                --------------------------------------------------------------------------------
+                -- Use GUI Scripting Method:
+                --------------------------------------------------------------------------------
+                log.wf("You are currently changing timecode using the GUI Scripting Method. You'll get better results if you set a shortcut key for 'Paste Timecode' within Final Cut Pro.")
+
+                --------------------------------------------------------------------------------
+                -- Make sure the timecode field is visible:
+                --------------------------------------------------------------------------------
+                if not tcField:isShowing() then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Timecode text not showing.")
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Get the timecode field UI position:
+                --------------------------------------------------------------------------------
+                local frame = tcField:frame()
+                if not frame then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to find timecode frame.")
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Make sure Final Cut Pro is frontmost:
+                --------------------------------------------------------------------------------
+                self:app():launch()
+                local result = doUntil(function()
+                    return self:app():isFrontmost()
+                end)
+                if not result then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: Failed to make Final Cut Pro frontmost.")
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Double click the timecode value in the Viewer:
+                --------------------------------------------------------------------------------
+                local center = geometry(frame).center
+                ninjaMouseClick(center)
+
+                --------------------------------------------------------------------------------
+                -- Wait until the click has been registered (give it 5 seconds):
+                --------------------------------------------------------------------------------
+                local toolbar = self:UI()
+                local ready = doUntil(function()
+                    return toolbar and #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
+                end, 5)
+                if not ready then
+                    log.ef("cp.apple.finalcutpro.viewer.Viewer.timecode: The toolbar was never ready.")
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Type the timecode value:
+                --------------------------------------------------------------------------------
+                local cleanedTimecodeValue = timecodeValue:gsub(";", ""):gsub(":", "")
+                for character in cleanedTimecodeValue:gmatch(".") do
+                    self:app():keyStroke({}, character)
+                end
+                self:app():keyStroke({}, 'return')
             end
         end
     )
 end
 
+--- cp.apple.finalcutpro.viewer.changePosition <cp.ui.Button>
+--- Field
+--- Change Position Button.
 function ControlBar.lazy.value:changePosition()
     return Button(self, self.UI:mutate(function(original)
         return childFromRight(original(), 3, Button.matches)
     end))
 end
 
+--- cp.apple.finalcutpro.viewer.playButton <cp.ui.Button>
+--- Field
+--- Play Button.
 function ControlBar.lazy.value:playButton()
     return Button(self, self.UI:mutate(function(original)
         return childFromRight(original(), 4, Button.matches)
@@ -285,6 +327,9 @@ function ControlBar.lazy.prop:isPlaying()
     )
 end
 
+--- cp.apple.finalcutpro.viewer.playButton <cp.ui.Image>
+--- Field
+--- Play Image.
 function ControlBar.lazy.value:playImage()
     return Image(self, self.UI:mutate(function(original)
         return childFromRight(original(), 1, Image.matches)

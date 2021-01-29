@@ -327,7 +327,7 @@ end
 function Contents:_filterClips(clips, expandGroups, filterFn)
     if expandGroups then
         return self:_expandClips(clips, filterFn)
-    elseif filterFn ~= nil then
+    elseif type(filterFn) == "function" and type(clips) == "table" then
         return fnutils.filter(clips, filterFn)
     else
         return clips
