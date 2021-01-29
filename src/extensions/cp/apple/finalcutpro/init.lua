@@ -1147,8 +1147,7 @@ function fcp:doShortcut(whichShortcut)
     :Then(function()
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
-            local app = self:application()
-            shortcuts[1]:trigger(app)
+            shortcuts[1]:trigger(self:application())
             return true
         else
             return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))

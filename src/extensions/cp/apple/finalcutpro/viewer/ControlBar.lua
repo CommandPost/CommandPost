@@ -6,7 +6,6 @@
 local log               = require "hs.logger" .new "ViewerCB"
 
 local canvas            = require "hs.canvas"
-local eventtap          = require "hs.eventtap"
 local geometry          = require "hs.geometry"
 local pasteboard        = require "hs.pasteboard"
 local timer             = require "hs.timer"

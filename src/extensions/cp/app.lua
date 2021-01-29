@@ -221,8 +221,7 @@ end
 --- Returns:
 ---  * None
 function app:keyStroke(modifiers, character)
-    local app = self:hsApplication()
-    keyStroke(modifiers, character, app)
+    keyStroke(modifiers, character, self:hsApplication())
 end
 
 --- cp.app.preferences <cp.app.prefs>
