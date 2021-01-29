@@ -138,6 +138,7 @@ function tools.keyStroke(modifiers, character, app)
         if m == "command" then m = "cmd" end
         if m == "option" then m = "alt" end
         if m == "control" then m = "ctrl" end
+        if m == "function" then m = "fn" end
         newKeyEvent(map[m], true):post(app)
     end
 
@@ -148,6 +149,7 @@ function tools.keyStroke(modifiers, character, app)
         if m == "command" then m = "cmd" end
         if m == "option" then m = "alt" end
         if m == "control" then m = "ctrl" end
+        if m == "function" then m = "fn" end
         newKeyEvent(map[m], false):post(app)
     end
 end

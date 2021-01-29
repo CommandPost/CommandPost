@@ -188,7 +188,7 @@ function mod.shortcutsFromCommandSet(id, commandSet)
 
     local commands = commandSet[id]
     if not commands then
-        log.ef("Command does not exist in Command Set: %s", id)
+        --log.ef("Command does not exist in Command Set: %s", id)
         return nil
     end
 
