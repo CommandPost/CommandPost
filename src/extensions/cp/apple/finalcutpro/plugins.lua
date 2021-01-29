@@ -41,12 +41,14 @@ local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local dir                       = fs.dir
 local doesDirectoryExist        = tools.doesDirectoryExist
+local endsWith                  = tools.endsWith
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getAudioEffectNames       = sound.getAudioEffectNames
 local getFilenameFromPath       = tools.getFilenameFromPath
 local getLocalizedName          = localized.getLocalizedName
 local insert                    = table.insert
 local pathToAbsolute            = fs.pathToAbsolute
+local rmdir                     = tools.rmdir
 local unescapeXML               = text.unescapeXML
 
 -- THEME_PATTERN -> string
@@ -678,12 +680,12 @@ local function getMotionTheme(filename)
             local line = file:read("*l")
             if line == nil then break end
             if not inTemplate then
-                inTemplate = tools.endsWith(line, "<template>")
+                inTemplate = endsWith(line, "<template>")
             end
             if inTemplate then
                 theme = theme or line:match(THEME_PATTERN)
                 flags = line:match(FLAGS_PATTERN) or flags
-                if tools.endsWith(line, "</template>") then
+                if endsWith(line, "</template>") then
                     break
                 end
             end
@@ -725,21 +727,23 @@ local function getPluginName(path, pluginExt, locale)
         local localName, realName = getLocalizedName(path, locale)
         if realName then
             local targetExt = "."..pluginExt
-            local pcallStatus, pcallError = pcall(function()
+            local pcallStatus, pcallError, pcallName, pcallTheme, pcallIsObsolete = pcall(function()
                 for file in dir(path) do
-                    if tools.endsWith(file, targetExt) then
+                    if endsWith(file, targetExt) then
                         local name = file:sub(1, (targetExt:len()+1)*-1)
                         local pluginPath = path .. "/" .. name .. targetExt
                         if name == realName then
                             name = localName
                         end
                         local theme, isObsolete = getMotionTheme(pluginPath)
-                        return name, theme, isObsolete
+                        return nil, name, theme, isObsolete
                     end
                 end
             end)
             if not pcallStatus then
                 log.ef("Error in getPluginName: %s", pcallError)
+            else
+                return pcallName, pcallTheme, pcallIsObsolete
             end
         end
     end
@@ -1507,7 +1511,7 @@ end
 function mod.mt.clearCaches()
     local cachePath = pathToAbsolute(CP_FCP_CACHE_PATH)
     if cachePath then
-        local ok, err = tools.rmdir(cachePath, true)
+        local ok, err = rmdir(cachePath, true)
         if not ok then
             log.ef("Unable to remove user plugin cache: %s", err)
             return false
@@ -1793,17 +1797,19 @@ local function doesPathContainPlugins(path)
     local attr = fs.attributes(path)
     if attr and attr.mode == "directory" then
         if doesDirectoryExist(path) then
-            local pcallStatus, pcallError = pcall(function()
+            local pcallStatus, pcallError, pcallResult = pcall(function()
                 for file in dir(path) do
                     if file:sub(1,1) ~= "." then
                         if doesPathContainPlugins(path .. "/" .. file) then
-                            return true
+                            return nil, true
                         end
                     end
                 end
             end)
             if not pcallStatus then
                 log.ef("Error in getPluginName: %s", pcallError)
+            else
+                return pcallResult
             end
         end
     elseif attr and attr.mode == "file" then
