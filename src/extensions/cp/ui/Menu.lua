@@ -4,12 +4,12 @@
 
 local require               = require
 
-local Element               = require("cp.ui.Element")
-
+local Element               = require "cp.ui.Element"
 local go                    = require "cp.rx.go"
-local If, WaitUntil         = go.If, go.WaitUntil
 
 local find                  = string.find
+local If                    = go.If
+local WaitUntil             = go.WaitUntil
 
 -- TIMEOUT_AFTER -> number
 -- Constant
@@ -58,6 +58,15 @@ function Menu:cancel()
     return self
 end
 
+--- cp.ui.Menu:doCancel(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will cancel a menu.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the `Statement`.
 function Menu:doCancel()
     return If(self.UI)
     :Then(function(ui)
@@ -93,7 +102,6 @@ function Menu:doSelectItem(index)
     :Label("Menu:doSelectItem")
 end
 
-
 --- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `Menu` by value.
@@ -106,8 +114,9 @@ end
 function Menu:doSelectValue(value)
     return If(self.UI)
     :Then(function(ui)
-        for _,item in ipairs(ui) do
-            if item:title() == value then
+        for _, item in ipairs(ui) do
+            local title = item:attributeValue("AXTitle")
+            if title == value then
                 item:doAXPress()
                 return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
             end
