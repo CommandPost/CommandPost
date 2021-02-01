@@ -728,7 +728,7 @@ end
 --- Returns:
 ---  * None
 function mod.mt:refresh(dueToAppChange)
-    local device = o.getDevice()
+    local device = self.getDevice()
 
     local success
     local frontmostApplication = application.frontmostApplication()
