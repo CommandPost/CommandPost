@@ -728,6 +728,8 @@ end
 --- Returns:
 ---  * None
 function mod.mt:refresh(dueToAppChange)
+    local device = o.getDevice()
+
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -794,7 +796,7 @@ function mod.mt:refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
     local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
-    self.device:updateWheelSensitivity(wheelSensitivity)
+    device:updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -807,7 +809,7 @@ function mod.mt:refresh(dueToAppChange)
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            self.device:buttonColor(i, {hex="#" .. ledColor})
+            device:buttonColor(i, {hex="#" .. ledColor})
         end
         self.cachedLEDButtonValues[id] = ledColor
     end
@@ -838,13 +840,13 @@ function mod.mt:refresh(dueToAppChange)
             self.cachedTouchScreenButtonValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             if decodedImage then
-                self.device:updateScreenButtonImage(i, decodedImage)
+                device:updateScreenButtonImage(i, decodedImage)
                 success = true
             end
         end
 
         if not success and self.cachedTouchScreenButtonValues[id] ~= defaultColor then
-            self.device:updateScreenButtonColor(i, {hex="#"..defaultColor})
+            device:updateScreenButtonColor(i, {hex="#"..defaultColor})
             self.cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
@@ -861,12 +863,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedWheelScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
+            device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
             success = true
         end
     end
     if not success and self.cachedWheelScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
         self.cachedWheelScreen = defaultColor
     end
 
@@ -886,12 +888,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.left, decodedImage)
+            device:updateScreenImage(loupedeck.screens.left, decodedImage)
             success = true
         end
     end
     if not success and self.cachedLeftSideScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
         self.cachedLeftSideScreen = defaultColor
     end
 
@@ -911,12 +913,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.right, decodedImage)
+            device:updateScreenImage(loupedeck.screens.right, decodedImage)
             success = true
         end
     end
     if not success and self.cachedRightSideScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
         self.cachedRightSideScreen = defaultColor
     end
 end
