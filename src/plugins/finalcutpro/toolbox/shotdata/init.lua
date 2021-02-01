@@ -336,8 +336,8 @@ end
 --
 -- Returns:
 --  * A string
-function secondsToClock(seconds)
-    local seconds = tonumber(seconds)
+local function secondsToClock(seconds)
+    seconds = tonumber(seconds)
     if seconds <= 0 then
         return "00:00:00";
     else
@@ -404,7 +404,7 @@ local function processTitles(nodes)
                     end
                     local convertedValue = secondsToClock(titleDuration)
                     if convertedValue ~= "00:00:00" then
-                        titleDuration = secondsToClock(titleDuration)
+                        titleDuration = convertedValue
                     else
                         titleDuration = titleDuration .. " seconds"
                     end
