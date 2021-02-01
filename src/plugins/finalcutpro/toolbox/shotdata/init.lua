@@ -26,6 +26,7 @@ local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getFilenameFromPath       = tools.getFilenameFromPath
 local removeFilenameFromPath    = tools.removeFilenameFromPath
 local spairs                    = tools.spairs
+local split                     = tools.split
 local tableCount                = tools.tableCount
 local webviewAlert              = dialog.webviewAlert
 local writeToFile               = tools.writeToFile
@@ -63,6 +64,48 @@ local DEFAULT_CAMERA_ANGLE = "Eye Line"
 -- The default flag value.
 local DEFAULT_FLAG = "false"
 
+-- TEMPLATE_ORDER -> table
+-- Constant
+-- A table containing the order of the headings when exporting to a CSV.
+local TEMPLATE_ORDER = {
+    [1]     = "Shot Number",
+    [2]     = "Scene Location",
+    [3]     = "Shot Duration",
+    [4]     = "Scene Number",
+    [5]     = "Scene Prefix",
+    [6]     = "Scene Time",
+    [7]     = "Scene Time Range",
+    [8]     = "Scene Set",
+    [9]     = "Script Page No.",
+    [10]    = "Scene Characters",
+    [11]    = "Scene Cast",
+    [12]    = "Scene Description",
+    [13]    = "Shot Size & Type",
+    [14]    = "Camera Movement",
+    [15]    = "Camera Angle",
+    [16]    = "Equipment",
+    [17]    = "Lens",
+    [18]    = "Lighting Notes",
+    [19]    = "VFX",
+    [20]    = "VFX Description",
+    [21]    = "SFX",
+    [22]    = "SFX Description",
+    [23]    = "Music Track",
+    [24]    = "Production Design",
+    [25]    = "Props",
+    [26]    = "Props Notes",
+    [27]    = "Wardrobe ID",
+    [28]    = "Wardrobe Notes",
+    [29]    = "Hair",
+    [30]    = "Make Up",
+    [31]    = "Flag",
+    [32]    = "User Notes 1",
+    [33]    = "User Notes 2",
+    [34]    = "Start Date",
+    [35]    = "End Date",
+    [36]    = "Days",
+}
+
 -- TEMPLATE -> table
 -- Constant
 -- A table that contains all the fields of the Shot Data Motion Template.
@@ -70,7 +113,7 @@ local TEMPLATE = {
     [1]     = { label = "Shot Data",            ignore = true  },
     [2]     = { label = "Shot Number",          ignore = false },
     [3]     = { label = "Shot Number",          ignore = true  },
-    [4]     = { label = "Shot Location",        ignore = false },
+    [4]     = { label = "Scene Location",       ignore = false },
     [5]     = { label = "Scene Location",       ignore = true  },
     [6]     = { label = "Shot Duration",        ignore = false },
     [7]     = { label = "Shot Duration",        ignore = true  },
@@ -97,7 +140,7 @@ local TEMPLATE = {
     [28]    = { label = "Scene Time Range",     ignore = true },
     [29]    = { label = "Scene Set",            ignore = false },
     [30]    = { label = "Scene Set",            ignore = true },
-    [31]    = { label = "Script Page No",       ignore = false },
+    [31]    = { label = "Script Page No.",      ignore = false },
     [32]    = { label = "Script Page No.",      ignore = true },
     [33]    = { label = "Scene Characters",     ignore = false },
     [34]    = { label = "Scene Characters",     ignore = true },
@@ -152,7 +195,7 @@ local TEMPLATE = {
     [83]    = { label = "No",                   ignore = true },
     [84]    = { label = "Yes",                  ignore = true },
     [85]    = { label = "VFX",                  ignore = true },
-    [86]    = { label = "AA VFX Description",   ignore = true },
+    [86]    = { label = "VFX Description",      ignore = false },
     [87]    = { label = "VFX Description",      ignore = true },
     [88]    = { label = "SOUND & MUSIC DATA",   ignore = true },
     [89]    = { label = "No",                   ignore = true },
@@ -284,6 +327,27 @@ local function installMotionTemplate()
     end, i18n("shotDataInstallMotionTemplate"), i18n("shotDataInstallMotionTemplateDescription"), i18n("ok"), i18n("cancel"), "informational")
 end
 
+-- secondsToClock(seconds) -> string
+-- Function
+-- Converts seconds to a string in the hh:mm:ss format.
+--
+-- Parameters:
+--  * seconds - The number of seconds to convert.
+--
+-- Returns:
+--  * A string
+function secondsToClock(seconds)
+    local seconds = tonumber(seconds)
+    if seconds <= 0 then
+        return "00:00:00";
+    else
+        local hours = string.format("%02.f", math.floor(seconds/3600));
+        local mins = string.format("%02.f", math.floor(seconds/60 - (hours*60)));
+        local secs = string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
+        return hours..":"..mins..":"..secs
+    end
+end
+
 -- processTitles(nodes) -> none
 -- Function
 -- Process Titles.
@@ -312,8 +376,43 @@ local function processTitles(nodes)
                 local sceneTimeValue            = DEFAULT_SCENE_TIME
                 local shotSizeAndTypeValue      = DEFAULT_SHOT_SIZE_AND_TYPE
                 local cameraAngleValue          = DEFAULT_CAMERA_ANGLE
-                local flagValue                 = DEFAULT_FLAG
 
+                local flagValue                 = DEFAULT_FLAG
+                local vfxFlagValue              = DEFAULT_FLAG
+                local sfxFlagValue              = DEFAULT_FLAG
+
+                local titleDuration             = nil
+
+                --------------------------------------------------------------------------------
+                -- Get title duration:
+                --------------------------------------------------------------------------------
+                for _, v in pairs(node:rawAttributes()) do
+                    if v:name() == "duration" then
+                        titleDuration = v:stringValue()
+                        break
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Format Title Duration:
+                --------------------------------------------------------------------------------
+                if titleDuration then
+                    titleDuration = titleDuration:gsub("s", "")
+                    if titleDuration:find("/") then
+                        local elements = split(titleDuration, "/")
+                        titleDuration = tostring(tonumber(elements[1]) / tonumber(elements[2]))
+                    end
+                    local convertedValue = secondsToClock(titleDuration)
+                    if convertedValue ~= "00:00:00" then
+                        titleDuration = secondsToClock(titleDuration)
+                    else
+                        titleDuration = titleDuration .. " seconds"
+                    end
+                end
+
+                --------------------------------------------------------------------------------
+                -- Process Nodes:
+                --------------------------------------------------------------------------------
                 local nodeChildren = node:children()
                 if nodeChildren and #nodeChildren >= TEMPLATE_NUMBER_OF_NODES then
                     local textCount = 1
@@ -357,6 +456,14 @@ local function processTitles(nodes)
                                 if value == "1" then
                                     flagValue = "true"
                                 end
+                            elseif name == "VFX" then
+                                if value == "1" then
+                                    vfxFlagValue = "true"
+                                end
+                            elseif name == "SFX" then
+                                if value == "1" then
+                                    sfxFlagValue = "true"
+                                end
                             end
                         end
                     end
@@ -369,6 +476,15 @@ local function processTitles(nodes)
                     results["Shot Size & Type"] = shotSizeAndTypeValue
                     results["Camera Angle"] = cameraAngleValue
                     results["Flag"] = flagValue
+                    results["VFX"] = vfxFlagValue
+                    results["SFX"] = sfxFlagValue
+
+                    --------------------------------------------------------------------------------
+                    -- If the Shot Duration field is empty, populate it with the Title Duration:
+                    --------------------------------------------------------------------------------
+                    if titleDuration and not results["Shot Duration"] then
+                        results["Shot Duration"] = titleDuration
+                    end
 
                     --------------------------------------------------------------------------------
                     -- Add results to data table:
@@ -438,36 +554,37 @@ local function processFCPXML(path)
             -- Convert the titles data to CSV data:
             --------------------------------------------------------------------------------
             local output = ""
-            local firstTitle = data[1]
-            local firstTitleCount = tableCount(firstTitle)
 
-            local count = 1
-            for heading, _ in spairs(firstTitle) do
-                if heading:match(",") then
-                    output = output .. [["]] .. heading .. [["]]
-                else
-                    output = output .. heading
+            local numberOfHeadings = tableCount(TEMPLATE_ORDER)
+
+            for i=1, numberOfHeadings do
+                output = output .. TEMPLATE_ORDER[i]
+                if i ~= numberOfHeadings then
+                    output = output .. ","
                 end
-                if count < firstTitleCount then
-                    output = output .. ", "
-                end
-                count = count + 1
             end
 
             output = output .. "\n"
 
             for _, row in pairs(data) do
-                count = 1
-                for _, value in spairs(row) do
-                    if value:match(",") then
-                        output = output .. [["]] .. value .. [["]]
+                for i=1, numberOfHeadings do
+                    local currentHeading = TEMPLATE_ORDER[i]
+                    local value = row[currentHeading]
+                    if value then
+                        if value:match(",") then
+                            output = output .. [["]] .. value .. [["]]
+                        else
+                            output = output .. value
+                        end
+                        if i ~= numberOfHeadings then
+                            output = output .. ","
+                        end
                     else
-                        output = output .. value
+                        --------------------------------------------------------------------------------
+                        -- This should never happen, unless the Motion Template has changed:
+                        --------------------------------------------------------------------------------
+                        log.ef("Invalid Heading: %s", currentHeading)
                     end
-                    if count < firstTitleCount then
-                        output = output .. ", "
-                    end
-                    count = count + 1
                 end
                 output = output .. "\n"
             end
