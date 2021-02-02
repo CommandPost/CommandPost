@@ -9,6 +9,7 @@ local log                   = require "hs.logger".new "streamDeck"
 local application           = require "hs.application"
 local appWatcher            = require "hs.application.watcher"
 local canvas                = require "hs.canvas"
+local fnutils               = require "hs.fnutils"
 local image                 = require "hs.image"
 local streamdeck            = require "hs.streamdeck"
 
@@ -20,6 +21,7 @@ local config                = require "cp.config"
 local json                  = require "cp.json"
 
 local displayNotification   = dialog.displayNotification
+local doesFileExist         = tools.doesFileExist
 local imageFromPath         = image.imageFromPath
 local imageFromURL          = image.imageFromURL
 local spairs                = tools.spairs
@@ -71,11 +73,6 @@ mod.numberOfButtons = {
     ["Original"] = 15,
     ["XL"] = 32,
 }
-
---- plugins.core.streamdeck.manager.items <cp.prop: table>
---- Field
---- Contains all the saved Stream Deck Buttons
-mod.items = json.prop(config.userConfigRootPath, "Stream Deck", "Default v2.cpStreamDeck", mod.defaultLayout)
 
 -- imageHolder -> hs.canvas
 -- Constant
@@ -401,6 +398,42 @@ local plugin = {
 }
 
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Migrate old preferences to newer format if 'Settings.cpStreamDeck' doesn't
+    -- already exist, and if we haven't already upgraded previously:
+    --------------------------------------------------------------------------------
+    local newLayoutExists = doesFileExist(config.userConfigRootPath .. "/Stream Deck/Settings.cpStreamDeck")
+    mod.items = json.prop(config.userConfigRootPath, "Stream Deck", "Settings.cpStreamDeck", mod.defaultLayout)
+    if not newLayoutExists then
+        local updatedPreferencesToV2 = config.prop("streamdeck.updatedPreferencesToV2", false)
+        local legacyPath = config.userConfigRootPath .. "/Stream Deck/Default.cpStreamDeck"
+        if doesFileExist(legacyPath) and not updatedPreferencesToV2() then
+            local legacyPreferences = json.read(legacyPath)
+            local newData = {}
+            if legacyPreferences then
+                for groupID, data in pairs(legacyPreferences) do
+                    local bundleID
+                    local bankID
+                    if string.sub(groupID, 1, 4) == "fcpx" then
+                        bundleID = "com.apple.FinalCut"
+                        bankID = string.sub(groupID, 5)
+                    end
+                    if string.sub(groupID, 1, 6) == "global" then
+                        bundleID = "All Applications"
+                        bankID = string.sub(groupID, 7)
+                    end
+
+                    if not newData["Original"] then newData["Original"] = {} end
+                    if not newData["Original"]["1"] then newData["Original"]["1"] = {} end
+                    if not newData["Original"]["1"][bundleID] then newData["Original"]["1"][bundleID] = {} end
+                    newData["Original"]["1"][bundleID][bankID] = fnutils.copy(data)
+                end
+                updatedPreferencesToV2(true)
+                mod.items(newData)
+                log.df("Converted Stream Deck Preferences from Default.cpStreamDeck to Settings.cpStreamDeck.")
+            end
+        end
+    end
 
     local icon = imageFromPath(env:pathToAbsolute("/../prefs/images/streamdeck.icns"))
 
