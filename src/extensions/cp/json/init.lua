@@ -185,7 +185,7 @@ function mod.prop(path, folder, filename, defaultValue, errorCallbackFn)
             end
 
         end
-    end):deepTable()
+    end):deepTable():cached()
 
 end
 
