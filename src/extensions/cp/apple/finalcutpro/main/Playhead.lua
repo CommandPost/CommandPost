@@ -109,7 +109,6 @@ end
 function Playhead.lazy.prop:frame()
     return self.UI:mutate(function(original)
         local ui = original()
-        log.df("ui: %s", ui)
         return ui and ui:attributeValue("AXFrame")
     end)
 end
