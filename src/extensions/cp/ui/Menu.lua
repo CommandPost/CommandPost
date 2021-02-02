@@ -4,6 +4,8 @@
 
 local require               = require
 
+--local log                   = require("hs.logger").new("Menu")
+
 local Element               = require "cp.ui.Element"
 local go                    = require "cp.rx.go"
 
@@ -14,7 +16,7 @@ local WaitUntil             = go.WaitUntil
 -- TIMEOUT_AFTER -> number
 -- Constant
 -- The common timeout amount in milliseconds.
-local TIMEOUT_AFTER = 3000
+local TIMEOUT_AFTER = 5000
 
 --- cp.ui.Menu(parent, uiFinder) -> Menu
 --- Constructor
@@ -149,7 +151,7 @@ function Menu:doSelectItemMatching(pattern, altPattern)
                     local s,e = find(title, selectedPattern)
                     if s == 1 and e == title:len() then
                         -- perfect match
-                        item:doAXPress()
+                        item:performAction("AXPress")
                         return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
                     end
                 end

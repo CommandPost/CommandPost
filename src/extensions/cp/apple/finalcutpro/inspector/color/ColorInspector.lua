@@ -23,7 +23,6 @@ local childFromTop          = axutils.childFromTop
 local childWithRole         = axutils.childWithRole
 local withRole              = axutils.withRole
 
-
 local ColorInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.color.ColorInspector")
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.matches(element)

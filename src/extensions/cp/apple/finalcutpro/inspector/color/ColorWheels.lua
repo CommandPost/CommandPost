@@ -148,7 +148,7 @@ end
 --- Field
 --- The hue for the corrector. A number from `0` to `360`.
 function ColorWheels.lazy.prop:hue()
-    return self.hueSlider.value
+    return self.hueTextField.value
 end
 
 --------------------------------------------------------------------------------
