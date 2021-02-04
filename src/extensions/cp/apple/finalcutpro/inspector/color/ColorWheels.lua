@@ -75,12 +75,19 @@ function ColorWheels:initialize(parent)
     -- mark this as being able to contain `PropertyRow` values.
     PropertyRow.prepareParent(self, self.contentUI)
 
-    -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
-    -- link these fields so they mirror each other.
+    --------------------------------------------------------------------------------
+    -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't
+    --       update the temperature value, so we link these fields so they mirror
+    --       each other.
+    --
+    --       We don't need to mirror the hue, because we're updating the textbox directly
+    --       and FCPX itself updates the knob/slider. The hue knob/slider actually has
+    --       a 90deg offset (tested in FCPX 10.4.4-10.4.10), so this makes life easier
+    --       anyway.
+    --------------------------------------------------------------------------------
     self.temperatureSlider.value:mirror(self.temperatureTextField.value)
     self.mixSlider.value:mirror(self.mixTextField.value)
     self.tintSlider.value:mirror(self.tintTextField.value)
-    self.hueSlider.value:mirror(self.hueTextField.value)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs.axuielement; read-only>
