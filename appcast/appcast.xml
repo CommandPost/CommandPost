@@ -6,8 +6,21 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.1.1</title>
+			<title>Version 1.1.2</title>
 			<description><![CDATA[
+				<h1>CommandPost 1.1.2</h1>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed a bug that could cause the hue control in the Final Cut Pro Colour Wheels to change its value to 90 degrees when CommandPost first loads, if the Colour Wheel is active on a clip. Thanks for reporting Valerio D'Andrassi.</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>The Shot Data Motion Template has been updated. Thanks Vigneswaran Rajkumar!</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
+
+				<hr />
+
 				<h1>CommandPost 1.1.1</h1>
 
 				<h2>Improvements:</h2>
@@ -23,6 +36,9 @@
 				<li>Some fields weren't being correctly exported in the Shot Data Toolbox Utility. This is now fixed. Thanks for reporting Vigneswaran Rajkumar!</li>
 				<li>Fixed a bug which cause a MIDI error when launching CommandPost 1.1 or later for the first time. Thanks for reporting Scott Dodson!</li>
 				<li>Fixed a bug where Stream Deck settings weren't migrated from CommandPost 1.0.6 (or earlier) to 1.1 (or later). The Final Cut Pro and All Applications settings are now automatically migrated to the Stream Deck Unit 1.</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
 
 				<hr />
 
@@ -113,11 +129,11 @@
 				<ul><li>For some strange reason the Search Console results in Mojave &amp; Catalina no longer display the full width of the Search Console window, but it looks correct in Big Sur. It seems Xcode 12 has broken something - we&#39;re still investigating a fix.</li></ul>
 			]]>
 			</description>
-			<pubDate>Tue,  2 Feb 2021 23:09:55 +1100</pubDate>
-			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.1.1/CommandPost_1.1.1.dmg"
-				sparkle:version="6478"
-                sparkle:shortVersionString="1.1.1"
-				sparkle:dsaSignature="MCwCFBVdrZIoiRw2QR54qpbtDZXPnXsxAhRirh+OO1GA2QbSy2lbaqEjnKFoJA=="
+			<pubDate>Thu,  4 Feb 2021 15:51:06 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.1.2/CommandPost_1.1.2.dmg"
+				sparkle:version="6480"
+                sparkle:shortVersionString="1.1.2"
+				sparkle:dsaSignature="MC4CFQD8cjKjqrxQ+I3NTQlO7VctZdX4rwIVAKL9WkB45ENoFjsbdK544g56tZg2"
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.12</sparkle:minimumSystemVersion>
