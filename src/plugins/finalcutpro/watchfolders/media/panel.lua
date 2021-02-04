@@ -15,6 +15,9 @@ local i18n              = require "cp.i18n"
 local tools             = require "cp.tools"
 local ui                = require "cp.web.ui"
 
+local iconFallback      = tools.iconFallback
+local imageFromPath     = image.imageFromPath
+
 local mod = {}
 
 -- uuid -> string
@@ -48,7 +51,7 @@ function mod.init(mediaFolderManager, panelManager)
         priority        = 2010,
         id              = "media",
         label           = i18n("media"),
-        image           = image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
+        image           = imageFromPath(iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns", fcp:getPath() .. "/Contents/Resources/AppIcon.icns")),
         tooltip         = i18n("watchFolderFCPMediaTooltip"),
         height          = 500,
         loadFn          = mod.refreshTable,

@@ -2,22 +2,24 @@
 ---
 --- Plugins Preferences Panel
 
-local require = require
+local require           = require
 
-local hs        = _G.hs
+local hs                = _G.hs
 
-local log       = require("hs.logger").new("prefsPlugin")
+local log               = require "hs.logger".new "prefsPlugin"
 
-local dialog    = require("hs.dialog")
-local fs        = require("hs.fs")
-local image     = require("hs.image")
-local inspect   = require("hs.inspect")
+local dialog            = require "hs.dialog"
+local fs                = require "hs.fs"
+local image             = require "hs.image"
+local inspect           = require "hs.inspect"
 
-local config    = require("cp.config")
-local plugins   = require("cp.plugins")
-local tools     = require("cp.tools")
-local i18n      = require("cp.i18n")
+local config            = require "cp.config"
+local i18n              = require "cp.i18n"
+local plugins           = require "cp.plugins"
+local tools             = require "cp.tools"
 
+local iconFallback      = tools.iconFallback
+local imageFromPath     = image.imageFromPath
 
 local mod = {}
 
@@ -261,7 +263,7 @@ function mod.init(deps, env)
         priority    = 2050,
         id          = "plugins",
         label       = i18n("pluginsPanelLabel"),
-        image       = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")),
+        image       = imageFromPath(iconFallback(config.basePath .. "/plugins/core/preferences/panels/images/Extensions.icns")),
         tooltip     = i18n("pluginsPanelTooltip"),
         height      = 492,
     })

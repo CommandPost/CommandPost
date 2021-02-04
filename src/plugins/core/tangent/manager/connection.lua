@@ -144,10 +144,10 @@ function connection:setupTangentConnection()
             end
         end,
 
-        [tangent.fromHub.transport] = function()
+        [tangent.fromHub.transport] = function(metadata)
             local transportFn = self._transportFn
             if type(transportFn) == "function" then
-                transportFn()
+                transportFn(metadata)
             end
         end,
 
@@ -517,7 +517,7 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     self._task                  = task
     self._pluginPath            = pluginPath
 
-    self.transportFn            = transportFn
+    self._transportFn           = transportFn
 
     self.manager                = manager
 

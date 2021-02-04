@@ -8,6 +8,7 @@
 ---  * https://github.com/INRIA/libpointing/blob/master/pointing/input/osx/osxPrivateMultitouchSupport.h
 ---  * https://github.com/calftrail/Touch
 ---  * https://github.com/jnordberg/FingerMgmt
+---  * https://github.com/artginzburg/MiddleClick-Catalina
 ---  * ...and I'm sure others that have slipped my mind.
 ---
 --- If you feel that I have missed a particular site that should be referenced, or know of a site with additional information that can clarify or expand this module or any of its functions -- many of the informational methods are not fully understood and clarification would be greatly appreciated -- please do not hesitate to submit an issue or pull request at https://github.com/asmagill/hammerspoon_asm.undocumented for consideration.
@@ -19,6 +20,7 @@
 local USERDATA_TAG = "hs._asm.undocumented.touchdevice"
 local module       = require(USERDATA_TAG..".internal")
 module.forcetouch  = require(USERDATA_TAG..".forcetouch")
+module.watcher     = require(USERDATA_TAG..".watcher")
 
 local objectMT     = hs.getObjectMetatable(USERDATA_TAG)
 

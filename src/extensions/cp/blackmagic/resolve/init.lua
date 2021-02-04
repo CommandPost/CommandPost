@@ -58,14 +58,14 @@ function resolve.lazy.prop:isRunning()
     return self.app.running
 end
 
---- cp.blackmagic.resolve.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.blackmagic.resolve.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The DaVinci Resolve `axuielement`, if available.
 function resolve.lazy.prop:UI()
     return self.app.UI
 end
 
---- cp.blackmagic.resolve.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.blackmagic.resolve.windowsUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the list of windows in the app.
 function resolve.lazy.prop:windowsUI()

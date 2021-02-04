@@ -453,6 +453,43 @@ local function callback(id, params)
                     webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
                 end
             end
+         elseif callbackType == "dropbox" then
+            ---------------------------------------------------
+            -- Make CommandPost active:
+            ---------------------------------------------------
+            hs.focus()
+
+            ---------------------------------------------------
+            -- Get value from UI:
+            ---------------------------------------------------
+            local value = params["value"] or ""
+            local path = os.tmpname() .. ".fcpxml"
+
+            ---------------------------------------------------
+            -- Write the FCPXML data to a temporary file:
+            ---------------------------------------------------
+            writeToFile(path, value)
+
+            ---------------------------------------------------
+            -- Process the FCPXML:
+            ---------------------------------------------------
+            if fcpxml.valid(path) then
+                xmlPath = path
+                originalFilename = "Dragged FCPXML"
+
+                data = {} -- Reset data.
+                count = 1 -- Reset count.
+
+                local document = xml.open(path)
+                local spine = document:XPathQuery("/fcpxml[1]/project[1]/sequence[1]/spine[1]")
+                local spineChildren = spine and spine[1] and spine[1]:children()
+                getTitles(spineChildren)
+
+                fcpxmlLoaded = true
+                updateUI()
+            else
+                webviewAlert(mod._manager.getWebview(), function() end, i18n("invalidFCPXMLFile"), i18n("theSuppliedFCPXMLDidNotPassDtdValidationPleaseCheckThatTheFCPXMLSuppliedIsValidAndTryAgain"), i18n("ok"), nil, "warning")
+            end
         elseif callbackType == "loadCSVData" then
             --------------------------------------------------------------------------------
             -- Load CSV Data:
@@ -717,7 +754,7 @@ function plugin.init(deps, env)
         label           = i18n("fcpxmlTitles"),
         image           = image.imageFromPath(env:pathToAbsolute("/images/XML.icns")),
         tooltip         = i18n("fcpxmlTitles"),
-        height          = 700,
+        height          = 810,
     })
     :addContent(1, generateContent, false)
 

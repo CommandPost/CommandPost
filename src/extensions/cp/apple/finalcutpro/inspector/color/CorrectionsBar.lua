@@ -50,7 +50,7 @@ CorrectionsBar.static.CORRECTION_TYPES = {
 ---  * `true` if matches otherwise `false`
 function CorrectionsBar.static.matches(element)
     if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup" then
-        local children = element:children()
+        local children = element:attributeValue("AXChildren")
         if children and #children >= 2 then
             -- sort them left-to-right
             sort(children, axutils.compareLeftToRight)

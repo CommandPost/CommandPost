@@ -18,7 +18,7 @@ local config                = require "cp.config"
 local i18n                  = require "cp.i18n"
 local tools                 = require "cp.tools"
 
-local ax                    = require "hs._asm.axuielement"
+local ax                    = require "hs.axuielement"
 
 local concat                = table.concat
 local copy                  = fnutils.copy

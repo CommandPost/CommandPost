@@ -80,7 +80,7 @@ end
 function Appearance:hide()
     local ui = self:UI()
     if ui then
-        ui:doCancel()
+        ui:performAction("AXCancel")
     end
     just.doWhile(function() return self:isShowing() end)
     return self
@@ -89,7 +89,7 @@ end
 function Appearance.lazy.method:doHide()
     return If(self.UI)
     :Then(function(ui)
-        ui:doCancel()
+        ui:performAction("AXCancel")
     end)
     :Then(WaitUntil(self.isShowing):Is(false))
     :Label("Appearance:doHide")

@@ -3,14 +3,6 @@
 <!-- Missing I18N keys values for FCPX. Generally prefixed with "CP" to avoid clashes with existing keys.  -->
 <plist version="1.0">
 <dict>
-    <key>CPViewerViewOptimized</key>
-    <string>优化大小/原始状态</string>
-    <key>CPViewerViewProxy</key>
-    <string>代理</string>
-    <key>CPViewerViewBetterQuality</key>
-    <string>较好质量</string>
-    <key>CPViewerViewBetterPerformance</key>
-    <string>较高性能</string>
     <key>CPCodecs</key>
     <string>编解码器</string>
     <key>CPShowHorizon</key>

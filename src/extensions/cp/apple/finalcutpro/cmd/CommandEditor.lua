@@ -168,7 +168,7 @@ function CommandEditor:hide()
     if ui then
         local closeBtn = axutils.childWith(ui, "AXSubrole", "AXCloseButton")
         if closeBtn then
-            closeBtn:doPress()
+            closeBtn:doAXPress()
         end
     end
     return self
@@ -221,7 +221,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doSave()
-    return self.save:doPress()
+    return self.save:doAXPress()
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:doClose() -> cp.rx.go.Statement <boolean>
@@ -234,7 +234,7 @@ end
 --- Returns:
 ---  * The `Statement`, resolving to `true` if the button was found and pushed, otherwise `false`.
 function CommandEditor.lazy.method:doClose()
-    return self.close:doPress()
+    return self.close:doAXPress()
 end
 
 return CommandEditor

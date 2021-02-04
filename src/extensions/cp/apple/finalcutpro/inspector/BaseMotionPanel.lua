@@ -68,7 +68,7 @@ function BaseMotionPanel:initialize(parent, panelType)
     }
 end
 
---- cp.apple.finalcutpro.inspector.BaseMotionPanel.contentUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.inspector.BaseMotionPanel.contentUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The primary content `axuielement` for the panel.
 function BaseMotionPanel.lazy.prop:contentUI()

@@ -286,196 +286,201 @@ local function convertPreferencesToMIDIActions()
     -- CommandPost uses banks, as opposed to these Loupedeck+ modes, we basically
     -- just ignore whatever the lights say, and the knobs do the same thing in
     -- CommandPost regardless of what "mode" the Loupedeck is in.
+    --
+    -- NOTE: It's possible that mod.loupedeckItems or mod.loupedeckPlusItems
+    --       don't exist on initial load, hence the reason for the check.
     --------------------------------------------------------------------------------
-    local whichItems = {
-        ["Loupedeck"]   = mod.loupedeckItems(),
-        ["Loupedeck+"]  = mod.loupedeckPlusItems(),
-    }
-    for panelType, panelItems in pairs(whichItems) do
-        for bundleID, app in pairs(panelItems) do
-            if type(app) == "table" then
-                for bankID, bank in pairs(app) do
-                    if type(bank) == "table" then
-                        for buttonID, button in pairs(bank) do
-                            if button.action then
-                                --------------------------------------------------------------------------------
-                                -- Press Button:
-                                --------------------------------------------------------------------------------
-                                if string.sub(buttonID, -5) == "Press" then
-                                    local original = tonumber(string.sub(buttonID, 0, -6))
-                                    local numbers = {original}
-                                    if original >= 1 and original <= 8 then
-                                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                                    end
-                                    for _, number in pairs(numbers) do
-                                        if not midiActions[bundleID] then
-                                            midiActions[bundleID] = {}
+    if mod.loupedeckItems and mod.loupedeckPlusItems then
+        local whichItems = {
+            ["Loupedeck"]   = mod.loupedeckItems(),
+            ["Loupedeck+"]  = mod.loupedeckPlusItems(),
+        }
+        for panelType, panelItems in pairs(whichItems) do
+            for bundleID, app in pairs(panelItems) do
+                if type(app) == "table" then
+                    for bankID, bank in pairs(app) do
+                        if type(bank) == "table" then
+                            for buttonID, button in pairs(bank) do
+                                if button.action then
+                                    --------------------------------------------------------------------------------
+                                    -- Press Button:
+                                    --------------------------------------------------------------------------------
+                                    if string.sub(buttonID, -5) == "Press" then
+                                        local original = tonumber(string.sub(buttonID, 0, -6))
+                                        local numbers = {original}
+                                        if original >= 1 and original <= 8 then
+                                            numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                         end
-                                        if not midiActions[bundleID][bankID] then
-                                            midiActions[bundleID][bankID] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType] then
-                                            midiActions[bundleID][bankID][panelType] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0] then
-                                            midiActions[bundleID][bankID][panelType][0] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["noteOn"] then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOn"] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["noteOn"][number] then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOn"][number] = {}
-                                        end
-                                        if type(button.action) == "table" then
-                                            if not midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] then
-                                                midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] = {}
+                                        for _, number in pairs(numbers) do
+                                            if not midiActions[bundleID] then
+                                                midiActions[bundleID] = {}
                                             end
-                                            for id, value in pairs(button.action) do
-                                                midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"][id] = value
+                                            if not midiActions[bundleID][bankID] then
+                                                midiActions[bundleID][bankID] = {}
                                             end
-                                        elseif type(button.action) == "string" then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] = button.action
-                                        end
-                                        if button.handlerID then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["handlerID"] = button.handlerID
+                                            if not midiActions[bundleID][bankID][panelType] then
+                                                midiActions[bundleID][bankID][panelType] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0] then
+                                                midiActions[bundleID][bankID][panelType][0] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["noteOn"] then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOn"] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["noteOn"][number] then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOn"][number] = {}
+                                            end
+                                            if type(button.action) == "table" then
+                                                if not midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] then
+                                                    midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] = {}
+                                                end
+                                                for id, value in pairs(button.action) do
+                                                    midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"][id] = value
+                                                end
+                                            elseif type(button.action) == "string" then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["action"] = button.action
+                                            end
+                                            if button.handlerID then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOn"][number]["handlerID"] = button.handlerID
+                                            end
                                         end
                                     end
-                                end
 
-                                --------------------------------------------------------------------------------
-                                -- Release Button:
-                                --------------------------------------------------------------------------------
-                                if string.sub(buttonID, -7) == "Release" then
-                                    local original = tonumber(string.sub(buttonID, 0, -8))
-                                    local numbers = {original}
-                                    if original >= 1 and original <= 8 then
-                                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                                    end
-                                    for _, number in pairs(numbers) do
-                                        if not midiActions[bundleID] then
-                                            midiActions[bundleID] = {}
+                                    --------------------------------------------------------------------------------
+                                    -- Release Button:
+                                    --------------------------------------------------------------------------------
+                                    if string.sub(buttonID, -7) == "Release" then
+                                        local original = tonumber(string.sub(buttonID, 0, -8))
+                                        local numbers = {original}
+                                        if original >= 1 and original <= 8 then
+                                            numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                         end
-                                        if not midiActions[bundleID][bankID] then
-                                            midiActions[bundleID][bankID] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType] then
-                                            midiActions[bundleID][bankID][panelType] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0] then
-                                            midiActions[bundleID][bankID][panelType][0] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["noteOff"] then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOff"] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["noteOff"][number] then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOff"][number] = {}
-                                        end
-                                        if type(button.action) == "table" then
-                                            if not midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] then
-                                                midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] = {}
+                                        for _, number in pairs(numbers) do
+                                            if not midiActions[bundleID] then
+                                                midiActions[bundleID] = {}
                                             end
-                                            for id, value in pairs(button.action) do
-                                                midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"][id] = value
+                                            if not midiActions[bundleID][bankID] then
+                                                midiActions[bundleID][bankID] = {}
                                             end
-                                        elseif type(button.action) == "string" then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] = button.action
-                                        end
-                                        if button.handlerID then
-                                            midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["handlerID"] = button.handlerID
+                                            if not midiActions[bundleID][bankID][panelType] then
+                                                midiActions[bundleID][bankID][panelType] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0] then
+                                                midiActions[bundleID][bankID][panelType][0] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["noteOff"] then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOff"] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["noteOff"][number] then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOff"][number] = {}
+                                            end
+                                            if type(button.action) == "table" then
+                                                if not midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] then
+                                                    midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] = {}
+                                                end
+                                                for id, value in pairs(button.action) do
+                                                    midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"][id] = value
+                                                end
+                                            elseif type(button.action) == "string" then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["action"] = button.action
+                                            end
+                                            if button.handlerID then
+                                                midiActions[bundleID][bankID][panelType][0]["noteOff"][number]["handlerID"] = button.handlerID
+                                            end
                                         end
                                     end
-                                end
 
-                                --------------------------------------------------------------------------------
-                                -- Left Knob Turn:
-                                --------------------------------------------------------------------------------
-                                if string.sub(buttonID, -4) == "Left" then
-                                    local original = tonumber(string.sub(buttonID, 0, -5))
-                                    local numbers = {original}
-                                    if original >= 1 and original <= 8 then
-                                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                                    end
-                                    for _, number in pairs(numbers) do
-                                        if not midiActions[bundleID] then
-                                            midiActions[bundleID] = {}
+                                    --------------------------------------------------------------------------------
+                                    -- Left Knob Turn:
+                                    --------------------------------------------------------------------------------
+                                    if string.sub(buttonID, -4) == "Left" then
+                                        local original = tonumber(string.sub(buttonID, 0, -5))
+                                        local numbers = {original}
+                                        if original >= 1 and original <= 8 then
+                                            numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                         end
-                                        if not midiActions[bundleID][bankID] then
-                                            midiActions[bundleID][bankID] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType] then
-                                            midiActions[bundleID][bankID][panelType] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0] then
-                                            midiActions[bundleID][bankID][panelType][0] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127] = {}
-                                        end
-                                        if type(button.action) == "table" then
-                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] then
-                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] = {}
+                                        for _, number in pairs(numbers) do
+                                            if not midiActions[bundleID] then
+                                                midiActions[bundleID] = {}
                                             end
-                                            for id, value in pairs(button.action) do
-                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"][id] = value
+                                            if not midiActions[bundleID][bankID] then
+                                                midiActions[bundleID][bankID] = {}
                                             end
-                                        elseif type(button.action) == "string" then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] = button.action
-                                        end
-                                        if button.handlerID then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                                            if not midiActions[bundleID][bankID][panelType] then
+                                                midiActions[bundleID][bankID][panelType] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0] then
+                                                midiActions[bundleID][bankID][panelType][0] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127] = {}
+                                            end
+                                            if type(button.action) == "table" then
+                                                if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] then
+                                                    midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] = {}
+                                                end
+                                                for id, value in pairs(button.action) do
+                                                    midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"][id] = value
+                                                end
+                                            elseif type(button.action) == "string" then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["action"] = button.action
+                                            end
+                                            if button.handlerID then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][127]["handlerID"] = button.handlerID
+                                            end
                                         end
                                     end
-                                end
 
-                                --------------------------------------------------------------------------------
-                                -- Right Knob Turn:
-                                --------------------------------------------------------------------------------
-                                if string.sub(buttonID, -5) == "Right" then
-                                    local original = tonumber(string.sub(buttonID, 0, -6))
-                                    local numbers = {original}
-                                    if original >= 1 and original <= 8 then
-                                        numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
-                                    end
-                                    for _, number in pairs(numbers) do
-                                        if not midiActions[bundleID] then
-                                            midiActions[bundleID] = {}
+                                    --------------------------------------------------------------------------------
+                                    -- Right Knob Turn:
+                                    --------------------------------------------------------------------------------
+                                    if string.sub(buttonID, -5) == "Right" then
+                                        local original = tonumber(string.sub(buttonID, 0, -6))
+                                        local numbers = {original}
+                                        if original >= 1 and original <= 8 then
+                                            numbers = {original, original + 8, original + 8 + 8, original + 8 + 8 + 8}
                                         end
-                                        if not midiActions[bundleID][bankID] then
-                                            midiActions[bundleID][bankID] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType] then
-                                            midiActions[bundleID][bankID][panelType] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0] then
-                                            midiActions[bundleID][bankID][panelType][0] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number] = {}
-                                        end
-                                        if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1] then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1] = {}
-                                        end
-                                        if type(button.action) == "table" then
-                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] then
-                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] = {}
+                                        for _, number in pairs(numbers) do
+                                            if not midiActions[bundleID] then
+                                                midiActions[bundleID] = {}
                                             end
-                                            for id, value in pairs(button.action) do
-                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"][id] = value
+                                            if not midiActions[bundleID][bankID] then
+                                                midiActions[bundleID][bankID] = {}
                                             end
-                                        elseif type(button.action) == "string" then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] = button.action
-                                        end
-                                        if button.handlerID then
-                                            midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                                            if not midiActions[bundleID][bankID][panelType] then
+                                                midiActions[bundleID][bankID][panelType] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0] then
+                                                midiActions[bundleID][bankID][panelType][0] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number] = {}
+                                            end
+                                            if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1] then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1] = {}
+                                            end
+                                            if type(button.action) == "table" then
+                                                if not midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] then
+                                                    midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] = {}
+                                                end
+                                                for id, value in pairs(button.action) do
+                                                    midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"][id] = value
+                                                end
+                                            elseif type(button.action) == "string" then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["action"] = button.action
+                                            end
+                                            if button.handlerID then
+                                                midiActions[bundleID][bankID][panelType][0]["controlChange"][number][1]["handlerID"] = button.handlerID
+                                            end
                                         end
                                     end
                                 end

@@ -86,7 +86,7 @@ menu:addMenuFinder(function(parentItem, path, childName, locale)
             if isEqual(path, item.path) and childName == itemChild then
                 local keyWithPattern = strings:find(item.key, locale):gsub("%%@", ".*")
                 return childMatching(parentItem, function(child)
-                    local title = child:title()
+                    local title = child:attributeValue("AXTitle")
                     return title and string.match(title, keyWithPattern)
                 end)
 

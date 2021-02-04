@@ -1,0 +1,84 @@
+<style>{(css/fcpxmltitles.css)}</style>
+<style>
+	#dropbox {
+		width: 90%;
+		padding: 5px 5px;
+		margin: 8px 0;
+		box-sizing: border-box;
+		border: 4px solid #22426f;
+		border-radius: 4px;
+		background-color: black;
+		text-align:center;
+		resize: none;
+		height: 30px;
+		overflow:hidden;
+		color: transparent;
+	    text-shadow: 0px 0px 0px tomato;
+	}
+</style>
+<script>
+	function pressButton(whichButton) {
+		try {
+			var result = {
+				id: "shotDataPanelCallback",
+				params: {
+					type: whichButton,
+				},
+			}
+			postMessage(result);
+		} catch(err) {
+			alertErrorMessage(err);
+		}
+	}
+
+	function dropboxAction(){
+		if (document.getElementById("dropbox") != null) {
+			try {
+				var result = {
+					id: "shotDataPanelCallback",
+					params: {
+						type: "dropbox",
+						value: document.getElementById("dropbox").value,
+					},
+				}
+				postMessage(result);
+			} catch(err) {
+				alertErrorMessage(err);
+			}
+			document.getElementById("dropbox").value = "";
+		}
+	}
+</script>
+<h3 class="uiItem">{{ i18n("shotData") }}</h3>
+<p class="uiItem">{{ i18n("shotDataDescriptionOne") }}</p>
+<p class="uiItem">{{ i18n("shotDataDescriptionTwo") }}</p>
+<br />
+<p class="uiItem">{{ i18n("shotDataDescriptionThree") }}</p>
+<br />
+<p class="uiItem">{{ i18n("shotDataDescriptionFour") }}</p>
+<table>
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 10px;"></th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('installMotionTemplate')">{{ i18n("installMotionTemplate") }}</a>
+		</th>
+		<th>
+			<a href="#" class="bottomButton" onclick="pressButton('convertFCPXMLtoCSV')">{{ i18n("convertFCPXMLToCSV") }}</a>
+		</th>
+	</tr>
+</table>
+<table width="100%">
+	<tr>
+		<th style="height: 10px;"></th>
+	</tr>
+	<tr>
+		<th style="width: 100%;">
+			<form>
+				<textarea type="text" id="dropbox" name="dropbox" oninput="dropboxAction()" tabindex="-1" placeholder="{{ string.upper(i18n("shotDataDropZone")) }}"></textarea>
+			</form>
+		</th>
+	</tr>
+</table>

@@ -74,7 +74,7 @@ end
 function RadioGroup.lazy.prop:optionsUI()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and ui:children()
+        return ui and ui:attributeValue("AXChildren")
     end)
 end
 
@@ -107,7 +107,8 @@ function RadioGroup.lazy.prop:selectedOption()
         function(original)
             local ui = original()
             if ui then
-                for i,item in ipairs(ui:children()) do
+                local children = ui:attributeValue("AXChildren")
+                for i,item in ipairs(children) do
                     if item:attributeValue("AXValue") == 1 then
                         return i
                     end
@@ -121,7 +122,7 @@ function RadioGroup.lazy.prop:selectedOption()
                 if index >= 1 and index <= #ui then
                     local item = ui[index]
                     if item and item:attributeValue("AXValue") ~= 1 then
-                        item:doPress()
+                        item:doAXPress()
                         return index
                     end
                 end

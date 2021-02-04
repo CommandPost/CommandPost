@@ -7,7 +7,7 @@ local hs                = _G.hs
 
 local log               = require "hs.logger".new "dev"
 
-local ax                = require "hs._asm.axuielement"
+local ax                = require "hs.axuielement"
 local drawing           = require "hs.drawing"
 local fs                = require "hs.fs"
 local geometry          = require "hs.geometry"
@@ -287,11 +287,11 @@ end
 --- Returns:
 ---  * The element.
 function mod.highlight(e)
-    if not e or not e.frame then
+    if not e then
         return e
     end
 
-    local eFrame = e:frame()
+    local eFrame = e:attributeValue("AXFrame")
     if eFrame then
         eFrame = geometry.rect(eFrame)
     else

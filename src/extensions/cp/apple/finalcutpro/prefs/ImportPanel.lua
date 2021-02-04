@@ -12,7 +12,7 @@ local go                                = require "cp.rx.go"
 local axutils							= require "cp.ui.axutils"
 local CheckBox							= require "cp.ui.CheckBox"
 local PopUpButton                       = require "cp.ui.PopUpButton"
-local RadioGroup                        = require "cp.ui.RadioGroup"
+local RadioButton                       = require "cp.ui.RadioButton"
 
 local Panel                             = require "cp.apple.finalcutpro.prefs.Panel"
 
@@ -36,29 +36,26 @@ function ImportPanel:initialize(preferencesDialog)
     Panel.initialize(self, preferencesDialog, "PEImportPreferenceName")
 end
 
---- cp.apple.finalcutpro.prefs.ImportPanel.mediaLocationGroup <cp.ui.RadioGroup>
+--- cp.apple.finalcutpro.prefs.ImportPanel.copyToLibraryStorageLocation <cp.ui.RadioButton>
 --- Field
---- A `RadioGroup` containing the "Copy to library storage location" and "Leave files in place" options.
-function ImportPanel.lazy.value:mediaLocationGroup()
-    return RadioGroup(self, self.UI:mutate(function(original)
-        return cache(self, "_mediaLocationGroup", function()
-            return childFromTop(original(), 1, RadioGroup.matches)
-        end, RadioGroup.matches)
+--- The "Copy to library storage location" `RadioButton`.
+function ImportPanel.lazy.value:copyToLibraryStorageLocation()
+    return RadioButton(self, self.UI:mutate(function(original)
+        return cache(self, "_copyToLibraryStorageLocation", function()
+            return childFromTop(original(), 1, RadioButton.matches)
+        end, RadioButton.matches)
     end))
 end
 
---- cp.apple.finalcutpro.prefs.ImportPanel.copyToMediaFolder <cp.ui.RadioButton>
---- Field
---- The "Copy to library storage location" `RadioButton`.
-function ImportPanel.lazy.value:copyToMediaFolder()
-    return self.mediaLocationGroup.options[1]
-end
-
---- cp.apple.finalcutpro.prefs.ImportPanel.leaveInPlace <cp.ui.RadioButton>
+--- cp.apple.finalcutpro.prefs.ImportPanel.leaveFilesInPlace <cp.ui.RadioButton>
 --- Field
 --- The "Leave files in place" `RadioButton`.
-function ImportPanel.lazy.value:leaveInPlace()
-    return self.mediaLocationGroup.options[2]
+function ImportPanel.lazy.value:leaveFilesInPlace()
+    return RadioButton(self, self.UI:mutate(function(original)
+        return cache(self, "_leaveFilesInPlace", function()
+            return childFromTop(original(), 2, RadioButton.matches)
+        end, RadioButton.matches)
+    end))
 end
 
 --- cp.apple.finalcutpro.prefs.ImportPanel:toggleMediaLocation() -> boolean
@@ -66,10 +63,10 @@ end
 --- Toggles between the "Copy to library storage location" and "Leave files in place" options.
 function ImportPanel:toggleMediaLocation()
     if self:show():isShowing() then
-        if self:copyToMediaFolder():checked() then
-            self:leaveInPlace():checked(true)
+        if self:copyToLibraryStorageLocation():checked() then
+            self:leaveFilesInPlace():checked(true)
         else
-            self:copyToMediaFolder():checked(true)
+            self:copyToLibraryStorageLocation():checked(true)
         end
         return true
     end
@@ -82,12 +79,12 @@ end
 function ImportPanel.lazy.method:doToggleMediaLocation()
     return Do(self:doShow())
     :Then(
-        If(self:copyToMediaFolder().checked)
+        If(self:copyToLibraryStorageLocation().checked)
         :Then(function()
-            self:leaveInPlace():checked(true)
+            self:leaveFilesInPlace():checked(true)
         end)
         :Otherwise(function()
-            self:copyToMediaFolder():checked(true)
+            self:copyToLibraryStorageLocation():checked(true)
         end)
     )
 end

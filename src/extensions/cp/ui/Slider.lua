@@ -2,16 +2,16 @@
 ---
 --- Slider Module.
 
-local require = require
+local require       = require
 
-local axutils			= require("cp.ui.axutils")
-local Element           = require("cp.ui.Element")
+local axutils       = require "cp.ui.axutils"
+local Element       = require "cp.ui.Element"
 
 local Slider = Element:subclass("cp.ui.Slider")
 
 --- cp.ui.Slider.matches(element) -> boolean
 --- Function
---- Checks if the provided `hs._asm.axuielement` is a Slider.
+--- Checks if the provided `hs.axuielement` is a Slider.
 ---
 --- Parameters:
 ---  * element		- The `axuielement` to check.
@@ -28,7 +28,7 @@ end
 ---
 --- Parameters:
 ---  * parent		- The parent object. Should have an `isShowing` property.
----  * uiFinder		- The function which returns an `hs._asm.axuielement` for the slider, or `nil`.
+---  * uiFinder		- The function which returns an `hs.axuielement` for the slider, or `nil`.
 ---
 --- Returns:
 ---  * A new `Slider` instance.
@@ -137,7 +137,7 @@ end
 function Slider:increment()
     local ui = self:UI()
     if ui then
-        ui:doIncrement()
+        ui:performAction("AXIncrement")
     end
     return self
 end
@@ -154,7 +154,7 @@ end
 function Slider:decrement()
     local ui = self:UI()
     if ui then
-        ui:doDecrement()
+        ui:performAction("AXDecrement")
     end
     return self
 end

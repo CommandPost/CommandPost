@@ -39,13 +39,16 @@ local v                         = require "semver"
 
 local contains                  = fnutils.contains
 local copy                      = fnutils.copy
+local dir                       = fs.dir
 local doesDirectoryExist        = tools.doesDirectoryExist
+local endsWith                  = tools.endsWith
 local ensureDirectoryExists     = tools.ensureDirectoryExists
 local getAudioEffectNames       = sound.getAudioEffectNames
 local getFilenameFromPath       = tools.getFilenameFromPath
 local getLocalizedName          = localized.getLocalizedName
 local insert                    = table.insert
 local pathToAbsolute            = fs.pathToAbsolute
+local rmdir                     = tools.rmdir
 local unescapeXML               = text.unescapeXML
 
 -- THEME_PATTERN -> string
@@ -267,31 +270,32 @@ mod.scanned = config.prop("finalCutProScanned", false)
 --  * path - The path to the folder
 --
 -- Returns:
---  * The size as a number of `nil` if something goes wrong.
+--  * The size as a number or `nil` if something goes wrong.
 local function getFolderSize(path, size)
-    if type(path) ~= "string" then
-        return
-    end
-    size = size or 0
-    local iterFn, dirObj = fs.dir(path)
-    if iterFn then
-        for file in iterFn, dirObj do
-            if file ~= "." and file ~= ".." then
-                local attributes = fs.attributes(path .. file)
-                if attributes then
-                    if attributes.mode == "directory" then
-                        local result = getFolderSize(path .. file .. "/")
-                        if result then
-                            size = size + result
+    if doesDirectoryExist(path) then
+        size = size or 0
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
+                if file ~= "." and file ~= ".." then
+                    local attributes = fs.attributes(path .. file)
+                    if attributes then
+                        if attributes.mode == "directory" then
+                            local result = getFolderSize(path .. file .. "/")
+                            if result then
+                                size = size + result
+                            end
+                        elseif attributes.mode == "file" then
+                            size = size + attributes.size
                         end
-                    elseif attributes.mode == "file" then
-                        size = size + attributes.size
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in getFolderSize: %s", pcallError)
         end
+        return size
     end
-    return size
 end
 
 -- doesCacheDirectoryExist() -> boolean
@@ -472,11 +476,8 @@ function mod.mt:scanUserEffectsPresets(locale)
 
     local videoEffect, audioEffect = PLUGIN_TYPES.videoEffect, PLUGIN_TYPES.audioEffect
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanUserEffectsPresets: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
                 local plugin = string.match(file, "(.+)%.effectsPreset")
                 if plugin then
                     local effectPath = path .. "/" .. file
@@ -503,6 +504,9 @@ function mod.mt:scanUserEffectsPresets(locale)
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanUserEffectsPresets: %s", pcallError)
         end
 
         --------------------------------------------------------------------------------
@@ -565,11 +569,8 @@ function mod.mt:scanUserColorPresets(locale)
     local category = fcpStrings:find("FFColorPresetsCategory", locale)
     local videoEffect = PLUGIN_TYPES.videoEffect
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanUserEffectsPresets: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
                 local plugin = string.match(file, "(.+)%.cboard")
                 if plugin then
                     local effectPath = path .. "/" .. file
@@ -629,6 +630,9 @@ function mod.mt:scanUserColorPresets(locale)
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanUserColorPresets: %s", pcallError)
         end
 
         --------------------------------------------------------------------------------
@@ -676,12 +680,12 @@ local function getMotionTheme(filename)
             local line = file:read("*l")
             if line == nil then break end
             if not inTemplate then
-                inTemplate = tools.endsWith(line, "<template>")
+                inTemplate = endsWith(line, "<template>")
             end
             if inTemplate then
                 theme = theme or line:match(THEME_PATTERN)
                 flags = line:match(FLAGS_PATTERN) or flags
-                if tools.endsWith(line, "</template>") then
+                if endsWith(line, "</template>") then
                     break
                 end
             end
@@ -723,21 +727,23 @@ local function getPluginName(path, pluginExt, locale)
         local localName, realName = getLocalizedName(path, locale)
         if realName then
             local targetExt = "."..pluginExt
-            local iterFn, dirObj = fs.dir(path)
-            if not iterFn then
-                log.ef("An error occured in cp.apple.finalcutpro.plugins.getPluginName: %s", dirObj)
-            else
-                for file in iterFn, dirObj do
-                    if tools.endsWith(file, targetExt) then
+            local pcallStatus, pcallError, pcallName, pcallTheme, pcallIsObsolete = pcall(function()
+                for file in dir(path) do
+                    if endsWith(file, targetExt) then
                         local name = file:sub(1, (targetExt:len()+1)*-1)
                         local pluginPath = path .. "/" .. name .. targetExt
                         if name == realName then
                             name = localName
                         end
                         local theme, isObsolete = getMotionTheme(pluginPath)
-                        return name, theme, isObsolete
+                        return nil, name, theme, isObsolete
                     end
                 end
+            end)
+            if not pcallStatus then
+                log.ef("Error in getPluginName: %s", pcallError)
+            else
+                return pcallName, pcallTheme, pcallIsObsolete
             end
         end
     end
@@ -789,24 +795,26 @@ function mod.mt:scanPluginsDirectory(locale, path, checkFn)
     --------------------------------------------------------------------------------
     -- Loop through the files in the directory:
     --------------------------------------------------------------------------------
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginsDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
-            if file:sub(1,1) ~= "." then
-                local typePath = path .. "/" .. file
-                local typeNameEN = getLocalizedName(typePath, "en")
-                local mt = MOTION_TEMPLATE_TYPES[typeNameEN]
-                if mt then
-                    local plugin = {
-                        type = mt.type,
-                        extension = mt.extension,
-                        check = checkFn or function() return true end,
-                    }
-                    failure = failure or not self:scanPluginTypeDirectory(locale, typePath, plugin)
+    if doesDirectoryExist(path) then
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
+                if file:sub(1,1) ~= "." then
+                    local typePath = path .. "/" .. file
+                    local typeNameEN = getLocalizedName(typePath, "en")
+                    local mt = MOTION_TEMPLATE_TYPES[typeNameEN]
+                    if mt then
+                        local plugin = {
+                            type = mt.type,
+                            extension = mt.extension,
+                            check = checkFn or function() return true end,
+                        }
+                        failure = failure or not self:scanPluginTypeDirectory(locale, typePath, plugin)
+                    end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanPluginsDirectory: %s", pcallError)
         end
     end
     return not failure
@@ -867,25 +875,26 @@ end
 function mod.mt:scanPluginTypeDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginTypeDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
-            if file:sub(1,1) ~= "." then
-                local p = copy(plugin)
-                local childPath = path .. "/" .. file
-                local attrs = fs.attributes(childPath)
-                if attrs and attrs.mode == "directory" then
-                    if not self:handlePluginDirectory(locale, childPath, p) then
-                        p.categoryLocal, p.categoryReal = getLocalizedName(childPath, locale)
-                        failure = failure or not self:scanPluginCategoryDirectory(locale, childPath, p)
+    if doesDirectoryExist(path) then
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
+                if file:sub(1,1) ~= "." then
+                    local p = copy(plugin)
+                    local childPath = path .. "/" .. file
+                    local attrs = fs.attributes(childPath)
+                    if attrs and attrs.mode == "directory" then
+                        if not self:handlePluginDirectory(locale, childPath, p) then
+                            p.categoryLocal, p.categoryReal = getLocalizedName(childPath, locale)
+                            failure = failure or not self:scanPluginCategoryDirectory(locale, childPath, p)
+                        end
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanPluginTypeDirectory: %s", pcallError)
         end
     end
-
     return not failure
 end
 
@@ -903,25 +912,26 @@ end
 function mod.mt:scanPluginCategoryDirectory(locale, path, plugin)
     locale = localeID(locale)
     local failure = false
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginsDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
-            if file:sub(1,1) ~= "." then
-                local p = copy(plugin)
-                local childPath = path .. "/" .. file
-                local attrs = fs.attributes(childPath)
-                if attrs and attrs.mode == "directory" then
-                    if not self:handlePluginDirectory(locale, childPath, p) then
-                        p.themeLocal, p.themeReal = getLocalizedName(childPath, locale)
-                        failure = failure or not self:scanPluginThemeDirectory(locale, childPath, p)
+    if doesDirectoryExist(path) then
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
+                if file:sub(1,1) ~= "." then
+                    local p = copy(plugin)
+                    local childPath = path .. "/" .. file
+                    local attrs = fs.attributes(childPath)
+                    if attrs and attrs.mode == "directory" then
+                        if not self:handlePluginDirectory(locale, childPath, p) then
+                            p.themeLocal, p.themeReal = getLocalizedName(childPath, locale)
+                            failure = failure or not self:scanPluginThemeDirectory(locale, childPath, p)
+                        end
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanPluginCategoryDirectory: %s", pcallError)
         end
     end
-
     return not failure
 end
 
@@ -938,40 +948,41 @@ end
 ---  * `true` if the folder was scanned successfully.
 function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
     locale = localeID(locale)
-    local iterFn, dirObj = fs.dir(path)
-    if not iterFn then
-        log.ef("An error occured in cp.apple.finalcutpro.plugins:scanPluginThemeDirectory: %s", dirObj)
-    else
-        for file in iterFn, dirObj do
-            if file:sub(1,1) ~= "." then
-                local p = copy(plugin)
-                local pluginPath = path .. "/" .. file
-                local attrs = fs.attributes(pluginPath)
-                if attrs and attrs.mode == "directory" then
-                    --------------------------------------------------------------------------------
-                    -- Maybe there's a subdirectory?
-                    --------------------------------------------------------------------------------
-                    local iterFnTwo, dirObjTwo = fs.dir(pluginPath)
-                    if iterFnTwo then
-                        local hasTemplate = false
-                        local ext = plugin.extension
-                        local extLen = (ext:len() + 1) * -1
-                        for fileTwo in iterFnTwo, dirObjTwo do
-                            if fileTwo:sub(extLen) == "." .. ext then
-                                hasTemplate = true
+    if doesDirectoryExist(path) then
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
+                if file:sub(1,1) ~= "." then
+                    local p = copy(plugin)
+                    local pluginPath = path .. "/" .. file
+                    local attrs = fs.attributes(pluginPath)
+                    if attrs and attrs.mode == "directory" then
+                        --------------------------------------------------------------------------------
+                        -- Maybe there's a subdirectory?
+                        --------------------------------------------------------------------------------
+                        if doesDirectoryExist(pluginPath) then
+                            local hasTemplate = false
+                            local ext = plugin.extension
+                            local extLen = (ext:len() + 1) * -1
+                            for fileTwo in dir(pluginPath) do
+                                if fileTwo:sub(extLen) == "." .. ext then
+                                    hasTemplate = true
+                                end
                             end
-                        end
-                        if hasTemplate then
-                            self:handlePluginDirectory(locale, pluginPath, p)
-                        else
-                            --------------------------------------------------------------------------------
-                            -- Try going down another level:
-                            --------------------------------------------------------------------------------
-                            self:scanPluginCategoryDirectory(locale, pluginPath, p)
+                            if hasTemplate then
+                                self:handlePluginDirectory(locale, pluginPath, p)
+                            else
+                                --------------------------------------------------------------------------------
+                                -- Try going down another level:
+                                --------------------------------------------------------------------------------
+                                self:scanPluginCategoryDirectory(locale, pluginPath, p)
+                            end
                         end
                     end
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanPluginThemeDirectory: %s", pcallError)
         end
     end
     return true
@@ -1100,11 +1111,8 @@ function mod.mt:scanAppAudioEffectBundles(locale)
     local audioEffect = PLUGIN_TYPES.audioEffect
     local path = fcpApp:path() .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles"
     if doesDirectoryExist(path) then
-        local iterFn, dirObj = fs.dir(path)
-        if not iterFn then
-            log.ef("An error occured in cp.apple.finalcutpro.plugins:scanAppAudioEffectBundles: %s", dirObj)
-        else
-            for file in iterFn, dirObj do
+        local pcallStatus, pcallError = pcall(function()
+            for file in dir(path) do
                 --------------------------------------------------------------------------------
                 -- Example: Alien.Voice.audio.effectBundle
                 --------------------------------------------------------------------------------
@@ -1114,6 +1122,9 @@ function mod.mt:scanAppAudioEffectBundles(locale)
                     self:registerPlugin(path .. "/" .. file, audioEffect, category, "Final Cut", plugin, locale)
                 end
             end
+        end)
+        if not pcallStatus then
+            log.ef("Error in scanAppAudioEffectBundles: %s", pcallError)
         end
     end
 end
@@ -1500,7 +1511,7 @@ end
 function mod.mt.clearCaches()
     local cachePath = pathToAbsolute(CP_FCP_CACHE_PATH)
     if cachePath then
-        local ok, err = tools.rmdir(cachePath, true)
+        local ok, err = rmdir(cachePath, true)
         if not ok then
             log.ef("Unable to remove user plugin cache: %s", err)
             return false
@@ -1785,14 +1796,20 @@ end
 local function doesPathContainPlugins(path)
     local attr = fs.attributes(path)
     if attr and attr.mode == "directory" then
-        local iterFn, dirObj = fs.dir(path)
-        if iterFn then
-            for file in iterFn, dirObj do
-                if file:sub(1,1) ~= "." then
-                    if doesPathContainPlugins(path .. "/" .. file) then
-                        return true
+        if doesDirectoryExist(path) then
+            local pcallStatus, pcallError, pcallResult = pcall(function()
+                for file in dir(path) do
+                    if file:sub(1,1) ~= "." then
+                        if doesPathContainPlugins(path .. "/" .. file) then
+                            return nil, true
+                        end
                     end
                 end
+            end)
+            if not pcallStatus then
+                log.ef("Error in getPluginName: %s", pcallError)
+            else
+                return pcallResult
             end
         end
     elseif attr and attr.mode == "file" then

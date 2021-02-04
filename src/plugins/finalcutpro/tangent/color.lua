@@ -465,7 +465,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0104)
         :name(format("%s - %s", iColorWheel, i18n("mix")))
-    :name9(format("%s %s", iColorWheel4, i18n("mix4")))
+        :name9(format("%s %s", iColorWheel4, i18n("mix4")))
         :minValue(0)
         :maxValue(1)
         :stepSize(0.01)
@@ -572,6 +572,36 @@ function plugin.init(deps)
     -- Show Inspector:
     --------------------------------------------------------------------------------
     doShowParameter(ciGroup, ci, wheelsBaseID+0x0132, i18n("show") .. " " .. i18n("inspector"))
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Contrast:
+    --------------------------------------------------------------------------------
+    local colorWheelContrastValue = 0
+    local updateColorWheelContrast = deferred.new(0.01):action(function()
+        cw:show()
+        cw.shadows.brightness:shiftValue(colorWheelContrastValue*-1)
+        cw.highlights.brightness:shiftValue(colorWheelContrastValue)
+        colorWheelContrastValue = 0
+    end)
+
+    cwGroup:parameter(wheelsBaseID+0x0135)
+        :name(format("%s - %s", iColorWheel, i18n("contrast")))
+        :minValue(-1)
+        :maxValue(1)
+        :stepSize(0.001)
+        :onGet(function()
+            local value = cw.shadows.brightness:value()
+            return value and round(value, 2)
+        end)
+        :onChange(function(value)
+            colorWheelContrastValue = colorWheelContrastValue + value
+            updateColorWheelContrast()
+        end)
+        :onReset(function()
+            if not cw:isShowing() then cw:show() end
+            cw.shadows.brightness:value(0)
+            cw.highlights.brightness:value(0)
+        end)
 
 end
 

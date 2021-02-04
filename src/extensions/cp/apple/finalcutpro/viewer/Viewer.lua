@@ -35,16 +35,7 @@ local topToBottom                       = axutils.compareTopToBottom
 
 local Viewer = Group:subclass("cp.apple.finalcutpro.viewer.Viewer")
 
--- PLAYER_QUALITY -> table
--- Constant
--- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
-local PLAYER_QUALITY = {
-    ORIGINAL_BETTER_QUALITY     = 10,
-    ORIGINAL_BETTER_PERFORMANCE = 5,
-    PROXY                       = 4,
-}
-
--- findViewersUI(...) -> table of hs._asm.axuielement | nil
+-- findViewersUI(...) -> table of hs.axuielement | nil
 -- Private Function
 -- Finds the viewer `axuielement`s in a table. There may be more than one if the Event Viewer is enabled.
 -- If none can be found, `nil` is returned.
@@ -67,7 +58,7 @@ local function findViewersUI(...)
     return nil
 end
 
--- findViewerUI(...) -> hs._asm.axuielement
+-- findViewerUI(...) -> hs.axuielement
 -- Private Function
 -- Finds the Viewer UI from the list, if present.
 --
@@ -84,7 +75,7 @@ local function findViewerUI(...)
     return nil
 end
 
--- findEventViewerUI(...) -> hs._asm.axuielement
+-- findEventViewerUI(...) -> hs.axuielement
 -- Private Function
 -- Finds the Event Viewer UI from the list, if present.
 --
@@ -231,7 +222,7 @@ end
 function Viewer.lazy.prop:isOnSecondary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and SecondaryWindow.matches(ui:window())
+        return ui and SecondaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -241,7 +232,7 @@ end
 function Viewer.lazy.prop:isOnPrimary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui and PrimaryWindow.matches(ui:window())
+        return ui and PrimaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -255,7 +246,7 @@ function Viewer.lazy.prop:frame()
     end)
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.viewer.Viewer.contentsUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Provides the `axuielement` for the media contents of the Viewer, or `nil` if not available.
 function Viewer.lazy.prop:contentsUI()
@@ -301,13 +292,6 @@ function Viewer.lazy.prop:timecode()
     return self.controlBar.timecode
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.playerQuality <cp.prop: string>
---- Field
---- The current player quality value.
-function Viewer.lazy.prop:playerQuality()
-    return self:app().preferences:prop("FFPlayerQuality")
-end
-
 --- cp.apple.finalcutpro.viewer.Viewer.hasPlayerControls <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the viewer has Player Controls visible.
@@ -334,59 +318,100 @@ function Viewer.lazy.prop:isPlaying()
     return self.controlBar.isPlaying
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.usingProxies <cp.prop: boolean>
+-- PLAYER_QUALITY -> table
+-- Constant
+-- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
+local PLAYER_QUALITY = {
+    ORIGINAL_BETTER_QUALITY     = 10,
+    ORIGINAL_BETTER_PERFORMANCE = 5,
+    PROXY                       = 4,
+}
+
+--- cp.apple.finalcutpro.viewer.Viewer.PLAYBACK_MODE -> table
+--- Constant
+--- Lists the possible playback modes for the viewer: `ORIGINAL_BETTER_QUALITY`, `ORIGINAL_BETTER_PERFORMANCE`, `PROXY_PREFERRED`, `PROXY_ONLY`.
+Viewer.static.PLAYBACK_MODE = {
+    ORIGINAL_BETTER_QUALITY = {quality = 10},
+    ORIGINAL_BETTER_PERFORMANCE = {quality = 5},
+    PROXY_PREFERRED = {quality = 4, proxyPreferred = true},
+    PROXY_ONLY = {quality = 4, proxyPreferred = false},
+}
+
+--- cp.apple.finalcutpro.viewer.Viewer.playbackMode -> Viewer.PLAYBACK_MODE
+--- Field
+--- Reports and allows modification of the current playback mode.
+function Viewer.lazy.prop:playbackMode()
+    return prop(
+        function()
+            local quality = self:playerQuality()
+            local fallback = self.proxyPreferred()
+            for _, mode in pairs(Viewer.PLAYBACK_MODE) do
+                if mode.quality == quality then
+                    local modeFallback = mode.proxyPreferred
+                    if modeFallback == nil or modeFallback == fallback then
+                        return mode
+                    end
+                end
+            end
+            return nil
+        end,
+        function(newValue)
+            self:playerQuality(newValue.quality)
+            if newValue.proxyPreferred ~= nil then
+                self:proxyPreferred(newValue.proxyPreferred)
+            end
+        end
+    )
+    :monitor(self.playerQuality, self.proxyPreferred)
+end
+
+-- cp.apple.finalcutpro.viewer.Viewer.playerQuality <cp.prop: string>
+-- Field
+-- The current player quality value.
+function Viewer.lazy.prop:playerQuality()
+    return self:app().preferences:prop("FFPlayerQuality")
+end
+
+-- cp.apple.finalcutpro.viewer.Viewer.proxyPreferred <cp.prop: boolean>
+-- Field
+-- If `true`, proxies will be preferred, but will fallback to original/optimised assets when they are unavailable.
+-- If `false`, only proxy media will be used.
+function Viewer.lazy.prop:proxyPreferred()
+    return self:app().preferences:prop("FFAssetProxyFallsBackToHighQuality")
+    :watch(function()
+        -- have to toggle player quality back to 'original' and back if proxy preferred changes, in order for the asset display to update correctly in the UI.
+        if self:playerQuality() == PLAYER_QUALITY.PROXY then
+            self.playerQuality(PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE)
+            self.playerQuality(PLAYER_QUALITY.PROXY)
+        end
+    end)
+end
+
+--- cp.apple.finalcutpro.viewer.Viewer.usingProxies <cp.prop: boolean, read-only>
 --- Field
 --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).
+---
+--- Notes:
+--- * Use `playbackMode` to change modes between original/proxy/quality/performance.
 function Viewer.lazy.prop:usingProxies()
     return self.playerQuality:mutate(
         function(original)
             return original() == PLAYER_QUALITY.PROXY
-        end,
-        function(proxies, original, _, theProp)
-            local currentValue = theProp()
-            if currentValue ~= proxies then -- got to switch
-                if self:isShowing() then
-                    local itemKey = proxies and "CPViewerViewProxy" or "CPViewerViewOptimized"
-                    local itemValue = self:app().strings:find(itemKey)
-                    if itemValue then
-                        self.viewMenu:selectItemMatching(itemValue)
-                    else
-                        log.ef("Unable to find the '%s' string in '%s'", itemKey, self:app():currentLocale())
-                    end
-                else
-                    local quality = proxies and PLAYER_QUALITY.PROXY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
-                    original(quality)
-                end
-            end
         end
     )
 end
 
---- cp.apple.finalcutpro.viewer.Viewer.betterQuality <cp.prop: boolean>
+--- cp.apple.finalcutpro.viewer.Viewer.betterQuality <cp.prop: boolean, read-only>
 --- Field
---- Indicates if the viewer is using playing with better quality (`true`) or performance (`false).
+--- Checks if the viewer is using playing with better quality (`true`) or performance (`false).
 --- If we are `usingProxies` then it will always be `false`.
+---
+--- Notes:
+--- * Use `playbackMode` to change modes between original/proxy/quality/performance.
 function Viewer.lazy.prop:betterQuality()
     return self.playerQuality:mutate(
         function(original)
             return original() == PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY
-        end,
-        function(quality, original, _, theProp)
-            local currentQuality = theProp()
-            if quality ~= currentQuality then
-                if self:isShowing() then
-                    local itemKey = quality and "CPViewerViewBetterQuality" or "CPViewerViewBetterPerformance"
-                    local itemValue = self:app().strings:find(itemKey)
-                    if itemValue then
-                        self.viewMenu:selectItemMatching(itemValue)
-                    else
-                        log.ef("Unable to find '%s' string in '%s'", itemValue, self:app():currentLocale())
-                    end
-                else
-                    local qualityValue = quality and PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
-                    original(qualityValue)
-                end
-            end
         end
     )
 end

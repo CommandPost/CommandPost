@@ -2,11 +2,10 @@
 ---
 --- Represents the Motion application, providing functions that allow different tasks to be accomplished.
 
-local require = require
+local require   = require
 
-local app             = require("cp.apple.motion.app")
-local prop					  = require("cp.prop")
-
+local app       = require("cp.apple.motion.app")
+local prop      = require("cp.prop")
 
 local motion = {
     app = app,
@@ -32,12 +31,12 @@ prop.bind(motion) {
     --- Is Final Cut Pro Running?
     isRunning = app.running,
 
-    --- cp.apple.motion.UI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- cp.apple.motion.UI <cp.prop: hs.axuielement; read-only; live>
     --- Field
     --- The Final Cut Pro `axuielement`, if available.
     UI = app.UI,
 
-    --- cp.apple.motion.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- cp.apple.motion.windowsUI <cp.prop: hs.axuielement; read-only; live>
     --- Field
     --- Returns the UI containing the list of windows in the app.
     windowsUI = app.windowsUI,

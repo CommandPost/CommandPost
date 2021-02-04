@@ -246,14 +246,14 @@ end
 --- This will trigger the keystroke specified in the shortcut.
 ---
 --- Parameters:
----  * None
+---  * app - An optional `hs.application` object.
 ---
 --- Returns:
 ---  * `self`
-function shortcut.mt:trigger()
+function shortcut.mt:trigger(app)
     local character = shortcut.textToKeyCode(self:getKeyCode())
     local modifiers = self._modifiers or {}
-    keyStroke(modifiers, character)
+    keyStroke(modifiers, character, app)
     return self
 end
 

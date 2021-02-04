@@ -399,7 +399,7 @@ function menu:initialize(app)
     end)
 end
 
---- cp.app.menu.UI <cp.prop:hs._asm.axuielement; read-only; live>
+--- cp.app.menu.UI <cp.prop:hs.axuielement; read-only; live>
 --- Field
 --- Returns the `axuielement` representing the menu.
 function menu.lazy.prop:UI()
@@ -493,7 +493,7 @@ function menu:doSelectMenu(path, options)
     return Do(findMenu)
     :Then(function(item)
         if item:attributeValue("AXEnabled") then
-            item:doPress()
+            item:doAXPress()
             return true
         else
             return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
@@ -665,7 +665,7 @@ local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
     return title
 end
 
---- cp.app.menu:doFindMenuUI(path[, options]) -> cp.rx.go.Statement <hs._asm.axuielement>
+--- cp.app.menu:doFindMenuUI(path[, options]) -> cp.rx.go.Statement <hs.axuielement>
 --- Method
 --- Returns a `Statement` that when executed will emit each of the menu items along the path.
 ---
@@ -983,7 +983,7 @@ function menu:visitMenuItems(visitFn, options)
     end
 end
 
--- cp.app.menu:_visitMenuItems(visitFn, path, menuUI[, options]) -> hs._asm.axuielement
+-- cp.app.menu:_visitMenuItems(visitFn, path, menuUI[, options]) -> hs.axuielement
 -- Method
 -- Returns the set of menu items in the provided path. If the path contains a menu, the children are returned.
 --

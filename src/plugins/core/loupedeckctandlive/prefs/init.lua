@@ -537,6 +537,10 @@ function mod.mt:generateKnobImages(app, bank, bid)
         end
 
         local knobImage = v:imageFromCanvas()
+
+        v:delete()
+        v = nil -- luacheck: ignore
+
         encodedKnobIcon = knobImage:encodeAsURLString(true)
     end
 
@@ -1124,6 +1128,9 @@ function mod.mt:panelCallback(id, params)
                     }
                     local newImage = a:imageFromCanvas()
 
+                    a:delete()
+                    a = nil -- luacheck: ignore
+
                     local newEncodedIcon = newImage:encodeAsURLString(true)
                     if newEncodedIcon then
                         --------------------------------------------------------------------------------
@@ -1243,6 +1250,10 @@ function mod.mt:panelCallback(id, params)
               frame = { x = 0, y = 0, h = "100%", w = "100%" },
             }
             local fixedImage = v:imageFromCanvas()
+
+            v:delete()
+            v = nil -- luacheck: ignore
+
             local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
             --------------------------------------------------------------------------------
@@ -1289,6 +1300,10 @@ function mod.mt:panelCallback(id, params)
               frame = { x = 0, y = 0, h = "100%", w = "100%" },
             }
             local fixedImage = v:imageFromCanvas()
+
+            v:delete()
+            v = nil -- luacheck: ignore
+
             local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
             --------------------------------------------------------------------------------
@@ -1335,6 +1350,10 @@ function mod.mt:panelCallback(id, params)
               frame = { x = 0, y = 0, h = "100%", w = "100%" },
             }
             local fixedImage = v:imageFromCanvas()
+
+            v:delete()
+            v = nil -- luacheck: ignore
+
             local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
             --------------------------------------------------------------------------------
@@ -1381,6 +1400,10 @@ function mod.mt:panelCallback(id, params)
               frame = { x = 0, y = 0, h = "100%", w = "100%" },
             }
             local fixedImage = v:imageFromCanvas()
+
+            v:delete()
+            v = nil -- luacheck: ignore
+
             local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
             --------------------------------------------------------------------------------
@@ -1426,6 +1449,10 @@ function mod.mt:panelCallback(id, params)
               frame = { x = 0, y = 0, h = "100%", w = "100%" },
             }
             local fixedImage = v:imageFromCanvas()
+
+            v:delete()
+            v = nil -- luacheck: ignore
+
             local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
             --------------------------------------------------------------------------------
@@ -1522,6 +1549,10 @@ function mod.mt:panelCallback(id, params)
                                   frame = { x = 0, y = 0, h = "100%", w = "100%" },
                                 }
                                 local fixedImage = v:imageFromCanvas()
+
+                                v:delete()
+                                v = nil -- luacheck: ignore
+
                                 local fixedEncodedIcon = fixedImage:encodeAsURLString(true)
 
                                 self:setItem(app, bank, controlType, bid, "encodedIcon", fixedEncodedIcon)
@@ -1699,6 +1730,10 @@ function mod.mt:panelCallback(id, params)
                 }
 
                 local img = v:imageFromCanvas()
+
+                v:delete()
+                v = nil -- luacheck: ignore
+
                 encodedImg = img:encodeAsURLString(true)
             end
 
@@ -1955,6 +1990,10 @@ function mod.mt:panelCallback(id, params)
                         }
 
                         local img = v:imageFromCanvas()
+
+                        v:delete()
+                        v = nil -- luacheck: ignore
+
                         local encodedImg = img:encodeAsURLString(true)
 
                         items[app][b][controlType][bid].encodedIconLabel = encodedImg

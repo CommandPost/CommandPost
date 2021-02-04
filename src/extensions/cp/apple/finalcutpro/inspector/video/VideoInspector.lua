@@ -149,7 +149,7 @@ function VideoInspector:initialize(parent)
     }
 end
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.contentUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
 function VideoInspector.lazy.prop:contentUI()

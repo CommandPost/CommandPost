@@ -52,7 +52,6 @@ function Panel:title()
     return strings:find(self._titleKey)
 end
 
-
 --- cp.apple.finalcutpro.prefs.Panel:show() -> self
 --- Function
 --- Shows the Panel.

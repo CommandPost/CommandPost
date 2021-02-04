@@ -79,7 +79,7 @@ function MediaBrowser.lazy.prop:isShowing()
     return parent.isShowing:AND(parent.mediaShowing)
 end
 
---- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the main group UI for the Media Browser, or `nil` if not available.
 function MediaBrowser.lazy.prop:mainGroupUI()

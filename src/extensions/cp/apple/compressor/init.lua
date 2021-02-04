@@ -60,12 +60,12 @@ prop.bind(compressor) {
     --- Is Final Cut Pro Running?
     isRunning = app.running,
 
-    --- cp.apple.compressor.UI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- cp.apple.compressor.UI <cp.prop: hs.axuielement; read-only; live>
     --- Field
     --- The Final Cut Pro `axuielement`, if available.
     UI = app.UI,
 
-    --- cp.apple.compressor.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- cp.apple.compressor.windowsUI <cp.prop: hs.axuielement; read-only; live>
     --- Field
     --- Returns the UI containing the list of windows in the app.
     windowsUI = app.windowsUI,

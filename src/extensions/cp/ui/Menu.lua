@@ -4,17 +4,19 @@
 
 local require               = require
 
-local Element               = require("cp.ui.Element")
+--local log                   = require("hs.logger").new("Menu")
 
+local Element               = require "cp.ui.Element"
 local go                    = require "cp.rx.go"
-local If, WaitUntil         = go.If, go.WaitUntil
 
 local find                  = string.find
+local If                    = go.If
+local WaitUntil             = go.WaitUntil
 
 -- TIMEOUT_AFTER -> number
 -- Constant
 -- The common timeout amount in milliseconds.
-local TIMEOUT_AFTER = 3000
+local TIMEOUT_AFTER = 5000
 
 --- cp.ui.Menu(parent, uiFinder) -> Menu
 --- Constructor
@@ -22,7 +24,7 @@ local TIMEOUT_AFTER = 3000
 ---
 --- Parameters:
 ---  * parent - The parent object.
----  * uiFinder - A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder - A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 ---  * A new `Menu` object.
@@ -58,6 +60,15 @@ function Menu:cancel()
     return self
 end
 
+--- cp.ui.Menu:doCancel(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will cancel a menu.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the `Statement`.
 function Menu:doCancel()
     return If(self.UI)
     :Then(function(ui)
@@ -82,7 +93,7 @@ function Menu:doSelectItem(index)
     :Then(function(ui)
         local item = ui[index]
         if item then
-            item:doPress()
+            item:doAXPress()
             return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
         else
             return self:doCancel()
@@ -92,7 +103,6 @@ function Menu:doSelectItem(index)
     :Otherwise(false)
     :Label("Menu:doSelectItem")
 end
-
 
 --- cp.ui.Menu:doSelectValue(value) -> cp.rx.go.Statement
 --- Method
@@ -106,9 +116,10 @@ end
 function Menu:doSelectValue(value)
     return If(self.UI)
     :Then(function(ui)
-        for _,item in ipairs(ui) do
-            if item:title() == value then
-                item:doPress()
+        for _, item in ipairs(ui) do
+            local title = item:attributeValue("AXTitle")
+            if title == value then
+                item:doAXPress()
                 return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
             end
         end
@@ -140,7 +151,7 @@ function Menu:doSelectItemMatching(pattern, altPattern)
                     local s,e = find(title, selectedPattern)
                     if s == 1 and e == title:len() then
                         -- perfect match
-                        item:doPress()
+                        item:performAction("AXPress")
                         return WaitUntil(self.isShowing):Is(false):TimeoutAfter(TIMEOUT_AFTER)
                     end
                 end

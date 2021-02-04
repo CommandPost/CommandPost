@@ -419,7 +419,7 @@ function TextInspector:initialize(parent)
     }
 end
 
---- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
 function TextInspector.lazy.prop:contentUI()
@@ -435,7 +435,7 @@ function TextInspector.lazy.prop:contentUI()
     end)
 end
 
---- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the properties rows, if available.
 function TextInspector.lazy.prop:bottomBarUI()

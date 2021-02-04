@@ -2,7 +2,7 @@
 ---
 --- Disclosure Triangle UI Module.
 ---
---- This represents an `hs._asm.axuielement` with a `AXDisclosureTriangle` role.
+--- This represents an `hs.axuielement` with a `AXDisclosureTriangle` role.
 --- It allows checking and modifying the `opened` status like so:
 ---
 --- ```lua
@@ -35,7 +35,7 @@ local DisclosureTriangle = Element:subclass("cp.ui.DisclosureTriangle")
 
 --- cp.ui.DisclosureTriangle.matches(element) -> boolean
 --- Function
---- Checks if the provided `hs._asm.axuielement` is a DisclosureTriangle.
+--- Checks if the provided `hs.axuielement` is a DisclosureTriangle.
 ---
 --- Parameters:
 ---  * element		- The `axuielement` to check.
@@ -52,7 +52,7 @@ end
 ---
 --- Parameters:
 ---  * parent		- The parent object.
----  * uiFinder		- A function which will return the `hs._asm.axuielement` when available.
+---  * uiFinder		- A function which will return the `hs.axuielement` when available.
 ---
 --- Returns:
 ---  * The new `DisclosureTriangle`.
@@ -80,7 +80,7 @@ function DisclosureTriangle.lazy.prop:opened()
         function(value, original) -- set
             local ui = original()
             if ui and value ~= (ui:attributeValue("AXValue") == 1) and ui:attributeValue("AXEnabled") == true then
-                ui:doPress()
+                ui:performAction("AXPress")
             end
         end
     )
@@ -132,7 +132,7 @@ end
 function DisclosureTriangle:press()
     local ui = self:UI()
     if ui then
-        ui:doPress()
+        ui:performAction("AXPress")
     end
     return self
 end

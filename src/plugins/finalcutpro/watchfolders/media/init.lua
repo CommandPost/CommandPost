@@ -2,7 +2,9 @@
 ---
 --- Final Cut Pro Media Watch Folder Plugin.
 
-local require = require
+local require           = require
+
+--local log               = require "hs.logger".new "WatchFolderMedia"
 
 local config            = require "cp.config"
 local fcp               = require "cp.apple.finalcutpro"
@@ -22,24 +24,52 @@ local savedMediaFolders = config.prop("fcp.watchFolders.mediaFolders", {})
 --- The table of MediaFolders currently configured.
 local mediaFolders = nil
 
--- TODO: Add documentation
+--- plugins.finalcutpro.watchfolders.media.addMediaFolder(path, videoTag, audioTag, imageTag) -> none
+--- Function
+--- Removes a media folder.
+---
+--- Parameters:
+---  * path - The path of the folder to remove.
+---  * videoTag - An optional video tag as a string.
+---  * audioTag - An optional audio tag as a string.
+---  * imageTag - An optional image tag as a string.
+---
+--- Returns:
+---  * None
 function mod.addMediaFolder(path, videoTag, audioTag, imageTag)
     insert(mediaFolders, MediaFolder.new(mod, path, videoTag, audioTag, imageTag):init())
     mod.saveMediaFolders()
 end
 
--- TODO: Add documentation
+--- plugins.finalcutpro.watchfolders.media.removeMediaFolder(path) -> boolean
+--- Function
+--- Removes a media folder.
+---
+--- Parameters:
+---  * path - The path of the folder to remove.
+---
+--- Returns:
+---  * None
 function mod.removeMediaFolder(path)
     for i,f in ipairs(mediaFolders) do
         if f.path == path then
             f:destroy()
             table.remove(mediaFolders, i)
+            mod.saveMediaFolders()
             break
         end
     end
 end
 
--- TODO: Add documentation
+--- plugins.finalcutpro.watchfolders.media.hasMediaFolder(path) -> boolean
+--- Function
+--- Checks to see if a path has a media folder already saved.
+---
+--- Parameters:
+---  * path - The path to check.
+---
+--- Returns:
+---  * A boolean
 function mod.hasMediaFolder(path)
     for _,folder in ipairs(mediaFolders) do
         if folder.path == path then
@@ -48,7 +78,15 @@ function mod.hasMediaFolder(path)
     end
 end
 
--- TODO: Add documentation
+--- plugins.finalcutpro.watchfolders.media.mediaFolders() -> table
+--- Function
+--- Gets a table of all the media folders.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of all the media folders.
 function mod.mediaFolders()
     return mediaFolders
 end

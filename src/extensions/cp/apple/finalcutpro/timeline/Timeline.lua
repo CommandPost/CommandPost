@@ -126,7 +126,7 @@ end
 function Timeline.lazy.prop:isOnSecondary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui ~= nil and SecondaryWindow.matches(ui:window())
+        return ui ~= nil and SecondaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -136,7 +136,7 @@ end
 function Timeline.lazy.prop:isOnPrimary()
     return self.UI:mutate(function(original)
         local ui = original()
-        return ui ~= nil and PrimaryWindow.matches(ui:window())
+        return ui ~= nil and PrimaryWindow.matches(ui:attributeValue("AXWindow"))
     end)
 end
 
@@ -150,7 +150,7 @@ function Timeline.lazy.prop:isShowing()
     end)
 end
 
---- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
+--- cp.apple.finalcutpro.timeline.Timeline.mainUI <cp.prop: hs.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
 function Timeline.lazy.prop:mainUI()

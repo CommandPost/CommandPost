@@ -24,15 +24,16 @@ local tools                     = require "cp.tools"
 local chooseFileOrFolder        = dialog.chooseFileOrFolder
 local copy                      = fnutils.copy
 local delayed                   = timer.delayed
+local doAfter                   = timer.doAfter
 local doesDirectoryExist        = tools.doesDirectoryExist
 local escapeTilda               = tools.escapeTilda
 local imageFromPath             = image.imageFromPath
 local infoForBundlePath         = application.infoForBundlePath
 local mergeTable                = tools.mergeTable
+local open                      = _G.hs.open
 local spairs                    = tools.spairs
 local tableContains             = tools.tableContains
 local webviewAlert              = dialog.webviewAlert
-local open                      = _G.hs.open
 
 local mod = {}
 
@@ -1384,8 +1385,16 @@ function plugin.init(deps, env)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
+    --
+    -- NOTE: Wrapping the callback function in a timer, seems to fix some
+    --       delays that were happening after pressing a button. I have no idea
+    --       why, but this seems to solve.
     --------------------------------------------------------------------------------
-    mod._panel:addHandler("onchange", "midiPanelCallback", midiPanelCallback)
+    mod._panel:addHandler("onchange", "midiPanelCallback", function(id, params)
+        doAfter(0, function()
+            midiPanelCallback(id, params)
+        end)
+    end)
 
     return mod
 end

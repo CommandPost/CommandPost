@@ -58,25 +58,27 @@
 --       using cp.plist. Will re-investigate once we have hs.plist.readString()
 ----------------------------------------------------------------------------------
 
-local require = require
+local require               = require
 
---local log               = require "hs.logger".new "destinations"
+--local log                   = require "hs.logger".new "destinations"
 
-local fs                = require "hs.fs"
+local fs                    = require "hs.fs"
 
-local archiver          = require "cp.plist.archiver"
-local fcpApp            = require "cp.apple.finalcutpro.app"
-local fcpStrings        = require "cp.apple.finalcutpro.strings"
-local plist             = require "cp.plist"
-local tools             = require "cp.tools"
+local archiver              = require "cp.plist.archiver"
+local fcpApp                = require "cp.apple.finalcutpro.app"
+local fcpStrings            = require "cp.apple.finalcutpro.strings"
+local plist                 = require "cp.plist"
+local tools                 = require "cp.tools"
 
-local moses             = require "moses"
+local moses                 = require "moses"
 
-local detect            = moses.detect
-local doesFileExist     = tools.doesFileExist
-local fileToTable       = plist.fileToTable
-local spairs            = tools.spairs
-local tableContains     = tools.tableContains
+local detect                = moses.detect
+local dir                   = fs.dir
+local doesDirectoryExist    = tools.doesDirectoryExist
+local doesFileExist         = tools.doesFileExist
+local fileToTable           = plist.fileToTable
+local spairs                = tools.spairs
+local tableContains         = tools.tableContains
 
 local mod = {}
 
@@ -91,10 +93,9 @@ local mod = {}
 -- Returns:
 --  * A table of paths.
 local function findDestinationsPaths(path)
-    local iterFn, dirObj = fs.dir(path)
     local paths = {}
-    if iterFn then
-        for file in iterFn, dirObj do
+    if doesDirectoryExist(path) then
+        for file in dir(path) do
             if file:sub(-9) == ".fcpxdest" then
                 table.insert(paths, path .. file)
             end

@@ -121,14 +121,18 @@ local gsub                                      = string.gsub
 local Do                                        = go.Do
 local Throw                                     = go.Throw
 
-local childMatching                             = axutils.childMatching
-local dirFiles                                  = tools.dirFiles
-local insert                                    = table.insert
+local dir                                       = fs.dir
 local pathFromBookmark                          = fs.pathFromBookmark
 local pathToAbsolute                            = fs.pathToAbsolute
 local pathToBookmark                            = fs.pathToBookmark
+
+local dirFiles                                  = tools.dirFiles
+local doesDirectoryExist                        = tools.doesDirectoryExist
 local stringToHexString                         = tools.stringToHexString
+
+local childMatching                             = axutils.childMatching
 local execute                                   = _G.hs.execute
+local insert                                    = table.insert
 
 -- Load the menu helpers:
 require "cp.apple.finalcutpro.menu"
@@ -259,11 +263,11 @@ function fcp.lazy.prop:isRunning()
     return self.app.running
 end
 
---- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- The Final Cut Pro `axuielement`, if available.
 
---- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.apple.finalcutpro.windowsUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the list of windows in the app.
 function fcp.lazy.prop:windowsUI()
@@ -591,7 +595,7 @@ function fcp:closeLibrary(title)
             end
 
             self:selectMenu({"File", function(item)
-                local itemTitle = item:title():gsub(NBSP, " ")
+                local itemTitle = item:attributeValue("AXTitle"):gsub(NBSP, " ")
                 local result = itemTitle == closeLibrary
                 return result
             end})
@@ -1027,15 +1031,12 @@ end
 function fcp.userCommandSets()
     local result = {}
     local userCommandSetPath = fcp:userCommandSetPath()
-    if userCommandSetPath then
-        local iterFn, dirObj = fs.dir(userCommandSetPath)
-        if iterFn then
-            for file in iterFn, dirObj do
-                if file:sub(-11) == ".commandset" then
-                    table.insert(result, file:sub(1, -12))
-                end
+    if doesDirectoryExist(userCommandSetPath) then
+        for file in dir(userCommandSetPath) do
+            if file:sub(-11) == ".commandset" then
+                table.insert(result, file:sub(1, -12))
             end
-       end
+        end
     end
     return result
 end
@@ -1146,7 +1147,7 @@ function fcp:doShortcut(whichShortcut)
     :Then(function()
         local shortcuts = self:getCommandShortcuts(whichShortcut)
         if shortcuts and #shortcuts > 0 then
-            shortcuts[1]:trigger()
+            shortcuts[1]:trigger(self:application())
             return true
         else
             return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))

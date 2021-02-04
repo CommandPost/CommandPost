@@ -179,7 +179,7 @@ end
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.GoToPrompt` object for method chaining.
 function GoToPrompt:setValue(value)
-    self:value(value)
+    self.UI:setAttributeValue("AXValue", value)
     return self
 end
 

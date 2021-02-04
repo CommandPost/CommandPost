@@ -15,6 +15,7 @@ local fs                        = require "hs.fs"
 local image                     = require "hs.image"
 local loupedeck                 = require "hs.loupedeck"
 local plist                     = require "hs.plist"
+local sleepWatcher              = require "hs.caffeinate.watcher"
 local timer                     = require "hs.timer"
 
 local config                    = require "cp.config"
@@ -334,6 +335,7 @@ function mod.new(deviceType)
         if enabled then
             o.appWatcher:start()
             o.driveWatcher:start()
+            o.sleepWatcher:start()
 
             local device = o.getDevice()
             device:connect()
@@ -343,6 +345,7 @@ function mod.new(deviceType)
             --------------------------------------------------------------------------------
             o.appWatcher:stop()
             o.driveWatcher:stop()
+            o.sleepWatcher:stop()
 
             if o.device then
                 --------------------------------------------------------------------------------
@@ -368,6 +371,41 @@ function mod.new(deviceType)
                     -- Destroy the device:
                     --------------------------------------------------------------------------------
                     o.device = nil
+                end)
+            end
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Watch for sleep events:
+    --------------------------------------------------------------------------------
+    o.sleepWatcher = sleepWatcher.new(function(eventType)
+        if eventType == sleepWatcher.systemDidWake then
+            if o.enabled() and o.device then
+                o.device:disconnect()
+                o.device:connect()
+            end
+        end
+        if eventType == sleepWatcher.systemWillSleep then
+            if o.enabled() and o.device then
+                --------------------------------------------------------------------------------
+                -- Make everything black:
+                --------------------------------------------------------------------------------
+                for _, screen in pairs(loupedeck.screens) do
+                    o.device:updateScreenColor(screen, {hex="#"..defaultColor})
+                end
+                for i=7, 26 do
+                    o.device:buttonColor(i, {hex="#" .. defaultColor})
+                end
+
+                --------------------------------------------------------------------------------
+                -- After a slight delay so the websocket message has time to send...
+                --------------------------------------------------------------------------------
+                doAfter(0.01, function()
+                    --------------------------------------------------------------------------------
+                    -- Disconnect from the Loupedeck:
+                    --------------------------------------------------------------------------------
+                    o.device:disconnect()
                 end)
             end
         end
@@ -690,6 +728,8 @@ end
 --- Returns:
 ---  * None
 function mod.mt:refresh(dueToAppChange)
+    local device = self.getDevice()
+
     local success
     local frontmostApplication = application.frontmostApplication()
     local bundleID = frontmostApplication:bundleID()
@@ -756,7 +796,7 @@ function mod.mt:refresh(dueToAppChange)
     --------------------------------------------------------------------------------
     local jogWheel = bank and bank.jogWheel and bank.jogWheel["1"]
     local wheelSensitivity = jogWheel and jogWheel.wheelSensitivity and tonumber(jogWheel.wheelSensitivity) or loupedeck.defaultWheelSensitivityIndex
-    self.device:updateWheelSensitivity(wheelSensitivity)
+    device:updateWheelSensitivity(wheelSensitivity)
 
     --------------------------------------------------------------------------------
     -- UPDATE LED BUTTON COLOURS:
@@ -769,7 +809,7 @@ function mod.mt:refresh(dueToAppChange)
             --------------------------------------------------------------------------------
             -- Only update if the colour has changed to save bandwidth:
             --------------------------------------------------------------------------------
-            self.device:buttonColor(i, {hex="#" .. ledColor})
+            device:buttonColor(i, {hex="#" .. ledColor})
         end
         self.cachedLEDButtonValues[id] = ledColor
     end
@@ -800,13 +840,13 @@ function mod.mt:refresh(dueToAppChange)
             self.cachedTouchScreenButtonValues[id] = encodedIcon
             local decodedImage = imageFromURL(encodedIcon)
             if decodedImage then
-                self.device:updateScreenButtonImage(i, decodedImage)
+                device:updateScreenButtonImage(i, decodedImage)
                 success = true
             end
         end
 
         if not success and self.cachedTouchScreenButtonValues[id] ~= defaultColor then
-            self.device:updateScreenButtonColor(i, {hex="#"..defaultColor})
+            device:updateScreenButtonColor(i, {hex="#"..defaultColor})
             self.cachedTouchScreenButtonValues[id] = defaultColor
         end
     end
@@ -823,12 +863,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedWheelScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
+            device:updateScreenImage(loupedeck.screens.wheel, decodedImage)
             success = true
         end
     end
     if not success and self.cachedWheelScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.wheel, {hex="#"..defaultColor})
         self.cachedWheelScreen = defaultColor
     end
 
@@ -848,12 +888,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedLeftSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.left, decodedImage)
+            device:updateScreenImage(loupedeck.screens.left, decodedImage)
             success = true
         end
     end
     if not success and self.cachedLeftSideScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.left, {hex="#"..defaultColor})
         self.cachedLeftSideScreen = defaultColor
     end
 
@@ -873,12 +913,12 @@ function mod.mt:refresh(dueToAppChange)
         self.cachedRightSideScreen = encodedIcon
         local decodedImage = imageFromURL(encodedIcon)
         if decodedImage then
-            self.device:updateScreenImage(loupedeck.screens.right, decodedImage)
+            device:updateScreenImage(loupedeck.screens.right, decodedImage)
             success = true
         end
     end
     if not success and self.cachedRightSideScreen ~= defaultColor then
-        self.device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
+        device:updateScreenColor(loupedeck.screens.right, {hex="#"..defaultColor})
         self.cachedRightSideScreen = defaultColor
     end
 end
@@ -1022,14 +1062,14 @@ function mod.mt:callback(data)
     if data.id == loupedeck.event.BUTTON_PRESS then
         if data.direction == "up" then
             if data.buttonID == loupedeck.buttonID.LEFT_FN then
-                local button = item[bankID]["ledButton"]["20"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     self.leftFnPressed = false
                     self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
-                local button = item[bankID]["ledButton"]["23"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     self.rightFnPressed = false
@@ -1038,7 +1078,7 @@ function mod.mt:callback(data)
             end
         elseif data.direction == "down" then
             if data.buttonID == loupedeck.buttonID.LEFT_FN then
-                local button = item[bankID]["ledButton"]["20"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["20"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true
@@ -1046,7 +1086,7 @@ function mod.mt:callback(data)
                     self:refresh()
                 end
             elseif data.buttonID == loupedeck.buttonID.RIGHT_FN then
-                local button = item[bankID]["ledButton"]["23"]
+                local button = item[bankID] and item[bankID]["ledButton"] and item[bankID]["ledButton"]["23"]
                 local pressAction = button and button["pressAction"]
                 if not pressAction or (pressAction and next(pressAction) == nil) then
                     functionButtonPressed = true

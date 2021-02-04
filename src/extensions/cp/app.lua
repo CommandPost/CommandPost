@@ -17,7 +17,7 @@ local log                       = require "hs.logger".new "app"
 
 local application               = require "hs.application"
 local applicationwatcher        = require "hs.application.watcher"
-local ax                        = require "hs._asm.axuielement"
+local ax                        = require "hs.axuielement"
 local fs                        = require "hs.fs"
 local inspect                   = require "hs.inspect"
 local task                      = require "hs.task"
@@ -42,12 +42,14 @@ local v                         = require "semver"
 local class                     = require "middleclass"
 
 local childMatching             = axutils.childMatching
+local dir                       = fs.dir
 local doAfter                   = timer.doAfter
 local format                    = string.format
 local Given                     = go.Given
 local If                        = go.If
 local insert                    = table.insert
 local keyStroke                 = tools.keyStroke
+local pathToAbsolute            = fs.pathToAbsolute
 local printf                    = hs.printf
 local processInfo               = hs.processInfo
 local tableFilter               = tools.tableFilter
@@ -219,7 +221,7 @@ end
 --- Returns:
 ---  * None
 function app:keyStroke(modifiers, character)
-    keyStroke(modifiers, character, self._hsApplication)
+    keyStroke(modifiers, character, self:hsApplication())
 end
 
 --- cp.app.preferences <cp.app.prefs>
@@ -271,7 +273,7 @@ function app.lazy.prop:running()
     end)
 end
 
---- cp.app.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.UI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the application's `axuielement`, if available.
 function app.lazy.prop:UI()
@@ -374,7 +376,7 @@ end
 
 -- cp.app:_findWindow(windowUI) -> cp.ui.Window
 -- Method
--- Finds the matching [Window](cp.ui.Window.md) for the `hs._asm.axuielement`.
+-- Finds the matching [Window](cp.ui.Window.md) for the `hs.axuielement`.
 -- If it is cached, return the cached instance, otherwise, create a new one.
 function app:_findWindow(windowUI)
     -- first, check the cache
@@ -422,7 +424,7 @@ function app.lazy.prop:windows()
     end)
 end
 
---- cp.app.windowsUI <cp.prop: table of hs._asm.axuielement; read-only; live>
+--- cp.app.windowsUI <cp.prop: table of hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the list of windows in the app.
 function app.lazy.prop:windowsUI()
@@ -452,7 +454,7 @@ function app.lazy.prop:focusedWindow()
     end)
 end
 
---- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.focusedWindowUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:focusedWindowUI()
@@ -471,7 +473,7 @@ function app.lazy.prop:mainWindow()
     end)
 end
 
---- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- cp.app.mainWindowUI <cp.prop: hs.axuielement; read-only; live>
 --- Field
 --- Returns the UI containing the currently-focused window for the app.
 function app.lazy.prop:mainWindowUI()
@@ -612,26 +614,20 @@ function app.lazy.prop:supportedLocales()
         local locales = {}
         local appPath = original()
         if appPath then
-            local resourcesPath = fs.pathToAbsolute(appPath .. "/Contents/Resources")
+            local resourcesPath = pathToAbsolute(appPath .. "/Contents/Resources")
             if resourcesPath then
                 local theBaseLocale = self:baseLocale()
                 if theBaseLocale then
                     -- always add the base locale, if present.
                     insert(locales, theBaseLocale)
                 end
-
-                local iterFn, dirObj = fs.dir(resourcesPath)
-                if not iterFn then
-                    log.ef("An error occured in cp.app.forBundleID: %s", dirObj)
-                else
-                    for file in iterFn, dirObj do
-                        local localeCode = file:match("(.+)%.lproj")
-                        if localeCode then
-                            if localeCode ~= BASE_LOCALE then
-                                local locale = localeID.forCode(localeCode)
-                                if locale and locale ~= theBaseLocale then
-                                    insert(locales, locale)
-                                end
+                for file in dir(resourcesPath) do
+                    local localeCode = file:match("(.+)%.lproj")
+                    if localeCode then
+                        if localeCode ~= BASE_LOCALE then
+                            local locale = localeID.forCode(localeCode)
+                            if locale and locale ~= theBaseLocale then
+                                insert(locales, locale)
                             end
                         end
                     end
@@ -731,7 +727,7 @@ end
 function app.lazy.prop:resourcesPath()
     return self.path:mutate(function(original)
         local path = original()
-        return path and fs.pathToAbsolute(path .. "/Contents/Resources") or nil
+        return path and pathToAbsolute(path .. "/Contents/Resources") or nil
     end)
 end
 
@@ -742,7 +738,7 @@ end
 function app.lazy.prop:baseResourcesPath()
     return self.resourcesPath:mutate(function(original)
         local path = original()
-        return path and fs.pathToAbsolute(path .. "/Base.lproj") or nil
+        return path and pathToAbsolute(path .. "/Base.lproj") or nil
     end)
 end
 
@@ -756,7 +752,7 @@ function app.lazy.prop:localeResourcesPath()
         if resourcesPath then
             local locale = self:bestSupportedLocale(self:currentLocale())
             for _, alias in pairs(locale.aliases) do
-                local path = fs.pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
+                local path = pathToAbsolute(resourcesPath .. "/" .. alias .. ".lproj")
                 if path then
                     return path
                 end

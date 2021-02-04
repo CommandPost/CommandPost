@@ -146,6 +146,7 @@ mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions)
     :watchPath(mod.scriptPath)
     :watchPath(mod.userPluginsPath)
     :watchPath(mod.bundledPluginsPath)
+    :watchPath(mod.scriptPath .. "/../tests/")
 
 --- cp.config.application() -> hs.application object
 --- Function
