@@ -241,7 +241,7 @@
 	<displayEffects>1</displayEffects>
 	<videoVerticalZoom>1.6111111640930176</videoVerticalZoom>
 	<audioVerticalZoom>1.5555555820465088</audioVerticalZoom>
-	<displayRange in="-215 579 3 0" out="3110 579 3 0"/>
+	<displayRange in="-202506522 1475000000 3 0" out="5137292557 1000000000 3 0"/>
 </timeline>
 
 <curveeditor>
@@ -249,8 +249,8 @@
 	<snapping>0</snapping>
 	<displayAudioWaveform>0</displayAudioWaveform>
 	<lockKeyframesInTime>0</lockKeyframesInTime>
-	<displayRange in="-215 579 3 0" out="3110 579 3 0"/>
-	<currentviewvolume originx="-0.37132987910189985" originy="-62.5" width="5.7426597582037999" height="125"/>
+	<displayRange in="-202506522 1475000000 3 0" out="5137292557 1000000000 3 0"/>
+	<currentviewvolume originx="-0.13729255728813558" originy="-62.5" width="5.2745851139999997" height="125"/>
 	<snapshotChannels>0</snapshotChannels>
 </curveeditor>
 
@@ -298,7 +298,7 @@
 		<target object="12503" channel="./1/100/101" name="Position"/>
 		<target object="10268" channel="./2/369" name="Shot Number"/>
 		<target object="10498" channel="./2/369" name="Scene Location"/>
-		<target object="10576" channel="./2/369" name="Shot Duration"/>
+		<target object="10576" channel="./2/369" name="Shot Duration (Auto Calcuated)"/>
 		<target object="39548" channel="./2/100" name="2️⃣ SECOND BLOCK"/>
 		<target object="12506" channel="./1/100/101" name="Position"/>
 		<target object="10881" channel="./2/369" name="Scene Number"/>
@@ -360,7 +360,8 @@
 		<target object="11762" channel="./1/208/212" name="Text Drop Shadow Distance"/>
 	</publishSettings>
 	<currentFrame>192000 153600 1 0</currentFrame>
-	<activeLayer>10043</activeLayer>
+	<currentObject>10000</currentObject>
+	<activeLayer>10575</activeLayer>
 	<timeRange offset="0 1 1 0" duration="768000 153600 1 0"/>
 	<playRange offset="0 1 1 0" duration="768000 153600 1 0"/>
 	<flags>1</flags>
@@ -385,7 +386,7 @@
 		<flags>0</flags>
 		<timing in="0 1 1 0" out="-6400 153600 1 0" offset="0 1 1 0"/>
 		<foldFlags>0</foldFlags>
-		<baseFlags>16</baseFlags>
+		<baseFlags>268435473</baseFlags>
 		<parameter name="Properties" id="1" flags="8589938704"/>
 		<parameter name="Object" id="2" flags="8589938704"/>
 	</scenenode>
@@ -1543,7 +1544,7 @@
 								</parameter>
 							</parameter>
 							<parameter name="Object" id="2" flags="8589938704">
-								<parameter name="Text" id="369" flags="8606777345">
+								<parameter name="Text" id="369" flags="8606777344">
 									<text>Location Address</text>
 								</parameter>
 								<parameter name="Render Text" id="360" flags="8590000146" default="0" value="0"/>
@@ -1794,7 +1795,6 @@
 									</parameter>
 								</parameter>
 							</style>
-							<styleRun style="10581" offset="0" length="5"/>
 							<aspectRatio>1</aspectRatio>
 							<flags>0</flags>
 							<timing in="0 1 1 0" out="761600 153600 1 0" offset="0 1 1 0"/>
@@ -1827,9 +1827,7 @@
 								</parameter>
 							</parameter>
 							<parameter name="Object" id="2" flags="8589938704">
-								<parameter name="Text" id="369" flags="8606777344">
-									<text>00:00</text>
-								</parameter>
+								<parameter name="Text" id="369" flags="8606777345"/>
 								<parameter name="Render Text" id="360" flags="8590000146" default="0" value="0"/>
 								<parameter name="Face Camera" id="352" flags="8589934610" default="0" value="0"/>
 								<parameter name="Path Options" id="329" flags="8589938704">
