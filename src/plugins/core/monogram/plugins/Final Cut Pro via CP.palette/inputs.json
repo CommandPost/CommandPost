@@ -1,28 +1,28 @@
 [
 	{
-		"name": "Color Wheels.Master.Reset All",
+		"name": "Color Wheels.Master.Master Reset All",
 		"info": "Resets the Master Wheel Position, Saturation and Brightness"
 	},
 	{
-		"name": "Color Wheels.Master.Reset",
+		"name": "Color Wheels.Master.Master Reset",
 		"info": "Resets the Master Wheel Position"
 	},
 	{
-		"name": "Color Wheels.Master.Saturation",
+		"name": "Color Wheels.Master.Master Saturation",
 		"range": [0, 2],
 		"step": 0.01,
 		"reset": 1,
 		"info": "Changes the Master Saturation"
 	},
 	{
-		"name": "Color Wheels.Master.Brightness",
+		"name": "Color Wheels.Master.Master Brightness",
 		"range": [-1, 1],
 		"step": 0.01,
 		"reset": 0,
 		"info": "Changes the Master Brightness"
 	},
 	{
-		"name": "Color Wheels.Master.Horizontal",
+		"name": "Color Wheels.Master.Master Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -30,7 +30,7 @@
 		"info": "Moves the Master Color Wheel Horizontally"
 	},
 	{
-		"name": "Color Wheels.Master.Vertical",
+		"name": "Color Wheels.Master.Master Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -38,29 +38,29 @@
 		"info": "Moves the Master Color Wheel Vertically"
 	},
 	{
-		"name": "Color Wheels.Shadows.Reset All",
+		"name": "Color Wheels.Shadows.Shadows Reset All",
 		"info": "Resets the Shadows Wheel Position, Saturation and Brightness"
 	},
 	{
-		"name": "Color Wheels.Shadows.Reset",
+		"name": "Color Wheels.Shadows.Shadows Reset",
 		"info": "Resets the Shadows Wheel Position"
 	},
 	{
-		"name": "Color Wheels.Shadows.Saturation",
+		"name": "Color Wheels.Shadows.Shadows Saturation",
 		"range": [0, 2],
 		"step": 0.01,
 		"reset": 1,
 		"info": "Changes the Shadows Saturation"
 	},
 	{
-		"name": "Color Wheels.Shadows.Brightness",
+		"name": "Color Wheels.Shadows.Shadows Brightness",
 		"range": [-1, 1],
 		"step": 0.01,
 		"reset": 0,
 		"info": "Changes the Shadows Brightness"
 	},
 	{
-		"name": "Color Wheels.Shadows.Horizontal",
+		"name": "Color Wheels.Shadows.Shadows Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -68,7 +68,7 @@
 		"info": "Moves the Shadows Color Wheel Horizontally"
 	},
 	{
-		"name": "Color Wheels.Shadows.Vertical",
+		"name": "Color Wheels.Shadows.Shadows Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -76,29 +76,29 @@
 		"info": "Moves the Shadows Color Wheel Vertically"
 	},
 	{
-		"name": "Color Wheels.Midtones.Reset All",
+		"name": "Color Wheels.Midtones.Midtones Reset All",
 		"info": "Resets the Midtones Wheel Position, Saturation and Brightness"
 	},
 	{
-		"name": "Color Wheels.Midtones.Reset",
+		"name": "Color Wheels.Midtones.Midtones Reset",
 		"info": "Resets the Midtones Wheel Position"
 	},
 	{
-		"name": "Color Wheels.Midtones.Saturation",
+		"name": "Color Wheels.Midtones.Midtones Saturation",
 		"range": [0, 2],
 		"step": 0.01,
 		"reset": 1,
 		"info": "Changes the Midtones Saturation"
 	},
 	{
-		"name": "Color Wheels.Midtones.Brightness",
+		"name": "Color Wheels.Midtones.Midtones Brightness",
 		"range": [-1, 1],
 		"step": 0.01,
 		"reset": 0,
 		"info": "Changes the Midtones Brightness"
 	},
 	{
-		"name": "Color Wheels.Midtones.Horizontal",
+		"name": "Color Wheels.Midtones.Midtones Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -106,7 +106,7 @@
 		"info": "Moves the Midtones Color Wheel Horizontally"
 	},
 	{
-		"name": "Color Wheels.Midtones.Vertical",
+		"name": "Color Wheels.Midtones.Midtones Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -114,29 +114,29 @@
 		"info": "Moves the Midtones Color Wheel Vertically"
 	},
 	{
-		"name": "Color Wheels.Highlights.Reset All",
+		"name": "Color Wheels.Highlights.Highlights Reset All",
 		"info": "Resets the Highlights Wheel Position, Saturation and Brightness"
 	},
 	{
-		"name": "Color Wheels.Highlights.Reset",
+		"name": "Color Wheels.Highlights.Highlights Reset",
 		"info": "Resets the Highlights Wheel Position"
 	},
 	{
-		"name": "Color Wheels.Highlights.Saturation",
+		"name": "Color Wheels.Highlights.Highlights Saturation",
 		"range": [0, 2],
 		"step": 0.01,
 		"reset": 1,
 		"info": "Changes the Highlights Saturation"
 	},
 	{
-		"name": "Color Wheels.Highlights.Brightness",
+		"name": "Color Wheels.Highlights.Highlights Brightness",
 		"range": [-1, 1],
 		"step": 0.01,
 		"reset": 0,
 		"info": "Changes the Highlights Brightness"
 	},
 	{
-		"name": "Color Wheels.Highlights.Horizontal",
+		"name": "Color Wheels.Highlights.Highlights Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
@@ -144,12 +144,212 @@
 		"info": "Moves the Highlights Color Wheel Horizontally"
 	},
 	{
-		"name": "Color Wheels.Highlights.Vertical",
+		"name": "Color Wheels.Highlights.Highlights Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
 		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Highlights Color Wheel Vertically"
+	},
+	{
+		"name": "Color Board.Color.Color Master (Percentage)",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Master Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Shadows (Percentage)",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Shadows Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Midtones (Percentage)",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Midtones Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Highlights (Percentage)",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Highlights Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Master (Angle)",
+		"range": [0, 359],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 110,
+		"info": "Moves the Master Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Shadows (Angle)",
+		"range": [0, 359],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 180,
+		"info": "Moves the Shadows Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Midtones (Angle)",
+		"range": [0, 359],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 215,
+		"info": "Moves the Midtones Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Color.Color Highlights (Angle)",
+		"range": [0, 359],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 250,
+		"info": "Moves the Highlights Color Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Saturation.Saturation Master",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Master Saturation Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Saturation.Saturation Shadows",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Shadows Saturation Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Saturation.Saturation Midtones",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Midtones Saturation Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Saturation.Saturation Highlights",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Highlights Saturation Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Exposure.Exposure Master",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Master Exposure Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Exposure.Exposure Shadows",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Shadows Exposure Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Exposure.Exposure Midtones",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Midtones Exposure Puck in the Color Board"
+	},
+	{
+		"name": "Color Board.Exposure.Exposure Highlights",
+		"range": [-100, 100],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 0,
+		"info": "Moves the Highlights Exposure Puck in the Color Board"
+	},
+	{
+		"name": "Video Inspector.Compositing.Opacity",
+		"range": [0, 100],
+		"step": 0.01,
+		"stepMin": 0.01,
+		"reset": 100,
+		"info": "Changes the opacity of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Position X",
+		"range": [-5000, 5000],
+		"step": 0.1,
+		"stepMin": 0.1,
+		"reset": 0,
+		"info": "Transforms the X position of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Position Y",
+		"range": [-5000, 5000],
+		"step": 0.1,
+		"stepMin": 0.1,
+		"reset": 0,
+		"info": "Transforms the Y position of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Rotation",
+		"range": [0, 360],
+		"step": 0.1,
+		"stepMin": 0.1,
+		"reset": 0,
+		"info": "Transforms the rotation of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Scale (All)",
+		"range": [0, 400],
+		"step": 1,
+		"stepMin": 1,
+		"reset": 100,
+		"info": "Transforms the X and Y scale of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Scale X",
+		"range": [0, 400],
+		"step": 0.01,
+		"stepMin": 0.01,
+		"reset": 100,
+		"info": "Transforms the X scale of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Scale Y",
+		"range": [0, 400],
+		"step": 0.01,
+		"stepMin": 0.01,
+		"reset": 100,
+		"info": "Transforms the Y scale of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Anchor X",
+		"range": [-5000, 5000],
+		"step": 0.1,
+		"stepMin": 0.1,
+		"reset": 0,
+		"info": "Transforms the X anchor of the selected clip"
+	},
+	{
+		"name": "Video Inspector.Transform.Anchor Y",
+		"range": [-5000, 5000],
+		"step": 0.1,
+		"stepMin": 0.1,
+		"reset": 0,
+		"info": "Transforms the Y anchor of the selected clip"
 	},
 	{
 		"name": "CommandPost Favourites.Favourite 1",

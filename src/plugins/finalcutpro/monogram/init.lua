@@ -65,7 +65,14 @@ local function makeWheelHandler(wheelFinderFn, vertical)
 
             updateUI()
         elseif data.operation == "=" then
-            wheel:reset()
+            local value = data.params and data.params[1]
+            local current = wheel:colorOrientation()
+            if vertical then
+                current.up = value
+            else
+                current.right = value
+            end
+            wheel:colorOrientation(current)
         end
     end
 end
@@ -135,7 +142,8 @@ local function makeSaturationHandler(wheelFinderFn)
             saturationShift = saturationShift + increment
             updateUI()
         elseif data.operation == "=" then
-            wheel:saturationValue(1)
+            local value = data.params and data.params[1]
+            wheel:saturationValue(value)
         end
     end
 end
@@ -169,7 +177,89 @@ local function makeBrightnessHandler(wheelFinderFn)
             brightnessShift = brightnessShift + increment
             updateUI()
         elseif data.operation == "=" then
-            wheel:brightnessValue(0)
+            local value = data.params and data.params[1]
+            wheel:brightnessValue(value)
+        end
+    end
+end
+
+-- makeColourBoardHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for color board controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+--  * boardFinderFn - a function that will return the color board puck to apply the value to.
+--  * angle - a boolean which specifies whether or not it's an angle value.
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeColourBoardHandler(boardFinderFn, angle)
+    local colorBoardShift = 0
+    local board = boardFinderFn()
+
+    local updateUI = deferred.new(0.01):action(function()
+        if board:isShowing() then
+            if angle then
+                local current = board:angle()
+                board:angle(current + colorBoardShift)
+                colorBoardShift = 0
+            else
+                local current = board:percent()
+                board:percent(current + colorBoardShift)
+                colorBoardShift = 0
+            end
+        else
+            board:show()
+        end
+    end)
+
+    return function(data)
+        if data.operation == "+" then
+            local increment = data.params and data.params[1]
+            colorBoardShift = colorBoardShift + increment
+            updateUI()
+        elseif data.operation == "=" then
+            local value = data.params and data.params[1]
+            if angle then
+                board:angle(value)
+            else
+                board:percent(value)
+            end
+        end
+    end
+end
+
+-- makeSliderHandler(finderFn) -> function
+-- Function
+-- Creates a 'handler' for slider controls, applying them to the slider returned by the `finderFn`
+--
+-- Parameters:
+--  * finderFn - a function that will return the slider to apply the value to.
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeSliderHandler(finderFn)
+    local shift = 0
+    local slider = finderFn()
+
+    local updateUI = deferred.new(0.01):action(function()
+        if slider:isShowing() then
+            local current = slider:value()
+            slider:value(current + shift)
+            shift = 0
+        else
+            slider:show()
+        end
+    end)
+
+    return function(data)
+        if data.operation == "+" then
+            local increment = data.params and data.params[1]
+            shift = shift + increment
+            updateUI()
+        elseif data.operation == "=" then
+            local value = data.params and data.params[1]
+            slider:value(value)
         end
     end
 end
@@ -207,13 +297,61 @@ function plugin.init(deps)
         { control = fcp.inspector.color.colorWheels.highlights,   id = "Highlights" },
     }
     for _, v in pairs(colourWheels) do
-        registerAction("Color Wheels." .. v.id .. ".Vertical", makeWheelHandler(function() return v.control end, true))
-        registerAction("Color Wheels." .. v.id .. ".Horizontal", makeWheelHandler(function() return v.control end, false))
-        registerAction("Color Wheels." .. v.id .. ".Reset", makeResetColorWheelHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. ".Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. ".Saturation", makeSaturationHandler(function() return v.control end))
-        registerAction("Color Wheels." .. v.id .. ".Brightness", makeBrightnessHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Vertical", makeWheelHandler(function() return v.control end, true))
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Horizontal", makeWheelHandler(function() return v.control end, false))
+
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Saturation", makeSaturationHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Brightness", makeBrightnessHandler(function() return v.control end))
+
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Reset", makeResetColorWheelHandler(function() return v.control end))
+        registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
     end
+
+    --------------------------------------------------------------------------------
+    -- Color Board Controls:
+    --------------------------------------------------------------------------------
+    local colourBoards = {
+        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color.Color Master (Angle)",            angle = true },
+        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color.Color Shadows (Angle)",           angle = true },
+        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color.Color Midtones (Angle)",          angle = true },
+        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color.Color Highlights (Angle)",        angle = true },
+
+        { control = fcp.inspector.color.colorBoard.color.master,            id = "Color.Color Master (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.shadows,           id = "Color.Color Shadows (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.midtones,          id = "Color.Color Midtones (Percentage)" },
+        { control = fcp.inspector.color.colorBoard.color.highlights,        id = "Color.Color Highlights (Percentage)" },
+
+        { control = fcp.inspector.color.colorBoard.saturation.master,       id = "Saturation.Saturation Master" },
+        { control = fcp.inspector.color.colorBoard.saturation.shadows,      id = "Saturation.Saturation Shadows" },
+        { control = fcp.inspector.color.colorBoard.saturation.midtones,     id = "Saturation.Saturation Midtones" },
+        { control = fcp.inspector.color.colorBoard.saturation.highlights,   id = "Saturation.Saturation Highlights" },
+
+        { control = fcp.inspector.color.colorBoard.exposure.master,         id = "Exposure.Exposure Master" },
+        { control = fcp.inspector.color.colorBoard.exposure.shadows,        id = "Exposure.Exposure Shadows" },
+        { control = fcp.inspector.color.colorBoard.exposure.midtones,       id = "Exposure.Exposure Midtones" },
+        { control = fcp.inspector.color.colorBoard.exposure.highlights,     id = "Exposure.Exposure Highlights" },
+    }
+    for _, v in pairs(colourBoards) do
+        registerAction("Color Board." .. v.id, makeColourBoardHandler(function() return v.control end, v.angle))
+    end
+
+    --------------------------------------------------------------------------------
+    -- Video Controls:
+    --------------------------------------------------------------------------------
+    registerAction("Video Inspector.Compositing.Opacity", makeSliderHandler(function() return fcp.inspector.video.compositing():opacity() end))
+
+    registerAction("Video Inspector.Transform.Position X", makeSliderHandler(function() return fcp.inspector.video.transform():position().x end))
+    registerAction("Video Inspector.Transform.Position Y", makeSliderHandler(function() return fcp.inspector.video.transform():position().y end))
+
+    registerAction("Video Inspector.Transform.Rotation", makeSliderHandler(function() return fcp.inspector.video.transform():rotation() end))
+
+    registerAction("Video Inspector.Transform.Scale (All)", makeSliderHandler(function() return fcp.inspector.video.transform():scaleAll() end))
+
+    registerAction("Video Inspector.Transform.Scale X", makeSliderHandler(function() return fcp.inspector.video.transform():scaleX() end))
+    registerAction("Video Inspector.Transform.Scale Y", makeSliderHandler(function() return fcp.inspector.video.transform():scaleY() end))
+
+    registerAction("Video Inspector.Transform.Anchor X", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().x end))
+    registerAction("Video Inspector.Transform.Anchor Y", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().y end))
 
 end
 
