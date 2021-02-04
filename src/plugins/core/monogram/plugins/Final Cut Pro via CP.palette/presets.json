@@ -1,0 +1,48 @@
+{
+	"orbiter": [
+		{
+			"name": "Color Wheels.Master Color Wheel",
+			"info": "Adjusts the Master Color Wheel.<br><br>Turn = Master Brightness<br>Tilt X = Master Wheel Horizontal<br>Tilt Y = Master Wheel Vertical",
+			"tiltX": "Color Wheels.Master.Horizontal",
+			"tiltY": "Color Wheels.Master.Vertical",
+			"tiltMode": 2,
+			"tiltSensitivity": 2,
+			"turn": "Color Wheels.Master.Brightness",
+			"turnSensitivity": 9,
+			"nudgeSpeedMs": 100
+		},
+		{
+			"name": "Color Wheels.Shadows Color Wheel",
+			"info": "Adjusts the Shadows Color Wheel.<br><br>Turn = Shadows Brightness<br>Tilt X = Shadows Wheel Horizontal<br>Tilt Y = Shadows Wheel Vertical",
+			"tiltX": "Color Wheels.Shadows.Horizontal",
+			"tiltY": "Color Wheels.Shadows.Vertical",
+			"tiltMode": 2,
+			"tiltSensitivity": 2,
+			"turn": "Color Wheels.Shadows.Brightness",
+			"turnSensitivity": 9,
+			"nudgeSpeedMs": 100
+		},
+		{
+			"name": "Color Wheels.Midtones Color Wheel",
+			"info": "Adjusts the Midtones Color Wheel.<br><br>Turn = Midtones Brightness<br>Tilt X = Midtones Wheel Horizontal<br>Tilt Y = Midtones Wheel Vertical",
+			"tiltX": "Color Wheels.Midtones.Horizontal",
+			"tiltY": "Color Wheels.Midtones.Vertical",
+			"tiltMode": 2,
+			"tiltSensitivity": 2,
+			"turn": "Color Wheels.Midtones.Brightness",
+			"turnSensitivity": 9,
+			"nudgeSpeedMs": 100
+		},
+		{
+			"name": "Color Wheels.Highlights Color Wheel",
+			"info": "Adjusts the Highlights Color Wheel.<br><br>Turn = Highlights Brightness<br>Tilt X = Highlights Wheel Horizontal<br>Tilt Y = Highlights Wheel Vertical",
+			"tiltX": "Color Wheels.Highlights.Horizontal",
+			"tiltY": "Color Wheels.Highlights.Vertical",
+			"tiltMode": 2,
+			"tiltSensitivity": 2,
+			"turn": "Color Wheels.Highlights.Brightness",
+			"turnSensitivity": 9,
+			"nudgeSpeedMs": 100
+		}
+	]
+}

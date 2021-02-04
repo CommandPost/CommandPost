@@ -25,6 +25,7 @@
 		"name": "Color Wheels.Master.Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Master Color Wheel Horizontally"
 	},
@@ -32,6 +33,7 @@
 		"name": "Color Wheels.Master.Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Master Color Wheel Vertically"
 	},
@@ -61,6 +63,7 @@
 		"name": "Color Wheels.Shadows.Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Shadows Color Wheel Horizontally"
 	},
@@ -68,6 +71,7 @@
 		"name": "Color Wheels.Shadows.Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Shadows Color Wheel Vertically"
 	},
@@ -97,6 +101,7 @@
 		"name": "Color Wheels.Midtones.Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Midtones Color Wheel Horizontally"
 	},
@@ -104,6 +109,7 @@
 		"name": "Color Wheels.Midtones.Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Midtones Color Wheel Vertically"
 	},
@@ -133,6 +139,7 @@
 		"name": "Color Wheels.Highlights.Horizontal",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Highlights Color Wheel Horizontally"
 	},
@@ -140,6 +147,7 @@
 		"name": "Color Wheels.Highlights.Vertical",
 		"range": [-255, 255],
 		"step": 0.001666666667,
+		"stepMin": 0.001666666667,
 		"reset": 0,
 		"info": "Moves the Highlights Color Wheel Vertically"
 	},
