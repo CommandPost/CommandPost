@@ -6,7 +6,7 @@
 
 local require = require
 
-local log                           = require "hs.logger".new "colorWheels"
+--local log                           = require "hs.logger".new "colorWheels"
 
 local axutils                       = require "cp.ui.axutils"
 local prop                          = require "cp.prop"
