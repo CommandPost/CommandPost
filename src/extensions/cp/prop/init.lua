@@ -271,16 +271,15 @@
 --- 2. If working with an array of immutible objects, use the `shallow` table copy.
 --- 3. In most other cases, use a `deep` table copy.
 
-local require = require
+local require       = require
 
-local log               = require("hs.logger").new("prop")
+local log           = require "hs.logger".new "prop"
 
-local inspect           = require("hs.inspect")
-local fnutils           = require("hs.fnutils")
+local inspect       = require "hs.inspect"
+local fnutils       = require "hs.fnutils"
 
-local format            = string.format
-local insert            = table.insert
-
+local format        = string.format
+local insert        = table.insert
 
 local prop = {}
 
