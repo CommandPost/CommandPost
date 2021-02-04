@@ -64,6 +64,8 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             end
 
             updateUI()
+        elseif data.operation == "=" then
+            wheel:reset()
         end
     end
 end
@@ -132,6 +134,8 @@ local function makeSaturationHandler(wheelFinderFn)
             local increment = data.params and data.params[1]
             saturationShift = saturationShift + increment
             updateUI()
+        elseif data.operation == "=" then
+            wheel:saturationValue(1)
         end
     end
 end
@@ -164,6 +168,8 @@ local function makeBrightnessHandler(wheelFinderFn)
             local increment = data.params and data.params[1]
             brightnessShift = brightnessShift + increment
             updateUI()
+        elseif data.operation == "=" then
+            wheel:brightnessValue(0)
         end
     end
 end
