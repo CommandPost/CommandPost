@@ -557,7 +557,12 @@ function connection:initialize(applicationName, displayName, systemPath, userPat
     --- plugins.core.tangent.manager.connection.enabled <cp.prop: boolean>
     --- Field
     --- Whether or not the connection is enabled or disabled.
-    self.enabled = config.prop("tangent.enabled." .. applicationName, true)
+    local defaultEnabled = false
+    if applicationName == "Final Cut Pro (via CP)" then
+        -- NOTE: We only want Final Cut Pro to be enabled by default.
+        defaultEnabled = true
+    end
+    self.enabled = config.prop("tangent.enabled." .. applicationName, defaultEnabled)
 
     --- plugins.core.tangent.manager.connection.commandPostGroup -> Group
     --- Field
