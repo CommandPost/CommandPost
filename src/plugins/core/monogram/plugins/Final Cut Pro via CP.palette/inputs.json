@@ -88,6 +88,50 @@
         "name": "Command Set Shortcuts.General.Adjust Content Created Date and Time…"
     },
     {
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Bottom",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Left",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Right",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Adjusts the cropping on the selected clip",
+        "name": "Video Inspector.Crop.Crop Top",
+        "range": [
+            0,
+            4000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
         "info": "Aligns selection to video clip range ",
         "name": "Command Set Shortcuts.Editing.Align Audio to Video"
     },
@@ -421,6 +465,50 @@
     {
         "info": "Connect with selected media",
         "name": "Command Set Shortcuts.General.Connect with Selected Media"
+    },
+    {
+        "info": "Controls the Color Wheels Hue slider",
+        "name": "Color Wheels.Hue",
+        "range": [
+            0,
+            360
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Controls the Color Wheels Mix slider",
+        "name": "Color Wheels.Mix",
+        "range": [
+            0,
+            1
+        ],
+        "reset": 0,
+        "step": 0.01,
+        "stepMin": 0.01
+    },
+    {
+        "info": "Controls the Color Wheels Temperature slider",
+        "name": "Color Wheels.Temperature",
+        "range": [
+            10000,
+            2500
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Controls the Color Wheels Tint slider",
+        "name": "Color Wheels.Tint",
+        "range": [
+            -50,
+            50
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
     },
     {
         "info": "Copy Selected Keyframes",

@@ -469,6 +469,11 @@ function plugin.init(deps)
         registerAction("Color Wheels." .. v.id .. "." .. v.id .. " Reset All", makeResetColorWheelSatAndBrightnessHandler(function() return v.control end))
     end
 
+    registerAction("Color Wheels.Temperature", makeSliderHandler(function() return fcp.inspector.color.colorWheels.temperatureSlider end))
+    registerAction("Color Wheels.Tint", makeSliderHandler(function() return fcp.inspector.color.colorWheels.tintSlider end))
+    registerAction("Color Wheels.Hue", makeSliderHandler(function() return fcp.inspector.color.colorWheels.hueTextField end))
+    registerAction("Color Wheels.Mix", makeSliderHandler(function() return fcp.inspector.color.colorWheels.mixSlider end))
+
     --------------------------------------------------------------------------------
     -- Color Board Controls:
     --------------------------------------------------------------------------------
@@ -514,6 +519,11 @@ function plugin.init(deps)
 
     registerAction("Video Inspector.Transform.Anchor X", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().x end))
     registerAction("Video Inspector.Transform.Anchor Y", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().y end))
+
+    registerAction("Video Inspector.Crop.Crop Left", makeSliderHandler(function() return fcp.inspector.video.crop():left() end))
+    registerAction("Video Inspector.Crop.Crop Right", makeSliderHandler(function() return fcp.inspector.video.crop():right() end))
+    registerAction("Video Inspector.Crop.Crop Top", makeSliderHandler(function() return fcp.inspector.video.crop():top() end))
+    registerAction("Video Inspector.Crop.Crop Bottom", makeSliderHandler(function() return fcp.inspector.video.crop():bottom() end))
 
     --------------------------------------------------------------------------------
     -- Menu Items:
