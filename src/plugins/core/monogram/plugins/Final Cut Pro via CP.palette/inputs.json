@@ -1,434 +1,2721 @@
 [
-	{
-		"name": "Color Wheels.Master.Master Reset All",
-		"info": "Resets the Master Wheel Position, Saturation and Brightness"
-	},
-	{
-		"name": "Color Wheels.Master.Master Reset",
-		"info": "Resets the Master Wheel Position"
-	},
-	{
-		"name": "Color Wheels.Master.Master Saturation",
-		"range": [0, 2],
-		"step": 0.01,
-		"reset": 1,
-		"info": "Changes the Master Saturation"
-	},
-	{
-		"name": "Color Wheels.Master.Master Brightness",
-		"range": [-1, 1],
-		"step": 0.01,
-		"reset": 0,
-		"info": "Changes the Master Brightness"
-	},
-	{
-		"name": "Color Wheels.Master.Master Horizontal",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Master Color Wheel Horizontally"
-	},
-	{
-		"name": "Color Wheels.Master.Master Vertical",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Master Color Wheel Vertically"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Reset All",
-		"info": "Resets the Shadows Wheel Position, Saturation and Brightness"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Reset",
-		"info": "Resets the Shadows Wheel Position"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Saturation",
-		"range": [0, 2],
-		"step": 0.01,
-		"reset": 1,
-		"info": "Changes the Shadows Saturation"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Brightness",
-		"range": [-1, 1],
-		"step": 0.01,
-		"reset": 0,
-		"info": "Changes the Shadows Brightness"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Horizontal",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Shadows Color Wheel Horizontally"
-	},
-	{
-		"name": "Color Wheels.Shadows.Shadows Vertical",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Shadows Color Wheel Vertically"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Reset All",
-		"info": "Resets the Midtones Wheel Position, Saturation and Brightness"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Reset",
-		"info": "Resets the Midtones Wheel Position"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Saturation",
-		"range": [0, 2],
-		"step": 0.01,
-		"reset": 1,
-		"info": "Changes the Midtones Saturation"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Brightness",
-		"range": [-1, 1],
-		"step": 0.01,
-		"reset": 0,
-		"info": "Changes the Midtones Brightness"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Horizontal",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Midtones Color Wheel Horizontally"
-	},
-	{
-		"name": "Color Wheels.Midtones.Midtones Vertical",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Midtones Color Wheel Vertically"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Reset All",
-		"info": "Resets the Highlights Wheel Position, Saturation and Brightness"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Reset",
-		"info": "Resets the Highlights Wheel Position"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Saturation",
-		"range": [0, 2],
-		"step": 0.01,
-		"reset": 1,
-		"info": "Changes the Highlights Saturation"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Brightness",
-		"range": [-1, 1],
-		"step": 0.01,
-		"reset": 0,
-		"info": "Changes the Highlights Brightness"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Horizontal",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Highlights Color Wheel Horizontally"
-	},
-	{
-		"name": "Color Wheels.Highlights.Highlights Vertical",
-		"range": [-255, 255],
-		"step": 0.001666666667,
-		"stepMin": 0.001666666667,
-		"reset": 0,
-		"info": "Moves the Highlights Color Wheel Vertically"
-	},
-	{
-		"name": "Color Board.Color.Color Master (Percentage)",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Master Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Shadows (Percentage)",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Shadows Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Midtones (Percentage)",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Midtones Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Highlights (Percentage)",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Highlights Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Master (Angle)",
-		"range": [0, 359],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 110,
-		"info": "Moves the Master Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Shadows (Angle)",
-		"range": [0, 359],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 180,
-		"info": "Moves the Shadows Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Midtones (Angle)",
-		"range": [0, 359],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 215,
-		"info": "Moves the Midtones Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Color.Color Highlights (Angle)",
-		"range": [0, 359],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 250,
-		"info": "Moves the Highlights Color Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Saturation.Saturation Master",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Master Saturation Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Saturation.Saturation Shadows",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Shadows Saturation Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Saturation.Saturation Midtones",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Midtones Saturation Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Saturation.Saturation Highlights",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Highlights Saturation Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Exposure.Exposure Master",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Master Exposure Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Exposure.Exposure Shadows",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Shadows Exposure Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Exposure.Exposure Midtones",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Midtones Exposure Puck in the Color Board"
-	},
-	{
-		"name": "Color Board.Exposure.Exposure Highlights",
-		"range": [-100, 100],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 0,
-		"info": "Moves the Highlights Exposure Puck in the Color Board"
-	},
-	{
-		"name": "Video Inspector.Compositing.Opacity",
-		"range": [0, 100],
-		"step": 0.01,
-		"stepMin": 0.01,
-		"reset": 100,
-		"info": "Changes the opacity of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Position X",
-		"range": [-5000, 5000],
-		"step": 0.1,
-		"stepMin": 0.1,
-		"reset": 0,
-		"info": "Transforms the X position of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Position Y",
-		"range": [-5000, 5000],
-		"step": 0.1,
-		"stepMin": 0.1,
-		"reset": 0,
-		"info": "Transforms the Y position of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Rotation",
-		"range": [0, 360],
-		"step": 0.1,
-		"stepMin": 0.1,
-		"reset": 0,
-		"info": "Transforms the rotation of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Scale (All)",
-		"range": [0, 400],
-		"step": 1,
-		"stepMin": 1,
-		"reset": 100,
-		"info": "Transforms the X and Y scale of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Scale X",
-		"range": [0, 400],
-		"step": 0.01,
-		"stepMin": 0.01,
-		"reset": 100,
-		"info": "Transforms the X scale of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Scale Y",
-		"range": [0, 400],
-		"step": 0.01,
-		"stepMin": 0.01,
-		"reset": 100,
-		"info": "Transforms the Y scale of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Anchor X",
-		"range": [-5000, 5000],
-		"step": 0.1,
-		"stepMin": 0.1,
-		"reset": 0,
-		"info": "Transforms the X anchor of the selected clip"
-	},
-	{
-		"name": "Video Inspector.Transform.Anchor Y",
-		"range": [-5000, 5000],
-		"step": 0.1,
-		"stepMin": 0.1,
-		"reset": 0,
-		"info": "Transforms the Y anchor of the selected clip"
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 1",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 2",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 3",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 4",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 5",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 6",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 7",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 8",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 9",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 10",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 11",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 12",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 13",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 14",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 15",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 16",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 17",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 18",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 19",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	},
-	{
-		"name": "CommandPost Favourites.Favourite 20",
-		"info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel."
-	}
+    {
+        "info": "Add a Color Mask to the selected effect",
+        "name": "Command Set Shortcuts.Effects.Add Color Mask"
+    },
+    {
+        "info": "Add a Shape Mask to the selected effect",
+        "name": "Command Set Shortcuts.Effects.Add Shape Mask"
+    },
+    {
+        "info": "Add a chapter marker at the location of the skimmer or playhead",
+        "name": "Command Set Shortcuts.Marking.Add Chapter Marker"
+    },
+    {
+        "info": "Add a keyframe to the selected effect in the Video Animation or Audio Animation Editor",
+        "name": "Command Set Shortcuts.General.Add Keyframe to Selected Effect in Animation Editor"
+    },
+    {
+        "info": "Add a marker and edit the marker’s text",
+        "name": "Command Set Shortcuts.Marking.Add Marker and Modify"
+    },
+    {
+        "info": "Add a marker at the location of the skimmer or playhead",
+        "name": "Command Set Shortcuts.Marking.Add Marker"
+    },
+    {
+        "info": "Add a todo marker at the location of the skimmer of playhead",
+        "name": "Command Set Shortcuts.Marking.Add ToDo Marker"
+    },
+    {
+        "info": "Add the Color Board Effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Color Board Effect"
+    },
+    {
+        "info": "Add the Color Curves Effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Color Curves Effect"
+    },
+    {
+        "info": "Add the Color Hue/Saturation Effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Color Hue/Saturation Effect"
+    },
+    {
+        "info": "Add the Color Wheel Effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Color Wheels Effect"
+    },
+    {
+        "info": "Add the audio from the selection to the end of the storyline",
+        "name": "Command Set Shortcuts.Editing.Append Audio only to Storyline"
+    },
+    {
+        "info": "Add the default audio effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Default Audio Effect"
+    },
+    {
+        "info": "Add the default transition to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Default Transition"
+    },
+    {
+        "info": "Add the default video effect to the selection",
+        "name": "Command Set Shortcuts.Effects.Add Default Video Effect"
+    },
+    {
+        "info": "Add the selected clip to the audition",
+        "name": "Command Set Shortcuts.Editing.Audition: Add to Audition"
+    },
+    {
+        "info": "Add the selected items in the timeline to the soloed items",
+        "name": "Command Set Shortcuts.Editing.Add to Soloed Clips"
+    },
+    {
+        "info": "Add the selection to the end of the storyline",
+        "name": "Command Set Shortcuts.Editing.Append to Storyline"
+    },
+    {
+        "info": "Add the video from the selection to the end of the storyline",
+        "name": "Command Set Shortcuts.Editing.Append Video only to Storyline"
+    },
+    {
+        "info": "Adjust the audio volume across all selected clips by the same dB value",
+        "name": "Command Set Shortcuts.General.Adjust Volume Relative…"
+    },
+    {
+        "info": "Adjust the audio volume across all selected clips to a specific dB value",
+        "name": "Command Set Shortcuts.General.Adjust Volume Absolute…"
+    },
+    {
+        "info": "Adjust the content creation date and time of the selected clips",
+        "name": "Command Set Shortcuts.General.Adjust Content Created Date and Time…"
+    },
+    {
+        "info": "Aligns selection to video clip range ",
+        "name": "Command Set Shortcuts.Editing.Align Audio to Video"
+    },
+    {
+        "info": "Analyze and enhance audio in the selected clip",
+        "name": "Command Set Shortcuts.General.Auto Enhance Audio"
+    },
+    {
+        "info": "Analyze and fix the selected clips",
+        "name": "Command Set Shortcuts.Organization.Analyze and Fix…"
+    },
+    {
+        "info": "Analyze selected clips for faces and reframe clips whose aspect ratio is different from the project’s aspect ratio",
+        "name": "Command Set Shortcuts.Effects.Smart Conform"
+    },
+    {
+        "info": "Apply (or remove) a default audio fade in to selected clips",
+        "name": "Command Set Shortcuts.General.Toggle Audio Fade In"
+    },
+    {
+        "info": "Apply (or remove) a default audio fade out to selected clips",
+        "name": "Command Set Shortcuts.General.Toggle Audio Fade Out"
+    },
+    {
+        "info": "Apply Dialog subroles to the selected clip’s components",
+        "name": "Command Set Shortcuts.Marking.Roles: Apply Dialogue Role"
+    },
+    {
+        "info": "Apply Effect subroles to the selected clip’s components",
+        "name": "Command Set Shortcuts.Marking.Roles: Apply Effects Role"
+    },
+    {
+        "info": "Apply Music subroles to the selected clip’s components",
+        "name": "Command Set Shortcuts.Marking.Roles: Apply Music Role"
+    },
+    {
+        "info": "Apply a crossfade to the audio edit point between the selected clips",
+        "name": "Command Set Shortcuts.General.Crossfade"
+    },
+    {
+        "info": "Apply a default audio fade in & out to selected clips",
+        "name": "Command Set Shortcuts.General.Apply Audio Fades"
+    },
+    {
+        "info": "Apply keyword 1 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 1"
+    },
+    {
+        "info": "Apply keyword 2 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 2"
+    },
+    {
+        "info": "Apply keyword 3 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 3"
+    },
+    {
+        "info": "Apply keyword 4 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 4"
+    },
+    {
+        "info": "Apply keyword 5 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 5"
+    },
+    {
+        "info": "Apply keyword 6 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 6"
+    },
+    {
+        "info": "Apply keyword 7 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 7"
+    },
+    {
+        "info": "Apply keyword 8 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 8"
+    },
+    {
+        "info": "Apply keyword 9 to the selection",
+        "name": "Command Set Shortcuts.Marking.Apply Keyword Tag 9"
+    },
+    {
+        "info": "Apply or turn on/off Balance Color",
+        "name": "Command Set Shortcuts.Effects.Enable/Disable Balance Color"
+    },
+    {
+        "info": "Apply the Color & Effects Workspace",
+        "name": "Command Set Shortcuts.Windows.Color & Effects"
+    },
+    {
+        "info": "Apply the Default Workspace",
+        "name": "Command Set Shortcuts.Windows.Default"
+    },
+    {
+        "info": "Apply the Dual Displays Workspace",
+        "name": "Command Set Shortcuts.Windows.Dual Displays"
+    },
+    {
+        "info": "Apply the Organize Workspace",
+        "name": "Command Set Shortcuts.Windows.Organize"
+    },
+    {
+        "info": "Apply the titles role to the selected clip",
+        "name": "Command Set Shortcuts.Marking.Roles: Apply Titles Role"
+    },
+    {
+        "info": "Apply the video role to the selected clip",
+        "name": "Command Set Shortcuts.Marking.Roles: Apply Video Role"
+    },
+    {
+        "info": "Better Playback Performance",
+        "name": "Command Set Shortcuts.General.Better Playback Performance"
+    },
+    {
+        "info": "Better Playback Quality",
+        "name": "Command Set Shortcuts.General.Better Playback Quality"
+    },
+    {
+        "info": "Blade the retimed speed segment.",
+        "name": "Command Set Shortcuts.General.Blade Speed"
+    },
+    {
+        "info": "Break the selected item into its component parts",
+        "name": "Command Set Shortcuts.Editing.Break Apart Clip Items"
+    },
+    {
+        "info": "Change the Browser filter setting to hide rejected clips",
+        "name": "Command Set Shortcuts.General.Hide Rejected"
+    },
+    {
+        "info": "Change the Browser filter setting to show Favorites",
+        "name": "Command Set Shortcuts.General.Favorites"
+    },
+    {
+        "info": "Change the Browser filter setting to show all clips",
+        "name": "Command Set Shortcuts.General.All Clips"
+    },
+    {
+        "info": "Change the Browser filter setting to show clips with no ratings or keywords",
+        "name": "Command Set Shortcuts.General.No Ratings or Keywords"
+    },
+    {
+        "info": "Change the Browser filter setting to show rejected clips",
+        "name": "Command Set Shortcuts.General.Rejected"
+    },
+    {
+        "info": "Change the Browser filter setting to show unused media only",
+        "name": "Command Set Shortcuts.General.Show Unused Media Only"
+    },
+    {
+        "info": "Change the duration of the selection",
+        "name": "Command Set Shortcuts.Editing.Change Duration"
+    },
+    {
+        "info": "Changes the Highlights Brightness",
+        "name": "Color Wheels.Highlights.Highlights Brightness",
+        "range": [
+            -1,
+            1
+        ],
+        "reset": 0,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Highlights Saturation",
+        "name": "Color Wheels.Highlights.Highlights Saturation",
+        "range": [
+            0,
+            2
+        ],
+        "reset": 1,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Master Brightness",
+        "name": "Color Wheels.Master.Master Brightness",
+        "range": [
+            -1,
+            1
+        ],
+        "reset": 0,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Master Saturation",
+        "name": "Color Wheels.Master.Master Saturation",
+        "range": [
+            0,
+            2
+        ],
+        "reset": 1,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Midtones Brightness",
+        "name": "Color Wheels.Midtones.Midtones Brightness",
+        "range": [
+            -1,
+            1
+        ],
+        "reset": 0,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Midtones Saturation",
+        "name": "Color Wheels.Midtones.Midtones Saturation",
+        "range": [
+            0,
+            2
+        ],
+        "reset": 1,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Shadows Brightness",
+        "name": "Color Wheels.Shadows.Shadows Brightness",
+        "range": [
+            -1,
+            1
+        ],
+        "reset": 0,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the Shadows Saturation",
+        "name": "Color Wheels.Shadows.Shadows Saturation",
+        "range": [
+            0,
+            2
+        ],
+        "reset": 1,
+        "step": 0.01
+    },
+    {
+        "info": "Changes the opacity of the selected clip",
+        "name": "Video Inspector.Compositing.Opacity",
+        "range": [
+            0,
+            100
+        ],
+        "reset": 100,
+        "step": 0.01,
+        "stepMin": 0.01
+    },
+    {
+        "info": "Clear the ranges that are selected",
+        "name": "Command Set Shortcuts.General.Clear Selected Ranges"
+    },
+    {
+        "info": "Clear the range’s end point",
+        "name": "Command Set Shortcuts.Marking.Clear Range End"
+    },
+    {
+        "info": "Clear the range’s start point",
+        "name": "Command Set Shortcuts.Marking.Clear Range Start"
+    },
+    {
+        "info": "Close projects or clips in the Timeline history, leaving the current project open",
+        "name": "Command Set Shortcuts.General.Close Other Timelines"
+    },
+    {
+        "info": "Close the current library",
+        "name": "Command Set Shortcuts.General.Close Library"
+    },
+    {
+        "info": "Close the project or clip currently visible in the Timeline",
+        "name": "Command Set Shortcuts.General.Close Project"
+    },
+    {
+        "info": "Close windows other than the Final Cut Pro main window",
+        "name": "Command Set Shortcuts.General.Close Window"
+    },
+    {
+        "info": "Collect all the media for the selected item in one location (on one storage device)",
+        "name": "Command Set Shortcuts.General.Consolidate Library/Project/Event/Clip Media"
+    },
+    {
+        "info": "Connect a new caption at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Marking.Add Caption"
+    },
+    {
+        "info": "Connect the audio from the selection to the primary storyline",
+        "name": "Command Set Shortcuts.Editing.Connect Audio only to Primary Storyline"
+    },
+    {
+        "info": "Connect the audio from the selection to the primary storyline, aligning the selection’s end point with the skimmer or playhead",
+        "name": "Command Set Shortcuts.Editing.Connect Audio only to Primary Storyline - Backtimed"
+    },
+    {
+        "info": "Connect the default lower third to the primary storyline",
+        "name": "Command Set Shortcuts.Effects.Connect Default Lower Third"
+    },
+    {
+        "info": "Connect the default title to the primary storyline",
+        "name": "Command Set Shortcuts.Effects.Connect Default Title"
+    },
+    {
+        "info": "Connect the selection to the primary storyline",
+        "name": "Command Set Shortcuts.Editing.Connect to Primary Storyline"
+    },
+    {
+        "info": "Connect the selection to the primary storyline, aligning the selection’s end point with the skimmer or playhead",
+        "name": "Command Set Shortcuts.Editing.Connect to Primary Storyline - Backtimed"
+    },
+    {
+        "info": "Connect the video from the selection to the primary storyline",
+        "name": "Command Set Shortcuts.Editing.Connect Video only to Primary Storyline"
+    },
+    {
+        "info": "Connect the video from the selection to the primary storyline, aligning the selection’s end point with the skimmer or playhead",
+        "name": "Command Set Shortcuts.Editing.Connect Video only to Primary Storyline - Backtimed"
+    },
+    {
+        "info": "Connect with Selected Media Audio Backtimed",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media Audio Backtimed"
+    },
+    {
+        "info": "Connect with Selected Media Backtimed",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media Backtimed"
+    },
+    {
+        "info": "Connect with Selected Media Video Backtimed",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media Video Backtimed"
+    },
+    {
+        "info": "Connect with selected media audio",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media Audio"
+    },
+    {
+        "info": "Connect with selected media video",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media Video"
+    },
+    {
+        "info": "Connect with selected media",
+        "name": "Command Set Shortcuts.General.Connect with Selected Media"
+    },
+    {
+        "info": "Copy Selected Keyframes",
+        "name": "Command Set Shortcuts.General.Copy Keyframes"
+    },
+    {
+        "info": "Copy the color correction from the clip three clips back and apply it to the selected clip ",
+        "name": "Command Set Shortcuts.Effects.Apply Color Correction from Three Clips Back"
+    },
+    {
+        "info": "Copy the color correction from the clip two clips back and apply it to the selected clip ",
+        "name": "Command Set Shortcuts.Effects.Apply Color Correction from Two Clips Back"
+    },
+    {
+        "info": "Copy the color correction from the previous clip and apply it to the selected clip",
+        "name": "Command Set Shortcuts.Effects.Apply Color Correction from Previous Clip"
+    },
+    {
+        "info": "Copy the selected effects and their settings",
+        "name": "Command Set Shortcuts.Effects.Copy Effects"
+    },
+    {
+        "info": "Copy the selection",
+        "name": "Command Set Shortcuts.Editing.Copy"
+    },
+    {
+        "info": "Copy the timecode at the playhead or skimmer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Copy Timecode"
+    },
+    {
+        "info": "Copy the timecode at the playhead",
+        "name": "Command Set Shortcuts.Playback/Navigation.Copy Playhead Timecode"
+    },
+    {
+        "info": "Create a 2-second hold segment",
+        "name": "Command Set Shortcuts.Effects.Retime: Hold"
+    },
+    {
+        "info": "Create a new Event",
+        "name": "Command Set Shortcuts.Organization.New Event…"
+    },
+    {
+        "info": "Create a new Keyword Collection",
+        "name": "Command Set Shortcuts.Marking.New Keyword Collection"
+    },
+    {
+        "info": "Create a new Library Smart Collection or a new Smart Collection",
+        "name": "Command Set Shortcuts.Marking.New Smart Collection"
+    },
+    {
+        "info": "Create a new compound clip (if there’s no selection, create an empty compound clip)",
+        "name": "Command Set Shortcuts.Editing.New Compound Clip…"
+    },
+    {
+        "info": "Create a new folder",
+        "name": "Command Set Shortcuts.Organization.New Folder"
+    },
+    {
+        "info": "Create a new library",
+        "name": "Command Set Shortcuts.General.New Library…"
+    },
+    {
+        "info": "Create a new multicam clip",
+        "name": "Command Set Shortcuts.Editing.New Multicam Clip…"
+    },
+    {
+        "info": "Create a new naming preset",
+        "name": "Command Set Shortcuts.General.Add Custom Name…"
+    },
+    {
+        "info": "Create a new project",
+        "name": "Command Set Shortcuts.General.New Project"
+    },
+    {
+        "info": "Create a rewind segment from the selection, and set the rewind speed to 100 percent",
+        "name": "Command Set Shortcuts.Effects.Retime: Rewind"
+    },
+    {
+        "info": "Create a rewind segment from the selection, and set the rewind speed to four times the normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Rewind 4x"
+    },
+    {
+        "info": "Create a rewind segment from the selection, and set the rewind speed to twice the normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Rewind 2x"
+    },
+    {
+        "info": "Create a storyline from a selection of connected clips",
+        "name": "Command Set Shortcuts.Editing.Create Storyline"
+    },
+    {
+        "info": "Create an audition and replace the Timeline clip with the current selection",
+        "name": "Command Set Shortcuts.Editing.Audition: Replace and Add to Audition"
+    },
+    {
+        "info": "Create an audition from the selection",
+        "name": "Command Set Shortcuts.Editing.Create Audition"
+    },
+    {
+        "info": "Create an audition with a Timeline clip and a duplicate version of the clip, including applied effects",
+        "name": "Command Set Shortcuts.Editing.Audition: Duplicate as Audition"
+    },
+    {
+        "info": "Create an instant replay segment from the selection",
+        "name": "Command Set Shortcuts.Effects.Retime: Instant Replay"
+    },
+    {
+        "info": "Custom Speed…",
+        "name": "Command Set Shortcuts.General.Custom Speed…"
+    },
+    {
+        "info": "Cut Selected Keyframes",
+        "name": "Command Set Shortcuts.General.Cut Keyframes"
+    },
+    {
+        "info": "Cut all clips at the skimmer or playhead location",
+        "name": "Command Set Shortcuts.Editing.Blade All"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 1 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 1"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 10 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 10"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 11 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 11"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 12 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 12"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 13 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 13"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 14 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 14"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 15 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 15"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 16 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 16"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 2 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 2"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 3 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 3"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 4 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 4"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 5 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 5"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 6 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 6"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 7 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 7"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 8 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 8"
+    },
+    {
+        "info": "Cut and switch the multicam clip to angle 9 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Cut and Switch to Viewer Angle 9"
+    },
+    {
+        "info": "Cut the selection",
+        "name": "Command Set Shortcuts.Editing.Cut"
+    },
+    {
+        "info": "Cut the topmost clip under the skimmer or playhead, or cut all selected clips",
+        "name": "Command Set Shortcuts.Editing.Blade"
+    },
+    {
+        "info": "Decrease the Browser clip height",
+        "name": "Command Set Shortcuts.View.Decrease Clip Height"
+    },
+    {
+        "info": "Decrease the size of audio waveforms for Timeline clips",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Decrease Waveform Size"
+    },
+    {
+        "info": "Delete Selected Keyframes",
+        "name": "Command Set Shortcuts.General.Delete Keyframes"
+    },
+    {
+        "info": "Delete all of the markers in the selection",
+        "name": "Command Set Shortcuts.Marking.Delete Markers In Selection"
+    },
+    {
+        "info": "Delete generated files for the selected library, event, project, or clip",
+        "name": "Command Set Shortcuts.General.Delete Generated Library/Event/Project/Clip Files"
+    },
+    {
+        "info": "Delete the Timeline selection, reject the Browser selection, or remove a multicam through edit",
+        "name": "Command Set Shortcuts.Editing.Delete"
+    },
+    {
+        "info": "Delete the selected marker",
+        "name": "Command Set Shortcuts.Marking.Delete Marker"
+    },
+    {
+        "info": "Delete the selection, reanchoring any non-selected anchors.",
+        "name": "Command Set Shortcuts.Editing.Delete Selection Only"
+    },
+    {
+        "info": "Depending on the clip name setting, display Timeline clips with clip names, role names, or active angle names only",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Clip Labels Only"
+    },
+    {
+        "info": "Deselect all selected items",
+        "name": "Command Set Shortcuts.Editing.Deselect All"
+    },
+    {
+        "info": "Display Timeline clips with audio waveforms and video filmstrips of equal size",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Waveforms and Filmstrips"
+    },
+    {
+        "info": "Display Timeline clips with large audio waveforms and small filmstrips",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Large Waveforms"
+    },
+    {
+        "info": "Display Timeline clips with large audio waveforms only",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Waveforms Only"
+    },
+    {
+        "info": "Display Timeline clips with large filmstrips only",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Filmstrips Only"
+    },
+    {
+        "info": "Display Timeline clips with small audio waveforms and large filmstrips",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Large Filmstrips"
+    },
+    {
+        "info": "Dissolve the audition and replace it with the audition pick",
+        "name": "Command Set Shortcuts.Editing.Finalize Audition"
+    },
+    {
+        "info": "Duplicate the project with new parent Multicam and Compound clips that are independent of the original project",
+        "name": "Command Set Shortcuts.General.Snapshot Project"
+    },
+    {
+        "info": "Duplicate the selected audition clip without applied effects",
+        "name": "Command Set Shortcuts.Editing.Audition: Duplicate from Original"
+    },
+    {
+        "info": "Duplicate the selected project and modify the new project’s settings",
+        "name": "Command Set Shortcuts.General.Duplicate Project As…"
+    },
+    {
+        "info": "Duplicate the selected project or clip",
+        "name": "Command Set Shortcuts.Editing.Duplicate"
+    },
+    {
+        "info": "Edit the caption at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Marking.Edit Caption"
+    },
+    {
+        "info": "Edit the next marker",
+        "name": "Command Set Shortcuts.General.Edit Next Marker"
+    },
+    {
+        "info": "Edit the previous marker",
+        "name": "Command Set Shortcuts.General.Edit Previous Marker"
+    },
+    {
+        "info": "Edit the search criteria for the selected Smart Collection",
+        "name": "Command Set Shortcuts.Organization.Edit Smart Collection"
+    },
+    {
+        "info": "Enable or disable playback for the selection",
+        "name": "Command Set Shortcuts.Editing.Enable/Disable Clip"
+    },
+    {
+        "info": "Enter a negative timecode value to move the playhead back, move a clip earlier, or trim a range or clip, depending on your selection",
+        "name": "Command Set Shortcuts.Playback/Navigation.Negative Timecode Entry"
+    },
+    {
+        "info": "Enter a positive timecode value to move the playhead forward, move a clip later, or trim a range or clip, depending on your selection",
+        "name": "Command Set Shortcuts.Playback/Navigation.Positive Timecode Entry"
+    },
+    {
+        "info": "Exit from the full screen player",
+        "name": "Command Set Shortcuts.Playback/Navigation.Exit Full Screen"
+    },
+    {
+        "info": "Expand or collapse audio components for the selection in the Timeline",
+        "name": "Command Set Shortcuts.Editing.Expand/Collapse Audio Components"
+    },
+    {
+        "info": "Export a Final Cut Pro X XML file for a selected project or event",
+        "name": "Command Set Shortcuts.General.Export Final Cut Pro X XML"
+    },
+    {
+        "info": "Export using the default share destination",
+        "name": "Command Set Shortcuts.Share.Export Using Default Share Destination…"
+    },
+    {
+        "info": "Exports sidecar files for each selected closed caption and subtitle format",
+        "name": "Command Set Shortcuts.General.Export Captions…"
+    },
+    {
+        "info": "Extend the selected edit point to the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Extend Edit"
+    },
+    {
+        "info": "Extract captions from the selected clip and connect them to the clip",
+        "name": "Command Set Shortcuts.Marking.Extract Captions"
+    },
+    {
+        "info": "Find and replace text in title clips",
+        "name": "Command Set Shortcuts.General.Find and Replace Title Text"
+    },
+    {
+        "info": "For audio/video clips in expanded view, select the right edge of the audio edit point",
+        "name": "Command Set Shortcuts.Editing.Select Right Audio Edge"
+    },
+    {
+        "info": "For the selected clip or library, reveal the source file in the Finder",
+        "name": "Command Set Shortcuts.General.Reveal in Finder"
+    },
+    {
+        "info": "Go To Photos and Audio in Browser",
+        "name": "Command Set Shortcuts.Windows.Go To Photos and Audio"
+    },
+    {
+        "info": "Go To Titles and Generators in Browser",
+        "name": "Command Set Shortcuts.Windows.Go To Titles and Generators"
+    },
+    {
+        "info": "Go back one level in the Timeline history",
+        "name": "Command Set Shortcuts.Playback/Navigation.Timeline History Back"
+    },
+    {
+        "info": "Go forward one level in the Timeline history",
+        "name": "Command Set Shortcuts.Playback/Navigation.Timeline History Forward"
+    },
+    {
+        "info": "Go to the Next Keyframe of the Selected Effect",
+        "name": "Command Set Shortcuts.General.Next Keyframe"
+    },
+    {
+        "info": "Go to the Previous Keyframe of the Selected Effect",
+        "name": "Command Set Shortcuts.General.Previous Keyframe"
+    },
+    {
+        "info": "Go to the next Inspector",
+        "name": "Command Set Shortcuts.Windows.Next Inspector Tab"
+    },
+    {
+        "info": "Go to the next bank of multicam angles",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Next Bank"
+    },
+    {
+        "info": "Go to the next color correction pane",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Go to the Next Pane"
+    },
+    {
+        "info": "Go to the next item (in the Browser) or the next edit point (in the Timeline)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Down"
+    },
+    {
+        "info": "Go to the next item (in the Browser) or the next edit point (in the Timeline)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Next Clip"
+    },
+    {
+        "info": "Go to the previous Inspector",
+        "name": "Command Set Shortcuts.Windows.Previous Inspector Tab"
+    },
+    {
+        "info": "Go to the previous bank of multicam angles",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Previous Bank"
+    },
+    {
+        "info": "Go to the previous color correction pane",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Go to the Previous Pane"
+    },
+    {
+        "info": "Go to the previous item (in the Browser) or the previous edit point (in the Timeline)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Previous Clip"
+    },
+    {
+        "info": "Go to the previous item (in the Browser) or the previous edit point (in the Timeline)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Up"
+    },
+    {
+        "info": "Hide Final Cut Pro",
+        "name": "Command Set Shortcuts.Application.Hide Application"
+    },
+    {
+        "info": "Hide Keyword Editor",
+        "name": "Command Set Shortcuts.General.Hide Keyword Editor"
+    },
+    {
+        "info": "Hide all applications except Final Cut Pro",
+        "name": "Command Set Shortcuts.Application.Hide Other Applications"
+    },
+    {
+        "info": "Import a Final Cut Pro X XML file",
+        "name": "Command Set Shortcuts.General.Import Final Cut Pro X XML"
+    },
+    {
+        "info": "Import iMovie iOS Projects",
+        "name": "Command Set Shortcuts.General.Import iMovie iOS Projects"
+    },
+    {
+        "info": "Import media from a device, camera, or archive",
+        "name": "Command Set Shortcuts.General.Import Media"
+    },
+    {
+        "info": "Imports captions or subtitles from a sidecar file and inserts them into the timeline",
+        "name": "Command Set Shortcuts.General.Import Captions…"
+    },
+    {
+        "info": "In the Browser, add the next clip to the selection",
+        "name": "Command Set Shortcuts.Editing.Extend Selection Down"
+    },
+    {
+        "info": "In the Browser, add the previous clip to the selection",
+        "name": "Command Set Shortcuts.Editing.Extend Selection Up"
+    },
+    {
+        "info": "In the Browser, show or hide colored bars indicating marked ranges in clips",
+        "name": "Command Set Shortcuts.Marking.Show/Hide Marked Ranges"
+    },
+    {
+        "info": "Increase the Browser clip height",
+        "name": "Command Set Shortcuts.View.Increase Clip Height"
+    },
+    {
+        "info": "Increase the size of audio waveforms for Timeline clips",
+        "name": "Command Set Shortcuts.View.Clip Appearance: Increase Waveform Size"
+    },
+    {
+        "info": "Insert a freeze frame at the playhead or skimmer location in the Timeline, or connect a freeze frame from the skimmer or playhead location in the Event to the playhead location in the Timeline",
+        "name": "Command Set Shortcuts.Editing.Insert/Connect Freeze Frame"
+    },
+    {
+        "info": "Insert a gap clip at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Insert Gap"
+    },
+    {
+        "info": "Insert the Clipboard contents at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Paste Insert at Playhead"
+    },
+    {
+        "info": "Insert the audio from the selection at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Insert Audio only"
+    },
+    {
+        "info": "Insert the default generator at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Insert Default Generator"
+    },
+    {
+        "info": "Insert the selection at the skimmer or playhead position ",
+        "name": "Command Set Shortcuts.Editing.Insert"
+    },
+    {
+        "info": "Insert the video from the selection at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Insert Video only"
+    },
+    {
+        "info": "Join selected items into a single clip or caption",
+        "name": "Command Set Shortcuts.Editing.Join Clips or Captions"
+    },
+    {
+        "info": "Lift the selection from the storyline and connect it to the resulting gap clips",
+        "name": "Command Set Shortcuts.Editing.Lift from Storyline"
+    },
+    {
+        "info": "Lower the audio volume by 1 dB",
+        "name": "Command Set Shortcuts.Editing.Lower Volume 1 dB"
+    },
+    {
+        "info": "Make a new parent clip in the event for the selected compound clip in the timeline",
+        "name": "Command Set Shortcuts.Editing.Reference New Parent Clip"
+    },
+    {
+        "info": "Make the Audio component a connected clip",
+        "name": "Command Set Shortcuts.General.Detach Audio"
+    },
+    {
+        "info": "Make the Blade tool active",
+        "name": "Command Set Shortcuts.Tools.Blade Tool"
+    },
+    {
+        "info": "Make the Color Inspector active",
+        "name": "Command Set Shortcuts.Windows.Go to Color Inspector"
+    },
+    {
+        "info": "Make the Comparison Viewer active (the active viewer is output to external devices)",
+        "name": "Command Set Shortcuts.General.Go to Comparison Viewer"
+    },
+    {
+        "info": "Make the Crop tool active and display onscreen controls for the selected clip or the top most clip under the playhead",
+        "name": "Command Set Shortcuts.Tools.Crop Tool"
+    },
+    {
+        "info": "Make the Distort tool active and display onscreen controls for the selected clip or the top most clip under the playhead",
+        "name": "Command Set Shortcuts.Tools.Distort Tool"
+    },
+    {
+        "info": "Make the Event Viewer active",
+        "name": "Command Set Shortcuts.General.Go to Event Viewer"
+    },
+    {
+        "info": "Make the Hand tool active",
+        "name": "Command Set Shortcuts.Tools.Hand Tool"
+    },
+    {
+        "info": "Make the Library Browser active",
+        "name": "Command Set Shortcuts.Windows.Go to Library Browser"
+    },
+    {
+        "info": "Make the Position tool active",
+        "name": "Command Set Shortcuts.Tools.Position Tool"
+    },
+    {
+        "info": "Make the Range Selection tool active",
+        "name": "Command Set Shortcuts.Marking.Range Selection Tool"
+    },
+    {
+        "info": "Make the Select tool active",
+        "name": "Command Set Shortcuts.Tools.Select Tool"
+    },
+    {
+        "info": "Make the Timeline active",
+        "name": "Command Set Shortcuts.Windows.Go to Timeline"
+    },
+    {
+        "info": "Make the Transform tool active and display onscreen controls for the selected clip or the top most clip under the playhead",
+        "name": "Command Set Shortcuts.Tools.Transform Tool"
+    },
+    {
+        "info": "Make the Trim tool active",
+        "name": "Command Set Shortcuts.Tools.Trim Tool"
+    },
+    {
+        "info": "Make the Viewer active",
+        "name": "Command Set Shortcuts.Windows.Go to Viewer"
+    },
+    {
+        "info": "Make the Zoom tool active",
+        "name": "Command Set Shortcuts.Tools.Zoom Tool"
+    },
+    {
+        "info": "Make the current inspector active",
+        "name": "Command Set Shortcuts.Windows.Go to Inspector"
+    },
+    {
+        "info": "Match color between clips",
+        "name": "Command Set Shortcuts.Effects.Match Color…"
+    },
+    {
+        "info": "Match the sound between clips",
+        "name": "Command Set Shortcuts.Effects.Match Audio…"
+    },
+    {
+        "info": "Merge the selected Events",
+        "name": "Command Set Shortcuts.Organization.Merge Events"
+    },
+    {
+        "info": "Minimize Final Cut Pro",
+        "name": "Command Set Shortcuts.Application.Minimize"
+    },
+    {
+        "info": "Mirror the display of the connected VR headset in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Mirror VR Headset"
+    },
+    {
+        "info": "Modify an existing naming preset",
+        "name": "Command Set Shortcuts.General.Edit Custom Names…"
+    },
+    {
+        "info": "Move playhead position to pasted timecode",
+        "name": "Command Set Shortcuts.Playback/Navigation.Paste Timecode"
+    },
+    {
+        "info": "Move the playhead and add the next topmost clip in the same role to the selection",
+        "name": "Command Set Shortcuts.Editing.Extend Selection to Next Clip"
+    },
+    {
+        "info": "Move the playhead and add the previous topmost clip in the same role to the selection",
+        "name": "Command Set Shortcuts.Editing.Extend Selection to Previous Clip"
+    },
+    {
+        "info": "Move the playhead and the selection to the next topmost clip in the same role",
+        "name": "Command Set Shortcuts.Editing.Select Next Clip"
+    },
+    {
+        "info": "Move the playhead and the selection to the previous topmost clip in the same role",
+        "name": "Command Set Shortcuts.Editing.Select Previous Clip"
+    },
+    {
+        "info": "Move the playhead back 10 frames",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go Back 10 Frames"
+    },
+    {
+        "info": "Move the playhead by entering a timecode value",
+        "name": "Command Set Shortcuts.Editing.Move Playhead Position"
+    },
+    {
+        "info": "Move the playhead forward 10 frames",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go Forward 10 Frames"
+    },
+    {
+        "info": "Move the playhead to the beginning of the Timeline or first clip in the Browser",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Beginning"
+    },
+    {
+        "info": "Move the playhead to the beginning of the nearest range",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Range Start"
+    },
+    {
+        "info": "Move the playhead to the end of the Timeline or last clip in the Browser",
+        "name": "Command Set Shortcuts.General.Go to End"
+    },
+    {
+        "info": "Move the playhead to the end of the nearest range",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Range End"
+    },
+    {
+        "info": "Move the playhead to the next audio subframe",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Next Subframe"
+    },
+    {
+        "info": "Move the playhead to the next edit point in the Timeline",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Next Edit"
+    },
+    {
+        "info": "Move the playhead to the next field",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Next Field"
+    },
+    {
+        "info": "Move the playhead to the next frame",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Next Frame"
+    },
+    {
+        "info": "Move the playhead to the next marker",
+        "name": "Command Set Shortcuts.Playback/Navigation.Next Marker"
+    },
+    {
+        "info": "Move the playhead to the previous audio subframe",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Previous Subframe"
+    },
+    {
+        "info": "Move the playhead to the previous edit point in the Timeline",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Previous Edit"
+    },
+    {
+        "info": "Move the playhead to the previous field",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Previous Field"
+    },
+    {
+        "info": "Move the playhead to the previous frame",
+        "name": "Command Set Shortcuts.Playback/Navigation.Go to Previous Frame"
+    },
+    {
+        "info": "Move the playhead to the previous marker",
+        "name": "Command Set Shortcuts.Playback/Navigation.Previous Marker"
+    },
+    {
+        "info": "Move the selection to the Finder Trash",
+        "name": "Command Set Shortcuts.General.Move to Trash"
+    },
+    {
+        "info": "Moves the Highlights Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Highlights (Angle)",
+        "range": [
+            0,
+            359
+        ],
+        "reset": 250,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Highlights Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Highlights (Percentage)",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Highlights Color Wheel Horizontally",
+        "name": "Color Wheels.Highlights.Highlights Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Highlights Color Wheel Vertically",
+        "name": "Color Wheels.Highlights.Highlights Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Highlights Exposure Puck in the Color Board",
+        "name": "Color Board.Exposure.Exposure Highlights",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Highlights Saturation Puck in the Color Board",
+        "name": "Color Board.Saturation.Saturation Highlights",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Master Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Master (Angle)",
+        "range": [
+            0,
+            359
+        ],
+        "reset": 110,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Master Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Master (Percentage)",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Master Color Wheel Horizontally",
+        "name": "Color Wheels.Master.Master Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Master Color Wheel Vertically",
+        "name": "Color Wheels.Master.Master Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Master Exposure Puck in the Color Board",
+        "name": "Color Board.Exposure.Exposure Master",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Master Saturation Puck in the Color Board",
+        "name": "Color Board.Saturation.Saturation Master",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Midtones Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Midtones (Angle)",
+        "range": [
+            0,
+            359
+        ],
+        "reset": 215,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Midtones Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Midtones (Percentage)",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Midtones Color Wheel Horizontally",
+        "name": "Color Wheels.Midtones.Midtones Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Midtones Color Wheel Vertically",
+        "name": "Color Wheels.Midtones.Midtones Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Midtones Exposure Puck in the Color Board",
+        "name": "Color Board.Exposure.Exposure Midtones",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Midtones Saturation Puck in the Color Board",
+        "name": "Color Board.Saturation.Saturation Midtones",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Shadows Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Shadows (Angle)",
+        "range": [
+            0,
+            359
+        ],
+        "reset": 180,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Shadows Color Puck in the Color Board",
+        "name": "Color Board.Color.Color Shadows (Percentage)",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Shadows Color Wheel Horizontally",
+        "name": "Color Wheels.Shadows.Shadows Horizontal",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Shadows Color Wheel Vertically",
+        "name": "Color Wheels.Shadows.Shadows Vertical",
+        "range": [
+            -255,
+            255
+        ],
+        "reset": 0,
+        "step": 0.001666666667,
+        "stepMin": 0.001666666667
+    },
+    {
+        "info": "Moves the Shadows Exposure Puck in the Color Board",
+        "name": "Color Board.Exposure.Exposure Shadows",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Moves the Shadows Saturation Puck in the Color Board",
+        "name": "Color Board.Saturation.Saturation Shadows",
+        "range": [
+            -100,
+            100
+        ],
+        "reset": 0,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Narrow the field of view in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Decrease Field of View"
+    },
+    {
+        "info": "Nudge the selected audio edit point left by 10 subframes, creating a split edit",
+        "name": "Command Set Shortcuts.Editing.Nudge Audio Subframe Left Many"
+    },
+    {
+        "info": "Nudge the selected audio edit point left by one subframe, creating a split edit",
+        "name": "Command Set Shortcuts.Editing.Nudge Audio Subframe Left"
+    },
+    {
+        "info": "Nudge the selected audio edit point right by 10 subframes, creating a split edit",
+        "name": "Command Set Shortcuts.Editing.Nudge Audio Subframe Right Many"
+    },
+    {
+        "info": "Nudge the selected audio edit point right by one subframe, creating a split edit",
+        "name": "Command Set Shortcuts.Editing.Nudge Audio Subframe Right"
+    },
+    {
+        "info": "Nudge the selected color correction control down",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Nudge Control Down"
+    },
+    {
+        "info": "Nudge the selected color correction control left",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Nudge Control Left"
+    },
+    {
+        "info": "Nudge the selected color correction control right",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Nudge Control Right"
+    },
+    {
+        "info": "Nudge the selected color correction control up",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Nudge Control Up"
+    },
+    {
+        "info": "Nudge the selected marker one frame to the left (on audio-only clips, nudge by one subframe)",
+        "name": "Command Set Shortcuts.General.Nudge Marker Left"
+    },
+    {
+        "info": "Nudge the selected marker one frame to the right (on audio-only clips, nudge by one subframe)",
+        "name": "Command Set Shortcuts.General.Nudge Marker Right"
+    },
+    {
+        "info": "Nudge the selection 10 units to the left",
+        "name": "Command Set Shortcuts.Editing.Nudge Left Many"
+    },
+    {
+        "info": "Nudge the selection 10 units to the right",
+        "name": "Command Set Shortcuts.Editing.Nudge Right Many"
+    },
+    {
+        "info": "Nudge the selection down 10 units",
+        "name": "Command Set Shortcuts.Editing.Nudge Down Many"
+    },
+    {
+        "info": "Nudge the selection down one unit",
+        "name": "Command Set Shortcuts.Editing.Nudge Down"
+    },
+    {
+        "info": "Nudge the selection one unit to the left",
+        "name": "Command Set Shortcuts.Editing.Nudge Left"
+    },
+    {
+        "info": "Nudge the selection one unit to the right",
+        "name": "Command Set Shortcuts.Editing.Nudge Right"
+    },
+    {
+        "info": "Nudge the selection up 10 units",
+        "name": "Command Set Shortcuts.Editing.Nudge Up Many"
+    },
+    {
+        "info": "Nudge the selection up one unit",
+        "name": "Command Set Shortcuts.Editing.Nudge Up"
+    },
+    {
+        "info": "Open a new or existing library",
+        "name": "Command Set Shortcuts.General.Open Library"
+    },
+    {
+        "info": "Open the Command Editor",
+        "name": "Command Set Shortcuts.Application.Keyboard Customization"
+    },
+    {
+        "info": "Open the Final Cut Pro Preferences window",
+        "name": "Command Set Shortcuts.Application.Preferences"
+    },
+    {
+        "info": "Open the Properties inspector for the current library",
+        "name": "Command Set Shortcuts.General.Library Properties"
+    },
+    {
+        "info": "Open the Properties inspector for the current project",
+        "name": "Command Set Shortcuts.General.Project Properties"
+    },
+    {
+        "info": "Open the Record Voiceover window",
+        "name": "Command Set Shortcuts.Windows.Record Voiceover"
+    },
+    {
+        "info": "Open the Transcoding Media window",
+        "name": "Command Set Shortcuts.General.Transcode Media…"
+    },
+    {
+        "info": "Open the role editor to add roles and subroles to the library",
+        "name": "Command Set Shortcuts.Marking.Edit Roles…"
+    },
+    {
+        "info": "Open the selected audition",
+        "name": "Command Set Shortcuts.Editing.Open Audition"
+    },
+    {
+        "info": "Open the selected clip in the Timeline, or open the selected multicam clip in the Angle Editor",
+        "name": "Command Set Shortcuts.Editing.Open Clip"
+    },
+    {
+        "info": "Open the selected clip or project in Compressor to assemble an IMF Package",
+        "name": "Command Set Shortcuts.General.Send IMF Package to Compressor"
+    },
+    {
+        "info": "Open the selected clip or project in Compressor to assemble an iTunes Store Package",
+        "name": "Command Set Shortcuts.General.Send iTMS Package to Compressor"
+    },
+    {
+        "info": "Open the selected project or clip in Compressor",
+        "name": "Command Set Shortcuts.Share.Send to Compressor"
+    },
+    {
+        "info": "Open the window for the current or next marker",
+        "name": "Command Set Shortcuts.General.Modify Marker"
+    },
+    {
+        "info": "Overwrite at the skimmer or playhead position in the primary storyline",
+        "name": "Command Set Shortcuts.Editing.Overwrite to Primary Storyline"
+    },
+    {
+        "info": "Overwrite at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Overwrite"
+    },
+    {
+        "info": "Overwrite audio at the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Overwrite Audio only"
+    },
+    {
+        "info": "Overwrite audio only, aligning the end point with the skimmer or playhead",
+        "name": "Command Set Shortcuts.Editing.Overwrite Audio only - Backtimed"
+    },
+    {
+        "info": "Overwrite from the skimmer or playhead position back",
+        "name": "Command Set Shortcuts.Editing.Overwrite - Backtimed"
+    },
+    {
+        "info": "Overwrite video only",
+        "name": "Command Set Shortcuts.Editing.Overwrite Video only"
+    },
+    {
+        "info": "Overwrite video only, aligning the end point with the skimmer or playhead",
+        "name": "Command Set Shortcuts.Editing.Overwrite Video only - Backtimed"
+    },
+    {
+        "info": "Pan left in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Pan Left"
+    },
+    {
+        "info": "Pan right in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Pan Right"
+    },
+    {
+        "info": "Paste Selected Keyframes",
+        "name": "Command Set Shortcuts.General.Paste Keyframes"
+    },
+    {
+        "info": "Paste effects and their settings to the selection",
+        "name": "Command Set Shortcuts.Effects.Paste Effects"
+    },
+    {
+        "info": "Paste selected attributes and their settings to the selection",
+        "name": "Command Set Shortcuts.Effects.Paste Attributes…"
+    },
+    {
+        "info": "Paste the selection and connect it to the primary storyline",
+        "name": "Command Set Shortcuts.Editing.Paste as Connected"
+    },
+    {
+        "info": "Paste the selection and connect it to the primary storyline",
+        "name": "Command Set Shortcuts.General.Paste as Connected"
+    },
+    {
+        "info": "Pick the next object in the stack",
+        "name": "Command Set Shortcuts.General.Pick the next object in the Audition"
+    },
+    {
+        "info": "Pick the previous object in the stack",
+        "name": "Command Set Shortcuts.General.Pick the previous object in the Audition"
+    },
+    {
+        "info": "Play around the playhead position",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Around"
+    },
+    {
+        "info": "Play at 16 times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 16"
+    },
+    {
+        "info": "Play at 32 times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 32"
+    },
+    {
+        "info": "Play at eight times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 8"
+    },
+    {
+        "info": "Play at four times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 4"
+    },
+    {
+        "info": "Play at normal (100 percent) speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 1"
+    },
+    {
+        "info": "Play at twice the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate 2"
+    },
+    {
+        "info": "Play forward (press L multiple times to increase the playback speed)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Forward"
+    },
+    {
+        "info": "Play from the beginning",
+        "name": "Command Set Shortcuts.General.Play From Beginning"
+    },
+    {
+        "info": "Play from the playhead position",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play from Playhead"
+    },
+    {
+        "info": "Play from the playhead to the end of the selection",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play to End"
+    },
+    {
+        "info": "Play full screen from the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Full Screen"
+    },
+    {
+        "info": "Play in reverse (press J multiple times to increase the reverse playback speed)",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Reverse"
+    },
+    {
+        "info": "Play in reverse at 16 times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -16"
+    },
+    {
+        "info": "Play in reverse at 32 times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -32"
+    },
+    {
+        "info": "Play in reverse at eight times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -8"
+    },
+    {
+        "info": "Play in reverse at four times the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -4"
+    },
+    {
+        "info": "Play in reverse at normal (100 percent) speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -1"
+    },
+    {
+        "info": "Play in reverse at twice the normal speed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Rate -2"
+    },
+    {
+        "info": "Play in reverse",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Reverse"
+    },
+    {
+        "info": "Play the clip from the beginning",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play From Beginning of Clip"
+    },
+    {
+        "info": "Play the pick in context in the Timeline",
+        "name": "Command Set Shortcuts.Playback/Navigation.Audition: Preview"
+    },
+    {
+        "info": "Play the selection",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play Selection"
+    },
+    {
+        "info": "Quit Final Cut Pro",
+        "name": "Command Set Shortcuts.Application.Quit"
+    },
+    {
+        "info": "Raise the audio volume by 1 dB",
+        "name": "Command Set Shortcuts.Editing.Raise Volume 1 dB"
+    },
+    {
+        "info": "Rate the Browser selection as Favorite ",
+        "name": "Command Set Shortcuts.Marking.Favorite"
+    },
+    {
+        "info": "Redo the last command",
+        "name": "Command Set Shortcuts.Application.Redo Changes"
+    },
+    {
+        "info": "Reimport from Camera/Archive…",
+        "name": "Command Set Shortcuts.General.Reimport from Camera/Archive…"
+    },
+    {
+        "info": "Reject the Browser selection(if there is no selection Reject the clip under the skimmer or playhead)",
+        "name": "Command Set Shortcuts.Marking.Reject"
+    },
+    {
+        "info": "Relink media files for the selected clips, projects, or Events",
+        "name": "Command Set Shortcuts.General.Relink Files…"
+    },
+    {
+        "info": "Relink proxy media files for the selected clips, projects, or Events",
+        "name": "Command Set Shortcuts.General.Relink Proxy Files…"
+    },
+    {
+        "info": "Remove all keywords from the Browser selection",
+        "name": "Command Set Shortcuts.Marking.Remove All Keywords From Selection"
+    },
+    {
+        "info": "Remove analysis keywords from the selection",
+        "name": "Command Set Shortcuts.General.Remove Analysis Keywords"
+    },
+    {
+        "info": "Remove audio fades from selected clips",
+        "name": "Command Set Shortcuts.General.Remove Audio Fades"
+    },
+    {
+        "info": "Remove effects from the selection",
+        "name": "Command Set Shortcuts.Effects.Remove Effects"
+    },
+    {
+        "info": "Remove ratings from the selection",
+        "name": "Command Set Shortcuts.Marking.Unrate"
+    },
+    {
+        "info": "Remove selected attributes from the selection",
+        "name": "Command Set Shortcuts.Effects.Remove Attributes…"
+    },
+    {
+        "info": "Replace the selected Sequence clip with the selected Organizer clip aligned to their Playhead locations",
+        "name": "Command Set Shortcuts.General.Replace At Playhead"
+    },
+    {
+        "info": "Replace the selected Timeline clip with a gap clip",
+        "name": "Command Set Shortcuts.Editing.Replace with Gap"
+    },
+    {
+        "info": "Replace the selected clip in the Timeline with the Browser selection",
+        "name": "Command Set Shortcuts.Editing.Replace"
+    },
+    {
+        "info": "Replace the selected clip in the Timeline with the Browser selection, starting from its end point",
+        "name": "Command Set Shortcuts.Editing.Replace From End"
+    },
+    {
+        "info": "Replace the selected clip in the Timeline with the Browser selection, starting from its start point",
+        "name": "Command Set Shortcuts.Editing.Replace From Start"
+    },
+    {
+        "info": "Reset the controls in the current color correction pane, the active color wheel, or the active color curve",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Reset Current Effect Pane"
+    },
+    {
+        "info": "Reset the current color correction effect",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Reset All Controls"
+    },
+    {
+        "info": "Reset the field of view in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Reset Field of View"
+    },
+    {
+        "info": "Reset the point of view in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Reset Angle"
+    },
+    {
+        "info": "Reset the selected color correction control",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Reset Selected Control"
+    },
+    {
+        "info": "Reset the selection to play forward at normal (100 percent) speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Reset"
+    },
+    {
+        "info": "Reset volume of clip selection(s) or range to 0dB",
+        "name": "Command Set Shortcuts.Editing.Reset Volume (0db)"
+    },
+    {
+        "info": "Resets the Highlights Wheel Position",
+        "name": "Color Wheels.Highlights.Highlights Reset"
+    },
+    {
+        "info": "Resets the Highlights Wheel Position, Saturation and Brightness",
+        "name": "Color Wheels.Highlights.Highlights Reset All"
+    },
+    {
+        "info": "Resets the Master Wheel Position",
+        "name": "Color Wheels.Master.Master Reset"
+    },
+    {
+        "info": "Resets the Master Wheel Position, Saturation and Brightness",
+        "name": "Color Wheels.Master.Master Reset All"
+    },
+    {
+        "info": "Resets the Midtones Wheel Position",
+        "name": "Color Wheels.Midtones.Midtones Reset"
+    },
+    {
+        "info": "Resets the Midtones Wheel Position, Saturation and Brightness",
+        "name": "Color Wheels.Midtones.Midtones Reset All"
+    },
+    {
+        "info": "Resets the Shadows Wheel Position",
+        "name": "Color Wheels.Shadows.Shadows Reset"
+    },
+    {
+        "info": "Resets the Shadows Wheel Position, Saturation and Brightness",
+        "name": "Color Wheels.Shadows.Shadows Reset All"
+    },
+    {
+        "info": "Reveal the open project in the Browser",
+        "name": "Command Set Shortcuts.Organization.Reveal Project in Browser"
+    },
+    {
+        "info": "Reveal the selected clip in the Browser",
+        "name": "Command Set Shortcuts.Organization.Reveal In Browser"
+    },
+    {
+        "info": "Reveal the selected clip’s proxy media in the Finder",
+        "name": "Command Set Shortcuts.General.Reveal Proxy Media in Finder"
+    },
+    {
+        "info": "Revert to the default main window layout",
+        "name": "Command Set Shortcuts.Windows.Revert to Original Layout"
+    },
+    {
+        "info": "Roll the view clockwise in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Roll Clockwise"
+    },
+    {
+        "info": "Roll the view counterclockwise in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Roll Counterclockwise"
+    },
+    {
+        "info": "Save any combination of audio effects as a preset, which appears in the Effects Browser and functions like any other audio effect",
+        "name": "Command Set Shortcuts.General.Save Audio Effect Preset"
+    },
+    {
+        "info": "Save any combination of color effects as a preset, which appears in the Effects Browser and functions like any other color effect",
+        "name": "Command Set Shortcuts.General.Save Color Effect Preset"
+    },
+    {
+        "info": "Save any combination of video effects as a preset, which appears in the Effects Browser and functions like any other video effect",
+        "name": "Command Set Shortcuts.General.Save Video Effect Preset"
+    },
+    {
+        "info": "Save the frame at the playhead or skimmer position to the Comparison Viewer frame browser",
+        "name": "Command Set Shortcuts.Effects.Save Frame"
+    },
+    {
+        "info": "Select all clips",
+        "name": "Command Set Shortcuts.Editing.Select All"
+    },
+    {
+        "info": "Select the clip under the pointer in the Timeline",
+        "name": "Command Set Shortcuts.Editing.Select Clip"
+    },
+    {
+        "info": "Select the left and right edges of the audio edit point when Audio/Video is expanded",
+        "name": "Command Set Shortcuts.Editing.Select Left and Right Audio Edit Edges"
+    },
+    {
+        "info": "Select the left and right edges of the edit point",
+        "name": "Command Set Shortcuts.Editing.Select Left and Right Edit Edges"
+    },
+    {
+        "info": "Select the left and right edges of the video edit point when Audio/Video is expanded",
+        "name": "Command Set Shortcuts.Editing.Select Left and Right Video Edit Edges"
+    },
+    {
+        "info": "Select the left edge of the audio edit point when Audio/Video is expanded",
+        "name": "Command Set Shortcuts.Editing.Select Left Audio Edge"
+    },
+    {
+        "info": "Select the left edge of the edit point",
+        "name": "Command Set Shortcuts.Editing.Select Left Edge"
+    },
+    {
+        "info": "Select the left edge of the video edit point when Audio/Video is expanded",
+        "name": "Command Set Shortcuts.Editing.Select Left Video Edge"
+    },
+    {
+        "info": "Select the next clip in the Audition window, making it the audition pick",
+        "name": "Command Set Shortcuts.Editing.Next Pick"
+    },
+    {
+        "info": "Select the next color correction applied to the current clip",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Select Next Effect"
+    },
+    {
+        "info": "Select the next color correction control",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Select Next Control"
+    },
+    {
+        "info": "Select the previous Color Correction applied to the current clip",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Select Previous Effect"
+    },
+    {
+        "info": "Select the previous clip in the Audition window, making it the audition pick",
+        "name": "Command Set Shortcuts.Editing.Previous Pick"
+    },
+    {
+        "info": "Select the previous color correction control",
+        "name": "Command Set Shortcuts.Effects.Color Correction: Select Previous Control"
+    },
+    {
+        "info": "Select the right edge of the edit point",
+        "name": "Command Set Shortcuts.Editing.Select Right Edge"
+    },
+    {
+        "info": "Select the right edge of the video edit point when Audio/Video is expanded",
+        "name": "Command Set Shortcuts.Editing.Select Right Video Edge"
+    },
+    {
+        "info": "Selects item above current selection under playhead or skimmer",
+        "name": "Command Set Shortcuts.Editing.Select Above"
+    },
+    {
+        "info": "Selects item below current selection under playhead or skimmer",
+        "name": "Command Set Shortcuts.Editing.Select Below"
+    },
+    {
+        "info": "Send 360° video to the connected VR headset",
+        "name": "Command Set Shortcuts.Playback/Navigation.Output to VR Headset"
+    },
+    {
+        "info": "Send video to the selected A/V output device",
+        "name": "Command Set Shortcuts.General.Toggle A/V Output on/off"
+    },
+    {
+        "info": "Set an additional range selection end point at the playhead or skimmer location",
+        "name": "Command Set Shortcuts.Marking.Set Additional Range End"
+    },
+    {
+        "info": "Set an additional range selection start point at the playhead or skimmer location",
+        "name": "Command Set Shortcuts.Marking.Set Additional Range Start"
+    },
+    {
+        "info": "Set retiming video quality to Frame Blending",
+        "name": "Command Set Shortcuts.Effects.Retime Video Quality: Frame Blending"
+    },
+    {
+        "info": "Set retiming video quality to Normal",
+        "name": "Command Set Shortcuts.Effects.Retime Video Quality: Normal"
+    },
+    {
+        "info": "Set retiming video quality to Optical Flow",
+        "name": "Command Set Shortcuts.Effects.Retime Video Quality: Optical Flow"
+    },
+    {
+        "info": "Set the angle being skimmed as the monitoring angle",
+        "name": "Command Set Shortcuts.Playback/Navigation.Set Monitoring Angle"
+    },
+    {
+        "info": "Set the end point for the range",
+        "name": "Command Set Shortcuts.Marking.Set Range End"
+    },
+    {
+        "info": "Set the range selection to match the boundaries of the clip below the skimmer or playhead",
+        "name": "Command Set Shortcuts.Marking.Select Clip Range"
+    },
+    {
+        "info": "Set the selection to play at 10 percent speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Slow 10%"
+    },
+    {
+        "info": "Set the selection to play at 25 percent speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Slow 25%"
+    },
+    {
+        "info": "Set the selection to play at 50 percent speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Slow 50%"
+    },
+    {
+        "info": "Set the selection to play at eight times the normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Fast 8x"
+    },
+    {
+        "info": "Set the selection to play at four times the normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Fast 4x"
+    },
+    {
+        "info": "Set the selection to play at normal (100 percent) speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Create Normal Speed Segment"
+    },
+    {
+        "info": "Set the selection to play at twice the normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Fast 2x"
+    },
+    {
+        "info": "Set the selection to play in reverse at 100 percent speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Reverse Clip"
+    },
+    {
+        "info": "Set the selection to ramp from 0 percent speed to normal speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Speed Ramp from Zero"
+    },
+    {
+        "info": "Set the selection to ramp from normal speed to 0 percent speed",
+        "name": "Command Set Shortcuts.Effects.Retime: Speed Ramp to Zero"
+    },
+    {
+        "info": "Set the speed of the selected clip to match the speed of the project or compound clip",
+        "name": "Command Set Shortcuts.Effects.Automatic Speed"
+    },
+    {
+        "info": "Set the start point for the range",
+        "name": "Command Set Shortcuts.Marking.Set Range Start"
+    },
+    {
+        "info": "Show Both Fields in the Event Viewer",
+        "name": "Command Set Shortcuts.General.Show Both Fields in the Event Viewer"
+    },
+    {
+        "info": "Show Title/Action Safe Zones",
+        "name": "Command Set Shortcuts.Windows.Show Title/Action Safe Zones"
+    },
+    {
+        "info": "Show both fields of an interlaced clip during playback and skimming",
+        "name": "Command Set Shortcuts.General.Show Both Fields"
+    },
+    {
+        "info": "Show fewer filmstrip frames in Browser clips",
+        "name": "Command Set Shortcuts.View.Show Fewer Filmstrip Frames"
+    },
+    {
+        "info": "Show more filmstrip frames in Browser clips",
+        "name": "Command Set Shortcuts.View.Show More Filmstrip Frames"
+    },
+    {
+        "info": "Show one effect at a time in the Video Animation Editor",
+        "name": "Command Set Shortcuts.Effects.Solo Animation"
+    },
+    {
+        "info": "Show one frame per filmstrip",
+        "name": "Command Set Shortcuts.View.Show One Frame per Filmstrip"
+    },
+    {
+        "info": "Show or go to the Keyword Editor",
+        "name": "Command Set Shortcuts.Marking.Go to Keyword Editor"
+    },
+    {
+        "info": "Show or hide a custom overlay in the Viewer",
+        "name": "Command Set Shortcuts.General.Show/Hide Custom Overlay"
+    },
+    {
+        "info": "Show or hide audio lanes for all roles",
+        "name": "Command Set Shortcuts.General.Show/Hide Audio Lanes"
+    },
+    {
+        "info": "Show or hide clip information when skimming in the Browser",
+        "name": "Command Set Shortcuts.View.Show/Hide Skimmer Info"
+    },
+    {
+        "info": "Show or hide clip names in the Browser",
+        "name": "Command Set Shortcuts.View.View Clip Names"
+    },
+    {
+        "info": "Show or hide the 360° Viewer in the Event Viewer",
+        "name": "Command Set Shortcuts.General.Show/Hide 360° Viewer in the Event Viewer"
+    },
+    {
+        "info": "Show or hide the 360° Viewer",
+        "name": "Command Set Shortcuts.Windows.Show/Hide 360° Viewer"
+    },
+    {
+        "info": "Show or hide the Angles in the Event Viewer",
+        "name": "Command Set Shortcuts.General.Show/Hide Angles in the Event Viewer"
+    },
+    {
+        "info": "Show or hide the Angles in the Viewer",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Angles"
+    },
+    {
+        "info": "Show or hide the Audio Animation Editor for the selected clips or components",
+        "name": "Command Set Shortcuts.View.Show/Hide Audio Animation"
+    },
+    {
+        "info": "Show or hide the Audio meters",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Audio Meters"
+    },
+    {
+        "info": "Show or hide the Background Tasks window",
+        "name": "Command Set Shortcuts.Windows.Background Tasks"
+    },
+    {
+        "info": "Show or hide the Browser",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Browser"
+    },
+    {
+        "info": "Show or hide the Comparison Viewer Frame Browser",
+        "name": "Command Set Shortcuts.Effects.Show/Hide Frame Browser"
+    },
+    {
+        "info": "Show or hide the Comparison Viewer",
+        "name": "Command Set Shortcuts.Effects.Show/Hide Comparison Viewer"
+    },
+    {
+        "info": "Show or hide the Effects Browser",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Effects Browser"
+    },
+    {
+        "info": "Show or hide the Event Viewer",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Event Viewer"
+    },
+    {
+        "info": "Show or hide the Filter window (in the Browser) or the Timeline Index (in the Timeline)",
+        "name": "Command Set Shortcuts.General.Find"
+    },
+    {
+        "info": "Show or hide the Inspector",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Inspector"
+    },
+    {
+        "info": "Show or hide the Precision Editor",
+        "name": "Command Set Shortcuts.Editing.Show/Hide Precision Editor"
+    },
+    {
+        "info": "Show or hide the Project Timecode window",
+        "name": "Command Set Shortcuts.Windows.Project Timecode"
+    },
+    {
+        "info": "Show or hide the Retime Editor",
+        "name": "Command Set Shortcuts.Effects.Retime Editor"
+    },
+    {
+        "info": "Show or hide the Sidebar",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Sidebar"
+    },
+    {
+        "info": "Show or hide the Source Timecode window",
+        "name": "Command Set Shortcuts.Windows.Source Timecode"
+    },
+    {
+        "info": "Show or hide the Timeline Index for the open project",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Timeline Index"
+    },
+    {
+        "info": "Show or hide the Timeline",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Timeline"
+    },
+    {
+        "info": "Show or hide the Transitions Browser",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Transitions Browser"
+    },
+    {
+        "info": "Show or hide the Video Animation Editor for the selected Timeline clips",
+        "name": "Command Set Shortcuts.View.Show/Hide Video Animation"
+    },
+    {
+        "info": "Show or hide the video scopes in the Viewer",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Video Scopes"
+    },
+    {
+        "info": "Show the Histogram in the Viewer",
+        "name": "Command Set Shortcuts.Windows.Show Histogram"
+    },
+    {
+        "info": "Show the Libraries and Browser on a second display",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Events on Second Display"
+    },
+    {
+        "info": "Show the Timeline on a second display",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Timeline on Second Display"
+    },
+    {
+        "info": "Show the Vectorscope in the Viewer",
+        "name": "Command Set Shortcuts.Windows.Show Vectorscope"
+    },
+    {
+        "info": "Show the Viewer on a second display",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Viewer on Second Display"
+    },
+    {
+        "info": "Show the Waveform Monitor in the Viewer",
+        "name": "Command Set Shortcuts.Windows.Show Video Waveform"
+    },
+    {
+        "info": "Show/Hide All Image Content",
+        "name": "Command Set Shortcuts.General.Show/Hide All Image Content"
+    },
+    {
+        "info": "Show/Hide Video Scopes in the Event Viewer",
+        "name": "Command Set Shortcuts.General.Show/Hide Video Scopes in the Event Viewer"
+    },
+    {
+        "info": "Silence the clip selection(s) or range",
+        "name": "Command Set Shortcuts.Editing.Set Volume to Silence (-∞)"
+    },
+    {
+        "info": "Solo the selected items in the timeline",
+        "name": "Command Set Shortcuts.Editing.Solo"
+    },
+    {
+        "info": "Sort the selected items by date",
+        "name": "Command Set Shortcuts.General.Sort By Date"
+    },
+    {
+        "info": "Sort the selected items by name",
+        "name": "Command Set Shortcuts.General.Sort By Name"
+    },
+    {
+        "info": "Sort the selected items in ascending order",
+        "name": "Command Set Shortcuts.General.Sort Ascending"
+    },
+    {
+        "info": "Sort the selected items in descending order",
+        "name": "Command Set Shortcuts.General.Sort Descending"
+    },
+    {
+        "info": "Split the selected caption into multiple single-line captions",
+        "name": "Command Set Shortcuts.Editing.Split Captions"
+    },
+    {
+        "info": "Start all rendering tasks for open timeline",
+        "name": "Command Set Shortcuts.General.Render All"
+    },
+    {
+        "info": "Start or pause playback",
+        "name": "Command Set Shortcuts.Playback/Navigation.Play/Pause"
+    },
+    {
+        "info": "Start or stop voiceover recording",
+        "name": "Command Set Shortcuts.General.Start/Stop Voiceover Recording"
+    },
+    {
+        "info": "Start rendering tasks for the selection",
+        "name": "Command Set Shortcuts.General.Render Selection"
+    },
+    {
+        "info": "Stop playback",
+        "name": "Command Set Shortcuts.Playback/Navigation.Stop"
+    },
+    {
+        "info": "Switch between the Viewer and the Comparison Viewer (the active viewer is output to external devices)",
+        "name": "Command Set Shortcuts.Effects.Switch Focus between Comparison Viewer and Main Viewer"
+    },
+    {
+        "info": "Switch between the inside and outside masks for the color correction",
+        "name": "Command Set Shortcuts.General.Color Correction: Switch Between Inside/Outside Masks"
+    },
+    {
+        "info": "Switch the Browser between filmstrip and list views",
+        "name": "Command Set Shortcuts.View.Toggle Filmstrip/List View"
+    },
+    {
+        "info": "Switch the multicam clip to angle 1 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 1"
+    },
+    {
+        "info": "Switch the multicam clip to angle 10 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 10"
+    },
+    {
+        "info": "Switch the multicam clip to angle 11 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 11"
+    },
+    {
+        "info": "Switch the multicam clip to angle 12 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 12"
+    },
+    {
+        "info": "Switch the multicam clip to angle 13 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 13"
+    },
+    {
+        "info": "Switch the multicam clip to angle 14 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 14"
+    },
+    {
+        "info": "Switch the multicam clip to angle 15 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 15"
+    },
+    {
+        "info": "Switch the multicam clip to angle 16 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 16"
+    },
+    {
+        "info": "Switch the multicam clip to angle 2 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 2"
+    },
+    {
+        "info": "Switch the multicam clip to angle 3 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 3"
+    },
+    {
+        "info": "Switch the multicam clip to angle 4 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 4"
+    },
+    {
+        "info": "Switch the multicam clip to angle 5 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 5"
+    },
+    {
+        "info": "Switch the multicam clip to angle 6 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 6"
+    },
+    {
+        "info": "Switch the multicam clip to angle 7 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 7"
+    },
+    {
+        "info": "Switch the multicam clip to angle 8 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 8"
+    },
+    {
+        "info": "Switch the multicam clip to angle 9 of the current bank",
+        "name": "Command Set Shortcuts.Editing.Switch to Viewer Angle 9"
+    },
+    {
+        "info": "Switch to the Color pane in the Color Board",
+        "name": "Command Set Shortcuts.Effects.Color Board: Switch to the Color Pane"
+    },
+    {
+        "info": "Switch to the Exposure pane in the Color Board",
+        "name": "Command Set Shortcuts.Effects.Color Board: Switch to the Exposure Pane"
+    },
+    {
+        "info": "Switch to the Saturation pane in the Color Board",
+        "name": "Command Set Shortcuts.Effects.Color Board: Switch to the Saturation Pane"
+    },
+    {
+        "info": "Switch to the next angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Next Angle"
+    },
+    {
+        "info": "Switch to the next audio angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Next Audio Angle"
+    },
+    {
+        "info": "Switch to the next video angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Next Video Angle"
+    },
+    {
+        "info": "Switch to the previous angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Previous Angle"
+    },
+    {
+        "info": "Switch to the previous audio angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Previous Audio Angle"
+    },
+    {
+        "info": "Switch to the previous video angle in the multicam clip",
+        "name": "Command Set Shortcuts.Editing.Select Previous Video Angle"
+    },
+    {
+        "info": "Sync an angle to the playhead",
+        "name": "Command Set Shortcuts.General.Sync To Monitoring Angle…"
+    },
+    {
+        "info": "Synchronize the selected Event clips",
+        "name": "Command Set Shortcuts.Organization.Synchronize Clips…"
+    },
+    {
+        "info": "Temporarily override clip connections for the selection",
+        "name": "Command Set Shortcuts.Editing.Override Connections"
+    },
+    {
+        "info": "Tilt down in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Tilt Down"
+    },
+    {
+        "info": "Tilt up in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Tilt Up"
+    },
+    {
+        "info": "Toggle Keyword Editor",
+        "name": "Command Set Shortcuts.Windows.Show/Hide Keyword Editor"
+    },
+    {
+        "info": "Toggle between full and half height Inspector pane",
+        "name": "Command Set Shortcuts.View.Toggle Inspector Height"
+    },
+    {
+        "info": "Toggle continuous playback for clips in the browser",
+        "name": "Command Set Shortcuts.Organization.Continuous Playback"
+    },
+    {
+        "info": "Toggle selected Color Mask type",
+        "name": "Command Set Shortcuts.Effects.Toggle Color Mask Type"
+    },
+    {
+        "info": "Toggle the ability to build Storylines when dragging clips in the timeline",
+        "name": "Command Set Shortcuts.Editing.Toggle Storyline Mode"
+    },
+    {
+        "info": "Transforms the X anchor of the selected clip",
+        "name": "Video Inspector.Transform.Anchor X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Transforms the X and Y scale of the selected clip",
+        "name": "Video Inspector.Transform.Scale (All)",
+        "range": [
+            0,
+            400
+        ],
+        "reset": 100,
+        "step": 1,
+        "stepMin": 1
+    },
+    {
+        "info": "Transforms the X position of the selected clip",
+        "name": "Video Inspector.Transform.Position X",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Transforms the X scale of the selected clip",
+        "name": "Video Inspector.Transform.Scale X",
+        "range": [
+            0,
+            400
+        ],
+        "reset": 100,
+        "step": 0.01,
+        "stepMin": 0.01
+    },
+    {
+        "info": "Transforms the Y anchor of the selected clip",
+        "name": "Video Inspector.Transform.Anchor Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Transforms the Y position of the selected clip",
+        "name": "Video Inspector.Transform.Position Y",
+        "range": [
+            -5000,
+            5000
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Transforms the Y scale of the selected clip",
+        "name": "Video Inspector.Transform.Scale Y",
+        "range": [
+            0,
+            400
+        ],
+        "reset": 100,
+        "step": 0.01,
+        "stepMin": 0.01
+    },
+    {
+        "info": "Transforms the rotation of the selected clip",
+        "name": "Video Inspector.Transform.Rotation",
+        "range": [
+            0,
+            360
+        ],
+        "reset": 0,
+        "step": 0.1,
+        "stepMin": 0.1
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 1"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 10"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 11"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 12"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 13"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 14"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 15"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 16"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 17"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 18"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 19"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 2"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 20"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 3"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 4"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 5"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 6"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 7"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 8"
+    },
+    {
+        "info": "Triggers a favourite that's been set in CommandPost's Monogram Control Surfaces panel.",
+        "name": "CommandPost Favourites.Favourite 9"
+    },
+    {
+        "info": "Trim clip start and end points to the range selection",
+        "name": "Command Set Shortcuts.Editing.Trim to Selection"
+    },
+    {
+        "info": "Trim clip start point to the skimmer or playhead position ",
+        "name": "Command Set Shortcuts.Editing.Trim Start"
+    },
+    {
+        "info": "Trim the end of the selected or topmost clip to the skimmer or playhead position ",
+        "name": "Command Set Shortcuts.Editing.Trim End"
+    },
+    {
+        "info": "Trim the nearer of start or end of clip to the skimmer or playhead position",
+        "name": "Command Set Shortcuts.Editing.Trim To Playhead"
+    },
+    {
+        "info": "Trim the selected overlapping captions so that they’re side by side in the timeline",
+        "name": "Command Set Shortcuts.Editing.Resolve Overlaps"
+    },
+    {
+        "info": "Turn View Mask on or off",
+        "name": "Command Set Shortcuts.Effects.Toggle View Mask On/Off"
+    },
+    {
+        "info": "Turn audio skimming on or off",
+        "name": "Command Set Shortcuts.Playback/Navigation.Audio Skimming"
+    },
+    {
+        "info": "Turn clip skimming on or off",
+        "name": "Command Set Shortcuts.General.Clip Skimming"
+    },
+    {
+        "info": "Turn color correction effects on or off",
+        "name": "Command Set Shortcuts.Effects.Toggle Color Correction Effects on/off"
+    },
+    {
+        "info": "Turn looped playback on or off",
+        "name": "Command Set Shortcuts.Playback/Navigation.Loop Playback"
+    },
+    {
+        "info": "Turn on audio-only mode for multicam cutting and switching",
+        "name": "Command Set Shortcuts.Playback/Navigation.Cut/Switch Multicam Audio Only"
+    },
+    {
+        "info": "Turn on audio-only mode to add the audio portion of your selection to the Timeline",
+        "name": "Command Set Shortcuts.Editing.Source Media: Audio Only"
+    },
+    {
+        "info": "Turn on audio/video mode for multicam cutting and switching",
+        "name": "Command Set Shortcuts.Playback/Navigation.Cut/Switch Multicam Audio and Video"
+    },
+    {
+        "info": "Turn on audio/video mode to add the video and audio portion of your selection to the timeline",
+        "name": "Command Set Shortcuts.Editing.Source Media: Audio & Video"
+    },
+    {
+        "info": "Turn on or turn off audio monitoring for the angle being skimmed",
+        "name": "Command Set Shortcuts.Playback/Navigation.Monitor Audio"
+    },
+    {
+        "info": "Turn on video-only mode for multicam cutting and switching",
+        "name": "Command Set Shortcuts.Playback/Navigation.Cut/Switch Multicam Video Only"
+    },
+    {
+        "info": "Turn on video-only mode to add the video portion of your selection to the Timeline",
+        "name": "Command Set Shortcuts.Editing.Source Media: Video Only"
+    },
+    {
+        "info": "Turn skimming on or off",
+        "name": "Command Set Shortcuts.General.Skimming"
+    },
+    {
+        "info": "Turn snapping on or off",
+        "name": "Command Set Shortcuts.Editing.Snapping"
+    },
+    {
+        "info": "Turn the selected color corrections and effects on or off",
+        "name": "Command Set Shortcuts.Effects.Toggle Effects on/off"
+    },
+    {
+        "info": "Turn zooming into samples on or off",
+        "name": "Command Set Shortcuts.View.Zoom to Samples"
+    },
+    {
+        "info": "Undo the last command",
+        "name": "Command Set Shortcuts.Application.Undo Changes"
+    },
+    {
+        "info": "Update existing Final Cut Pro projects and events and place them in a library",
+        "name": "Command Set Shortcuts.General.Update Projects and Events…"
+    },
+    {
+        "info": "Use audio sync technology to synchronize the angle to clips in the monitoring angle",
+        "name": "Command Set Shortcuts.Editing.Sync Angle to Monitoring Angle"
+    },
+    {
+        "info": "Use audio sync technology to synchronize the selected clips to clips in the monitoring angle",
+        "name": "Command Set Shortcuts.Editing.Sync Selection to Monitoring Angle"
+    },
+    {
+        "info": "View Captions tab in Timeline Index",
+        "name": "Command Set Shortcuts.Windows.View Captions in Timeline Index"
+    },
+    {
+        "info": "View Clips tab in Timeline Index",
+        "name": "Command Set Shortcuts.Windows.View Clips in Timeline Index"
+    },
+    {
+        "info": "View Roles tab in Timeline Index",
+        "name": "Command Set Shortcuts.Windows.View Roles in Timeline Index"
+    },
+    {
+        "info": "View Tags tab in Timeline Index",
+        "name": "Command Set Shortcuts.Windows.View Tags in Timeline Index"
+    },
+    {
+        "info": "View all color channels",
+        "name": "Command Set Shortcuts.View.View All Color Channels"
+    },
+    {
+        "info": "View audio and video separately for selected clips",
+        "name": "Command Set Shortcuts.Editing.Expand Audio/Video"
+    },
+    {
+        "info": "View only the left eye in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Left Eye Only"
+    },
+    {
+        "info": "View only the right eye in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Right Eye Only"
+    },
+    {
+        "info": "View stereoscopic as red/cyan anaglyph color in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Anaglyph Color"
+    },
+    {
+        "info": "View stereoscopic as red/cyan anaglyph outlines in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Anaglyph Outline"
+    },
+    {
+        "info": "View stereoscopic as red/cyan desaturated anaglyph in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Anaglyph Monochrome"
+    },
+    {
+        "info": "View stereoscopic left/right differences in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Difference"
+    },
+    {
+        "info": "View stereoscopic left/right superimposed together in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Superimpose"
+    },
+    {
+        "info": "View the alpha channel",
+        "name": "Command Set Shortcuts.View.View Alpha Color Channel"
+    },
+    {
+        "info": "View the blue color channel",
+        "name": "Command Set Shortcuts.View.View Blue Color Channel"
+    },
+    {
+        "info": "View the green color channel",
+        "name": "Command Set Shortcuts.View.View Green Color Channel"
+    },
+    {
+        "info": "View the red color channel",
+        "name": "Command Set Shortcuts.View.View Red Color Channel"
+    },
+    {
+        "info": "Widen the field of view in the 360° Viewer",
+        "name": "Command Set Shortcuts.Playback/Navigation.Increase Field of View"
+    },
+    {
+        "info": "Zoom in to the Timeline, Browser, or Viewer",
+        "name": "Command Set Shortcuts.View.Zoom In"
+    },
+    {
+        "info": "Zoom out of the Timeline, Browser, or Viewer",
+        "name": "Command Set Shortcuts.View.Zoom Out"
+    },
+    {
+        "info": "Zoom the contents to fit the size of the Browser, Viewer, or Timeline",
+        "name": "Command Set Shortcuts.View.Zoom to Fit"
+    }
 ]
