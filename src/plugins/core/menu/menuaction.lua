@@ -24,6 +24,7 @@ local concat                = table.concat
 local copy                  = fnutils.copy
 local doAfter               = timer.doAfter
 local imageFromPath         = image.imageFromPath
+local insert                = table.insert
 local playErrorSound        = tools.playErrorSound
 local runningApplications   = application.runningApplications
 local watcher               = application.watcher
@@ -67,9 +68,9 @@ function mod._getMenuStructure(item)
         local modsVal = thisMenuItem["AXMenuItemCmdModifiers"]
         if type(modsVal) == "number" then
             modsDst = ((modsVal & kAXMenuItemModifierNoCommand) > 0) and {} or { "cmd" }
-            if (modsVal & kAXMenuItemModifierShift)   > 0 then table.insert(modsDst, "shift") end
-            if (modsVal & kAXMenuItemModifierOption)  > 0 then table.insert(modsDst, "alt") end
-            if (modsVal & kAXMenuItemModifierControl) > 0 then table.insert(modsDst, "ctrl") end
+            if (modsVal & kAXMenuItemModifierShift)   > 0 then insert(modsDst, "shift") end
+            if (modsVal & kAXMenuItemModifierOption)  > 0 then insert(modsDst, "alt") end
+            if (modsVal & kAXMenuItemModifierControl) > 0 then insert(modsDst, "ctrl") end
         end
         thisMenuItem["AXMenuItemCmdModifiers"] = modsDst
 
@@ -77,7 +78,7 @@ function mod._getMenuStructure(item)
         for i = 1, #item, 1 do
             local data = mod._getMenuStructure(item[i])
             if data then
-                table.insert(children, data)
+                insert(children, data)
             end
         end
         if #children > 0 then
@@ -117,13 +118,18 @@ function mod._processMenuItems(items, choices, bundleID, path)
             local children = v.AXChildren
             local title = v.AXTitle
             if role == "AXMenuBarItem" and type(children) == "table" then
-                table.insert(path, title)
-                mod._processMenuItems(children[1], choices, bundleID, path)
+                local newPath = copy(path)
+                insert(newPath, title)
+                mod._processMenuItems(children[1], choices, bundleID, newPath)
+            elseif role == "AXMenuItem" and children then
+                local newPath = copy(path)
+                insert(newPath, title)
+                mod._processMenuItems(children[1], choices, bundleID, newPath)
             elseif role == "AXMenuItem" and not children then
                 if title and title ~= "" then
                     local menuPath = copy(path)
                     local menuPathString = concat(path, " > ")
-                    table.insert(menuPath, title)
+                    insert(menuPath, title)
                     choices
                         :add(title)
                         :subText(menuPathString)
@@ -277,7 +283,7 @@ function plugin.postInit(deps)
     for bundleID, _ in pairs(registeredApps) do
         if not bundleIDsHash[bundleID] then
             bundleIDsHash[bundleID] = true
-            table.insert(bundleIDs, bundleID)
+            insert(bundleIDs, bundleID)
         end
     end
 
@@ -299,7 +305,7 @@ function plugin.postInit(deps)
                 if v.displayName then
                     if not bundleIDsHash[bundleID] then
                         bundleIDsHash[bundleID] = true
-                        table.insert(bundleIDs, bundleID)
+                        insert(bundleIDs, bundleID)
                     end
                 end
             end
@@ -314,7 +320,7 @@ function plugin.postInit(deps)
                     if v.displayName then
                         if not bundleIDsHash[bundleID] then
                             bundleIDsHash[bundleID] = true
-                            table.insert(bundleIDs, bundleID)
+                            insert(bundleIDs, bundleID)
                         end
                     end
                 end
