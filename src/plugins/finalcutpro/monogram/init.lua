@@ -2,26 +2,18 @@
 ---
 --- Monogram Actions for Final Cut Pro
 
-local require                   = require
+local require           = require
 
-local log                       = require "hs.logger".new "monogram"
+local log               = require "hs.logger".new "monogram"
 
-local application               = require "hs.application"
-local json                      = require "hs.json"
-local plist                     = require "hs.plist"
-local timer                     = require "hs.timer"
-local udp                       = require "hs.socket.udp"
+local fnutils           = require "hs.fnutils"
+local plist             = require "hs.plist"
 
-local config                    = require "cp.config"
-local deferred                  = require "cp.deferred"
-local fcp                       = require "cp.apple.finalcutpro"
-local i18n                      = require "cp.i18n"
-local tools                     = require "cp.tools"
+local config            = require "cp.config"
+local deferred          = require "cp.deferred"
+local fcp               = require "cp.apple.finalcutpro"
 
-local doAfter                   = timer.doAfter
-local doesDirectoryExist        = tools.doesDirectoryExist
-local doesFileExist             = tools.doesFileExist
-local ensureDirectoryExists     = tools.ensureDirectoryExists
+local copy              = fnutils.copy
 
 local mod = {}
 
@@ -129,6 +121,23 @@ local function makeShortcutHandler(finderFn)
     return function()
         local shortcut = finderFn()
         fcp:doShortcut(shortcut):Now()
+    end
+end
+
+-- makeMenuItemHandler(finderFn) -> function
+-- Function
+-- Creates a 'handler' for triggering a Final Cut Pro Menu Item.
+--
+-- Parameters:
+--  * finderFn - a function that will return the Menu Item identifier.
+--
+-- Returns:
+--  * a function that will receive the Monogram control metadata table and process it.
+local function makeMenuItemHandler(finderFn)
+    return function()
+        local id = finderFn()
+        local menuTable = id:split("|||")
+        fcp:application():selectMenuItem(menuTable)
     end
 end
 
@@ -332,6 +341,91 @@ function mod._buildCommandSet()
     log.df("xmlForInputs:\n%s", xmlForInputs)
 end
 
+-- menuItems -> table
+-- Variable
+-- A table of menu items.
+local menuItems = {}
+
+-- _processMenuItems(items, path)
+-- Function
+-- A private function which processes menu items.
+-- This should only really ever be used by CommandPost Developers.
+--
+-- Parameters:
+--  * items - A table of menu items
+--  * path - A table containing the current menu item path.
+--
+-- Returns:
+--  * None
+local function _processMenuItems(items, path)
+    path = path or {}
+    for _,v in pairs(items) do
+        if type(v) == "table" then
+            local role = v.AXRole
+            local children = v.AXChildren
+            local title = v.AXTitle
+            if children then
+                local newPath = copy(path)
+                table.insert(newPath, title)
+                _processMenuItems(children[1], newPath)
+            else
+                if title and title ~= "" then
+                    table.insert(menuItems, {
+                        title = title,
+                        path = copy(path),
+                    })
+                end
+            end
+        end
+    end
+end
+
+-- plugins.core.monogram.manager._buildMenuItems() -> none
+-- Function
+-- A private function which outputs the menu items code into the Debug Console.
+-- This should only really ever be used by CommandPost Developers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._buildMenuItems()
+    menuItems = {}
+
+    local items = fcp:application():getMenuItems()
+
+    for _, v in pairs(items) do
+        local title = v.AXTitle
+        local children = v.AXChildren
+        if children then
+            _processMenuItems(children[1], {v.AXTitle})
+        end
+    end
+
+    local codeForCommandPost = ""
+    local xmlForInputs = ""
+
+    for _, v in pairs(menuItems) do
+
+        local group = table.concat(v.path, ".")
+        local commandName = v.title
+        local id = table.concat(v.path, "|||") .. "|||" .. commandName
+        local info = table.concat(v.path, " > ") .. " > " .. commandName
+
+        codeForCommandPost = codeForCommandPost .. [[registerAction("Menu Items.]] .. group .. [[.]] .. commandName .. [[", makeMenuItemHandler(function() return "]] .. id .. [[" end))]] .. "\n"
+        xmlForInputs = xmlForInputs .. [[
+            {
+                "name": "Menu Items.]] .. group .. [[.]] .. commandName .. [[",
+                "info": "Triggers the Final Cut Pro Menu Item: ]] .. info .. [["
+            },
+        ]]
+    end
+
+    log.df("codeForCommandPost:\n%s", codeForCommandPost)
+    log.df("xmlForInputs:\n%s", xmlForInputs)
+end
+
 local plugin = {
     id          = "finalcutpro.monogram",
     group       = "finalcutpro",
@@ -420,6 +514,471 @@ function plugin.init(deps)
 
     registerAction("Video Inspector.Transform.Anchor X", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().x end))
     registerAction("Video Inspector.Transform.Anchor Y", makeSliderHandler(function() return fcp.inspector.video.transform():anchor().y end))
+
+    --------------------------------------------------------------------------------
+    -- Menu Items:
+    --------------------------------------------------------------------------------
+    registerAction("Menu Items.Final Cut Pro.About Final Cut Pro", makeMenuItemHandler(function() return "Final Cut Pro|||About Final Cut Pro" end))
+    registerAction("Menu Items.Final Cut Pro.Preferences…", makeMenuItemHandler(function() return "Final Cut Pro|||Preferences…" end))
+    registerAction("Menu Items.Final Cut Pro.Commands.Customize…", makeMenuItemHandler(function() return "Final Cut Pro|||Commands|||Customize…" end))
+    registerAction("Menu Items.Final Cut Pro.Commands.Import…", makeMenuItemHandler(function() return "Final Cut Pro|||Commands|||Import…" end))
+    registerAction("Menu Items.Final Cut Pro.Commands.Export…", makeMenuItemHandler(function() return "Final Cut Pro|||Commands|||Export…" end))
+    registerAction("Menu Items.Final Cut Pro.Commands.Default", makeMenuItemHandler(function() return "Final Cut Pro|||Commands|||Default" end))
+    registerAction("Menu Items.Final Cut Pro.Download Additional Content…", makeMenuItemHandler(function() return "Final Cut Pro|||Download Additional Content…" end))
+    registerAction("Menu Items.Final Cut Pro.Provide Final Cut Pro Feedback…", makeMenuItemHandler(function() return "Final Cut Pro|||Provide Final Cut Pro Feedback…" end))
+    registerAction("Menu Items.Final Cut Pro.Hide Final Cut Pro", makeMenuItemHandler(function() return "Final Cut Pro|||Hide Final Cut Pro" end))
+    registerAction("Menu Items.Final Cut Pro.Hide Others", makeMenuItemHandler(function() return "Final Cut Pro|||Hide Others" end))
+    registerAction("Menu Items.Final Cut Pro.Show All", makeMenuItemHandler(function() return "Final Cut Pro|||Show All" end))
+    registerAction("Menu Items.Final Cut Pro.Quit Final Cut Pro", makeMenuItemHandler(function() return "Final Cut Pro|||Quit Final Cut Pro" end))
+    registerAction("Menu Items.Final Cut Pro.Quit and Keep Windows", makeMenuItemHandler(function() return "Final Cut Pro|||Quit and Keep Windows" end))
+    registerAction("Menu Items.File.New.Project…", makeMenuItemHandler(function() return "File|||New|||Project…" end))
+    registerAction("Menu Items.File.New.Event…", makeMenuItemHandler(function() return "File|||New|||Event…" end))
+    registerAction("Menu Items.File.New.Library…", makeMenuItemHandler(function() return "File|||New|||Library…" end))
+    registerAction("Menu Items.File.New.Folder", makeMenuItemHandler(function() return "File|||New|||Folder" end))
+    registerAction("Menu Items.File.New.Keyword Collection", makeMenuItemHandler(function() return "File|||New|||Keyword Collection" end))
+    registerAction("Menu Items.File.New.Library Smart Collection", makeMenuItemHandler(function() return "File|||New|||Library Smart Collection" end))
+    registerAction("Menu Items.File.New.Compound Clip…", makeMenuItemHandler(function() return "File|||New|||Compound Clip…" end))
+    registerAction("Menu Items.File.New.Multicam Clip…", makeMenuItemHandler(function() return "File|||New|||Multicam Clip…" end))
+    registerAction("Menu Items.File.Open Library.Other…", makeMenuItemHandler(function() return "File|||Open Library|||Other…" end))
+    registerAction("Menu Items.File.Open Library.From Backup…", makeMenuItemHandler(function() return "File|||Open Library|||From Backup…" end))
+    registerAction("Menu Items.File.Open Library.Clear Recents", makeMenuItemHandler(function() return "File|||Open Library|||Clear Recents" end))
+    registerAction("Menu Items.File.Close Library", makeMenuItemHandler(function() return "File|||Close Library" end))
+    registerAction("Menu Items.File.Library Properties", makeMenuItemHandler(function() return "File|||Library Properties" end))
+    registerAction("Menu Items.File.Import.Media…", makeMenuItemHandler(function() return "File|||Import|||Media…" end))
+    registerAction("Menu Items.File.Import.Reimport from Camera/Archive...", makeMenuItemHandler(function() return "File|||Import|||Reimport from Camera/Archive..." end))
+    registerAction("Menu Items.File.Import.Redownload Remote Media...", makeMenuItemHandler(function() return "File|||Import|||Redownload Remote Media..." end))
+    registerAction("Menu Items.File.Import.iMovie iOS Projects...", makeMenuItemHandler(function() return "File|||Import|||iMovie iOS Projects..." end))
+    registerAction("Menu Items.File.Import.XML...", makeMenuItemHandler(function() return "File|||Import|||XML..." end))
+    registerAction("Menu Items.File.Import.Captions…", makeMenuItemHandler(function() return "File|||Import|||Captions…" end))
+    registerAction("Menu Items.File.Transcode Media…", makeMenuItemHandler(function() return "File|||Transcode Media…" end))
+    registerAction("Menu Items.File.Relink Files.Original Media…", makeMenuItemHandler(function() return "File|||Relink Files|||Original Media…" end))
+    registerAction("Menu Items.File.Relink Files.Proxy Media…", makeMenuItemHandler(function() return "File|||Relink Files|||Proxy Media…" end))
+    registerAction("Menu Items.File.Export XML…", makeMenuItemHandler(function() return "File|||Export XML…" end))
+    registerAction("Menu Items.File.Export Captions...", makeMenuItemHandler(function() return "File|||Export Captions..." end))
+    registerAction("Menu Items.File.Share.Master File…", makeMenuItemHandler(function() return "File|||Share|||Master File…" end))
+    registerAction("Menu Items.File.Share.AIFF…", makeMenuItemHandler(function() return "File|||Share|||AIFF…" end))
+    registerAction("Menu Items.File.Share.DVD…", makeMenuItemHandler(function() return "File|||Share|||DVD…" end))
+    registerAction("Menu Items.File.Share.Save Current Frame…", makeMenuItemHandler(function() return "File|||Share|||Save Current Frame…" end))
+    registerAction("Menu Items.File.Share.Apple Devices 720p…", makeMenuItemHandler(function() return "File|||Share|||Apple Devices 720p…" end))
+    registerAction("Menu Items.File.Share.Apple Devices 1080p…", makeMenuItemHandler(function() return "File|||Share|||Apple Devices 1080p…" end))
+    registerAction("Menu Items.File.Share.Apple Devices 4K…", makeMenuItemHandler(function() return "File|||Share|||Apple Devices 4K…" end))
+    registerAction("Menu Items.File.Share.MP3…", makeMenuItemHandler(function() return "File|||Share|||MP3…" end))
+    registerAction("Menu Items.File.Share.Export Image Sequence…", makeMenuItemHandler(function() return "File|||Share|||Export Image Sequence…" end))
+    registerAction("Menu Items.File.Share.Vimeo (advanced)…", makeMenuItemHandler(function() return "File|||Share|||Vimeo (advanced)…" end))
+    registerAction("Menu Items.File.Share.Xsend Motion…", makeMenuItemHandler(function() return "File|||Share|||Xsend Motion…" end))
+    registerAction("Menu Items.File.Share.Add Destination…", makeMenuItemHandler(function() return "File|||Share|||Add Destination…" end))
+    registerAction("Menu Items.File.Send to Compressor.New Batch", makeMenuItemHandler(function() return "File|||Send to Compressor|||New Batch" end))
+    registerAction("Menu Items.File.Send to Compressor.iTunes Store Package", makeMenuItemHandler(function() return "File|||Send to Compressor|||iTunes Store Package" end))
+    registerAction("Menu Items.File.Send to Compressor.IMF Package", makeMenuItemHandler(function() return "File|||Send to Compressor|||IMF Package" end))
+    registerAction("Menu Items.File.Save Video Effects Preset…", makeMenuItemHandler(function() return "File|||Save Video Effects Preset…" end))
+    registerAction("Menu Items.File.Save Audio Effects Preset…", makeMenuItemHandler(function() return "File|||Save Audio Effects Preset…" end))
+    registerAction("Menu Items.File.Copy to Library.New Library…", makeMenuItemHandler(function() return "File|||Copy to Library|||New Library…" end))
+    registerAction("Menu Items.File.Move to Library.New Library…", makeMenuItemHandler(function() return "File|||Move to Library|||New Library…" end))
+    registerAction("Menu Items.File.Consolidate Library Media…", makeMenuItemHandler(function() return "File|||Consolidate Library Media…" end))
+    registerAction("Menu Items.File.Consolidate Motion Content...", makeMenuItemHandler(function() return "File|||Consolidate Motion Content..." end))
+    registerAction("Menu Items.File.Delete Generated Clip Files…", makeMenuItemHandler(function() return "File|||Delete Generated Clip Files…" end))
+    registerAction("Menu Items.File.Merge Events", makeMenuItemHandler(function() return "File|||Merge Events" end))
+    registerAction("Menu Items.File.Close Other Timelines", makeMenuItemHandler(function() return "File|||Close Other Timelines" end))
+    registerAction("Menu Items.File.Reveal in Browser", makeMenuItemHandler(function() return "File|||Reveal in Browser" end))
+    registerAction("Menu Items.File.Reveal Project in Browser", makeMenuItemHandler(function() return "File|||Reveal Project in Browser" end))
+    registerAction("Menu Items.File.Reveal in Finder", makeMenuItemHandler(function() return "File|||Reveal in Finder" end))
+    registerAction("Menu Items.File.Reveal Proxy Media in Finder", makeMenuItemHandler(function() return "File|||Reveal Proxy Media in Finder" end))
+    registerAction("Menu Items.File.Move to Trash", makeMenuItemHandler(function() return "File|||Move to Trash" end))
+    registerAction("Menu Items.Edit.Undo", makeMenuItemHandler(function() return "Edit|||Undo" end))
+    registerAction("Menu Items.Edit.Redo", makeMenuItemHandler(function() return "Edit|||Redo" end))
+    registerAction("Menu Items.Edit.Cut", makeMenuItemHandler(function() return "Edit|||Cut" end))
+    registerAction("Menu Items.Edit.Copy", makeMenuItemHandler(function() return "Edit|||Copy" end))
+    registerAction("Menu Items.Edit.Copy Timecode", makeMenuItemHandler(function() return "Edit|||Copy Timecode" end))
+    registerAction("Menu Items.Edit.Paste", makeMenuItemHandler(function() return "Edit|||Paste" end))
+    registerAction("Menu Items.Edit.Paste as Connected Clip", makeMenuItemHandler(function() return "Edit|||Paste as Connected Clip" end))
+    registerAction("Menu Items.Edit.Delete", makeMenuItemHandler(function() return "Edit|||Delete" end))
+    registerAction("Menu Items.Edit.Replace with Gap", makeMenuItemHandler(function() return "Edit|||Replace with Gap" end))
+    registerAction("Menu Items.Edit.Select All", makeMenuItemHandler(function() return "Edit|||Select All" end))
+    registerAction("Menu Items.Edit.Select Clip", makeMenuItemHandler(function() return "Edit|||Select Clip" end))
+    registerAction("Menu Items.Edit.Deselect All", makeMenuItemHandler(function() return "Edit|||Deselect All" end))
+    registerAction("Menu Items.Edit.Select.Select Next", makeMenuItemHandler(function() return "Edit|||Select|||Select Next" end))
+    registerAction("Menu Items.Edit.Select.Select Previous", makeMenuItemHandler(function() return "Edit|||Select|||Select Previous" end))
+    registerAction("Menu Items.Edit.Select.Select Above", makeMenuItemHandler(function() return "Edit|||Select|||Select Above" end))
+    registerAction("Menu Items.Edit.Select.Select Below", makeMenuItemHandler(function() return "Edit|||Select|||Select Below" end))
+    registerAction("Menu Items.Edit.Paste Effects", makeMenuItemHandler(function() return "Edit|||Paste Effects" end))
+    registerAction("Menu Items.Edit.Paste Attributes…", makeMenuItemHandler(function() return "Edit|||Paste Attributes…" end))
+    registerAction("Menu Items.Edit.Remove Effects", makeMenuItemHandler(function() return "Edit|||Remove Effects" end))
+    registerAction("Menu Items.Edit.Remove Attributes…", makeMenuItemHandler(function() return "Edit|||Remove Attributes…" end))
+    registerAction("Menu Items.Edit.Duplicate Project", makeMenuItemHandler(function() return "Edit|||Duplicate Project" end))
+    registerAction("Menu Items.Edit.Duplicate Project As…", makeMenuItemHandler(function() return "Edit|||Duplicate Project As…" end))
+    registerAction("Menu Items.Edit.Snapshot Project", makeMenuItemHandler(function() return "Edit|||Snapshot Project" end))
+    registerAction("Menu Items.Edit.Keyframes.Cut", makeMenuItemHandler(function() return "Edit|||Keyframes|||Cut" end))
+    registerAction("Menu Items.Edit.Keyframes.Copy", makeMenuItemHandler(function() return "Edit|||Keyframes|||Copy" end))
+    registerAction("Menu Items.Edit.Keyframes.Paste", makeMenuItemHandler(function() return "Edit|||Keyframes|||Paste" end))
+    registerAction("Menu Items.Edit.Keyframes.Delete", makeMenuItemHandler(function() return "Edit|||Keyframes|||Delete" end))
+    registerAction("Menu Items.Edit.Connect to Primary Storyline", makeMenuItemHandler(function() return "Edit|||Connect to Primary Storyline" end))
+    registerAction("Menu Items.Edit.Insert", makeMenuItemHandler(function() return "Edit|||Insert" end))
+    registerAction("Menu Items.Edit.Append to Storyline", makeMenuItemHandler(function() return "Edit|||Append to Storyline" end))
+    registerAction("Menu Items.Edit.Overwrite", makeMenuItemHandler(function() return "Edit|||Overwrite" end))
+    registerAction("Menu Items.Edit.Source Media.All", makeMenuItemHandler(function() return "Edit|||Source Media|||All" end))
+    registerAction("Menu Items.Edit.Source Media.Video Only", makeMenuItemHandler(function() return "Edit|||Source Media|||Video Only" end))
+    registerAction("Menu Items.Edit.Source Media.Audio Only", makeMenuItemHandler(function() return "Edit|||Source Media|||Audio Only" end))
+    registerAction("Menu Items.Edit.Overwrite to Primary Storyline", makeMenuItemHandler(function() return "Edit|||Overwrite to Primary Storyline" end))
+    registerAction("Menu Items.Edit.Lift from Storyline", makeMenuItemHandler(function() return "Edit|||Lift from Storyline" end))
+    registerAction("Menu Items.Edit.Add Cross Dissolve", makeMenuItemHandler(function() return "Edit|||Add Cross Dissolve" end))
+    registerAction("Menu Items.Edit.Add Color Board", makeMenuItemHandler(function() return "Edit|||Add Color Board" end))
+    registerAction("Menu Items.Edit.Add Channel EQ", makeMenuItemHandler(function() return "Edit|||Add Channel EQ" end))
+    registerAction("Menu Items.Edit.Connect Title.Basic Title", makeMenuItemHandler(function() return "Edit|||Connect Title|||Basic Title" end))
+    registerAction("Menu Items.Edit.Connect Title.Basic Lower Third", makeMenuItemHandler(function() return "Edit|||Connect Title|||Basic Lower Third" end))
+    registerAction("Menu Items.Edit.Insert Generator.Placeholder", makeMenuItemHandler(function() return "Edit|||Insert Generator|||Placeholder" end))
+    registerAction("Menu Items.Edit.Insert Generator.Gap", makeMenuItemHandler(function() return "Edit|||Insert Generator|||Gap" end))
+    registerAction("Menu Items.Edit.Connect Freeze Frame", makeMenuItemHandler(function() return "Edit|||Connect Freeze Frame" end))
+    registerAction("Menu Items.Edit.Captions.Add Caption", makeMenuItemHandler(function() return "Edit|||Captions|||Add Caption" end))
+    registerAction("Menu Items.Edit.Captions.Edit Caption", makeMenuItemHandler(function() return "Edit|||Captions|||Edit Caption" end))
+    registerAction("Menu Items.Edit.Captions.Split Captions", makeMenuItemHandler(function() return "Edit|||Captions|||Split Captions" end))
+    registerAction("Menu Items.Edit.Captions.Resolve Overlaps", makeMenuItemHandler(function() return "Edit|||Captions|||Resolve Overlaps" end))
+    registerAction("Menu Items.Edit.Captions.Extract Captions", makeMenuItemHandler(function() return "Edit|||Captions|||Extract Captions" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Afrikaans", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Afrikaans" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Arabic", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Arabic" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Bangla", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Bangla" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Bulgarian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Bulgarian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Catalan", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Catalan" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Cantonese)", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Chinese (Cantonese)" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Simplified)", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Chinese (Simplified)" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Traditional)", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Chinese (Traditional)" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Croatian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Croatian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Czech", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Czech" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Danish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Danish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Dutch", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Dutch" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.English.All", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||English|||All" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.English.Australia", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||English|||Australia" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.English.Canada", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||English|||Canada" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.English.United Kingdom", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||English|||United Kingdom" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.English.United States", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||English|||United States" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Estonian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Estonian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Finnish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Finnish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Belgium", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||French|||Belgium" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Canada", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||French|||Canada" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.French.France", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||French|||France" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Switzerland", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||French|||Switzerland" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.German.All", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||German|||All" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Austria", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||German|||Austria" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Germany", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||German|||Germany" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Switzerland", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||German|||Switzerland" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Greek.All", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Greek|||All" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Greek.Cyprus", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Greek|||Cyprus" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Hebrew", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Hebrew" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Hindi", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Hindi" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Hungarian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Hungarian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Icelandic", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Icelandic" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Indonesian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Indonesian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Italian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Italian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Japanese", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Japanese" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Kannada", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Kannada" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Kazakh", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Kazakh" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Korean", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Korean" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Lao", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Lao" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Latvian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Latvian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Lithuanian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Lithuanian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Luxembourgish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Luxembourgish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Malay", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Malay" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Malayalam", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Malayalam" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Maltese", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Maltese" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Marathi", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Marathi" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Norwegian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Norwegian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Polish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Polish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Portuguese.Brazil", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Portuguese|||Brazil" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Portuguese.Portugal", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Portuguese|||Portugal" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Punjabi", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Punjabi" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Romanian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Romanian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Russian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Russian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Scottish Gaelic", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Scottish Gaelic" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Slovak", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Slovak" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Slovenian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Slovenian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Latin America", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Spanish|||Latin America" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Mexico", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Spanish|||Mexico" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Spain", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Spanish|||Spain" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Swedish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Swedish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Tagalog", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Tagalog" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Tamil", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Tamil" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Telugu", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Telugu" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Thai", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Thai" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Turkish", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Turkish" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Ukrainian", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Ukrainian" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Urdu", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Urdu" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Vietnamese", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Vietnamese" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Welsh", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Welsh" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Language.Zulu", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Language|||Zulu" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Format.iTT", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Format|||iTT" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Format.CEA-608", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Format|||CEA-608" end))
+    registerAction("Menu Items.Edit.Captions.Duplicate Captions to New Format.SRT", makeMenuItemHandler(function() return "Edit|||Captions|||Duplicate Captions to New Format|||SRT" end))
+    registerAction("Menu Items.Edit.Find…", makeMenuItemHandler(function() return "Edit|||Find…" end))
+    registerAction("Menu Items.Edit.Find and Replace Title Text...", makeMenuItemHandler(function() return "Edit|||Find and Replace Title Text..." end))
+    registerAction("Menu Items.Edit.Start Dictation…", makeMenuItemHandler(function() return "Edit|||Start Dictation…" end))
+    registerAction("Menu Items.Edit.Emoji & Symbols", makeMenuItemHandler(function() return "Edit|||Emoji & Symbols" end))
+    registerAction("Menu Items.Trim.Blade", makeMenuItemHandler(function() return "Trim|||Blade" end))
+    registerAction("Menu Items.Trim.Blade All", makeMenuItemHandler(function() return "Trim|||Blade All" end))
+    registerAction("Menu Items.Trim.Join Clips", makeMenuItemHandler(function() return "Trim|||Join Clips" end))
+    registerAction("Menu Items.Trim.Trim Start", makeMenuItemHandler(function() return "Trim|||Trim Start" end))
+    registerAction("Menu Items.Trim.Trim End", makeMenuItemHandler(function() return "Trim|||Trim End" end))
+    registerAction("Menu Items.Trim.Trim to Selection", makeMenuItemHandler(function() return "Trim|||Trim to Selection" end))
+    registerAction("Menu Items.Trim.Extend Edit", makeMenuItemHandler(function() return "Trim|||Extend Edit" end))
+    registerAction("Menu Items.Trim.Align Audio to Video", makeMenuItemHandler(function() return "Trim|||Align Audio to Video" end))
+    registerAction("Menu Items.Trim.Nudge Left", makeMenuItemHandler(function() return "Trim|||Nudge Left" end))
+    registerAction("Menu Items.Trim.Nudge Right", makeMenuItemHandler(function() return "Trim|||Nudge Right" end))
+    registerAction("Menu Items.Mark.Set Range Start", makeMenuItemHandler(function() return "Mark|||Set Range Start" end))
+    registerAction("Menu Items.Mark.Set Range End", makeMenuItemHandler(function() return "Mark|||Set Range End" end))
+    registerAction("Menu Items.Mark.Set Clip Range", makeMenuItemHandler(function() return "Mark|||Set Clip Range" end))
+    registerAction("Menu Items.Mark.Clear Selected Ranges", makeMenuItemHandler(function() return "Mark|||Clear Selected Ranges" end))
+    registerAction("Menu Items.Mark.Favorite", makeMenuItemHandler(function() return "Mark|||Favorite" end))
+    registerAction("Menu Items.Mark.Delete", makeMenuItemHandler(function() return "Mark|||Delete" end))
+    registerAction("Menu Items.Mark.Unrate", makeMenuItemHandler(function() return "Mark|||Unrate" end))
+    registerAction("Menu Items.Mark.Show Keyword Editor", makeMenuItemHandler(function() return "Mark|||Show Keyword Editor" end))
+    registerAction("Menu Items.Mark.Remove All Keywords", makeMenuItemHandler(function() return "Mark|||Remove All Keywords" end))
+    registerAction("Menu Items.Mark.Remove All Analysis Keywords", makeMenuItemHandler(function() return "Mark|||Remove All Analysis Keywords" end))
+    registerAction("Menu Items.Mark.Markers.Add Marker", makeMenuItemHandler(function() return "Mark|||Markers|||Add Marker" end))
+    registerAction("Menu Items.Mark.Markers.Add Marker and Modify", makeMenuItemHandler(function() return "Mark|||Markers|||Add Marker and Modify" end))
+    registerAction("Menu Items.Mark.Markers.Modify Marker", makeMenuItemHandler(function() return "Mark|||Markers|||Modify Marker" end))
+    registerAction("Menu Items.Mark.Markers.Nudge Marker Left", makeMenuItemHandler(function() return "Mark|||Markers|||Nudge Marker Left" end))
+    registerAction("Menu Items.Mark.Markers.Nudge Marker Right", makeMenuItemHandler(function() return "Mark|||Markers|||Nudge Marker Right" end))
+    registerAction("Menu Items.Mark.Markers.Delete Marker", makeMenuItemHandler(function() return "Mark|||Markers|||Delete Marker" end))
+    registerAction("Menu Items.Mark.Markers.Delete Markers in Selection", makeMenuItemHandler(function() return "Mark|||Markers|||Delete Markers in Selection" end))
+    registerAction("Menu Items.Mark.Go to.Range Start", makeMenuItemHandler(function() return "Mark|||Go to|||Range Start" end))
+    registerAction("Menu Items.Mark.Go to.Range End", makeMenuItemHandler(function() return "Mark|||Go to|||Range End" end))
+    registerAction("Menu Items.Mark.Go to.Beginning", makeMenuItemHandler(function() return "Mark|||Go to|||Beginning" end))
+    registerAction("Menu Items.Mark.Go to.End", makeMenuItemHandler(function() return "Mark|||Go to|||End" end))
+    registerAction("Menu Items.Mark.Previous.Frame", makeMenuItemHandler(function() return "Mark|||Previous|||Frame" end))
+    registerAction("Menu Items.Mark.Previous.Edit", makeMenuItemHandler(function() return "Mark|||Previous|||Edit" end))
+    registerAction("Menu Items.Mark.Previous.Marker", makeMenuItemHandler(function() return "Mark|||Previous|||Marker" end))
+    registerAction("Menu Items.Mark.Previous.Keyframe", makeMenuItemHandler(function() return "Mark|||Previous|||Keyframe" end))
+    registerAction("Menu Items.Mark.Next.Frame", makeMenuItemHandler(function() return "Mark|||Next|||Frame" end))
+    registerAction("Menu Items.Mark.Next.Edit", makeMenuItemHandler(function() return "Mark|||Next|||Edit" end))
+    registerAction("Menu Items.Mark.Next.Marker", makeMenuItemHandler(function() return "Mark|||Next|||Marker" end))
+    registerAction("Menu Items.Mark.Next.Keyframe", makeMenuItemHandler(function() return "Mark|||Next|||Keyframe" end))
+    registerAction("Menu Items.Clip.Create Storyline", makeMenuItemHandler(function() return "Clip|||Create Storyline" end))
+    registerAction("Menu Items.Clip.Synchronize Clips…", makeMenuItemHandler(function() return "Clip|||Synchronize Clips…" end))
+    registerAction("Menu Items.Clip.Reference New Parent Clip", makeMenuItemHandler(function() return "Clip|||Reference New Parent Clip" end))
+    registerAction("Menu Items.Clip.Open Clip", makeMenuItemHandler(function() return "Clip|||Open Clip" end))
+    registerAction("Menu Items.Clip.Audition.Open", makeMenuItemHandler(function() return "Clip|||Audition|||Open" end))
+    registerAction("Menu Items.Clip.Audition.Preview", makeMenuItemHandler(function() return "Clip|||Audition|||Preview" end))
+    registerAction("Menu Items.Clip.Audition.Create", makeMenuItemHandler(function() return "Clip|||Audition|||Create" end))
+    registerAction("Menu Items.Clip.Audition.Duplicate as Audition", makeMenuItemHandler(function() return "Clip|||Audition|||Duplicate as Audition" end))
+    registerAction("Menu Items.Clip.Audition.Duplicate from Original", makeMenuItemHandler(function() return "Clip|||Audition|||Duplicate from Original" end))
+    registerAction("Menu Items.Clip.Audition.Next Pick", makeMenuItemHandler(function() return "Clip|||Audition|||Next Pick" end))
+    registerAction("Menu Items.Clip.Audition.Previous Pick", makeMenuItemHandler(function() return "Clip|||Audition|||Previous Pick" end))
+    registerAction("Menu Items.Clip.Audition.Finalize Audition", makeMenuItemHandler(function() return "Clip|||Audition|||Finalize Audition" end))
+    registerAction("Menu Items.Clip.Audition.Replace and add to Audition", makeMenuItemHandler(function() return "Clip|||Audition|||Replace and add to Audition" end))
+    registerAction("Menu Items.Clip.Audition.Add to Audition", makeMenuItemHandler(function() return "Clip|||Audition|||Add to Audition" end))
+    registerAction("Menu Items.Clip.Show Video Animation", makeMenuItemHandler(function() return "Clip|||Show Video Animation" end))
+    registerAction("Menu Items.Clip.Show Audio Animation", makeMenuItemHandler(function() return "Clip|||Show Audio Animation" end))
+    registerAction("Menu Items.Clip.Solo Animation", makeMenuItemHandler(function() return "Clip|||Solo Animation" end))
+    registerAction("Menu Items.Clip.Expand Audio", makeMenuItemHandler(function() return "Clip|||Expand Audio" end))
+    registerAction("Menu Items.Clip.Expand Audio Components", makeMenuItemHandler(function() return "Clip|||Expand Audio Components" end))
+    registerAction("Menu Items.Clip.Detach Audio", makeMenuItemHandler(function() return "Clip|||Detach Audio" end))
+    registerAction("Menu Items.Clip.Break Apart Clip Items", makeMenuItemHandler(function() return "Clip|||Break Apart Clip Items" end))
+    registerAction("Menu Items.Clip.Enable", makeMenuItemHandler(function() return "Clip|||Enable" end))
+    registerAction("Menu Items.Clip.Solo", makeMenuItemHandler(function() return "Clip|||Solo" end))
+    registerAction("Menu Items.Clip.Add to Soloed Clips", makeMenuItemHandler(function() return "Clip|||Add to Soloed Clips" end))
+    registerAction("Menu Items.Modify.Analyze and Fix…", makeMenuItemHandler(function() return "Modify|||Analyze and Fix…" end))
+    registerAction("Menu Items.Modify.Adjust Content Created Date and Time…", makeMenuItemHandler(function() return "Modify|||Adjust Content Created Date and Time…" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.Clip Date/Time", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||Clip Date/Time" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.Custom Name with Counter", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||Custom Name with Counter" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.Original Name from Camera", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||Original Name from Camera" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.Scene/Shot/Take/Angle", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||Scene/Shot/Take/Angle" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.Edit…", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||Edit…" end))
+    registerAction("Menu Items.Modify.Apply Custom Name.New…", makeMenuItemHandler(function() return "Modify|||Apply Custom Name|||New…" end))
+    registerAction("Menu Items.Modify.Assign Audio Roles.Edit Roles…", makeMenuItemHandler(function() return "Modify|||Assign Audio Roles|||Edit Roles…" end))
+    registerAction("Menu Items.Modify.Assign Video Roles.Edit Roles…", makeMenuItemHandler(function() return "Modify|||Assign Video Roles|||Edit Roles…" end))
+    registerAction("Menu Items.Modify.Assign Caption Roles.Edit Roles…", makeMenuItemHandler(function() return "Modify|||Assign Caption Roles|||Edit Roles…" end))
+    registerAction("Menu Items.Modify.Edit Roles…", makeMenuItemHandler(function() return "Modify|||Edit Roles…" end))
+    registerAction("Menu Items.Modify.Balance Color", makeMenuItemHandler(function() return "Modify|||Balance Color" end))
+    registerAction("Menu Items.Modify.Match Color…", makeMenuItemHandler(function() return "Modify|||Match Color…" end))
+    registerAction("Menu Items.Modify.Smart Conform", makeMenuItemHandler(function() return "Modify|||Smart Conform" end))
+    registerAction("Menu Items.Modify.Auto Enhance Audio", makeMenuItemHandler(function() return "Modify|||Auto Enhance Audio" end))
+    registerAction("Menu Items.Modify.Match Audio…", makeMenuItemHandler(function() return "Modify|||Match Audio…" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Up (+1 dB)", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Up (+1 dB)" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Down (-1 dB)", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Down (-1 dB)" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Silence (-∞)", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Silence (-∞)" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Reset (0dB)", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Reset (0dB)" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Absolute…", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Absolute…" end))
+    registerAction("Menu Items.Modify.Adjust Volume.Relative…", makeMenuItemHandler(function() return "Modify|||Adjust Volume|||Relative…" end))
+    registerAction("Menu Items.Modify.Adjust Audio Fades.Crossfade", makeMenuItemHandler(function() return "Modify|||Adjust Audio Fades|||Crossfade" end))
+    registerAction("Menu Items.Modify.Adjust Audio Fades.Apply Fades", makeMenuItemHandler(function() return "Modify|||Adjust Audio Fades|||Apply Fades" end))
+    registerAction("Menu Items.Modify.Adjust Audio Fades.Remove Fades", makeMenuItemHandler(function() return "Modify|||Adjust Audio Fades|||Remove Fades" end))
+    registerAction("Menu Items.Modify.Adjust Audio Fades.Fade In", makeMenuItemHandler(function() return "Modify|||Adjust Audio Fades|||Fade In" end))
+    registerAction("Menu Items.Modify.Adjust Audio Fades.Fade Out", makeMenuItemHandler(function() return "Modify|||Adjust Audio Fades|||Fade Out" end))
+    registerAction("Menu Items.Modify.Add Keyframe to Selected Effect in Animation Editor", makeMenuItemHandler(function() return "Modify|||Add Keyframe to Selected Effect in Animation Editor" end))
+    registerAction("Menu Items.Modify.Change Duration…", makeMenuItemHandler(function() return "Modify|||Change Duration…" end))
+    registerAction("Menu Items.Modify.Retime.Slow.50%", makeMenuItemHandler(function() return "Modify|||Retime|||Slow|||50%" end))
+    registerAction("Menu Items.Modify.Retime.Slow.25%", makeMenuItemHandler(function() return "Modify|||Retime|||Slow|||25%" end))
+    registerAction("Menu Items.Modify.Retime.Slow.10%", makeMenuItemHandler(function() return "Modify|||Retime|||Slow|||10%" end))
+    registerAction("Menu Items.Modify.Retime.Fast.2x", makeMenuItemHandler(function() return "Modify|||Retime|||Fast|||2x" end))
+    registerAction("Menu Items.Modify.Retime.Fast.4x", makeMenuItemHandler(function() return "Modify|||Retime|||Fast|||4x" end))
+    registerAction("Menu Items.Modify.Retime.Fast.8x", makeMenuItemHandler(function() return "Modify|||Retime|||Fast|||8x" end))
+    registerAction("Menu Items.Modify.Retime.Fast.20x", makeMenuItemHandler(function() return "Modify|||Retime|||Fast|||20x" end))
+    registerAction("Menu Items.Modify.Retime.Normal (100%)", makeMenuItemHandler(function() return "Modify|||Retime|||Normal (100%)" end))
+    registerAction("Menu Items.Modify.Retime.Hold", makeMenuItemHandler(function() return "Modify|||Retime|||Hold" end))
+    registerAction("Menu Items.Modify.Retime.Blade Speed", makeMenuItemHandler(function() return "Modify|||Retime|||Blade Speed" end))
+    registerAction("Menu Items.Modify.Retime.Custom Speed...", makeMenuItemHandler(function() return "Modify|||Retime|||Custom Speed..." end))
+    registerAction("Menu Items.Modify.Retime.Reverse Clip", makeMenuItemHandler(function() return "Modify|||Retime|||Reverse Clip" end))
+    registerAction("Menu Items.Modify.Retime.Reset Speed ", makeMenuItemHandler(function() return "Modify|||Retime|||Reset Speed " end))
+    registerAction("Menu Items.Modify.Retime.Automatic Speed", makeMenuItemHandler(function() return "Modify|||Retime|||Automatic Speed" end))
+    registerAction("Menu Items.Modify.Retime.Speed Ramp.to 0%", makeMenuItemHandler(function() return "Modify|||Retime|||Speed Ramp|||to 0%" end))
+    registerAction("Menu Items.Modify.Retime.Speed Ramp.from 0%", makeMenuItemHandler(function() return "Modify|||Retime|||Speed Ramp|||from 0%" end))
+    registerAction("Menu Items.Modify.Retime.Instant Replay.100%", makeMenuItemHandler(function() return "Modify|||Retime|||Instant Replay|||100%" end))
+    registerAction("Menu Items.Modify.Retime.Instant Replay.50%", makeMenuItemHandler(function() return "Modify|||Retime|||Instant Replay|||50%" end))
+    registerAction("Menu Items.Modify.Retime.Instant Replay.25%", makeMenuItemHandler(function() return "Modify|||Retime|||Instant Replay|||25%" end))
+    registerAction("Menu Items.Modify.Retime.Instant Replay.10%", makeMenuItemHandler(function() return "Modify|||Retime|||Instant Replay|||10%" end))
+    registerAction("Menu Items.Modify.Retime.Rewind.1x", makeMenuItemHandler(function() return "Modify|||Retime|||Rewind|||1x" end))
+    registerAction("Menu Items.Modify.Retime.Rewind.2x", makeMenuItemHandler(function() return "Modify|||Retime|||Rewind|||2x" end))
+    registerAction("Menu Items.Modify.Retime.Rewind.4x", makeMenuItemHandler(function() return "Modify|||Retime|||Rewind|||4x" end))
+    registerAction("Menu Items.Modify.Retime.Jump Cut at Markers.3 frames", makeMenuItemHandler(function() return "Modify|||Retime|||Jump Cut at Markers|||3 frames" end))
+    registerAction("Menu Items.Modify.Retime.Jump Cut at Markers.5 frames", makeMenuItemHandler(function() return "Modify|||Retime|||Jump Cut at Markers|||5 frames" end))
+    registerAction("Menu Items.Modify.Retime.Jump Cut at Markers.10 frames", makeMenuItemHandler(function() return "Modify|||Retime|||Jump Cut at Markers|||10 frames" end))
+    registerAction("Menu Items.Modify.Retime.Jump Cut at Markers.20 frames", makeMenuItemHandler(function() return "Modify|||Retime|||Jump Cut at Markers|||20 frames" end))
+    registerAction("Menu Items.Modify.Retime.Jump Cut at Markers.30 frames", makeMenuItemHandler(function() return "Modify|||Retime|||Jump Cut at Markers|||30 frames" end))
+    registerAction("Menu Items.Modify.Retime.Video Quality.Normal", makeMenuItemHandler(function() return "Modify|||Retime|||Video Quality|||Normal" end))
+    registerAction("Menu Items.Modify.Retime.Video Quality.Frame Blending", makeMenuItemHandler(function() return "Modify|||Retime|||Video Quality|||Frame Blending" end))
+    registerAction("Menu Items.Modify.Retime.Video Quality.Optical Flow", makeMenuItemHandler(function() return "Modify|||Retime|||Video Quality|||Optical Flow" end))
+    registerAction("Menu Items.Modify.Retime.Preserve Pitch", makeMenuItemHandler(function() return "Modify|||Retime|||Preserve Pitch" end))
+    registerAction("Menu Items.Modify.Retime.Speed Transitions", makeMenuItemHandler(function() return "Modify|||Retime|||Speed Transitions" end))
+    registerAction("Menu Items.Modify.Retime.Show Retime Editor", makeMenuItemHandler(function() return "Modify|||Retime|||Show Retime Editor" end))
+    registerAction("Menu Items.Modify.Render All", makeMenuItemHandler(function() return "Modify|||Render All" end))
+    registerAction("Menu Items.Modify.Render Selection", makeMenuItemHandler(function() return "Modify|||Render Selection" end))
+    registerAction("Menu Items.View.Playback.Play", makeMenuItemHandler(function() return "View|||Playback|||Play" end))
+    registerAction("Menu Items.View.Playback.Play Selection", makeMenuItemHandler(function() return "View|||Playback|||Play Selection" end))
+    registerAction("Menu Items.View.Playback.Play Around", makeMenuItemHandler(function() return "View|||Playback|||Play Around" end))
+    registerAction("Menu Items.View.Playback.Play from Beginning", makeMenuItemHandler(function() return "View|||Playback|||Play from Beginning" end))
+    registerAction("Menu Items.View.Playback.Play to End", makeMenuItemHandler(function() return "View|||Playback|||Play to End" end))
+    registerAction("Menu Items.View.Playback.Play Full Screen", makeMenuItemHandler(function() return "View|||Playback|||Play Full Screen" end))
+    registerAction("Menu Items.View.Playback.Loop Playback", makeMenuItemHandler(function() return "View|||Playback|||Loop Playback" end))
+    registerAction("Menu Items.View.Sort Library Events By.Date", makeMenuItemHandler(function() return "View|||Sort Library Events By|||Date" end))
+    registerAction("Menu Items.View.Sort Library Events By.Name", makeMenuItemHandler(function() return "View|||Sort Library Events By|||Name" end))
+    registerAction("Menu Items.View.Sort Library Events By.Ascending", makeMenuItemHandler(function() return "View|||Sort Library Events By|||Ascending" end))
+    registerAction("Menu Items.View.Sort Library Events By.Descending", makeMenuItemHandler(function() return "View|||Sort Library Events By|||Descending" end))
+    registerAction("Menu Items.View.Browser.Toggle Filmstrip/List View", makeMenuItemHandler(function() return "View|||Browser|||Toggle Filmstrip/List View" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.None", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||None" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Content Created", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Content Created" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Date Imported", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Date Imported" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Reel", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Reel" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Scene", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Scene" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Duration", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Duration" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.File Type", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||File Type" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Roles", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Roles" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Camera Name", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Camera Name" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Camera Angle", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Camera Angle" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Ascending", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Ascending" end))
+    registerAction("Menu Items.View.Browser.Group Clips By.Descending", makeMenuItemHandler(function() return "View|||Browser|||Group Clips By|||Descending" end))
+    registerAction("Menu Items.View.Browser.Sort By.Content Created", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Content Created" end))
+    registerAction("Menu Items.View.Browser.Sort By.Name", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Name" end))
+    registerAction("Menu Items.View.Browser.Sort By.Take", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Take" end))
+    registerAction("Menu Items.View.Browser.Sort By.Duration", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Duration" end))
+    registerAction("Menu Items.View.Browser.Sort By.Ascending", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Ascending" end))
+    registerAction("Menu Items.View.Browser.Sort By.Descending", makeMenuItemHandler(function() return "View|||Browser|||Sort By|||Descending" end))
+    registerAction("Menu Items.View.Browser.Clip Name Size.Small", makeMenuItemHandler(function() return "View|||Browser|||Clip Name Size|||Small" end))
+    registerAction("Menu Items.View.Browser.Clip Name Size.Medium", makeMenuItemHandler(function() return "View|||Browser|||Clip Name Size|||Medium" end))
+    registerAction("Menu Items.View.Browser.Clip Name Size.Large", makeMenuItemHandler(function() return "View|||Browser|||Clip Name Size|||Large" end))
+    registerAction("Menu Items.View.Browser.Clip Names", makeMenuItemHandler(function() return "View|||Browser|||Clip Names" end))
+    registerAction("Menu Items.View.Browser.Waveforms", makeMenuItemHandler(function() return "View|||Browser|||Waveforms" end))
+    registerAction("Menu Items.View.Browser.Marked Ranges", makeMenuItemHandler(function() return "View|||Browser|||Marked Ranges" end))
+    registerAction("Menu Items.View.Browser.Used Media Ranges", makeMenuItemHandler(function() return "View|||Browser|||Used Media Ranges" end))
+    registerAction("Menu Items.View.Browser.Skimmer Info", makeMenuItemHandler(function() return "View|||Browser|||Skimmer Info" end))
+    registerAction("Menu Items.View.Browser.Continuous Playback", makeMenuItemHandler(function() return "View|||Browser|||Continuous Playback" end))
+    registerAction("Menu Items.View.Show in Viewer.Angles", makeMenuItemHandler(function() return "View|||Show in Viewer|||Angles" end))
+    registerAction("Menu Items.View.Show in Viewer.360°", makeMenuItemHandler(function() return "View|||Show in Viewer|||360°" end))
+    registerAction("Menu Items.View.Show in Viewer.Video Scopes", makeMenuItemHandler(function() return "View|||Show in Viewer|||Video Scopes" end))
+    registerAction("Menu Items.View.Show in Viewer.Both Fields", makeMenuItemHandler(function() return "View|||Show in Viewer|||Both Fields" end))
+    registerAction("Menu Items.View.Show in Viewer.Title/Action Safe Zones", makeMenuItemHandler(function() return "View|||Show in Viewer|||Title/Action Safe Zones" end))
+    registerAction("Menu Items.View.Show in Viewer.Show Custom Overlay", makeMenuItemHandler(function() return "View|||Show in Viewer|||Show Custom Overlay" end))
+    registerAction("Menu Items.View.Show in Viewer.Choose Custom Overlay.Add Custom Overlay…", makeMenuItemHandler(function() return "View|||Show in Viewer|||Choose Custom Overlay|||Add Custom Overlay…" end))
+    registerAction("Menu Items.View.Show in Viewer.Color Channels.All", makeMenuItemHandler(function() return "View|||Show in Viewer|||Color Channels|||All" end))
+    registerAction("Menu Items.View.Show in Viewer.Color Channels.Alpha", makeMenuItemHandler(function() return "View|||Show in Viewer|||Color Channels|||Alpha" end))
+    registerAction("Menu Items.View.Show in Viewer.Color Channels.Red", makeMenuItemHandler(function() return "View|||Show in Viewer|||Color Channels|||Red" end))
+    registerAction("Menu Items.View.Show in Viewer.Color Channels.Green", makeMenuItemHandler(function() return "View|||Show in Viewer|||Color Channels|||Green" end))
+    registerAction("Menu Items.View.Show in Viewer.Color Channels.Blue", makeMenuItemHandler(function() return "View|||Show in Viewer|||Color Channels|||Blue" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Angles", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Angles" end))
+    registerAction("Menu Items.View.Show in Event Viewer.360°", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||360°" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Video Scopes", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Video Scopes" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Both Fields", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Both Fields" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Title/Action Safe Zones", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Title/Action Safe Zones" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Show Custom Overlay", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Show Custom Overlay" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Choose Custom Overlay", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Choose Custom Overlay" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Color Channels.All", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Color Channels|||All" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Color Channels.Alpha", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Color Channels|||Alpha" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Color Channels.Red", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Color Channels|||Red" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Color Channels.Green", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Color Channels|||Green" end))
+    registerAction("Menu Items.View.Show in Event Viewer.Color Channels.Blue", makeMenuItemHandler(function() return "View|||Show in Event Viewer|||Color Channels|||Blue" end))
+    registerAction("Menu Items.View.Toggle Inspector Height", makeMenuItemHandler(function() return "View|||Toggle Inspector Height" end))
+    registerAction("Menu Items.View.Timeline Index.Clips", makeMenuItemHandler(function() return "View|||Timeline Index|||Clips" end))
+    registerAction("Menu Items.View.Timeline Index.Tags", makeMenuItemHandler(function() return "View|||Timeline Index|||Tags" end))
+    registerAction("Menu Items.View.Timeline Index.Roles", makeMenuItemHandler(function() return "View|||Timeline Index|||Roles" end))
+    registerAction("Menu Items.View.Timeline Index.Captions", makeMenuItemHandler(function() return "View|||Timeline Index|||Captions" end))
+    registerAction("Menu Items.View.Show Audio Lanes", makeMenuItemHandler(function() return "View|||Show Audio Lanes" end))
+    registerAction("Menu Items.View.Collapse Subroles", makeMenuItemHandler(function() return "View|||Collapse Subroles" end))
+    registerAction("Menu Items.View.Timeline History Back", makeMenuItemHandler(function() return "View|||Timeline History Back" end))
+    registerAction("Menu Items.View.Timeline History Forward", makeMenuItemHandler(function() return "View|||Timeline History Forward" end))
+    registerAction("Menu Items.View.Show Precision Editor", makeMenuItemHandler(function() return "View|||Show Precision Editor" end))
+    registerAction("Menu Items.View.Zoom In", makeMenuItemHandler(function() return "View|||Zoom In" end))
+    registerAction("Menu Items.View.Zoom Out", makeMenuItemHandler(function() return "View|||Zoom Out" end))
+    registerAction("Menu Items.View.Zoom to Fit", makeMenuItemHandler(function() return "View|||Zoom to Fit" end))
+    registerAction("Menu Items.View.Zoom to Samples", makeMenuItemHandler(function() return "View|||Zoom to Samples" end))
+    registerAction("Menu Items.View.Skimming", makeMenuItemHandler(function() return "View|||Skimming" end))
+    registerAction("Menu Items.View.Clip Skimming", makeMenuItemHandler(function() return "View|||Clip Skimming" end))
+    registerAction("Menu Items.View.Audio Skimming", makeMenuItemHandler(function() return "View|||Audio Skimming" end))
+    registerAction("Menu Items.View.Snapping", makeMenuItemHandler(function() return "View|||Snapping" end))
+    registerAction("Menu Items.View.Enter Full Screen", makeMenuItemHandler(function() return "View|||Enter Full Screen" end))
+    registerAction("Menu Items.Window.Minimize", makeMenuItemHandler(function() return "Window|||Minimize" end))
+    registerAction("Menu Items.Window.Zoom", makeMenuItemHandler(function() return "Window|||Zoom" end))
+    registerAction("Menu Items.Window.Go To.Libraries", makeMenuItemHandler(function() return "Window|||Go To|||Libraries" end))
+    registerAction("Menu Items.Window.Go To.Photos and Audio", makeMenuItemHandler(function() return "Window|||Go To|||Photos and Audio" end))
+    registerAction("Menu Items.Window.Go To.Titles and Generators", makeMenuItemHandler(function() return "Window|||Go To|||Titles and Generators" end))
+    registerAction("Menu Items.Window.Go To.Viewer", makeMenuItemHandler(function() return "Window|||Go To|||Viewer" end))
+    registerAction("Menu Items.Window.Go To.Event Viewer", makeMenuItemHandler(function() return "Window|||Go To|||Event Viewer" end))
+    registerAction("Menu Items.Window.Go To.Comparison Viewer", makeMenuItemHandler(function() return "Window|||Go To|||Comparison Viewer" end))
+    registerAction("Menu Items.Window.Go To.Timeline", makeMenuItemHandler(function() return "Window|||Go To|||Timeline" end))
+    registerAction("Menu Items.Window.Go To.Inspector", makeMenuItemHandler(function() return "Window|||Go To|||Inspector" end))
+    registerAction("Menu Items.Window.Go To.Color Inspector", makeMenuItemHandler(function() return "Window|||Go To|||Color Inspector" end))
+    registerAction("Menu Items.Window.Go To.Next Tab", makeMenuItemHandler(function() return "Window|||Go To|||Next Tab" end))
+    registerAction("Menu Items.Window.Go To.Previous Tab", makeMenuItemHandler(function() return "Window|||Go To|||Previous Tab" end))
+    registerAction("Menu Items.Window.Show in Workspace.Sidebar", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Sidebar" end))
+    registerAction("Menu Items.Window.Show in Workspace.Browser", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Browser" end))
+    registerAction("Menu Items.Window.Show in Workspace.Event Viewer", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Event Viewer" end))
+    registerAction("Menu Items.Window.Show in Workspace.Comparison Viewer", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Comparison Viewer" end))
+    registerAction("Menu Items.Window.Show in Workspace.Inspector", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Inspector" end))
+    registerAction("Menu Items.Window.Show in Workspace.Timeline", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Timeline" end))
+    registerAction("Menu Items.Window.Show in Workspace.Timeline Index", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Timeline Index" end))
+    registerAction("Menu Items.Window.Show in Workspace.Audio Meters", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Audio Meters" end))
+    registerAction("Menu Items.Window.Show in Workspace.Effects", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Effects" end))
+    registerAction("Menu Items.Window.Show in Workspace.Transitions", makeMenuItemHandler(function() return "Window|||Show in Workspace|||Transitions" end))
+    registerAction("Menu Items.Window.Show in Secondary Display.Browser", makeMenuItemHandler(function() return "Window|||Show in Secondary Display|||Browser" end))
+    registerAction("Menu Items.Window.Show in Secondary Display.Viewers", makeMenuItemHandler(function() return "Window|||Show in Secondary Display|||Viewers" end))
+    registerAction("Menu Items.Window.Show in Secondary Display.Timeline", makeMenuItemHandler(function() return "Window|||Show in Secondary Display|||Timeline" end))
+    registerAction("Menu Items.Window.Workspaces.Default", makeMenuItemHandler(function() return "Window|||Workspaces|||Default" end))
+    registerAction("Menu Items.Window.Workspaces.Organize", makeMenuItemHandler(function() return "Window|||Workspaces|||Organize" end))
+    registerAction("Menu Items.Window.Workspaces.Color & Effects", makeMenuItemHandler(function() return "Window|||Workspaces|||Color & Effects" end))
+    registerAction("Menu Items.Window.Workspaces.Dual Displays", makeMenuItemHandler(function() return "Window|||Workspaces|||Dual Displays" end))
+    registerAction("Menu Items.Window.Workspaces.Save Workspace as…", makeMenuItemHandler(function() return "Window|||Workspaces|||Save Workspace as…" end))
+    registerAction("Menu Items.Window.Workspaces.Update Workspace", makeMenuItemHandler(function() return "Window|||Workspaces|||Update Workspace" end))
+    registerAction("Menu Items.Window.Workspaces.Open Workspace Folder in Finder", makeMenuItemHandler(function() return "Window|||Workspaces|||Open Workspace Folder in Finder" end))
+    registerAction("Menu Items.Window.Extensions.Frame.io", makeMenuItemHandler(function() return "Window|||Extensions|||Frame.io" end))
+    registerAction("Menu Items.Window.Extensions.Getting Started for Final Cut Pro 10.4", makeMenuItemHandler(function() return "Window|||Extensions|||Getting Started for Final Cut Pro 10.4" end))
+    registerAction("Menu Items.Window.Extensions.KeyFlow Pro 2 Extension", makeMenuItemHandler(function() return "Window|||Extensions|||KeyFlow Pro 2 Extension" end))
+    registerAction("Menu Items.Window.Extensions.Scribeomatic", makeMenuItemHandler(function() return "Window|||Extensions|||Scribeomatic" end))
+    registerAction("Menu Items.Window.Extensions.ShareBrowser", makeMenuItemHandler(function() return "Window|||Extensions|||ShareBrowser" end))
+    registerAction("Menu Items.Window.Extensions.Shutterstock", makeMenuItemHandler(function() return "Window|||Extensions|||Shutterstock" end))
+    registerAction("Menu Items.Window.Extensions.Simon Says Transcription", makeMenuItemHandler(function() return "Window|||Extensions|||Simon Says Transcription" end))
+    registerAction("Menu Items.Window.Record Voiceover", makeMenuItemHandler(function() return "Window|||Record Voiceover" end))
+    registerAction("Menu Items.Window.Background Tasks", makeMenuItemHandler(function() return "Window|||Background Tasks" end))
+    registerAction("Menu Items.Window.Project Properties", makeMenuItemHandler(function() return "Window|||Project Properties" end))
+    registerAction("Menu Items.Window.Project Timecode", makeMenuItemHandler(function() return "Window|||Project Timecode" end))
+    registerAction("Menu Items.Window.Source Timecode", makeMenuItemHandler(function() return "Window|||Source Timecode" end))
+    registerAction("Menu Items.Window.A/V Output", makeMenuItemHandler(function() return "Window|||A/V Output" end))
+    registerAction("Menu Items.Window.Output to VR Headset", makeMenuItemHandler(function() return "Window|||Output to VR Headset" end))
+    registerAction("Menu Items.Window.Bring All to Front", makeMenuItemHandler(function() return "Window|||Bring All to Front" end))
+    registerAction("Menu Items.Window.Final Cut Pro", makeMenuItemHandler(function() return "Window|||Final Cut Pro" end))
+    registerAction("Menu Items.Help.Final Cut Pro X Help", makeMenuItemHandler(function() return "Help|||Final Cut Pro X Help" end))
+    registerAction("Menu Items.Help.What's New in Final Cut Pro X", makeMenuItemHandler(function() return "Help|||What's New in Final Cut Pro X" end))
+    registerAction("Menu Items.Help.Keyboard Shortcuts", makeMenuItemHandler(function() return "Help|||Keyboard Shortcuts" end))
+    registerAction("Menu Items.Help.Logic Effects Reference", makeMenuItemHandler(function() return "Help|||Logic Effects Reference" end))
+    registerAction("Menu Items.Help.Supported Cameras", makeMenuItemHandler(function() return "Help|||Supported Cameras" end))
+    registerAction("Menu Items.Help.Apps for Final Cut Pro X", makeMenuItemHandler(function() return "Help|||Apps for Final Cut Pro X" end))
+    registerAction("Menu Items.Help.Service and Support", makeMenuItemHandler(function() return "Help|||Service and Support" end))
+    registerAction("Menu Items.Help.Gather App Diagnostics", makeMenuItemHandler(function() return "Help|||Gather App Diagnostics" end))
 
     --------------------------------------------------------------------------------
     -- Command Set Shortcuts:

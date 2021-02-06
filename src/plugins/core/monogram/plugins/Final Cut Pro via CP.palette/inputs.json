@@ -2535,6 +2535,1850 @@
         "name": "CommandPost Favourites.Favourite 9"
     },
     {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Add to Soloed Clips",
+        "name": "Menu Items.Clip.Add to Soloed Clips"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Add to Audition",
+        "name": "Menu Items.Clip.Audition.Add to Audition"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Create",
+        "name": "Menu Items.Clip.Audition.Create"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Duplicate as Audition",
+        "name": "Menu Items.Clip.Audition.Duplicate as Audition"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Duplicate from Original",
+        "name": "Menu Items.Clip.Audition.Duplicate from Original"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Finalize Audition",
+        "name": "Menu Items.Clip.Audition.Finalize Audition"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Next Pick",
+        "name": "Menu Items.Clip.Audition.Next Pick"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Open",
+        "name": "Menu Items.Clip.Audition.Open"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Preview",
+        "name": "Menu Items.Clip.Audition.Preview"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Previous Pick",
+        "name": "Menu Items.Clip.Audition.Previous Pick"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Audition > Replace and add to Audition",
+        "name": "Menu Items.Clip.Audition.Replace and add to Audition"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Break Apart Clip Items",
+        "name": "Menu Items.Clip.Break Apart Clip Items"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Create Storyline",
+        "name": "Menu Items.Clip.Create Storyline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Detach Audio",
+        "name": "Menu Items.Clip.Detach Audio"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Enable",
+        "name": "Menu Items.Clip.Enable"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Expand Audio Components",
+        "name": "Menu Items.Clip.Expand Audio Components"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Expand Audio",
+        "name": "Menu Items.Clip.Expand Audio"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Open Clip",
+        "name": "Menu Items.Clip.Open Clip"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Reference New Parent Clip",
+        "name": "Menu Items.Clip.Reference New Parent Clip"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Show Audio Animation",
+        "name": "Menu Items.Clip.Show Audio Animation"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Show Video Animation",
+        "name": "Menu Items.Clip.Show Video Animation"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Solo Animation",
+        "name": "Menu Items.Clip.Solo Animation"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Solo",
+        "name": "Menu Items.Clip.Solo"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Clip > Synchronize Clips…",
+        "name": "Menu Items.Clip.Synchronize Clips…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Add Channel EQ",
+        "name": "Menu Items.Edit.Add Channel EQ"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Add Color Board",
+        "name": "Menu Items.Edit.Add Color Board"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Add Cross Dissolve",
+        "name": "Menu Items.Edit.Add Cross Dissolve"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Append to Storyline",
+        "name": "Menu Items.Edit.Append to Storyline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Add Caption",
+        "name": "Menu Items.Edit.Captions.Add Caption"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Format > CEA-608",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Format.CEA-608"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Format > SRT",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Format.SRT"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Format > iTT",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Format.iTT"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Afrikaans",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Afrikaans"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Arabic",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Arabic"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Bangla",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Bangla"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Bulgarian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Bulgarian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Catalan",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Catalan"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Chinese (Cantonese)",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Cantonese)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Chinese (Simplified)",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Simplified)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Chinese (Traditional)",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Chinese (Traditional)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Croatian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Croatian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Czech",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Czech"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Danish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Danish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Dutch",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Dutch"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > English > All",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.English.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > English > Australia",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.English.Australia"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > English > Canada",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.English.Canada"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > English > United Kingdom",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.English.United Kingdom"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > English > United States",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.English.United States"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Estonian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Estonian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Finnish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Finnish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > French > Belgium",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Belgium"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > French > Canada",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Canada"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > French > France",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.French.France"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > French > Switzerland",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.French.Switzerland"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > German > All",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.German.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > German > Austria",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Austria"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > German > Germany",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Germany"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > German > Switzerland",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.German.Switzerland"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Greek > All",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Greek.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Greek > Cyprus",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Greek.Cyprus"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Hebrew",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Hebrew"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Hindi",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Hindi"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Hungarian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Hungarian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Icelandic",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Icelandic"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Indonesian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Indonesian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Italian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Italian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Japanese",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Japanese"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Kannada",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Kannada"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Kazakh",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Kazakh"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Korean",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Korean"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Lao",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Lao"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Latvian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Latvian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Lithuanian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Lithuanian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Luxembourgish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Luxembourgish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Malay",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Malay"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Malayalam",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Malayalam"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Maltese",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Maltese"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Marathi",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Marathi"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Norwegian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Norwegian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Polish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Polish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Portuguese > Brazil",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Portuguese.Brazil"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Portuguese > Portugal",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Portuguese.Portugal"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Punjabi",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Punjabi"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Romanian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Romanian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Russian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Russian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Scottish Gaelic",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Scottish Gaelic"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Slovak",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Slovak"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Slovenian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Slovenian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Spanish > Latin America",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Latin America"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Spanish > Mexico",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Mexico"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Spanish > Spain",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Spanish.Spain"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Swedish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Swedish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Tagalog",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Tagalog"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Tamil",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Tamil"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Telugu",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Telugu"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Thai",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Thai"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Turkish",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Turkish"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Ukrainian",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Ukrainian"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Urdu",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Urdu"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Vietnamese",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Vietnamese"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Welsh",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Welsh"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Duplicate Captions to New Language > Zulu",
+        "name": "Menu Items.Edit.Captions.Duplicate Captions to New Language.Zulu"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Edit Caption",
+        "name": "Menu Items.Edit.Captions.Edit Caption"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Extract Captions",
+        "name": "Menu Items.Edit.Captions.Extract Captions"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Resolve Overlaps",
+        "name": "Menu Items.Edit.Captions.Resolve Overlaps"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Captions > Split Captions",
+        "name": "Menu Items.Edit.Captions.Split Captions"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Connect Freeze Frame",
+        "name": "Menu Items.Edit.Connect Freeze Frame"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Connect Title > Basic Lower Third",
+        "name": "Menu Items.Edit.Connect Title.Basic Lower Third"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Connect Title > Basic Title",
+        "name": "Menu Items.Edit.Connect Title.Basic Title"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Connect to Primary Storyline",
+        "name": "Menu Items.Edit.Connect to Primary Storyline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Copy Timecode",
+        "name": "Menu Items.Edit.Copy Timecode"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Copy",
+        "name": "Menu Items.Edit.Copy"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Cut",
+        "name": "Menu Items.Edit.Cut"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Delete",
+        "name": "Menu Items.Edit.Delete"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Deselect All",
+        "name": "Menu Items.Edit.Deselect All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Duplicate Project As…",
+        "name": "Menu Items.Edit.Duplicate Project As…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Duplicate Project",
+        "name": "Menu Items.Edit.Duplicate Project"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Emoji & Symbols",
+        "name": "Menu Items.Edit.Emoji & Symbols"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Find and Replace Title Text...",
+        "name": "Menu Items.Edit.Find and Replace Title Text..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Find…",
+        "name": "Menu Items.Edit.Find…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Insert Generator > Gap",
+        "name": "Menu Items.Edit.Insert Generator.Gap"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Insert Generator > Placeholder",
+        "name": "Menu Items.Edit.Insert Generator.Placeholder"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Insert",
+        "name": "Menu Items.Edit.Insert"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Keyframes > Copy",
+        "name": "Menu Items.Edit.Keyframes.Copy"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Keyframes > Cut",
+        "name": "Menu Items.Edit.Keyframes.Cut"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Keyframes > Delete",
+        "name": "Menu Items.Edit.Keyframes.Delete"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Keyframes > Paste",
+        "name": "Menu Items.Edit.Keyframes.Paste"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Lift from Storyline",
+        "name": "Menu Items.Edit.Lift from Storyline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Overwrite to Primary Storyline",
+        "name": "Menu Items.Edit.Overwrite to Primary Storyline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Overwrite",
+        "name": "Menu Items.Edit.Overwrite"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Paste Attributes…",
+        "name": "Menu Items.Edit.Paste Attributes…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Paste Effects",
+        "name": "Menu Items.Edit.Paste Effects"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Paste as Connected Clip",
+        "name": "Menu Items.Edit.Paste as Connected Clip"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Paste",
+        "name": "Menu Items.Edit.Paste"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Redo",
+        "name": "Menu Items.Edit.Redo"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Remove Attributes…",
+        "name": "Menu Items.Edit.Remove Attributes…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Remove Effects",
+        "name": "Menu Items.Edit.Remove Effects"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Replace with Gap",
+        "name": "Menu Items.Edit.Replace with Gap"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select > Select Above",
+        "name": "Menu Items.Edit.Select.Select Above"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select > Select Below",
+        "name": "Menu Items.Edit.Select.Select Below"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select > Select Next",
+        "name": "Menu Items.Edit.Select.Select Next"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select > Select Previous",
+        "name": "Menu Items.Edit.Select.Select Previous"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select All",
+        "name": "Menu Items.Edit.Select All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Select Clip",
+        "name": "Menu Items.Edit.Select Clip"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Snapshot Project",
+        "name": "Menu Items.Edit.Snapshot Project"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Source Media > All",
+        "name": "Menu Items.Edit.Source Media.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Source Media > Audio Only",
+        "name": "Menu Items.Edit.Source Media.Audio Only"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Source Media > Video Only",
+        "name": "Menu Items.Edit.Source Media.Video Only"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Start Dictation…",
+        "name": "Menu Items.Edit.Start Dictation…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Edit > Undo",
+        "name": "Menu Items.Edit.Undo"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Close Library",
+        "name": "Menu Items.File.Close Library"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Close Other Timelines",
+        "name": "Menu Items.File.Close Other Timelines"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Consolidate Library Media…",
+        "name": "Menu Items.File.Consolidate Library Media…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Consolidate Motion Content...",
+        "name": "Menu Items.File.Consolidate Motion Content..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Copy to Library > New Library…",
+        "name": "Menu Items.File.Copy to Library.New Library…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Delete Generated Clip Files…",
+        "name": "Menu Items.File.Delete Generated Clip Files…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Export Captions...",
+        "name": "Menu Items.File.Export Captions..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Export XML…",
+        "name": "Menu Items.File.Export XML…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > Captions…",
+        "name": "Menu Items.File.Import.Captions…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > Media…",
+        "name": "Menu Items.File.Import.Media…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > Redownload Remote Media...",
+        "name": "Menu Items.File.Import.Redownload Remote Media..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > Reimport from Camera/Archive...",
+        "name": "Menu Items.File.Import.Reimport from Camera/Archive..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > XML...",
+        "name": "Menu Items.File.Import.XML..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Import > iMovie iOS Projects...",
+        "name": "Menu Items.File.Import.iMovie iOS Projects..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Library Properties",
+        "name": "Menu Items.File.Library Properties"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Merge Events",
+        "name": "Menu Items.File.Merge Events"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Move to Library > New Library…",
+        "name": "Menu Items.File.Move to Library.New Library…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Move to Trash",
+        "name": "Menu Items.File.Move to Trash"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Compound Clip…",
+        "name": "Menu Items.File.New.Compound Clip…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Event…",
+        "name": "Menu Items.File.New.Event…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Folder",
+        "name": "Menu Items.File.New.Folder"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Keyword Collection",
+        "name": "Menu Items.File.New.Keyword Collection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Library Smart Collection",
+        "name": "Menu Items.File.New.Library Smart Collection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Library…",
+        "name": "Menu Items.File.New.Library…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Multicam Clip…",
+        "name": "Menu Items.File.New.Multicam Clip…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > New > Project…",
+        "name": "Menu Items.File.New.Project…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Open Library > Clear Recents",
+        "name": "Menu Items.File.Open Library.Clear Recents"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Open Library > From Backup…",
+        "name": "Menu Items.File.Open Library.From Backup…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Open Library > Other…",
+        "name": "Menu Items.File.Open Library.Other…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Relink Files > Original Media…",
+        "name": "Menu Items.File.Relink Files.Original Media…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Relink Files > Proxy Media…",
+        "name": "Menu Items.File.Relink Files.Proxy Media…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Reveal Project in Browser",
+        "name": "Menu Items.File.Reveal Project in Browser"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Reveal Proxy Media in Finder",
+        "name": "Menu Items.File.Reveal Proxy Media in Finder"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Reveal in Browser",
+        "name": "Menu Items.File.Reveal in Browser"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Reveal in Finder",
+        "name": "Menu Items.File.Reveal in Finder"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Save Audio Effects Preset…",
+        "name": "Menu Items.File.Save Audio Effects Preset…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Save Video Effects Preset…",
+        "name": "Menu Items.File.Save Video Effects Preset…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Send to Compressor > IMF Package",
+        "name": "Menu Items.File.Send to Compressor.IMF Package"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Send to Compressor > New Batch",
+        "name": "Menu Items.File.Send to Compressor.New Batch"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Send to Compressor > iTunes Store Package",
+        "name": "Menu Items.File.Send to Compressor.iTunes Store Package"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > AIFF…",
+        "name": "Menu Items.File.Share.AIFF…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Add Destination…",
+        "name": "Menu Items.File.Share.Add Destination…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Apple Devices 1080p…",
+        "name": "Menu Items.File.Share.Apple Devices 1080p…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Apple Devices 4K…",
+        "name": "Menu Items.File.Share.Apple Devices 4K…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Apple Devices 720p…",
+        "name": "Menu Items.File.Share.Apple Devices 720p…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > DVD…",
+        "name": "Menu Items.File.Share.DVD…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Export Image Sequence…",
+        "name": "Menu Items.File.Share.Export Image Sequence…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > MP3…",
+        "name": "Menu Items.File.Share.MP3…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Master File…",
+        "name": "Menu Items.File.Share.Master File…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Save Current Frame…",
+        "name": "Menu Items.File.Share.Save Current Frame…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Vimeo (advanced)…",
+        "name": "Menu Items.File.Share.Vimeo (advanced)…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Share > Xsend Motion…",
+        "name": "Menu Items.File.Share.Xsend Motion…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: File > Transcode Media…",
+        "name": "Menu Items.File.Transcode Media…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > About Final Cut Pro",
+        "name": "Menu Items.Final Cut Pro.About Final Cut Pro"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Commands > Customize…",
+        "name": "Menu Items.Final Cut Pro.Commands.Customize…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Commands > Default",
+        "name": "Menu Items.Final Cut Pro.Commands.Default"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Commands > Export…",
+        "name": "Menu Items.Final Cut Pro.Commands.Export…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Commands > Import…",
+        "name": "Menu Items.Final Cut Pro.Commands.Import…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Download Additional Content…",
+        "name": "Menu Items.Final Cut Pro.Download Additional Content…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Hide Final Cut Pro",
+        "name": "Menu Items.Final Cut Pro.Hide Final Cut Pro"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Hide Others",
+        "name": "Menu Items.Final Cut Pro.Hide Others"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Preferences…",
+        "name": "Menu Items.Final Cut Pro.Preferences…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Provide Final Cut Pro Feedback…",
+        "name": "Menu Items.Final Cut Pro.Provide Final Cut Pro Feedback…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Quit Final Cut Pro",
+        "name": "Menu Items.Final Cut Pro.Quit Final Cut Pro"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Quit and Keep Windows",
+        "name": "Menu Items.Final Cut Pro.Quit and Keep Windows"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Final Cut Pro > Show All",
+        "name": "Menu Items.Final Cut Pro.Show All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Apps for Final Cut Pro X",
+        "name": "Menu Items.Help.Apps for Final Cut Pro X"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Final Cut Pro X Help",
+        "name": "Menu Items.Help.Final Cut Pro X Help"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Gather App Diagnostics",
+        "name": "Menu Items.Help.Gather App Diagnostics"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Keyboard Shortcuts",
+        "name": "Menu Items.Help.Keyboard Shortcuts"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Logic Effects Reference",
+        "name": "Menu Items.Help.Logic Effects Reference"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Service and Support",
+        "name": "Menu Items.Help.Service and Support"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > Supported Cameras",
+        "name": "Menu Items.Help.Supported Cameras"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Help > What's New in Final Cut Pro X",
+        "name": "Menu Items.Help.What's New in Final Cut Pro X"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Clear Selected Ranges",
+        "name": "Menu Items.Mark.Clear Selected Ranges"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Delete",
+        "name": "Menu Items.Mark.Delete"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Favorite",
+        "name": "Menu Items.Mark.Favorite"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Go to > Beginning",
+        "name": "Menu Items.Mark.Go to.Beginning"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Go to > End",
+        "name": "Menu Items.Mark.Go to.End"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Go to > Range End",
+        "name": "Menu Items.Mark.Go to.Range End"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Go to > Range Start",
+        "name": "Menu Items.Mark.Go to.Range Start"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Add Marker and Modify",
+        "name": "Menu Items.Mark.Markers.Add Marker and Modify"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Add Marker",
+        "name": "Menu Items.Mark.Markers.Add Marker"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Delete Marker",
+        "name": "Menu Items.Mark.Markers.Delete Marker"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Delete Markers in Selection",
+        "name": "Menu Items.Mark.Markers.Delete Markers in Selection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Modify Marker",
+        "name": "Menu Items.Mark.Markers.Modify Marker"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Nudge Marker Left",
+        "name": "Menu Items.Mark.Markers.Nudge Marker Left"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Markers > Nudge Marker Right",
+        "name": "Menu Items.Mark.Markers.Nudge Marker Right"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Next > Edit",
+        "name": "Menu Items.Mark.Next.Edit"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Next > Frame",
+        "name": "Menu Items.Mark.Next.Frame"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Next > Keyframe",
+        "name": "Menu Items.Mark.Next.Keyframe"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Next > Marker",
+        "name": "Menu Items.Mark.Next.Marker"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Previous > Edit",
+        "name": "Menu Items.Mark.Previous.Edit"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Previous > Frame",
+        "name": "Menu Items.Mark.Previous.Frame"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Previous > Keyframe",
+        "name": "Menu Items.Mark.Previous.Keyframe"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Previous > Marker",
+        "name": "Menu Items.Mark.Previous.Marker"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Remove All Analysis Keywords",
+        "name": "Menu Items.Mark.Remove All Analysis Keywords"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Remove All Keywords",
+        "name": "Menu Items.Mark.Remove All Keywords"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Set Clip Range",
+        "name": "Menu Items.Mark.Set Clip Range"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Set Range End",
+        "name": "Menu Items.Mark.Set Range End"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Set Range Start",
+        "name": "Menu Items.Mark.Set Range Start"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Show Keyword Editor",
+        "name": "Menu Items.Mark.Show Keyword Editor"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Mark > Unrate",
+        "name": "Menu Items.Mark.Unrate"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Add Keyframe to Selected Effect in Animation Editor",
+        "name": "Menu Items.Modify.Add Keyframe to Selected Effect in Animation Editor"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Audio Fades > Apply Fades",
+        "name": "Menu Items.Modify.Adjust Audio Fades.Apply Fades"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Audio Fades > Crossfade",
+        "name": "Menu Items.Modify.Adjust Audio Fades.Crossfade"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Audio Fades > Fade In",
+        "name": "Menu Items.Modify.Adjust Audio Fades.Fade In"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Audio Fades > Fade Out",
+        "name": "Menu Items.Modify.Adjust Audio Fades.Fade Out"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Audio Fades > Remove Fades",
+        "name": "Menu Items.Modify.Adjust Audio Fades.Remove Fades"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Content Created Date and Time…",
+        "name": "Menu Items.Modify.Adjust Content Created Date and Time…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Absolute…",
+        "name": "Menu Items.Modify.Adjust Volume.Absolute…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Down (-1 dB)",
+        "name": "Menu Items.Modify.Adjust Volume.Down (-1 dB)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Relative…",
+        "name": "Menu Items.Modify.Adjust Volume.Relative…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Reset (0dB)",
+        "name": "Menu Items.Modify.Adjust Volume.Reset (0dB)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Silence (-∞)",
+        "name": "Menu Items.Modify.Adjust Volume.Silence (-∞)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Adjust Volume > Up (+1 dB)",
+        "name": "Menu Items.Modify.Adjust Volume.Up (+1 dB)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Analyze and Fix…",
+        "name": "Menu Items.Modify.Analyze and Fix…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > Clip Date/Time",
+        "name": "Menu Items.Modify.Apply Custom Name.Clip Date/Time"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > Custom Name with Counter",
+        "name": "Menu Items.Modify.Apply Custom Name.Custom Name with Counter"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > Edit…",
+        "name": "Menu Items.Modify.Apply Custom Name.Edit…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > New…",
+        "name": "Menu Items.Modify.Apply Custom Name.New…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > Original Name from Camera",
+        "name": "Menu Items.Modify.Apply Custom Name.Original Name from Camera"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Apply Custom Name > Scene/Shot/Take/Angle",
+        "name": "Menu Items.Modify.Apply Custom Name.Scene/Shot/Take/Angle"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Assign Audio Roles > Edit Roles…",
+        "name": "Menu Items.Modify.Assign Audio Roles.Edit Roles…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Assign Caption Roles > Edit Roles…",
+        "name": "Menu Items.Modify.Assign Caption Roles.Edit Roles…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Assign Video Roles > Edit Roles…",
+        "name": "Menu Items.Modify.Assign Video Roles.Edit Roles…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Auto Enhance Audio",
+        "name": "Menu Items.Modify.Auto Enhance Audio"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Balance Color",
+        "name": "Menu Items.Modify.Balance Color"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Change Duration…",
+        "name": "Menu Items.Modify.Change Duration…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Edit Roles…",
+        "name": "Menu Items.Modify.Edit Roles…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Match Audio…",
+        "name": "Menu Items.Modify.Match Audio…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Match Color…",
+        "name": "Menu Items.Modify.Match Color…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Render All",
+        "name": "Menu Items.Modify.Render All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Render Selection",
+        "name": "Menu Items.Modify.Render Selection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Automatic Speed",
+        "name": "Menu Items.Modify.Retime.Automatic Speed"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Blade Speed",
+        "name": "Menu Items.Modify.Retime.Blade Speed"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Custom Speed...",
+        "name": "Menu Items.Modify.Retime.Custom Speed..."
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Fast > 20x",
+        "name": "Menu Items.Modify.Retime.Fast.20x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Fast > 2x",
+        "name": "Menu Items.Modify.Retime.Fast.2x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Fast > 4x",
+        "name": "Menu Items.Modify.Retime.Fast.4x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Fast > 8x",
+        "name": "Menu Items.Modify.Retime.Fast.8x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Hold",
+        "name": "Menu Items.Modify.Retime.Hold"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Instant Replay > 10%",
+        "name": "Menu Items.Modify.Retime.Instant Replay.10%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Instant Replay > 100%",
+        "name": "Menu Items.Modify.Retime.Instant Replay.100%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Instant Replay > 25%",
+        "name": "Menu Items.Modify.Retime.Instant Replay.25%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Instant Replay > 50%",
+        "name": "Menu Items.Modify.Retime.Instant Replay.50%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Jump Cut at Markers > 10 frames",
+        "name": "Menu Items.Modify.Retime.Jump Cut at Markers.10 frames"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Jump Cut at Markers > 20 frames",
+        "name": "Menu Items.Modify.Retime.Jump Cut at Markers.20 frames"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Jump Cut at Markers > 3 frames",
+        "name": "Menu Items.Modify.Retime.Jump Cut at Markers.3 frames"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Jump Cut at Markers > 30 frames",
+        "name": "Menu Items.Modify.Retime.Jump Cut at Markers.30 frames"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Jump Cut at Markers > 5 frames",
+        "name": "Menu Items.Modify.Retime.Jump Cut at Markers.5 frames"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Normal (100%)",
+        "name": "Menu Items.Modify.Retime.Normal (100%)"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Preserve Pitch",
+        "name": "Menu Items.Modify.Retime.Preserve Pitch"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Reset Speed ",
+        "name": "Menu Items.Modify.Retime.Reset Speed "
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Reverse Clip",
+        "name": "Menu Items.Modify.Retime.Reverse Clip"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Rewind > 1x",
+        "name": "Menu Items.Modify.Retime.Rewind.1x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Rewind > 2x",
+        "name": "Menu Items.Modify.Retime.Rewind.2x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Rewind > 4x",
+        "name": "Menu Items.Modify.Retime.Rewind.4x"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Show Retime Editor",
+        "name": "Menu Items.Modify.Retime.Show Retime Editor"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Slow > 10%",
+        "name": "Menu Items.Modify.Retime.Slow.10%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Slow > 25%",
+        "name": "Menu Items.Modify.Retime.Slow.25%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Slow > 50%",
+        "name": "Menu Items.Modify.Retime.Slow.50%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Speed Ramp > from 0%",
+        "name": "Menu Items.Modify.Retime.Speed Ramp.from 0%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Speed Ramp > to 0%",
+        "name": "Menu Items.Modify.Retime.Speed Ramp.to 0%"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Speed Transitions",
+        "name": "Menu Items.Modify.Retime.Speed Transitions"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Video Quality > Frame Blending",
+        "name": "Menu Items.Modify.Retime.Video Quality.Frame Blending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Video Quality > Normal",
+        "name": "Menu Items.Modify.Retime.Video Quality.Normal"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Retime > Video Quality > Optical Flow",
+        "name": "Menu Items.Modify.Retime.Video Quality.Optical Flow"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Modify > Smart Conform",
+        "name": "Menu Items.Modify.Smart Conform"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Align Audio to Video",
+        "name": "Menu Items.Trim.Align Audio to Video"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Blade All",
+        "name": "Menu Items.Trim.Blade All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Blade",
+        "name": "Menu Items.Trim.Blade"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Extend Edit",
+        "name": "Menu Items.Trim.Extend Edit"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Join Clips",
+        "name": "Menu Items.Trim.Join Clips"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Nudge Left",
+        "name": "Menu Items.Trim.Nudge Left"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Nudge Right",
+        "name": "Menu Items.Trim.Nudge Right"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Trim End",
+        "name": "Menu Items.Trim.Trim End"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Trim Start",
+        "name": "Menu Items.Trim.Trim Start"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Trim > Trim to Selection",
+        "name": "Menu Items.Trim.Trim to Selection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Audio Skimming",
+        "name": "Menu Items.View.Audio Skimming"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Clip Name Size > Large",
+        "name": "Menu Items.View.Browser.Clip Name Size.Large"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Clip Name Size > Medium",
+        "name": "Menu Items.View.Browser.Clip Name Size.Medium"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Clip Name Size > Small",
+        "name": "Menu Items.View.Browser.Clip Name Size.Small"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Clip Names",
+        "name": "Menu Items.View.Browser.Clip Names"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Continuous Playback",
+        "name": "Menu Items.View.Browser.Continuous Playback"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Ascending",
+        "name": "Menu Items.View.Browser.Group Clips By.Ascending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Camera Angle",
+        "name": "Menu Items.View.Browser.Group Clips By.Camera Angle"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Camera Name",
+        "name": "Menu Items.View.Browser.Group Clips By.Camera Name"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Content Created",
+        "name": "Menu Items.View.Browser.Group Clips By.Content Created"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Date Imported",
+        "name": "Menu Items.View.Browser.Group Clips By.Date Imported"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Descending",
+        "name": "Menu Items.View.Browser.Group Clips By.Descending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Duration",
+        "name": "Menu Items.View.Browser.Group Clips By.Duration"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > File Type",
+        "name": "Menu Items.View.Browser.Group Clips By.File Type"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > None",
+        "name": "Menu Items.View.Browser.Group Clips By.None"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Reel",
+        "name": "Menu Items.View.Browser.Group Clips By.Reel"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Roles",
+        "name": "Menu Items.View.Browser.Group Clips By.Roles"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Group Clips By > Scene",
+        "name": "Menu Items.View.Browser.Group Clips By.Scene"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Marked Ranges",
+        "name": "Menu Items.View.Browser.Marked Ranges"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Skimmer Info",
+        "name": "Menu Items.View.Browser.Skimmer Info"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Ascending",
+        "name": "Menu Items.View.Browser.Sort By.Ascending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Content Created",
+        "name": "Menu Items.View.Browser.Sort By.Content Created"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Descending",
+        "name": "Menu Items.View.Browser.Sort By.Descending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Duration",
+        "name": "Menu Items.View.Browser.Sort By.Duration"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Name",
+        "name": "Menu Items.View.Browser.Sort By.Name"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Sort By > Take",
+        "name": "Menu Items.View.Browser.Sort By.Take"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Toggle Filmstrip/List View",
+        "name": "Menu Items.View.Browser.Toggle Filmstrip/List View"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Used Media Ranges",
+        "name": "Menu Items.View.Browser.Used Media Ranges"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Browser > Waveforms",
+        "name": "Menu Items.View.Browser.Waveforms"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Clip Skimming",
+        "name": "Menu Items.View.Clip Skimming"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Collapse Subroles",
+        "name": "Menu Items.View.Collapse Subroles"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Enter Full Screen",
+        "name": "Menu Items.View.Enter Full Screen"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Loop Playback",
+        "name": "Menu Items.View.Playback.Loop Playback"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play Around",
+        "name": "Menu Items.View.Playback.Play Around"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play Full Screen",
+        "name": "Menu Items.View.Playback.Play Full Screen"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play Selection",
+        "name": "Menu Items.View.Playback.Play Selection"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play from Beginning",
+        "name": "Menu Items.View.Playback.Play from Beginning"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play to End",
+        "name": "Menu Items.View.Playback.Play to End"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Playback > Play",
+        "name": "Menu Items.View.Playback.Play"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show Audio Lanes",
+        "name": "Menu Items.View.Show Audio Lanes"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show Precision Editor",
+        "name": "Menu Items.View.Show Precision Editor"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > 360°",
+        "name": "Menu Items.View.Show in Event Viewer.360°"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Angles",
+        "name": "Menu Items.View.Show in Event Viewer.Angles"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Both Fields",
+        "name": "Menu Items.View.Show in Event Viewer.Both Fields"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Choose Custom Overlay",
+        "name": "Menu Items.View.Show in Event Viewer.Choose Custom Overlay"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Color Channels > All",
+        "name": "Menu Items.View.Show in Event Viewer.Color Channels.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Color Channels > Alpha",
+        "name": "Menu Items.View.Show in Event Viewer.Color Channels.Alpha"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Color Channels > Blue",
+        "name": "Menu Items.View.Show in Event Viewer.Color Channels.Blue"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Color Channels > Green",
+        "name": "Menu Items.View.Show in Event Viewer.Color Channels.Green"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Color Channels > Red",
+        "name": "Menu Items.View.Show in Event Viewer.Color Channels.Red"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Show Custom Overlay",
+        "name": "Menu Items.View.Show in Event Viewer.Show Custom Overlay"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Title/Action Safe Zones",
+        "name": "Menu Items.View.Show in Event Viewer.Title/Action Safe Zones"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Event Viewer > Video Scopes",
+        "name": "Menu Items.View.Show in Event Viewer.Video Scopes"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > 360°",
+        "name": "Menu Items.View.Show in Viewer.360°"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Angles",
+        "name": "Menu Items.View.Show in Viewer.Angles"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Both Fields",
+        "name": "Menu Items.View.Show in Viewer.Both Fields"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Choose Custom Overlay > Add Custom Overlay…",
+        "name": "Menu Items.View.Show in Viewer.Choose Custom Overlay.Add Custom Overlay…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Color Channels > All",
+        "name": "Menu Items.View.Show in Viewer.Color Channels.All"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Color Channels > Alpha",
+        "name": "Menu Items.View.Show in Viewer.Color Channels.Alpha"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Color Channels > Blue",
+        "name": "Menu Items.View.Show in Viewer.Color Channels.Blue"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Color Channels > Green",
+        "name": "Menu Items.View.Show in Viewer.Color Channels.Green"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Color Channels > Red",
+        "name": "Menu Items.View.Show in Viewer.Color Channels.Red"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Show Custom Overlay",
+        "name": "Menu Items.View.Show in Viewer.Show Custom Overlay"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Title/Action Safe Zones",
+        "name": "Menu Items.View.Show in Viewer.Title/Action Safe Zones"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Show in Viewer > Video Scopes",
+        "name": "Menu Items.View.Show in Viewer.Video Scopes"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Skimming",
+        "name": "Menu Items.View.Skimming"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Snapping",
+        "name": "Menu Items.View.Snapping"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Sort Library Events By > Ascending",
+        "name": "Menu Items.View.Sort Library Events By.Ascending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Sort Library Events By > Date",
+        "name": "Menu Items.View.Sort Library Events By.Date"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Sort Library Events By > Descending",
+        "name": "Menu Items.View.Sort Library Events By.Descending"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Sort Library Events By > Name",
+        "name": "Menu Items.View.Sort Library Events By.Name"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline History Back",
+        "name": "Menu Items.View.Timeline History Back"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline History Forward",
+        "name": "Menu Items.View.Timeline History Forward"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline Index > Captions",
+        "name": "Menu Items.View.Timeline Index.Captions"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline Index > Clips",
+        "name": "Menu Items.View.Timeline Index.Clips"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline Index > Roles",
+        "name": "Menu Items.View.Timeline Index.Roles"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Timeline Index > Tags",
+        "name": "Menu Items.View.Timeline Index.Tags"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Toggle Inspector Height",
+        "name": "Menu Items.View.Toggle Inspector Height"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Zoom In",
+        "name": "Menu Items.View.Zoom In"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Zoom Out",
+        "name": "Menu Items.View.Zoom Out"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Zoom to Fit",
+        "name": "Menu Items.View.Zoom to Fit"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: View > Zoom to Samples",
+        "name": "Menu Items.View.Zoom to Samples"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > A/V Output",
+        "name": "Menu Items.Window.A/V Output"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Background Tasks",
+        "name": "Menu Items.Window.Background Tasks"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Bring All to Front",
+        "name": "Menu Items.Window.Bring All to Front"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > Frame.io",
+        "name": "Menu Items.Window.Extensions.Frame.io"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > Getting Started for Final Cut Pro 10.4",
+        "name": "Menu Items.Window.Extensions.Getting Started for Final Cut Pro 10.4"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > KeyFlow Pro 2 Extension",
+        "name": "Menu Items.Window.Extensions.KeyFlow Pro 2 Extension"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > Scribeomatic",
+        "name": "Menu Items.Window.Extensions.Scribeomatic"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > ShareBrowser",
+        "name": "Menu Items.Window.Extensions.ShareBrowser"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > Shutterstock",
+        "name": "Menu Items.Window.Extensions.Shutterstock"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Extensions > Simon Says Transcription",
+        "name": "Menu Items.Window.Extensions.Simon Says Transcription"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Final Cut Pro",
+        "name": "Menu Items.Window.Final Cut Pro"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Color Inspector",
+        "name": "Menu Items.Window.Go To.Color Inspector"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Comparison Viewer",
+        "name": "Menu Items.Window.Go To.Comparison Viewer"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Event Viewer",
+        "name": "Menu Items.Window.Go To.Event Viewer"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Inspector",
+        "name": "Menu Items.Window.Go To.Inspector"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Libraries",
+        "name": "Menu Items.Window.Go To.Libraries"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Next Tab",
+        "name": "Menu Items.Window.Go To.Next Tab"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Photos and Audio",
+        "name": "Menu Items.Window.Go To.Photos and Audio"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Previous Tab",
+        "name": "Menu Items.Window.Go To.Previous Tab"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Timeline",
+        "name": "Menu Items.Window.Go To.Timeline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Titles and Generators",
+        "name": "Menu Items.Window.Go To.Titles and Generators"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Go To > Viewer",
+        "name": "Menu Items.Window.Go To.Viewer"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Minimize",
+        "name": "Menu Items.Window.Minimize"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Output to VR Headset",
+        "name": "Menu Items.Window.Output to VR Headset"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Project Properties",
+        "name": "Menu Items.Window.Project Properties"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Project Timecode",
+        "name": "Menu Items.Window.Project Timecode"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Record Voiceover",
+        "name": "Menu Items.Window.Record Voiceover"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Secondary Display > Browser",
+        "name": "Menu Items.Window.Show in Secondary Display.Browser"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Secondary Display > Timeline",
+        "name": "Menu Items.Window.Show in Secondary Display.Timeline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Secondary Display > Viewers",
+        "name": "Menu Items.Window.Show in Secondary Display.Viewers"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Audio Meters",
+        "name": "Menu Items.Window.Show in Workspace.Audio Meters"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Browser",
+        "name": "Menu Items.Window.Show in Workspace.Browser"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Comparison Viewer",
+        "name": "Menu Items.Window.Show in Workspace.Comparison Viewer"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Effects",
+        "name": "Menu Items.Window.Show in Workspace.Effects"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Event Viewer",
+        "name": "Menu Items.Window.Show in Workspace.Event Viewer"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Inspector",
+        "name": "Menu Items.Window.Show in Workspace.Inspector"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Sidebar",
+        "name": "Menu Items.Window.Show in Workspace.Sidebar"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Timeline Index",
+        "name": "Menu Items.Window.Show in Workspace.Timeline Index"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Timeline",
+        "name": "Menu Items.Window.Show in Workspace.Timeline"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Show in Workspace > Transitions",
+        "name": "Menu Items.Window.Show in Workspace.Transitions"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Source Timecode",
+        "name": "Menu Items.Window.Source Timecode"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Color & Effects",
+        "name": "Menu Items.Window.Workspaces.Color & Effects"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Default",
+        "name": "Menu Items.Window.Workspaces.Default"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Dual Displays",
+        "name": "Menu Items.Window.Workspaces.Dual Displays"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Open Workspace Folder in Finder",
+        "name": "Menu Items.Window.Workspaces.Open Workspace Folder in Finder"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Organize",
+        "name": "Menu Items.Window.Workspaces.Organize"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Save Workspace as…",
+        "name": "Menu Items.Window.Workspaces.Save Workspace as…"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Workspaces > Update Workspace",
+        "name": "Menu Items.Window.Workspaces.Update Workspace"
+    },
+    {
+        "info": "Triggers the Final Cut Pro Menu Item: Window > Zoom",
+        "name": "Menu Items.Window.Zoom"
+    },
+    {
         "info": "Trim clip start and end points to the range selection",
         "name": "Command Set Shortcuts.Editing.Trim to Selection"
     },
